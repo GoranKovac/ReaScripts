@@ -1,2 +1,2 @@
 # ReaScripts
-REAPER Lua Scripts
+REAPER Scripts
