@@ -1,6 +1,5 @@
-
 local last_proj_change_count = reaper.GetProjectStateChangeCount(0)
-local Button_TB = {}          
+local Button_TB = {}        
 local Static_Buttons_TB = {} 
 
 local Element = {}
@@ -122,18 +121,18 @@ save_btn.onClick =  function()
                           if tr then 
                              local ret, chunk = reaper.GetTrackStateChunk(tr,"", 0) 
                                    for k , v in pairs(Button_TB)do
-                                       if chunk == v.tr_chunk then return end 
+                                       if chunk == v.tr_chunk then return end
                                    end
-                             local retval, version_name = reaper.GetUserInputs("Version Name", 1, "Enter Version Name:", "") 
-                                  if not retval then return end                        
-                             create_button_from_selection(version_name) 
+                             local retval, version_name = reaper.GetUserInputs("Version Name", 1, "Enter Version Name:", "")  
+                                  if not retval then return end                           
+                             create_button_from_selection(version_name)
                              save_tracks() 
                           end                            
                     end                
                     
                     
 local Static_Buttons_TB = {save_btn} 
-
+-------------------------------------------
 ----------------------------------------------------------------------------------------------------
 ---   Main DRAW function   -------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
@@ -159,6 +158,7 @@ function Init()
     last_x, last_y = 0, 0
     mouse_ox, mouse_oy = -1, -1
 end
+----------------------------------------
 ----------------------------------------
 --   Mainloop   ------------------------
 ----------------------------------------
@@ -231,10 +231,10 @@ btn.onClick = function()
                  end                        
                  return
               end                         
-              reaper.SetTrackStateChunk(track, chunk) ---set chunk          
+              reaper.SetTrackStateChunk(track, chunk)         
               end 
               
-Button_TB[#Button_TB+1] = btn --add new button to table             
+Button_TB[#Button_TB+1] = btn            
 end
 ----------------------------------------------- 
 -----------------------------------------------
@@ -264,7 +264,7 @@ end
 --- Function: store buttons to ext state ---
 -----------------------------------------------
 function save_tracks()
-local save_chunk = {} 
+local save_chunk = {}
 local save_name = {}
    
      for k , v in ipairs(Button_TB) do 
@@ -274,7 +274,7 @@ local save_name = {}
      
      local concat_save_chunk = table.concat(save_chunk) 
      local concat_save_name = table.concat(save_name) 
-     reaper.SetProjExtState(0,"Track_Versions","Chunk",concat_save_chunk) 
+     reaper.SetProjExtState(0,"Track_Versions","Chunk",concat_save_chunk)
      reaper.SetProjExtState(0,"Track_Versions","Name",concat_save_name) 
 end
 -----------------------------------------------
@@ -283,56 +283,36 @@ end
 function restore()
 local retval, rs_chunk = reaper.GetProjExtState(0, "Track_Versions","Chunk") 
 local retval, rs_name = reaper.GetProjExtState(0, "Track_Versions","Name") 
-local restore_save_name = split(rs_name, ",") 
+local restore_save_chunk = split(rs_chunk, ",")
+local restore_save_name = split(rs_name, ",")
    
   for i = 1 , #restore_save_chunk do
     local chunk = restore_save_chunk[i]
     local name =  restore_save_name[i]
     local GUID = chunk:match("TRACKID ([^ ]+)\n") 
-    create_button(name,GUID,chunk) 
+    create_button(name,GUID,chunk)
   end
   
 end
-
-
---[[
-for k,v in ipairs(restore_save)do
-  chunk_temp = string.sub(v, 2)
-  close_v1 = string.find(chunk_temp, ">")
-     close_v2 = string.find(chunk_temp, "<")
-      if close_v2 == nil then close_v2 = 0 end
-         close_v = math.min(close_v1, close_v2)
-         chunk_part1 = string.sub(chunk_temp, 1, close_v-1 )
-         chunk_part2 = "\n"..string.sub(chunk_temp, close_v)     
-         if close_v2 == 0 then chunk_part2 = "" end
-         
-chunk_part_track = {}    
-chunk_part_item = {}
-for line in chunk_part1:gmatch("[^\r\n]+") do table.insert(chunk_part_track, line) end
-for line in chunk_part2:gmatch("[^\r\n]+") do table.insert(chunk_part_item, line) end
-         end
-      end
-]]
 
 -----------------------------------------------
 --- Function: Create Buttons From Selection ---
 -----------------------------------------------
 function create_button_from_selection(version_name)
-local tr = reaper.GetSelectedTrack(0,0) do     
+local tr = reaper.GetSelectedTrack(0,0)  
          
-      if tr then       
-         local ret, chunk = reaper.GetTrackStateChunk(tr,"", 0)    
-         local GUID = chunk:match("TRACKID ([^ ]+)\n")     
-         local name = version_name
+      if tr then         
+         local ret, chunk = reaper.GetTrackStateChunk(tr,"", 0) 
+         local GUID = chunk:match("TRACKID ([^ ]+)\n")       
+         local name = version_name 
          create_button(name,GUID,chunk) 
       end
-end
 end
 -----------------------------------------------
 --- Function: Delete button from table it button track is deleted ---
 -----------------------------------------------
 function track_deleted()
-local temp_del = {} -- temp table for storing 
+local temp_del = {}
 
   for k,v in ipairs(Button_TB)do
       local cnt_tr = reaper.CountTracks(0)
