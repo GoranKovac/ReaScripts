@@ -375,8 +375,8 @@ function create_button(name,GUID,chunk)
                       end
                     end                        
                     return
-                  end  
-                  restoreTrackItems(btn.track, btn.state.chunk)     
+                  end
+                  restoreTrackItems(btn.track, btn.state.chunk)
                 end 
               
 Button_TB[#Button_TB+1] = btn           
@@ -441,15 +441,47 @@ function restore()
 end
 
 -----------------------------------------------
+--- Function: Get Folder Depth ---
+-----------------------------------------------
+function get_track_folder_depth(track_index)
+  local folder_depth = 0
+  for i=0, track_index do -- loop from start of tracks to "track_index"... 
+    local track = reaper.GetTrack(0, i)
+    folder_depth = folder_depth + reaper.GetMediaTrackInfo_Value(track, "I_FOLDERDEPTH") -- ...to get the actual folder depth
+  end
+  return folder_depth
+end
+
+-----------------------------------------------
 --- Function: Create Buttons From Selection ---
 -----------------------------------------------
 function create_button_from_selection(version_name)
 local tr = reaper.GetSelectedTrack(0,0)
-      if tr then
-         local chunk = getTrackItems(tr)
-         local GUID =  reaper.GetTrackGUID(tr)
-         local name = version_name
-         create_button(name,GUID,chunk)
+      if tr then      
+          -----------------------------create version for all childs in folder
+         local retval, flags = reaper.GetTrackState(tr) -- get track flag
+             if flags&1 == 1 then -- if track is a folder
+                local tr_index = reaper.CSurf_TrackToID(tr, false) - 1 -- get track id
+                local parent_folder_depth = get_track_folder_depth(tr_index) -- get folder depth
+                     for i = tr_index + 1, reaper.CountTracks(0) do                         
+                         child_tr = reaper.GetTrack(0, i)
+                         local retval, cflags = reaper.GetTrackState(child_tr) -- get child track flag
+                         if cflags&1 ~= 1 then --if child not folder
+                            child_chunk = getTrackItems(child_tr)
+                            child_GUID  = reaper.GetTrackGUID(child_tr)
+                            child_name  = version_name
+                            create_button(child_name,child_GUID,child_chunk)
+                            child_track_folder_depth = parent_folder_depth + reaper.GetMediaTrackInfo_Value(child_tr, "I_FOLDERDEPTH")
+                            if child_track_folder_depth < parent_folder_depth then break end 
+                         end                        
+                     end
+            -----------------------------create version for all childs in folder                                                  
+             else
+                local chunk = getTrackItems(tr)
+                local GUID =  reaper.GetTrackGUID(tr)
+                local name = version_name
+                create_button(name,GUID,chunk)
+             end
       end
 end
 -----------------------------------------------
