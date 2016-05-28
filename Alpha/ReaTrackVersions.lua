@@ -463,7 +463,7 @@ local temp_del = {}
       for i = 0 , cnt_tr-1 do
           local tr = reaper.GetTrack(0, i)
           local guid = reaper.GetTrackGUID(tr)
-          if v.tr_guid == guid then
+          if v.state.GUID == guid then
              temp_del[#temp_del+1]=Button_TB[k]
           end
       end
