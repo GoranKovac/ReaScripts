@@ -194,6 +194,7 @@ function Button:draw()
   --DBG("Button::draw")
     self:update_xywh() -- Update xywh(if wind changed)
     local r,g,b,a  = self.r,self.g,self.b,self.a
+    if self.norm_val == 1 then a = a+0.3 end
     local fnt,fnt_sz = self.fnt, self.fnt_sz
     -- Get mouse state ---------
           -- in element --------
@@ -268,7 +269,7 @@ end
 local function getTrackItems(track)
   local items={}
   local num_items = reaper.CountTrackMediaItems(track)
-  DBG("num_items = "..num_items)
+  --DBG("num_items = "..num_items)
   for i=1, num_items, 1 do
     local item = reaper.GetTrackMediaItem(track, i-1)
     local _, it_chunk = reaper.GetItemStateChunk(item, '')
@@ -381,29 +382,6 @@ function create_button(name,GUID,chunk)
               
 Button_TB[#Button_TB+1] = btn           
 end
------------------------------------------------ 
------------------------------------------------
---- Function: convert string to table pStringe = string , pPatern = "," (simbol for separating)
------------------------------------------------
-function split(pString, pPattern)
-local Table = {}
-local fpat = "(.-)" .. pPattern
-local last_end = 1
-local s, e, cap = pString:find(fpat, 1)
-while s do
-  if s ~= 1 or cap ~= "" then
-   table.insert(Table,cap)
-  end
-  last_end = e+1
-  s, e, cap = pString:find(fpat, last_end)
-end
-if last_end <= #pString then
-  cap = pString:sub(last_end)
-  table.insert(Table, cap)
-end
-return Table
-end
-
 ----------------------------------------------- 
 -----------------------------------------------
 --- Function: store buttons to ext state ---
@@ -532,9 +510,17 @@ local current_track = {}
      for k,v in pairs(Button_TB) do
          if guid == v.state.GUID then
             current_track[#current_track+1] = Button_TB[k]
-         end
+         end         
      end
 
+current_items = getTrackItems(sel_track)
+     for k,v in ipairs(current_track)do
+        if #current_items == #v.state.chunk then
+            v.norm_val = 1
+            else
+            v.norm_val = 0
+            end
+      end
 ----------position of the buttons of current track table on the fly-------------
 local pos_x = 10
 local pos_y = 30
