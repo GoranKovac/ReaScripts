@@ -221,9 +221,11 @@ save_btn.onClick =  function()
                     local tr = reaper.GetSelectedTrack(0, 0) 
                           if tr then 
                              local ret, chunk = reaper.GetTrackStateChunk(tr,"", 0) 
+                                   --[[
                                    for k , v in pairs(Button_TB)do
                                        if chunk == v.state.chunk then return end 
                                    end
+                                   --]]
                              local retval, version_name = reaper.GetUserInputs("Version Name", 1, "Enter Version Name:", "")  
                                   if not retval then return end                            
                              create_button_from_selection(version_name) 
@@ -240,6 +242,43 @@ local Static_Buttons_TB = {save_btn}
 function DRAW(tbl)
     for key,btn  in pairs(tbl) do btn:draw()  end
 end
+
+
+----------------------------------------------------------------------------------------------------
+---  Getting/setting track items functions  --------------------------------------------------------
+-- This uses all API with no track chunks involved -------------------------------------------------
+----------------------------------------------------------------------------------------------------
+
+local function restoreTrackItems(track, track_items_table)
+  local num_items = reaper.CountTrackMediaItems(track)
+  if num_items>0 then 
+    for i = 1, num_items, 1 do
+      reaper.DeleteTrackMediaItem(track, reaper.GetTrackMediaItem(track,0))
+    end
+  end
+  for i = 1, #track_items_table, 1 do
+    local item = reaper.CreateNewMIDIItemInProj(track, 1, 1) -- maybe there's another way?
+    reaper.SetItemStateChunk(item, track_items_table[i], false)
+  end
+  reaper.UpdateArrange()
+end
+
+
+-- return a table of all item chunks on a track
+local function getTrackItems(track)
+  local items={}
+  local num_items = reaper.CountTrackMediaItems(track)
+  DBG("num_items = "..num_items)
+  for i=1, num_items, 1 do
+    local item = reaper.GetTrackMediaItem(track, i-1)
+    local _, it_chunk = reaper.GetItemStateChunk(item, '')
+    items[#items+1]=it_chunk
+  end
+  return items
+end
+
+
+
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --   INIT   --------------------------------------------------------------------
@@ -324,6 +363,7 @@ function create_button(name,GUID,chunk)
                 )
                 
   local track = reaper.BR_GetMediaTrackByGUID(0, GUID)
+  btn.track=track
 
   btn.onClick = function()
                   if gfx.mouse_cap&16==16 then --Alt is pressed
@@ -335,8 +375,8 @@ function create_button(name,GUID,chunk)
                       end
                     end                        
                     return
-                  end                         
-                  reaper.SetTrackStateChunk(track, btn.state.chunk)         
+                  end  
+                  restoreTrackItems(btn.track, btn.state.chunk)     
                 end 
               
 Button_TB[#Button_TB+1] = btn           
@@ -406,7 +446,7 @@ end
 function create_button_from_selection(version_name)
 local tr = reaper.GetSelectedTrack(0,0)
       if tr then
-         local ret, chunk = reaper.GetTrackStateChunk(tr,"", 0)
+         local chunk = getTrackItems(tr)
          local GUID =  reaper.GetTrackGUID(tr)
          local name = version_name
          create_button(name,GUID,chunk)
@@ -423,7 +463,7 @@ local temp_del = {}
       for i = 0 , cnt_tr-1 do
           local tr = reaper.GetTrack(0, i)
           local guid = reaper.GetTrackGUID(tr)
-          if v.tr_guid == guid then
+          if v.state.GUID == guid then
              temp_del[#temp_del+1]=Button_TB[k]
           end
       end
