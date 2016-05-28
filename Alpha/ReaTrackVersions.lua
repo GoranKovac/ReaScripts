@@ -250,7 +250,7 @@ end
 ----------------------------------------------------------------------------------------------------
 
 local function restoreTrackItems(track, track_items_table)
-  local num_items = reaper.CountMediaItems(0,track)
+  local num_items = reaper.CountTrackMediaItems(track)
   if num_items>0 then 
     for i = 1, num_items, 1 do
       reaper.DeleteTrackMediaItem(track, reaper.GetTrackMediaItem(track,0))
@@ -267,7 +267,9 @@ end
 -- return a table of all item chunks on a track
 local function getTrackItems(track)
   local items={}
-  for i=1, reaper.CountMediaItems(0,track),1 do
+  local num_items = reaper.CountTrackMediaItems(track)
+  DBG("num_items = "..num_items)
+  for i=1, num_items, 1 do
     local item = reaper.GetTrackMediaItem(track, i-1)
     local _, it_chunk = reaper.GetItemStateChunk(item, '')
     items[#items+1]=it_chunk
@@ -361,6 +363,7 @@ function create_button(name,GUID,chunk)
                 )
                 
   local track = reaper.BR_GetMediaTrackByGUID(0, GUID)
+  btn.track=track
 
   btn.onClick = function()
                   if gfx.mouse_cap&16==16 then --Alt is pressed
@@ -373,7 +376,7 @@ function create_button(name,GUID,chunk)
                     end                        
                     return
                   end  
-                  restoreTrackItems(track, btn.state.chunk)     
+                  restoreTrackItems(btn.track, btn.state.chunk)     
                 end 
               
 Button_TB[#Button_TB+1] = btn           
