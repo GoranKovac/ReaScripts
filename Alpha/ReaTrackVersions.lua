@@ -464,12 +464,12 @@ local tr = reaper.GetSelectedTrack(0,0)
                 local tr_index = reaper.CSurf_TrackToID(tr, false) - 1 -- get track id
                 local parent_folder_depth = get_track_folder_depth(tr_index) -- get folder depth
                      for i = tr_index + 1, reaper.CountTracks(0) do                         
-                         child_tr = reaper.GetTrack(0, i)
-                         local retval, cflags = reaper.GetTrackState(child_tr) -- get child track flag
-                         if cflags&1 ~= 1 then --if child not folder
-                            child_chunk = getTrackItems(child_tr)
-                            child_GUID  = reaper.GetTrackGUID(child_tr)
-                            child_name  = version_name
+                         local child_tr = reaper.GetTrack(0, i)
+                         local retval, child_flags = reaper.GetTrackState(child_tr) -- get child track flag
+                         if child_flags&1 ~= 1 then --if child not folder
+                            local child_chunk = getTrackItems(child_tr)
+                            local child_GUID  = reaper.GetTrackGUID(child_tr)
+                            local child_name  = version_name
                             create_button(child_name,child_GUID,child_chunk)
                             child_track_folder_depth = parent_folder_depth + reaper.GetMediaTrackInfo_Value(child_tr, "I_FOLDERDEPTH")
                             if child_track_folder_depth < parent_folder_depth then break end 
