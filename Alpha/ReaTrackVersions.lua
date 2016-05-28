@@ -218,9 +218,8 @@ local btn = Button:new(
                  chunk               --  tr_chunk
                 )
                 
-local track = reaper.BR_GetMediaTrackByGUID(0, btn.tr_guid) 
+local track = reaper.BR_GetMediaTrackByGUID(0, btn.tr_guid)
 
-------when button is clicked             
 btn.onClick = function()
               if gfx.mouse_cap&16==16 then --Alt is pressed
                  for i=1,#Button_TB,1 do
@@ -232,10 +231,10 @@ btn.onClick = function()
                  end                        
                  return
               end                         
-              reaper.SetTrackStateChunk(track, chunk) ---set chunk          
+              reaper.SetTrackStateChunk(track, chunk)         
               end 
               
-Button_TB[#Button_TB+1] = btn --add new button to table             
+Button_TB[#Button_TB+1] = btn           
 end
 ----------------------------------------------- 
 -----------------------------------------------
@@ -269,45 +268,43 @@ local save_chunk = {}
 local save_name = {}
    
      for k , v in ipairs(Button_TB) do
-     save_chunk[#save_chunk+1] = v.tr_chunk .. "," 
+     save_chunk[#save_chunk+1] = v.tr_chunk .. ","
      save_name[#save_name+1] = v.lbl .. ","
-     end
-     
-     local concat_save_chunk = table.concat(save_chunk) 
+    end
+    
+     local concat_save_chunk = table.concat(save_chunk)
      local concat_save_name = table.concat(save_name)
-     reaper.SetProjExtState(0,"Track_Versions","Chunk",concat_save_chunk) 
-     reaper.SetProjExtState(0,"Track_Versions","Name",concat_save_name) 
+     reaper.SetProjExtState(0,"Track_Versions","Chunk",concat_save_chunk)
+     reaper.SetProjExtState(0,"Track_Versions","Name",concat_save_name)
 end
 -----------------------------------------------
 --- Function: Restore Saved Buttons From extstate ---
 -----------------------------------------------
 function restore()
-local retval, rs_chunk = reaper.GetProjExtState(0, "Track_Versions","Chunk") 
-local retval, rs_name = reaper.GetProjExtState(0, "Track_Versions","Name") 
+local retval, rs_chunk = reaper.GetProjExtState(0, "Track_Versions","Chunk")
+local retval, rs_name = reaper.GetProjExtState(0, "Track_Versions","Name")
 local restore_save_chunk = split(rs_chunk, ",")
-local restore_save_name = split(rs_name, ",") 
-   
+local restore_save_name = split(rs_name, ",")
+
   for i = 1 , #restore_save_chunk do
     local chunk = restore_save_chunk[i]
     local name =  restore_save_name[i]
-    local GUID = chunk:match("TRACKID ([^ ]+)\n") 
-    create_button(name,GUID,chunk) 
+    local GUID = chunk:match("TRACKID ([^ ]+)\n")
+    create_button(name,GUID,chunk)
   end
   
 end
-
-
 -----------------------------------------------
 --- Function: Create Buttons From Selection ---
 -----------------------------------------------
 function create_button_from_selection(version_name)
-local tr = reaper.GetSelectedTrack(0,0) 
-         
-      if tr then       
-         local ret, chunk = reaper.GetTrackStateChunk(tr,"", 0) 
-         local GUID = chunk:match("TRACKID ([^ ]+)\n")     
-         local name = version_name 
-         create_button(name,GUID,chunk) 
+local tr = reaper.GetSelectedTrack(0,0)
+
+      if tr then
+         local ret, chunk = reaper.GetTrackStateChunk(tr,"", 0)
+         local GUID = chunk:match("TRACKID ([^ ]+)\n")
+         local name = version_name
+         create_button(name,GUID,chunk)
       end
   
 end
@@ -315,72 +312,71 @@ end
 --- Function: Delete button from table it button track is deleted ---
 -----------------------------------------------
 function track_deleted()
-local temp_del = {} 
+local temp_del = {}
 
   for k,v in ipairs(Button_TB)do
       local cnt_tr = reaper.CountTracks(0)
-      for i = 0 , cnt_tr-1 do 
-          local tr = reaper.GetTrack(0, i) 
-          local guid = reaper.GetTrackGUID(tr) 
-          if v.tr_guid == guid then 
-             temp_del[#temp_del+1]=Button_TB[k] 
+      for i = 0 , cnt_tr-1 do
+          local tr = reaper.GetTrack(0, i)
+          local guid = reaper.GetTrackGUID(tr)
+          if v.tr_guid == guid then
+             temp_del[#temp_del+1]=Button_TB[k]
           end
-      end      
+      end
   end
   
-Button_TB = temp_del 
-temp_del = {} 
-save_tracks() 
-end  
+Button_TB = temp_del
+temp_del = {}
+save_tracks()
+end
 ----------------------------------------
 --   Main  -----------------------------
 ----------------------------------------
 function main()
-----check if some action appeared in project
 local proj_change_count = reaper.GetProjectStateChangeCount(0)
-  if proj_change_count > last_proj_change_count then 
+  if proj_change_count > last_proj_change_count then
       local last_action = reaper.Undo_CanUndo2(0)
-      if last_action == "Remove Tracks" then 
-         track_deleted() 
+      if last_action == "Remove Tracks" then
+         track_deleted()
       end
-      last_proj_change_count = proj_change_count 
-  end  
-
-local sel_track = reaper.GetSelectedTrack(0,0)    
+      last_proj_change_count = proj_change_count
+  end
+  
+local sel_track = reaper.GetSelectedTrack(0,0)
   
 ----------print track name in window
-  if sel_track then 
-     local guid = reaper.GetTrackGUID(sel_track) 
-     local retval, title_name = reaper.GetSetMediaTrackInfo_String(sel_track, "P_NAME", "", false) 
+  if sel_track then
+     local guid = reaper.GetTrackGUID(sel_track)
+     local retval, title_name = reaper.GetSetMediaTrackInfo_String(sel_track, "P_NAME", "", false)
      gfx.x = 10
-     gfx.y = 8      
-     gfx.printf("Current Track : " .. title_name) 
-   
+     gfx.y = 8
+     gfx.printf("Current Track : " .. title_name)
+     
 ----------show only buttons for currently selected track to a current_track table  
-local current_track = {}     
+local current_track = {}
      for k,v in pairs(Button_TB) do
-         if guid == v.tr_guid then  
-            current_track[#current_track+1] = Button_TB[k] 
-         end        
+         if guid == v.tr_guid then
+            current_track[#current_track+1] = Button_TB[k]
+         end
      end
 
 ----------position of the buttons of current track table on the fly-------------
 local pos_x = 10
 local pos_y = 30
-local btn_pos_counter = 0    
+local btn_pos_counter = 0
     
      for k,v in pairs(current_track)do
-         v.x = pos_x -- x value
-         v.y = pos_y + ((btn_h + btn_pad_y)*btn_pos_counter) 
-             if v.y + btn_h + btn_pad_y >= gfx.h-50 then 
-                btn_pos_counter=-1 
-                pos_y=30 
-                pos_x = pos_x + btn_w + btn_pad_x  
+         v.x = pos_x
+         v.y = pos_y + ((btn_h + btn_pad_y)*btn_pos_counter)
+             if v.y + btn_h + btn_pad_y >= gfx.h-50 then
+                btn_pos_counter=-1
+                pos_y=30
+                pos_x = pos_x + btn_w + btn_pad_x
              end
-         btn_pos_counter = btn_pos_counter + 1    
+         btn_pos_counter = btn_pos_counter + 1
       end
       
-  DRAW(current_track) 
+  DRAW(current_track)
   end
      
 end
