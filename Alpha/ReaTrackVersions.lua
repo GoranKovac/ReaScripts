@@ -302,7 +302,7 @@ local tr = reaper.GetSelectedTrack(0,0)
 
       if tr then
          local ret, chunk = reaper.GetTrackStateChunk(tr,"", 0)
-         local GUID = chunk:match("TRACKID ([^ ]+)\n")
+         local GUID =  reaper.GetTrackGUID(tr)
          local name = version_name
          create_button(name,GUID,chunk)
       end
@@ -326,7 +326,6 @@ local temp_del = {}
   end
   
 Button_TB = temp_del
-temp_del = {}
 save_tracks()
 end
 ----------------------------------------
@@ -352,7 +351,7 @@ local sel_track = reaper.GetSelectedTrack(0,0)
      gfx.y = 8
      gfx.printf("Current Track : " .. title_name)
      
-----------show only buttons for currently selected track to a current_track table  
+----------show only buttons for currently selected track , add them to current_track table  
 local current_track = {}
      for k,v in pairs(Button_TB) do
          if guid == v.tr_guid then
