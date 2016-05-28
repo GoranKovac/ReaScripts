@@ -1,10 +1,110 @@
+function DBG(str)
+  ---[[
+  if str==nil then str="nil" end
+  reaper.ShowConsoleMsg(str.."\n")
+  --]]
+end
+
+
+
+----------------------------------------------
+-- Pickle.lua
+-- A table serialization utility for lua
+-- Steve Dekorte, http://www.dekorte.com, Apr 2000
+-- (updated for Lua 5.3 by me)
+-- Freeware
+----------------------------------------------
+
+function pickle(t)
+  return Pickle:clone():pickle_(t)
+end
+
+Pickle = {
+  clone = function (t) local nt={}; for i, v in pairs(t) do nt[i]=v end return nt end 
+}
+
+function Pickle:pickle_(root)
+  if type(root) ~= "table" then 
+    error("can only pickle tables, not ".. type(root).."s")
+  end
+  self._tableToRef = {}
+  self._refToTable = {}
+  local savecount = 0
+  self:ref_(root)
+  local s = ""
+  
+  while #self._refToTable > savecount do
+    savecount = savecount + 1
+    local t = self._refToTable[savecount]
+    s = s.."{\n"
+    
+    for i, v in pairs(t) do
+        s = string.format("%s[%s]=%s,\n", s, self:value_(i), self:value_(v))
+    end
+    s = s.."},\n"
+  end
+
+  return string.format("{%s}", s)
+end
+
+function Pickle:value_(v)
+  local vtype = type(v)
+  if     vtype == "string" then return string.format("%q", v)
+  elseif vtype == "number" then return v
+  elseif vtype == "boolean" then return tostring(v)
+  elseif vtype == "table" then return "{"..self:ref_(v).."}"
+  else error("pickle a "..type(v).." is not supported")
+  end  
+end
+
+function Pickle:ref_(t)
+  local ref = self._tableToRef[t]
+  if not ref then 
+    if t == self then error("can't pickle the pickle class") end
+    table.insert(self._refToTable, t)
+    ref = #self._refToTable
+    self._tableToRef[t] = ref
+  end
+  return ref
+end
+
+----------------------------------------------
+-- unpickle
+----------------------------------------------
+
+function unpickle(s)
+  if type(s) ~= "string" then
+    error("can't unpickle a "..type(s)..", only strings")
+  end
+  local gentables = load("return "..s)
+  local tables = gentables()
+  
+  for tnum = 1, #tables do
+    local t = tables[tnum]
+    local tcopy = {}; for i, v in pairs(t) do tcopy[i] = v end
+    for i, v in pairs(tcopy) do
+      local ni, nv
+      if type(i) == "table" then ni = tables[i[1]] else ni = i end
+      if type(v) == "table" then nv = tables[v[1]] else nv = v end
+      t[i] = nil
+      t[ni] = nv
+    end
+  end
+  return tables[1]
+end
+
+
+-----------------------------------------------------------------------------------------------
+---------                            ReaTrackVersions                                ----------
+-----------------------------------------------------------------------------------------------
+
 local last_proj_change_count = reaper.GetProjectStateChangeCount(0)
 local Button_TB = {}          -- A table for "dynamic" buttons
 local Static_Buttons_TB = {}  -- A table for "static" buttons
  -- Variables to set the button drawing pos (updated when new button is created)
 
 local Element = {}
-function Element:new(x,y,w,h, r,g,b,a, lbl,fnt,fnt_sz, norm_val, norm_val2, tr_guid, tr_chunk)
+function Element:new(x,y,w,h, r,g,b,a, lbl,fnt,fnt_sz, norm_val, norm_val2, state)
     local elm = {}
     elm.def_xywh = {x,y,w,h,fnt_sz} -- its default coord,used for Zoom etc
     elm.x, elm.y, elm.w, elm.h = x, y, w, h
@@ -12,8 +112,7 @@ function Element:new(x,y,w,h, r,g,b,a, lbl,fnt,fnt_sz, norm_val, norm_val2, tr_g
     elm.lbl, elm.fnt, elm.fnt_sz  = lbl, fnt, fnt_sz
     elm.norm_val = norm_val
     elm.norm_val2 = norm_val2
-    elm.tr_guid = tr_guid
-    elm.tr_chunk = tr_chunk
+    elm.state = state or {}
     ------
     setmetatable(elm, self)
     self.__index = self 
@@ -92,6 +191,7 @@ function Button:draw_lbl()
 end
 ------------------------function Button:draw()
 function Button:draw()
+  --DBG("Button::draw")
     self:update_xywh() -- Update xywh(if wind changed)
     local r,g,b,a  = self.r,self.g,self.b,self.a
     local fnt,fnt_sz = self.fnt, self.fnt_sz
@@ -122,7 +222,7 @@ save_btn.onClick =  function()
                           if tr then 
                              local ret, chunk = reaper.GetTrackStateChunk(tr,"", 0) 
                                    for k , v in pairs(Button_TB)do
-                                       if chunk == v.tr_chunk then return end 
+                                       if chunk == v.state.chunk then return end 
                                    end
                              local retval, version_name = reaper.GetUserInputs("Version Name", 1, "Enter Version Name:", "")  
                                   if not retval then return end                            
@@ -145,6 +245,7 @@ end
 --   INIT   --------------------------------------------------------------------
 --------------------------------------------------------------------------------
 function Init()
+  DBG("Init")
     -- Some gfx Wnd Default Values --
     local R,G,B = 20,20,20               -- 0..255 form
     local Wnd_bgd = R + G*256 + B*65536  -- red+green*256+blue*65536  
@@ -195,12 +296,17 @@ end
 --- Function: Create Button and Define  ---
 ------------------------------------------- 
 function create_button(name,GUID,chunk)
-btn_w = 65              -- width for new buttons
-btn_h = 20              -- height for new buttons
-btn_pad_x = 10          -- x space between buttons
-btn_pad_y = 10          -- y space between buttons
+  btn_w = 65              -- width for new buttons
+  btn_h = 20              -- height for new buttons
+  btn_pad_x = 10          -- x space between buttons
+  btn_pad_y = 10          -- y space between buttons
 
-local btn = Button:new(
+  local state = {}     -- now the things we want to store in our buttons
+  state.name = name    -- are stored into a state table, for pickling
+  state.GUID = GUID;
+  state.chunk = chunk;
+
+  local btn = Button:new(
                  0, --  x
                  0, --  y 
                  btn_w,              --  w
@@ -214,25 +320,24 @@ local btn = Button:new(
                  15,                 --  label font size
                  0,                  --  norm_val
                  0,                  --  norm_val2
-                 GUID,               --  tr_guid
-                 chunk               --  tr_chunk
+                 state               --  state
                 )
                 
-local track = reaper.BR_GetMediaTrackByGUID(0, btn.tr_guid)
+  local track = reaper.BR_GetMediaTrackByGUID(0, GUID)
 
-btn.onClick = function()
-              if gfx.mouse_cap&16==16 then --Alt is pressed
-                 for i=1,#Button_TB,1 do
-                     if Button_TB[i]==btn then
+  btn.onClick = function()
+                  if gfx.mouse_cap&16==16 then --Alt is pressed
+                    for i=1,#Button_TB,1 do
+                      if Button_TB[i]==btn then
                         table.remove(Button_TB,i)
                         save_tracks()
                         break
-                     end
-                 end                        
-                 return
-              end                         
-              reaper.SetTrackStateChunk(track, chunk)         
-              end 
+                      end
+                    end                        
+                    return
+                  end                         
+                  reaper.SetTrackStateChunk(track, btn.state.chunk)         
+                end 
               
 Button_TB[#Button_TB+1] = btn           
 end
@@ -264,49 +369,48 @@ end
 --- Function: store buttons to ext state ---
 -----------------------------------------------
 function save_tracks()
-local save_chunk = {}  
-local save_name = {}
-   
-     for k , v in ipairs(Button_TB) do
-     save_chunk[#save_chunk+1] = v.tr_chunk .. ","
-     save_name[#save_name+1] = v.lbl .. ","
-    end
-    
-     local concat_save_chunk = table.concat(save_chunk)
-     local concat_save_name = table.concat(save_name)
-     reaper.SetProjExtState(0,"Track_Versions","Chunk",concat_save_chunk)
-     reaper.SetProjExtState(0,"Track_Versions","Name",concat_save_name)
+  DBG("Saving")
+  -- here we are going to pickle one big table for all states. This might not be a good
+  -- idea, but it's easy enough to change it to save and recall separate pickled states
+  -- per button. using pickle.lua prepares us to be storing tables of lines instead
+  -- of big chunks.
+  local all_button_states = {}
+  
+  for k, v in ipairs(Button_TB) do
+    all_button_states[#all_button_states+1] = v.state
+  end
+  
+  reaper.SetProjExtState(0, "Track_Versions", "States", pickle(all_button_states))
 end
+
 -----------------------------------------------
 --- Function: Restore Saved Buttons From extstate ---
 -----------------------------------------------
 function restore()
-local retval, rs_chunk = reaper.GetProjExtState(0, "Track_Versions","Chunk")
-local retval, rs_name = reaper.GetProjExtState(0, "Track_Versions","Name")
-local restore_save_chunk = split(rs_chunk, ",")
-local restore_save_name = split(rs_name, ",")
-
-  for i = 1 , #restore_save_chunk do
-    local chunk = restore_save_chunk[i]
-    local name =  restore_save_name[i]
-    local GUID = chunk:match("TRACKID ([^ ]+)\n")
-    create_button(name,GUID,chunk)
+  DBG("Restoring")
+  local ok, states = reaper.GetProjExtState(0, "Track_Versions","States")
+  if states~="" then
+    states = unpickle(states)
+    for i = 1, #states do
+      local s = states[i]
+      create_button(s.name,s.GUID,s.chunk)
+    end
+  else
+    DBG("state=\"\"")
   end
-  
 end
+
 -----------------------------------------------
 --- Function: Create Buttons From Selection ---
 -----------------------------------------------
 function create_button_from_selection(version_name)
 local tr = reaper.GetSelectedTrack(0,0)
-
       if tr then
          local ret, chunk = reaper.GetTrackStateChunk(tr,"", 0)
          local GUID =  reaper.GetTrackGUID(tr)
          local name = version_name
          create_button(name,GUID,chunk)
       end
-  
 end
 -----------------------------------------------
 --- Function: Delete button from table it button track is deleted ---
@@ -354,7 +458,7 @@ local sel_track = reaper.GetSelectedTrack(0,0)
 ----------show only buttons for currently selected track , add them to current_track table  
 local current_track = {}
      for k,v in pairs(Button_TB) do
-         if guid == v.tr_guid then
+         if guid == v.state.GUID then
             current_track[#current_track+1] = Button_TB[k]
          end
      end
