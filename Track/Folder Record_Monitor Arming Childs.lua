@@ -87,9 +87,6 @@ function on_rec_arm_change(track_pointer, track_index)
   reaper.UpdateArrange()                -- update arrange view
   reaper.TrackList_AdjustWindows(false) -- update tracklist
 end
-
-
-
 -----------------------------
 -- on_project_state_change --
 -----------------------------
@@ -113,9 +110,7 @@ function on_project_state_change(last_action)
 end  
 ----------
 
-function main() 
- lt=reaper.GetLastTouchedTrack()
- lt_par= reaper.GetMediaTrackInfo_Value(lt, "I_FOLDERDEPTH")
+function main()
   local proj_change_count = reaper.GetProjectStateChangeCount(0)
   if proj_change_count > last_proj_change_count then
     local last_action = reaper.Undo_CanUndo2(0) -- get last action
