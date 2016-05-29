@@ -1,8 +1,8 @@
 function DBG(str)
-  ---[[
+  --[[
   if str==nil then str="nil" end
   reaper.ShowConsoleMsg(str.."\n")
-  --]]
+  ]]
 end
 
 
@@ -99,7 +99,7 @@ end
 -----------------------------------------------------------------------------------------------
 
 local last_proj_change_count = reaper.GetProjectStateChangeCount(0)
-local Button_TB = {}          -- A table for "dynamic" buttons
+Button_TB = {}          -- A table for "dynamic" buttons
 local Static_Buttons_TB = {}  -- A table for "static" buttons
  -- Variables to set the button drawing pos (updated when new button is created)
 
@@ -221,7 +221,7 @@ local save_btn = Button:new(10,220,40,20, 0.2,0.2,1.0,0.5, "Save","Arial",15, 0 
 save_btn.onClick =  function()
                     local tr = reaper.GetSelectedTrack(0, 0) 
                           if tr then 
-                             local ret, chunk = reaper.GetTrackStateChunk(tr,"", 0) 
+                             --local ret, chunk = reaper.GetTrackStateChunk(tr,"", 0) 
                                    --[[
                                    for k , v in pairs(Button_TB)do
                                        if chunk == v.state.chunk then return end 
@@ -229,7 +229,7 @@ save_btn.onClick =  function()
                                    --]]
                              local retval, version_name = reaper.GetUserInputs("Version Name", 1, "Enter Version Name:", "")  
                                   if not retval then return end                            
-                             create_button_from_selection(version_name) 
+                             create_button_from_selection(tr,version_name) 
                              save_tracks() 
                           end                            
                     end                
@@ -253,14 +253,13 @@ end
 local function restoreTrackItems(track, track_items_table)
   local num_items = reaper.CountTrackMediaItems(track)
   reaper.PreventUIRefresh(1)
-  if num_items>0 then 
+  if num_items>0 then  
     for i = 1, num_items, 1 do
       reaper.DeleteTrackMediaItem(track, reaper.GetTrackMediaItem(track,0))
     end
   end
   for i = 1, #track_items_table, 1 do
     local item = reaper.AddMediaItemToTrack(track)
-    --local item = reaper.CreateNewMIDIItemInProj(track, 1, 1) -- maybe there's another way? If anything breaks this is the old one
     reaper.SetItemStateChunk(item, track_items_table[i], false)
   end
   reaper.PreventUIRefresh(-1)
@@ -379,7 +378,10 @@ function create_button(name,GUID,chunk)
                       end
                     end                        
                     return
-                  end
+                  end 
+                  ---- add code when clicking on folder button
+                  ---- to change all child versions,
+                  ---- at the moment it will breake the script if pressed                
                   restoreTrackItems(btn.track, btn.state.chunk)
                 end 
               
@@ -436,34 +438,42 @@ end
 -----------------------------------------------
 --- Function: Create Buttons From Selection ---
 -----------------------------------------------
-function create_button_from_selection(version_name)
-local tr = reaper.GetSelectedTrack(0,0)
-      if tr then      
-          -----------------------------create version for all childs in folder
-         local retval, flags = reaper.GetTrackState(tr) -- get track flag
+function create_button_from_selection(tr,version_name)
+local retval, flags = reaper.GetTrackState(tr) -- get track flag
+         
              if flags&1 == 1 then -- if track is a folder
-                local tr_index = reaper.CSurf_TrackToID(tr, false) - 1 -- get track id
+                local child_tracks = {} -- table for all child data           
+                local tr_index = reaper.CSurf_TrackToID(tr, false) - 1 -- get folder track id
                 local parent_folder_depth = get_track_folder_depth(tr_index) -- get folder depth
-                     for i = tr_index + 1, reaper.CountTracks(0) do                         
-                         local child_tr = reaper.GetTrack(0, i)
-                         local retval, child_flags = reaper.GetTrackState(child_tr) -- get child track flag
-                         if child_flags&1 ~= 1 then --if child not folder
-                            local child_chunk = getTrackItems(child_tr)
-                            local child_GUID  = reaper.GetTrackGUID(child_tr)
-                            local child_name  = version_name
-                            create_button(child_name,child_GUID,child_chunk)
-                            child_track_folder_depth = parent_folder_depth + reaper.GetMediaTrackInfo_Value(child_tr, "I_FOLDERDEPTH")
-                            if child_track_folder_depth < parent_folder_depth then break end 
-                         end                        
-                     end
-            -----------------------------create version for all childs in folder                                                  
+                
+                for i = tr_index + 2, reaper.CountTracks(0) do                         
+                    local child_tr = reaper.GetTrack(0, i-1)
+                    local retval, child_flags = reaper.GetTrackState(child_tr) -- get child track flag
+                    
+                    if child_flags&1 ~= 1 then -- if child is not a folder
+                    -----------create button for child tracks
+                       local c_chunk = getTrackItems(child_tr)
+                       local c_GUID  = reaper.GetTrackGUID(child_tr)
+                       local c_name  = version_name
+                       child_tracks[#child_tracks+1] = { name = version_name , GUID = child_GUID , chunk = getTrackItems(child_tr)}
+                       create_button(c_name,c_GUID,c_chunk)
+                    end
+                    
+                    child_track_folder_depth = parent_folder_depth + reaper.GetMediaTrackInfo_Value(child_tr, "I_FOLDERDEPTH")
+                    if child_track_folder_depth < parent_folder_depth then break end 
+                end
+             ---------- create button in folder track for with all child data                      
+             local f_chunk = child_tracks
+             local f_GUID  = reaper.GetTrackGUID(tr)
+             local f_name  = "Folder :" .. version_name
+             create_button(f_name,f_GUID,f_chunk)              
              else
-                local chunk = getTrackItems(tr)
-                local GUID =  reaper.GetTrackGUID(tr)
-                local name = version_name
-                create_button(name,GUID,chunk)
+             -------------create button for selected track
+             local t_chunk = getTrackItems(tr)
+             local t_GUID  = reaper.GetTrackGUID(tr)
+             local t_name  = version_name
+             create_button(t_name,t_GUID,t_chunk)
              end
-      end
 end
 -----------------------------------------------
 --- Function: Delete button from table it button track is deleted ---
@@ -497,13 +507,21 @@ local proj_change_count = reaper.GetProjectStateChangeCount(0)
       end
       last_proj_change_count = proj_change_count
   end
-  
+local count_tracks = reaper.CountSelectedTracks(0)  
 local sel_track = reaper.GetSelectedTrack(0,0)
   
 ----------print track name in window
+
+for i = 1, count_tracks do
+  s_track = reaper.GetSelectedTrack(0,i-1)
+end
+
   if sel_track then
      local guid = reaper.GetTrackGUID(sel_track)
      local retval, title_name = reaper.GetSetMediaTrackInfo_String(sel_track, "P_NAME", "", false)
+     if count_tracks > 1 then
+     title_name = "Multiple Tracks Selected"
+     end
      gfx.x = 10
      gfx.y = 8
      gfx.printf("Current Track : " .. title_name)
@@ -516,9 +534,8 @@ local current_track = {}
          end         
      end
 
-
-----------------------button highlight -- this is temporary , there must be a normal way to highlight buttons
-current_items = getTrackItems(sel_track)
+--[[ --------highlight selected button, this needs a better approach (in the button table somehow
+local current_items = getTrackItems(sel_track)
      for k,v in ipairs(current_track)do
         if #current_items == #v.state.chunk then
             v.norm_val = 1
@@ -526,6 +543,7 @@ current_items = getTrackItems(sel_track)
             v.norm_val = 0
             end
       end
+]]      
 ----------position of the buttons of current track table on the fly-------------
 local pos_x = 10
 local pos_y = 30
@@ -540,11 +558,9 @@ local btn_pos_counter = 0
                 pos_x = pos_x + btn_w + btn_pad_x
              end
          btn_pos_counter = btn_pos_counter + 1
-      end
-      
+      end           
   DRAW(current_track)
-  end
-     
+  end      
 end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
