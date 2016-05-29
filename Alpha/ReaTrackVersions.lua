@@ -252,15 +252,18 @@ end
 
 local function restoreTrackItems(track, track_items_table)
   local num_items = reaper.CountTrackMediaItems(track)
+  reaper.PreventUIRefresh(1)
   if num_items>0 then 
     for i = 1, num_items, 1 do
       reaper.DeleteTrackMediaItem(track, reaper.GetTrackMediaItem(track,0))
     end
   end
   for i = 1, #track_items_table, 1 do
-    local item = reaper.CreateNewMIDIItemInProj(track, 1, 1) -- maybe there's another way?
+    local item = reaper.AddMediaItemToTrack(track)
+    --local item = reaper.CreateNewMIDIItemInProj(track, 1, 1) -- maybe there's another way? If anything breaks this is the old one
     reaper.SetItemStateChunk(item, track_items_table[i], false)
   end
+  reaper.PreventUIRefresh(-1)
   reaper.UpdateArrange()
 end
 
