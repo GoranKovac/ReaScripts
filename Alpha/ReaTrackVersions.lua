@@ -211,39 +211,19 @@ function Button:draw()
     gfx.set(0.7, 0.9, 0.4, 1)   -- set label color
     gfx.setfont(1, fnt, fnt_sz) -- set label fnt
     self:draw_lbl()             -- draw lbl
-end             
-------------------------------------
---- Create static "store" button ---
-------------------------------------
-local save_btn = Button:new(10,220,40,20, 0.2,0.2,1.0,0.5, "Save","Arial",15, 0 )
-
-
-save_btn.onClick =  function()
-                    local tr = reaper.GetSelectedTrack(0, 0) 
-                          if tr then 
-                             --local ret, chunk = reaper.GetTrackStateChunk(tr,"", 0) 
-                                   --[[
-                                   for k , v in pairs(Button_TB)do
-                                       if chunk == v.state.chunk then return end 
-                                   end
-                                   --]]
-                             local retval, version_name = reaper.GetUserInputs("Version Name", 1, "Enter Version Name:", "")  
-                                  if not retval then return end                            
-                             create_button_from_selection(tr,version_name) 
-                             save_tracks() 
-                          end                            
-                    end                
-                    
-                    
-local Static_Buttons_TB = {save_btn}
--------------------------------------------
-----------------------------------------------------------------------------------------------------
----   Main DRAW function   -------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------
-function DRAW(tbl)
-    for key,btn  in pairs(tbl) do btn:draw()  end
 end
 
+
+--table compare meta table
+local tcmt = {
+     __eq = function (o1, o2)
+              if #o1 ~= #o2 then return false end
+              for i = 1, #o1 do
+                if o1[i] ~= o2[i] then return false end
+              end
+              return true
+            end
+        }
 
 ----------------------------------------------------------------------------------------------------
 ---  Getting/setting track items functions  --------------------------------------------------------
@@ -278,10 +258,43 @@ local function getTrackItems(track)
     local _, it_chunk = reaper.GetItemStateChunk(item, '')
     items[#items+1]=it_chunk
   end
-  return items
+  return setmetatable(items, tcmt)
 end
 
 
+
+
+         
+------------------------------------
+--- Create static "store" button ---
+------------------------------------
+local save_btn = Button:new(10,220,40,20, 0.2,0.2,1.0,0.5, "Save","Arial",15, 0 )
+
+
+save_btn.onClick = function()
+                     local tr = reaper.GetSelectedTrack(0, 0) 
+                     if tr then 
+                       local chunk = getTrackItems(tr)
+                       for k , v in pairs(Button_TB)do
+                         if chunk == v.state.chunk then return end 
+                       end
+                            
+                       local retval, version_name = reaper.GetUserInputs("Version Name", 1, "Enter Version Name:", "")  
+                       if not retval then return end                            
+                         create_button_from_selection(tr,version_name) 
+                         save_tracks() 
+                       end                            
+                     end                
+                    
+                    
+local Static_Buttons_TB = {save_btn}
+-------------------------------------------
+----------------------------------------------------------------------------------------------------
+---   Main DRAW function   -------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
+function DRAW(tbl)
+    for key,btn  in pairs(tbl) do btn:draw()  end
+end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
