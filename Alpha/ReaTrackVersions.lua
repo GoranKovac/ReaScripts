@@ -342,7 +342,7 @@ function create_button(name,GUID,chunk)
   btn_w = 65              -- width for new buttons
   btn_h = 20              -- height for new buttons
   btn_pad_x = 10          -- x space between buttons
-  btn_pad_y = 10          -- y space between buttons
+  btn_pad_y = 10          -- y space between buttons  
 
   local state = {}     -- now the things we want to store in our buttons
   state.name = name    -- are stored into a state table, for pickling
@@ -453,8 +453,9 @@ local retval, flags = reaper.GetTrackState(tr) -- get track flag
                 local child_tracks = {} -- table for all child data           
                 local tr_index = reaper.CSurf_TrackToID(tr, false) - 1 -- get folder track id
                 local parent_folder_depth = get_track_folder_depth(tr_index) -- get folder depth
+                local total_folder_depth = parent_folder_depth 
                 
-                for i = tr_index + 2, reaper.CountTracks(0) do                         
+                for i = tr_index + 1, reaper.CountTracks(0) do                         
                     local child_tr = reaper.GetTrack(0, i-1)
                     local retval, child_flags = reaper.GetTrackState(child_tr) -- get child track flag
                     
@@ -467,8 +468,8 @@ local retval, flags = reaper.GetTrackState(tr) -- get track flag
                        create_button(c_name,c_GUID,c_chunk)
                     end
                     
-                    child_track_folder_depth = parent_folder_depth + reaper.GetMediaTrackInfo_Value(child_tr, "I_FOLDERDEPTH")
-                    if child_track_folder_depth < parent_folder_depth then break end 
+                    total_folder_depth = total_folder_depth + reaper.GetMediaTrackInfo_Value(child_tr, "I_FOLDERDEPTH")
+                    if total_folder_depth <= parent_folder_depth then break end 
                 end
              ---------- create button in folder track for with all child data                      
              local f_chunk = child_tracks
