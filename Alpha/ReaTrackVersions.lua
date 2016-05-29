@@ -99,7 +99,7 @@ end
 -----------------------------------------------------------------------------------------------
 
 local last_proj_change_count = reaper.GetProjectStateChangeCount(0)
-Button_TB = {}          -- A table for "dynamic" buttons
+local Button_TB = {}          -- A table for "dynamic" buttons
 local Static_Buttons_TB = {}  -- A table for "static" buttons
  -- Variables to set the button drawing pos (updated when new button is created)
 
@@ -381,9 +381,7 @@ function create_button(name,GUID,chunk)
                     end                        
                     return
                   end 
-                  ---- add code when clicking on folder button
-                  ---- to change all child versions,
-                  ---- at the moment it will breake the script if pressed 
+                  
                   if flags&1 == 1 then
                     for i = 1 , #btn.state.chunk do
                        local f_track = reaper.BR_GetMediaTrackByGUID(0, btn.state.chunk[i].GUID)
@@ -452,7 +450,7 @@ function create_button_from_selection(tr,version_name)
 local retval, flags = reaper.GetTrackState(tr) -- get track flag
          
              if flags&1 == 1 then -- if track is a folder
-                child_tracks = {} -- table for all child data           
+                local child_tracks = {} -- table for all child data           
                 local tr_index = reaper.CSurf_TrackToID(tr, false) - 1 -- get folder track id
                 local parent_folder_depth = get_track_folder_depth(tr_index) -- get folder depth
                 
