@@ -516,6 +516,8 @@ local current_track = {}
          end         
      end
 
+
+----------------------button highlight -- this is temporary , there must be a normal way to highlight buttons
 current_items = getTrackItems(sel_track)
      for k,v in ipairs(current_track)do
         if #current_items == #v.state.chunk then
