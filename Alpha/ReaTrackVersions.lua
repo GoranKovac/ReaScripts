@@ -1,8 +1,8 @@
 function DBG(str)
-  --[[
+  ---[[
   if str==nil then str="nil" end
   reaper.ShowConsoleMsg(str.."\n")
-  ]]
+  --]]
 end
 
 
@@ -229,11 +229,11 @@ local tcmt = {
 ---  Getting/setting track items functions  --------------------------------------------------------
 -- This uses all API with no track chunks involved -------------------------------------------------
 ----------------------------------------------------------------------------------------------------
-
+local EMPTY_TABLE = "empty_table"
 local function restoreTrackItems(track, track_items_table)
   local num_items = reaper.CountTrackMediaItems(track)
   reaper.PreventUIRefresh(1)
-  if num_items>0 then  
+  if num_items>0 and num_items[1] ~= EMPTY_TABLE then
     for i = 1, num_items, 1 do
       reaper.DeleteTrackMediaItem(track, reaper.GetTrackMediaItem(track,0))
     end
@@ -258,13 +258,12 @@ local function getTrackItems(track)
     local _, it_chunk = reaper.GetItemStateChunk(item, '')
     items[#items+1]=it_chunk
   end
+  if #items == 0 then items[1]=EMPTY_TABLE end -- pickle doesn't like empty tables
   return setmetatable(items, tcmt)
 end
 
 
-
-
-         
+    
 ------------------------------------
 --- Create static "store" button ---
 ------------------------------------
@@ -477,6 +476,7 @@ local retval, flags = reaper.GetTrackState(tr) -- get track flag
                        local c_chunk = getTrackItems(child_tr)
                        local c_GUID  = reaper.GetTrackGUID(child_tr)
                        local c_name  = version_name
+                       DBG(#c_chunk)
                        child_tracks[#child_tracks+1] = { name = version_name , GUID = c_GUID , chunk = c_chunk}
                        create_button(c_name,c_GUID,c_chunk)
                     end
