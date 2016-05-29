@@ -464,39 +464,39 @@ function create_button_from_selection(tr,version_name)
   local retval, flags = reaper.GetTrackState(tr) -- get track flag
          
   if flags&1 == 1 then -- if track is a folder
-  local child_tracks = {} -- table for all child data           
-  local tr_index = reaper.CSurf_TrackToID(tr, false) - 1 -- get folder track id
-  local parent_folder_depth = get_track_folder_depth(tr_index) -- get folder depth
-  local total_folder_depth = parent_folder_depth 
-  
-  for i = tr_index + 1, reaper.CountTracks(0) do                         
+    local child_tracks = {} -- table for all child data           
+    local tr_index = reaper.CSurf_TrackToID(tr, false) - 1 -- get folder track id
+    local parent_folder_depth = get_track_folder_depth(tr_index) -- get folder depth
+    local total_folder_depth = parent_folder_depth 
+    
+    for i = tr_index + 1, reaper.CountTracks(0) do                         
       local child_tr = reaper.GetTrack(0, i-1)
       local retval, child_flags = reaper.GetTrackState(child_tr) -- get child track flag
-      
+        
       if child_flags&1 ~= 1 then -- if child is not a folder
       -----------create button for child tracks
-          local c_chunk = getTrackItems(child_tr)
-          local c_GUID  = reaper.GetTrackGUID(child_tr)
-          local c_name  = version_name
-          DBG(#c_chunk)
-          child_tracks[#child_tracks+1] = { name = version_name , GUID = c_GUID , chunk = c_chunk}
-          create_button(c_name,c_GUID,c_chunk)
+        local c_chunk = getTrackItems(child_tr)
+        local c_GUID  = reaper.GetTrackGUID(child_tr)
+        local c_name  = version_name
+        DBG(#c_chunk)
+        child_tracks[#child_tracks+1] = { name = version_name , GUID = c_GUID , chunk = c_chunk}
+        create_button(c_name,c_GUID,c_chunk)
       end
-      
+        
       total_folder_depth = total_folder_depth + reaper.GetMediaTrackInfo_Value(child_tr, "I_FOLDERDEPTH")
       if total_folder_depth <= parent_folder_depth then break end 
-  end
-  ---------- create button in folder track for with all child data                      
-  local f_chunk = child_tracks
-  local f_GUID  = reaper.GetTrackGUID(tr)
-  local f_name  = "Folder :" .. version_name
-  create_button(f_name,f_GUID,f_chunk)              
-  else
-  -------------create button for selected track
-  local t_chunk = getTrackItems(tr)
-  local t_GUID  = reaper.GetTrackGUID(tr)
-  local t_name  = version_name
-  create_button(t_name,t_GUID,t_chunk)
+    end
+    ---------- create button in folder track for with all child data                      
+    local f_chunk = child_tracks
+    local f_GUID  = reaper.GetTrackGUID(tr)
+    local f_name  = "Folder :" .. version_name
+    create_button(f_name,f_GUID,f_chunk)              
+  else -- not a folder
+    -------------create button for selected track
+    local t_chunk = getTrackItems(tr)
+    local t_GUID  = reaper.GetTrackGUID(tr)
+    local t_name  = version_name
+    create_button(t_name,t_GUID,t_chunk)
   end
 end
 
