@@ -455,7 +455,7 @@ local retval, flags = reaper.GetTrackState(tr) -- get track flag
                        local c_chunk = getTrackItems(child_tr)
                        local c_GUID  = reaper.GetTrackGUID(child_tr)
                        local c_name  = version_name
-                       child_tracks[#child_tracks+1] = { name = version_name , GUID = child_GUID , chunk = getTrackItems(child_tr)}
+                       child_tracks[#child_tracks+1] = { name = version_name , GUID = c_GUID , chunk = c_chunk}
                        create_button(c_name,c_GUID,c_chunk)
                     end
                     
