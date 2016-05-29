@@ -1,10 +1,15 @@
+-----------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------
+---------                            ReaTrackVersions                                ----------
+-----------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------
+
 function DBG(str)
   ---[[
   if str==nil then str="nil" end
   reaper.ShowConsoleMsg(str.."\n")
   --]]
 end
-
 
 
 ----------------------------------------------
@@ -93,9 +98,7 @@ function unpickle(s)
   return tables[1]
 end
 
-
 -----------------------------------------------------------------------------------------------
----------                            ReaTrackVersions                                ----------
 -----------------------------------------------------------------------------------------------
 
 local last_proj_change_count = reaper.GetProjectStateChangeCount(0)
@@ -105,19 +108,20 @@ local Static_Buttons_TB = {}  -- A table for "static" buttons
 
 local Element = {}
 function Element:new(x,y,w,h, r,g,b,a, lbl,fnt,fnt_sz, norm_val, norm_val2, state)
-    local elm = {}
-    elm.def_xywh = {x,y,w,h,fnt_sz} -- its default coord,used for Zoom etc
-    elm.x, elm.y, elm.w, elm.h = x, y, w, h
-    elm.r, elm.g, elm.b, elm.a = r, g, b, a
-    elm.lbl, elm.fnt, elm.fnt_sz  = lbl, fnt, fnt_sz
-    elm.norm_val = norm_val
-    elm.norm_val2 = norm_val2
-    elm.state = state or {}
-    ------
-    setmetatable(elm, self)
-    self.__index = self 
-    return elm
-end--------------------------------------------------------------
+  local elm = {}
+  elm.def_xywh = {x,y,w,h,fnt_sz} -- its default coord,used for Zoom etc
+  elm.x, elm.y, elm.w, elm.h = x, y, w, h
+  elm.r, elm.g, elm.b, elm.a = r, g, b, a
+  elm.lbl, elm.fnt, elm.fnt_sz  = lbl, fnt, fnt_sz
+  elm.norm_val = norm_val
+  elm.norm_val2 = norm_val2
+  elm.state = state or {}
+  ------
+  setmetatable(elm, self)
+  self.__index = self 
+  return elm
+end
+--------------------------------------------------------------
 --- Function for Child Classes(args = Child,Parent Class) ----
 --------------------------------------------------------------
 function extended(Child, Parent)
@@ -174,45 +178,44 @@ end
 ---   Create Element Child Classes(Button,Slider,Knob)   -----------------------
 --------------------------------------------------------------------------------
 local Button = {}
-  extended(Button,     Element)  
+  extended(Button, Element)  
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 ---   Button Class Methods   ---------------------------------------------------
 --------------------------------------------------------------------------------
 function Button:draw_body()
-    gfx.rect(self.x,self.y,self.w,self.h, true) -- draw btn body
+  gfx.rect(self.x,self.y,self.w,self.h, true) -- draw btn body
 end
 --------
 function Button:draw_lbl()
-    local x,y,w,h  = self.x,self.y,self.w,self.h
-    local lbl_w, lbl_h = gfx.measurestr(self.lbl)
-    gfx.x = x+(w-lbl_w)/2; gfx.y = y+(h-lbl_h)/2
-    gfx.drawstr(self.lbl)
+  local x,y,w,h  = self.x,self.y,self.w,self.h
+  local lbl_w, lbl_h = gfx.measurestr(self.lbl)
+  gfx.x = x+(w-lbl_w)/2; gfx.y = y+(h-lbl_h)/2
+  gfx.drawstr(self.lbl)
 end
 ------------------------function Button:draw()
 function Button:draw()
   --DBG("Button::draw")
-    self:update_xywh() -- Update xywh(if wind changed)
-    local r,g,b,a  = self.r,self.g,self.b,self.a
-    if self.norm_val == 1 then a = a+0.3 end
-    local fnt,fnt_sz = self.fnt, self.fnt_sz
-    -- Get mouse state ---------
-          -- in element --------
-          if self:mouseIN() then a=a+0.1 end
-          -- in elm L_down -----
-          if self:mouseDown() then a=a+0.2 end
-          -- in elm L_up(released and was previously pressed) --
-          if self:mouseClick() and self.onClick then self.onClick() end
-    -- Draw btn body, frame ----
-    gfx.set(r,g,b,a)    -- set body color
-    self:draw_body()    -- body
-    self:draw_frame()   -- frame
-    -- Draw label --------------
-    gfx.set(0.7, 0.9, 0.4, 1)   -- set label color
-    gfx.setfont(1, fnt, fnt_sz) -- set label fnt
-    self:draw_lbl()             -- draw lbl
+  self:update_xywh() -- Update xywh(if wind changed)
+  local r,g,b,a  = self.r,self.g,self.b,self.a
+  if self.norm_val == 1 then a = a+0.3 end
+  local fnt,fnt_sz = self.fnt, self.fnt_sz
+  -- Get mouse state ------
+  ----- in element --------
+  if self:mouseIN() then a=a+0.1 end
+  -- in elm L_down -----
+  if self:mouseDown() then a=a+0.2 end
+  -- in elm L_up(released and was previously pressed) --
+  if self:mouseClick() and self.onClick then self.onClick() end
+  -- Draw btn body, frame ----
+  gfx.set(r,g,b,a)    -- set body color
+  self:draw_body()    -- body
+  self:draw_frame()   -- frame
+  -- Draw label --------------
+  gfx.set(0.7, 0.9, 0.4, 1)   -- set label color
+  gfx.setfont(1, fnt, fnt_sz) -- set label fnt
+  self:draw_lbl()             -- draw lbl
 end
-
 
 --table compare meta table
 local tcmt = {
@@ -230,6 +233,7 @@ local tcmt = {
 -- This uses all API with no track chunks involved -------------------------------------------------
 ----------------------------------------------------------------------------------------------------
 local EMPTY_TABLE = "empty_table"
+
 local function restoreTrackItems(track, track_items_table)
   local num_items = reaper.CountTrackMediaItems(track)
   reaper.PreventUIRefresh(1)
@@ -247,7 +251,6 @@ local function restoreTrackItems(track, track_items_table)
   reaper.UpdateArrange()
 end
 
-
 -- return a table of all item chunks on a track
 local function getTrackItems(track)
   local items={}
@@ -261,9 +264,7 @@ local function getTrackItems(track)
   if #items == 0 then items[1]=EMPTY_TABLE end -- pickle doesn't like empty tables
   return setmetatable(items, tcmt)
 end
-
-
-    
+ 
 ------------------------------------
 --- Create static "store" button ---
 ------------------------------------
@@ -287,12 +288,12 @@ save_btn.onClick = function()
                     
                     
 local Static_Buttons_TB = {save_btn}
--------------------------------------------
+
 ----------------------------------------------------------------------------------------------------
 ---   Main DRAW function   -------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
 function DRAW(tbl)
-    for key,btn  in pairs(tbl) do btn:draw()  end
+  for key,btn  in pairs(tbl) do btn:draw()  end
 end
 
 --------------------------------------------------------------------------------
@@ -301,52 +302,53 @@ end
 --------------------------------------------------------------------------------
 function Init()
   DBG("Init")
-    -- Some gfx Wnd Default Values --
-    local R,G,B = 20,20,20               -- 0..255 form
-    local Wnd_bgd = R + G*256 + B*65536  -- red+green*256+blue*65536  
-    local Wnd_Title = "ReaTrack-Versions"
-    local Wnd_Dock,Wnd_X,Wnd_Y = 0,100,320
-    Wnd_W,Wnd_H = 235,250 -- global values(used for define zoom level)
-    -- Init window ------
-    gfx.clear = Wnd_bgd         
-    gfx.init( Wnd_Title, Wnd_W,Wnd_H, Wnd_Dock, Wnd_X,Wnd_Y )
-    -- Init mouse last --
-    last_mouse_cap = 0
-    last_x, last_y = 0, 0
-    mouse_ox, mouse_oy = -1, -1
+  -- Some gfx Wnd Default Values --
+  local R,G,B = 20,20,20               -- 0..255 form
+  local Wnd_bgd = R + G*256 + B*65536  -- red+green*256+blue*65536  
+  local Wnd_Title = "ReaTrack-Versions"
+  local Wnd_Dock,Wnd_X,Wnd_Y = 0,100,320
+  Wnd_W,Wnd_H = 235,250 -- global values(used for define zoom level)
+  -- Init window ------
+  gfx.clear = Wnd_bgd         
+  gfx.init( Wnd_Title, Wnd_W,Wnd_H, Wnd_Dock, Wnd_X,Wnd_Y )
+  -- Init mouse last --
+  last_mouse_cap = 0
+  last_x, last_y = 0, 0
+  mouse_ox, mouse_oy = -1, -1
 end
-----------------------------------------
+
 ----------------------------------------
 --   Mainloop   ------------------------
 ----------------------------------------
 function mainloop()
--- zoom level --
---    Z_w, Z_h = gfx.w/Wnd_W, gfx.h/Wnd_H
---    if Z_w<0.6 then Z_w = 0.6 elseif Z_w>2 then Z_w = 2 end
---    if Z_h<0.6 then Z_h = 0.6 elseif Z_h>2 then Z_h = 2 end 
--- mouse and modkeys --
-    if gfx.mouse_cap&1==1   and last_mouse_cap&1==0  or   -- L mouse
-       gfx.mouse_cap&2==2   and last_mouse_cap&2==0  or   -- R mouse
-       gfx.mouse_cap&64==64 and last_mouse_cap&64==0 then -- M mouse
-       mouse_ox, mouse_oy = gfx.mouse_x, gfx.mouse_y 
-    end 
-    -----------------------
-    -----------------------
-    main()
-    DRAW(Static_Buttons_TB)
-    -----------------------
-    -----------------------
-    last_mouse_cap = gfx.mouse_cap
-    last_x, last_y = gfx.mouse_x, gfx.mouse_y
-    gfx.mouse_wheel = 0 -- reset gfx.mouse_wheel 
+  -- zoom level --
+  --    Z_w, Z_h = gfx.w/Wnd_W, gfx.h/Wnd_H
+  --    if Z_w<0.6 then Z_w = 0.6 elseif Z_w>2 then Z_w = 2 end
+  --    if Z_h<0.6 then Z_h = 0.6 elseif Z_h>2 then Z_h = 2 end 
+  -- mouse and modkeys --
+  if gfx.mouse_cap&1==1   and last_mouse_cap&1==0  or   -- L mouse
+    gfx.mouse_cap&2==2   and last_mouse_cap&2==0  or   -- R mouse
+    gfx.mouse_cap&64==64 and last_mouse_cap&64==0 then -- M mouse
+    mouse_ox, mouse_oy = gfx.mouse_x, gfx.mouse_y 
+  end 
+  ----------------------
+  -----------------------
+  main()
+  DRAW(Static_Buttons_TB)
+  -----------------------
+  -----------------------
+  last_mouse_cap = gfx.mouse_cap
+  last_x, last_y = gfx.mouse_x, gfx.mouse_y
+  gfx.mouse_wheel = 0 -- reset gfx.mouse_wheel 
     
-    char = gfx.getchar()
-    if char==32 then reaper.Main_OnCommand(40044, 0) end -- play 
-    if char~=-1 then reaper.defer(mainloop) end          -- defer
-    -----------  
-    gfx.update()
-    -----------
+  char = gfx.getchar()
+  if char==32 then reaper.Main_OnCommand(40044, 0) end -- play 
+  if char~=-1 then reaper.defer(mainloop) end          -- defer
+  -----------  
+  gfx.update()
+  -----------
 end
+
 -------------------------------------------
 --- Function: Create Button and Define  ---
 ------------------------------------------- 
@@ -407,7 +409,7 @@ function create_button(name,GUID,chunk)
               
 Button_TB[#Button_TB+1] = btn           
 end
------------------------------------------------ 
+
 -----------------------------------------------
 --- Function: store buttons to ext state ---
 -----------------------------------------------
@@ -426,9 +428,9 @@ function save_tracks()
   reaper.SetProjExtState(0, "Track_Versions", "States", pickle(all_button_states))
 end
 
------------------------------------------------
+-----------------------------------------------------
 --- Function: Restore Saved Buttons From extstate ---
------------------------------------------------
+-----------------------------------------------------
 function restore()
   DBG("Restoring")
   local ok, states = reaper.GetProjExtState(0, "Track_Versions","States")
@@ -444,7 +446,7 @@ function restore()
 end
 
 -----------------------------------------------
---- Function: Get Folder Depth ---
+---      Function: Get Folder Depth         ---
 -----------------------------------------------
 function get_track_folder_depth(track_index)
   local folder_depth = 0
@@ -459,129 +461,131 @@ end
 --- Function: Create Buttons From Selection ---
 -----------------------------------------------
 function create_button_from_selection(tr,version_name)
-local retval, flags = reaper.GetTrackState(tr) -- get track flag
+  local retval, flags = reaper.GetTrackState(tr) -- get track flag
          
-             if flags&1 == 1 then -- if track is a folder
-                local child_tracks = {} -- table for all child data           
-                local tr_index = reaper.CSurf_TrackToID(tr, false) - 1 -- get folder track id
-                local parent_folder_depth = get_track_folder_depth(tr_index) -- get folder depth
-                local total_folder_depth = parent_folder_depth 
-                
-                for i = tr_index + 1, reaper.CountTracks(0) do                         
-                    local child_tr = reaper.GetTrack(0, i-1)
-                    local retval, child_flags = reaper.GetTrackState(child_tr) -- get child track flag
-                    
-                    if child_flags&1 ~= 1 then -- if child is not a folder
-                    -----------create button for child tracks
-                       local c_chunk = getTrackItems(child_tr)
-                       local c_GUID  = reaper.GetTrackGUID(child_tr)
-                       local c_name  = version_name
-                       DBG(#c_chunk)
-                       child_tracks[#child_tracks+1] = { name = version_name , GUID = c_GUID , chunk = c_chunk}
-                       create_button(c_name,c_GUID,c_chunk)
-                    end
-                    
-                    total_folder_depth = total_folder_depth + reaper.GetMediaTrackInfo_Value(child_tr, "I_FOLDERDEPTH")
-                    if total_folder_depth <= parent_folder_depth then break end 
-                end
-             ---------- create button in folder track for with all child data                      
-             local f_chunk = child_tracks
-             local f_GUID  = reaper.GetTrackGUID(tr)
-             local f_name  = "Folder :" .. version_name
-             create_button(f_name,f_GUID,f_chunk)              
-             else
-             -------------create button for selected track
-             local t_chunk = getTrackItems(tr)
-             local t_GUID  = reaper.GetTrackGUID(tr)
-             local t_name  = version_name
-             create_button(t_name,t_GUID,t_chunk)
-             end
+  if flags&1 == 1 then -- if track is a folder
+  local child_tracks = {} -- table for all child data           
+  local tr_index = reaper.CSurf_TrackToID(tr, false) - 1 -- get folder track id
+  local parent_folder_depth = get_track_folder_depth(tr_index) -- get folder depth
+  local total_folder_depth = parent_folder_depth 
+  
+  for i = tr_index + 1, reaper.CountTracks(0) do                         
+      local child_tr = reaper.GetTrack(0, i-1)
+      local retval, child_flags = reaper.GetTrackState(child_tr) -- get child track flag
+      
+      if child_flags&1 ~= 1 then -- if child is not a folder
+      -----------create button for child tracks
+          local c_chunk = getTrackItems(child_tr)
+          local c_GUID  = reaper.GetTrackGUID(child_tr)
+          local c_name  = version_name
+          DBG(#c_chunk)
+          child_tracks[#child_tracks+1] = { name = version_name , GUID = c_GUID , chunk = c_chunk}
+          create_button(c_name,c_GUID,c_chunk)
+      end
+      
+      total_folder_depth = total_folder_depth + reaper.GetMediaTrackInfo_Value(child_tr, "I_FOLDERDEPTH")
+      if total_folder_depth <= parent_folder_depth then break end 
+  end
+  ---------- create button in folder track for with all child data                      
+  local f_chunk = child_tracks
+  local f_GUID  = reaper.GetTrackGUID(tr)
+  local f_name  = "Folder :" .. version_name
+  create_button(f_name,f_GUID,f_chunk)              
+  else
+  -------------create button for selected track
+  local t_chunk = getTrackItems(tr)
+  local t_GUID  = reaper.GetTrackGUID(tr)
+  local t_name  = version_name
+  create_button(t_name,t_GUID,t_chunk)
+  end
 end
+
 -----------------------------------------------
 --- Function: Delete button from table it button track is deleted ---
 -----------------------------------------------
 function track_deleted()
-local temp_del = {}
+  local temp_del = {}
 
   for k,v in ipairs(Button_TB)do
-      local cnt_tr = reaper.CountTracks(0)
-      for i = 0 , cnt_tr-1 do
-          local tr = reaper.GetTrack(0, i)
-          local guid = reaper.GetTrackGUID(tr)
-          if v.state.GUID == guid then
-             temp_del[#temp_del+1]=Button_TB[k]
-          end
+    local cnt_tr = reaper.CountTracks(0)
+    for i = 0 , cnt_tr-1 do
+      local tr = reaper.GetTrack(0, i)
+      local guid = reaper.GetTrackGUID(tr)
+      if v.state.GUID == guid then
+        temp_del[#temp_del+1]=Button_TB[k]
       end
+    end
   end
   
-Button_TB = temp_del
-save_tracks()
+  Button_TB = temp_del
+  save_tracks()
 end
+
 ----------------------------------------
 --   Main  -----------------------------
 ----------------------------------------
 function main()
-local proj_change_count = reaper.GetProjectStateChangeCount(0)
+  local proj_change_count = reaper.GetProjectStateChangeCount(0)
   if proj_change_count > last_proj_change_count then
-      local last_action = reaper.Undo_CanUndo2(0)
-      if last_action == "Remove Tracks" then
-         track_deleted()
-      end
-      last_proj_change_count = proj_change_count
+    local last_action = reaper.Undo_CanUndo2(0)
+    if last_action == "Remove Tracks" then
+      track_deleted()
+    end
+    last_proj_change_count = proj_change_count
   end
-local count_tracks = reaper.CountSelectedTracks(0)  
-local sel_track = reaper.GetSelectedTrack(0,0)
+  local count_tracks = reaper.CountSelectedTracks(0)  
+  local sel_track = reaper.GetSelectedTrack(0,0)
   
-----------print track name in window
+  ----------print track name in window
 
-for i = 1, count_tracks do
-  s_track = reaper.GetSelectedTrack(0,i-1)
-end
+  for i = 1, count_tracks do
+    s_track = reaper.GetSelectedTrack(0,i-1)
+  end
 
   if sel_track then
-     local guid = reaper.GetTrackGUID(sel_track)
-     local retval, title_name = reaper.GetSetMediaTrackInfo_String(sel_track, "P_NAME", "", false)
-     if count_tracks > 1 then
-     title_name = "Multiple Tracks Selected"
-     end
-     gfx.x = 10
-     gfx.y = 8
-     gfx.printf("Current Track : " .. title_name)
+    local guid = reaper.GetTrackGUID(sel_track)
+    local retval, title_name = reaper.GetSetMediaTrackInfo_String(sel_track, "P_NAME", "", false)
+    if count_tracks > 1 then
+      title_name = "Multiple Tracks Selected"
+    end
+    gfx.x = 10
+    gfx.y = 8
+    gfx.printf("Current Track : " .. title_name)
      
-----------show only buttons for currently selected track , add them to current_track table  
-local current_track = {}
-     for k,v in pairs(Button_TB) do
-         if guid == v.state.GUID then
-            current_track[#current_track+1] = Button_TB[k]
-         end         
-     end
+    ----------show only buttons for currently selected track , add them to current_track table  
+    local current_track = {}
+    for k,v in pairs(Button_TB) do
+      if guid == v.state.GUID then
+        current_track[#current_track+1] = Button_TB[k]
+      end         
+    end
 
---[[ --------highlight selected button, this needs a better approach (in the button table somehow
-local current_items = getTrackItems(sel_track)
-     for k,v in ipairs(current_track)do
-        if #current_items == #v.state.chunk then
-            v.norm_val = 1
-            else
-            v.norm_val = 0
-            end
+    --[[ --------highlight selected button, this needs a better approach (in the button table somehow
+    local current_items = getTrackItems(sel_track)
+      for k,v in ipairs(current_track)do
+          if #current_items == #v.state.chunk then
+              v.norm_val = 1
+              else
+              v.norm_val = 0
+              end
+        end
+    ]]      
+    ----------position of the buttons of current track table on the fly-------------
+    local pos_x = 10
+    local pos_y = 30
+    local btn_pos_counter = 0
+      
+    for k,v in pairs(current_track) do
+      v.x = pos_x
+      v.y = pos_y + ((btn_h + btn_pad_y)*btn_pos_counter)
+      if v.y + btn_h + btn_pad_y >= gfx.h-50 then
+        btn_pos_counter=-1
+        pos_y=30
+        pos_x = pos_x + btn_w + btn_pad_x
       end
-]]      
-----------position of the buttons of current track table on the fly-------------
-local pos_x = 10
-local pos_y = 30
-local btn_pos_counter = 0
-    
-     for k,v in pairs(current_track)do
-         v.x = pos_x
-         v.y = pos_y + ((btn_h + btn_pad_y)*btn_pos_counter)
-             if v.y + btn_h + btn_pad_y >= gfx.h-50 then
-                btn_pos_counter=-1
-                pos_y=30
-                pos_x = pos_x + btn_w + btn_pad_x
-             end
-         btn_pos_counter = btn_pos_counter + 1
-      end           
-  DRAW(current_track)
+      btn_pos_counter = btn_pos_counter + 1
+    end           
+    DRAW(current_track)
   end      
 end
 --------------------------------------------------------------------------------
