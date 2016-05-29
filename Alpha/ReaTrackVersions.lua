@@ -260,6 +260,7 @@ local function restoreTrackItems(track, track_items_table)
   end
   for i = 1, #track_items_table, 1 do
     local item = reaper.AddMediaItemToTrack(track)
+    --local item = reaper.CreateNewMIDIItemInProj(track, 1, 1) -- maybe there's another way?
     reaper.SetItemStateChunk(item, track_items_table[i], false)
   end
   reaper.PreventUIRefresh(-1)
@@ -366,6 +367,7 @@ function create_button(name,GUID,chunk)
                 )
                 
   local track = reaper.BR_GetMediaTrackByGUID(0, GUID)
+  local retval, flags = reaper.GetTrackState(track) -- get track flag
   btn.track=track
 
   btn.onClick = function()
@@ -381,7 +383,15 @@ function create_button(name,GUID,chunk)
                   end 
                   ---- add code when clicking on folder button
                   ---- to change all child versions,
-                  ---- at the moment it will breake the script if pressed                
+                  ---- at the moment it will breake the script if pressed 
+                  if flags&1 == 1 then
+                    for i = 1 , #btn.state.chunk do
+                       local f_track = reaper.BR_GetMediaTrackByGUID(0, btn.state.chunk[i].GUID)
+                       btn.track=f_track
+                       restoreTrackItems(btn.track, btn.state.chunk[i].chunk)
+                    end
+                    return
+                  end         
                   restoreTrackItems(btn.track, btn.state.chunk)
                 end 
               
@@ -442,7 +452,7 @@ function create_button_from_selection(tr,version_name)
 local retval, flags = reaper.GetTrackState(tr) -- get track flag
          
              if flags&1 == 1 then -- if track is a folder
-                local child_tracks = {} -- table for all child data           
+                child_tracks = {} -- table for all child data           
                 local tr_index = reaper.CSurf_TrackToID(tr, false) - 1 -- get folder track id
                 local parent_folder_depth = get_track_folder_depth(tr_index) -- get folder depth
                 
