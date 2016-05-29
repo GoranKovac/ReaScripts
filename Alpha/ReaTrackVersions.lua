@@ -1,8 +1,8 @@
 function DBG(str)
-  --[[
+  ---[[
   if str==nil then str="nil" end
   reaper.ShowConsoleMsg(str.."\n")
-  ]]
+  --]]
 end
 
 
@@ -211,49 +211,29 @@ function Button:draw()
     gfx.set(0.7, 0.9, 0.4, 1)   -- set label color
     gfx.setfont(1, fnt, fnt_sz) -- set label fnt
     self:draw_lbl()             -- draw lbl
-end             
-------------------------------------
---- Create static "store" button ---
-------------------------------------
-local save_btn = Button:new(10,220,40,20, 0.2,0.2,1.0,0.5, "Save","Arial",15, 0 )
-
-
-save_btn.onClick =  function()
-                    local tr = reaper.GetSelectedTrack(0, 0) 
-                          if tr then 
-                             --local ret, chunk = reaper.GetTrackStateChunk(tr,"", 0) 
-                                   --[[
-                                   for k , v in pairs(Button_TB)do
-                                       if chunk == v.state.chunk then return end 
-                                   end
-                                   --]]
-                             local retval, version_name = reaper.GetUserInputs("Version Name", 1, "Enter Version Name:", "")  
-                                  if not retval then return end                            
-                             create_button_from_selection(tr,version_name) 
-                             save_tracks() 
-                          end                            
-                    end                
-                    
-                    
-local Static_Buttons_TB = {save_btn}
--------------------------------------------
-----------------------------------------------------------------------------------------------------
----   Main DRAW function   -------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------
-function DRAW(tbl)
-    for key,btn  in pairs(tbl) do btn:draw()  end
 end
 
+
+--table compare meta table
+local tcmt = {
+     __eq = function (o1, o2)
+              if #o1 ~= #o2 then return false end
+              for i = 1, #o1 do
+                if o1[i] ~= o2[i] then return false end
+              end
+              return true
+            end
+        }
 
 ----------------------------------------------------------------------------------------------------
 ---  Getting/setting track items functions  --------------------------------------------------------
 -- This uses all API with no track chunks involved -------------------------------------------------
 ----------------------------------------------------------------------------------------------------
-
+local EMPTY_TABLE = "empty_table"
 local function restoreTrackItems(track, track_items_table)
   local num_items = reaper.CountTrackMediaItems(track)
   reaper.PreventUIRefresh(1)
-  if num_items>0 then  
+  if num_items>0 and num_items[1] ~= EMPTY_TABLE then
     for i = 1, num_items, 1 do
       reaper.DeleteTrackMediaItem(track, reaper.GetTrackMediaItem(track,0))
     end
@@ -278,10 +258,42 @@ local function getTrackItems(track)
     local _, it_chunk = reaper.GetItemStateChunk(item, '')
     items[#items+1]=it_chunk
   end
-  return items
+  if #items == 0 then items[1]=EMPTY_TABLE end -- pickle doesn't like empty tables
+  return setmetatable(items, tcmt)
 end
 
 
+    
+------------------------------------
+--- Create static "store" button ---
+------------------------------------
+local save_btn = Button:new(10,220,40,20, 0.2,0.2,1.0,0.5, "Save","Arial",15, 0 )
+
+
+save_btn.onClick = function()
+                     local tr = reaper.GetSelectedTrack(0, 0) 
+                     if tr then 
+                       local chunk = getTrackItems(tr)
+                       for k , v in pairs(Button_TB)do
+                         if chunk == v.state.chunk then return end 
+                       end
+                            
+                       local retval, version_name = reaper.GetUserInputs("Version Name", 1, "Enter Version Name:", "")  
+                       if not retval then return end                            
+                         create_button_from_selection(tr,version_name) 
+                         save_tracks() 
+                       end                            
+                     end                
+                    
+                    
+local Static_Buttons_TB = {save_btn}
+-------------------------------------------
+----------------------------------------------------------------------------------------------------
+---   Main DRAW function   -------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
+function DRAW(tbl)
+    for key,btn  in pairs(tbl) do btn:draw()  end
+end
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -464,6 +476,7 @@ local retval, flags = reaper.GetTrackState(tr) -- get track flag
                        local c_chunk = getTrackItems(child_tr)
                        local c_GUID  = reaper.GetTrackGUID(child_tr)
                        local c_name  = version_name
+                       DBG(#c_chunk)
                        child_tracks[#child_tracks+1] = { name = version_name , GUID = c_GUID , chunk = c_chunk}
                        create_button(c_name,c_GUID,c_chunk)
                     end
