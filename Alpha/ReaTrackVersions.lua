@@ -456,15 +456,11 @@ function get_track_folder_depth(track_index)
   end
   return folder_depth
 end
-
 -----------------------------------------------
---- Function: Create Buttons From Selection ---
+--- Function: Create Folders and SubFolders ---
 -----------------------------------------------
-function create_button_from_selection(tr,version_name)
-  local retval, flags = reaper.GetTrackState(tr) -- get track flag
-         
-  if flags&1 == 1 then -- if track is a folder
-    local child_tracks = {} -- table for all child data           
+function folders_subfolders(tr,version_name)
+local child_tracks = {} -- table for all child data           
     local tr_index = reaper.CSurf_TrackToID(tr, false) - 1 -- get folder track id
     local parent_folder_depth = get_track_folder_depth(tr_index) -- get folder depth
     local total_folder_depth = parent_folder_depth 
@@ -499,7 +495,7 @@ function create_button_from_selection(tr,version_name)
                 break -- break when last child is found
               end
             end
-            ------ create button on subfolder
+            ------ create button on subfolder with its childs
           local sf_chunk = sf_childs
           local sf_GUID  = reaper.GetTrackGUID(child_tr)
           local sf_name  = "SubFolder :" .. version_name
@@ -509,11 +505,20 @@ function create_button_from_selection(tr,version_name)
       total_folder_depth = total_folder_depth + reaper.GetMediaTrackInfo_Value(child_tr, "I_FOLDERDEPTH")
       if total_folder_depth <= parent_folder_depth then break end 
     end
-    ---------- create button in folder track for with all child data                      
+    ---------- create button in folder track for with all childs                      
     local f_chunk = child_tracks
     local f_GUID  = reaper.GetTrackGUID(tr)
     local f_name  = "Folder :" .. version_name
-    create_button(f_name,f_GUID,f_chunk)              
+    create_button(f_name,f_GUID,f_chunk)
+end
+-----------------------------------------------
+--- Function: Create Buttons From Selection ---
+-----------------------------------------------
+function create_button_from_selection(tr,version_name)
+  local retval, flags = reaper.GetTrackState(tr) -- get track flag
+         
+  if flags&1 == 1 then -- if track is a folder
+    folders_subfolders(tr,version_name)              
   else -- not a folder
     -------------create button for selected track
     local t_chunk = getTrackItems(tr)
