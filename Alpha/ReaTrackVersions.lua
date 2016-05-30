@@ -272,20 +272,34 @@ local save_btn = Button:new(10,220,40,20, 0.2,0.2,1.0,0.5, "Save","Arial",15, 0 
 
 
 save_btn.onClick = function()
-                     local tr = reaper.GetSelectedTrack(0, 0) 
-                     if tr then 
-                       local chunk = getTrackItems(tr)
-                       for k , v in pairs(Button_TB)do
-                         if chunk == v.state.chunk then return end 
-                       end
-                            
-                       local retval, version_name = reaper.GetUserInputs("Version Name", 1, "Enter Version Name:", "")  
-                       if not retval then return end                            
-                         create_button_from_selection(tr,version_name) 
-                         save_tracks() 
-                       end                            
-                     end                
-                    
+                   local sel_tr_count = reaper.CountSelectedTracks(0)
+                   if sel_tr_count == 0 then return end
+                     
+                   for i=1, sel_tr_count do     -- loop through selected tracks                      
+                     local tr = reaper.GetSelectedTrack(0, i-1)
+                     local chunk = getTrackItems(tr)
+                     
+                     for k , v in pairs(Button_TB)do
+                       if chunk == v.state.chunk then return end 
+                     end
+                     
+                     local tr = reaper.GetSelectedTrack(0, i-1)
+                     local retval, tr_name = reaper.GetSetMediaTrackInfo_String(tr, "P_NAME", "", false)
+                     local retval, flags = reaper.GetTrackState(tr)
+                       
+                     if flags&1 == 1 then -- Folder only
+                       local retval, version_name = reaper.GetUserInputs("Folder Version Name", 1, "Folder Name for :" .." " .. tr_name, "")  
+                       if not retval then return end
+                       create_folders_subfolders_version(tr,version_name)
+                       save_tracks()
+                     else -- track only
+                       local retval, version_name = reaper.GetUserInputs("Track Version Name", 1, "Track Name for :" .." " .. tr_name, "")  
+                       if not retval then return end  
+                       create_button_from_selection(tr,version_name)
+                       save_tracks()
+                     end
+                   end                               
+                 end 
                     
 local Static_Buttons_TB = {save_btn}
 
@@ -459,7 +473,7 @@ end
 -----------------------------------------------
 --- Function: Create Folders and SubFolders ---
 -----------------------------------------------
-function folders_subfolders(tr,version_name)
+function create_folders_subfolders_version(tr,version_name)
 local child_tracks = {} -- table for all child data           
     local tr_index = reaper.CSurf_TrackToID(tr, false) - 1 -- get folder track id
     local parent_folder_depth = get_track_folder_depth(tr_index) -- get folder depth
@@ -515,19 +529,11 @@ end
 --- Function: Create Buttons From Selection ---
 -----------------------------------------------
 function create_button_from_selection(tr,version_name)
-  local retval, flags = reaper.GetTrackState(tr) -- get track flag
-         
-  if flags&1 == 1 then -- if track is a folder
-    folders_subfolders(tr,version_name)              
-  else -- not a folder
-    -------------create button for selected track
-    local t_chunk = getTrackItems(tr)
-    local t_GUID  = reaper.GetTrackGUID(tr)
-    local t_name  = version_name
-    create_button(t_name,t_GUID,t_chunk)
-  end
+   local t_chunk = getTrackItems(tr)
+   local t_GUID  = reaper.GetTrackGUID(tr)
+   local t_name  = version_name
+   create_button(t_name,t_GUID,t_chunk)
 end
-
 -----------------------------------------------
 --- Function: Delete button from table it button track is deleted ---
 -----------------------------------------------
