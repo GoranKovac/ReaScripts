@@ -472,17 +472,17 @@ function create_button_from_selection(tr,version_name)
     for i = tr_index + 1, reaper.CountTracks(0) do                         
       local child_tr = reaper.GetTrack(0, i-1)
       local retval, child_flags = reaper.GetTrackState(child_tr) -- get child track flag
-        
-      if child_flags&1 ~= 1 then -- if child is not a folder
-      -----------create button for child tracks
-        local c_chunk = getTrackItems(child_tr)
-        local c_GUID  = reaper.GetTrackGUID(child_tr)
-        local c_name  = version_name
-        DBG(#c_chunk)
-        child_tracks[#child_tracks+1] = { name = version_name , GUID = c_GUID , chunk = c_chunk}
-        create_button(c_name,c_GUID,c_chunk)
-      end
-        
+      if child_tr ~= tr then -- do not include main folder track into child tracks    
+        if child_flags&1 ~= 1 then -- if child is not a folder
+          --------create button for child tracks
+          local c_chunk = getTrackItems(child_tr)
+          local c_GUID  = reaper.GetTrackGUID(child_tr)
+          local c_name  = version_name
+          DBG(#c_chunk)
+          child_tracks[#child_tracks+1] = { name = version_name , GUID = c_GUID , chunk = c_chunk}
+          create_button(c_name,c_GUID,c_chunk)
+        end
+      end  
       total_folder_depth = total_folder_depth + reaper.GetMediaTrackInfo_Value(child_tr, "I_FOLDERDEPTH")
       if total_folder_depth <= parent_folder_depth then break end 
     end
