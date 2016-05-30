@@ -481,6 +481,29 @@ function create_button_from_selection(tr,version_name)
           DBG(#c_chunk)
           child_tracks[#child_tracks+1] = { name = version_name , GUID = c_GUID , chunk = c_chunk}
           create_button(c_name,c_GUID,c_chunk)
+        else
+          --------find all subfolder childs
+          local sf_childs = {} 
+          local sf_index = reaper.CSurf_TrackToID(child_tr, false) - 1 -- get sub folder track id
+          local sf_parent_folder_depth = get_track_folder_depth(sf_index) -- get sub folder depth
+            for i = sf_index + 1, reaper.CountTracks(0) do
+              local sf_child_tr = reaper.GetTrack(0, i-1)
+              if sf_child_tr ~= child_tr then -- do not include subfolder into subchilds
+                local sfc_chunk =  getTrackItems(sf_child_tr)
+                local sfc_GUID  = reaper.GetTrackGUID(sf_child_tr)
+                local sfc_name  = version_name
+                sf_childs[#sf_childs+1] = {name = version_name , GUID = sfc_GUID , chunk = sfc_chunk}
+              end
+              child_track_folder_depth = sf_parent_folder_depth + reaper.GetMediaTrackInfo_Value(sf_child_tr, "I_FOLDERDEPTH")
+              if child_track_folder_depth < sf_parent_folder_depth then break
+                break -- break when last child is found
+              end
+            end
+            ------ create button on subfolder
+          local sf_chunk = sf_childs
+          local sf_GUID  = reaper.GetTrackGUID(child_tr)
+          local sf_name  = "SubFolder :" .. version_name
+          create_button(sf_name,sf_GUID,sf_chunk)
         end
       end  
       total_folder_depth = total_folder_depth + reaper.GetMediaTrackInfo_Value(child_tr, "I_FOLDERDEPTH")
