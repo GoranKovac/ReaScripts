@@ -237,7 +237,7 @@ local EMPTY_TABLE = "empty_table"
 local function restoreTrackItems(track, track_items_table)
   local num_items = reaper.CountTrackMediaItems(track)
   reaper.PreventUIRefresh(1)
-  if num_items>0 and num_items[1] ~= EMPTY_TABLE then
+  if num_items>0 and track_items_table[1] ~= EMPTY_TABLE then
     for i = 1, num_items, 1 do
       reaper.DeleteTrackMediaItem(track, reaper.GetTrackMediaItem(track,0))
     end
