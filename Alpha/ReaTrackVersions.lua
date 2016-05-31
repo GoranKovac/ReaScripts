@@ -102,7 +102,7 @@ end
 -----------------------------------------------------------------------------------------------
 
 local last_proj_change_count = reaper.GetProjectStateChangeCount(0)
-Button_TB = {}          -- A table for "dynamic" buttons
+local Button_TB = {}          -- A table for "dynamic" buttons
 local Static_Buttons_TB = {}  -- A table for "static" buttons
  -- Variables to set the button drawing pos (updated when new button is created)
 
@@ -302,7 +302,8 @@ end
 --- Create static "store" button ---
 ------------------------------------
 local save_btn = Button:new(10,220,40,20, 0.2,0.2,1.0,0.5, "Save","Arial",15, 0 )
-
+--local comp_btn = Button:new(60,220,70,20, 0.2,0.2,1.0,0.5, "New Comp","Arial",15, 0 )
+local empty_btn = Button:new(10,10,65,20, 0.2,0.2,1.0,0.5, "Empty","Arial",15, 0 )
 
 save_btn.onClick = function()
                    local sel_tr_count = reaper.CountSelectedTracks(0)
@@ -319,7 +320,6 @@ save_btn.onClick = function()
                        reaper.MB("Same Version Exists", "Error", 0) 
                        return end 
                      end
-                      
                        
                      if flags&1 == 1 then -- Folder only
                        if name == "" then reaper.MB("Track has no name!", "Error", 0)return end                  
@@ -337,9 +337,61 @@ save_btn.onClick = function()
                        save_tracks()
                      end
                    end                               
-                 end 
-                    
+                 end
+                 
+--comp_btn.onClick = function()
+                   --create checkbox for comp list
+                   --create empty version (comp version)
+                   --add mini buttons next to version buttons
+                   --if item is selected or a timeselection add that item to comp at same position when clicking on mini button
+--                   end                   
+  empty_btn.onClick = function() 
+                      local items = {}
+                      local sel_tr_count = reaper.CountSelectedTracks(0)
+                      if sel_tr_count == 0 then return end
+                                           
+                         for i=1, sel_tr_count do                                                    
+                             local tr = reaper.GetSelectedTrack(0, i-1)
+                             local retval, flags = reaper.GetTrackState(tr)
+                             if flags&1 == 1 then --folder
+                                local tr_index = reaper.CSurf_TrackToID(tr, false) - 1 -- get folder track id
+                                local parent_folder_depth = get_track_folder_depth(tr_index) -- get folder depth
+                                local total_folder_depth = parent_folder_depth 
+                                 --get folder childs items
+                                for i = tr_index + 1, reaper.CountTracks(0) do                         
+                                    local child_tr = reaper.GetTrack(0, i-1)
+                                    if child_tr ~= tr then -- do not include folder track
+                                      local num_items = reaper.CountTrackMediaItems(child_tr)
+                                      for i=1, num_items, 1 do
+                                        local item = reaper.GetTrackMediaItem(child_tr, i-1)
+                                        items[#items+1] = item
+                                      end                                   
+                                    end
+                                    total_folder_depth = total_folder_depth + reaper.GetMediaTrackInfo_Value(child_tr, "I_FOLDERDEPTH")
+                                    if total_folder_depth <= parent_folder_depth then break end
+                                end                                     
+                             else -- normal track items
+                                local num_items = reaper.CountTrackMediaItems(tr)
+                                if num_items ~= 0 then
+                                  for i=1, num_items, 1 do
+                                    local item = reaper.GetTrackMediaItem(tr, i-1)
+                                    items[#items+1] = item
+                                  end
+                                end
+                             end
+                           -- remove items in tracks
+                           for i = 1 , #items do
+                               local track = reaper.GetMediaItem_Track(items[i])
+                               reaper.DeleteTrackMediaItem(track, items[i])                               
+                           end
+                           reaper.UpdateArrange()                         
+                        end
+                     end    
+                         
+                      
 local Static_Buttons_TB = {save_btn}
+
+local Empty_button = {empty_btn}
 
 ----------------------------------------------------------------------------------------------------
 ---   Main DRAW function   -------------------------------------------------------------------------
@@ -430,8 +482,8 @@ function create_button(name,GUID,chunk,type)
 ]]
   
   local btn = Button:new(
-                 btn_x,                  --  x
-                 btn_y,                  --  y 
+                 0,                  --  x
+                 0,                  --  y 
                  btn_w,              --  w
                  btn_h,              --  h
                  0.2,                --  r
@@ -522,17 +574,7 @@ function create_button(name,GUID,chunk,type)
                         save_tracks()
                       end
                     end
-                  
-                     --[[
-                    elseif btn_r_click_menu.norm_val == 3 then -- third menu item clicked
-                      DBG("third menu item clicked")
-                      -- add your code here
-                    elseif btn_r_click_menu.norm_val == 4 then -- fourth menu item clicked
-                      DBG("fourth menu item clicked")
-                      -- add your code here
-                    end
-                  end 
-                    ]]
+                     
 Button_TB[#Button_TB+1] = btn           
 end
 
@@ -717,21 +759,17 @@ function main()
   local sel_track = reaper.GetSelectedTrack(0,0)
   
   ----------print track name in window
-
-  for i = 1, count_tracks do
-    s_track = reaper.GetSelectedTrack(0,i-1)
-  end
-
+  
   if sel_track then
     local guid = reaper.GetTrackGUID(sel_track)
     local retval, title_name = reaper.GetSetMediaTrackInfo_String(sel_track, "P_NAME", "", false)
+    gfx.x = 88
+    gfx.y = 12
     if count_tracks > 1 then
-      title_name = "Multiple Tracks Selected"
-    end
-    gfx.x = 10
-    gfx.y = 8
+    gfx.printf("Multiple Tracks Selected")
+    else
     gfx.printf("Current Track : " .. title_name)
-     
+    end
     ----------show only buttons for currently selected track , add them to current_track table  
     local current_track = {}
     for k,v in pairs(Button_TB) do
@@ -740,6 +778,7 @@ function main()
       end         
     end
 
+      
     --[[ --------highlight selected button, this needs a better approach (in the button table somehow
     local current_items = getTrackItems(sel_track)
       for k,v in ipairs(current_track)do
@@ -751,10 +790,14 @@ function main()
         end
     ]]      
     ----------position of the buttons of current track table on the fly-------------
+    if #current_track ~= 0 then -- if track has no version hide empty button
+           DRAW(Empty_button)
+    end
+    
     local pos_x = 10
-    local pos_y = 30
+    local pos_y = 40    
     local btn_pos_counter = 0
-    local btn_g_counter = 0  
+    local btn_g_counter = 0
     
     for k,v in pairs(current_track) do
       if v.state.type ~= "GROUP" and v.state.type ~= "FOLDER" then
@@ -762,7 +805,7 @@ function main()
          v.y = pos_y + ((btn_h + btn_pad_y)*btn_pos_counter)
          if v.y + btn_h + btn_pad_y >= gfx.h-50 then
             btn_pos_counter=-1
-            pos_y=30
+            pos_y = 40
             pos_x = pos_x + btn_w + btn_pad_x
          end
          
@@ -773,6 +816,7 @@ function main()
         if v.y + btn_h + btn_pad_y >= gfx.h-50 then
            btn_g_counter=-1
            pos_y=30
+           v.y = pos_y + ((btn_h + btn_pad_y)*btn_g_counter)
            pos_x = pos_x + btn_w + btn_pad_x
         end
         btn_g_counter = btn_g_counter + 1
