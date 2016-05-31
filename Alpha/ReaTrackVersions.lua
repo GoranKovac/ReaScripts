@@ -5,10 +5,10 @@
 -----------------------------------------------------------------------------------------------
 
 function DBG(str)
-  ---[[
+  --[[
   if str==nil then str="nil" end
   reaper.ShowConsoleMsg(str.."\n")
-  --]]
+  ]]
 end
 
 
@@ -102,7 +102,7 @@ end
 -----------------------------------------------------------------------------------------------
 
 local last_proj_change_count = reaper.GetProjectStateChangeCount(0)
-local Button_TB = {}          -- A table for "dynamic" buttons
+Button_TB = {}          -- A table for "dynamic" buttons
 local Static_Buttons_TB = {}  -- A table for "static" buttons
  -- Variables to set the button drawing pos (updated when new button is created)
 
@@ -160,6 +160,11 @@ function Element:mouseClick()
   return gfx.mouse_cap&1==0 and last_mouse_cap&1==1 and
   self:pointIN(gfx.mouse_x,gfx.mouse_y) and self:pointIN(mouse_ox,mouse_oy)         
 end
+---------
+function Element:mouseRClick()
+  return gfx.mouse_cap&2==0 and last_mouse_cap&2==2 and
+  self:pointIN(gfx.mouse_x,gfx.mouse_y) and self:pointIN(mouse_ox,mouse_oy)         
+end
 ------------------------
 function Element:mouseR_Down()
   return gfx.mouse_cap&2==2 and self:pointIN(mouse_ox,mouse_oy)
@@ -177,8 +182,35 @@ end
 --------------------------------------------------------------------------------
 ---   Create Element Child Classes(Button,Slider,Knob)   -----------------------
 --------------------------------------------------------------------------------
+local Menu = {}
+  extended(Menu, Element)
 local Button = {}
-  extended(Button, Element)  
+  extended(Button, Element)
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+---   Menu Class Methods   -----------------------------------------------------
+--------------------------------------------------------------------------------
+function Menu:set_norm_val()
+    local x,y,w,h  = self.x,self.y,self.w,self.h
+    local val = self.norm_val      -- current value,check
+    local menu_tb = self.norm_val2 -- checkbox table
+    local menu_str = ""
+       for i=1, #menu_tb,1 do
+         if i~=val then menu_str = menu_str..menu_tb[i].."|"
+                   --else menu_str = menu_str.."!"..menu_tb[i].."|" -- add check
+         end
+       end
+    gfx.x = self.x; gfx.y = self.y + self.h
+    local new_val = gfx.showmenu(menu_str)        -- show checkbox menu
+    if new_val>0 then self.norm_val = new_val end -- change check(!)
+end
+------------------------
+function Menu:draw()
+    -- Get mouse state ---------
+    if self:mouseRClick() then self:set_norm_val()
+    if self:mouseRClick() and self.onRClick then self.onRClick() end
+    end
+end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 ---   Button Class Methods   ---------------------------------------------------
@@ -207,6 +239,8 @@ function Button:draw()
   if self:mouseDown() then a=a+0.2 end
   -- in elm L_up(released and was previously pressed) --
   if self:mouseClick() and self.onClick then self.onClick() end
+  -- in elm R_up(released and was previously pressed) --
+  if self:mouseRClick() and self.onRClick then self.onRClick() end
   -- Draw btn body, frame ----
   gfx.set(r,g,b,a)    -- set body color
   self:draw_body()    -- body
@@ -244,7 +278,6 @@ local function restoreTrackItems(track, track_items_table)
   end
   for i = 1, #track_items_table, 1 do
     local item = reaper.AddMediaItemToTrack(track)
-    --local item = reaper.CreateNewMIDIItemInProj(track, 1, 1) -- maybe there's another way?
     reaper.SetItemStateChunk(item, track_items_table[i], false)
   end
   reaper.PreventUIRefresh(-1)
@@ -276,25 +309,30 @@ save_btn.onClick = function()
                    if sel_tr_count == 0 then return end
                      
                    for i=1, sel_tr_count do     -- loop through selected tracks                      
-                     local tr = reaper.GetSelectedTrack(0, i-1)
+                     local tr = reaper.GetSelectedTrack(0, i-1)                     
                      local chunk = getTrackItems(tr)
+                     local retval, flags = reaper.GetTrackState(tr)
+                     local retval, name = reaper.GetSetMediaTrackInfo_String(tr, "P_NAME", "", false)
                      
                      for k , v in pairs(Button_TB)do
-                       if chunk == v.state.chunk then return end 
+                       if chunk == v.state.chunk then
+                       reaper.MB("Same Version Exists", "Error", 0) 
+                       return end 
                      end
-                     
-                     local tr = reaper.GetSelectedTrack(0, i-1)
-                     local retval, tr_name = reaper.GetSetMediaTrackInfo_String(tr, "P_NAME", "", false)
-                     local retval, flags = reaper.GetTrackState(tr)
+                      
                        
                      if flags&1 == 1 then -- Folder only
-                       local retval, version_name = reaper.GetUserInputs("Folder Version Name", 1, "Folder Name for :" .." " .. tr_name, "")  
-                       if not retval then return end
+                       if name == "" then reaper.MB("Track has no name!", "Error", 0)return end                  
+                       local retval, version_name = reaper.GetUserInputs("Folder Version Name", 1, "Folder Name for : " .. name, "")  
+                       if not retval then return
+                       elseif version_name == "" then reaper.MB("Enter Valid name", "Error", 0) return end
                        create_folders_subfolders_version(tr,version_name)
                        save_tracks()
                      else -- track only
-                       local retval, version_name = reaper.GetUserInputs("Track Version Name", 1, "Track Name for :" .." " .. tr_name, "")  
-                       if not retval then return end  
+                       if name == "" then reaper.MB("Track has no name!", "Error", 0)return end                         
+                       local retval, version_name = reaper.GetUserInputs("Track Version Name", 1, "Track Name for : " .. name, "")  
+                       if not retval then return
+                       elseif version_name == "" then reaper.MB("Enter Valid name", "Error", 0) return end
                        create_button_from_selection(tr,version_name)
                        save_tracks()
                      end
@@ -308,6 +346,9 @@ local Static_Buttons_TB = {save_btn}
 ----------------------------------------------------------------------------------------------------
 function DRAW(tbl)
   for key,btn  in pairs(tbl) do btn:draw()  end
+end
+function DRAW_MENU(tbl)
+  for key,menu  in pairs(tbl) do menu:draw() end
 end
 
 --------------------------------------------------------------------------------
@@ -366,61 +407,132 @@ end
 -------------------------------------------
 --- Function: Create Button and Define  ---
 ------------------------------------------- 
-function create_button(name,GUID,chunk)
-  btn_w = 65              -- width for new buttons
-  btn_h = 20              -- height for new buttons
+function create_button(name,GUID,chunk,type)
+  btn_w     = 65          -- width for new buttons
+  btn_h     = 20          -- height for new buttons
   btn_pad_x = 10          -- x space between buttons
   btn_pad_y = 10          -- y space between buttons  
 
-  local state = {}     -- now the things we want to store in our buttons
-  state.name = name    -- are stored into a state table, for pickling
-  state.GUID = GUID;
+  local state = {}     -- now the things we want to store in our buttons  
+  state.name  = name    -- are stored into a state table, for pickling
+  state.GUID  = GUID;  
   state.chunk = chunk;
-
+  state.type  = type;
+ 
+  --[[ ---- i want something like this to work but it breaks saving
+  if state.type == "FOLDER" then
+  state.folder = chunk
+  elseif state.type == "GROUP" then
+  state.group = chunk
+  elseif state.type == "TRACK" then
+  state.chunk = chunk;
+  end
+]]
+  
   local btn = Button:new(
-                 0, --  x
-                 0, --  y 
+                 btn_x,                  --  x
+                 btn_y,                  --  y 
                  btn_w,              --  w
                  btn_h,              --  h
                  0.2,                --  r
                  0.2,                --  g
                  1.0,                --  b
                  0.5,                --  a                             
-                 name,               --  track name
+                 state.name,         --  track name
                  "Arial",            --  label font
                  15,                 --  label font size
                  0,                  --  norm_val
                  0,                  --  norm_val2
                  state               --  state
-                )
-                
-  local track = reaper.BR_GetMediaTrackByGUID(0, GUID)
-  local retval, flags = reaper.GetTrackState(track) -- get track flag
-  btn.track=track
+                )                
+ 
+  if btn.state.type == "GROUP" then  -- colors   
+  btn.r = 0.2
+  btn.g = 0.7
+  btn.b = 0.2
+  elseif btn.state.type == "FOLDER" then -- colors  
+  btn.r = 0.7
+  btn.g = 0.2
+  btn.b = 0.2
+  end
+  
+  
+ 
 
-  btn.onClick = function()
-                  if gfx.mouse_cap&16==16 then --Alt is pressed
-                    for i=1,#Button_TB,1 do
-                      if Button_TB[i]==btn then
-                        table.remove(Button_TB,i)
-                        save_tracks()
-                        break
-                      end
-                    end                        
-                    return
-                  end 
-                  
-                  if flags&1 == 1 then
+  btn.onClick = function()  
+                  if btn.state.type == "FOLDER" then
                     for i = 1 , #btn.state.chunk do
-                       local f_track = reaper.BR_GetMediaTrackByGUID(0, btn.state.chunk[i].GUID)
-                       btn.track=f_track
+                       btn.track = reaper.BR_GetMediaTrackByGUID(0, btn.state.chunk[i].GUID)
                        restoreTrackItems(btn.track, btn.state.chunk[i].chunk)
                     end
                     return
-                  end         
-                  restoreTrackItems(btn.track, btn.state.chunk)
-                end 
-              
+                  end
+                  
+                  if btn.state.type == "GROUP" then
+                     for i = 1 , #btn.state.chunk do
+                         btn.track = reaper.BR_GetMediaTrackByGUID(0, btn.state.chunk[i].GUID)
+                         restoreTrackItems(btn.track, btn.state.chunk[i].chunk)
+                     end
+                     return
+                  end
+                  
+                  if btn.state.type == "TRACK" then
+                     btn.track = reaper.BR_GetMediaTrackByGUID(0, GUID)                      
+                     restoreTrackItems(btn.track, btn.state.chunk)
+                  end
+                end
+  
+ btn.onRClick =  function()
+                    -- x,y,w,h, r,g,b,a, lbl,fnt,fnt_sz, norm_val = check, norm_val2 = checkbox table --
+                    local btn_r_click_menu = Menu:new(
+                                             btn.x,
+                                             btn.y,
+                                             btn.w,
+                                             btn.h,                                             
+                                             0.6,
+                                             0.6,
+                                             0.6,
+                                             0.3,
+                                             "Chan :",
+                                             "Arial",
+                                             15,
+                                             -1,
+                                             {"Delete Version","Rename Version"}
+                                        )
+                                        
+                    local menu_TB = {btn_r_click_menu}
+                    DRAW_MENU(menu_TB)
+                    
+                    if btn_r_click_menu.norm_val == -1 then return -- nothing clicked                    
+                    
+                    elseif btn_r_click_menu.norm_val == 1 then -- remove button
+                      for i=1,#Button_TB,1 do
+                          if Button_TB[i]==btn then
+                             table.remove(Button_TB,i)
+                             save_tracks()
+                             break
+                          end
+                      end
+                      
+                    elseif btn_r_click_menu.norm_val == 2 then --- rename button
+                      local retval, version_name = reaper.GetUserInputs("Rename Version ", 1, "Version Name :", "")  
+                      if not retval or version_name == "" then return end
+                        btn.state.name = version_name
+                        btn.lbl = btn.state.name
+                        save_tracks()
+                      end
+                    end
+                  
+                     --[[
+                    elseif btn_r_click_menu.norm_val == 3 then -- third menu item clicked
+                      DBG("third menu item clicked")
+                      -- add your code here
+                    elseif btn_r_click_menu.norm_val == 4 then -- fourth menu item clicked
+                      DBG("fourth menu item clicked")
+                      -- add your code here
+                    end
+                  end 
+                    ]]
 Button_TB[#Button_TB+1] = btn           
 end
 
@@ -452,13 +564,12 @@ function restore()
     states = unpickle(states)
     for i = 1, #states do
       local s = states[i]
-      create_button(s.name,s.GUID,s.chunk)
+      create_button(s.name,s.GUID,s.chunk,s.type)
     end
   else
     DBG("state=\"\"")
   end
 end
-
 -----------------------------------------------
 ---      Function: Get Folder Depth         ---
 -----------------------------------------------
@@ -485,12 +596,14 @@ local child_tracks = {} -- table for all child data
       if child_tr ~= tr then -- do not include main folder track into child tracks    
         if child_flags&1 ~= 1 then -- if child is not a folder
           --------create button for child tracks
+          local retval, tr_name = reaper.GetSetMediaTrackInfo_String(child_tr, "P_NAME", "", false) 
           local c_chunk = getTrackItems(child_tr)
           local c_GUID  = reaper.GetTrackGUID(child_tr)
-          local c_name  = version_name
+          local c_name  = tr_name .. " : " .. version_name
+          local c_type  = "TRACK"
           DBG(#c_chunk)
-          child_tracks[#child_tracks+1] = { name = version_name , GUID = c_GUID , chunk = c_chunk}
-          create_button(c_name,c_GUID,c_chunk)
+          child_tracks[#child_tracks+1] = { name = version_name , GUID = c_GUID , chunk = c_chunk , type = c_type}
+          create_button(c_name,c_GUID,c_chunk,c_type)
         else
           --------find all subfolder childs
           local sf_childs = {} 
@@ -499,10 +612,12 @@ local child_tracks = {} -- table for all child data
             for i = sf_index + 1, reaper.CountTracks(0) do
               local sf_child_tr = reaper.GetTrack(0, i-1)
               if sf_child_tr ~= child_tr then -- do not include subfolder into subchilds
-                local sfc_chunk =  getTrackItems(sf_child_tr)
+                local retval, tr_name = reaper.GetSetMediaTrackInfo_String(sf_child_tr, "P_NAME", "", false)                  
+                local sfc_chunk = getTrackItems(sf_child_tr)
                 local sfc_GUID  = reaper.GetTrackGUID(sf_child_tr)
-                local sfc_name  = version_name
-                sf_childs[#sf_childs+1] = {name = version_name , GUID = sfc_GUID , chunk = sfc_chunk}
+                local sfc_name  = tr_name .. " : " .. version_name
+                local sfc_type  = "TRACK"
+                sf_childs[#sf_childs+1] = {name = version_name , GUID = sfc_GUID , chunk = sfc_chunk , type = sfc_type}
               end
               child_track_folder_depth = sf_parent_folder_depth + reaper.GetMediaTrackInfo_Value(sf_child_tr, "I_FOLDERDEPTH")
               if child_track_folder_depth < sf_parent_folder_depth then break
@@ -510,29 +625,60 @@ local child_tracks = {} -- table for all child data
               end
             end
             ------ create button on subfolder with its childs
+          local retval, tr_name = reaper.GetSetMediaTrackInfo_String(child_tr, "P_NAME", "", false)  
           local sf_chunk = sf_childs
           local sf_GUID  = reaper.GetTrackGUID(child_tr)
-          local sf_name  = "SubFolder :" .. version_name
-          create_button(sf_name,sf_GUID,sf_chunk)
+          local sf_name  = tr_name .. " : " .. version_name
+          local sf_type = "FOLDER"
+          create_button(sf_name,sf_GUID,sf_chunk,sf_type)
+          ------ create subfolders own track
+         -- local sft_chunk = getTrackItems(child_tr)
+         -- local sft_GUID  = reaper.GetTrackGUID(child_tr)
+         -- local sft_name  = version_name
+         -- local sft_type = "TRACK"
+         -- create_button(sft_name,sft_GUID,sft_chunk,sft_type)
         end
       end  
       total_folder_depth = total_folder_depth + reaper.GetMediaTrackInfo_Value(child_tr, "I_FOLDERDEPTH")
       if total_folder_depth <= parent_folder_depth then break end 
     end
-    ---------- create button in folder track for with all childs                      
+    ---------- create button in folder track for with all childs
+    local retval, tr_name = reaper.GetSetMediaTrackInfo_String(tr, "P_NAME", "", false)                        
     local f_chunk = child_tracks
     local f_GUID  = reaper.GetTrackGUID(tr)
-    local f_name  = "Folder :" .. version_name
-    create_button(f_name,f_GUID,f_chunk)
+    local f_name  = tr_name .. " : " .. version_name
+    local f_type = "FOLDER"
+    create_button(f_name,f_GUID,f_chunk,f_type)
 end
 -----------------------------------------------
 --- Function: Create Buttons From Selection ---
 -----------------------------------------------
 function create_button_from_selection(tr,version_name)
+ local sel_tr_count = reaper.CountSelectedTracks(0)
+  if sel_tr_count > 1 then     
+     local group = {}
+     
+     for i = 1 , sel_tr_count do -- get all track in group
+         local m_track = reaper.GetSelectedTrack(0,i-1)
+         local m_chunk = getTrackItems(m_track)
+         local m_GUID  = reaper.GetTrackGUID(m_track)
+         local m_name  = version_name
+         local m_type  = "TRACK"
+         group[#group+1] = { name = version_name , GUID = m_GUID , chunk = m_chunk , type = m_type} -- add tracks to group table
+     end
+     -- create group button in every track
+     local g_chunk = group
+     local g_GUID  = reaper.GetTrackGUID(tr)
+     local g_name  = "GROUP " .. version_name
+     local g_type  = "GROUP"   
+     create_button(g_name,g_GUID,g_chunk,g_type)
+  end                     
+   -- create normal button
    local t_chunk = getTrackItems(tr)
    local t_GUID  = reaper.GetTrackGUID(tr)
    local t_name  = version_name
-   create_button(t_name,t_GUID,t_chunk)
+   local t_type  = "TRACK" 
+   create_button(t_name,t_GUID,t_chunk,t_type)
 end
 -----------------------------------------------
 --- Function: Delete button from table it button track is deleted ---
@@ -608,16 +754,30 @@ function main()
     local pos_x = 10
     local pos_y = 30
     local btn_pos_counter = 0
-      
+    local btn_g_counter = 0  
+    
     for k,v in pairs(current_track) do
-      v.x = pos_x
-      v.y = pos_y + ((btn_h + btn_pad_y)*btn_pos_counter)
-      if v.y + btn_h + btn_pad_y >= gfx.h-50 then
-        btn_pos_counter=-1
-        pos_y=30
-        pos_x = pos_x + btn_w + btn_pad_x
+      if v.state.type ~= "GROUP" and v.state.type ~= "FOLDER" then
+         v.x = pos_x
+         v.y = pos_y + ((btn_h + btn_pad_y)*btn_pos_counter)
+         if v.y + btn_h + btn_pad_y >= gfx.h-50 then
+            btn_pos_counter=-1
+            pos_y=30
+            pos_x = pos_x + btn_w + btn_pad_x
+         end
+         
+         btn_pos_counter = btn_pos_counter + 1
+      else
+        v.x = 160
+        v.y = pos_y + ((btn_h + btn_pad_y)*btn_g_counter)
+        if v.y + btn_h + btn_pad_y >= gfx.h-50 then
+           btn_g_counter=-1
+           pos_y=30
+           pos_x = pos_x + btn_w + btn_pad_x
+        end
+        btn_g_counter = btn_g_counter + 1
       end
-      btn_pos_counter = btn_pos_counter + 1
+      
     end           
     DRAW(current_track)
   end      
