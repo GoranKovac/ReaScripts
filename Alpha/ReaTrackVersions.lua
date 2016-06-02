@@ -8,7 +8,7 @@ function DBG(str)
   --[[
   if str==nil then str="nil" end
   reaper.ShowConsoleMsg(str.."\n")
-  ]]
+  --]]
 end
 
 
@@ -346,47 +346,48 @@ save_btn.onClick = function()
                    --if item is selected or a timeselection add that item to comp at same position when clicking on mini button
 --                   end                   
   empty_btn.onClick = function() 
-                      local items = {}
-                      local sel_tr_count = reaper.CountSelectedTracks(0)
-                      if sel_tr_count == 0 then return end
+                        local items = {}
+                        local sel_tr_count = reaper.CountSelectedTracks(0)
+                        if sel_tr_count == 0 then return end
                                            
-                         for i=1, sel_tr_count do                                                    
-                             local tr = reaper.GetSelectedTrack(0, i-1)
-                             local retval, flags = reaper.GetTrackState(tr)
-                             if flags&1 == 1 then --folder
-                                local tr_index = reaper.CSurf_TrackToID(tr, false) - 1 -- get folder track id
-                                local parent_folder_depth = get_track_folder_depth(tr_index) -- get folder depth
-                                local total_folder_depth = parent_folder_depth 
-                                 --get folder childs items
-                                for i = tr_index + 1, reaper.CountTracks(0) do                         
-                                    local child_tr = reaper.GetTrack(0, i-1)
-                                    if child_tr ~= tr then -- do not include folder track
-                                      local num_items = reaper.CountTrackMediaItems(child_tr)
-                                      for i=1, num_items, 1 do
-                                        local item = reaper.GetTrackMediaItem(child_tr, i-1)
-                                        items[#items+1] = item
-                                      end                                   
-                                    end
-                                    total_folder_depth = total_folder_depth + reaper.GetMediaTrackInfo_Value(child_tr, "I_FOLDERDEPTH")
-                                    if total_folder_depth <= parent_folder_depth then break end
-                                end                                     
-                             else -- normal track items
-                                local num_items = reaper.CountTrackMediaItems(tr)
-                                if num_items ~= 0 then
-                                  for i=1, num_items, 1 do
-                                    local item = reaper.GetTrackMediaItem(tr, i-1)
-                                    items[#items+1] = item
-                                  end
-                                end
-                             end
-                           -- remove items in tracks
-                           for i = 1 , #items do
-                               local track = reaper.GetMediaItem_Track(items[i])
-                               reaper.DeleteTrackMediaItem(track, items[i])                               
-                           end
-                           reaper.UpdateArrange()                         
-                        end
-                     end    
+                        for i=1, sel_tr_count do                                        
+                          local tr = reaper.GetSelectedTrack(0, i-1)
+                          local retval, flags = reaper.GetTrackState(tr)
+                          if flags&1 == 1 then --folder
+                            local tr_index = reaper.CSurf_TrackToID(tr, false) - 1 -- get folder track id
+                            local parent_folder_depth = get_track_folder_depth(tr_index) -- get folder depth
+                            local total_folder_depth = parent_folder_depth 
+                            --get folder childs items
+                            for i = tr_index + 1, reaper.CountTracks(0) do                         
+                              local child_tr = reaper.GetTrack(0, i-1)
+                              if child_tr ~= tr then -- do not include folder track
+                                local num_items = reaper.CountTrackMediaItems(child_tr)
+                                for i=1, num_items, 1 do
+                                  local item = reaper.GetTrackMediaItem(child_tr, i-1)
+                                  items[#items+1] = item
+                                end              
+                              end
+                              total_folder_depth = total_folder_depth + reaper.GetMediaTrackInfo_Value(child_tr, "I_FOLDERDEPTH")
+                              if total_folder_depth <= parent_folder_depth then break end
+                            end                                     
+                          else -- not a folder - normal track items
+                            local num_items = reaper.CountTrackMediaItems(tr)
+                            if num_items ~= 0 then
+                              for i=1, num_items, 1 do
+                                local item = reaper.GetTrackMediaItem(tr, i-1)
+                                items[#items+1] = item
+                              end
+                            end
+                          end -- end if
+                          -- remove items in tracks
+                          for i = 1 , #items do
+                            local track = reaper.GetMediaItem_Track(items[i])
+                            reaper.DeleteTrackMediaItem(track, items[i])                            
+                          end
+                          items={}
+                          reaper.UpdateArrange()                         
+                        end -- for loop
+                      end
                          
                       
 local Static_Buttons_TB = {save_btn}
