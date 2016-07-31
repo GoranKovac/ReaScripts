@@ -99,7 +99,7 @@ end
    * Licence: GPL v3
    * Version: 1.0
   ]]
-local CheckBox_TB = {}
+CheckBox_TB = {}
 local last_proj_change_count = reaper.GetProjectStateChangeCount(0)
 --------------------------------------------------------------------------------
 ---   Simple Element Class   ---------------------------------------------------
@@ -584,7 +584,7 @@ function create_folder_or_items(tr,version_name,job)
   end
 end
 --------------------------------------------------------------------------------
----  Function Create Button from TRACK SELECTION -------------------------------
+---  Function Create Button from TRACK SELECTION -------------------------------   OVO
 --------------------------------------------------------------------------------
 function create_button_from_selection(tr,version_name)
   local job = "unselect"
@@ -605,12 +605,14 @@ function create_button(name,GUID,chunk,type,nv)
   state.chunk = chunk
   
   local ch_box = CheckBox:new(70,50,120,20,  0.2,0.2,1.0,0, "Version","Arial",15,{0.7, 0.9, 1, 1}, 1, {state} )
+  
   ch_box.id = GUID                            
   ch_box.type = type
   
   if check == false then -- if ID does not exist in the table create new checklist
     state.name = name -- add version name
-    CheckBox_TB[#CheckBox_TB+1] = ch_box -- add new ch_box to CheckBox_TB table
+    CheckBox_TB[#CheckBox_TB+1] = ch_box -- add new ch_box to CheckBox_TB table  
+   
   else -- if ID exists in the table then only add new chunk to it
     for k,v in ipairs(CheckBox_TB)do
       if v.id == GUID then -- if check_box ID is same as track ID then
@@ -623,6 +625,10 @@ function create_button(name,GUID,chunk,type,nv)
       end
     end
   end
+  
+  if ch_box.type == "FOLDER" then -- colors  for button
+    ch_box.fnt_rgba = {0.5, 0.9, 0.5, 1}
+  end
     
   ch_box.onClick = function() -- check box on click action
                   if ch_box.type == "TRACK" then
@@ -634,8 +640,8 @@ function create_button(name,GUID,chunk,type,nv)
                     local job = "select"
                     reaper.Main_OnCommand( 40289, 0 )
                     unselect_items(tr,job) -- select track from version (for easier locating)
-                  end
-                  if ch_box.type == "FOLDER" then
+                  
+                  elseif ch_box.type == "FOLDER" then
                     if ch_box.norm_val == 0 then return end
                     local parent_norm_val = ch_box.norm_val -- get folders norm_val
                     local child_guid = ch_box.norm_val2[ch_box.norm_val] -- child guid table of folder checkbox
@@ -665,16 +671,22 @@ function create_button(name,GUID,chunk,type,nv)
                   if r_click_menu.norm_val == -1 then return -- nothing clicked 
                   
                   elseif r_click_menu.norm_val == 1 then --- delete version
-                      table.remove(ch_box.norm_val2,ch_box.norm_val)
-                      ch_box.norm_val = #ch_box.norm_val2
+                    table.remove(ch_box.norm_val2,ch_box.norm_val)
+                    ch_box.norm_val = #ch_box.norm_val2
+                    
+                    if ch_box.norm_val > 0 then -- restore previous/next version after delete (because if version is deleted same items stay)
+                      local tr = reaper.BR_GetMediaTrackByGUID(0,ch_box.id) -- convert it to track
+                      local items = ch_box.norm_val2[ch_box.norm_val].chunk -- items on track are norm_val2 table SECTION norm_val(which box is clicked)
+                      restoreTrackItems(tr,items) -- restore items
                       save_tracks()
-                        
-                        for k,v in ipairs(CheckBox_TB)do -- if chunk table is empty delete whole chechbox
-                          if #v.norm_val2 == 0 then  
-                            table.remove(CheckBox_TB,k)
-                            save_tracks()
-                          end
-                        end                
+                    else 
+                      for k,v in ipairs(CheckBox_TB)do -- if there are no more versions remove whole CheckBox
+                        if #v.norm_val2 == 0 then  
+                          table.remove(CheckBox_TB,k)
+                          save_tracks()
+                        end
+                      end
+                    end   
                                      
                   elseif r_click_menu.norm_val == 2 then --- rename button
                     local retval, version_name = reaper.GetUserInputs("Rename Version ", 1, "Version Name :", "")  
@@ -683,11 +695,22 @@ function create_button(name,GUID,chunk,type,nv)
                     save_tracks()
                   
                   elseif r_click_menu.norm_val == 3 then -- save current version (save modifications)
-                    ch_box.norm_val2[ch_box.norm_val].chunk = sel_chunk
-                    save_tracks()  
+                    local sel_tr_count = reaper.CountSelectedTracks(0)
+                      for i=1, sel_tr_count do     -- loop through selected tracks                      
+                      local tr = reaper.GetSelectedTrack(0, i-1)
+                      local sel_GUID = reaper.GetTrackGUID(tr)
+                      local sel_chunk1= getTrackItems(tr)
+                    
+                        for k,v in ipairs(CheckBox_TB)do
+                          if v.id == sel_GUID then
+                            v.norm_val2[v.norm_val].chunk = sel_chunk1
+                            save_tracks()
+                          end
+                        end  
+                      end
                   end
                   
-  end -- end ch_box.onRClick                      
+  end -- end ch_box.onRClick
 end -- end create_button()
 --------------------------------------------------------------------------------
 ---  Function MAIN -------------------------------------------------------------
@@ -731,7 +754,7 @@ function main()
             end
         end
       -------------------AUTO SAVE
-      --[[
+      --[[      
       if chunk1 ~= chunk2 then
         for k,v in pairs(cur_sel)do
             if v.type ~= "FOLDER" and sel_chunk[1] ~= EMPTY_TABLE then -- ignore FOLDER tracks and tracks that are empty
@@ -755,8 +778,12 @@ function main()
       if flags&1 == 1 then -- draw save folder button only if folder track is selected
         DRAW_B(Folder_TB)
       end
+    
+    else -- if no track is selected     
+      sel_chunk = nil
+      chunk2 = nil
+    
   end -- end sel_tr loop
-  
 DRAW_C(cur_sel) -- draw currrent table
 end 
 ----------------------------------------------------------------------------------------------------
