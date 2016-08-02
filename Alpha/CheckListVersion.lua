@@ -99,7 +99,7 @@ end
    * Licence: GPL v3
    * Version: 1.0
   ]]
-CheckBox_TB = {}
+local CheckBox_TB = {}
 local last_proj_change_count = reaper.GetProjectStateChangeCount(0)
 --------------------------------------------------------------------------------
 ---   Simple Element Class   ---------------------------------------------------
@@ -720,6 +720,7 @@ function create_button(name,GUID,chunk,type,nv)
                     save_tracks()
                   
                   elseif r_click_menu.norm_val == 3 then -- save current version (save modifications)
+                    if ch_box.type == "TRACK" then
                     local sel_tr_count = reaper.CountSelectedTracks(0)
                       for i=1, sel_tr_count do     -- loop through selected tracks                      
                       local tr = reaper.GetSelectedTrack(0, i-1)
@@ -733,6 +734,20 @@ function create_button(name,GUID,chunk,type,nv)
                           end
                         end  
                       end
+                    elseif ch_box.type == "FOLDER" then
+                      local childs = ch_box.norm_val2[ch_box.norm_val].chunk -- add childs to tabnle
+                      for i = 1 , #childs do
+                        local child = childs[i]
+                        local tr = reaper.BR_GetMediaTrackByGUID(0, child)
+                        local sel_chunk1= getTrackItems(tr)
+                        for k,v in ipairs(CheckBox_TB)do
+                          if v.id == child then
+                            v.norm_val2[v.norm_val].chunk = sel_chunk1
+                            save_tracks()
+                          end
+                        end
+                      end
+                    end  
                   end
                   
   end -- end ch_box.onRClick
@@ -753,7 +768,7 @@ function main()
   local cur_sel = {} -- table for current selected track (show only checkbox of selected track)
   local sel_tr = reaper.GetSelectedTrack(0,0) -- get track
     if sel_tr then
-      sel_chunk = getTrackItems(sel_tr)
+      local sel_chunk = getTrackItems(sel_tr)
       local retval, flags = reaper.GetTrackState(sel_tr)
       local sel_GUID = reaper.GetTrackGUID(sel_tr)
       
@@ -804,8 +819,8 @@ function main()
         DRAW_B(Folder_TB)
       end
     
-    else -- if no track is selected     
-      sel_chunk = nil
+    else -- if no track is selected 
+      chunk1 = nil
       chunk2 = nil
     
   end -- end sel_tr loop
