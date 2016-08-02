@@ -99,7 +99,7 @@ end
    * Licence: GPL v3
    * Version: 1.0
   ]]
-local CheckBox_TB = {}
+CheckBox_TB = {}
 local last_proj_change_count = reaper.GetProjectStateChangeCount(0)
 --------------------------------------------------------------------------------
 ---   Simple Element Class   ---------------------------------------------------
@@ -672,8 +672,20 @@ function create_button(name,GUID,chunk,type,nv)
                   
                   elseif r_click_menu.norm_val == 1 then --- delete version
                     if ch_box.type == "TRACK" then
+                      local ID = ch_box.id
                       table.remove(ch_box.norm_val2,ch_box.norm_val)
                       ch_box.norm_val = #ch_box.norm_val2
+                        for k,v in ipairs(CheckBox_TB)do
+                          if v.type == "FOLDER" then
+                            for i = 1 , #v.norm_val2[v.norm_val].chunk do
+                            local child = v.norm_val2[v.norm_val].chunk[i]
+                              if ID == child then
+                              table.remove(v.norm_val2[v.norm_val].chunk,i)
+                              end
+                            end
+                          end
+                        end
+                            
                       save_tracks()
                     elseif ch_box.type == "FOLDER" then -- delete childs of folder
                       local childs = ch_box.norm_val2[ch_box.norm_val].chunk -- add childs to tabnle
