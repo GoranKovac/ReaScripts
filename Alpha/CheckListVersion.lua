@@ -671,22 +671,47 @@ function create_button(name,GUID,chunk,type,nv)
                   if r_click_menu.norm_val == -1 then return -- nothing clicked 
                   
                   elseif r_click_menu.norm_val == 1 then --- delete version
-                    table.remove(ch_box.norm_val2,ch_box.norm_val)
-                    ch_box.norm_val = #ch_box.norm_val2
-                    
+                    if ch_box.type == "TRACK" then
+                      table.remove(ch_box.norm_val2,ch_box.norm_val)
+                      ch_box.norm_val = #ch_box.norm_val2
+                      save_tracks()
+                    elseif ch_box.type == "FOLDER" then -- delete childs of folder
+                      local childs = ch_box.norm_val2[ch_box.norm_val].chunk -- add childs to tabnle
+                      table.remove(ch_box.norm_val2,ch_box.norm_val) -- remove folder version
+                      ch_box.norm_val = #ch_box.norm_val2 -- change norm_val
+                      for i = 1 , #childs do
+                        local child = childs[i]
+                        for k,v in ipairs(CheckBox_TB)do
+                          if child == v.id then
+                            table.remove(v.norm_val2,v.norm_val)
+                            v.norm_val = #v.norm_val2
+                          end
+                          if #v.norm_val2==0 then
+                            table.remove(CheckBox_TB,k)
+                          else
+                            local tr = reaper.BR_GetMediaTrackByGUID(0,v.id) -- convert it to track
+                            local items = v.norm_val2[v.norm_val].chunk -- items on track are norm_val2 table SECTION norm_val(which box is clicked)
+                            restoreTrackItems(tr,items) -- restore items
+                          end
+                        end
+                      end
+                      childs = nil
+                      save_tracks()                      
+                  end
+                          
                     if ch_box.norm_val > 0 then -- restore previous/next version after delete (because if version is deleted same items stay)
                       local tr = reaper.BR_GetMediaTrackByGUID(0,ch_box.id) -- convert it to track
                       local items = ch_box.norm_val2[ch_box.norm_val].chunk -- items on track are norm_val2 table SECTION norm_val(which box is clicked)
                       restoreTrackItems(tr,items) -- restore items
                       save_tracks()
-                    else 
+                    else
                       for k,v in ipairs(CheckBox_TB)do -- if there are no more versions remove whole CheckBox
                         if #v.norm_val2 == 0 then  
                           table.remove(CheckBox_TB,k)
                           save_tracks()
                         end
                       end
-                    end   
+                    end
                                      
                   elseif r_click_menu.norm_val == 2 then --- rename button
                     local retval, version_name = reaper.GetUserInputs("Rename Version ", 1, "Version Name :", "")  
