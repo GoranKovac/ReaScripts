@@ -99,7 +99,7 @@ end
    * Licence: GPL v3
    * Version: 1.0
   ]]
-CheckBox_TB = {}
+local CheckBox_TB = {}
 local last_proj_change_count = reaper.GetProjectStateChangeCount(0)
 --------------------------------------------------------------------------------
 ---   Simple Element Class   ---------------------------------------------------
@@ -460,8 +460,8 @@ end
 ---------------------------------------------------------------------------------------------------------
 ---   START   -------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------------
-local save = Button:new(15,15,40,20, 0.2,0.2,1.0,0, "New","Arial",15,{0.7, 0.9, 1, 1}, 0 )
-local save_folder = Button:new(60,15,80,20, 0.2,0.2,1.0,0, "New Folder","Arial",15,{0.7, 0.9, 1, 1}, 0 )
+local save = Button:new(35,15,40,20, 0.2,0.2,1.0,0, "New Track","Arial",15,{0.7, 0.9, 1, 1}, 0 )
+local save_folder = Button:new(15,15,80,20, 0.2,0.2,1.0,0, "New Folder","Arial",15,{0.7, 0.9, 1, 1}, 0 )
 local empty = Button:new(165,15,40,20, 0.2,0.2,1.0,0, "Empty","Arial",15,{0.7, 0.9, 1, 1}, 0 )
 ---------------------------------------------------------------------------------------------------------
 local Folder_TB = {save_folder}
@@ -532,13 +532,8 @@ save_folder.onClick = function()
                                 end
                               end
                             end
-                           
-                          --local retval, version_name = reaper.GetUserInputs("Version Name", 1, "Enter Version Name :", "")  
-                          --if not retval then return end                               
-                          --if version_name == "" then reaper.MB("Enter Valid Name!", "Error", 0)return end
                           local job = "folder"
-                          local f_chunk = create_folder_or_items(tr,version_name,job) -- job will return "child_tracks" table (childs GUID) and create versions for every child
-                          
+                          local f_chunk = create_folder_or_items(tr,version_name,job) -- job will return "child_tracks" table (childs GUID) and create versions for every child                          
                           local f_name  = version_name
                           local f_type  = "FOLDER"  
                           create_button(f_name,f_GUID,f_chunk,f_type,nv)
@@ -553,10 +548,7 @@ end
 --------------------------------------------------------------------------------
 save.onClick = function()
               local sel_tr_count = reaper.CountSelectedTracks(0)
-              if sel_tr_count == 0 then return end              
-              --local retval, version_name = reaper.GetUserInputs("Version Name", 1, "Enter Version Name :", "")  
-              --if not retval then return end
-              --if version_name == "" then reaper.MB("Enter Valid Name!", "Error", 0)return end
+              if sel_tr_count == 0 then return end
               for i=1, sel_tr_count do     -- loop through selected tracks                      
                 local tr = reaper.GetSelectedTrack(0, i-1)
                 local guid = reaper.GetTrackGUID(tr)
@@ -629,7 +621,7 @@ function create_button(name,GUID,chunk,type,nv)
   
   local ch_box = CheckBox:new(70,50,120,20,  0.2,0.2,1.0,0, "Version","Arial",15,{0.7, 0.9, 1, 1}, 1, {state} )
   
-  ch_box.id = GUID                            
+  ch_box.id = GUID                             
   ch_box.type = type
   
   if check == false then -- if ID does not exist in the table create new checklist
@@ -829,8 +821,8 @@ function main()
             end
         end
       -------------------AUTO SAVE
-      --[[      
-      if chunk1 ~= chunk2 then
+       --[[    
+      if chunk1 ~= nil and chunk1 ~= chunk2 and chunk2 ~= "empty_table" then       
         for k,v in pairs(cur_sel)do
             if v.type ~= "FOLDER" and sel_chunk[1] ~= EMPTY_TABLE then -- ignore FOLDER tracks and tracks that are empty
             if v.norm_val == 0 then return end
@@ -852,6 +844,8 @@ function main()
   
       if flags&1 == 1 then -- draw save folder button only if folder track is selected
         DRAW_B(Folder_TB)
+      else
+        DRAW_B(Button_TB)        
       end
     
     else -- if no track is selected 
@@ -915,7 +909,7 @@ function mainloop()
     -- DRAW,MAIN functions --
       main() -- Main()
       DRAW_F(Frame_TB)  -- draw frame
-      DRAW_B(Button_TB) -- Draw Static Buttons 
+      --DRAW_B(Button_TB) -- Draw Static Buttons 
     -------------------------
     -------------------------
     last_mouse_cap = gfx.mouse_cap
