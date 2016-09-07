@@ -460,8 +460,8 @@ end
 ---------------------------------------------------------------------------------------------------------
 ---   START   -------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------------
-local save = Button:new(15,15,40,20, 0.2,0.2,1.0,0, "Save","Arial",15,{0.7, 0.9, 1, 1}, 0 )
-local save_folder = Button:new(60,15,80,20, 0.2,0.2,1.0,0, "Save Folder","Arial",15,{0.7, 0.9, 1, 1}, 0 )
+local save = Button:new(15,15,40,20, 0.2,0.2,1.0,0, "New","Arial",15,{0.7, 0.9, 1, 1}, 0 )
+local save_folder = Button:new(60,15,80,20, 0.2,0.2,1.0,0, "New Folder","Arial",15,{0.7, 0.9, 1, 1}, 0 )
 local empty = Button:new(165,15,40,20, 0.2,0.2,1.0,0, "Empty","Arial",15,{0.7, 0.9, 1, 1}, 0 )
 ---------------------------------------------------------------------------------------------------------
 local Folder_TB = {save_folder}
@@ -520,13 +520,25 @@ save_folder.onClick = function()
                       for i=1, sel_tr_count do     -- loop through selected tracks
                         local tr = reaper.GetSelectedTrack(0, i-1)
                         local retval, flags = reaper.GetTrackState(tr)
-                        if flags&1 == 1 then -- Folder only 
-                          local retval, version_name = reaper.GetUserInputs("Version Name", 1, "Enter Version Name :", "")  
-                          if not retval then return end                               
-                          if version_name == "" then reaper.MB("Enter Valid Name!", "Error", 0)return end
+                        if flags&1 == 1 then -- Folder only
+                          local f_GUID  = reaper.GetTrackGUID(tr)
+                          local check = has_value(CheckBox_TB,f_GUID)
+                            if check == false then
+                              version_name = "V1"
+                            else
+                              for k,v in ipairs(CheckBox_TB)do
+                                if v.id == f_GUID then
+                                  version_name = "V" .. #v.norm_val2+1
+                                end
+                              end
+                            end
+                           
+                          --local retval, version_name = reaper.GetUserInputs("Version Name", 1, "Enter Version Name :", "")  
+                          --if not retval then return end                               
+                          --if version_name == "" then reaper.MB("Enter Valid Name!", "Error", 0)return end
                           local job = "folder"
                           local f_chunk = create_folder_or_items(tr,version_name,job) -- job will return "child_tracks" table (childs GUID) and create versions for every child
-                          local f_GUID  = reaper.GetTrackGUID(tr)
+                          
                           local f_name  = version_name
                           local f_type  = "FOLDER"  
                           create_button(f_name,f_GUID,f_chunk,f_type,nv)
@@ -541,12 +553,23 @@ end
 --------------------------------------------------------------------------------
 save.onClick = function()
               local sel_tr_count = reaper.CountSelectedTracks(0)
-              if sel_tr_count == 0 then return end
-              local retval, version_name = reaper.GetUserInputs("Version Name", 1, "Enter Version Name :", "")  
-              if not retval then return end
-              if version_name == "" then reaper.MB("Enter Valid Name!", "Error", 0)return end
+              if sel_tr_count == 0 then return end              
+              --local retval, version_name = reaper.GetUserInputs("Version Name", 1, "Enter Version Name :", "")  
+              --if not retval then return end
+              --if version_name == "" then reaper.MB("Enter Valid Name!", "Error", 0)return end
               for i=1, sel_tr_count do     -- loop through selected tracks                      
                 local tr = reaper.GetSelectedTrack(0, i-1)
+                local guid = reaper.GetTrackGUID(tr)
+                local check = has_value(CheckBox_TB,guid)
+                    if check == false then
+                      version_name = "V1"
+                    else
+                      for k,v in ipairs(CheckBox_TB)do
+                        if v.id == guid then
+                        version_name = "V" .. #v.norm_val2+1
+                        end
+                     end
+                  end
                 create_button_from_selection(tr,version_name,sel_tr_count)
                 save_tracks()
               end 
@@ -610,7 +633,7 @@ function create_button(name,GUID,chunk,type,nv)
   ch_box.type = type
   
   if check == false then -- if ID does not exist in the table create new checklist
-    state.name = name -- add version name
+    state.name = name
     CheckBox_TB[#CheckBox_TB+1] = ch_box -- add new ch_box to CheckBox_TB table  
    
   else -- if ID exists in the table then only add new chunk to it
@@ -684,9 +707,9 @@ function create_button(name,GUID,chunk,type,nv)
                               end
                             end
                           end
-                        end
-                            
+                        end                            
                       save_tracks()
+                      
                     elseif ch_box.type == "FOLDER" then -- delete childs of folder
                       local childs = ch_box.norm_val2[ch_box.norm_val].chunk -- add childs to tabnle
                       table.remove(ch_box.norm_val2,ch_box.norm_val) -- remove folder version
