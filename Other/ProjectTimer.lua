@@ -18,7 +18,8 @@ local afk = 60 -- set afk treshold HERE
 ---------------------------------------
 
 local last_proj_change_count = reaper.GetProjectStateChangeCount(0)
-local sec,min,hour,day,cnt,last_action_time
+local last_action_time = 0
+local sec,min,hour,day,cnt
 
 function store_time() -- store time values to project
   local save_time = sec .. ",".. min .. ",".. hour .. ",".. day
@@ -75,7 +76,6 @@ local playing   = reaper.GetPlayState() == 1 -- play
   local proj_change_count = reaper.GetProjectStateChangeCount(0)
   if proj_change_count > last_proj_change_count or recording or playing then -- if project state changed or transport is in play or record mode
     cnt = 0
-    last_action_time = os.time()
     last_proj_change_count = proj_change_count
   end
  
