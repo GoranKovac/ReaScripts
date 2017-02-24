@@ -17,7 +17,6 @@
 local afk = 59 -- set afk treshold HERE
 ---------------------------------------
 
-local last_proj_change_count = reaper.GetProjectStateChangeCount(0)
 local last_action_time = 0 -- initial action time
 local cnt = 0
 local sec,min,hour,day
