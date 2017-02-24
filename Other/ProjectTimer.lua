@@ -19,8 +19,7 @@ local afk = 59 -- set afk treshold HERE
 
 local last_proj_change_count = reaper.GetProjectStateChangeCount(0)
 local last_action_time = 0 -- initial action time
-local cnt = 0
-local sec,min,hour,day
+local sec,min,hour,day,cnt
 
 function store_time() -- store time values to project
   local save_time = sec .. ",".. min .. ",".. hour .. ",".. day
@@ -30,11 +29,11 @@ end
 function restore_time() -- restore time values from project
   local ret, load_time = reaper.GetProjExtState(0, "time", "global") -- restore seconds
  
-    if load_time ~= "" then
-      sec, min, hour, day = string.match(load_time, "([^,]+),([^,]+),([^,]+),([^,]+)")
-    else
-      sec, min, hour, day = 0, 0, 0, 0 
-    end 
+  if load_time ~= "" then
+    sec, min, hour, day = string.match(load_time, "([^,]+),([^,]+),([^,]+),([^,]+)")
+  else
+    sec, min, hour, day = 0, 0, 0, 0 
+  end 
   
 end
 
@@ -70,11 +69,11 @@ function count_time()
   end
     
 store_time() -- call function to store time values
-end  
-
+end
+ 
 function main()
 restore_time()
-
+  
 local play_state = reaper.GetPlayState() -- get transport state
 local recording = play_state == 5 -- is record button on
 local playing = play_state == 1 -- is play button on
@@ -117,27 +116,13 @@ function store_settings()
   store_time()
 end
 
-local gui = {}
 function init()
-  dock_pos = reaper.GetExtState("time", "dock") 
-  -- Add stuff to "gui" table
-  gui.settings = {}                 -- Add "settings" table to "gui" table 
-  gui.settings.font_size = 24       -- font size  
+  local dock_pos = reaper.GetExtState("time", "dock")
+  dock_pos = dock_pos or 0
   
-  if dock_pos ~= "" then
-    gui.settings.docker_id = dock_pos
-  else
-    gui.settings.docker_id = 0
-  end   
-  ---------------------------
-  -- Initialize gfx window --
-  ---------------------------
-  
-  gfx.init("", 0, 30, gui.settings.docker_id)
-  
-  gfx.setfont(1,"Arial", gui.settings.font_size)
+  gfx.init("", 0, 30, dock_pos)
+  gfx.setfont(1,"Arial", 24)
   gfx.clear = 3355443 
-  
   main()   
 end
 restore_time() -- call function restore_time() to restore time values from project
