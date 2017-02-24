@@ -9,17 +9,16 @@
  
 --[[
  * Changelog:
- * v1.1 (2017-02-24)
-  + improve code and save dock position
+ * v1.2 (2017-02-24)
+  + fix double second add
 --]]
 
 ---------------------------------------
-local afk = 59 -- set afk treshold HERE
+local afk = 60 -- set afk treshold HERE
 ---------------------------------------
 
 local last_proj_change_count = reaper.GetProjectStateChangeCount(0)
-local last_action_time = 0 -- initial action time
-local sec,min,hour,day,cnt
+local sec,min,hour,day,cnt,last_action_time
 
 function store_time() -- store time values to project
   local save_time = sec .. ",".. min .. ",".. hour .. ",".. day
@@ -38,8 +37,7 @@ function restore_time() -- restore time values from project
 end
 
 function count_time()
-  if cnt <= afk then
-
+  if cnt < afk then
     if os.time() - last_action_time > 0 then -- interval of 1 second
       cnt = cnt + 1
       
@@ -56,32 +54,29 @@ function count_time()
         day = day + 1
         hour = 0          
       end
-          
       end
-        
       end
       
-    last_action_time = os.time() 
+      last_action_time = os.time() 
     end
-  
   else
-  cnt = nil 
+    cnt = nil 
   end
     
-store_time() -- call function to store time values
+store_time()
 end
  
 function main()
 restore_time()
   
-local play_state = reaper.GetPlayState() -- get transport state
-local recording = play_state == 5 -- is record button on
-local playing = play_state == 1 -- is play button on
+local recording = reaper.GetPlayState() == 5 -- record
+local playing   = reaper.GetPlayState() == 1 -- play 
  
   local proj_change_count = reaper.GetProjectStateChangeCount(0)
   if proj_change_count > last_proj_change_count or recording or playing then -- if project state changed or transport is in play or record mode
     cnt = 0
-    last_proj_change_count = proj_change_count -- store "Project State Change Count" for the next pass 
+    last_action_time = os.time()
+    last_proj_change_count = proj_change_count
   end
  
   if cnt then
