@@ -16,6 +16,7 @@
 ---------------------------------------
 local afk = 60 -- set afk treshold HERE
 ---------------------------------------
+local threshold = afk
 
 local last_action_time = 0
 local last_proj_change_count = reaper.GetProjectStateChangeCount(0)
@@ -51,7 +52,7 @@ function main()
     last_proj_change_count = proj_change_count
   end
  
-  if afk < 60 then
+  if afk < threshold then
     count_time()
   end
   
