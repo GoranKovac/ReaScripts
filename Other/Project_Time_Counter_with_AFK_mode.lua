@@ -81,7 +81,7 @@ end
 
 function init()
   local dock_pos = reaper.GetExtState("time", "dock")
-  dock_pos = dock_pos or 0
+  dock_pos = dock_pos or 513
   
   gfx.init("", 0, 30, dock_pos)
   gfx.setfont(1,"Arial", 24)
