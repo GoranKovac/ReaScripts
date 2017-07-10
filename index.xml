@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="394d9b1609a474de0497249b0bcf3bcb88848d0b" name="ReaPackRepo">
+<index version="1" commit="394d9b1609a474de0497249b0bcf3bcb88848d0b" name="Sexan_Scripts">
   <category name="Items">
     <reapack name="Sexan_SmartSplit_Items_Crossfade_Left_or_Right.lua" type="script" desc="Smart Split Items Crossfade Left or Right">
       <version name="1.0" author="SeXan" time="2017-07-10T17:47:59Z">
