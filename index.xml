@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<index version="1" commit="394d9b1609a474de0497249b0bcf3bcb88848d0b">
+  <category name="Items">
+    <reapack name="Sexan_SmartSplit_Items_Crossfade_Left_or_Right.lua" type="script" desc="Smart Split Items Crossfade Left or Right">
+      <version name="1.0" author="SeXan" time="2017-07-10T17:47:59Z">
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/e0bfbaf95336a888fe12afac79dbce5039fe2d5c/Items/Sexan_SmartSplit_Items_Crossfade_Left_or_Right.lua</source>
+      </version>
+    </reapack>
+  </category>
+  <category name="Other">
+    <reapack name="Sexan_Remove_in_order_Time_selection_Items_Tracks.lua" type="script" desc="Remove in Order Time Selection,Items,Tracks">
+      <version name="1.0" author="SeXan" time="2017-07-10T21:54:32Z">
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/394d9b1609a474de0497249b0bcf3bcb88848d0b/Other/Sexan_Remove_in_order_Time_selection_Items_Tracks.lua</source>
+      </version>
+    </reapack>
+  </category>
+  <category name="Project">
+    <reapack name="Sexan_Project_Time_Counter_with_AFK_mode.lua" type="script" desc="Project Time Counter with AFK mode">
+      <version name="1.3" author="SeXan" time="2017-07-10T17:47:24Z">
+        <changelog><![CDATA[+ Simplified the code]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/bea6aa77a98658f3dad6831aa03b9095bc58caec/Project/Sexan_Project_Time_Counter_with_AFK_mode.lua</source>
+      </version>
+    </reapack>
+  </category>
+  <category name="Track">
+    <reapack name="Sexan_Folder Record_Monitor Arming Childs.lua" type="script" desc="Folder Record_Monitor Arming Childs">
+      <version name="1.0" author="SPK77, SeXan" time="2017-07-10T17:38:28Z">
+        <changelog><![CDATA[+ Initial Release]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/0bf552dd29797484fb2cdd072f420999cba0dffa/Track/Sexan_Folder%20Record_Monitor%20Arming%20Childs.lua</source>
+      </version>
+    </reapack>
+  </category>
+</index>
