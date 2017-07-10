@@ -1,3 +1,17 @@
+--[[
+ * ReaScript Name: Smart Split Items Crossfade Left or Right
+ * Author: SeXan
+ * Licence: GPL v3
+ * REAPER: 5.0
+ * Extensions: SWS
+ * Version: 1.0
+--]]
+ 
+--[[
+ * Changelog:
+ * v1.0 (2017-07-10)
+--]]
+
 local edit_cursor_pos = reaper.GetCursorPosition()
 local _, _, mouse_pos = reaper.BR_TrackAtMouseCursor()
 
