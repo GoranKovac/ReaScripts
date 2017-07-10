@@ -29,3 +29,4 @@ function Main()
     reaper.Main_OnCommand(40297,0)
   end
 end
+Main()
