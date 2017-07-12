@@ -5,18 +5,19 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.9
+ * Version: 1.1
 --]]
  
 --[[
  * Changelog:
- * v0.9 (2017-07-12)
-  + Initial release
+ * v1.1 (2017-07-12)
+  + Added settings to enable disable Manual naming, Mute and Solo Flags
 --]]
 
 -- USER SETTING
 ---------------
 popup = 0    -- (set to 0 for no popup, set to 1 for popup asking to name the VCA group)
+mute_solo = 1 -- (set to 0 to disable mute and solo flags)
 ---------------
 --------------------------------------------------------------------------------------
 -- GROUP FLAGS
@@ -36,8 +37,8 @@ local function scan_groups()
   
   for i = 0 , cnt_tr-1 do
     local tr = reaper.GetTrack(0,i)
+    local VCA_M = reaper.GetSetTrackGroupMembership(tr,"VOLUME_VCA_MASTER", 0,0)
       for i = 1 , #groups do
-        local VCA_M = reaper.GetSetTrackGroupMembership(tr,"VOLUME_VCA_MASTER", 0,0)
           -- IF GROUP IS USED REMOVE IT FROM UNUSED TABLE
           if VCA_M == unused[i] then
             table.remove(unused,i)
@@ -65,8 +66,10 @@ local function create_master(free_group)
   end
   -- SET TRACK AS VCA MASTER
   local VCA_M = reaper.GetSetTrackGroupMembership(tr,"VOLUME_VCA_MASTER", free_group,free_group)
+    if mute_solo == 1 then 
   local VCA_M_MUTE = reaper.GetSetTrackGroupMembership(tr,"MUTE_MASTER", free_group,free_group)
   local VCA_M_SOLO = reaper.GetSetTrackGroupMembership(tr,"SOLO_MASTER", free_group,free_group)
+    end
 end
 
 local function set_slaves()
@@ -86,8 +89,10 @@ local function set_slaves()
         free_group = unused[1]
         -- SET SELECTED TRACKS (TABLE) AS VCA SLAVES)  
         local VCA_S = reaper.GetSetTrackGroupMembership(tr,"VOLUME_VCA_SLAVE", free_group,free_group)
+          if mute_solo == 1 then
         local VCA_S_MUTE = reaper.GetSetTrackGroupMembership(tr,"MUTE_SLAVE", free_group,free_group)
         local VCA_S_SOLO = reaper.GetSetTrackGroupMembership(tr,"SOLO_SLAVE", free_group,free_group)
+          end
       end   
     create_master(free_group)
   end
