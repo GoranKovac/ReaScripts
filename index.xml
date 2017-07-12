@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="7c7189512f2194844837e950630787c508e16d72" name="Sexan_Scripts">
+<index version="1" commit="d7c8e51f6b3c49d16562c402d90d1e3cfa346132" name="Sexan_Scripts">
   <category name="Items">
     <reapack name="Sexan_SmartSplit_Items_Crossfade_Left_or_Right.lua" type="script" desc="Smart Split Items Crossfade Left or Right">
       <version name="1.0" author="SeXan" time="2017-07-10T17:47:59Z">
@@ -26,6 +26,10 @@
     <reapack name="Sexan_Create_VCA_Master_from_selection.lua" type="script" desc="Create VCA Master from selection.lua">
       <version name="1.3" author="SeXan" time="2017-07-12T09:25:22Z">
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/efb0b27c3d624ae959483fcff65d5157b6c513f7/Track/Sexan_Create_VCA_Master_from_selection.lua</source>
+      </version>
+      <version name="0.9" author="SeXan" time="2017-07-12T09:39:37Z">
+        <changelog><![CDATA[+ Initial release]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/d7c8e51f6b3c49d16562c402d90d1e3cfa346132/Track/Sexan_Create_VCA_Master_from_selection.lua</source>
       </version>
     </reapack>
     <reapack name="Sexan_Folder Record_Monitor Arming Childs.lua" type="script" desc="Folder Record_Monitor Arming Childs">
