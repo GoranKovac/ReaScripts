@@ -5,13 +5,13 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 1.43
+ * Version: 1.44
 --]]
  
 --[[
  * Changelog:
- * v1.43 (2017-07-12)
-  + Scan for all flags to make sure VCAs go to EMPTY group
+ * v1.44 (2017-07-12)
+  + VCAs start from group 32 (in reverse order) for easier organization
 --]]
 
 -- USER SETTING
@@ -122,7 +122,7 @@ local function set_slaves()
     for i = 1, #tracks do
       local tr = tracks[i]
       -- SET FIRST UNUSED GROUP
-      free_group = unused[1]
+      free_group = unused[#unused]
       -- SET SELECTED TRACKS (TABLE) AS VCA SLAVES)  
       local VCA_S = reaper.GetSetTrackGroupMembership(tr,"VOLUME_VCA_SLAVE", free_group,free_group)
         if mute_solo == 1 then
