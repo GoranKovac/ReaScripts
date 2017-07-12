@@ -1,3 +1,19 @@
+--[[
+ * ReaScript Name: Create VCA Master from selection.lua
+ * Discription: Script creates Master VCA for selected tracks and makes them VCA Slave.Also Mute and SOLO flags are added
+ * Author: SeXan
+ * Licence: GPL v3
+ * REAPER: 5.0
+ * Extensions: None
+ * Version: 1.3
+--]]
+ 
+--[[
+ * Changelog:
+ * v0.9 (2017-07-12)
+  + Initial release
+--]]
+
 -- GROUP FLAGS
 local groups =  { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536,
                   131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864,
