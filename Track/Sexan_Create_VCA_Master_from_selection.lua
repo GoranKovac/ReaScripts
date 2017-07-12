@@ -5,13 +5,13 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 1.44
+ * Version: 1.45
 --]]
  
 --[[
  * Changelog:
- * v1.44 (2017-07-12)
-  + VCAs start from group 32 (in reverse order) for easier organization
+ * v1.45 (2017-07-12)
+  + Minor error fix
 --]]
 
 -- USER SETTING
@@ -33,7 +33,7 @@ local unused =  { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192,
 
 local VCA_FLAGS = { "VOLUME_MASTER", 
                     "VOLUME_SLAVE", 
-                    --"VOLUME_VCA_MASTER", 
+                    "VOLUME_VCA_MASTER", 
                     "VOLUME_VCA_SLAVE",
                     "PAN_MASTER",
                     "PAN_SLAVE", 
