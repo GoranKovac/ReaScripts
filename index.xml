@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="1ae53cef356cb9fa6f5f51fac995aeac17663f71" name="Sexan_Scripts">
+<index version="1" commit="880e889bee7a0d8597d0995ca195a4e7a9f29c43" name="Sexan_Scripts">
   <category name="Items">
     <reapack name="Sexan_SmartSplit_Items_Crossfade_Left_or_Right.lua" type="script" desc="Smart Split Items Crossfade Left or Right">
       <version name="1.0" author="SeXan" time="2017-07-10T17:47:59Z">
@@ -46,10 +46,10 @@
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/0bf552dd29797484fb2cdd072f420999cba0dffa/Track/Sexan_Folder%20Record_Monitor%20Arming%20Childs.lua</source>
       </version>
     </reapack>
-    <reapack name="Sexan_Remove_VCA_Master_And_Slaves.lua" type="script" desc="Remove VCA Master And Slaves.lua">
-      <version name="1.0" author="SeXan" time="2017-07-12T10:42:18Z">
-        <changelog><![CDATA[+ Innitial release]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/05b4813d4754e97ad7c3a382bc3050e8f2ea2ee7/Track/Sexan_Remove_VCA_Master_And_Slaves.lua</source>
+    <reapack name="Sexan_Remove_Selected_VCA_Master_And_Its_Slaves_With_All_Flags.lua" type="script" desc="Remove Selected VCA Master And Its Slaves With All Flags.lua">
+      <version name="1.01" author="SeXan" time="2017-07-12T10:53:13Z">
+        <changelog><![CDATA[+ Better Script name]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/880e889bee7a0d8597d0995ca195a4e7a9f29c43/Track/Sexan_Remove_Selected_VCA_Master_And_Its_Slaves_With_All_Flags.lua</source>
       </version>
     </reapack>
   </category>
