@@ -5,20 +5,28 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 1.4
+ * Version: 1.41
 --]]
  
 --[[
  * Changelog:
- * v1.4 (2017-07-12)
-  + Added settings to enable disable Manual naming, Mute and Solo Flags
+ * v1.41 (2017-07-12)
+  + Added settings for master VCA position (TOP of project,BOTTOM of project)
 --]]
 
 -- USER SETTING
 ---------------
 popup = 0    -- (set to 0 for no popup, set to 1 for popup asking to name the VCA group)
 mute_solo = 1 -- (set to 0 to disable mute and solo flags)
+position = 1 -- (set VCA Master track position 1 - TOP , 0 - Bottom)
 ---------------
+
+if position == 1 then
+  master_pos = 0
+else
+  master_pos = reaper.CountTracks(0)
+end
+
 --------------------------------------------------------------------------------------
 -- GROUP FLAGS
 local groups =  { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536,
@@ -26,7 +34,9 @@ local groups =  { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192,
                   134217728, 268435456, 536870912, 1073741824, 2147483648 
                 } 
 local unused =  { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536,
+                  
                   131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864,
+                  
                   134217728, 268435456, 536870912, 1073741824, 2147483648 
                 }                
                               
@@ -39,10 +49,10 @@ local function scan_groups()
     local tr = reaper.GetTrack(0,i)
     local VCA_M = reaper.GetSetTrackGroupMembership(tr,"VOLUME_VCA_MASTER", 0,0)
       for i = 1 , #groups do
-          -- IF GROUP IS USED REMOVE IT FROM UNUSED TABLE
-          if VCA_M == unused[i] then
-            table.remove(unused,i)
-          end
+        -- IF GROUP IS USED REMOVE IT FROM UNUSED TABLE
+        if VCA_M == unused[i] then
+          table.remove(unused,i)
+        end
       end
   end
   
@@ -50,9 +60,9 @@ end
 
 local function create_master(free_group)
   -- INSERT TRACK AT THE END (FOR SOME REASON WHEN ADDING TRACKS AT THE BEGGINING SCRIPT DOES NOT WORK)
-  reaper.InsertTrackAtIndex(reaper.CountTracks(0), false)
+  reaper.InsertTrackAtIndex(master_pos, false)
   reaper.TrackList_AdjustWindows(false)
-  local tr = reaper.GetTrack(0,reaper.CountTracks(0)-1) 
+  local tr = reaper.GetTrack(0,master_pos) 
   -- VCA NAMING
   if popup == 0 then
     for i = 1 , #groups do
@@ -90,8 +100,8 @@ local function set_slaves()
         -- SET SELECTED TRACKS (TABLE) AS VCA SLAVES)  
         local VCA_S = reaper.GetSetTrackGroupMembership(tr,"VOLUME_VCA_SLAVE", free_group,free_group)
           if mute_solo == 1 then
-        local VCA_S_MUTE = reaper.GetSetTrackGroupMembership(tr,"MUTE_SLAVE", free_group,free_group)
-        local VCA_S_SOLO = reaper.GetSetTrackGroupMembership(tr,"SOLO_SLAVE", free_group,free_group)
+            local VCA_S_MUTE = reaper.GetSetTrackGroupMembership(tr,"MUTE_SLAVE", free_group,free_group)
+            local VCA_S_SOLO = reaper.GetSetTrackGroupMembership(tr,"SOLO_SLAVE", free_group,free_group)
           end
       end   
     create_master(free_group)
