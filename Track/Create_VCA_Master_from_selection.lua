@@ -45,9 +45,9 @@ end
 
 local function set_slaves()
   local free_group
+  local cnt_sel = reaper.CountSelectedTracks(0)
   -- IF UNUSED GROUP TABLE IS EMPTY DO NOT CREATE NEW GROUP
-  if #unused ~= 0 then
-    local cnt_sel = reaper.CountSelectedTracks(0)
+  if #unused ~= 0 and cnt_sel > 0 then 
       -- ADD SELECTED TRACKS TO TABLE (FOR MAKING THEM VCA SLAVES)
       for i = 0, cnt_sel-1 do
         local tr = reaper.GetSelectedTrack(0,i)
