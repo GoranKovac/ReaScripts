@@ -14,6 +14,11 @@
   + Initial release
 --]]
 
+-- USER SETTING
+---------------
+popup = 0    -- (set to 0 for no popup, set to 1 for popup asking to name the VCA group)
+---------------
+--------------------------------------------------------------------------------------
 -- GROUP FLAGS
 local groups =  { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536,
                   131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864,
@@ -46,12 +51,17 @@ local function create_master(free_group)
   -- INSERT TRACK AT THE END (FOR SOME REASON WHEN ADDING TRACKS AT THE BEGGINING SCRIPT DOES NOT WORK)
   reaper.InsertTrackAtIndex(reaper.CountTracks(0), false)
   reaper.TrackList_AdjustWindows(false)
-  local tr = reaper.GetTrack(0,reaper.CountTracks(0)-1)    
-  --local retval, name = reaper.GetUserInputs("ADD VCA NAME ", 1, "VCA NAME :", "")
-  for i = 1 , #groups do
-    if free_group == groups[i] then
-      local retval, track_name = reaper.GetSetMediaTrackInfo_String(tr, "P_NAME", "VCA " .. i , true) 
+  local tr = reaper.GetTrack(0,reaper.CountTracks(0)-1) 
+  -- VCA NAMING
+  if popup == 0 then
+    for i = 1 , #groups do
+      if free_group == groups[i] then
+        local retval, track_name = reaper.GetSetMediaTrackInfo_String(tr, "P_NAME", "VCA " .. i , true) 
+      end
     end
+  else
+    local _, name = reaper.GetUserInputs("ADD VCA NAME ", 1, "VCA NAME :", "")
+    local retval, track_name = reaper.GetSetMediaTrackInfo_String(tr, "P_NAME", name , true)
   end
   -- SET TRACK AS VCA MASTER
   local VCA_M = reaper.GetSetTrackGroupMembership(tr,"VOLUME_VCA_MASTER", free_group,free_group)
