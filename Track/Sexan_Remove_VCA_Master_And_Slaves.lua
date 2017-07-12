@@ -1,6 +1,6 @@
 --[[
  * ReaScript Name: Remove VCA Master And Slaves.lua
- * Discription: Script Removes VCA Master,and Slaves and all flags
+ * Discription: Script Removes VCA Master, Slaves and all flags
  * Author: SeXan
  * Licence: GPL v3
  * REAPER: 5.0
