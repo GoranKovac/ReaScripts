@@ -5,12 +5,12 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 1.1
+ * Version: 1.4
 --]]
  
 --[[
  * Changelog:
- * v1.1 (2017-07-12)
+ * v1.4 (2017-07-12)
   + Added settings to enable disable Manual naming, Mute and Solo Flags
 --]]
 
