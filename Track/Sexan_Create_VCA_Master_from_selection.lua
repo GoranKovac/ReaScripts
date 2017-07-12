@@ -5,13 +5,13 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 1.42
+ * Version: 1.43
 --]]
  
 --[[
  * Changelog:
- * v1.42 (2017-07-12)
-  + Top created MASTER VCA-s better order (1,2,3.... insetead of ...3,2,1)
+ * v1.43 (2017-07-12)
+  + Scan for all flags to make sure VCAs go to EMPTY group
 --]]
 
 -- USER SETTING
@@ -30,24 +30,53 @@ local unused =  { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192,
                   131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864,                  
                   134217728, 268435456, 536870912, 1073741824, 2147483648 
                 }                
-                              
+
+local VCA_FLAGS = { "VOLUME_MASTER", 
+                    "VOLUME_SLAVE", 
+                    --"VOLUME_VCA_MASTER", 
+                    "VOLUME_VCA_SLAVE",
+                    "PAN_MASTER",
+                    "PAN_SLAVE", 
+                    "WIDTH_MASTER", 
+                    "WIDTH_SLAVE" ,
+                    "MUTE_MASTER", 
+                    "MUTE_SLAVE", 
+                    "SOLO_MASTER", 
+                    "SOLO_SLAVE", 
+                    "RECARM_MASTER", 
+                    "RECARM_SLAVE" ,
+                    "POLARITY_MASTER", 
+                    "POLARITY_SLAVE", 
+                    "AUTOMODE_MASTER",
+                    "AUTOMODE_SLAVE"
+                  }  
+local vca_group = {}                                              
 local tracks = {}
 local top_pos_offset
 
 local function scan_groups()
   local cnt_tr = reaper.CountTracks(0)
-  
+  -- SCAN FOR ALL FLAGS
   for i = 0 , cnt_tr-1 do
     local tr = reaper.GetTrack(0,i)
     local VCA_M = reaper.GetSetTrackGroupMembership(tr,"VOLUME_VCA_MASTER", 0,0)
-      for i = 1 , #groups do
-        -- IF GROUP IS USED REMOVE IT FROM UNUSED TABLE
-        if VCA_M == unused[i] then
-          table.remove(unused,i)          
-        end
+      for j = 1 , #VCA_FLAGS do
+        local flags = reaper.GetSetTrackGroupMembership(tr,VCA_FLAGS[j], 0,0)
+          for k = 1 , #groups do
+            -- IF GROUP IS USED REMOVE IT FROM UNUSED TABLE
+            if flags == unused[k] then
+              table.remove(unused,k)
+            end
+          end
       end
+      --SCAN VCA MASTER FLAGS ONLY AND ADD IT TO GROUP(NEEDED FOR TRACK CREATION ON TOP)
+      for l = 1 , #groups do
+        if VCA_M == groups[l] then
+          vca_group[#vca_group+1] = groups[l]            
+        end
+      end      
   end
-  top_pos_offset = #groups - #unused
+  top_pos_offset = #vca_group
 end
  
 local function create_master(free_group)
