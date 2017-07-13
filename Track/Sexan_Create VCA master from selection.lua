@@ -1,17 +1,17 @@
 --[[
- * ReaScript Name: Create VCA master from selection.lua
+ * ReaScript Name: Create VCA Master from selection.lua
  * Discription: Script creates Master VCA for selected tracks and makes them VCA Slave.Also Mute and SOLO flags are added
  * Author: SeXan
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 1.451
+ * Version: 1.46
 --]]
  
 --[[
  * Changelog:
- * v1.451 (2017-07-13)
-  + Minor error fix
+ * v1.46 (2017-07-13)
+  + VCA autonaming uses number of VCAs instead of group number
 --]]
 
 -- USER SETTING
@@ -91,11 +91,11 @@ local function create_master(free_group)
   local tr = reaper.GetTrack(0,master_pos) 
   -- VCA NAMING
   if popup == 0 then
-    for i = 1 , #groups do
-      if free_group == groups[i] then
-        local retval, track_name = reaper.GetSetMediaTrackInfo_String(tr, "P_NAME", "VCA " .. i , true) 
-      end
-    end
+    --for i = 1 , #groups do
+     -- if free_group == groups[i] then
+        local retval, track_name = reaper.GetSetMediaTrackInfo_String(tr, "P_NAME", "VCA " .. #vca_group+1 , true) 
+    --  end
+   -- end
   else
     local _, name = reaper.GetUserInputs("ADD VCA NAME ", 1, "VCA NAME :", "")
     local retval, track_name = reaper.GetSetMediaTrackInfo_String(tr, "P_NAME", name , true)
