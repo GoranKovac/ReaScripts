@@ -5,13 +5,13 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 1.452
+ * Version: 1.453
 --]]
  
 --[[
  * Changelog:
- * v1.452 (2017-07-13)
-  + add user setting for warning if no track is selected
+ * v1.453 (2017-07-13)
+  + When clicking cancel or pressing ESC key in naming popup do nothing
 --]]
 
 -- USER SETTING
@@ -80,36 +80,54 @@ local function scan_groups()
   top_pos_offset = #vca_group
 end
  
-local function create_master(free_group)
+local function create_VCAs()
+  local free_group = unused[#unused]
+  
   if position == 1 then
     master_pos = top_pos_offset
   else
     master_pos = reaper.CountTracks(0)
   end
+  
   -- INSERT MASTER VCA TRACK AT TOP OR BOTTTOM
   reaper.InsertTrackAtIndex(master_pos, false)
   reaper.TrackList_AdjustWindows(false)
   local tr = reaper.GetTrack(0,master_pos) 
+  
   -- VCA NAMING
   if popup == 0 then
-    --for i = 1 , #groups do
-     -- if free_group == groups[i] then
-        local retval, track_name = reaper.GetSetMediaTrackInfo_String(tr, "P_NAME", "VCA " .. #vca_group+1 , true) 
-    --  end
-   -- end
+    local retval, track_name = reaper.GetSetMediaTrackInfo_String(tr, "P_NAME", "VCA " .. #vca_group+1 , true)
   else
-    local _, name = reaper.GetUserInputs("ADD VCA NAME ", 1, "VCA NAME :", "")
-    local retval, track_name = reaper.GetSetMediaTrackInfo_String(tr, "P_NAME", name , true)
+    local ret , name = reaper.GetUserInputs("ADD VCA NAME ", 1, "VCA NAME :", "")
+    -- IF OK WAS CLICKED
+    if ret then 
+      local retval, track_name = reaper.GetSetMediaTrackInfo_String(tr, "P_NAME", name , true)
+    -- IF CANCEL OR ESC KEY IS PRESSED DELETE TRACK AND DO NOTHING
+    else      
+      reaper.DeleteTrack(tr)
+      return 0
+    end
   end
+  
   -- SET TRACK AS VCA MASTER
   local VCA_M = reaper.GetSetTrackGroupMembership(tr,"VOLUME_VCA_MASTER", free_group,free_group)
     if mute_solo == 1 then 
       local VCA_M_MUTE = reaper.GetSetTrackGroupMembership(tr,"MUTE_MASTER", free_group,free_group)
       local VCA_M_SOLO = reaper.GetSetTrackGroupMembership(tr,"SOLO_MASTER", free_group,free_group)
     end
+    
+  -- SET VCA SLAVES  
+  for i = 1, #tracks do
+    local tr = tracks[i]
+    local VCA_S = reaper.GetSetTrackGroupMembership(tr,"VOLUME_VCA_SLAVE", free_group,free_group)
+      if mute_solo == 1 then
+        local VCA_S_MUTE = reaper.GetSetTrackGroupMembership(tr,"MUTE_SLAVE", free_group,free_group)
+        local VCA_S_SOLO = reaper.GetSetTrackGroupMembership(tr,"SOLO_SLAVE", free_group,free_group)
+      end
+  end
 end
 
-local function set_slaves()
+local function main()
   local free_group
   local cnt_sel = reaper.CountSelectedTracks(0)
   if warning == 1 and cnt_sel == 0 then
@@ -122,20 +140,8 @@ local function set_slaves()
       local tr = reaper.GetSelectedTrack(0,i)
       tracks[#tracks+1] = tr
     end
-    
-    for i = 1, #tracks do
-      local tr = tracks[i]
-      -- SET FIRST UNUSED GROUP
-      free_group = unused[#unused]
-      -- SET SELECTED TRACKS (TABLE) AS VCA SLAVES)  
-      local VCA_S = reaper.GetSetTrackGroupMembership(tr,"VOLUME_VCA_SLAVE", free_group,free_group)
-        if mute_solo == 1 then
-          local VCA_S_MUTE = reaper.GetSetTrackGroupMembership(tr,"MUTE_SLAVE", free_group,free_group)
-          local VCA_S_SOLO = reaper.GetSetTrackGroupMembership(tr,"SOLO_SLAVE", free_group,free_group)
-        end
-    end   
-    create_master(free_group)
+    create_VCAs()
   end
 end
 scan_groups()
-set_slaves()
+main()
