@@ -5,12 +5,12 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 1.47
+ * Version: 1.452
 --]]
  
 --[[
  * Changelog:
- * v1.47 (2017-07-13)
+ * v1.452 (2017-07-13)
   + add user setting for warning if no track is selected
 --]]
 
