@@ -5,13 +5,13 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 1.46
+ * Version: 1.47
 --]]
  
 --[[
  * Changelog:
- * v1.46 (2017-07-13)
-  + VCA autonaming uses number of VCAs instead of group number
+ * v1.47 (2017-07-13)
+  + add user setting for warning if no track is selected
 --]]
 
 -- USER SETTING
@@ -19,6 +19,7 @@
 popup = 0    -- (set to 0 for no popup, set to 1 for popup asking to name the VCA group)
 mute_solo = 1 -- (set to 0 to disable mute and solo flags)
 position = 1 -- (set VCA Master track position 1 - TOP , 0 - Bottom)
+warning = 0  -- (gives user a warning popup to select tracks if no tracks are selected, 0 OFF , 1 ON)
 ---------------
 --------------------------------------------------------------------------------------
 -- GROUP FLAGS
@@ -111,6 +112,9 @@ end
 local function set_slaves()
   local free_group
   local cnt_sel = reaper.CountSelectedTracks(0)
+  if warning == 1 and cnt_sel == 0 then
+    reaper.ShowMessageBox("Please select tracks to create VCA", "WARNING", 0)
+  end
   -- IF UNUSED GROUP TABLE IS EMPTY DO NOT CREATE NEW GROUP
   if #unused ~= 0 and cnt_sel > 0 then 
     -- ADD SELECTED TRACKS TO TABLE (FOR MAKING THEM VCA SLAVES)
