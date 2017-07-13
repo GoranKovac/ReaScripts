@@ -7,12 +7,12 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: SWS
- * Version: 1.0
+ * Version: 1.01
 --]]
  
 --[[
  * Changelog:
- * v1.0 (2017-07-10)
+ * v1.01 (2017-07-13)
 --]]
 
 local edit_cursor_pos = reaper.GetCursorPosition()
