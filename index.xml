@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="101ed6a82b7e56ae9486fde6d3f30f5049f2cffb" name="Sexan_Scripts">
+<index version="1" commit="cdb750099473a1c03040a4aa643ef5583211b179" name="Sexan_Scripts">
   <category name="Items">
     <reapack name="Sexan_SmartSplit items crossfade left or right.lua" type="script" desc="SmartSplit items crossfade left or right">
       <version name="1.01" author="SeXan" time="2017-07-13T12:48:21Z">
@@ -23,10 +23,14 @@
     </reapack>
   </category>
   <category name="Track">
-    <reapack name="Sexan_Create VCA master from selection.lua" type="script" desc="Create VCA master from selection.lua">
+    <reapack name="Sexan_Create VCA master from selection.lua" type="script" desc="Create VCA Master from selection.lua">
       <version name="1.451" author="SeXan" time="2017-07-13T12:50:30Z">
         <changelog><![CDATA[+ Minor error fix]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/58e35c6476a6eaf8b9b240006500e5b5668068bc/Track/Sexan_Create%20VCA%20master%20from%20selection.lua</source>
+      </version>
+      <version name="1.46" author="SeXan" time="2017-07-13T13:02:47Z">
+        <changelog><![CDATA[+ VCA autonaming uses number of VCAs instead of group number]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/cdb750099473a1c03040a4aa643ef5583211b179/Track/Sexan_Create%20VCA%20master%20from%20selection.lua</source>
       </version>
     </reapack>
     <reapack name="Sexan_Folder record monitor arming childs.lua" type="script" desc="Folder record monitor arming childs">
