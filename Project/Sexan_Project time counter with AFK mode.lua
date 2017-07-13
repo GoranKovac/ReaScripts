@@ -1,5 +1,5 @@
 --[[
- * ReaScript Name: Project Time Counter with AFK mode
+ * ReaScript Name: Project time counter with AFK mode
  * Author: SeXan
  * Licence: GPL v3
  * REAPER: 5.0
