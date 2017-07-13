@@ -1,75 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="15e32cf4e0d41249236b3d6b4af8ce161f5a1888" name="Sexan_Scripts">
+<index version="1" commit="101ed6a82b7e56ae9486fde6d3f30f5049f2cffb" name="Sexan_Scripts">
   <category name="Items">
-    <reapack name="Sexan_SmartSplit_Items_Crossfade_Left_or_Right.lua" type="script" desc="Smart Split Items Crossfade Left or Right">
-      <version name="1.0" author="SeXan" time="2017-07-10T17:47:59Z">
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/e0bfbaf95336a888fe12afac79dbce5039fe2d5c/Items/Sexan_SmartSplit_Items_Crossfade_Left_or_Right.lua</source>
+    <reapack name="Sexan_SmartSplit items crossfade left or right.lua" type="script" desc="SmartSplit items crossfade left or right">
+      <version name="1.01" author="SeXan" time="2017-07-13T12:48:21Z">
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/9dc010345cce2e7f660ea4a3bb1805339636d72b/Items/Sexan_SmartSplit%20items%20crossfade%20left%20or%20right.lua</source>
       </version>
     </reapack>
   </category>
   <category name="Other">
-    <reapack name="Sexan_Remove_in_order_Time_selection_Items_Tracks.lua" type="script" desc="Remove in Order Time Selection,Items,Tracks">
-      <version name="1.0" author="SeXan" time="2017-07-10T21:54:32Z">
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/394d9b1609a474de0497249b0bcf3bcb88848d0b/Other/Sexan_Remove_in_order_Time_selection_Items_Tracks.lua</source>
+    <reapack name="Sexan_Remove in order time selection items tracks.lua" type="script" desc="Remove in order time selection,items,tracks">
+      <version name="1.01" author="SeXan" time="2017-07-13T12:49:05Z">
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/e46e203d5b205689742ae26940d8ce4b7addc5de/Other/Sexan_Remove%20in%20order%20time%20selection%20items%20tracks.lua</source>
       </version>
     </reapack>
   </category>
   <category name="Project">
-    <reapack name="Sexan_Project_Time_Counter_with_AFK_mode.lua" type="script" desc="Project Time Counter with AFK mode">
-      <version name="1.3" author="SeXan" time="2017-07-10T17:47:24Z">
+    <reapack name="Sexan_Project time counter with AFK mode.lua" type="script" desc="Project time counter with AFK mode">
+      <version name="1.31" author="SeXan" time="2017-07-13T12:49:54Z">
         <changelog><![CDATA[+ Simplified the code]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/bea6aa77a98658f3dad6831aa03b9095bc58caec/Project/Sexan_Project_Time_Counter_with_AFK_mode.lua</source>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/530d66124dfb322f9f4a5b9dbd3bdd3738677207/Project/Sexan_Project%20time%20counter%20with%20AFK%20mode.lua</source>
       </version>
     </reapack>
   </category>
   <category name="Track">
-    <reapack name="Sexan_Create_VCA_Master_from_selection.lua" type="script" desc="Create VCA Master from selection.lua">
-      <version name="1.3" author="SeXan" time="2017-07-12T09:25:22Z">
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/efb0b27c3d624ae959483fcff65d5157b6c513f7/Track/Sexan_Create_VCA_Master_from_selection.lua</source>
-      </version>
-      <version name="0.9" author="SeXan" time="2017-07-12T09:39:37Z">
-        <changelog><![CDATA[+ Initial release]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/d7c8e51f6b3c49d16562c402d90d1e3cfa346132/Track/Sexan_Create_VCA_Master_from_selection.lua</source>
-      </version>
-      <version name="1.1" author="SeXan" time="2017-07-12T09:59:22Z">
-        <changelog><![CDATA[+ Added settings to enable disable Manual naming, Mute and Solo Flags]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/305cc98f3bdcb468eb43bb48b1f2feac8a3cd002/Track/Sexan_Create_VCA_Master_from_selection.lua</source>
-      </version>
-      <version name="1.4" author="SeXan" time="2017-07-12T10:00:49Z">
-        <changelog><![CDATA[+ Added settings to enable disable Manual naming, Mute and Solo Flags]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/14f82b7552e40db30324d0f397374b06b14a0d71/Track/Sexan_Create_VCA_Master_from_selection.lua</source>
-      </version>
-      <version name="1.41" author="SeXan" time="2017-07-12T12:03:41Z">
-        <changelog><![CDATA[+ Added settings for master VCA position (TOP of project,BOTTOM of project)]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/582601c5996a7f8db0636127db59237689544b31/Track/Sexan_Create_VCA_Master_from_selection.lua</source>
-      </version>
-      <version name="1.42" author="SeXan" time="2017-07-12T13:41:14Z">
-        <changelog><![CDATA[+ Top created MASTER VCA-s better order (1,2,3.... insetead of ...3,2,1)]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/ef22faa02447e72645f1d9751acfd57769af1029/Track/Sexan_Create_VCA_Master_from_selection.lua</source>
-      </version>
-      <version name="1.43" author="SeXan" time="2017-07-12T19:55:40Z">
-        <changelog><![CDATA[+ Scan for all flags to make sure VCAs go to EMPTY group]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/43a0ac8eaa2b9891118683363ce182409101fc0c/Track/Sexan_Create_VCA_Master_from_selection.lua</source>
-      </version>
-      <version name="1.44" author="SeXan" time="2017-07-12T20:34:26Z">
-        <changelog><![CDATA[+ VCAs start from group 32 (in reverse order) for easier organization]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/c218637a12f155be827414d86dc460fe45deaa88/Track/Sexan_Create_VCA_Master_from_selection.lua</source>
-      </version>
-      <version name="1.45" author="SeXan" time="2017-07-12T21:06:14Z">
+    <reapack name="Sexan_Create VCA master from selection.lua" type="script" desc="Create VCA master from selection.lua">
+      <version name="1.451" author="SeXan" time="2017-07-13T12:50:30Z">
         <changelog><![CDATA[+ Minor error fix]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/15e32cf4e0d41249236b3d6b4af8ce161f5a1888/Track/Sexan_Create_VCA_Master_from_selection.lua</source>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/58e35c6476a6eaf8b9b240006500e5b5668068bc/Track/Sexan_Create%20VCA%20master%20from%20selection.lua</source>
       </version>
     </reapack>
-    <reapack name="Sexan_Folder Record_Monitor Arming Childs.lua" type="script" desc="Folder Record_Monitor Arming Childs">
-      <version name="1.0" author="SPK77, SeXan" time="2017-07-10T17:38:28Z">
+    <reapack name="Sexan_Folder record monitor arming childs.lua" type="script" desc="Folder record monitor arming childs">
+      <version name="1.01" author="SPK77, SeXan" time="2017-07-13T12:51:03Z">
         <changelog><![CDATA[+ Initial Release]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/0bf552dd29797484fb2cdd072f420999cba0dffa/Track/Sexan_Folder%20Record_Monitor%20Arming%20Childs.lua</source>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/ae31f5a8c70237a3cb6ac96a94188c14f6d21d42/Track/Sexan_Folder%20record%20monitor%20arming%20childs.lua</source>
       </version>
     </reapack>
-    <reapack name="Sexan_Remove_Selected_VCA_Master_And_Its_Slaves_With_All_Flags.lua" type="script" desc="Remove Selected VCA Master And Its Slaves With All Flags.lua">
-      <version name="1.01" author="SeXan" time="2017-07-12T10:53:13Z">
+    <reapack name="Sexan_Remove selected VCA master and its slaves with all flags.lua" type="script" desc="Remove selected VCA master and its slaves with all flags.lua">
+      <version name="1.02" author="SeXan" time="2017-07-13T12:54:19Z">
         <changelog><![CDATA[+ Better Script name]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/880e889bee7a0d8597d0995ca195a4e7a9f29c43/Track/Sexan_Remove_Selected_VCA_Master_And_Its_Slaves_With_All_Flags.lua</source>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/101ed6a82b7e56ae9486fde6d3f30f5049f2cffb/Track/Sexan_Remove%20selected%20VCA%20master%20and%20its%20slaves%20with%20all%20flags.lua</source>
       </version>
     </reapack>
   </category>
