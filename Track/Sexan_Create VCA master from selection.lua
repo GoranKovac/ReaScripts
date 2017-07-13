@@ -1,5 +1,5 @@
 --[[
- * ReaScript Name: Create VCA Master from selection.lua
+ * ReaScript Name: Create VCA master from selection.lua
  * Discription: Script creates Master VCA for selected tracks and makes them VCA Slave.Also Mute and SOLO flags are added
  * Author: SeXan
  * Licence: GPL v3
