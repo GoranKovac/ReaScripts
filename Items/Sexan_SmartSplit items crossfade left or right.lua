@@ -1,5 +1,5 @@
 --[[
- * ReaScript Name: Smart Split Items Crossfade Left or Right
+ * ReaScript Name: SmartSplit items crossfade left or right
  * Description: This is two action split script, normal split and time selection split.If time selection split already
  *              exists then you can freely split anywhere while time selection is still active.
  *              Normal split creates crossfade on the side where the mouse cursor is depending on edit cursor
