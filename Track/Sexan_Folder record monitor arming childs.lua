@@ -1,5 +1,5 @@
 --[[
- * ReaScript Name: Folder Record_Monitor Arming Childs
+ * ReaScript Name: Folder record monitor arming childs
  * Author: SPK77, SeXan
  * Licence: GPL v3
  * REAPER: 5.0
