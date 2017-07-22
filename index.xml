@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="d7760fa7833d2507f72a83a3ce4d2e4a6d869854" name="Sexan_Scripts">
+<index version="1" commit="510b4aa983747173b01270699c56cdc1cea73eda" name="Sexan_Scripts">
   <category name="Items">
     <reapack name="Sexan_SmartSplit items crossfade left or right.lua" type="script" desc="SmartSplit items crossfade left or right">
       <version name="1.01" author="SeXan" time="2017-07-13T12:48:21Z">
@@ -49,6 +49,12 @@
       <version name="1.01" author="SPK77, SeXan" time="2017-07-13T12:51:03Z">
         <changelog><![CDATA[+ Initial Release]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/ae31f5a8c70237a3cb6ac96a94188c14f6d21d42/Track/Sexan_Folder%20record%20monitor%20arming%20childs.lua</source>
+      </version>
+    </reapack>
+    <reapack name="Sexan_Highlight selected track sends.lua" type="script" desc="Highlight selected track sends.lua">
+      <version name="1.0" author="SeXan" time="2017-07-22T11:12:55Z">
+        <changelog><![CDATA[+ Innitial release]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/f6de6d0844e3cb064d66762ec35a97ee6c4e801b/Track/Sexan_Highlight%20selected%20track%20sends.lua</source>
       </version>
     </reapack>
     <reapack name="Sexan_Remove selected VCA master and its slaves with all flags.lua" type="script" desc="Remove selected VCA master and its slaves with all flags.lua">
