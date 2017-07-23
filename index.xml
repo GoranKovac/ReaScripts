@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="5e66a175722d4e128e1b88dd61f75e105bff863b" name="Sexan_Scripts">
+<index version="1" commit="d63e3c72f3465d141c53588fb2ae9e9a73ac9de5" name="Sexan_Scripts">
   <category name="Items">
+    <reapack name="Sexan_select all other items on track.lua" type="script" desc="Sexan_select all other items on track.lua">
+      <version name="1.1" author="SeXan" time="2017-07-23T20:09:46Z">
+        <changelog><![CDATA[+ Initial release]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/6a3c64a9d772059cbae28d173df4d0559405b430/Items/Sexan_select%20all%20other%20items%20on%20track.lua</source>
+      </version>
+      <version name="1.0" author="SeXan" time="2017-07-23T20:09:58Z">
+        <changelog><![CDATA[+ Initial release]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/d63e3c72f3465d141c53588fb2ae9e9a73ac9de5/Items/Sexan_select%20all%20other%20items%20on%20track.lua</source>
+      </version>
+    </reapack>
     <reapack name="Sexan_SmartSplit items crossfade left or right.lua" type="script" desc="SmartSplit items crossfade left or right">
       <version name="1.01" author="SeXan" time="2017-07-13T12:48:21Z">
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/9dc010345cce2e7f660ea4a3bb1805339636d72b/Items/Sexan_SmartSplit%20items%20crossfade%20left%20or%20right.lua</source>
