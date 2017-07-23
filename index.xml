@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="33651c6f6b03a0ce3c3ee9c1ee8baf164973bbd3" name="Sexan_Scripts">
+<index version="1" commit="20246c998d2cfc4b8b6bc07c428f51e6aefb6ee9" name="Sexan_Scripts">
   <category name="Items">
     <reapack name="Sexan_select all other items on track.lua" type="script" desc="Select all other items on track.lua">
       <version name="1.1" author="SeXan" time="2017-07-23T20:09:46Z">
@@ -17,6 +17,10 @@
       <version name="1.12" author="SeXan" time="2017-07-23T20:20:58Z">
         <changelog><![CDATA[+ fixed error]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/33651c6f6b03a0ce3c3ee9c1ee8baf164973bbd3/Items/Sexan_select%20all%20other%20items%20on%20track.lua</source>
+      </version>
+      <version name="1.13" author="SeXan" time="2017-07-23T20:34:53Z">
+        <changelog><![CDATA[+ wrong api used]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/20246c998d2cfc4b8b6bc07c428f51e6aefb6ee9/Items/Sexan_select%20all%20other%20items%20on%20track.lua</source>
       </version>
     </reapack>
     <reapack name="Sexan_SmartSplit items crossfade left or right.lua" type="script" desc="SmartSplit items crossfade left or right">
