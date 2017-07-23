@@ -1,5 +1,5 @@
 --[[
- * ReaScript Name: Sexan_select all other items on track.lua
+ * ReaScript Name: Select all other items on track.lua
  * Discription: Script select all items on the track except selected one
  * Author: SeXan
  * Licence: GPL v3
@@ -10,7 +10,7 @@
  
 --[[
  * Changelog:
- * v1.0 (2017-07-23)
+ * v1.1 (2017-07-23)
   + Initial release
 --]]
 
