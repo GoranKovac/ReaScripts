@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="d63e3c72f3465d141c53588fb2ae9e9a73ac9de5" name="Sexan_Scripts">
+<index version="1" commit="afd92b9c8f22aa1a75cf7c16fa9c4e286c9c2df4" name="Sexan_Scripts">
   <category name="Items">
-    <reapack name="Sexan_select all other items on track.lua" type="script" desc="Sexan_select all other items on track.lua">
+    <reapack name="Sexan_select all other items on track.lua" type="script" desc="Select all other items on track.lua">
       <version name="1.1" author="SeXan" time="2017-07-23T20:09:46Z">
         <changelog><![CDATA[+ Initial release]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/6a3c64a9d772059cbae28d173df4d0559405b430/Items/Sexan_select%20all%20other%20items%20on%20track.lua</source>
