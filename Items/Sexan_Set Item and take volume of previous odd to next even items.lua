@@ -5,20 +5,21 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 1.1
+ * Version: 1.2
 --]]
  
 --[[
  * Changelog:
- * v1.1 (2017-07-25)
-  + Added Envelope and always run on track 3
+ * v1.2 (2017-07-25)
+  + Unselect items
 --]]
 
 -- Aquired from SPK77 Script - Copy take volume envelope from selected take to other takes in same group
 function get_and_show_take_envelope(take, envelope_name)
   local env = reaper.GetTakeEnvelopeByName(take, envelope_name)
+  
   if env == nil then
-    local item = reaper.GetMediaItemTake_Item(take)
+    item = reaper.GetMediaItemTake_Item(take)
     local sel = reaper.IsMediaItemSelected(item)
     if not sel then
       reaper.SetMediaItemSelected(item, true)
@@ -33,7 +34,7 @@ function get_and_show_take_envelope(take, envelope_name)
     end
     env = reaper.GetTakeEnvelopeByName(take, envelope_name)
   end
-  return env
+  return env,item
 end
 
 function Main() 
@@ -43,7 +44,8 @@ function Main()
   if not tr then return 0 end
   
   local cnt_items = reaper.CountTrackMediaItems( tr )  
-    
+  reaper.PreventUIRefresh(1)
+  
     for i = 1, cnt_items, 2 do
       -- ODD
       local o_item =  reaper.GetTrackMediaItem( tr, i-1 )
@@ -62,11 +64,16 @@ function Main()
       
       local e_take = reaper.GetActiveTake(e_item)      
       local e_take_v = reaper.SetMediaItemTakeInfo_Value( e_take, "D_VOL", o_take_v )
-      local env = get_and_show_take_envelope(e_take, "Volume")
+      local env,item = get_and_show_take_envelope(e_take, "Volume")
       local set_env = reaper.SetEnvelopeStateChunk(env, env_chunk, true)
-            
+        
+        if item then
+          -- UNSELECT ITEMS
+          reaper.SetMediaItemSelected(item, false)
+        end 
+           
     end
-    
+  reaper.PreventUIRefresh(0)  
   reaper.UpdateArrange()
 end
 Main()
