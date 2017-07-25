@@ -5,19 +5,20 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 1.2
+ * Version: 1.3
 --]]
  
 --[[
  * Changelog:
- * v1.2 (2017-07-25)
-  + Unselect items
+ * v1.3 (2017-07-25)
+  + Small modifications
 --]]
 
 -- Aquired from SPK77 Script - Copy take volume envelope from selected take to other takes in same group
-function get_and_show_take_envelope(take, envelope_name)
+local function get_and_show_take_envelope(take, envelope_name)
   local env = reaper.GetTakeEnvelopeByName(take, envelope_name)
-  
+  local item 
+ 
   if env == nil then
     item = reaper.GetMediaItemTake_Item(take)
     local sel = reaper.IsMediaItemSelected(item)
@@ -37,7 +38,7 @@ function get_and_show_take_envelope(take, envelope_name)
   return env,item
 end
 
-function Main() 
+local function Main() 
   -- ALWAYS USE TRACK 3 
   local tr =  reaper.GetTrack(0,2)
   
