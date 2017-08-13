@@ -5,15 +5,16 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 1.1
+ * Version: 1.2
 --]]
  
 --[[
  * Changelog:
- * v1.1 (2017-08-13)
-  + Initial release
+ * v1.2 (2017-08-13)
+  + Code change
 --]]
-
+---------------------------------------
+local dock_pos = 0  -- use one of following : 0, 1, 257, 513, 1027
 ---------------------------------------
 local afk = 60 -- set afk treshold HERE
 ---------------------------------------
@@ -75,14 +76,14 @@ function main()
     count_time()
   end
   
-  local days,p_days = math.floor(timer/(60*60*24)),math.floor(timer2/(60*60*24))
-  local hours, w_hours, p_hours = math.floor(timer/(60*60)%24), math.floor(w_timer/(60*60)%24), math.floor(timer2/(60*60)%24)
-  local minutes, w_minutes, p_minutes = math.floor(timer/60%60), math.floor(w_timer/60%60), math.floor(timer2/60%60)
-  local seconds, w_seconds, p_seconds = math.floor(timer%60), math.floor(w_timer%60), math.floor(timer2%60)
+  local days,p_days = math.floor(timer/(60*60*24)), math.floor(timer2/(60*60*24))
+  local hours, p_hours = math.floor(timer/(60*60)%24), math.floor(timer2/(60*60)%24)
+  local minutes, p_minutes = math.floor(timer/60%60), math.floor(timer2/60%60)
+  local seconds, p_seconds = math.floor(timer%60), math.floor(timer2%60)
       
   local format = string.format("%02d:%02d:%02d:%02d",days,hours,minutes,seconds)
   local p_format = string.format("%02d:%02d:%02d:%02d",p_days,p_hours,p_minutes,p_seconds)
-  local w_format = string.format("%02d:%02d:%02d",w_hours,w_minutes,w_seconds)
+  local w_format = os.date("%X")
  
   gfx.x, gfx.y = 2, 8
   gfx.printf(w_format)
@@ -100,13 +101,15 @@ function main()
 end
 
 function store_settings()
-  reaper.SetExtState("timer", "dock", gfx.dock(-1), true)
+  dock_state = gfx.dock(-1)
+  reaper.SetExtState("timer", "dock", dock_state, true)
   store_time()
 end
 
 function init()
-  local dock_pos = reaper.GetExtState("time", "dock")
-  dock_pos = dock_pos or 513
+  --dock_pos = reaper.GetExtState("time", "dock")
+  --test = reaper.HasExtState("time", "dock")
+  --dock_pos = dock_pos or 513
   
   gfx.init("", 120, 100, dock_pos)
   gfx.setfont(1,"Arial", 24)
