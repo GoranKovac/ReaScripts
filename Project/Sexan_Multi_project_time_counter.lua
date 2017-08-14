@@ -5,13 +5,13 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 1.41
+ * Version: 1.42
 --]]
  
 --[[
  * Changelog:
- * v1.41 (2017-08-14)
-  + Store dock position, code improvement
+ * v1.42 (2017-08-14)
+  + simplifed code
 --]]
 ---------------------------------------
 local afk = 60 -- set afk treshold HERE
@@ -33,28 +33,28 @@ local function restore_time() -- restore time values from project
   local ret, load_timer = reaper.GetProjExtState(0, "timer", "timer") -- restore seconds
   local ret, load_timer2 = reaper.GetProjExtState(0, "timer", "timer2") -- restore seconds
     if load_timer ~= "" and load_timer2 ~= "" then
-      timer = load_timer
-      timer2 = load_timer2
+      timer = tonumber(load_timer)
+      timer2 = tonumber(load_timer2)
     else
       timer = 0
       timer2 = 0
     end
 end
 
-local function proj_time()
+local function count_time()
+  if afk < threshold then
+    if os.time() - last_action_time > 0 then -- interval of 1 second      
+      afk = afk + 1
+      timer = timer + 1
+      last_action_time = os.time() 
+    end
+  end
+  
   if os.time() - last_time > 0 then
     timer2 = timer2 + 1
     last_time = os.time()    
   end
-  store_time()
-end
-
-local function count_time()
-  if os.time() - last_action_time > 0 then -- interval of 1 second      
-    afk = afk + 1
-    timer = timer + 1
-    last_action_time = os.time() 
-  end  
+    
   store_time()
 end
 
@@ -68,19 +68,15 @@ local function time(x)
   return time
 end
 
-local function main()  
-  restore_time()
-  proj_time()
-  
+local function main() 
   local proj_change_count = reaper.GetProjectStateChangeCount(0)
+  
   if proj_change_count > last_proj_change_count or reaper.GetPlayState() ~= 0 then
     afk = 0
     last_proj_change_count = proj_change_count
-  end
- 
-  if afk < threshold then
-    count_time()
-  end  
+  end 
+  
+  count_time()
   
   local project_time, afk_time = time(timer2), time(timer)
   local w_time = os.date("%X")
@@ -108,8 +104,7 @@ local function store_settings()
 end
 
 local function init()
-  dock_pos = dock_pos or 513
-  
+  dock_pos = dock_pos or 513  
   gfx.init("", 155, 100, dock_pos)
   gfx.setfont(1,"Arial", 24)
   gfx.clear = 3355443 
