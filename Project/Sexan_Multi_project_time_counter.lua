@@ -5,12 +5,12 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 1.4
+ * Version: 1.41
 --]]
  
 --[[
  * Changelog:
- * v1.4 (2017-08-14)
+ * v1.41 (2017-08-14)
   + Store dock position, code improvement
 --]]
 ---------------------------------------
@@ -86,7 +86,7 @@ local function main()
   local w_time = os.date("%X")
   
   gfx.x, gfx.y = 2, 8
-  gfx.printf("       ")
+  gfx.printf("     ")
   gfx.printf(w_time)
   gfx.printf(" - T")
   gfx.x, gfx.y = 2, 38
