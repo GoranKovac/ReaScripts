@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="10ca0a43a9782cd897546590860b500288a16c95" name="Sexan_Scripts">
+<index version="1" commit="0840d751308128b96d034ccb017e1af87e919c92" name="Sexan_Scripts">
   <category name="Items">
     <reapack name="Sexan_select all other items on track.lua" type="script" desc="Select all other items on track.lua">
       <version name="1.1" author="SeXan" time="2017-07-23T20:09:46Z">
@@ -67,6 +67,10 @@
       <version name="1.4" author="SeXan" time="2017-08-14T07:08:46Z">
         <changelog><![CDATA[+ Store dock position, code improvement]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/584101a12312625352984585de560029d40d97cc/Project/Sexan_Multi_project_time_counter.lua</source>
+      </version>
+      <version name="1.41" author="SeXan" time="2017-08-14T09:28:25Z">
+        <changelog><![CDATA[+ Store dock position, code improvement]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/0840d751308128b96d034ccb017e1af87e919c92/Project/Sexan_Multi_project_time_counter.lua</source>
       </version>
     </reapack>
     <reapack name="Sexan_Project time counter with AFK mode.lua" type="script" desc="Project Time Counter with AFK mode">
