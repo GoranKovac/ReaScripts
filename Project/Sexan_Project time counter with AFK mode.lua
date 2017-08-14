@@ -4,13 +4,13 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 1.35
+ * Version: 1.36
 --]]
  
 --[[
  * Changelog:
- * v1.35 (2017-08-14)
-  + Fixed dock storing
+ * v1.36 (2017-08-14)
+  + code improvement
 --]]
 
 ---------------------------------------
@@ -29,17 +29,19 @@ end
 function restore_time() -- restore time values from project
   local ret, load_timer = reaper.GetProjExtState(0, "timer", "timer") -- restore seconds
     if load_timer ~= "" then
-      timer = load_timer
+      timer =  tonumber(load_timer)
     else
       timer = 0
     end
 end
 
 function count_time()
-  if os.time() - last_action_time > 0 then -- interval of 1 second      
-    afk = afk + 1
-    timer = timer + 1      
-    last_action_time = os.time() 
+  if afk < threshold then
+    if os.time() - last_action_time > 0 then -- interval of 1 second      
+      afk = afk + 1
+      timer = timer + 1      
+      last_action_time = os.time() 
+    end
   end  
   store_time()
 end
@@ -54,18 +56,15 @@ function time()
   return format
 end
  
-function main()
-  restore_time()
-  
+function main()  
   local proj_change_count = reaper.GetProjectStateChangeCount(0)
+  
   if proj_change_count > last_proj_change_count or reaper.GetPlayState() ~= 0 then
     afk = 0
     last_proj_change_count = proj_change_count
   end
- 
-  if afk < threshold then
-    count_time()
-  end
+  
+  count_time()
   
   gfx.x, gfx.y = 2, 15
   gfx.printf(time())
