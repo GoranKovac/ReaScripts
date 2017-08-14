@@ -5,12 +5,12 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 1.42
+ * Version: 1.43
 --]]
  
 --[[
  * Changelog:
- * v1.42 (2017-08-14)
+ * v1.43 (2017-08-14)
   + simplifed code
 --]]
 ---------------------------------------
@@ -20,6 +20,7 @@ local threshold = afk
 local last_time = 0
 local last_action_time = 0
 local last_proj_change_count = reaper.GetProjectStateChangeCount(0)
+local last_proj, last_proj_name =  reaper.EnumProjects( -1 , 0) 
 local dock_pos = reaper.GetExtState("timer", "dock")
 
 local timer,timer2
@@ -68,8 +69,14 @@ local function time(x)
   return time
 end
 
-local function main() 
+local function main()
+  local proj, proj_name =  reaper.EnumProjects( -1 , 0) 
   local proj_change_count = reaper.GetProjectStateChangeCount(0)
+  
+  if last_proj ~= proj then
+    restore_time()
+    last_proj = proj
+  end
   
   if proj_change_count > last_proj_change_count or reaper.GetPlayState() ~= 0 then
     afk = 0
