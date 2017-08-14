@@ -5,16 +5,14 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 1.2
+ * Version: 1.4
 --]]
  
 --[[
  * Changelog:
- * v1.2 (2017-08-13)
-  + Code change
+ * v1.4 (2017-08-14)
+  + Store dock position, code improvement
 --]]
----------------------------------------
-local dock_pos = 0  -- use one of following : 0, 1, 257, 513, 1027
 ---------------------------------------
 local afk = 60 -- set afk treshold HERE
 ---------------------------------------
@@ -22,37 +20,36 @@ local threshold = afk
 local last_time = 0
 local last_action_time = 0
 local last_proj_change_count = reaper.GetProjectStateChangeCount(0)
+local dock_pos = reaper.GetExtState("timer", "dock")
 
-function store_time() -- store time values to project
+local timer,timer2
+
+local function store_time() -- store time values to project
   reaper.SetProjExtState(0, "timer", "timer", timer) -- store seconds
   reaper.SetProjExtState(0, "timer", "timer2", timer2) -- store seconds
 end
 
-function restore_time() -- restore time values from project
+local function restore_time() -- restore time values from project
   local ret, load_timer = reaper.GetProjExtState(0, "timer", "timer") -- restore seconds
   local ret, load_timer2 = reaper.GetProjExtState(0, "timer", "timer2") -- restore seconds
-    if load_timer ~= "" then
+    if load_timer ~= "" and load_timer2 ~= "" then
       timer = load_timer
-    else
-      timer = 0
-    end
-    
-    if load_timer2 ~= "" then
       timer2 = load_timer2
     else
+      timer = 0
       timer2 = 0
     end
-    
-end
-function proj_time()
-  if os.time() - last_time > 0 then
-    timer2 = timer2 + 1
-    last_time = os.time()
-    store_time()
-  end
 end
 
-function count_time()
+local function proj_time()
+  if os.time() - last_time > 0 then
+    timer2 = timer2 + 1
+    last_time = os.time()    
+  end
+  store_time()
+end
+
+local function count_time()
   if os.time() - last_action_time > 0 then -- interval of 1 second      
     afk = afk + 1
     timer = timer + 1
@@ -61,10 +58,19 @@ function count_time()
   store_time()
 end
 
-function main()
+local function time(x)
+  local days = math.floor(x/(60*60*24))
+  local hours  = math.floor(x/(60*60)%24)
+  local minutes = math.floor(x/60%60)
+  local seconds = math.floor(x%60)
+      
+  local time = string.format("%02d:%02d:%02d:%02d",days,hours,minutes,seconds)
+  return time
+end
+
+local function main()  
   restore_time()
   proj_time()
-  local w_timer = os.time()
   
   local proj_change_count = reaper.GetProjectStateChangeCount(0)
   if proj_change_count > last_proj_change_count or reaper.GetPlayState() ~= 0 then
@@ -74,48 +80,41 @@ function main()
  
   if afk < threshold then
     count_time()
-  end
+  end  
   
-  local days,p_days = math.floor(timer/(60*60*24)), math.floor(timer2/(60*60*24))
-  local hours, p_hours = math.floor(timer/(60*60)%24), math.floor(timer2/(60*60)%24)
-  local minutes, p_minutes = math.floor(timer/60%60), math.floor(timer2/60%60)
-  local seconds, p_seconds = math.floor(timer%60), math.floor(timer2%60)
-      
-  local format = string.format("%02d:%02d:%02d:%02d",days,hours,minutes,seconds)
-  local p_format = string.format("%02d:%02d:%02d:%02d",p_days,p_hours,p_minutes,p_seconds)
-  local w_format = os.date("%X")
- 
+  local project_time, afk_time = time(timer2), time(timer)
+  local w_time = os.date("%X")
+  
   gfx.x, gfx.y = 2, 8
-  gfx.printf(w_format)
+  gfx.printf("       ")
+  gfx.printf(w_time)
+  gfx.printf(" - T")
   gfx.x, gfx.y = 2, 38
-  gfx.printf(p_format)
+  gfx.printf(project_time)
+  gfx.printf(" - P")
   gfx.x, gfx.y = 2, 68
-  gfx.printf(format)
+  gfx.printf(afk_time)
+  gfx.printf(" - A")
   gfx.update()
 
   if gfx.getchar() > -1 then  -- defer while gfx window is open
      reaper.defer(main)
-  else
-    
   end
 end
 
-function store_settings()
-  dock_state = gfx.dock(-1)
-  reaper.SetExtState("timer", "dock", dock_state, true)
+local function store_settings()
+  reaper.SetExtState("timer", "dock", gfx.dock(-1), true)
   store_time()
 end
 
-function init()
-  --dock_pos = reaper.GetExtState("time", "dock")
-  --test = reaper.HasExtState("time", "dock")
-  --dock_pos = dock_pos or 513
+local function init()
+  dock_pos = dock_pos or 513
   
-  gfx.init("", 120, 100, dock_pos)
+  gfx.init("", 155, 100, dock_pos)
   gfx.setfont(1,"Arial", 24)
   gfx.clear = 3355443 
   main()   
 end
-restore_time() -- call function restore_time() to restore time values from project
+restore_time()
 init()
 reaper.atexit(store_settings)
