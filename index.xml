@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="a3e67329754a213f9f4b09efb933283986696fdb" name="Sexan_Scripts">
+<index version="1" commit="fde2b0f51281accbca0002061a107fb3ecc32864" name="Sexan_Scripts">
   <category name="Items">
     <reapack name="Sexan_select all other items on track.lua" type="script" desc="Select all other items on track.lua">
       <version name="1.1" author="SeXan" time="2017-07-23T20:09:46Z">
@@ -76,6 +76,14 @@
         <changelog><![CDATA[+ simplifed code]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/765fa0e6eb4303d6de8858d1939aca1b59beb672/Project/Sexan_Multi_project_time_counter.lua</source>
       </version>
+      <version name="1.43" author="SeXan" time="2017-08-14T09:55:02Z">
+        <changelog><![CDATA[+ simplifed code]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/48bf22cea52e2d3b1afb8b98c23e103496989746/Project/Sexan_Multi_project_time_counter.lua</source>
+      </version>
+      <version name="1.44" author="SeXan" time="2017-08-14T09:58:57Z">
+        <changelog><![CDATA[+ simplifed code]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/8bb0a0ef6b5f5b38c8bd09bd977f8c0021e1ca7c/Project/Sexan_Multi_project_time_counter.lua</source>
+      </version>
     </reapack>
     <reapack name="Sexan_Project time counter with AFK mode.lua" type="script" desc="Project Time Counter with AFK mode">
       <version name="1.31" author="SeXan" time="2017-07-13T12:49:54Z">
@@ -89,6 +97,14 @@
       <version name="1.36" author="SeXan" time="2017-08-14T09:47:56Z">
         <changelog><![CDATA[+ code improvement]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/a3e67329754a213f9f4b09efb933283986696fdb/Project/Sexan_Project%20time%20counter%20with%20AFK%20mode.lua</source>
+      </version>
+      <version name="1.37" author="SeXan" time="2017-08-14T09:57:02Z">
+        <changelog><![CDATA[+ code improvement]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/f8b2f35ac33a1178599b92c11eb357ba47ee11dd/Project/Sexan_Project%20time%20counter%20with%20AFK%20mode.lua</source>
+      </version>
+      <version name="1.38" author="SeXan" time="2017-08-14T09:59:12Z">
+        <changelog><![CDATA[+ code improvement]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/fde2b0f51281accbca0002061a107fb3ecc32864/Project/Sexan_Project%20time%20counter%20with%20AFK%20mode.lua</source>
       </version>
     </reapack>
   </category>
