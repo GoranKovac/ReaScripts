@@ -1,16 +1,16 @@
 --[[
- * ReaScript Name: Project time counter with AFK mode
+ * ReaScript Name: Project Time Counter with AFK mode
  * Author: SeXan
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 1.31
+ * Version: 1.35
 --]]
  
 --[[
  * Changelog:
- * v1.31 (2017-07-13)
-  + Simplified the code
+ * v1.35 (2017-08-14)
+  + Fixed dock storing
 --]]
 
 ---------------------------------------
@@ -20,6 +20,7 @@ local threshold = afk
 
 local last_action_time = 0
 local last_proj_change_count = reaper.GetProjectStateChangeCount(0)
+local dock_pos = reaper.GetExtState("timer", "dock")
 
 function store_time() -- store time values to project
   reaper.SetProjExtState(0, "timer", "timer", timer) -- store seconds
@@ -42,6 +43,16 @@ function count_time()
   end  
   store_time()
 end
+
+function time()
+  local days = math.floor(timer/(60*60*24))
+  local hours = math.floor(timer/(60*60)%24)
+  local minutes = math.floor(timer/60%60)
+  local seconds = math.floor(timer%60)
+      
+  local format = string.format("%02d:%02d:%02d:%02d",days,hours,minutes,seconds)
+  return format
+end
  
 function main()
   restore_time()
@@ -56,15 +67,8 @@ function main()
     count_time()
   end
   
-  local days = math.floor(timer/(60*60*24))
-  local hours = math.floor(timer/(60*60)%24)
-  local minutes = math.floor(timer/60%60)
-  local seconds = math.floor(timer%60)
-      
-  local format = string.format("%02d:%02d:%02d:%02d",days,hours,minutes,seconds)
- 
   gfx.x, gfx.y = 2, 15
-  gfx.printf(format)
+  gfx.printf(time())
   gfx.update()
 
   if gfx.getchar() > -1 then  -- defer while gfx window is open
@@ -80,7 +84,6 @@ function store_settings()
 end
 
 function init()
-  local dock_pos = reaper.GetExtState("time", "dock")
   dock_pos = dock_pos or 513
   
   gfx.init("", 120, 50, dock_pos)
