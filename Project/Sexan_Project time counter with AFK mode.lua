@@ -20,6 +20,7 @@ local threshold = afk
 
 local last_action_time = 0
 local last_proj_change_count = reaper.GetProjectStateChangeCount(0)
+local last_proj, last_proj_name =  reaper.EnumProjects( -1 , 0) 
 local dock_pos = reaper.GetExtState("timer", "dock")
 
 function store_time() -- store time values to project
@@ -56,8 +57,14 @@ function time()
   return format
 end
  
-function main()  
+function main() 
+  local proj, proj_name =  reaper.EnumProjects( -1 , 0) 
   local proj_change_count = reaper.GetProjectStateChangeCount(0)
+  
+  if last_proj ~= proj then
+    restore_time()
+    last_proj = proj
+  end
   
   if proj_change_count > last_proj_change_count or reaper.GetPlayState() ~= 0 then
     afk = 0
