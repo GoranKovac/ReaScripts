@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="ae197bbab70995fb0743190d0343d2f9a819152c" name="Sexan_Scripts">
+<index version="1" commit="95982ebf6b1ea0a53fb62f727c16116b91d4de31" name="Sexan_Scripts">
   <category name="Items">
     <reapack name="Sexan_select all other items on track.lua" type="script" desc="Select all other items on track.lua">
       <version name="1.1" author="SeXan" time="2017-07-23T20:09:46Z">
@@ -109,12 +109,6 @@
     </reapack>
   </category>
   <category name="Track">
-    <reapack name="New_vca.lua" type="script" desc="Create VCA Master from selection.lua">
-      <version name="1.5" author="SeXan" time="2018-02-17T12:36:00Z">
-        <changelog><![CDATA[+ Better code, added option to add VCA above selected tracks]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/4ea66ee6783ca01b11e96333380cf4dd6e42a843/Track/New_vca.lua</source>
-      </version>
-    </reapack>
     <reapack name="Sexan_Create VCA master from selection.lua" type="script" desc="Create VCA Master from selection.lua">
       <version name="1.451" author="SeXan" time="2017-07-13T12:50:30Z">
         <changelog><![CDATA[+ Minor error fix]]></changelog>
