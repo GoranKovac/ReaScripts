@@ -1,5 +1,6 @@
 --[[
  * ReaScript Name: Project Time Counter with AFK mode
+ * About: Script counts working time on projects and stop counting when AFK mode kicks in
  * Author: SeXan
  * Licence: GPL v3
  * REAPER: 5.0

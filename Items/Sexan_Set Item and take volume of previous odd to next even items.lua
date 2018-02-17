@@ -1,6 +1,6 @@
 --[[
  * ReaScript Name: Set Item and take volume of odd to even items.lua
- * Discription: Script sets volume of item and take of previous odd item to next even item
+ * About: Script sets volume of item and take of previous odd item to next even item
  * Author: SeXan
  * Licence: GPL v3
  * REAPER: 5.0

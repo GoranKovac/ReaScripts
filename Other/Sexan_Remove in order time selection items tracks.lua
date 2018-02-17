@@ -1,6 +1,6 @@
 --[[
  * ReaScript Name: Remove in order time selection,items,tracks
- * Description: Script removes things in following order. If there is time selection, some selected items and tracks
+ * About: Script removes things in following order. If there is time selection, some selected items and tracks
  *              First run of the script it removes time selection, second items and third tracks.
  *              (I use it on "ESC" key)
  * Author: SeXan

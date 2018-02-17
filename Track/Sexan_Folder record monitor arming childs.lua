@@ -1,5 +1,6 @@
 --[[
  * ReaScript Name: Folder record monitor arming childs
+ * About: Record arming folder arms all child tracks
  * Author: SPK77, SeXan
  * Licence: GPL v3
  * REAPER: 5.0

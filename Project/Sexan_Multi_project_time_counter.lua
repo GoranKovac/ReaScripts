@@ -1,6 +1,6 @@
 --[[
  * ReaScript Name: Multi project time counter
- * Discription: Script shows 3 timers: Windows time, how long project has been opened and third timer has AFK mode that that counts time only while you work in the project
+ * About: Script shows 3 timers: Windows time, how long project has been opened and third timer has AFK mode that that counts time only while you work in the project
  * Author: SeXan
  * Licence: GPL v3
  * REAPER: 5.0

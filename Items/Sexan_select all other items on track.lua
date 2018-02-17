@@ -1,6 +1,6 @@
 --[[
  * ReaScript Name: Select all other items on track.lua
- * Discription: Script select all items on the track except selected one
+ * About: Script select all items on the track except selected one
  * Author: SeXan
  * Licence: GPL v3
  * REAPER: 5.0

@@ -1,6 +1,6 @@
 --[[
  * ReaScript Name: Remove selected VCA master and its slaves with all flags.lua
- * Discription: Script removes selected VCA master its slaves and all flags associated
+ * About: Script removes selected VCA master its slaves and all flags associated
  * Author: SeXan
  * Licence: GPL v3
  * REAPER: 5.0
