@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="95d575f1aab44503b28296efe1b3ff9585b718cb" name="Sexan_Scripts">
+<index version="1" commit="6ec7228d71969ff84d5953e88fd05103322db902" name="Sexan_Scripts">
   <category name="Items">
     <reapack name="Sexan_select all other items on track.lua" type="script" desc="Select all other items on track.lua">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 Script select all items on the track except selected one\par}
+}
+]]></description>
+      </metadata>
       <version name="1.1" author="SeXan" time="2017-07-23T20:09:46Z">
         <changelog><![CDATA[+ Initial release]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/6a3c64a9d772059cbae28d173df4d0559405b430/Items/Sexan_select%20all%20other%20items%20on%20track.lua</source>
@@ -24,6 +33,15 @@
       </version>
     </reapack>
     <reapack name="Sexan_Set Item and take volume of previous odd to next even items.lua" type="script" desc="Set Item and take volume of odd to even items.lua">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 Script sets volume of item and take of previous odd item to next even item\par}
+}
+]]></description>
+      </metadata>
       <version name="1.0" author="SeXan" time="2017-07-24T10:19:05Z">
         <changelog><![CDATA[+ Initial Release]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/4137e3be05cfbe53112c92f33f06ea8f5e59f917/Items/Sexan_Set%20Item%20and%20take%20volume%20of%20previous%20odd%20to%20next%20even%20items.lua</source>
@@ -42,6 +60,15 @@
       </version>
     </reapack>
     <reapack name="Sexan_SmartSplit items crossfade left or right.lua" type="script" desc="SmartSplit items crossfade left or right">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 This is two action split script, normal split and time selection split.If time selection split already exists then you can freely split anywhere while time selection is still active. Normal split creates crossfade on the side where the mouse cursor is depending on edit cursor\par}
+}
+]]></description>
+      </metadata>
       <version name="1.01" author="SeXan" time="2017-07-13T12:48:21Z">
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/9dc010345cce2e7f660ea4a3bb1805339636d72b/Items/Sexan_SmartSplit%20items%20crossfade%20left%20or%20right.lua</source>
       </version>
@@ -49,6 +76,15 @@
   </category>
   <category name="Other">
     <reapack name="Sexan_Remove in order time selection items tracks.lua" type="script" desc="Remove in order time selection,items,tracks">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 Script removes things in following order. If there is time selection, some selected items and tracks First run of the script it removes time selection, second items and third tracks. (I use it on "ESC" key)\par}
+}
+]]></description>
+      </metadata>
       <version name="1.01" author="SeXan" time="2017-07-13T12:49:05Z">
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/e46e203d5b205689742ae26940d8ce4b7addc5de/Other/Sexan_Remove%20in%20order%20time%20selection%20items%20tracks.lua</source>
       </version>
@@ -56,6 +92,15 @@
   </category>
   <category name="Project">
     <reapack name="Sexan_Multi_project_time_counter.lua" type="script" desc="Multi project time counter">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 Script shows 3 timers: Windows time, how long project has been opened and third timer has AFK mode that that counts time only while you work in the project\par}
+}
+]]></description>
+      </metadata>
       <version name="1.1" author="SeXan" time="2017-08-13T16:49:03Z">
         <changelog><![CDATA[+ Initial release]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/07e692a4c26d1cac727212deb0515e4aa035ae71/Project/Sexan_Multi_project_time_counter.lua</source>
@@ -86,6 +131,15 @@
       </version>
     </reapack>
     <reapack name="Sexan_Project time counter with AFK mode.lua" type="script" desc="Project Time Counter with AFK mode">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 Script counts working time on projects and stop counting when AFK mode kicks in\par}
+}
+]]></description>
+      </metadata>
       <version name="1.31" author="SeXan" time="2017-07-13T12:49:54Z">
         <changelog><![CDATA[+ Simplified the code]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/530d66124dfb322f9f4a5b9dbd3bdd3738677207/Project/Sexan_Project%20time%20counter%20with%20AFK%20mode.lua</source>
@@ -109,19 +163,46 @@
     </reapack>
   </category>
   <category name="Track">
-    <reapack name="Sexan_Create VCA master from selection.lua" type="script" desc="Create VCA Master from selection.lua">      
+    <reapack name="Sexan_Create VCA master from selection.lua" type="script" desc="Create VCA Master from selection.lua">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 Script creates Master VCA for selected tracks and makes them VCA Slave.Also Mute and SOLO flags are added\par}
+}
+]]></description>
+      </metadata>
       <version name="1.6" author="SeXan" time="2018-02-17T15:25:50Z">
         <changelog><![CDATA[+ Better code, added option to add VCA above selected track, 64 groups support]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/95d575f1aab44503b28296efe1b3ff9585b718cb/Track/Sexan_Create%20VCA%20master%20from%20selection.lua</source>
       </version>
     </reapack>
     <reapack name="Sexan_Folder record monitor arming childs.lua" type="script" desc="Folder record monitor arming childs">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 Record arming folder arms all child tracks\par}
+}
+]]></description>
+      </metadata>
       <version name="1.01" author="SPK77, SeXan" time="2017-07-13T12:51:03Z">
         <changelog><![CDATA[+ Initial Release]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/ae31f5a8c70237a3cb6ac96a94188c14f6d21d42/Track/Sexan_Folder%20record%20monitor%20arming%20childs.lua</source>
       </version>
     </reapack>
     <reapack name="Sexan_Remove selected VCA master and its slaves with all flags.lua" type="script" desc="Remove selected VCA master and its slaves with all flags.lua">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 Script removes selected VCA master its slaves and all flags associated\par}
+}
+]]></description>
+      </metadata>
       <version name="1.02" author="SeXan" time="2017-07-13T12:54:19Z">
         <changelog><![CDATA[+ Better Script name]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/101ed6a82b7e56ae9486fde6d3f30f5049f2cffb/Track/Sexan_Remove%20selected%20VCA%20master%20and%20its%20slaves%20with%20all%20flags.lua</source>
