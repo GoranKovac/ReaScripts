@@ -11,7 +11,7 @@
 --[[
  * Changelog:
  * v1.5 (2018-02-17)
-  + Better code, added option to add VCA above selected tracks
+  + Better code, added option to add VCA above selected track, 64 groups support
 --]]
 
 -- USER SETTING
@@ -45,25 +45,31 @@ local VCA_FLAGS = { "VOLUME_MASTER",
                   }
 local free_group,master_pos = nil, nil 
 local tracks, vca_group ,cnt = {}, {}, 1 
-for i = 1 ,32 do vca_group[i] = 0 end
+for i = 1 ,64 do vca_group[i] = 0 end
 
 local function scan_groups()
   local cnt_tr = reaper.CountTracks(0)
   for i = 0 , cnt_tr-1 do
     local tr = reaper.GetTrack(0,i)
     for k = 1 , #vca_group do
-      if reaper.GetSetTrackGroupMembership(tr,"VOLUME_VCA_MASTER", 0,0) == 2^(k-1) then cnt = cnt + 1 end
+      if reaper.GetSetTrackGroupMembership(tr,"VOLUME_VCA_MASTER", 0,0) == 2^(k-1) or reaper.GetSetTrackGroupMembershipHigh(tr,"VOLUME_VCA_MASTER", 0,0) == 2^((k-32)-1) then cnt = cnt + 1 end
       for j = 1 , #VCA_FLAGS do
-        if reaper.GetSetTrackGroupMembership(tr,VCA_FLAGS[j], 0,0) == 2^(k-1) then vca_group[k] = nil end
+        if reaper.GetSetTrackGroupMembership(tr,VCA_FLAGS[j], 0,0) == 2^(k-1) or 
+          reaper.GetSetTrackGroupMembershipHigh(tr,VCA_FLAGS[j], 0,0) == 2^((k-32)-1) then 
+          vca_group[k] = nil
+        end
       end
     end
   end
 end
  
 function create_VCAs()
+ local group 
  for k,v in pairs(vca_group) do
    if v == 0 then 
-     free_group = 2^(k-1)
+     if k > 32 then group = reaper.GetSetTrackGroupMembershipHigh free_group = 2^((k-32)-1)
+     else group = reaper.GetSetTrackGroupMembership free_group = 2^(k-1)
+     end
      --break -- ADD BREAK TO ITERIATE FROM 1 to 32, without its 32 to 1
     end
   end
@@ -97,19 +103,19 @@ function create_VCAs()
   end
  
   -- SET TRACK AS VCA MASTER
-  local VCA_M = reaper.GetSetTrackGroupMembership(tr,"VOLUME_VCA_MASTER", free_group,free_group)
+  local VCA_M = group(tr,"VOLUME_VCA_MASTER", free_group,free_group)
     if mute_solo == 1 then 
-      local VCA_M_MUTE = reaper.GetSetTrackGroupMembership(tr,"MUTE_MASTER", free_group,free_group)
-      local VCA_M_SOLO = reaper.GetSetTrackGroupMembership(tr,"SOLO_MASTER", free_group,free_group)
+      local VCA_M_MUTE = group(tr,"MUTE_MASTER", free_group,free_group)
+      local VCA_M_SOLO = group(tr,"SOLO_MASTER", free_group,free_group)
     end
     
   -- SET VCA SLAVES  
   for i = 1, #tracks do
     local tr = tracks[i]
-    local VCA_S = reaper.GetSetTrackGroupMembership(tr,"VOLUME_VCA_SLAVE", free_group,free_group)
+    local VCA_S = group(tr,"VOLUME_VCA_SLAVE", free_group,free_group)
       if mute_solo == 1 then
-        local VCA_S_MUTE = reaper.GetSetTrackGroupMembership(tr,"MUTE_SLAVE", free_group,free_group)
-        local VCA_S_SOLO = reaper.GetSetTrackGroupMembership(tr,"SOLO_SLAVE", free_group,free_group)
+        local VCA_S_MUTE = group(tr,"MUTE_SLAVE", free_group,free_group)
+        local VCA_S_SOLO = group(tr,"SOLO_SLAVE", free_group,free_group)
       end
   end
 end
