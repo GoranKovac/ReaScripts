@@ -5,12 +5,12 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 1.51
+ * Version: 1.6
 --]]
  
 --[[
  * Changelog:
- * v1.51 (2018-02-17)
+ * v1.6 (2018-02-17)
   + Better code, added option to add VCA above selected track, 64 groups support
 --]]
 
