@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="93cee14011ad3d56669677789fb400f5c98c470d" name="Sexan_Scripts">
+<index version="1" commit="c6910bc30cb0bbca6014ea8fd22fe2694eed0560" name="Sexan_Scripts">
   <category name="Items">
     <reapack name="Sexan_select all other items on track.lua" type="script" desc="Select all other items on track.lua">
       <metadata>
@@ -210,6 +210,10 @@
       <version name="1.02" author="SeXan" time="2017-07-13T12:54:19Z">
         <changelog><![CDATA[+ Better Script name]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/101ed6a82b7e56ae9486fde6d3f30f5049f2cffb/Track/Sexan_Remove%20selected%20VCA%20master%20and%20its%20slaves%20with%20all%20flags.lua</source>
+      </version>
+      <version name="1.03" author="SeXan" time="2018-02-27T14:40:19Z">
+        <changelog><![CDATA[+ Fixed for 64 group remove]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/c6910bc30cb0bbca6014ea8fd22fe2694eed0560/Track/Sexan_Remove%20selected%20VCA%20master%20and%20its%20slaves%20with%20all%20flags.lua</source>
       </version>
     </reapack>
   </category>
