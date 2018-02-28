@@ -5,14 +5,13 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.32
+ * Version: 0.33
 --]]
  
 --[[
  * Changelog:
- * v0.32 (2018-02-28)
-  + Fixed bug when creating multiple same versions if multiple tracks are created
-  + Fixed selecting track items
+ * v0.33 (2018-02-28)
+  + Fixed another minor bug with deleted checking (subfolders with no data would not be removed)
 --]]
 
 -- USER SETTINGS
@@ -385,25 +384,23 @@ end
 --- Function: Delete button from table it button track is deleted ---
 ---------------------------------------------------------------------
 local function track_deleted()
-  for i = #TrackTB, 1 , -1 do
-    local tr = reaper.BR_GetMediaTrackByGUID( 0, TrackTB[i].guid )      
-    if not reaper.ValidatePtr(tr, "MediaTrack*") then -- IF TRACK FROM TABLE DOES NOT EXIST IN REAPER
-      for j = #TrackTB, 1 , -1 do
-        for k = #TrackTB[j].ver, 1, -1 do          
-          local chunk = TrackTB[j].ver[k].chunk
-            for l = #chunk, 1, -1 do               
-              if chunk[l] and string.sub(chunk[l],1,1) == "{" then  -- FIND IF TRACK IS IN A FOLDER
-                if chunk[l] == TrackTB[i].guid then table.remove(chunk,l)
-                  if #chunk == 0 then table.remove(TrackTB[j].ver,k) end -- if no more tracks in folder 
-                end -- REMOVE CHILD FROM FOLDER IF DELETED
-              end
-            end
+  for j = #TrackTB, 1 , -1 do -- SCAN FOLDERS
+    for k = #TrackTB[j].ver, 1, -1 do          
+      local chunk = TrackTB[j].ver[k].chunk
+        for l = #chunk, 1, -1 do               
+          if chunk[l] and string.sub(chunk[l],1,1) == "{" then  -- FIND IF TRACK IS IN A FOLDER DATA (IF GUID IS FOUND)
+            if not reaper.ValidatePtr( reaper.BR_GetMediaTrackByGUID( 0, chunk[l] ) , "MediaTrack*")then table.remove(chunk,l) end
+            if #chunk == 0 then table.remove(TrackTB[j].ver,k) end -- if no more tracks in folder 
+          end -- REMOVE CHILD FROM FOLDER IF DELETED
         end
-      end
-      table.remove(TrackTB,i) -- REMOVE TRACK FROM TABLE
     end
-    if TrackTB[i] and #TrackTB[i].ver == 0 then table.remove(TrackTB,i) end
   end
+
+  for i = #TrackTB, 1 , -1 do -- scan whole table
+    local tr = reaper.BR_GetMediaTrackByGUID( 0, TrackTB[i].guid )      
+    if not reaper.ValidatePtr(tr, "MediaTrack*") then table.remove(TrackTB,i) end-- IF TRACK FROM TABLE DOES NOT EXIST IN REAPER
+  end
+  update_tbl()
 end
 --------------------------------------------------------------------------------
 ---  Function Get Items chunk --------------------------------------------------
