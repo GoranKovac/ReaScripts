@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="af9ae505a2bcdc4754e66ae4a26266d61871fcb6" name="Sexan_Scripts">
+<index version="1" commit="f6e8daf276876bed4392efad546c5d20719af92c" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track versions.lua" type="script" desc="Track versions.lua">
       <metadata>
@@ -22,6 +22,10 @@
       <version name="0.3" author="SeXan" time="2018-02-28T16:22:53Z">
         <changelog><![CDATA[+ Added checking for deleted track]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/af9ae505a2bcdc4754e66ae4a26266d61871fcb6/Alpha/Sexan_Track%20versions.lua</source>
+      </version>
+      <version name="0.31" author="SeXan" time="2018-02-28T16:54:27Z">
+        <changelog><![CDATA[+ Fixed but with deleting code where script would crash if subfolder is deleted]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/f6e8daf276876bed4392efad546c5d20719af92c/Alpha/Sexan_Track%20versions.lua</source>
       </version>
     </reapack>
   </category>
