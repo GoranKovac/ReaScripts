@@ -1,5 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="c6910bc30cb0bbca6014ea8fd22fe2694eed0560" name="Sexan_Scripts">
+<index version="1" commit="c5fa16f718e09aeef913fe7e0c0239095dd97b31" name="Sexan_Scripts">
+  <category name="Alpha">
+    <reapack name="Sexan_Track versions.lua" type="script" desc="Track versions.lua">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 Protools style playlist, track versions (Cubase)\par}
+}
+]]></description>
+      </metadata>
+      <version name="0.1" author="SeXan" time="2018-02-28T10:13:15Z">
+        <changelog><![CDATA[+ Initial release]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/c5fa16f718e09aeef913fe7e0c0239095dd97b31/Alpha/Sexan_Track%20versions.lua</source>
+      </version>
+    </reapack>
+  </category>
   <category name="Items">
     <reapack name="Sexan_select all other items on track.lua" type="script" desc="Select all other items on track.lua">
       <metadata>
