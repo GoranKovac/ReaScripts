@@ -5,13 +5,13 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.3
+ * Version: 0.31
 --]]
  
 --[[
  * Changelog:
- * v0.3 (2018-02-28)
-  + Added checking for deleted track
+ * v0.31 (2018-02-28)
+  + Fixed but with deleting code where script would crash if subfolder is deleted
 --]]
 
 -- USER SETTINGS
@@ -390,11 +390,11 @@ local function track_deleted()
       for j = #TrackTB, 1 , -1 do
         for k = #TrackTB[j].ver, 1, -1 do          
           local chunk = TrackTB[j].ver[k].chunk
-            for l = 1, #chunk do               
+            for l = #chunk, 1, -1 do               
               if chunk[l] and string.sub(chunk[l],1,1) == "{" then  -- FIND IF TRACK IS IN A FOLDER
                 if chunk[l] == TrackTB[i].guid then table.remove(chunk,l)
                   if #chunk == 0 then table.remove(TrackTB[j].ver,k) end -- if no more tracks in folder 
-                  if #TrackTB[j].ver == 0 then table.remove(TrackTB,j) end -- if no more data in button
+                  --if #TrackTB[j].ver == 0 then table.remove(TrackTB,j) end -- if no more data in button
                 end -- REMOVE CHILD FROM FOLDER IF DELETED
               end
             end
@@ -402,6 +402,7 @@ local function track_deleted()
       end
       table.remove(TrackTB,i) -- REMOVE TRACK FROM TABLE
     end
+    if TrackTB[i] and #TrackTB[i].ver == 0 then table.remove(TrackTB,i) end
   end
 end
 --------------------------------------------------------------------------------
