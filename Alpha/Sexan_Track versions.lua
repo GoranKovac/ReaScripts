@@ -5,13 +5,13 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.1
+ * Version: 0.2
 --]]
  
 --[[
  * Changelog:
- * v0.1 (2018-02-28)
-  + Initial release
+ * v0.2 (2018-02-28)
+  + Hide save button if on folder
 --]]
 
 -- USER SETTINGS
@@ -668,7 +668,7 @@ function main()
       local sel_guid = reaper.GetTrackGUID(sel_tr)
       cur_sel[1] = find_guid(sel_guid) -- VIEW CURRENT SELECTED TRACK VERSIONS       
       if #cur_sel ~= 0 then DRAW_B(Empty) end-- if track has no version hide empty button (to avoid deleting original items)
-      if reaper.GetMediaTrackInfo_Value(sel_tr, "I_FOLDERDEPTH") == 1 then DRAW_B(Folder) end-- draw save folder button only if folder track is selected
+      if reaper.GetMediaTrackInfo_Value(sel_tr, "I_FOLDERDEPTH") == 1 then DRAW_B(Folder) else DRAW_B(Track) end-- draw save folder button only if folder track is selected
     end 
   DRAW_C(cur_sel) -- draw currrent table
 end
@@ -725,7 +725,7 @@ function mainloop()
     -- DRAW,MAIN functions --
       main() -- Main()
       DRAW_F(Frame)  -- draw frame
-      DRAW_B(Track) -- Draw Static Buttons 
+      --DRAW_B(Track) -- Draw Static Buttons 
     -------------------------
     last_mouse_cap = gfx.mouse_cap
     last_x, last_y = gfx.mouse_x, gfx.mouse_y
