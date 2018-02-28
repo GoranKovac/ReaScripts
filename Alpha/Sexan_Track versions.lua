@@ -5,13 +5,14 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.31
+ * Version: 0.32
 --]]
  
 --[[
  * Changelog:
- * v0.31 (2018-02-28)
-  + Fixed but with deleting code where script would crash if subfolder is deleted
+ * v0.32 (2018-02-28)
+  + Fixed bug when creating multiple same versions if multiple tracks are created
+  + Fixed selecting track items
 --]]
 
 -- USER SETTINGS
@@ -394,7 +395,6 @@ local function track_deleted()
               if chunk[l] and string.sub(chunk[l],1,1) == "{" then  -- FIND IF TRACK IS IN A FOLDER
                 if chunk[l] == TrackTB[i].guid then table.remove(chunk,l)
                   if #chunk == 0 then table.remove(TrackTB[j].ver,k) end -- if no more tracks in folder 
-                  --if #TrackTB[j].ver == 0 then table.remove(TrackTB,j) end -- if no more data in button
                 end -- REMOVE CHILD FROM FOLDER IF DELETED
               end
             end
@@ -426,6 +426,7 @@ end
 ----------------------------------------------------
 local function select_items(track)
   if reaper.GetMediaTrackInfo_Value(track, "I_FOLDERDEPTH") == 1 then return end
+  reaper.Main_OnCommand(40289,0)
   local _, items = getTrackItems(track)
     for i = 1 , #items do reaper.SetMediaItemSelected(items[i], true) end
   reaper.UpdateArrange()
@@ -558,13 +559,14 @@ end
 -------------------------------------------------------------------------------
 function on_click_function(button)  
   local sel_tr_count = reaper.CountSelectedTracks(0)
-    for i = 1, sel_tr_count do                                                 
+    for i = 1, sel_tr_count do    
+      ::JUMP::                                               
       local tr = reaper.GetSelectedTrack(0, i-1)
       local guid = reaper.GetTrackGUID(tr)
       local version_name = naming(find_guid(guid),"V")
       if not version_name then return end
       button(tr, version_name, reaper.genGuid())
-      if version_name == "Original" then on_click_function(button) end -- make 2 versions as default Original and V1
+      if version_name == "Original" then goto JUMP end -- make 2 versions as default Original and V1
     end
 end
 ---------------------------------------------------------------------------------------------------------
