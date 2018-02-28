@@ -5,19 +5,18 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.2
+ * Version: 0.3
 --]]
  
 --[[
  * Changelog:
- * v0.2 (2018-02-28)
-  + Hide save button if on folder
+ * v0.3 (2018-02-28)
+  + Added checking for deleted track
 --]]
 
 -- USER SETTINGS
 local manual_naming = false
 ----------------------------
-
 local Wnd_W,Wnd_H = 220,220
 cur_sel = {[1] = nil}
 TrackTB = {}
@@ -384,9 +383,26 @@ end
 ---------------------------------------------------------------------
 --- Function: Delete button from table it button track is deleted ---
 ---------------------------------------------------------------------
---TODO:
 local function track_deleted()
-
+  for i = #TrackTB, 1 , -1 do
+    local tr = reaper.BR_GetMediaTrackByGUID( 0, TrackTB[i].guid )      
+    if not reaper.ValidatePtr(tr, "MediaTrack*") then -- IF TRACK FROM TABLE DOES NOT EXIST IN REAPER
+      for j = #TrackTB, 1 , -1 do
+        for k = #TrackTB[j].ver, 1, -1 do          
+          local chunk = TrackTB[j].ver[k].chunk
+            for l = 1, #chunk do               
+              if chunk[l] and string.sub(chunk[l],1,1) == "{" then  -- FIND IF TRACK IS IN A FOLDER
+                if chunk[l] == TrackTB[i].guid then table.remove(chunk,l)
+                  if #chunk == 0 then table.remove(TrackTB[j].ver,k) end -- if no more tracks in folder 
+                  if #TrackTB[j].ver == 0 then table.remove(TrackTB,j) end -- if no more data in button
+                end -- REMOVE CHILD FROM FOLDER IF DELETED
+              end
+            end
+        end
+      end
+      table.remove(TrackTB,i) -- REMOVE TRACK FROM TABLE
+    end
+  end
 end
 --------------------------------------------------------------------------------
 ---  Function Get Items chunk --------------------------------------------------
@@ -664,13 +680,14 @@ end
 --------------------------------------------------------------------------------
 function main()
   local sel_tr = reaper.GetSelectedTrack(0,0) -- get track 
-    if sel_tr then
+    if sel_tr then      
       local sel_guid = reaper.GetTrackGUID(sel_tr)
       cur_sel[1] = find_guid(sel_guid) -- VIEW CURRENT SELECTED TRACK VERSIONS       
       if #cur_sel ~= 0 then DRAW_B(Empty) end-- if track has no version hide empty button (to avoid deleting original items)
       if reaper.GetMediaTrackInfo_Value(sel_tr, "I_FOLDERDEPTH") == 1 then DRAW_B(Folder) else DRAW_B(Track) end-- draw save folder button only if folder track is selected
-    end 
-  DRAW_C(cur_sel) -- draw currrent table
+      DRAW_C(cur_sel)
+    end
+  track_deleted()
 end
 ----------------------------------------------------------------------------------------------------
 ---   Main DRAW function   -------------------------------------------------------------------------
