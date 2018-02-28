@@ -5,17 +5,18 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 1.600
+ * Version: 1.700
 --]]
  
 --[[
  * Changelog:
- * v1.600 (2018-02-17)
-  + Better code, added option to add VCA above selected track, 64 groups support
+ * v1.700 (2018-02-17)
+  + Added user setting "group range" for creating custom VCA ranges
 --]]
 
 -- USER SETTING
 ---------------
+local group_range = 1 -- (1 creates from 64-1, 32 creates 32-64)
 local popup = 0    -- (set to 0 for no popup, set to 1 for popup asking to name the VCA group)
 local mute_solo = 1 -- (set to 0 to disable mute and solo flags)
 local position = 3 -- (set VCA Master track position 1 - TOP , 0 - Bottom, 3 - Above selected tracks)
@@ -65,12 +66,13 @@ end
  
 function create_VCAs()
  local group 
- for k,v in pairs(vca_group) do
-   if v == 0 then 
-     if k > 32 then group = reaper.GetSetTrackGroupMembershipHigh free_group = 2^((k-32)-1)
-     else group = reaper.GetSetTrackGroupMembership free_group = 2^(k-1)
+ for i = group_range, #vca_group do
+ --for k,v in pairs(vca_group) do
+   if vca_group[i] == 0 then
+     if i > 32 then group = reaper.GetSetTrackGroupMembershipHigh free_group = 2^((i-32)-1)
+     else group = reaper.GetSetTrackGroupMembership free_group = 2^(i-1)
      end
-     --break -- ADD BREAK TO ITERIATE FROM 1 to 32, without its 32 to 1
+     if group_range == 32 then break end -- ADD BREAK TO ITERIATE FROM 1 to 32, without its 32 to 1
     end
   end
   
