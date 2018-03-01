@@ -5,21 +5,21 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.33
+ * Version: 0.34
 --]]
  
 --[[
  * Changelog:
- * v0.33 (2018-02-28)
-  + Fixed another minor bug with deleted checking (subfolders with no data would not be removed)
+ * v0.34 (2018-02-28)
+  + Allow saving empty version of track which will automatically be called "Empty"
 --]]
 
 -- USER SETTINGS
 local manual_naming = false
 ----------------------------
 local Wnd_W,Wnd_H = 220,220
-cur_sel = {[1] = nil}
-TrackTB = {}
+local cur_sel = {[1] = nil}
+local TrackTB = {}
 local get_val
 ----------------------------------------------
 -- Pickle.lua
@@ -389,9 +389,9 @@ local function track_deleted()
       local chunk = TrackTB[j].ver[k].chunk
         for l = #chunk, 1, -1 do               
           if chunk[l] and string.sub(chunk[l],1,1) == "{" then  -- FIND IF TRACK IS IN A FOLDER DATA (IF GUID IS FOUND)
-            if not reaper.ValidatePtr( reaper.BR_GetMediaTrackByGUID( 0, chunk[l] ) , "MediaTrack*")then table.remove(chunk,l) end
-            if #chunk == 0 then table.remove(TrackTB[j].ver,k) end -- if no more tracks in folder 
-          end -- REMOVE CHILD FROM FOLDER IF DELETED
+            if not reaper.ValidatePtr( reaper.BR_GetMediaTrackByGUID( 0, chunk[l] ) , "MediaTrack*")then table.remove(chunk,l) end -- remove child if not found
+            if #chunk == 0 then table.remove(TrackTB[j].ver,k) end -- if no more tracks in folder, remove chunk
+          end 
         end
     end
   end
@@ -407,15 +407,15 @@ end
 --------------------------------------------------------------------------------
 function getTrackItems(track)
   if reaper.GetMediaTrackInfo_Value(track, "I_FOLDERDEPTH")== 1 then return end
-  local items_chunk, items= {}, {}
+  local items_chunk, items = {}, {}
   local num_items = reaper.CountTrackMediaItems(track)
     for i=1, num_items, 1 do
       local item = reaper.GetTrackMediaItem(track, i-1)
       local _, it_chunk = reaper.GetItemStateChunk(item, '')
       items_chunk[#items_chunk+1] = pattern(it_chunk)
-      items[#items+1]=item
+      items[#items+1] = item
     end
-    if #items == 0 then items[1] = "empty_table" end -- pickle doesn't like empty tables
+    if #items == 0 then items_chunk[1] = "empty_track" end -- pickle doesn't like empty tables
   return setmetatable(items_chunk, tcmt), items
 end
 ----------------------------------------------------
@@ -425,7 +425,7 @@ local function select_items(track)
   if reaper.GetMediaTrackInfo_Value(track, "I_FOLDERDEPTH") == 1 then return end
   reaper.Main_OnCommand(40289,0)
   local _, items = getTrackItems(track)
-    for i = 1 , #items do reaper.SetMediaItemSelected(items[i], true) end
+  for i = 1 , #items do reaper.SetMediaItemSelected(items[i], true) end
   reaper.UpdateArrange()
 end
 --------------------------------------------------------------------------------
@@ -463,8 +463,8 @@ end
 ---      Function: FIND GUID Value Key of track ---
 ---------------------------------------------------
 function find_guid(guid)
-  for k,v in pairs(TrackTB) do
-    if v.guid == guid then return v, k end
+  for i = 1 , #TrackTB do
+    if TrackTB[i].guid == guid then return TrackTB[i], i end
   end
 end
 ----------------------------------------------------------------------
@@ -517,9 +517,9 @@ function create_folder(tr,version_name,ver_id)
   local depth, children =  0, {}
   local folderID = reaper.GetMediaTrackInfo_Value(tr, "IP_TRACKNUMBER")-1
     for i = folderID + 1 , reaper.CountTracks(0) do -- start from first track after folder
-      local child = reaper.GetTrack(0,i-1)
+      local child = reaper.GetTrack(0,i-1) -- because -1 it will also create main folder track
       local currDepth = reaper.GetMediaTrackInfo_Value(child, "I_FOLDERDEPTH")
-      create_track(child,version_name,ver_id) -- if we are creating folder (only if version ID exists)
+      create_track(child,version_name,ver_id) -- create versions for all child terack
       depth = depth + currDepth
       if depth < 0 then break end --until we are out of folder 
     end
@@ -528,7 +528,8 @@ end
 ---  Function Create Button from TRACK SELECTION -------------------------------
 --------------------------------------------------------------------------------
 function create_track(tr,version_name,ver_id)
-  local chunk = getTrackItems(tr) or get_folder(tr) -- items or tracks (if no items then its tracks (folder)  
+  local chunk = getTrackItems(tr) or get_folder(tr) -- items or tracks (if no items then its tracks (folder)
+  if chunk[1] == "empty_track" and version_name ~= "Original" then version_name = "Empty" end -- if there is no chunk (no items) call version EMPTY
   create_button(version_name,reaper.GetTrackGUID(tr),chunk,ver_id)
 end
 --------------------------------------------------------------------------------
@@ -676,13 +677,16 @@ function pattern(chunk)
   return chunk
 end
 --------------------------------------------------------------------------------
+---  Function SAVE GUI SETTING  ------------------------------------------------
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
 ---  Function MAIN -------------------------------------------------------------
 --------------------------------------------------------------------------------
 function main()
   local sel_tr = reaper.GetSelectedTrack(0,0) -- get track 
-    if sel_tr then      
-      local sel_guid = reaper.GetTrackGUID(sel_tr)
-      cur_sel[1] = find_guid(sel_guid) -- VIEW CURRENT SELECTED TRACK VERSIONS       
+    if sel_tr then 
+      cur_sel[1] = find_guid(reaper.GetTrackGUID(sel_tr)) -- VIEW CURRENT SELECTED TRACK VERSIONS       
       if #cur_sel ~= 0 then DRAW_B(Empty) end-- if track has no version hide empty button (to avoid deleting original items)
       if reaper.GetMediaTrackInfo_Value(sel_tr, "I_FOLDERDEPTH") == 1 then DRAW_B(Folder) else DRAW_B(Track) end-- draw save folder button only if folder track is selected
       DRAW_C(cur_sel)
@@ -728,8 +732,8 @@ end
 function mainloop()
     -- zoom level --
     Z_w, Z_h = gfx.w/Wnd_W, gfx.h/Wnd_H
-     if Z_w<0.6 then Z_w = 0.6 elseif Z_w>2 then Z_w = 2 end
-     if Z_h<0.6 then Z_h = 0.6 elseif Z_h>2 then Z_h = 2 end 
+    -- if Z_w<0.6 then Z_w = 0.6 elseif Z_w>5 then Z_w = 5 end
+    -- if Z_h<0.6 then Z_h = 0.6 elseif Z_h>5 then Z_h = 5 end 
     -- mouse and modkeys --
     if gfx.mouse_cap&1==1   and last_mouse_cap&1==0  or   -- L mouse
        gfx.mouse_cap&2==2   and last_mouse_cap&2==0  or   -- R mouse
@@ -742,7 +746,6 @@ function mainloop()
     -- DRAW,MAIN functions --
       main() -- Main()
       DRAW_F(Frame)  -- draw frame
-      --DRAW_B(Track) -- Draw Static Buttons 
     -------------------------
     last_mouse_cap = gfx.mouse_cap
     last_x, last_y = gfx.mouse_x, gfx.mouse_y
