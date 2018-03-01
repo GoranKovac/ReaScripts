@@ -5,13 +5,13 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.36
+ * Version: 0.37
 --]]
  
 --[[
  * Changelog:
- * v0.36 (2018-02-28)
-  + Fixed saving multiselected folders
+ * v0.37 (2018-02-28)
+  + Fixed small bug when saving folder that contains subfolders
 --]]
 
 -- USER SETTINGS
@@ -649,7 +649,9 @@ function create_button(name,guid,chunk,ver_id,num)
                     if string.sub(chunk[1],1,1) == "{" then
                       for i = 1, #chunk do
                         local child = find_guid(chunk[i])
-                         child.ver[child.num].chunk = getTrackItems(reaper.BR_GetMediaTrackByGUID(0,child.guid))
+                          if string.sub(child.ver[child.num].chunk[1],1,1) ~= "{" then
+                            child.ver[child.num].chunk = getTrackItems(reaper.BR_GetMediaTrackByGUID(0,child.guid))
+                          end
                       end
                     else
                       chunk = getTrackItems(reaper.BR_GetMediaTrackByGUID(0,box.guid))
