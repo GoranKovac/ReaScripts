@@ -5,13 +5,13 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.35
+ * Version: 0.36
 --]]
  
 --[[
  * Changelog:
- * v0.35 (2018-02-28)
-  + Fixed saving changes on folder versions
+ * v0.36 (2018-02-28)
+  + Fixed saving multiselected folders
 --]]
 
 -- USER SETTINGS
@@ -514,20 +514,16 @@ end
 --    FUNCTION CREATE FOLDER ---------------------------------------------------
 --------------------------------------------------------------------------------
 function create_folder(tr,version_name,ver_id)
-  local depth, children =  0, {}
-  local folderID = reaper.GetMediaTrackInfo_Value(tr, "IP_TRACKNUMBER")-1
-    for i = folderID + 1 , reaper.CountTracks(0) do -- start from first track after folder
-      local child = reaper.GetTrack(0,i-1) -- because -1 it will also create main folder track
-      local currDepth = reaper.GetMediaTrackInfo_Value(child, "I_FOLDERDEPTH")
-      create_track(child,version_name,ver_id) -- create versions for all child terack
-      depth = depth + currDepth
-      if depth < 0 then break end --until we are out of folder 
-    end
+  create_track(tr,version_name,ver_id) -- FOLDER 
+  local childs = get_folder(tr)
+  for i = 1, #childs do
+    create_track(reaper.BR_GetMediaTrackByGUID(0,childs[i]),version_name,ver_id) -- create childs
+  end
 end
 --------------------------------------------------------------------------------
 ---  Function Create Button from TRACK SELECTION -------------------------------
 --------------------------------------------------------------------------------
-function create_track(tr,version_name,ver_id)
+function create_track(tr,version_name,ver_id,job)
   local chunk = getTrackItems(tr) or get_folder(tr) -- items or tracks (if no items then its tracks (folder)
   if chunk[1] == "empty_track" and version_name ~= "Original" then version_name = "Empty" end -- if there is no chunk (no items) call version EMPTY
   create_button(version_name,reaper.GetTrackGUID(tr),chunk,ver_id)
@@ -623,15 +619,17 @@ function create_button(name,guid,chunk,ver_id,num)
                   local menu_TB = {r_click_menu}
                   DRAW_M(menu_TB)
                   
+                  local chunk = box.ver[box.num].chunk 
+                  
                   if r_click_menu.num == -1 then return -- nothing clicked
                   
                   elseif r_click_menu.num == 1 then --- delete version
                     if box.ver[box.num].name ~= "Original" then -- prevent deleting original if other version exist
-                      delete_childs(box.ver[box.num].chunk, box.ver[box.num].ver_id) -- IF FOLDER DELETE CHILDS
+                      delete_childs(chunk, box.ver[box.num].ver_id) -- IF FOLDER DELETE CHILDS
                       table.remove(box.ver,box.num) -- REMOVE FROM FOLDER OR TRACK
                     else
                       if #box.ver == 1 then -- if only original left
-                        delete_childs(box.ver[box.num].chunk, box.ver[box.num].ver_id) -- IF FOLDER DELETE CHILDS
+                        delete_childs(chunk, box.ver[box.num].ver_id) -- IF FOLDER DELETE CHILDS
                         table.remove(box.ver,box.num) -- REMOVE FROM FOLDER OR TRACK
                       end
                     end
@@ -648,7 +646,6 @@ function create_button(name,guid,chunk,ver_id,num)
                     box.ver[box.num].name = version_name
                     
                   elseif r_click_menu.num == 5 then -- save current version (save modifications)
-                    local chunk = box.ver[box.num].chunk                    
                     if string.sub(chunk[1],1,1) == "{" then
                       for i = 1, #chunk do
                         local child = find_guid(chunk[i])
@@ -672,7 +669,7 @@ function create_button(name,guid,chunk,ver_id,num)
                       if box.num ~= i then table.remove(box.ver,i) end -- TRACK OR MAIN FOLDER - trim to only one version
                     end
                     box.num = #box.ver -- set last active
-                    delete_childs(box.ver[box.num].chunk, box.ver[box.num].ver_id, 2) -- IF FOLDER HAS CHILDS THEN TRIM ALL THE CHILDS TO SAME VERSION (2 is job and not to remove ORIGINAL)
+                    delete_childs(chunk, box.ver[box.num].ver_id, 2) -- IF FOLDER HAS CHILDS THEN TRIM ALL THE CHILDS TO SAME VERSION (2 is job and not to remove ORIGINAL)
                   end
                   save_tracks()
   end -- end box.onRClick
