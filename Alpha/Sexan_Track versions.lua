@@ -5,13 +5,13 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.34
+ * Version: 0.35
 --]]
  
 --[[
  * Changelog:
- * v0.34 (2018-02-28)
-  + Allow saving empty version of track which will automatically be called "Empty"
+ * v0.35 (2018-02-28)
+  + Fixed saving changes on folder versions
 --]]
 
 -- USER SETTINGS
@@ -19,7 +19,7 @@ local manual_naming = false
 ----------------------------
 local Wnd_W,Wnd_H = 220,220
 local cur_sel = {[1] = nil}
-local TrackTB = {}
+TrackTB = {}
 local get_val
 ----------------------------------------------
 -- Pickle.lua
@@ -423,7 +423,7 @@ end
 ----------------------------------------------------
 local function select_items(track)
   if reaper.GetMediaTrackInfo_Value(track, "I_FOLDERDEPTH") == 1 then return end
-  reaper.Main_OnCommand(40289,0)
+  --reaper.Main_OnCommand(40289,0)
   local _, items = getTrackItems(track)
   for i = 1 , #items do reaper.SetMediaItemSelected(items[i], true) end
   reaper.UpdateArrange()
@@ -563,7 +563,7 @@ function on_click_function(button)
       local guid = reaper.GetTrackGUID(tr)
       local version_name = naming(find_guid(guid),"V")
       if not version_name then return end
-      button(tr, version_name, reaper.genGuid())
+      button(tr, version_name, reaper.genGuid()) -- STAVIT FOLDER CHECK
       if version_name == "Original" then goto JUMP end -- make 2 versions as default Original and V1
     end
 end
@@ -577,7 +577,7 @@ local Folder, Empty, Track = {save_folder}, {empty}, {save_track}
 local W_Frame, T_Frame = Frame:new(10,10,Wnd_W-20,Wnd_H-20,  0,0.5,2,0.4 ), Frame:new(10,10,200,30,  0,0.5,2,0.4 )
 local Frame = {W_Frame,T_Frame}
 --------------------------------------------------------------------------------
----  BUTTONS FUNCTIOINS   ------------------------------------------------------
+---  BUTTONS FUNCTIONS   ------------------------------------------------------
 --------------------------------------------------------------------------------
 empty.onClick = function()
                 local childs = get_folder(reaper.BR_GetMediaTrackByGUID(0,cur_sel[1].guid)) or {}
@@ -609,9 +609,13 @@ function create_button(name,guid,chunk,ver_id,num)
   end
     
   box.onClick = function() -- check box on click action
-                 local items = box.ver[box.num].chunk -- items or tracks (based on if is a track or folder)
-                 restoreTrackItems(box.guid,items,box.num)
-                 
+                local tr
+                  for i = 1, reaper.CountSelectedTracks() do
+                    local sel_tr = reaper.GetTrackGUID(reaper.GetSelectedTrack(0,i-1))
+                    local tr = find_guid(sel_tr)
+                    local items = tr.ver[box.num].chunk -- items or tracks (based on if is a track or folder)
+                    restoreTrackItems(tr.guid,items,box.num)
+                  end
   end -- end box.onClick
   box.onRClick =  function()
                   local r_click_menu = Menu:new(box.x,box.y,box.w,box.h,0.6,0.6,0.6,0.3,"Chan :","Arial",15,{0.7, 0.9, 1, 1},-1,
@@ -644,7 +648,15 @@ function create_button(name,guid,chunk,ver_id,num)
                     box.ver[box.num].name = version_name
                     
                   elseif r_click_menu.num == 5 then -- save current version (save modifications)
-                    box.ver[box.num].chunk = getTrackItems(reaper.BR_GetMediaTrackByGUID(0,box.guid))
+                    local chunk = box.ver[box.num].chunk                    
+                    if string.sub(chunk[1],1,1) == "{" then
+                      for i = 1, #chunk do
+                        local child = find_guid(chunk[i])
+                         child.ver[child.num].chunk = getTrackItems(reaper.BR_GetMediaTrackByGUID(0,child.guid))
+                      end
+                    else
+                      chunk = getTrackItems(reaper.BR_GetMediaTrackByGUID(0,box.guid))
+                    end
                   
                   elseif r_click_menu.num == 4 then --- DUPLICATE s                 
                     local duplicate_num = naming(box,"D",box.ver[get_val].ver_id)-- .. " - " .. box.ver[get_val].name
@@ -684,6 +696,9 @@ end
 ---  Function MAIN -------------------------------------------------------------
 --------------------------------------------------------------------------------
 function main()
+  --count_sel_tr = reaper.CountSelectedTracks()
+  --for i = 1, reaper.CountSelectedTracks() do
+   -- local sel_tr = reaper.GetSelectedTrack(0,i-1)
   local sel_tr = reaper.GetSelectedTrack(0,0) -- get track 
     if sel_tr then 
       cur_sel[1] = find_guid(reaper.GetTrackGUID(sel_tr)) -- VIEW CURRENT SELECTED TRACK VERSIONS       
@@ -691,6 +706,7 @@ function main()
       if reaper.GetMediaTrackInfo_Value(sel_tr, "I_FOLDERDEPTH") == 1 then DRAW_B(Folder) else DRAW_B(Track) end-- draw save folder button only if folder track is selected
       DRAW_C(cur_sel)
     end
+  --end
   track_deleted()
 end
 ----------------------------------------------------------------------------------------------------
