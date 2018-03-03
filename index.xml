@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="62db6c3a491ddbc8401e2c094a5fc9f54632f914" name="Sexan_Scripts">
+<index version="1" commit="bccfd198fd1adb6b91c0323bb63440c30b2428fe" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track versions.lua" type="script" desc="Track versions.lua">
       <metadata>
@@ -59,6 +59,15 @@
       <version name="0.41" author="SeXan" time="2018-03-03T15:21:39Z">
         <changelog><![CDATA[+ added initial support for envelope versions (Volume,Pan,Width)]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/62db6c3a491ddbc8401e2c094a5fc9f54632f914/Alpha/Sexan_Track%20versions.lua</source>
+      </version>
+      <version name="0.42" author="SeXan" time="2018-03-03T18:29:31Z">
+        <changelog><![CDATA[+ added all track envelope types versions
++ fixed bug when creating multiselection version folder and track (would crash),now when multiselecting tracks folders get priority over tracks
++ show envelope menu only if there is saved envelope
++ mouse wheel support on envelope menu box
++ automatically show envelope menu if that envelope is selected
++ fixed bug when selecting other tracks envelope would crash the script]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/bccfd198fd1adb6b91c0323bb63440c30b2428fe/Alpha/Sexan_Track%20versions.lua</source>
       </version>
     </reapack>
   </category>
