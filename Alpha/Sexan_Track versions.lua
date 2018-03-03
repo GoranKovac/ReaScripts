@@ -5,13 +5,13 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.37
+ * Version: 0.4
 --]]
  
 --[[
  * Changelog:
- * v0.37 (2018-02-28)
-  + Fixed small bug when saving folder that contains subfolders
+ * v0.4 (2018-03-03)
+  + added initial support for envelope versions (Volume,Pan,Width)
 --]]
 
 -- USER SETTINGS
@@ -98,14 +98,14 @@ end
 ---   Simple Element Class   ---------------------------------------------------
 --------------------------------------------------------------------------------
 local Element = {}
-function Element:new(x,y,w,h, r,g,b,a, lbl,fnt,fnt_sz,fnt_rgba,num,ver,guid)
+function Element:new(x,y,w,h, r,g,b,a, lbl,fnt,fnt_sz,fnt_rgba,num,ver,guid,env)
     local elm = {}
     elm.def_xywh = {x,y,w,h,fnt_sz} -- its default coord,used for Zoom etc
     elm.x, elm.y, elm.w, elm.h = x, y, w, h
     elm.r, elm.g, elm.b, elm.a = r, g, b, a
     elm.lbl, elm.fnt, elm.fnt_sz  = lbl, fnt, fnt_sz
     elm.fnt_rgba = fnt_rgba
-    elm.num ,elm.ver, elm.guid = num, ver, guid
+    elm.num ,elm.ver, elm.guid, elm.env = num, ver, guid, env
     ------
     setmetatable(elm, self)
     self.__index = self 
@@ -131,7 +131,7 @@ function Element:update_xywh()
 end
 ------------------------
 function Element:pointIN(p_x, p_y)
-  return p_x >= self.x and p_x <= self.x + self.w and p_y >= self.y and p_y <= self.y + self.h
+  return p_x >= self.x and p_x <= self.x + self.w/1.3 and p_y >= self.y and p_y <= self.y + self.h
 end
 --------
 function Element:mouseIN()
@@ -176,10 +176,12 @@ local Button = {}
 local Frame = {}
 local Radio_Btns = {}
 local Menu = {}
+local CheckBox = {}
   extended(Menu,       Element)
   extended(Button,     Element)
   extended(Frame,      Element)
   extended(Radio_Btns, Element)
+  extended(CheckBox,   Element)
 --------------------------------------------------------------------------------
 ---   Menu Class Methods   -----------------------------------------------------
 --------------------------------------------------------------------------------
@@ -227,6 +229,7 @@ function Button:draw()
           if self:mouseDown() then a=a+0.2 end
           -- in elm L_up(released and was previously pressed) --
           if self:mouseClick() and self.onClick then self.onClick() end
+          if self:mouseRClick() and self.onRClick then self.onRClick() end
     -- Draw btn body, frame ----
     gfx.set(r,g,b,a)    -- set body color
     self:draw_body()    -- body
@@ -348,7 +351,70 @@ function Radio_Btns:draw()
   gfx.setfont(1, fnt, fnt_sz) 
   self:draw_vals()
   self:draw_lbl()
-end--------------------------------------------------------------------------------
+end
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+---   CheckBox Class Methods   -------------------------------------------------
+--------------------------------------------------------------------------------
+function CheckBox:set_num()
+    local x,y,w,h  = self.x,self.y,self.w,self.h
+    local val = self.num      -- current value,check
+    local menu_tb = self.ver -- checkbox table
+    local menu_str = ""
+       for i=1, #menu_tb,1 do
+         if i~=val then menu_str = menu_str..menu_tb[i].."|"
+                   else menu_str = menu_str.."!"..menu_tb[i].."|" -- add check
+         end
+       end
+    gfx.x = self.x; gfx.y = self.y + self.h
+    local new_val = gfx.showmenu(menu_str)        -- show checkbox menu
+    if new_val>0 then self.num = new_val end -- change check(!)
+end
+--------
+function CheckBox:draw_body()
+    gfx.rect(self.x,self.y,self.w,self.h, true) -- draw checkbox body
+end
+--------
+function CheckBox:draw_lbl()
+    local x,y,w,h  = self.x,self.y,self.w,self.h
+    local lbl_w, lbl_h = gfx.measurestr(self.lbl)
+    gfx.x = x-lbl_w-5; gfx.y = y+(h-lbl_h)/2
+    gfx.drawstr(self.lbl) -- draw checkbox label
+end
+--------
+function CheckBox:draw_val()
+    local x,y,w,h  = self.x,self.y,self.w,self.h
+    local val = self.ver[self.num]
+    local val_w, val_h = gfx.measurestr(val)
+    gfx.x = x+(w-val_w)/2; gfx.y = y+(h-val_h)/2
+    gfx.drawstr(val) -- draw checkbox val
+end
+------------------------
+function CheckBox:draw()
+    self:update_xywh() -- Update xywh(if wind changed)
+    local r,g,b,a  = self.r,self.g,self.b,self.a
+    local fnt,fnt_sz = self.fnt, self.fnt_sz
+    -- Get mouse state ---------
+          -- in element --------
+          if self:mouseIN() then a=a+0.1 end
+          -- in elm L_down -----
+          if self:mouseDown() then a=a+0.2 end
+          -- in elm L_up(released and was previously pressed) --
+          if self:mouseClick() then self:set_num()
+             if self:mouseClick() and self.onClick then self.onClick() end
+          end
+    -- Draw ch_box body, frame -
+    gfx.set(r,g,b,a)    -- set body color
+    self:draw_body()    -- body
+    self:draw_frame()   -- frame
+    -- Draw label --------------
+    gfx.set(table.unpack(self.fnt_rgba))   -- set label,val color
+    gfx.setfont(1, fnt, fnt_sz) -- set label,val fnt
+    self:draw_lbl()             -- draw lbl
+    self:draw_val()             -- draw val
+end
+
+--------------------------------------------------------------------------------
 ---   Frame Class Methods  -----------------------------------------------------
 --------------------------------------------------------------------------------
 function Frame:draw()
@@ -364,7 +430,7 @@ end
 local function save_tracks()
   local all_button_states = {}  
     for k, v in ipairs(TrackTB) do
-      all_button_states[#all_button_states+1] = {guid = v.guid, ver = v.ver, num = v.num}
+      all_button_states[#all_button_states+1] = {guid = v.guid, ver = v.ver, num = v.num, env = v.env}
     end 
   reaper.SetProjExtState(0, "Track_Versions", "States", pickle(all_button_states))
 end
@@ -376,7 +442,7 @@ local function restore()
   if states ~= "" then states = unpickle(states) end
   for i = 1, #states do
     for j = 1 , #states[i].ver do
-      create_button(states[i].ver[j].name, states[i].guid, states[i].ver[j].chunk, states[i].ver[j].ver_id, states[i].num)
+      create_button(states[i].ver[j].name, states[i].guid, states[i].ver[j].chunk, states[i].ver[j].ver_id, states[i].num, states[i].env)
     end
   end
 end
@@ -405,8 +471,8 @@ end
 --------------------------------------------------------------------------------
 ---  Function Get Items chunk --------------------------------------------------
 --------------------------------------------------------------------------------
-function getTrackItems(track)
-  if reaper.GetMediaTrackInfo_Value(track, "I_FOLDERDEPTH")== 1 then return end
+function getTrackItems(track,job)
+  if reaper.GetMediaTrackInfo_Value(track, "I_FOLDERDEPTH")== 1 and not job then return end
   local items_chunk, items = {}, {}
   local num_items = reaper.CountTrackMediaItems(track)
     for i=1, num_items, 1 do
@@ -423,7 +489,6 @@ end
 ----------------------------------------------------
 local function select_items(track)
   if reaper.GetMediaTrackInfo_Value(track, "I_FOLDERDEPTH") == 1 then return end
-  --reaper.Main_OnCommand(40289,0)
   local _, items = getTrackItems(track)
   for i = 1 , #items do reaper.SetMediaItemSelected(items[i], true) end
   reaper.UpdateArrange()
@@ -524,7 +589,7 @@ end
 ---  Function Create Button from TRACK SELECTION -------------------------------
 --------------------------------------------------------------------------------
 function create_track(tr,version_name,ver_id,job)
-  local chunk = getTrackItems(tr) or get_folder(tr) -- items or tracks (if no items then its tracks (folder)
+  local chunk = getTrackItems(tr,job) or get_folder(tr) -- items or tracks (if no items then its tracks (folder)
   if chunk[1] == "empty_track" and version_name ~= "Original" then version_name = "Empty" end -- if there is no chunk (no items) call version EMPTY
   create_button(version_name,reaper.GetTrackGUID(tr),chunk,ver_id)
 end
@@ -559,19 +624,23 @@ function on_click_function(button)
       local guid = reaper.GetTrackGUID(tr)
       local version_name = naming(find_guid(guid),"V")
       if not version_name then return end
-      button(tr, version_name, reaper.genGuid()) -- STAVIT FOLDER CHECK
+      button(tr, version_name, reaper.genGuid(),"track")
       if version_name == "Original" then goto JUMP end -- make 2 versions as default Original and V1
     end
 end
 ---------------------------------------------------------------------------------------------------------
 ---   START   -------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------------
-local save_track  = Button:new(15,15,40,20, 0.2,0.2,1.0,0, "Save","Arial",15,{0.7, 0.9, 1, 1}, 0 )
-local save_folder = Button:new(60,15,80,20, 0.2,0.2,1.0,0, "Save Folder","Arial",15,{0.7, 0.9, 1, 1}, 0 )
+local save_env    = Button:new(125,15,30,20, 0.2,0.2,1.0,0, "ENV","Arial",15,{0.7, 0.9, 1, 1}, 0 )
+local save_track  = Button:new(15,15,32,20, 0.2,0.2,1.0,0, "Save","Arial",15,{0.7, 0.9, 1, 1}, 0 )
+local save_folder = Button:new(50,15,70,20, 0.2,0.2,1.0,0, "Save Folder","Arial",15,{0.7, 0.9, 1, 1}, 0 )
 local empty       = Button:new(165,15,40,20, 0.2,0.2,1.0,0, "Empty","Arial",15,{0.7, 0.9, 1, 1}, 0 )
-local Folder, Empty, Track = {save_folder}, {empty}, {save_track}
+local ch_box1     = CheckBox:new(122,46,85,20,  0.2,0.5,0.6,0.3, "","Arial",15,{0.7, 0.9, 1, 1}, 1, {"Volume","Pan", "Width" } )
+local Folder, Empty, Track, Env, CheckBox_TB = {save_folder}, {empty}, {save_track}, {save_env}, {ch_box1}             
 local W_Frame, T_Frame = Frame:new(10,10,Wnd_W-20,Wnd_H-20,  0,0.5,2,0.4 ), Frame:new(10,10,200,30,  0,0.5,2,0.4 )
 local Frame = {W_Frame,T_Frame}
+local box_env = Radio_Btns:new(125,70,120,20,  0.3,0.8,0.3,0.7, "","Arial",15,{0.7, 0.9, 1, 1}, 1, {})
+local env = {box_env}
 --------------------------------------------------------------------------------
 ---  BUTTONS FUNCTIONS   ------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -589,12 +658,86 @@ end
 save_track.onClick = function()
                       on_click_function(create_track)
 end
+save_env.onClick = function()
+                      get_env()
+end
+ch_box1.onClick = function()
+                  cur_sel[1].env["Last"] = ch_box1.num -- Restore last checked menu
+end
+-------------------------------------------------------------------------------
+---  Function GET TRACK ENVELOPE ----------------------------------------------
+-------------------------------------------------------------------------------
+function get_env()
+  local env = reaper.GetSelectedEnvelope( 0 )
+  local retval, env_name = reaper.GetEnvelopeName(env, "")
+  local env_tr = reaper.BR_EnvAlloc( env, false )
+  if reaper.GetTrackGUID(reaper.BR_EnvGetParentTrack( env_tr )) ~= cur_sel[1].guid or ch_box1.ver[ch_box1.num] ~= env_name then return end -- do not create envelope version if from other track or does not match current checbox name
+  local tr = reaper.BR_GetMediaTrackByGUID(0,cur_sel[1].guid)
+  local retval, str = reaper.GetEnvelopeStateChunk(env, "", true)
+  local trim = string.find(str, "PT") -- find where point chunk begin
+  str = string.sub(str, trim-2) -- trim it before
+  local track = find_guid(cur_sel[1].guid)
+  track.env[#track.env+1] = { [env_name] = str , name = env_name .. " " .. #set_env_box(cur_sel[1],"get_lenght")+1} --  envid = reaper.genGuid()
+  track.env[ch_box1.ver[ch_box1.num]] = #set_env_box(cur_sel[1],"get_lenght")
+end
+--------------------------------------------------------------------------------
+---  Function CHECKBOX FILTER TABLE  --------------------------------------------
+--------------------------------------------------------------------------------
+function set_env_box(tbl,job)
+  local temp = {}
+  if not tbl then return end
+  ch_box1.num = tbl.env["Last"]
+  for k, v in pairs(tbl.env) do
+    if type(v) ~= "number" then 
+      for k1, v1 in pairs(v) do
+        if k1 == ch_box1.ver[ch_box1.num] then
+          temp[#temp+1]= v
+        end
+      end
+    end
+  end
+  if not job then envelope(tbl,temp) end
+  return temp
+end
+--------------------------------------------------------------------------------
+---  Function SET ENVELOPE VERSION  --------------------------------------------
+--------------------------------------------------------------------------------
+function envelope(tbl,data)
+  if not tbl then return end
+  box_env.num, box_env.ver = tbl.env[ch_box1.ver[ch_box1.num]], data -- set stored num from main table (Volume,Pan,Width), set data table as ver
+  
+  box_env.onClick = function()
+                  local chunk,env
+                  local tr = reaper.BR_GetMediaTrackByGUID(0,cur_sel[1].guid)
+                    for k, v in pairs(box_env.ver[box_env.num]) do
+                      if reaper.GetTrackEnvelopeByName( tr, k ) then
+                        env = reaper.GetTrackEnvelopeByName( tr, k )
+                        chunk = v
+                      end
+                     end 
+                  local _, str = reaper.GetEnvelopeStateChunk(env, "", true)
+                  local trim = string.find(str, "PT")
+                  str = string.sub(str, 0,trim-3) -- trim it after
+                  local env_chunk = str .. chunk
+                  reaper.SetEnvelopeStateChunk(env, env_chunk, false )
+                  tbl.env[ch_box1.ver[ch_box1.num]] = box_env.num -- change check in original table
+  end
+  
+  box_env.onRClick = function()
+                    table.remove(tbl.env,box_env.num)
+                    if box_env.num > #set_env_box(cur_sel[1],"get_lenght") then box_env.num = #set_env_box(cur_sel[1],"get_lenght") end
+                    tbl.env[ch_box1.ver[ch_box1.num]] = #set_env_box(cur_sel[1],"get_lenght")
+  end
+  DRAW_C(env)
+end
+                     
 --------------------------------------------------------------------------------
 ---  Function Create Button ----------------------------------------------------
 --------------------------------------------------------------------------------
-function create_button(name,guid,chunk,ver_id,num)
+function create_button(name,guid,chunk,ver_id,num,env)
   local v_table = {chunk = chunk, ver_id = ver_id, name = name}
-  local box = Radio_Btns:new(105,50,120,20,  0.2,0.2,1.0,0.7, "","Arial",15,{0.7, 0.9, 1, 1},1, {v_table}, guid )
+  local env = env or { Volume = 0, Pan = 0, Width = 0, Last = 1}
+  local box = Radio_Btns:new(30,50,120,20,  0.2,0.2,1.0,0.7, "","Arial",15,{0.7, 0.9, 1, 1},1, {v_table}, guid , env)
   
   if not find_guid(guid) then -- if ID does not exist in the table create new checklist
     TrackTB[#TrackTB+1] = box -- add new box to TrackTB table
@@ -646,15 +789,15 @@ function create_button(name,guid,chunk,ver_id,num)
                     box.ver[box.num].name = version_name
                     
                   elseif r_click_menu.num == 5 then -- save current version (save modifications)
-                    if string.sub(chunk[1],1,1) == "{" then
+                    if string.sub(chunk[1],1,1) == "{" then -- FOLDER
                       for i = 1, #chunk do
                         local child = find_guid(chunk[i])
-                          if string.sub(child.ver[child.num].chunk[1],1,1) ~= "{" then
+                          if string.sub(child.ver[child.num].chunk[1],1,1) ~= "{" then -- NOT SUBFOLDER (SINCE IT CONTAINS ONLY GUIDS OF CHILDS AND VID)
                             child.ver[child.num].chunk = getTrackItems(reaper.BR_GetMediaTrackByGUID(0,child.guid))
                           end
                       end
                     else
-                      chunk = getTrackItems(reaper.BR_GetMediaTrackByGUID(0,box.guid))
+                      box.ver[box.num].chunk = getTrackItems(reaper.BR_GetMediaTrackByGUID(0,box.guid))
                     end
                   
                   elseif r_click_menu.num == 4 then --- DUPLICATE s                 
@@ -695,17 +838,16 @@ end
 ---  Function MAIN -------------------------------------------------------------
 --------------------------------------------------------------------------------
 function main()
-  --count_sel_tr = reaper.CountSelectedTracks()
-  --for i = 1, reaper.CountSelectedTracks() do
-   -- local sel_tr = reaper.GetSelectedTrack(0,i-1)
   local sel_tr = reaper.GetSelectedTrack(0,0) -- get track 
     if sel_tr then 
       cur_sel[1] = find_guid(reaper.GetTrackGUID(sel_tr)) -- VIEW CURRENT SELECTED TRACK VERSIONS       
       if #cur_sel ~= 0 then DRAW_B(Empty) end-- if track has no version hide empty button (to avoid deleting original items)
-      if reaper.GetMediaTrackInfo_Value(sel_tr, "I_FOLDERDEPTH") == 1 then DRAW_B(Folder) else DRAW_B(Track) end-- draw save folder button only if folder track is selected
+      if reaper.GetMediaTrackInfo_Value(sel_tr, "I_FOLDERDEPTH") == 1 then DRAW_B(Folder)end-- else DRAW_B(Track) end-- draw save folder button only if folder track is selected      
+      if reaper.GetSelectedEnvelope( 0 ) and #cur_sel ~= 0 then DRAW_B(Env) end -- dont show envelope button if there are no version and envelope is not selected
       DRAW_C(cur_sel)
+      set_env_box(cur_sel[1])
+      DRAW_CH(CheckBox_TB)
     end
-  --end
   track_deleted()
 end
 ----------------------------------------------------------------------------------------------------
@@ -722,6 +864,9 @@ function DRAW_F(tbl)
 end
 function DRAW_M(tbl)
     for key,menu    in pairs(tbl)   do menu:draw()   end
+end
+function DRAW_CH(tbl)
+    for key,ch_box  in pairs(tbl)   do ch_box:draw() end 
 end
 --------------------------------------------------------------------------------
 --   INIT   --------------------------------------------------------------------
@@ -761,6 +906,7 @@ function mainloop()
     -- DRAW,MAIN functions --
       main() -- Main()
       DRAW_F(Frame)  -- draw frame
+      DRAW_B(Track)
     -------------------------
     last_mouse_cap = gfx.mouse_cap
     last_x, last_y = gfx.mouse_x, gfx.mouse_y
