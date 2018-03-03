@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="a4ec2c75fb52f67cb21068f966608e886e0c86fa" name="Sexan_Scripts">
+<index version="1" commit="62db6c3a491ddbc8401e2c094a5fc9f54632f914" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track versions.lua" type="script" desc="Track versions.lua">
       <metadata>
@@ -55,6 +55,10 @@
       <version name="0.4" author="SeXan" time="2018-03-03T15:11:47Z">
         <changelog><![CDATA[+ added initial support for envelope versions (Volume,Pan,Width)]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/a4ec2c75fb52f67cb21068f966608e886e0c86fa/Alpha/Sexan_Track%20versions.lua</source>
+      </version>
+      <version name="0.41" author="SeXan" time="2018-03-03T15:21:39Z">
+        <changelog><![CDATA[+ added initial support for envelope versions (Volume,Pan,Width)]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/62db6c3a491ddbc8401e2c094a5fc9f54632f914/Alpha/Sexan_Track%20versions.lua</source>
       </version>
     </reapack>
   </category>
