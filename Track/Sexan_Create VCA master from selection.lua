@@ -5,13 +5,13 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 1.700
+ * Version: 1.710
 --]]
  
 --[[
  * Changelog:
- * v1.700 (2018-02-17)
-  + Added user setting "group range" for creating custom VCA ranges
+ * v1.710 (2018-03-03)
+  + fixed bug when creating groups from 32 to 64
 --]]
 
 -- USER SETTING
@@ -128,6 +128,7 @@ local function main()
     reaper.ShowMessageBox("Please select tracks to create VCA", "WARNING", 0)
   end
   -- IF VCA GROUP TABLE IS EMPTY DO NOT CREATE NEW GROUP
+  if group_range == 32 and vca_group[64] ~= 0 then return end -- if creating only from 32 to 64
   if #vca_group ~= 0 and cnt_sel > 0 then 
     -- ADD SELECTED TRACKS TO TABLE (FOR MAKING THEM VCA SLAVES)
     for i = 0, cnt_sel-1 do
