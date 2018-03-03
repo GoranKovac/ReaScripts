@@ -5,12 +5,12 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.4
+ * Version: 0.41
 --]]
  
 --[[
  * Changelog:
- * v0.4 (2018-03-03)
+ * v0.41 (2018-03-03)
   + added initial support for envelope versions (Volume,Pan,Width)
 --]]
 
