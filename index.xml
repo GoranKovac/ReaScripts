@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="1cd34a6d6ea720f63306335ac697be7ce56cd31d" name="Sexan_Scripts">
+<index version="1" commit="19b951b409f63e7b1f8eb3d89a01924aeda332f9" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track versions.lua" type="script" desc="Track versions.lua">
       <metadata>
@@ -238,6 +238,10 @@
       <version name="1.700" author="SeXan" time="2018-02-28T17:43:41Z">
         <changelog><![CDATA[+ Added user setting "group range" for creating custom VCA ranges]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/2867ebecc0d53b80c38af3c0a6a1f8c0faeb9cfa/Track/Sexan_Create%20VCA%20master%20from%20selection.lua</source>
+      </version>
+      <version name="1.710" author="SeXan" time="2018-03-03T10:54:50Z">
+        <changelog><![CDATA[+ fixed bug when creating groups from 32 to 64]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/19b951b409f63e7b1f8eb3d89a01924aeda332f9/Track/Sexan_Create%20VCA%20master%20from%20selection.lua</source>
       </version>
     </reapack>
     <reapack name="Sexan_Folder record monitor arming childs.lua" type="script" desc="Folder record monitor arming childs">
