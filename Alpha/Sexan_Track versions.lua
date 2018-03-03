@@ -5,13 +5,19 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.41
+ * Version: 0.42
 --]]
  
 --[[
  * Changelog:
- * v0.41 (2018-03-03)
-  + added initial support for envelope versions (Volume,Pan,Width)
+ * v0.42 (2018-03-03)
+  + added all track envelope types versions
+  + fixed bug when creating multiselection version folder and track (would crash),now when multiselecting tracks folders get priority over tracks
+  + show envelope menu only if there is saved envelope
+  + mouse wheel support on envelope menu box
+  + automatically show envelope menu if that envelope is selected
+  + fixed bug when selecting other tracks envelope would crash the script
+  
 --]]
 
 -- USER SETTINGS
@@ -21,6 +27,17 @@ local Wnd_W,Wnd_H = 220,220
 local cur_sel = {[1] = nil}
 TrackTB = {}
 local get_val
+
+local env_type =  {  
+              ["Volume"] = 1,
+              ["Pan"] = 0,
+              ["Width"] = 0,
+              ["Volume" .. " " .. "(Pre-FX)"] = 0,
+              ["Pan" .. " " .. "(Pre-FX)"] = 0,
+              ["Width" .. " " .. "(Pre-FX)"] = 0,
+              ["Trim" .. " " .. "Volume"] = 0,
+              ["Mute"] = 0
+            }
 ----------------------------------------------
 -- Pickle.lua
 --------------------------------------------
@@ -356,6 +373,12 @@ end
 --------------------------------------------------------------------------------
 ---   CheckBox Class Methods   -------------------------------------------------
 --------------------------------------------------------------------------------
+function CheckBox:set_val_m_wheel()
+    if gfx.mouse_wheel == 0 then return false end  -- return if m_wheel = 0
+    if gfx.mouse_wheel < 0 then self.num = math.min(self.num+1, #self.ver) end
+    if gfx.mouse_wheel > 0 then self.num = math.max(self.num-1, 1) end
+    return true
+end
 function CheckBox:set_num()
     local x,y,w,h  = self.x,self.y,self.w,self.h
     local val = self.num      -- current value,check
@@ -396,7 +419,11 @@ function CheckBox:draw()
     local fnt,fnt_sz = self.fnt, self.fnt_sz
     -- Get mouse state ---------
           -- in element --------
-          if self:mouseIN() then a=a+0.1 end
+          if self:mouseIN() then a=a+0.1 
+            if self:set_val_m_wheel() then         
+              if self.onClick then self.onClick() end 
+            end
+          end
           -- in elm L_down -----
           if self:mouseDown() then a=a+0.2 end
           -- in elm L_up(released and was previously pressed) --
@@ -579,6 +606,7 @@ end
 --    FUNCTION CREATE FOLDER ---------------------------------------------------
 --------------------------------------------------------------------------------
 function create_folder(tr,version_name,ver_id)
+  if reaper.GetMediaTrackInfo_Value(tr, "I_FOLDERDEPTH") ~= 1 then return end
   create_track(tr,version_name,ver_id) -- FOLDER 
   local childs = get_folder(tr)
   for i = 1, #childs do
@@ -625,7 +653,8 @@ function on_click_function(button)
       local version_name = naming(find_guid(guid),"V")
       if not version_name then return end
       button(tr, version_name, reaper.genGuid(),"track")
-      if version_name == "Original" then goto JUMP end -- make 2 versions as default Original and V1
+      if not find_guid(guid) then return elseif #find_guid(guid).ver == 1 then goto JUMP end -- better than original below (infinite loops when error)
+      --if version_name == "Original" then goto JUMP end -- make 2 versions as default Original and V1
     end
 end
 ---------------------------------------------------------------------------------------------------------
@@ -635,12 +664,16 @@ local save_env    = Button:new(125,15,30,20, 0.2,0.2,1.0,0, "ENV","Arial",15,{0.
 local save_track  = Button:new(15,15,32,20, 0.2,0.2,1.0,0, "Save","Arial",15,{0.7, 0.9, 1, 1}, 0 )
 local save_folder = Button:new(50,15,70,20, 0.2,0.2,1.0,0, "Save Folder","Arial",15,{0.7, 0.9, 1, 1}, 0 )
 local empty       = Button:new(165,15,40,20, 0.2,0.2,1.0,0, "Empty","Arial",15,{0.7, 0.9, 1, 1}, 0 )
-local ch_box1     = CheckBox:new(122,46,85,20,  0.2,0.5,0.6,0.3, "","Arial",15,{0.7, 0.9, 1, 1}, 1, {"Volume","Pan", "Width" } )
+local ch_box1     = CheckBox:new(122,46,85,20,  0.2,0.5,0.6,0.3, "","Arial",15,{0.7, 0.9, 1, 1}, 1, {} )
 local Folder, Empty, Track, Env, CheckBox_TB = {save_folder}, {empty}, {save_track}, {save_env}, {ch_box1}             
 local W_Frame, T_Frame = Frame:new(10,10,Wnd_W-20,Wnd_H-20,  0,0.5,2,0.4 ), Frame:new(10,10,200,30,  0,0.5,2,0.4 )
 local Frame = {W_Frame,T_Frame}
 local box_env = Radio_Btns:new(125,70,120,20,  0.3,0.8,0.3,0.7, "","Arial",15,{0.7, 0.9, 1, 1}, 1, {})
 local env = {box_env}
+
+for k, v in pairs(env_type) do
+  ch_box1.ver[#ch_box1.ver + 1] = k
+end
 --------------------------------------------------------------------------------
 ---  BUTTONS FUNCTIONS   ------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -672,6 +705,7 @@ function get_env()
   local retval, env_name = reaper.GetEnvelopeName(env, "")
   local env_tr = reaper.BR_EnvAlloc( env, false )
   if reaper.GetTrackGUID(reaper.BR_EnvGetParentTrack( env_tr )) ~= cur_sel[1].guid or ch_box1.ver[ch_box1.num] ~= env_name then return end -- do not create envelope version if from other track or does not match current checbox name
+  
   local tr = reaper.BR_GetMediaTrackByGUID(0,cur_sel[1].guid)
   local retval, str = reaper.GetEnvelopeStateChunk(env, "", true)
   local trim = string.find(str, "PT") -- find where point chunk begin
@@ -684,8 +718,18 @@ end
 ---  Function CHECKBOX FILTER TABLE  --------------------------------------------
 --------------------------------------------------------------------------------
 function set_env_box(tbl,job)
-  local temp = {}
   if not tbl then return end
+  local env = reaper.GetSelectedEnvelope( 0 )
+    if env then
+      local env_tr = reaper.BR_EnvAlloc( env, false )
+      if reaper.GetTrackGUID(reaper.BR_EnvGetParentTrack( env_tr )) == tbl.guid  then -- do not show other tracks envelope
+      local retval, env_name = reaper.GetEnvelopeName(env, "")
+        for i = 1 , #ch_box1.ver do
+          if env_name == ch_box1.ver[i] then tbl.env["Last"] = i end -- change envelope menu based on selected envelope
+        end
+      end
+    end
+  local temp = {}
   ch_box1.num = tbl.env["Last"]
   for k, v in pairs(tbl.env) do
     if type(v) ~= "number" then 
@@ -729,6 +773,7 @@ function envelope(tbl,data)
                     tbl.env[ch_box1.ver[ch_box1.num]] = #set_env_box(cur_sel[1],"get_lenght")
   end
   DRAW_C(env)
+  if #box_env.ver ~= 0 then DRAW_CH(CheckBox_TB) end -- draw envelope checkbox menu only if envelope data exists
 end
                      
 --------------------------------------------------------------------------------
@@ -736,7 +781,7 @@ end
 --------------------------------------------------------------------------------
 function create_button(name,guid,chunk,ver_id,num,env)
   local v_table = {chunk = chunk, ver_id = ver_id, name = name}
-  local env = env or { Volume = 0, Pan = 0, Width = 0, Last = 1}
+  local env = env or env_type
   local box = Radio_Btns:new(30,50,120,20,  0.2,0.2,1.0,0.7, "","Arial",15,{0.7, 0.9, 1, 1},1, {v_table}, guid , env)
   
   if not find_guid(guid) then -- if ID does not exist in the table create new checklist
@@ -846,7 +891,6 @@ function main()
       if reaper.GetSelectedEnvelope( 0 ) and #cur_sel ~= 0 then DRAW_B(Env) end -- dont show envelope button if there are no version and envelope is not selected
       DRAW_C(cur_sel)
       set_env_box(cur_sel[1])
-      DRAW_CH(CheckBox_TB)
     end
   track_deleted()
 end
