@@ -5,13 +5,14 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.45
+ * Version: 0.47
 --]]
  
 --[[
  * Changelog:
- * v0.45 (2018-03-04)
-  + do not allow storing envelope if not visible
+ * v0.47 (2018-03-04)
+  + Mousewheel support on envelope menu
+  + Disable saving envelopes if multiple tracks selected
  
 --]]
 
@@ -22,18 +23,17 @@ local Wnd_W,Wnd_H = 220,220
 local cur_sel = {[1] = nil}
 TrackTB = {}
 local get_val
-
 local env_type =  {  
-              [1] = {name = "Volume",                     v = 1},
-              [2] = {name = "Pan" ,                       v = 0},
-              [3] = {name = "Width",                      v = 0},
-              [4] = {name = "Volume".. " " .. "(Pre-FX)", v = 0},
-              [5] = {name = "Pan" .. " " .. "(Pre-FX)",   v = 0},
-              [6] = {name = "Width" .. " " .. "(Pre-FX)", v = 0},
-              [7] = {name = "Trim" .. " " .. "Volume",    v = 0},
-              [8] = {name = "Mute",                       v = 0},
-              [9] = {name = "Last",                       v = 1}
-            }
+                    [1] = {name = "Volume",                     v = 1},
+                    [2] = {name = "Pan" ,                       v = 0},
+                    [3] = {name = "Width",                      v = 0},
+                    [4] = {name = "Volume".. " " .. "(Pre-FX)", v = 0},
+                    [5] = {name = "Pan" .. " " .. "(Pre-FX)",   v = 0},
+                    [6] = {name = "Width" .. " " .. "(Pre-FX)", v = 0},
+                    [7] = {name = "Trim" .. " " .. "Volume",    v = 0},
+                    [8] = {name = "Mute",                       v = 0},
+                    [9] = {name = "Last",                       v = 1}
+                  }
 ----------------------------------------------
 -- Pickle.lua
 --------------------------------------------
@@ -416,15 +416,12 @@ function CheckBox:draw()
     -- Get mouse state ---------
           -- in element --------
           if self:mouseIN() then a=a+0.1 
-           -- if self:set_val_m_wheel() then         
-           --   if self.onClick then self.onClick() end 
-           -- end
+            if self:set_val_m_wheel() then
+              if self:onRClick() then self.onRClick() end
+            end
           end
           -- in elm L_down -----
           if self:mouseDown() then a=a+0.2 end
-          -- in elm L_up(released and was previously pressed) --
-          --if self:mouseClick() then self:set_num()
-          --if self:mouseRClick() then self:set_num() end
           if self:mouseRClick() and self.onRClick then self:set_num() self.onRClick() end
           if self:mouseClick() and self.onClick then self.onClick() end
           --end
@@ -653,7 +650,6 @@ function on_click_function(button)
       if not version_name then return end
       button(tr, version_name, reaper.genGuid(),"track")
       if not find_guid(guid) then return elseif #find_guid(guid).ver == 1 then goto JUMP end -- better than original below (infinite loops when error)
-      --if version_name == "Original" then goto JUMP end -- make 2 versions as default Original and V1
     end
 end
 ---------------------------------------------------------------------------------------------------------
@@ -666,8 +662,7 @@ local empty       = Button:new(165,15,40,20, 0.2,0.2,1.0,0, "Empty","Arial",15,{
 local ch_box1     = CheckBox:new(122,46,85,20,  0.2,0.5,0.6,0.3, "","Arial",15,{0.7, 0.9, 1, 1}, 1, {} )
 local box_env     = Radio_Btns:new(125,70,120,20,  0.3,0.8,0.3,0.7, "","Arial",15,{0.7, 0.9, 1, 1}, 1, {})
 local W_Frame, T_Frame = Frame:new(10,10,Wnd_W-20,Wnd_H-20,  0,0.5,2,0.4 ), Frame:new(10,10,200,30,  0,0.5,2,0.4 )
-local Folder, Empty, Track, Env, Frame = {save_folder}, {empty}, {save_track}, {save_env}, {W_Frame,T_Frame}
-local CheckBox_TB = {ch_box1} 
+local Folder, Empty, Track, Env, Frame, CheckBox_TB = {save_folder}, {empty}, {save_track}, {save_env}, {W_Frame,T_Frame}, {ch_box1}
 local env = {box_env}
 
 for i = 1, #env_type-1 do
@@ -690,9 +685,6 @@ end
 save_track.onClick = function()
                       on_click_function(create_track)
 end
---save_env.onClick = function()
---                      get_env()
---end
 ch_box1.onRClick = function()                  
                   cur_sel[1].env["Last"] = ch_box1.num -- Restore last checked menu
 end
@@ -807,8 +799,7 @@ function envelope(tbl,data)
     end
  
   if not sametrack then DRAW_C(env) end
-  DRAW_CH(CheckBox_TB)  
- -- if #box_env.ver ~= 0 then DRAW_CH(CheckBox_TB) end -- draw envelope checkbox menu only if envelope data exists
+  if reaper.CountSelectedTracks() < 2 then DRAW_CH(CheckBox_TB) end
 end
                      
 --------------------------------------------------------------------------------
@@ -908,7 +899,6 @@ function create_button(name,guid,chunk,ver_id,num,env)
   reaper.PreventUIRefresh(-1)
   reaper.UpdateArrange()                      
 end -- end create_button()
-
 --------------------------------------------------------------------------------
 ---  Function REMOVE PATTERNS FROM CHUNK ---------------------------------------
 --------------------------------------------------------------------------------
@@ -929,10 +919,8 @@ function main()
     if sel_tr then 
       cur_sel[1] = find_guid(reaper.GetTrackGUID(sel_tr)) -- VIEW CURRENT SELECTED TRACK VERSIONS       
       if #cur_sel ~= 0 then DRAW_B(Empty) end-- if track has no version hide empty button (to avoid deleting original items)
-      if reaper.GetMediaTrackInfo_Value(sel_tr, "I_FOLDERDEPTH") == 1 then DRAW_B(Folder)end-- else DRAW_B(Track) end-- draw save folder button only if folder track is selected      
-      --if reaper.GetSelectedEnvelope( 0 ) and #cur_sel ~= 0 and reaper.CountSelectedTracks(0) == 1 then DRAW_B(Env) end -- dont show envelope button if there are no version and envelope is not selected or if multiple tracks are selected
+      if reaper.GetMediaTrackInfo_Value(sel_tr, "I_FOLDERDEPTH") == 1 then DRAW_B(Folder)end-- else DRAW_B(Track) end-- draw save folder button only if folder track is selected            
       DRAW_C(cur_sel)
-      --DRAW_CH(CheckBox_TB)
       set_env_box(cur_sel[1])
     end
   track_deleted()
