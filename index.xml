@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="522bf689f11c96e963bd91e6da1feb42b123e3c3" name="Sexan_Scripts">
+<index version="1" commit="df8b148bcd743b9328af90d85a928288489c2869" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track versions.lua" type="script" desc="Track versions.lua">
       <metadata>
@@ -128,6 +128,11 @@
       </version>
       <version name="0.53" author="SeXan" time="2018-03-04T19:08:40Z">
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/522bf689f11c96e963bd91e6da1feb42b123e3c3/Alpha/Sexan_Track%20versions.lua</source>
+      </version>
+      <version name="0.54" author="SeXan" time="2018-03-04T20:07:41Z">
+        <changelog><![CDATA[+ More naming fixes and crash fix
++ user option to store original track]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/df8b148bcd743b9328af90d85a928288489c2869/Alpha/Sexan_Track%20versions.lua</source>
       </version>
     </reapack>
   </category>
