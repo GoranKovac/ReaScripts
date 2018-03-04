@@ -5,18 +5,20 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.53
+ * Version: 0.54
 --]]
  
 --[[
- * Changelog:sa
- * v0.53 (2018-03-04)
-  + fix color error
+ * Changelog:
+ * v0.54 (2018-03-04)
+  + More naming fixes and crash fix
+  + user option to store original track
 --]]
 
 -- USER SETTINGS
 local manual_naming = true
 local color = 0 -- 1 for checkboxes, 2 for fonts , 3 for both, 0 for default
+local store_original = 1 -- set 0 to disable storing original version
 ----------------------------
 local Wnd_W,Wnd_H = 220,220
 local cur_sel = {[1] = nil}
@@ -104,8 +106,6 @@ function unpickle(s)
   end
   return tables[1]
 end
---------------------------------------------------------------------------------
--- EUGENE 27777 GUI TEMPLATE
 --------------------------------------------------------------------------------
 ---   Simple Element Class   ---------------------------------------------------
 --------------------------------------------------------------------------------
@@ -623,15 +623,17 @@ end
 --------------------------------------------------------------------------------
 local pass_name
 function naming(tbl,string,v_id)
-  if tbl == nil then return "Original" end
-    if manual_naming and not pass_name then
-      local retval, name = reaper.GetUserInputs("Version name ", 1, "Version Name :", "")  
-      if not retval or name == "" then return end
-      pass_name = name
-      return pass_name
-    else
-      return pass_name
-    end
+  if store_original == 1 then if tbl == nil then return "Original" end end
+  
+  if manual_naming and not pass_name then
+    local retval, name = reaper.GetUserInputs("Version name ", 1, "Version Name :", "")  
+    if not retval or name == "" then return end
+    pass_name = name
+    return pass_name
+  else
+    return pass_name
+  end
+  
   local name,counter = nil, 0
   for i = 1, #tbl.ver do
     if string == "V" and (#tbl.ver[i].ver_id == 38) then counter = counter + 1
@@ -655,8 +657,10 @@ function on_click_function(button)
       if sel_tr_count > 1 then version_name = "M - " .. version_name end
       if reaper.GetMediaTrackInfo_Value(tr, "I_FOLDERDEPTH") == 1 then version_name = "F - " .. version_name end
       if not version_name then return end
-      button(tr, version_name, reaper.genGuid(),"track")
+      button(tr, version_name, reaper.genGuid(),"track") -- "track" to exclued creating folder chunk in gettrackitems function (would result a crash)
+      if store_original == 1 then
       if not find_guid(guid) then return elseif #find_guid(guid).ver == 1 then goto JUMP end -- better than original below (infinite loops when error)
+      end
     end
     pass_name = nil
 end
@@ -862,6 +866,7 @@ function create_button(name,guid,chunk,ver_id,num,env)
                     local items = tr.ver[box.num].chunk -- items or tracks (based on if is a track or folder)
                     restoreTrackItems(tr.guid,items,box.num)
                   end
+                  
   end -- end box.onClick
   box.onRClick =  function()
                   local r_click_menu = Menu:new(box.x,box.y,box.w,box.h,0.6,0.6,0.6,0.3,"Chan :","Arial",15,{0.7, 0.9, 1, 1},-1,
@@ -891,10 +896,11 @@ function create_button(name,guid,chunk,ver_id,num,env)
                     update_tbl() -- CHECK AND REMOVE BUTTON FROM MAIN TABLE IF VERSION IS EMPTY
                      
                   elseif r_click_menu.num == 3 then --- rename button
-                    local retval, version_name = reaper.GetUserInputs("Rename Version ", 1, "Version Name :", "")  
-                    if not retval or version_name == "" then return end
-                    box.ver[get_val].name = version_name
-                    
+                    if box.ver[get_val].name ~= "Original" then -- prevent renaming original
+                      local retval, version_name = reaper.GetUserInputs("Rename Version ", 1, "Version Name :", "")  
+                      if not retval or version_name == "" then return end
+                      box.ver[get_val].name = version_name
+                    end
                   elseif r_click_menu.num == 5 then -- save current version (save modifications)
                     if string.sub(chunk[1],1,1) == "{" then -- FOLDER
                       for i = 1, #chunk do
@@ -947,18 +953,19 @@ end
 ---  Function SET COLORS -------------------------------------------------------
 --------------------------------------------------------------------------------
 function set_color(tr,tbl,job)
+  if not tbl then return end
+  local tbl_col = {tbl, env[1]}
   local col =  reaper.GetTrackColor( tr )
   local r, g, b = reaper.ColorFromNative( col )
   r,g,b = round(r/255,1), round(g/255,1), round(b/255,1)
-  for i = 1, #tbl do
-    if tbl[i] == nil then return end
+  for i = 1, #tbl_col do
   if job == 1 then
-    tbl[i].r,tbl[i].g,tbl[i].b = r,g,b
+    tbl_col[i].r,tbl_col[i].g,tbl_col[i].b = r,g,b
   elseif job == 2 then
-    tbl[i].fnt_rgba = {r,g,b,1}
+    tbl_col[i].fnt_rgba = {r,g,b,1}
   elseif job == 3 then 
-    tbl[i].r,tbl[i].g,tbl[i].b = r,g,b
-    tbl[i].fnt_rgba = {r,g,b,1}
+    tbl_col[i].r,tbl_col[i].g,tbl_col[i].b = r,g,b
+    tbl_col[i].fnt_rgba = {r,g,b,1}
   end
   end
 end
@@ -969,7 +976,7 @@ function main()
   local sel_tr = reaper.GetSelectedTrack(0,0) -- get track 
     if sel_tr then
       cur_sel[1] = find_guid(reaper.GetTrackGUID(sel_tr)) -- VIEW CURRENT SELECTED TRACK VERSIONS
-      set_color(sel_tr,{cur_sel[1],env[1]},color)
+      set_color(sel_tr,cur_sel[1],color)
       if #cur_sel ~= 0 then DRAW_B(Empty) end-- if track has no version hide empty button (to avoid deleting original items)
       if reaper.GetMediaTrackInfo_Value(sel_tr, "I_FOLDERDEPTH") == 1 then DRAW_B(Folder)end-- else DRAW_B(Track) end-- draw save folder button only if folder track is selected            
       DRAW_C(cur_sel)
