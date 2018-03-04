@@ -5,18 +5,17 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.54
+ * Version: 0.55
 --]]
  
 --[[
  * Changelog:
- * v0.54 (2018-03-04)
-  + More naming fixes and crash fix
-  + user option to store original track
+ * v0.55 (2018-03-04)
+  + Stupid errors with naming
 --]]
 
 -- USER SETTINGS
-local manual_naming = true
+local manual_naming = false
 local color = 0 -- 1 for checkboxes, 2 for fonts , 3 for both, 0 for default
 local store_original = 1 -- set 0 to disable storing original version
 ----------------------------
@@ -626,11 +625,9 @@ function naming(tbl,string,v_id)
   if store_original == 1 then if tbl == nil then return "Original" end end
   
   if manual_naming and not pass_name then
-    local retval, name = reaper.GetUserInputs("Version name ", 1, "Version Name :", "")  
+    local retval, name = reaper.GetUserInputs("Version name ", 1, "Version Name :", "")
     if not retval or name == "" then return end
     pass_name = name
-    return pass_name
-  else
     return pass_name
   end
   
@@ -654,9 +651,9 @@ function on_click_function(button)
       local tr = reaper.GetSelectedTrack(0, i-1)
       local guid = reaper.GetTrackGUID(tr)
       local version_name = naming(find_guid(guid),"V")
-      if sel_tr_count > 1 then version_name = "M - " .. version_name end
-      if reaper.GetMediaTrackInfo_Value(tr, "I_FOLDERDEPTH") == 1 then version_name = "F - " .. version_name end
       if not version_name then return end
+      if sel_tr_count > 1 then version_name = "M - " .. version_name end
+      if reaper.GetMediaTrackInfo_Value(tr, "I_FOLDERDEPTH") == 1 then version_name = "F - " .. version_name end      
       button(tr, version_name, reaper.genGuid(),"track") -- "track" to exclued creating folder chunk in gettrackitems function (would result a crash)
       if store_original == 1 then
       if not find_guid(guid) then return elseif #find_guid(guid).ver == 1 then goto JUMP end -- better than original below (infinite loops when error)
