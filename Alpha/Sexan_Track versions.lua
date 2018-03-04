@@ -5,33 +5,34 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.48
+ * Version: 0.5
 --]]
  
 --[[
  * Changelog:
- * v0.48 (2018-03-04)
-  + envelope right click menu
- 
+ * v0.5 (2018-03-04)
+  + GUI Stores position (dock,x,y)
+  + added user option to color font,checkboxes or both
 --]]
 
 -- USER SETTINGS
 local manual_naming = false
+local color = 0 -- 1 for checkboxes, 2 for fonts , 3 for both, 0 for default
 ----------------------------
 local Wnd_W,Wnd_H = 220,220
 local cur_sel = {[1] = nil}
 TrackTB = {}
 local get_val
 local env_type =  {  
-                    [1] = {name = "Volume",                     v = 1},
-                    [2] = {name = "Pan" ,                       v = 0},
-                    [3] = {name = "Width",                      v = 0},
-                    [4] = {name = "Volume".. " " .. "(Pre-FX)", v = 0},
-                    [5] = {name = "Pan" .. " " .. "(Pre-FX)",   v = 0},
-                    [6] = {name = "Width" .. " " .. "(Pre-FX)", v = 0},
-                    [7] = {name = "Trim" .. " " .. "Volume",    v = 0},
-                    [8] = {name = "Mute",                       v = 0},
-                    [9] = {name = "Last_menu",                       v = 1}
+                    [1] = {name = "Volume",                       v = 1},
+                    [2] = {name = "Pan" ,                         v = 0},
+                    [3] = {name = "Width",                        v = 0},
+                    [4] = {name = "Volume".. " " .. "(Pre-FX)",   v = 0},
+                    [5] = {name = "Pan"   .. " " .. "(Pre-FX)",   v = 0},
+                    [6] = {name = "Width" .. " " .. "(Pre-FX)",   v = 0},
+                    [7] = {name = "Trim"  .. " " .. "Volume",     v = 0},
+                    [8] = {name = "Mute",                         v = 0},
+                    [9] = {name = "Last_menu",                    v = 1}
                   }
 ----------------------------------------------
 -- Pickle.lua
@@ -454,6 +455,7 @@ local function save_tracks()
       all_button_states[#all_button_states+1] = {guid = v.guid, ver = v.ver, num = v.num, env = v.env}
     end 
   reaper.SetProjExtState(0, "Track_Versions", "States", pickle(all_button_states))
+  store_gui()
 end
 -----------------------------------------------------
 --- Function: Restore Saved Buttons From extstate ---
@@ -751,7 +753,7 @@ end
 --------------------------------------------------------------------------------
 ---  Function SET ENVELOPE VERSION  --------------------------------------------
 --------------------------------------------------------------------------------
-function envelope(tbl,data)  
+function envelope(tbl,data) 
   ch_box1.num = tbl.env["Last_menu"] -- restore last checked menu
   if not tbl then return end
   box_env.num, box_env.ver = tbl.env[ch_box1.ver[ch_box1.num]], data -- set stored num from main table (Volume,Pan,Width), set data table as ver
@@ -766,25 +768,24 @@ function envelope(tbl,data)
   end
   
   box_env.onRClick = function()
-                      local r_click_menu = Menu:new(box_env.x,box_env.y,box_env.w,box_env.h,0.6,0.6,0.6,0.3,"Chan :","Arial",15,{0.7, 0.9, 1, 1},-1,
+                    local r_click_menu = Menu:new(box_env.x,box_env.y,box_env.w,box_env.h,0.6,0.6,0.6,0.3,"Chan :","Arial",15,{0.7, 0.9, 1, 1},-1,
                                                                           {"Delete Version","Rename Version","Save current version"})
-                      local menu_TB = {r_click_menu}
-                      DRAW_M(menu_TB)
-                      
-                    local env_id = box_env.ver[box_env.num].id
+                    local menu_TB = {r_click_menu}
+                    DRAW_M(menu_TB)
+                    local env_id = box_env.ver[box_env.num].id --selected
+                    --local env_id = box_env.ver[get_val].id --highlighted
                     local env_type = ch_box1.ver[ch_box1.num]
                     
                     if r_click_menu.num == -1 then return -- nothing clicked
                                      
                     elseif r_click_menu.num == 1 then --- delete version
-                      --local env_id = box_env.ver[box_env.num].id
                         table.remove(box_env.ver,box_env.num) -- remove from envelope button
                           for i = #tbl.env , 1, -1 do
                             if tbl.env[i].id == env_id then table.remove(tbl.env,i) end -- remove from main button
                           end
-                      if box_env.num > #set_env_box(cur_sel[1],"get_lenght") then 
-                        tbl.env[ch_box1.ver[ch_box1.num]] = #set_env_box(cur_sel[1],"get_lenght") 
-                        box_env.num = #set_env_box(cur_sel[1],"get_lenght")
+                      if box_env.num > #set_env_box(cur_sel[1],"get") then 
+                        tbl.env[ch_box1.ver[ch_box1.num]] = #set_env_box(cur_sel[1],"get") 
+                        box_env.num = #set_env_box(cur_sel[1],"get")
                       end
                       if box_env.num ~= 0 then
                         local point_chunk = box_env.ver[box_env.num][ch_box1.ver[ch_box1.num]]
@@ -796,7 +797,6 @@ function envelope(tbl,data)
                     elseif r_click_menu.num == 2 then --- rename version
                       local retval, version_name = reaper.GetUserInputs("Rename Version ", 1, "Version Name :", "")  
                       if not retval or version_name == "" then return end
-                      --local env_id = box_env.ver[box_env.num].id
                         for i = #tbl.env , 1, -1 do
                           if tbl.env[i].id == env_id then tbl.env[i].name = version_name end -- remove from main button
                         end
@@ -820,8 +820,8 @@ function envelope(tbl,data)
         end
     end
  
-  if not sametrack then DRAW_C(env) end
-  if reaper.CountSelectedTracks() < 2 then DRAW_CH(CheckBox_TB) end
+  if not sametrack then DRAW_C(env) end -- if other track envelope is selected do not show versions
+  if reaper.CountSelectedTracks() < 2 then DRAW_CH(CheckBox_TB) end -- disable checbox envelope button if multiple tracks selected
 end
                      
 --------------------------------------------------------------------------------
@@ -930,16 +930,38 @@ function pattern(chunk)
   return chunk
 end
 --------------------------------------------------------------------------------
----  Function SAVE GUI SETTING  ------------------------------------------------
+---  Function round number  ------------------------------------------------
 --------------------------------------------------------------------------------
-
+function round(num, numDecimalPlaces)
+  local mult = 10^(numDecimalPlaces or 0)
+  return math.floor(num * mult + 0.5) / mult
+end
+--------------------------------------------------------------------------------
+---  Function SET COLORS -------------------------------------------------------
+--------------------------------------------------------------------------------
+function set_color(tr,tbl,job)  
+  local col =  reaper.GetTrackColor( tr )
+  local r, g, b = reaper.ColorFromNative( col )
+  r,g,b = round(r/255,1), round(g/255,1), round(b/255,1)
+  for i = 1, #tbl do
+  if job == 1 then
+    tbl[i].r,tbl[i].g,tbl[i].b = r,g,b
+  elseif job == 2 then
+    tbl[i].fnt_rgba = {r,g,b,1}
+  elseif job == 3 then 
+    tbl[i].r,tbl[i].g,tbl[i].b = r,g,b
+    tbl[i].fnt_rgba = {r,g,b,1}
+  end
+  end
+end
 --------------------------------------------------------------------------------
 ---  Function MAIN -------------------------------------------------------------
 --------------------------------------------------------------------------------
 function main()
   local sel_tr = reaper.GetSelectedTrack(0,0) -- get track 
-    if sel_tr then 
-      cur_sel[1] = find_guid(reaper.GetTrackGUID(sel_tr)) -- VIEW CURRENT SELECTED TRACK VERSIONS       
+    if sel_tr then
+      cur_sel[1] = find_guid(reaper.GetTrackGUID(sel_tr)) -- VIEW CURRENT SELECTED TRACK VERSIONS
+      set_color(sel_tr,{cur_sel[1],env[1]},color)
       if #cur_sel ~= 0 then DRAW_B(Empty) end-- if track has no version hide empty button (to avoid deleting original items)
       if reaper.GetMediaTrackInfo_Value(sel_tr, "I_FOLDERDEPTH") == 1 then DRAW_B(Folder)end-- else DRAW_B(Track) end-- draw save folder button only if folder track is selected            
       DRAW_C(cur_sel)
@@ -966,6 +988,15 @@ function DRAW_CH(tbl)
     for key,ch_box  in pairs(tbl)   do ch_box:draw() end 
 end
 --------------------------------------------------------------------------------
+--   SAVE GUI   ----------------------------------------------------------------
+--------------------------------------------------------------------------------
+function store_gui()
+  dock, x, y, w, h = gfx.dock(-1,0,0,0,0)
+  gui_pos =  {dock = dock , x = x, y = y, w = w , h = h }
+  AAA = gui_pos
+  reaper.SetProjExtState(0, "Track_Versions", "Dock_state", pickle(gui_pos))
+end
+--------------------------------------------------------------------------------
 --   INIT   --------------------------------------------------------------------
 --------------------------------------------------------------------------------
 function Init()
@@ -973,11 +1004,16 @@ function Init()
     local R,G,B = 20,20,20               -- 0..255 form
     local Wnd_bgd = R + G*256 + B*65536  -- red+green*256+blue*65536  
     local Wnd_Title = "Schwa for President!"
-    local Wnd_Dock,Wnd_X,Wnd_Y = 0,100,320
+    --local Wnd_X,Wnd_Y = 100,320
     Wnd_W,Wnd_H = Wnd_W,Wnd_H -- global values(used for define zoom level)
     -- Init window ------
+    local ok, state = reaper.GetProjExtState(0, "Track_Versions", "Dock_state")
+    if state ~= "" then state = unpickle(state) end
+        Wnd_Dock = state.dock or -1
+        Wnd_X = state.x or 100
+        Wnd_Y = state.y or 320
     gfx.clear = Wnd_bgd         
-    gfx.init( Wnd_Title, Wnd_W,Wnd_H, Wnd_Dock, Wnd_X,Wnd_Y )
+    gfx.init( Wnd_Title, Wnd_W,Wnd_H, Wnd_Dock, Wnd_X, Wnd_Y )
     -- Init mouse last --
     last_mouse_cap = 0
     last_x, last_y = 0, 0
