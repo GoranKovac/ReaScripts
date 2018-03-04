@@ -5,14 +5,14 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.50
+ * Version: 0.51
 --]]
  
 --[[
  * Changelog:
- * v0.50 (2018-03-04)
-  + GUI Stores position (dock,x,y)
-  + added user option to color font,checkboxes or both
+ * v0.51 (2018-03-04)
+  + fixed global store settings loop because of deleted tracks
+  + now its run only when deleted tracks action is found
 --]]
 
 -- USER SETTINGS
@@ -967,7 +967,15 @@ function main()
       DRAW_C(cur_sel)
       set_env_box(cur_sel[1])
     end
-  track_deleted()
+    
+    local proj_change_count = reaper.GetProjectStateChangeCount(0)
+     if proj_change_count > last_proj_change_count then
+       local last_action = reaper.Undo_CanUndo2(0)
+       if last_action ~= nil then
+         if last_action:find("Remove tracks") then track_deleted() end -- run only if action "Remove tracks" is found
+       end
+       last_proj_change_count = proj_change_count
+     end
 end
 ----------------------------------------------------------------------------------------------------
 ---   Main DRAW function   -------------------------------------------------------------------------
@@ -993,13 +1001,13 @@ end
 function store_gui()
   dock, x, y, w, h = gfx.dock(-1,0,0,0,0)
   gui_pos =  {dock = dock , x = x, y = y, w = w , h = h }
-  AAA = gui_pos
   reaper.SetProjExtState(0, "Track_Versions", "Dock_state", pickle(gui_pos))
 end
 --------------------------------------------------------------------------------
 --   INIT   --------------------------------------------------------------------
 --------------------------------------------------------------------------------
 function Init()
+    last_proj_change_count = reaper.GetProjectStateChangeCount(0)
     -- Some gfx Wnd Default Values --
     local R,G,B = 20,20,20               -- 0..255 form
     local Wnd_bgd = R + G*256 + B*65536  -- red+green*256+blue*65536  
@@ -1009,9 +1017,9 @@ function Init()
     -- Init window ------
     local ok, state = reaper.GetProjExtState(0, "Track_Versions", "Dock_state")
     if state ~= "" then state = unpickle(state) end
-        Wnd_Dock = state.dock or -1
-        Wnd_X = state.x or 100
-        Wnd_Y = state.y or 320
+    Wnd_Dock = state.dock or 0
+    Wnd_X = state.x or 100
+    Wnd_Y = state.y or 320
     gfx.clear = Wnd_bgd         
     gfx.init( Wnd_Title, Wnd_W,Wnd_H, Wnd_Dock, Wnd_X, Wnd_Y )
     -- Init mouse last --
