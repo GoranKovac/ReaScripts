@@ -5,19 +5,19 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.56
+ * Version: 0.57
 --]]
  
 --[[
  * Changelog:
- * v0.56 (2018-03-04)
-  + spk77 weird folders fix
+ * v0.57 (2018-03-04)
+  + removed store original setting
 --]]
 
 -- USER SETTINGS
 local manual_naming = false
 local color = 0 -- 1 for checkboxes, 2 for fonts , 3 for both, 0 for default
-local store_original = 1 -- set 0 to disable storing original version
+--local store_original = 1 -- set 0 to disable storing original version
 ----------------------------
 local Wnd_W,Wnd_H = 220,220
 local cur_sel = {[1] = nil}
@@ -622,7 +622,7 @@ end
 --------------------------------------------------------------------------------
 local pass_name
 function naming(tbl,string,v_id)
-  if store_original == 1 then if tbl == nil then return "Original" end end
+  if tbl == nil then return "Original" end 
   
   if manual_naming and not pass_name then
     local retval, name = reaper.GetUserInputs("Version name ", 1, "Version Name :", "")
@@ -655,9 +655,9 @@ function on_click_function(button)
       if sel_tr_count > 1 then version_name = "M - " .. version_name end
       if reaper.GetMediaTrackInfo_Value(tr, "I_FOLDERDEPTH") == 1 then version_name = "F - " .. version_name end      
       button(tr, version_name, reaper.genGuid(),"track") -- "track" to exclued creating folder chunk in gettrackitems function (would result a crash)
-      if store_original == 1 then
+      --if store_original == 1 then
       if not find_guid(guid) then return elseif #find_guid(guid).ver == 1 then goto JUMP end -- better than original below (infinite loops when error)
-      end
+      --end
     end
     pass_name = nil
 end
