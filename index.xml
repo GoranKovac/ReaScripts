@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="2bbff83af8035aa567cd11967e431640c42ed73e" name="Sexan_Scripts">
+<index version="1" commit="980681792f7c201bfe042b419c24bf400f2a75ae" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track versions.lua" type="script" desc="Track versions.lua">
       <metadata>
@@ -80,6 +80,19 @@
 + show selected envelope version if selected, if not then choose selection
 + saving envelopes do not require selecting it]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/2bbff83af8035aa567cd11967e431640c42ed73e/Alpha/Sexan_Track%20versions.lua</source>
+      </version>
+      <version name="0.44" author="SeXan" time="2018-03-04T14:36:30Z">
+        <changelog><![CDATA[+ one envelope button (left click saves , right click opens menu)
++ Right click on envelope version removes it
++ disabled saving envelopes if multiple tracks are selected (for now)
++ envelope code improvement
++ fixed incorect removing of envelopes versions
++ fixed envelope restoration after removing
++ disabled showing envelope versions if envelope of other track is selected
++ show selected envelope version if selected, if not then choose selection
++ saving envelopes do not require selecting it  
++ fixed small bug that would crash the script]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/980681792f7c201bfe042b419c24bf400f2a75ae/Alpha/Sexan_Track%20versions.lua</source>
       </version>
     </reapack>
   </category>
