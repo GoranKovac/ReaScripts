@@ -5,12 +5,12 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.5
+ * Version: 0.50
 --]]
  
 --[[
  * Changelog:
- * v0.5 (2018-03-04)
+ * v0.50 (2018-03-04)
   + GUI Stores position (dock,x,y)
   + added user option to color font,checkboxes or both
 --]]
