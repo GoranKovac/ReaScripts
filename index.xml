@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="a5c73f8144e4f24a6dd12d0a23dae028bbb47c2b" name="Sexan_Scripts">
+<index version="1" commit="4fc49d5154d31a7451e6dc31f44e61bed1c5abe1" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track versions.lua" type="script" desc="Track versions.lua">
       <metadata>
@@ -121,6 +121,10 @@
         <changelog><![CDATA[+ fixed global store settings loop because of deleted tracks
 + now its run only when deleted tracks action is found]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/a5c73f8144e4f24a6dd12d0a23dae028bbb47c2b/Alpha/Sexan_Track%20versions.lua</source>
+      </version>
+      <version name="0.52" author="SeXan" time="2018-03-04T18:46:47Z">
+        <changelog><![CDATA[+ manual naming changes and fixes]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/4fc49d5154d31a7451e6dc31f44e61bed1c5abe1/Alpha/Sexan_Track%20versions.lua</source>
       </version>
     </reapack>
   </category>
