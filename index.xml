@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="1cc716287f2bc0a646dbb53fec347ce68daf5912" name="Sexan_Scripts">
+<index version="1" commit="0aae0f5839406f68fc0c6b6d7b513e9a93cb0f94" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track versions.lua" type="script" desc="Track versions.lua">
       <metadata>
@@ -97,6 +97,11 @@
       <version name="0.45" author="SeXan" time="2018-03-04T14:46:32Z">
         <changelog><![CDATA[+ do not allow storing envelope if not visible]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/1cc716287f2bc0a646dbb53fec347ce68daf5912/Alpha/Sexan_Track%20versions.lua</source>
+      </version>
+      <version name="0.47" author="SeXan" time="2018-03-04T15:06:02Z">
+        <changelog><![CDATA[+ Mousewheel support on envelope menu
++ Disable saving envelopes if multiple tracks selected]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/0aae0f5839406f68fc0c6b6d7b513e9a93cb0f94/Alpha/Sexan_Track%20versions.lua</source>
       </version>
     </reapack>
   </category>
