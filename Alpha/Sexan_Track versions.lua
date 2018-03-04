@@ -5,23 +5,14 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.44
+ * Version: 0.45
 --]]
  
 --[[
  * Changelog:
- * v0.44 (2018-03-04)
-  + one envelope button (left click saves , right click opens menu)
-  + Right click on envelope version removes it
-  + disabled saving envelopes if multiple tracks are selected (for now)
-  + envelope code improvement
-  + fixed incorect removing of envelopes versions
-  + fixed envelope restoration after removing
-  + disabled showing envelope versions if envelope of other track is selected
-  + show selected envelope version if selected, if not then choose selection
-  + saving envelopes do not require selecting it  
-  + fixed small bug that would crash the script
-  
+ * v0.45 (2018-03-04)
+  + do not allow storing envelope if not visible
+ 
 --]]
 
 -- USER SETTINGS
@@ -727,6 +718,12 @@ function get_env()
     if reaper.GetTrackGUID(reaper.BR_EnvGetParentTrack( env_tr )) ~= cur_sel[1].guid then return end -- do not create envelope version if from other track  
   end
   if not env then return end
+  
+  local retval, strNeedBig = reaper.GetEnvelopeStateChunk(env, "", true)
+  local visible = string.find(strNeedBig, "VIS 1")
+  
+  if not visible then return end
+  
   reaper.Main_OnCommand(40331,0) -- unselect all points
   local retval, str = reaper.GetEnvelopeStateChunk(env, "", true) -- save current envelope chunk
   local trim = string.find(str, "PT") -- find where point chunk begins
