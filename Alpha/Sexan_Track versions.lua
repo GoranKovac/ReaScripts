@@ -5,13 +5,13 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.55
+ * Version: 0.56
 --]]
  
 --[[
  * Changelog:
- * v0.55 (2018-03-04)
-  + Stupid errors with naming
+ * v0.56 (2018-03-04)
+  + spk77 weird folders fix
 --]]
 
 -- USER SETTINGS
@@ -588,12 +588,12 @@ function get_folder(tr)
   if reaper.GetMediaTrackInfo_Value(tr, "I_FOLDERDEPTH") <= 0 then return end -- ignore tracks and last folder child
   local depth, children =  0, {}
   local folderID = reaper.GetMediaTrackInfo_Value(tr, "IP_TRACKNUMBER")-1
-    for i = folderID + 1 , reaper.CountTracks(0) do -- start from first track after folder
+    for i = folderID + 1 , reaper.CountTracks(0)-1 do -- start from first track after folder
       local child = reaper.GetTrack(0,i)
       local currDepth = reaper.GetMediaTrackInfo_Value(child, "I_FOLDERDEPTH")
       children[#children+1] = reaper.GetTrackGUID(child)--insert child into array
       depth = depth + currDepth
-      if depth < 0 then break end --until we are out of folder 
+      if depth <= -1 then break end --until we are out of folder 
     end
   return children -- if we only getting folder childs
 end
