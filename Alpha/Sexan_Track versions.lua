@@ -5,13 +5,13 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.52
+ * Version: 0.53
 --]]
  
 --[[
- * Changelog:
- * v0.52 (2018-03-04)
-  + manual naming changes and fixes
+ * Changelog:sa
+ * v0.53 (2018-03-04)
+  + fix color error
 --]]
 
 -- USER SETTINGS
@@ -946,11 +946,12 @@ end
 --------------------------------------------------------------------------------
 ---  Function SET COLORS -------------------------------------------------------
 --------------------------------------------------------------------------------
-function set_color(tr,tbl,job)  
+function set_color(tr,tbl,job)
   local col =  reaper.GetTrackColor( tr )
   local r, g, b = reaper.ColorFromNative( col )
   r,g,b = round(r/255,1), round(g/255,1), round(b/255,1)
   for i = 1, #tbl do
+    if tbl[i] == nil then return end
   if job == 1 then
     tbl[i].r,tbl[i].g,tbl[i].b = r,g,b
   elseif job == 2 then
