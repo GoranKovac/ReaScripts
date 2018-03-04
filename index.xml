@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="980681792f7c201bfe042b419c24bf400f2a75ae" name="Sexan_Scripts">
+<index version="1" commit="1cc716287f2bc0a646dbb53fec347ce68daf5912" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track versions.lua" type="script" desc="Track versions.lua">
       <metadata>
@@ -93,6 +93,10 @@
 + saving envelopes do not require selecting it  
 + fixed small bug that would crash the script]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/980681792f7c201bfe042b419c24bf400f2a75ae/Alpha/Sexan_Track%20versions.lua</source>
+      </version>
+      <version name="0.45" author="SeXan" time="2018-03-04T14:46:32Z">
+        <changelog><![CDATA[+ do not allow storing envelope if not visible]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/1cc716287f2bc0a646dbb53fec347ce68daf5912/Alpha/Sexan_Track%20versions.lua</source>
       </version>
     </reapack>
   </category>
