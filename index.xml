@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="c4c260871036ae6d58f6dd27c8a2f2e2179e54de" name="Sexan_Scripts">
+<index version="1" commit="a5c73f8144e4f24a6dd12d0a23dae028bbb47c2b" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track versions.lua" type="script" desc="Track versions.lua">
       <metadata>
@@ -116,6 +116,11 @@
         <changelog><![CDATA[+ GUI Stores position (dock,x,y)
 + added user option to color font,checkboxes or both]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/c4c260871036ae6d58f6dd27c8a2f2e2179e54de/Alpha/Sexan_Track%20versions.lua</source>
+      </version>
+      <version name="0.51" author="SeXan" time="2018-03-04T18:11:30Z">
+        <changelog><![CDATA[+ fixed global store settings loop because of deleted tracks
++ now its run only when deleted tracks action is found]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/a5c73f8144e4f24a6dd12d0a23dae028bbb47c2b/Alpha/Sexan_Track%20versions.lua</source>
       </version>
     </reapack>
   </category>
