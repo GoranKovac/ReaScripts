@@ -5,18 +5,17 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.51
+ * Version: 0.52
 --]]
  
 --[[
  * Changelog:
- * v0.51 (2018-03-04)
-  + fixed global store settings loop because of deleted tracks
-  + now its run only when deleted tracks action is found
+ * v0.52 (2018-03-04)
+  + manual naming changes and fixes
 --]]
 
 -- USER SETTINGS
-local manual_naming = false
+local manual_naming = true
 local color = 0 -- 1 for checkboxes, 2 for fonts , 3 for both, 0 for default
 ----------------------------
 local Wnd_W,Wnd_H = 220,220
@@ -604,7 +603,8 @@ end
 --------------------------------------------------------------------------------
 function create_folder(tr,version_name,ver_id)
   if reaper.GetMediaTrackInfo_Value(tr, "I_FOLDERDEPTH") ~= 1 then return end
-  create_track(tr,version_name,ver_id) -- FOLDER 
+  local trim_name = string.sub(version_name, 5) -- exclue "F -" from main folder
+  create_track(tr,trim_name,ver_id) -- FOLDER 
   local childs = get_folder(tr)
   for i = 1, #childs do
     create_track(reaper.BR_GetMediaTrackByGUID(0,childs[i]),version_name,ver_id) -- create childs
@@ -621,12 +621,16 @@ end
 --------------------------------------------------------------------------------
 ---  Function NAMING (for all versions in script -------------------------------
 --------------------------------------------------------------------------------
+local pass_name
 function naming(tbl,string,v_id)
   if tbl == nil then return "Original" end
-    if manual_naming then
+    if manual_naming and not pass_name then
       local retval, name = reaper.GetUserInputs("Version name ", 1, "Version Name :", "")  
       if not retval or name == "" then return end
-      return name
+      pass_name = name
+      return pass_name
+    else
+      return pass_name
     end
   local name,counter = nil, 0
   for i = 1, #tbl.ver do
@@ -648,10 +652,13 @@ function on_click_function(button)
       local tr = reaper.GetSelectedTrack(0, i-1)
       local guid = reaper.GetTrackGUID(tr)
       local version_name = naming(find_guid(guid),"V")
+      if sel_tr_count > 1 then version_name = "M - " .. version_name end
+      if reaper.GetMediaTrackInfo_Value(tr, "I_FOLDERDEPTH") == 1 then version_name = "F - " .. version_name end
       if not version_name then return end
       button(tr, version_name, reaper.genGuid(),"track")
       if not find_guid(guid) then return elseif #find_guid(guid).ver == 1 then goto JUMP end -- better than original below (infinite loops when error)
     end
+    pass_name = nil
 end
 ---------------------------------------------------------------------------------------------------------
 ---   START   -------------------------------------------------------------------------------------------
@@ -773,7 +780,7 @@ function envelope(tbl,data)
                     local menu_TB = {r_click_menu}
                     DRAW_M(menu_TB)
                     local env_id = box_env.ver[box_env.num].id --selected
-                    --local env_id = box_env.ver[get_val].id --highlighted
+                    local env_id_h = box_env.ver[get_val].id --highlighted
                     local env_type = ch_box1.ver[ch_box1.num]
                     
                     if r_click_menu.num == -1 then return -- nothing clicked
@@ -798,7 +805,7 @@ function envelope(tbl,data)
                       local retval, version_name = reaper.GetUserInputs("Rename Version ", 1, "Version Name :", "")  
                       if not retval or version_name == "" then return end
                         for i = #tbl.env , 1, -1 do
-                          if tbl.env[i].id == env_id then tbl.env[i].name = version_name end -- remove from main button
+                          if tbl.env[i].id == env_id_h then tbl.env[i].name = version_name end -- remove from main button
                         end
                         
                     elseif r_click_menu.num == 3 then --- Save version
@@ -886,7 +893,7 @@ function create_button(name,guid,chunk,ver_id,num,env)
                   elseif r_click_menu.num == 3 then --- rename button
                     local retval, version_name = reaper.GetUserInputs("Rename Version ", 1, "Version Name :", "")  
                     if not retval or version_name == "" then return end
-                    box.ver[box.num].name = version_name
+                    box.ver[get_val].name = version_name
                     
                   elseif r_click_menu.num == 5 then -- save current version (save modifications)
                     if string.sub(chunk[1],1,1) == "{" then -- FOLDER
