@@ -5,19 +5,22 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.57
+ * Version: 0.58
 --]]
  
 --[[
  * Changelog:
- * v0.57 (2018-03-04)
-  + removed store original setting
+ * v0.58 (2018-03-04)
+  + store original track user setting
+  + fixed crash when multiselected tracks do not have same number of versions
+  + fixed manual naming 
+  + prevent renaming original version
 --]]
 
 -- USER SETTINGS
 local manual_naming = false
 local color = 0 -- 1 for checkboxes, 2 for fonts , 3 for both, 0 for default
---local store_original = 1 -- set 0 to disable storing original version
+local store_original = true -- set enable-disable storing original version
 ----------------------------
 local Wnd_W,Wnd_H = 220,220
 local cur_sel = {[1] = nil}
@@ -537,7 +540,7 @@ function restoreTrackItems(track, track_items_table, num, job)
             end
           end
       else   -- TRACK (ITEMS)
-        local item = reaper.AddMediaItemToTrack(track)  
+        local item = reaper.AddMediaItemToTrack(track)
         reaper.SetItemStateChunk(item, track_items_table[i], false) 
         select_items(track,"select") -- select track from version (for easier locating)
         find_guid(c_track).num = num -- check track/child
@@ -603,18 +606,20 @@ end
 function create_folder(tr,version_name,ver_id)
   if reaper.GetMediaTrackInfo_Value(tr, "I_FOLDERDEPTH") ~= 1 then return end
   local trim_name = string.sub(version_name, 5) -- exclue "F -" from main folder
-  create_track(tr,trim_name,ver_id) -- FOLDER 
+  local create_child 
+  --create_track(tr,trim_name,ver_id) -- FOLDER 
   local childs = get_folder(tr)
   for i = 1, #childs do
-    create_track(reaper.BR_GetMediaTrackByGUID(0,childs[i]),version_name,ver_id) -- create childs
+    create_child = create_track(reaper.BR_GetMediaTrackByGUID(0,childs[i]),version_name,ver_id) -- create childs
   end
+  if not create_child then create_track(tr,trim_name,ver_id) end -- create FOLDER only if childs have item chunk (note "empty")
 end
 --------------------------------------------------------------------------------
 ---  Function Create Button from TRACK SELECTION -------------------------------
 --------------------------------------------------------------------------------
 function create_track(tr,version_name,ver_id,job)
   local chunk = getTrackItems(tr,job) or get_folder(tr) -- items or tracks (if no items then its tracks (folder)
-  if chunk[1] == "empty_track" and version_name ~= "Original" then version_name = "Empty" end -- if there is no chunk (no items) call version EMPTY
+  if chunk[1] == "empty_track" then return 0 end --and version_name ~= "Original" then version_name = version_name .. " Empty" end -- if there is no chunk (no items) call version EMPTY
   create_button(version_name,reaper.GetTrackGUID(tr),chunk,ver_id)
 end
 --------------------------------------------------------------------------------
@@ -622,16 +627,34 @@ end
 --------------------------------------------------------------------------------
 local pass_name
 function naming(tbl,string,v_id)
-  if tbl == nil then return "Original" end 
+  if tbl == nil then
+    if store_original then return "Original" 
+    elseif not store_original and not manual_naming then return "V01"
+    elseif not store_original and manual_naming then 
+      if not pass_name then
+        local retval, name = reaper.GetUserInputs("Version name ", 1, "Version Name :", "")
+        if not retval or name == "" then return end
+        pass_name = name
+        return name
+      else
+        return pass_name
+      end
+    end
+  end
   
-  if manual_naming and not pass_name then
-    local retval, name = reaper.GetUserInputs("Version name ", 1, "Version Name :", "")
-    if not retval or name == "" then return end
-    pass_name = name
-    return pass_name
+  if manual_naming then
+    if not pass_name then
+      local retval, name = reaper.GetUserInputs("Version name ", 1, "Version Name :", "")
+      if not retval or name == "" then return end
+      pass_name = name
+      return pass_name
+    else
+      return pass_name
+    end
   end
   
   local name,counter = nil, 0
+  if not store_original then counter = 1 end
   for i = 1, #tbl.ver do
     if string == "V" and (#tbl.ver[i].ver_id == 38) then counter = counter + 1
     elseif string == "D" and (v_id  == tbl.ver[i].ver_id or v_id == tbl.ver[i].ver_id:sub(1, -4))then
@@ -655,9 +678,9 @@ function on_click_function(button)
       if sel_tr_count > 1 then version_name = "M - " .. version_name end
       if reaper.GetMediaTrackInfo_Value(tr, "I_FOLDERDEPTH") == 1 then version_name = "F - " .. version_name end      
       button(tr, version_name, reaper.genGuid(),"track") -- "track" to exclued creating folder chunk in gettrackitems function (would result a crash)
-      --if store_original == 1 then
-      if not find_guid(guid) then return elseif #find_guid(guid).ver == 1 then goto JUMP end -- better than original below (infinite loops when error)
-      --end
+      if store_original then
+        if not find_guid(guid) then return elseif #find_guid(guid).ver == 1 then goto JUMP end -- better than original below (infinite loops when error)
+      end
     end
     pass_name = nil
 end
@@ -857,11 +880,13 @@ function create_button(name,guid,chunk,ver_id,num,env)
     
   box.onClick = function() -- check box on click action
                 local tr
-                  for i = 1, reaper.CountSelectedTracks() do
+                  for i = 1, reaper.CountSelectedTracks() do 
                     local sel_tr = reaper.GetTrackGUID(reaper.GetSelectedTrack(0,i-1))
                     local tr = find_guid(sel_tr)
-                    local items = tr.ver[box.num].chunk -- items or tracks (based on if is a track or folder)
-                    restoreTrackItems(tr.guid,items,box.num)
+                      if box.num <= #tr.ver then -- for multiselection (if other track does not have same number of versions,would result a crash)
+                        local items = tr.ver[box.num].chunk -- items or tracks (based on if is a track or folder)
+                        restoreTrackItems(tr.guid,items,box.num)
+                      end
                   end
                   
   end -- end box.onClick
@@ -893,7 +918,7 @@ function create_button(name,guid,chunk,ver_id,num,env)
                     update_tbl() -- CHECK AND REMOVE BUTTON FROM MAIN TABLE IF VERSION IS EMPTY
                      
                   elseif r_click_menu.num == 3 then --- rename button
-                    if box.ver[get_val].name ~= "Original" then -- prevent renaming original
+                    if not box.ver[get_val].name:find("Original") then -- prevent renaming original
                       local retval, version_name = reaper.GetUserInputs("Rename Version ", 1, "Version Name :", "")  
                       if not retval or version_name == "" then return end
                       box.ver[get_val].name = version_name
@@ -967,6 +992,21 @@ function set_color(tr,tbl,job)
   end
 end
 --------------------------------------------------------------------------------
+---  Function recoding takes ---------------------------------------------------
+--------------------------------------------------------------------------------
+function takes_to_version(tr)
+  local chunk = {}
+  local item = reaper.GetSelectedMediaItem(0, 0)
+  local cnt_take = reaper.CountTakes( item )
+    for i = 1, cnt_take do
+      local take = reaper.GetMediaItemTake( item, cnt_take-1 )
+      local take_item = reaper.GetMediaItemTake_Item( take )
+      local _, take_chunk = reaper.GetItemStateChunk(take_item, '')      
+      take_chunk = {pattern(take_chunk)}
+   -- create_button("take ".. i,reaper.GetTrackGUID(tr),take_chunk,reaper.genGuid())
+    end
+end
+--------------------------------------------------------------------------------
 ---  Function MAIN -------------------------------------------------------------
 --------------------------------------------------------------------------------
 function main()
@@ -984,7 +1024,9 @@ function main()
      if proj_change_count > last_proj_change_count then
        local last_action = reaper.Undo_CanUndo2(0)
        if last_action ~= nil then
-         if last_action:find("Remove tracks") then track_deleted() end -- run only if action "Remove tracks" is found
+         if last_action:find("Remove tracks") then track_deleted() --end -- run only if action "Remove tracks" is found
+         --elseif last_action:find("Recorded media") then takes_to_version(sel_tr)
+         end
        end
        last_proj_change_count = proj_change_count
      end
