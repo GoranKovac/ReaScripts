@@ -5,12 +5,12 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.62
+ * Version: 0.63
 --]]
  
 --[[
  * Changelog:
- * v0.62 (2018-03-04)
+ * v0.63 (2018-03-04)
   + one more error
 --]]
 
