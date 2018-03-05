@@ -5,24 +5,25 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.59
+ * Version: 0.60
 --]]
  
 --[[
  * Changelog:
- * v0.59 (2018-03-04)
-  + More fixes for hopi and top secret new code inside
+ * v0.60 (2018-03-04)
+  + Recording in takes set every take to individual version
+  + fixed storing gui  
 --]]
 
 -- USER SETTINGS
 local manual_naming = false
 local color = 0 -- 1 for checkboxes, 2 for fonts , 3 for both, 0 for default
 local store_original = true -- set enable-disable storing original version
---local rec_takes = false
+local rec_takes = false
 --------------------------------------------------------------------------
 local Wnd_W,Wnd_H = 220,220
-cur_sel = {[1] = nil}
-local TrackTB = {}
+local cur_sel = {[1] = nil}
+TrackTB = {}
 local get_val
 local env_type =  {  
                     [1] = {name = "Volume",                       v = 1},
@@ -454,7 +455,6 @@ local function save_tracks()
       all_button_states[#all_button_states+1] = {guid = v.guid, ver = v.ver, num = v.num, env = v.env}
     end 
   reaper.SetProjExtState(0, "Track_Versions", "States", pickle(all_button_states))
-  store_gui()
 end
 -----------------------------------------------------
 --- Function: Restore Saved Buttons From extstate ---
@@ -725,16 +725,17 @@ ch_box1.onClick = function()
 end
 
 menu_btn.onClick = function()
-                    local menu = Menu:new(menu_btn.x,menu_btn.y,menu_btn.w,menu_btn.h,0.6,0.6,0.6,0.3,"","Arial",15,{0.7, 0.9, 1, 1},-1,
-                                                                            {"Manual Naming","Record Mode","Store Original",">Color","Font","Checkbox","<Both"})
-                    local menu_TB = {menu}
                     DRAW_M(menu_TB)
                     
-                    if manual_naming then menu.ver[1] = "!" .. menu.ver[1] end
-                    local manual_naming = false
-                    local color = 0 -- 1 for checkboxes, 2 for fonts , 3 for both, 0 for default
-                    local store_original = true -- set enable-disable storing original version
-                    local rec_takes = true
+                    if menu.num == -1 then return -- nothing clicked
+                    elseif menu.num == 1 then manual_naming = not manual_naming
+                    elseif menu.num == 2 then rec_takes = not rec_takes
+                    elseif menu.num == 3 then store_original = not store_original
+                    elseif menu.num == 4 then color = 1
+                    elseif menu.num == 5 then color = 2
+                    elseif menu.num == 6 then color = 3
+                    end
+                    
 end
 -------------------------------------------------------------------------------
 ---  Function GET TRACK ENVELOPE ----------------------------------------------
@@ -1065,11 +1066,12 @@ function main()
        local last_action = reaper.Undo_CanUndo2(0)
        if last_action ~= nil then
          if last_action:find("Remove tracks") then track_deleted()  -- run only if action "Remove tracks" is found
-        -- elseif last_action:find("Recorded media") and rec_takes then takes_to_version() -- IF REC_TAKES IS ENABLED MAKE VERSIONS FROM TAKE
+         elseif last_action:find("Recorded media") and rec_takes then takes_to_version() -- IF REC_TAKES IS ENABLED MAKE VERSIONS FROM TAKE
          end
        end
        last_proj_change_count = proj_change_count
      end
+     store_gui()
 end
 ----------------------------------------------------------------------------------------------------
 ---   Main DRAW function   -------------------------------------------------------------------------
@@ -1095,7 +1097,12 @@ end
 function store_gui()
   dock, x, y, w, h = gfx.dock(-1,0,0,0,0)
   gui_pos =  {dock = dock , x = x, y = y, w = w , h = h }
-  reaper.SetProjExtState(0, "Track_Versions", "Dock_state", pickle(gui_pos))
+  reaper.SetProjExtState(0,"Track_Versions", "Dock_state", pickle(gui_pos))
+end
+
+function exit()
+  save_tracks()
+  gfx.quit()
 end
 --------------------------------------------------------------------------------
 --   INIT   --------------------------------------------------------------------
@@ -1109,8 +1116,8 @@ function Init()
     --local Wnd_X,Wnd_Y = 100,320
     Wnd_W,Wnd_H = Wnd_W,Wnd_H -- global values(used for define zoom level)
     -- Init window ------
-    local ok, state = reaper.GetProjExtState(0, "Track_Versions", "Dock_state")
-    if state ~= "" then state = unpickle(state) end
+    local ok, state = reaper.GetProjExtState(0,"Track_Versions", "Dock_state")
+    state = unpickle(state)
     Wnd_Dock = state.dock or 0
     Wnd_X = state.x or 100
     Wnd_Y = state.y or 320
@@ -1157,5 +1164,5 @@ end
 --------------------------------------------------------------------------------
 Init()
 restore()
-reaper.atexit(save_tracks)
+reaper.atexit(exit)
 mainloop()
