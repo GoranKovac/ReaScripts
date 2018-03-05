@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="64d489062854ed5cfe19d865d8bd01f5251a0802" name="Sexan_Scripts">
+<index version="1" commit="1f51575c5dbf6e63d8639c0d5e4d36c5acddde00" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track versions.lua" type="script" desc="Track versions.lua">
       <metadata>
@@ -152,6 +152,10 @@
 + fixed manual naming 
 + prevent renaming original version]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/64d489062854ed5cfe19d865d8bd01f5251a0802/Alpha/Sexan_Track%20versions.lua</source>
+      </version>
+      <version name="0.59" author="SeXan" time="2018-03-05T17:48:05Z">
+        <changelog><![CDATA[+ More fixes for hopi and top secret new code inside]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/1f51575c5dbf6e63d8639c0d5e4d36c5acddde00/Alpha/Sexan_Track%20versions.lua</source>
       </version>
     </reapack>
   </category>
