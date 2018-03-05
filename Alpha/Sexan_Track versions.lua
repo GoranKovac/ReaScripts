@@ -5,26 +5,24 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.58
+ * Version: 0.59
 --]]
  
 --[[
  * Changelog:
- * v0.58 (2018-03-04)
-  + store original track user setting
-  + fixed crash when multiselected tracks do not have same number of versions
-  + fixed manual naming 
-  + prevent renaming original version
+ * v0.59 (2018-03-04)
+  + More fixes for hopi and top secret new code inside
 --]]
 
 -- USER SETTINGS
 local manual_naming = false
 local color = 0 -- 1 for checkboxes, 2 for fonts , 3 for both, 0 for default
 local store_original = true -- set enable-disable storing original version
-----------------------------
+--local rec_takes = false
+--------------------------------------------------------------------------
 local Wnd_W,Wnd_H = 220,220
-local cur_sel = {[1] = nil}
-TrackTB = {}
+cur_sel = {[1] = nil}
+local TrackTB = {}
 local get_val
 local env_type =  {  
                     [1] = {name = "Volume",                       v = 1},
@@ -214,8 +212,8 @@ end
 ------------------------
 function Menu:draw()
     -- Get mouse state ---------
-    if self:mouseRClick() then self:set_num()
-    if self:mouseRClick() and self.onRClick then self.onRClick() end
+    if self:mouseClick() then self:set_num()
+    if self:mouseClick() and self.onClick then self.onClick() end
     end
 end  
 --------------------------------------------------------------------------------
@@ -526,7 +524,7 @@ function restoreTrackItems(track, track_items_table, num, job)
   --local parent_num = num or parent.num -- VERSION NUMBER FOR FOLDER CHANHING (maybe not needed)
   local c_track, track = track, reaper.BR_GetMediaTrackByGUID(0,track)
   local num_items = reaper.CountTrackMediaItems(track)
-  reaper.PreventUIRefresh(1)
+ -- reaper.PreventUIRefresh(1)
   for i = 1, num_items, 1 do reaper.DeleteTrackMediaItem(track, reaper.GetTrackMediaItem(track,0)) end
     for i = 1, #track_items_table, 1 do
       if reaper.BR_GetMediaTrackByGUID( 0, track_items_table[i] ) then  -- FOLDER (TRACKS) (table is filled with tracks not items)
@@ -546,7 +544,7 @@ function restoreTrackItems(track, track_items_table, num, job)
         find_guid(c_track).num = num -- check track/child
       end
     end
-  reaper.PreventUIRefresh(-1)              
+ -- reaper.PreventUIRefresh(-1)              
   reaper.UpdateArrange()
 end
 ---------------------------------------------------
@@ -687,6 +685,7 @@ end
 ---------------------------------------------------------------------------------------------------------
 ---   START   -------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------------
+local menu_btn    = Button:new(125,15,30,20, 0.2,0.2,1.0,0, "Menu","Arial",15,{0.7, 0.9, 1, 1}, 0 )
 local save_env    = Button:new(125,15,30,20, 0.2,0.2,1.0,0, "ENV","Arial",15,{0.7, 0.9, 1, 1}, 0 )
 local save_track  = Button:new(15,15,32,20, 0.2,0.2,1.0,0, "Save","Arial",15,{0.7, 0.9, 1, 1}, 0 )
 local save_folder = Button:new(50,15,70,20, 0.2,0.2,1.0,0, "Save Folder","Arial",15,{0.7, 0.9, 1, 1}, 0 )
@@ -696,6 +695,7 @@ local box_env     = Radio_Btns:new(125,70,120,20,  0.3,0.8,0.3,0.7, "","Arial",1
 local W_Frame, T_Frame = Frame:new(10,10,Wnd_W-20,Wnd_H-20,  0,0.5,2,0.4 ), Frame:new(10,10,200,30,  0,0.5,2,0.4 )
 local Folder, Empty, Track, Env, Frame, CheckBox_TB = {save_folder}, {empty}, {save_track}, {save_env}, {W_Frame,T_Frame}, {ch_box1}
 local env = {box_env}
+local global_m = {menu_btn}
 
 for i = 1, #env_type-1 do
   ch_box1.ver[#ch_box1.ver + 1] = env_type[i].name
@@ -722,6 +722,19 @@ ch_box1.onRClick = function()
 end
 ch_box1.onClick = function()
                   get_env() -- save envelope
+end
+
+menu_btn.onClick = function()
+                    local menu = Menu:new(menu_btn.x,menu_btn.y,menu_btn.w,menu_btn.h,0.6,0.6,0.6,0.3,"","Arial",15,{0.7, 0.9, 1, 1},-1,
+                                                                            {"Manual Naming","Record Mode","Store Original",">Color","Font","Checkbox","<Both"})
+                    local menu_TB = {menu}
+                    DRAW_M(menu_TB)
+                    
+                    if manual_naming then menu.ver[1] = "!" .. menu.ver[1] end
+                    local manual_naming = false
+                    local color = 0 -- 1 for checkboxes, 2 for fonts , 3 for both, 0 for default
+                    local store_original = true -- set enable-disable storing original version
+                    local rec_takes = true
 end
 -------------------------------------------------------------------------------
 ---  Function GET TRACK ENVELOPE ----------------------------------------------
@@ -879,18 +892,20 @@ function create_button(name,guid,chunk,ver_id,num,env)
   end
     
   box.onClick = function() -- check box on click action
+                reaper.PreventUIRefresh(1)
                 local tr
                   for i = 1, reaper.CountSelectedTracks() do 
                     local sel_tr = reaper.GetTrackGUID(reaper.GetSelectedTrack(0,i-1))
                     local tr = find_guid(sel_tr)
-                      if box.num <= #tr.ver then -- for multiselection (if other track does not have same number of versions,would result a crash)
+                      if tr and box.num <= #tr.ver then -- for multiselection (if other track does not have same number of versions,or if other track exists in table)
                         local items = tr.ver[box.num].chunk -- items or tracks (based on if is a track or folder)
                         restoreTrackItems(tr.guid,items,box.num)
                       end
                   end
-                  
+                  reaper.PreventUIRefresh(-1)  
   end -- end box.onClick
   box.onRClick =  function()
+                  reaper.PreventUIRefresh(1)
                   local r_click_menu = Menu:new(box.x,box.y,box.w,box.h,0.6,0.6,0.6,0.3,"Chan :","Arial",15,{0.7, 0.9, 1, 1},-1,
                                                {"Delete Version","Delete All Except","Rename Version","Duplicate","Save current version"})
                   local menu_TB = {r_click_menu}
@@ -953,7 +968,7 @@ function create_button(name,guid,chunk,ver_id,num,env)
                   end
                   save_tracks()
   end -- end box.onRClick
-  reaper.PreventUIRefresh(-1)
+  --reaper.PreventUIRefresh(-1)
   reaper.UpdateArrange()                      
 end -- end create_button()
 --------------------------------------------------------------------------------
@@ -992,19 +1007,44 @@ function set_color(tr,tbl,job)
   end
 end
 --------------------------------------------------------------------------------
----  Function recoding takes ---------------------------------------------------
+---  Function MAKE VERSION FROM RECORDED TAKES  --------------------------------
 --------------------------------------------------------------------------------
-function takes_to_version(tr)
-  local chunk = {}
-  local item = reaper.GetSelectedMediaItem(0, 0)
-  local cnt_take = reaper.CountTakes( item )
-    for i = 1, cnt_take do
-      local take = reaper.GetMediaItemTake( item, cnt_take-1 )
-      local take_item = reaper.GetMediaItemTake_Item( take )
-      local _, take_chunk = reaper.GetItemStateChunk(take_item, '')      
-      take_chunk = {pattern(take_chunk)}
-   -- create_button("take ".. i,reaper.GetTrackGUID(tr),take_chunk,reaper.genGuid())
+function takes_to_version()
+  local item_tb = {}
+  for j = 1, reaper.CountSelectedMediaItems( 0 ) do  
+    local s_item = reaper.GetSelectedMediaItem(0, j-1)
+    item_tb[j] = s_item -- add newly created takes to table
+  end
+  reaper.PreventUIRefresh(1)
+  for k = 1, #item_tb do
+    local titems = {}
+    local s_item = item_tb[k]
+    local tr =  reaper.GetMediaItemTrack( s_item )
+    local s_take = reaper.GetMediaItemTake( s_item, 0 )
+    local s_pos =  reaper.GetMediaItemInfo_Value( s_item, "D_POSITION" )   -- get position of original take
+    local _, s_name = reaper.GetSetMediaItemTakeInfo_String( s_take, "P_NAME", "",0 ) -- get name of the take item
+    reaper.Main_OnCommand(40643,0) -- explode takes in order  
+    local num_items = reaper.CountTrackMediaItems(tr) -- check every item in track
+      for i = num_items, 1, -1 do
+        local item = reaper.GetTrackMediaItem(tr, i-1)      
+        local d_take = reaper.GetMediaItemTake( item, 0 )
+        local _, d_name = reaper.GetSetMediaItemTakeInfo_String( d_take, "P_NAME", "",0 ) -- get its name
+          if d_name == s_name then -- if exploded item is found (shares same name as take item)
+            reaper.SetMediaItemInfo_Value( item, "D_POSITION",s_pos ) --set items position to original (since we explode in order)      
+            local _, item_chunk = reaper.GetItemStateChunk(item, '')  -- gets its chunk
+            titems[#titems+1] = {pattern(item_chunk)} -- add it to chunk table
+            reaper.DeleteTrackMediaItem(tr,item) -- remove exploded items
+          end
+      end
+    for i = 1, #titems do
+      create_button("Take ".. i, reaper.GetTrackGUID(tr),titems[i],reaper.genGuid())   -- create version from it with Take prefix
+      local tr = find_guid(reaper.GetTrackGUID(tr))
+      local items = tr.ver[#titems].chunk -- new created take versions
+      restoreTrackItems(tr.guid,items,#titems) -- restore them
     end
+  end 
+  reaper.PreventUIRefresh(-1)              
+  reaper.UpdateArrange()
 end
 --------------------------------------------------------------------------------
 ---  Function MAIN -------------------------------------------------------------
@@ -1024,8 +1064,8 @@ function main()
      if proj_change_count > last_proj_change_count then
        local last_action = reaper.Undo_CanUndo2(0)
        if last_action ~= nil then
-         if last_action:find("Remove tracks") then track_deleted() --end -- run only if action "Remove tracks" is found
-         --elseif last_action:find("Recorded media") then takes_to_version(sel_tr)
+         if last_action:find("Remove tracks") then track_deleted()  -- run only if action "Remove tracks" is found
+        -- elseif last_action:find("Recorded media") and rec_takes then takes_to_version() -- IF REC_TAKES IS ENABLED MAKE VERSIONS FROM TAKE
          end
        end
        last_proj_change_count = proj_change_count
@@ -1102,6 +1142,7 @@ function mainloop()
       main() -- Main()
       DRAW_F(Frame)  -- draw frame
       DRAW_B(Track)
+      --DRAW_B(global_m)
     -------------------------
     last_mouse_cap = gfx.mouse_cap
     last_x, last_y = gfx.mouse_x, gfx.mouse_y
