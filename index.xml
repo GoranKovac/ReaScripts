@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="5513b838b661da439d642852594bd98f2792b4e9" name="Sexan_Scripts">
+<index version="1" commit="c43108bf055f1b75ba7a0937ca09e20beae75076" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track versions.lua" type="script" desc="Track versions.lua">
       <metadata>
@@ -161,6 +161,11 @@
         <changelog><![CDATA[+ Recording in takes set every take to individual version
 + fixed storing gui  ]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/5513b838b661da439d642852594bd98f2792b4e9/Alpha/Sexan_Track%20versions.lua</source>
+      </version>
+      <version name="0.61" author="SeXan" time="2018-03-05T19:53:59Z">
+        <changelog><![CDATA[+ disable creating take versions if there is only 1 take 
++ major bug with gui]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/c43108bf055f1b75ba7a0937ca09e20beae75076/Alpha/Sexan_Track%20versions.lua</source>
       </version>
     </reapack>
   </category>
