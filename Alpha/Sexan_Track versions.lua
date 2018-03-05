@@ -5,21 +5,21 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.60
+ * Version: 0.61
 --]]
  
 --[[
  * Changelog:
- * v0.60 (2018-03-04)
-  + Recording in takes set every take to individual version
-  + fixed storing gui  
+ * v0.61 (2018-03-04)
+  + disable creating take versions if there is only 1 take 
+  + major bug with gui
 --]]
 
 -- USER SETTINGS
 local manual_naming = false
 local color = 0 -- 1 for checkboxes, 2 for fonts , 3 for both, 0 for default
 local store_original = true -- set enable-disable storing original version
-local rec_takes = false
+local rec_takes = true
 --------------------------------------------------------------------------
 local Wnd_W,Wnd_H = 220,220
 local cur_sel = {[1] = nil}
@@ -1014,7 +1014,8 @@ function takes_to_version()
   local item_tb = {}
   for j = 1, reaper.CountSelectedMediaItems( 0 ) do  
     local s_item = reaper.GetSelectedMediaItem(0, j-1)
-    item_tb[j] = s_item -- add newly created takes to table
+    local take_num = reaper.CountTakes( s_item )
+    if take_num > 1 then item_tb[j] = s_item end-- add newly created takes to table
   end
   reaper.PreventUIRefresh(1)
   for k = 1, #item_tb do
@@ -1117,7 +1118,8 @@ function Init()
     Wnd_W,Wnd_H = Wnd_W,Wnd_H -- global values(used for define zoom level)
     -- Init window ------
     local ok, state = reaper.GetProjExtState(0,"Track_Versions", "Dock_state")
-    state = unpickle(state)
+    if state ~= "" then state = unpickle(state) end
+    --state = unpickle(state)
     Wnd_Dock = state.dock or 0
     Wnd_X = state.x or 100
     Wnd_Y = state.y or 320
