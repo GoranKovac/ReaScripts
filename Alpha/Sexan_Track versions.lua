@@ -5,14 +5,13 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.61
+ * Version: 0.62
 --]]
  
 --[[
  * Changelog:
- * v0.61 (2018-03-04)
-  + disable creating take versions if there is only 1 take 
-  + major bug with gui
+ * v0.62 (2018-03-04)
+  + one more error
 --]]
 
 -- USER SETTINGS
@@ -1041,8 +1040,8 @@ function takes_to_version()
     for i = 1, #titems do
       create_button("Take ".. i, reaper.GetTrackGUID(tr),titems[i],reaper.genGuid())   -- create version from it with Take prefix
       local tr = find_guid(reaper.GetTrackGUID(tr))
-      local items = tr.ver[#titems].chunk -- new created take versions
-      restoreTrackItems(tr.guid,items,#titems) -- restore them
+      local items = tr.ver[#tr.ver].chunk -- new created take versions
+      restoreTrackItems(tr.guid,items,#tr.ver) -- restore them
     end
   end 
   reaper.PreventUIRefresh(-1)              
