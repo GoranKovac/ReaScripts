@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="4aa393d9885a50c2c4da6e2ab5885d06fd9dea3d" name="Sexan_Scripts">
+<index version="1" commit="23edd3a2f890604749450f812b229b2b59d1fa4b" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track versions.lua" type="script" desc="Track versions.lua">
       <metadata>
@@ -179,6 +179,14 @@
         <changelog><![CDATA[+ disable take version for now
 + fixed empty crash]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/4aa393d9885a50c2c4da6e2ab5885d06fd9dea3d/Alpha/Sexan_Track%20versions.lua</source>
+      </version>
+      <version name="0.65" author="SeXan" time="2018-03-06T21:41:46Z">
+        <changelog><![CDATA[+ fixed bugs with right click menus
++ little gui rearange
++ single save/folder save button based on what type of track is selected
++ added selected track name to GUI
++ fixed rec takes to version (thx Spk77)]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/23edd3a2f890604749450f812b229b2b59d1fa4b/Alpha/Sexan_Track%20versions.lua</source>
       </version>
     </reapack>
   </category>
