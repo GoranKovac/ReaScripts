@@ -5,17 +5,14 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.65
+ * Version: 0.66
 --]]
  
 --[[
  * Changelog:
- * v0.65 (2018-03-06)
-  + fixed bugs with right click menus
-  + little gui rearange
-  + single save/folder save button based on what type of track is selected
-  + added selected track name to GUI
-  + fixed rec takes to version (thx Spk77)
+ * v0.66 (2018-03-04)
+  + allow storing empty tracks
+
 --]]
 
 -- USER SETTINGS
@@ -624,20 +621,18 @@ end
 function create_folder(tr,version_name,ver_id)
   if reaper.GetMediaTrackInfo_Value(tr, "I_FOLDERDEPTH") ~= 1 then return end
   local trim_name = string.sub(version_name, 5) -- exclue "F -" from main folder
-  local create_child 
-  --create_track(tr,trim_name,ver_id) -- FOLDER 
   local childs = get_folder(tr)
   for i = 1, #childs do
     create_child = create_track(reaper.BR_GetMediaTrackByGUID(0,childs[i]),version_name,ver_id) -- create childs
   end
-  if not create_child then create_track(tr,trim_name,ver_id) end -- create FOLDER only if childs have item chunk (note "empty")
+  create_track(tr,trim_name,ver_id) -- create FOLDER only if childs have item chunk (note "empty")
 end
 --------------------------------------------------------------------------------
 ---  Function Create Button from TRACK SELECTION -------------------------------
 --------------------------------------------------------------------------------
 function create_track(tr,version_name,ver_id,job)
   local chunk = getTrackItems(tr,job) or get_folder(tr) -- items or tracks (if no items then its tracks (folder)
-  if chunk[1] == "empty_track" then return 0 end --and version_name ~= "Original" then version_name = version_name .. " Empty" end -- if there is no chunk (no items) call version EMPTY
+  --if chunk[1] == "empty_track" then return end --and version_name ~= "Original" then version_name = version_name .. " Empty" end -- if there is no chunk (no items) call version EMPTY
   create_button(version_name,reaper.GetTrackGUID(tr),chunk,ver_id)
 end
 --------------------------------------------------------------------------------
