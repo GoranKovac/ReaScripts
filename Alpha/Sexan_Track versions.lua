@@ -5,25 +5,28 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.64
+ * Version: 0.65
 --]]
  
 --[[
  * Changelog:
- * v0.64 (2018-03-04)
-  + disable take version for now
-  + fixed empty crash
+ * v0.65 (2018-03-06)
+  + fixed bugs with right click menus
+  + little gui rearange
+  + single save/folder save button based on what type of track is selected
+  + added selected track name to GUI
+  + fixed rec takes to version (thx Spk77)
 --]]
 
 -- USER SETTINGS
 local manual_naming = false
 local color = 0 -- 1 for checkboxes, 2 for fonts , 3 for both, 0 for default
 local store_original = true -- set enable-disable storing original version
---local rec_takes = true
+local rec_takes = false -- make versions from recorded takes
 --------------------------------------------------------------------------
 local Wnd_W,Wnd_H = 220,220
 local cur_sel = {[1] = nil}
-TrackTB = {}
+local TrackTB = {}
 local get_val
 local env_type =  {  
                     [1] = {name = "Volume",                       v = 1},
@@ -190,6 +193,8 @@ local Frame = {}
 local Radio_Btns = {}
 local Menu = {}
 local CheckBox = {}
+local Title = {}
+  extended(Title,      Element)
   extended(Menu,       Element)
   extended(Button,     Element)
   extended(Frame,      Element)
@@ -222,6 +227,15 @@ function Menu:draw2()
     if self:mouseClick() then self:set_num()
     if self:mouseClick() and self.onClick then self.onClick() end
     end
+end
+function Title:draw()
+    self:update_xywh() -- Update xywh(if wind changed)
+    local r,g,b,a  = self.r,self.g,self.b,self.a
+    local fnt,fnt_sz = self.fnt, self.fnt_sz
+    local x,y,w,h  = self.x,self.y,self.w,self.h
+    local lbl_w, lbl_h = gfx.measurestr(self.lbl)
+    gfx.x = x; gfx.y = y+(h-lbl_h)/2
+    gfx.drawstr(self.lbl)
 end  
 --------------------------------------------------------------------------------
 ---   Button Class Methods   ---------------------------------------------------
@@ -243,7 +257,7 @@ function Button:draw()
     local fnt,fnt_sz = self.fnt, self.fnt_sz
     -- Get mouse state ---------
           -- in element --------
-          if self:mouseIN() then a=a+0.4 end
+          if self:mouseIN() then a=a+0.1 end
           -- in elm L_down -----
           if self:mouseDown() then a=a+0.2 end
           -- in elm L_up(released and was previously pressed) --
@@ -318,7 +332,7 @@ function Radio_Btns:draw_vals()
   -- to match up with the options
   local r = opt_spacing / 3
   local center_offset = ((opt_spacing - (2.5 * r)) / 2)
-  x, y = x + opt_spacing + center_offset, y + center_offset
+  x, y = x + opt_spacing + center_offset, y + center_offset 
   for i = 1, num_opts do
     local opt_y = y + ((i - 1) * opt_spacing)
     gfx.x, gfx.y = x, opt_y
@@ -692,17 +706,15 @@ end
 ---   START   -------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------------
 local menu_btn    = Button:new(125,15,30,20, 0.2,0.2,1.0,0, "Menu","Arial",15,{0.7, 0.9, 1, 1}, 0 )
-local save_env    = Button:new(125,15,30,20, 0.2,0.2,1.0,0, "ENV","Arial",15,{0.7, 0.9, 1, 1}, 0 )
-local save_track  = Button:new(15,15,32,20, 0.2,0.2,1.0,0, "Save","Arial",15,{0.7, 0.9, 1, 1}, 0 )
-local save_folder = Button:new(50,15,70,20, 0.2,0.2,1.0,0, "Save Folder","Arial",15,{0.7, 0.9, 1, 1}, 0 )
+local save        = Button:new(22,46,75,20, 0.2,0.2,1.0,0.4, "Save","Arial",15,{0.7, 0.9, 1, 1}, 0 )
+--local save_folder = Button:new(50,46,70,20, 0.2,0.2,1.0,0, "Save Folder","Arial",15,{0.7, 0.9, 1, 1}, 0 )
 local empty       = Button:new(165,15,40,20, 0.2,0.2,1.0,0, "Empty","Arial",15,{0.7, 0.9, 1, 1}, 0 )
-local ch_box1     = CheckBox:new(122,46,85,20,  0.2,0.5,0.6,0.3, "","Arial",15,{0.7, 0.9, 1, 1}, 1, {} )
-local box_env     = Radio_Btns:new(125,70,120,20,  0.3,0.8,0.3,0.7, "","Arial",15,{0.7, 0.9, 1, 1}, 1, {})
+local ch_box1     = CheckBox:new(112,46,85,20,  0.2,0.5,0.6,0.3, "","Arial",15,{0.7, 0.9, 1, 1}, 1, {} )
+local box_env     = Radio_Btns:new(116,70,120,20,  0.3,0.8,0.3,0.7, "","Arial",15,{0.7, 0.9, 1, 1}, 1, {})
 local W_Frame, T_Frame = Frame:new(10,10,Wnd_W-20,Wnd_H-20,  0,0.5,2,0.4 ), Frame:new(10,10,200,30,  0,0.5,2,0.4 )
-local Folder, Empty, Track, Env, Frame, CheckBox_TB = {save_folder}, {empty}, {save_track}, {save_env}, {W_Frame,T_Frame}, {ch_box1}
-local env = {box_env}
-local global_m = {menu_btn}
-
+local Empty, Track, Env, Frame, CheckBox_TB, env = {empty}, {save}, {save_env}, {W_Frame,T_Frame}, {ch_box1}, {box_env}
+--local global_m = {menu_btn}
+-- Folder = {save_folder}
 for i = 1, #env_type-1 do
   ch_box1.ver[#ch_box1.ver + 1] = env_type[i].name
 end
@@ -717,11 +729,15 @@ empty.onClick = function()
                     find_guid(childs[i]).num = 0
                   end
 end             
-save_folder.onClick = function()
-                      on_click_function(create_folder)
-end
-save_track.onClick = function()
-                      on_click_function(create_track)
+--save_folder.onClick = function()
+--                      on_click_function(create_folder)
+--end
+save.onClick = function()
+                if save.lbl:find("Folder") then
+                  on_click_function(create_folder)
+                else
+                  on_click_function(create_track)
+                end
 end
 ch_box1.onRClick = function()                  
                   cur_sel[1].env["Last_menu"] = ch_box1.num -- set last checked menu
@@ -888,7 +904,7 @@ function create_button(name,guid,chunk,ver_id,num,env)
     end
   end
   
-  local box = Radio_Btns:new(30,50,120,20,  0.2,0.2,1.0,0.7, "","Arial",15,{0.7, 0.9, 1, 1},1, {v_table}, guid , env_tb)
+  local box = Radio_Btns:new(26,70,120,20,  0.2,0.2,1.0,0.7, "","Arial",15,{0.7, 0.9, 1, 1},1, {v_table}, guid , env_tb)
   
   if not find_guid(guid) then -- if ID does not exist in the table create new checklist
     TrackTB[#TrackTB+1] = box -- add new box to TrackTB table
@@ -918,19 +934,16 @@ function create_button(name,guid,chunk,ver_id,num,env)
                   local menu_TB = {r_click_menu}
                   DRAW_M(menu_TB)
                   
-                  --if box.num > 1 then return end
-                  --local chunk = box.ver[box.num].chunk 
-                  
                   if r_click_menu.num == -1 then return -- nothing clicked
                   
                   elseif r_click_menu.num == 1 then --- delete version
-                    if box.ver[box.num].name ~= "Original" then -- prevent deleting original if other version exist
-                      delete_childs(box.ver[box.num].chunk, box.ver[box.num].ver_id) -- IF FOLDER DELETE CHILDS
-                      table.remove(box.ver,box.num) -- REMOVE FROM FOLDER OR TRACK
+                    if box.ver[get_val].name ~= "Original" then -- prevent deleting original if other version exist
+                      delete_childs(box.ver[get_val].chunk, box.ver[get_val].ver_id) -- IF FOLDER DELETE CHILDS
+                      table.remove(box.ver,get_val) -- REMOVE FROM FOLDER OR TRACK
                     else
                       if #box.ver == 1 then -- if only original left
-                        delete_childs(box.ver[box.num].chunk, box.ver[box.num].ver_id) -- IF FOLDER DELETE CHILDS
-                        table.remove(box.ver,box.num) -- REMOVE FROM FOLDER OR TRACK
+                        delete_childs(box.ver[get_val].chunk, box.ver[get_val].ver_id) -- IF FOLDER DELETE CHILDS
+                        table.remove(box.ver,get_val) -- REMOVE FROM FOLDER OR TRACK
                       end
                     end
                     if #box.ver ~= 0 then
@@ -946,7 +959,9 @@ function create_button(name,guid,chunk,ver_id,num,env)
                       if not retval or version_name == "" then return end
                       box.ver[get_val].name = version_name
                     end
+                    
                   elseif r_click_menu.num == 5 then -- save current version (save modifications)
+                    if box.num == 0 then return end
                     if string.sub(box.ver[box.num].chunk[1],1,1) == "{" then -- FOLDER
                       for i = 1, #box.ver[box.num].chunk do
                         local child = find_guid(box.ver[box.num].chunk[i])
@@ -958,13 +973,31 @@ function create_button(name,guid,chunk,ver_id,num,env)
                       box.ver[box.num].chunk = getTrackItems(reaper.BR_GetMediaTrackByGUID(0,box.guid))
                     end
                   
-                  elseif r_click_menu.num == 4 then --- DUPLICATE s                 
+                  elseif r_click_menu.num == 4 then --- DUPLICATE
+                    local chunk = box.ver[get_val].chunk  
                     local duplicate_num = naming(box,"D",box.ver[get_val].ver_id)-- .. " - " .. box.ver[get_val].name
                     local duplicate_name = duplicate_num .. " - " .. box.ver[get_val].name 
+                    local ver_id = box.ver[get_val].ver_id .. duplicate_num
                     if reaper.GetMediaTrackInfo_Value(reaper.BR_GetMediaTrackByGUID(0, box.guid), "I_FOLDERDEPTH") == 1 then
-                      create_folder(reaper.BR_GetMediaTrackByGUID(0, box.guid),duplicate_name,box.ver[get_val].ver_id .. duplicate_num)
-                    else
-                      create_track(reaper.BR_GetMediaTrackByGUID(0, box.guid),duplicate_name,box.ver[get_val].ver_id .. duplicate_num)
+                      local p_vid = box.ver[get_val].ver_id
+                      create_button(duplicate_name,box.guid,chunk,ver_id)
+                        for i = 1, #chunk do
+                          local child = find_guid(chunk[i])
+                            for j = 1, #child.ver do
+                              if child.ver[j].ver_id == p_vid then
+                                local c_chunk = child.ver[j].chunk
+                                local c_name = child.ver[j].name
+                                local c_vid = child.ver[j].ver_id .. duplicate_num
+                                local duplicate_num = naming(child,"D",child.ver[j].ver_id)-- .. " - " .. box.ver[get_val].name
+                                local duplicate_name = duplicate_num .. " - " .. child.ver[j].name
+                                create_button(duplicate_name,child.guid,c_chunk,ver_id)
+                              end
+                            end
+                        end
+                      --create_folder(reaper.BR_GetMediaTrackByGUID(0, box.guid),duplicate_name,box.ver[get_val].ver_id .. duplicate_num)
+                    else 
+                      create_button(duplicate_name,box.guid,chunk,ver_id)                 
+                      --create_track(reaper.BR_GetMediaTrackByGUID(0, box.guid),duplicate_name,box.ver[get_val].ver_id .. duplicate_num)
                     end
                     
                   elseif r_click_menu.num == 2 then --- remove except
@@ -1019,23 +1052,24 @@ end
 --------------------------------------------------------------------------------
 function get_time_sel()
 local t_start, t_end = reaper.GetSet_LoopTimeRange(0, true, 0, 0, false)
+  return t_start, t_end
 end
 --------------------------------------------------------------------------------
 ---  Function MAKE VERSION FROM RECORDED TAKES  --------------------------------
 --------------------------------------------------------------------------------
 function takes_to_version()
-  item_tb = {}
+  local item_tb = {}
+  reaper.Main_OnCommand(41348,0) -- remove empty take
   for j = 1, reaper.CountSelectedMediaItems( 0 ) do  
     local s_item = reaper.GetSelectedMediaItem(0, j-1)
+    local s_item_guid = reaper.BR_GetMediaItemGUID(s_item)
     local take_num = reaper.CountTakes( s_item )
-    --reaper.Main_OnCommand(41348,0) -- remove empty take
-    item_tb[j] = s_item
-    if take_num > 1 then item_tb[j] = s_item end-- add newly created takes to table
+    if take_num > 1 then item_tb[#item_tb+1] = s_item_guid end-- add item guids to table
   end
   reaper.PreventUIRefresh(1)
   for k = 1, #item_tb do
     local titems = {}
-    local s_item = item_tb[k]
+    local s_item = reaper.BR_GetMediaItemByGUID(0, item_tb[k]) -- get item pointers from stored guids
     local tr = reaper.GetMediaItemTrack( s_item )
     local s_take = reaper.GetMediaItemTake( s_item, 0 )
     local s_pos =  reaper.GetMediaItemInfo_Value( s_item, "D_POSITION" )   -- get position of original take
@@ -1043,27 +1077,38 @@ function takes_to_version()
     reaper.Main_OnCommand(40643,0) -- explode takes in order  
     local num_items = reaper.CountTrackMediaItems(tr) -- check every item in track
       for i = num_items, 1, -1 do
-        local item = reaper.GetTrackMediaItem(tr, i-1)  
-        local take_num = reaper.CountTakes( item )    
+        local item = reaper.GetTrackMediaItem(tr, i-1)
         local d_take = reaper.GetMediaItemTake( item, 0 )
         local _, d_name = reaper.GetSetMediaItemTakeInfo_String( d_take, "P_NAME", "",0 ) -- get its name
-          if d_name == s_name and take_num == 1 then -- if exploded item is found (shares same name as take item)
-            reaper.SetMediaItemInfo_Value( item, "D_POSITION",s_pos ) --set items position to original (since we explode in order)      
-            local _, item_chunk = reaper.GetItemStateChunk(item, '')  -- gets its chunk
-            titems[#titems+1] = {pattern(item_chunk)} -- add it to chunk table
-            reaper.DeleteTrackMediaItem(tr,item) -- remove exploded items
+          if d_name == s_name and reaper.GetMediaItemInfo_Value( item, "D_POSITION" ) >= get_time_sel() then -- if exploded item is found (shares same name as take item)
+              reaper.SetMediaItemInfo_Value( item, "D_POSITION",get_time_sel() )--s_pos --set items position to original (since we explode in order)      
+              local _, item_chunk = reaper.GetItemStateChunk(item, '')  -- gets its chunk
+              titems[#titems+1] = {pattern(item_chunk)} -- add it to chunk table
+              reaper.DeleteTrackMediaItem(tr,item) -- remove exploded items
           end
       end
-    for i = 1, #titems do
-      create_button("Take ".. i, reaper.GetTrackGUID(tr),titems[i],reaper.genGuid())   -- create version from it with Take prefix
+    local t = 1  
+    for i = #titems, 1, -1 do -- need to reverse it becouse the previous loop is also reversed because of deleting (always better) but chunks are in reverse order      
+      create_button("Take ".. t, reaper.GetTrackGUID(tr),titems[i],reaper.genGuid())   -- create version from it with Take prefix
       local tr = find_guid(reaper.GetTrackGUID(tr))
       local items = tr.ver[#tr.ver].chunk -- new created take versions
+      t = t + 1
       restoreTrackItems(tr.guid,items,#tr.ver) -- restore them
     end
   end 
   reaper.PreventUIRefresh(-1)              
   reaper.UpdateArrange()
 end
+
+function title_and_button_upd(tr)  
+  local retval, name = reaper.GetSetMediaTrackInfo_String(tr, "P_NAME", "", false) 
+  local tr_num = math.floor(reaper.GetMediaTrackInfo_Value( tr, "IP_TRACKNUMBER" ))
+  local title = Title:new(25,15,70,20, 0.2,0.2,1.0,0, tr_num .. " : " .. name, "Arial",15,{0.7, 0.9, 1, 1}, 0 )
+  local title_TB = {title}
+  if reaper.GetMediaTrackInfo_Value(tr, "I_FOLDERDEPTH") == 1 then save.lbl = "Save Folder" else save.lbl = "Save" end-- else DRAW_B(Track) end-- draw save folder button only if folder track is selected  DRAW_B(Folder)  
+  DRAW_M(title_TB)
+end
+
 --------------------------------------------------------------------------------
 ---  Function MAIN -------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -1071,9 +1116,9 @@ function main()
   local sel_tr = reaper.GetSelectedTrack(0,0) -- get track 
     if sel_tr then
       cur_sel[1] = find_guid(reaper.GetTrackGUID(sel_tr)) -- VIEW CURRENT SELECTED TRACK VERSIONS
+      title_and_button_upd(sel_tr)
       set_color(sel_tr,cur_sel[1],color)
-      if #cur_sel ~= 0 then DRAW_B(Empty) end-- if track has no version hide empty button (to avoid deleting original items)
-      if reaper.GetMediaTrackInfo_Value(sel_tr, "I_FOLDERDEPTH") == 1 then DRAW_B(Folder)end-- else DRAW_B(Track) end-- draw save folder button only if folder track is selected            
+      if #cur_sel ~= 0 then DRAW_B(Empty) end-- if track has no version hide empty button (to avoid deleting original items)     
       DRAW_C(cur_sel)
       set_env_box(cur_sel[1])
     end
@@ -1082,12 +1127,11 @@ function main()
        local last_action = reaper.Undo_CanUndo2(0)
        if last_action ~= nil then
          if last_action:find("Remove tracks") then track_deleted()  -- run only if action "Remove tracks" is found
-         --elseif last_action:find("Recorded media") and rec_takes then takes_to_version() -- IF REC_TAKES IS ENABLED MAKE VERSIONS FROM TAKE
+         elseif last_action:find("Recorded media") and rec_takes then takes_to_version() -- IF REC_TAKES IS ENABLED MAKE VERSIONS FROM TAKE
          end
        end
        last_proj_change_count = proj_change_count
      end
-     --store_gui()
 end
 ----------------------------------------------------------------------------------------------------
 ---   Main DRAW function   -------------------------------------------------------------------------
