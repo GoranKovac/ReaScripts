@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="c32308b127273a3e9f99b59fb61daad7bba91d34" name="Sexan_Scripts">
+<index version="1" commit="44e637c64a12dc09d7f78db3f09831d5b7bb71e1" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track versions.lua" type="script" desc="Track versions.lua">
       <metadata>
@@ -191,6 +191,11 @@
       <version name="0.66" author="SeXan" time="2018-03-06T23:20:59Z">
         <changelog><![CDATA[+ allow storing empty tracks]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/c32308b127273a3e9f99b59fb61daad7bba91d34/Alpha/Sexan_Track%20versions.lua</source>
+      </version>
+      <version name="0.67" author="SeXan" time="2018-03-07T11:48:03Z">
+        <changelog><![CDATA[+ Added time selection version (can be created only if version exist)
++ fixed crash when deleting version after empty is clicked]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/44e637c64a12dc09d7f78db3f09831d5b7bb71e1/Alpha/Sexan_Track%20versions.lua</source>
       </version>
     </reapack>
   </category>
