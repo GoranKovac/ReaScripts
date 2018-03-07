@@ -5,13 +5,14 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.66
+ * Version: 0.67
 --]]
  
 --[[
  * Changelog:
- * v0.66 (2018-03-04)
-  + allow storing empty tracks
+ * v0.67 (2018-03-07)
+  + Added time selection version (can be created only if version exist)
+  + fixed crash when deleting version after empty is clicked
 
 --]]
 
@@ -22,7 +23,7 @@ local store_original = true -- set enable-disable storing original version
 local rec_takes = false -- make versions from recorded takes
 --------------------------------------------------------------------------
 local Wnd_W,Wnd_H = 220,220
-local cur_sel = {[1] = nil}
+cur_sel = {[1] = nil}
 local TrackTB = {}
 local get_val
 local env_type =  {  
@@ -512,17 +513,33 @@ end
 ---  Function Get Items chunk --------------------------------------------------
 --------------------------------------------------------------------------------
 function getTrackItems(track,job)
-  if reaper.GetMediaTrackInfo_Value(track, "I_FOLDERDEPTH")== 1 and not job then return end
-  local items_chunk, items = {}, {}
+  if reaper.GetMediaTrackInfo_Value(track, "I_FOLDERDEPTH")== 1 and not job then return end  
+  local items_chunk, items, ts_items = {}, {}, {}
   local num_items = reaper.CountTrackMediaItems(track)
     for i=1, num_items, 1 do
       local item = reaper.GetTrackMediaItem(track, i-1)
-      local _, it_chunk = reaper.GetItemStateChunk(item, '')
-      items_chunk[#items_chunk+1] = pattern(it_chunk)
+      ts_items[#ts_items+1] = get_items_in_ts(item)
       items[#items+1] = item
     end
-    if #items == 0 then items_chunk[1] = "empty_track" end -- pickle doesn't like empty tables
+    if #ts_items == 0 or not find_guid(reaper.GetTrackGUID(track)) or #find_guid(reaper.GetTrackGUID(track)).ver < 2 then ts_items = nil end -- do not create TS ITEMS if there are no VERSIONS
+    local items_tb = ts_items or items
+    for i = 1, #items_tb do
+      local _, it_chunk = reaper.GetItemStateChunk(items_tb[i], '')
+      items_chunk[#items_chunk+1] = pattern(it_chunk)
+    end 
+    
+    if #items_tb == 0 then items_chunk[1] = "empty_track" end -- pickle doesn't like empty tables
   return setmetatable(items_chunk, tcmt), items
+end
+--------------------------------------------------------------------------------
+---  Function GET ITEMS IN TS  --------------------------------
+--------------------------------------------------------------------------------
+function get_items_in_ts(item)
+  local Tstart, Tend = get_time_sel()
+  local item_start = reaper.GetMediaItemInfo_Value(item,"D_POSITION")
+  local item_len = reaper.GetMediaItemInfo_Value(item,"D_LENGTH")
+  local item_end = item_start + item_len
+  if Tstart <= item_start and Tend >= item_end then return item end
 end
 ----------------------------------------------------
 --- select all items -------------------------------
@@ -536,29 +553,27 @@ end
 --------------------------------------------------------------------------------
 ---  Function Restore Item Position --------------------------------------------
 --------------------------------------------------------------------------------
-function restoreTrackItems(track, track_items_table, num, job)
-  local parent = find_guid(track)
-  --local parent_num = num or parent.num -- VERSION NUMBER FOR FOLDER CHANHING (maybe not needed)
-  local c_track, track = track, reaper.BR_GetMediaTrackByGUID(0,track)
+function restoreTrackItems(track, num, job)
+  local track, track_tb = reaper.BR_GetMediaTrackByGUID( 0,track), find_guid(track)
+  local track_items_table = job or track_tb.ver[num].chunk -- (we send {} as job from empty click)
   local num_items = reaper.CountTrackMediaItems(track)
  -- reaper.PreventUIRefresh(1)
   for i = 1, num_items, 1 do reaper.DeleteTrackMediaItem(track, reaper.GetTrackMediaItem(track,0)) end
     for i = 1, #track_items_table, 1 do
       if reaper.BR_GetMediaTrackByGUID( 0, track_items_table[i] ) then  -- FOLDER (TRACKS) (table is filled with tracks not items)
-        parent.num = num -- check parent version --
+        track_tb.num = num -- check parent version --
         local child = find_guid(track_items_table[i]) -- get child
           for j = 1 , #child.ver do
-            if parent.ver[parent.num].ver_id == child.ver[j].ver_id then -- IF FOLDER VER ID MATCH WITH CHILD
-              local child_items = child.ver[j].chunk
-              restoreTrackItems(track_items_table[i],child_items,j)
+            if track_tb.ver[track_tb.num].ver_id == child.ver[j].ver_id then -- IF FOLDER VER ID MATCH WITH CHILD
+              restoreTrackItems(track_items_table[i],j)
               child.num = j -- CHECK THE CHILD BOXES
             end
           end
       else   -- TRACK (ITEMS)
         local item = reaper.AddMediaItemToTrack(track)
-        reaper.SetItemStateChunk(item, track_items_table[i], false) 
+        reaper.SetItemStateChunk(item, track_items_table[i], false)
         select_items(track,"select") -- select track from version (for easier locating)
-        find_guid(c_track).num = num -- check track/child
+        track_tb.num = num -- check track/child
       end
     end
  -- reaper.PreventUIRefresh(-1)              
@@ -720,7 +735,7 @@ empty.onClick = function()
                 local childs = get_folder(reaper.BR_GetMediaTrackByGUID(0,cur_sel[1].guid)) or {}
                 childs[#childs+1] = cur_sel[1].guid
                   for i = 1 , #childs do
-                    restoreTrackItems(childs[i], {}) -- sending empty table {} removes items from track
+                    restoreTrackItems(childs[i], 0,{}) -- sending empty table {} removes items from track
                     find_guid(childs[i]).num = 0
                   end
 end             
@@ -907,17 +922,20 @@ function create_button(name,guid,chunk,ver_id,num,env)
     local version = find_guid(guid) 
     version.ver[#version.ver+1] = v_table -- add state to ver table
     version.num = num or #version.ver
+    reaper.PreventUIRefresh(1)
+    --restoreTrackItems(version.guid,version.ver[version.num].chunk,version.num)
+    reaper.PreventUIRefresh(-1)
   end
     
   box.onClick = function() -- check box on click action
                 reaper.PreventUIRefresh(1)
-                local tr
+                reaper.Main_OnCommand(40289,0) -- unselect all items
                   for i = 1, reaper.CountSelectedTracks() do 
                     local sel_tr = reaper.GetTrackGUID(reaper.GetSelectedTrack(0,i-1))
                     local tr = find_guid(sel_tr)
-                      if tr and box.num <= #tr.ver then -- for multiselection (if other track does not have same number of versions,or if other track exists in table)
-                        local items = tr.ver[box.num].chunk -- items or tracks (based on if is a track or folder)
-                        restoreTrackItems(tr.guid,items,box.num)
+                      if tr and box.num <= #tr.ver then -- for multiselection (if other track does not have same number of versions,or if other track exists in table)                        
+                        --reaper.Main_OnCommand(40289,0) -- unselect all items
+                        restoreTrackItems(tr.guid,box.num)
                       end
                   end
                   reaper.PreventUIRefresh(-1)  
@@ -941,10 +959,9 @@ function create_button(name,guid,chunk,ver_id,num,env)
                         table.remove(box.ver,get_val) -- REMOVE FROM FOLDER OR TRACK
                       end
                     end
-                    if #box.ver ~= 0 then
+                    if #box.ver ~= 0 and box.num ~= 0 then
                       if box.num > #box.ver then box.num = #box.ver end
-                      local items = box.ver[box.num].chunk
-                      restoreTrackItems(box.guid,items,box.num)
+                      --restoreTrackItems(box.guid,box.num)
                     end
                     update_tbl() -- CHECK AND REMOVE BUTTON FROM MAIN TABLE IF VERSION IS EMPTY
                      
@@ -1086,9 +1103,8 @@ function takes_to_version()
     for i = #titems, 1, -1 do -- need to reverse it becouse the previous loop is also reversed because of deleting (always better) but chunks are in reverse order      
       create_button("Take ".. t, reaper.GetTrackGUID(tr),titems[i],reaper.genGuid())   -- create version from it with Take prefix
       local tr = find_guid(reaper.GetTrackGUID(tr))
-      local items = tr.ver[#tr.ver].chunk -- new created take versions
       t = t + 1
-      restoreTrackItems(tr.guid,items,#tr.ver) -- restore them
+      restoreTrackItems(tr.guid,#tr.ver) -- restore them
     end
   end 
   reaper.PreventUIRefresh(-1)              
