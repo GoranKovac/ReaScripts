@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="44e637c64a12dc09d7f78db3f09831d5b7bb71e1" name="Sexan_Scripts">
+<index version="1" commit="9a361ff860518d9f9b581166f73f8773c7a5e477" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track versions.lua" type="script" desc="Track versions.lua">
       <metadata>
@@ -196,6 +196,21 @@
         <changelog><![CDATA[+ Added time selection version (can be created only if version exist)
 + fixed crash when deleting version after empty is clicked]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/44e637c64a12dc09d7f78db3f09831d5b7bb71e1/Alpha/Sexan_Track%20versions.lua</source>
+      </version>
+    </reapack>
+    <reapack name="Sexan_TrackVersionWIP.lua" type="script" desc="TrackVersionsWIP.lua">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 Protools style playlist, track versions (Cubase)\par}
+}
+]]></description>
+      </metadata>
+      <version name="0.1" author="SeXan" time="2018-10-02T19:44:02Z">
+        <changelog><![CDATA[+ multiedit,comping,view all versions,view time selection version etc]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/9a361ff860518d9f9b581166f73f8773c7a5e477/Alpha/Sexan_TrackVersionWIP.lua</source>
       </version>
     </reapack>
   </category>
