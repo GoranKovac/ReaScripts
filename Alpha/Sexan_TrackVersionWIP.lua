@@ -5,13 +5,14 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.3
+ * Version: 0.4
 --]]
  
 --[[
  * Changelog:
- * v0.3 (2018-03-10)
-  + More fixes to copy to destination & while in view time selection versions,copy to will copy to current version of time selection view
+ * v0.4 (2018-03-10)
+  + More fixes to copy to destination for multitracks and view time selection
+  + In View all version mode,view time selection mode is not allowed
 
 --]]
 
@@ -788,6 +789,8 @@ function restoreTrackItems(track, num, job)
   
   ----- IF WE ARE IN VIEW TIME SELECTION MODE SET THE SAVED VERSION/SOURCE STATIC
   if view == 1 then
+    track_tb.stored = {}
+    cur_ts_items = {} 
     for i = 1 ,#stored_version do
       local tr_tbl = find_guid(stored_version[i].guid)
         if has_id(tr_tbl,stored_version[i].ver_id) then
@@ -817,10 +820,11 @@ function restoreTrackItems(track, num, job)
             if view == 1 then -- TIME SELECTION VIEW
               for j = 1 , #stored_version do
                 --if AAA[j].ver_id ~= track_tb.ver[track_tb.num].ver_id and track_tb.guid == AAA[j].guid then reaper.SetItemStateChunk(item, track_items_table[i], false) end -- PREVENT ADDING SAME VERSION AS SOURCE (THEY GET OVERLAPED) and make sure items get on right track
-                if stored_version[j].ver_id ~= track_tb.ver[track_tb.num].ver_id then reaper.SetItemStateChunk(item, track_items_table[i], false) end -- PREVENT ADDING SAME VERSION AS SOURCE (THEY GET OVERLAPED) and make sure items get on right track
+                if track_tb.guid == stored_version[j].guid and stored_version[j].ver_id ~= track_tb.ver[track_tb.num].ver_id then reaper.SetItemStateChunk(item, track_items_table[i], false) end -- PREVENT ADDING SAME VERSION AS SOURCE (THEY GET OVERLAPED) and make sure items get on right track
               end
-              if ts_item_position(item) then cur_ts_items[#cur_ts_items+1] = show_ts_version(item) else reaper.DeleteTrackMediaItem(track, item) end -- TIMESELECTION VIEW,
+              if ts_item_position(item) then track_tb.stored[#track_tb.stored+1] = show_ts_version(item) else reaper.DeleteTrackMediaItem(track, item) end -- TIMESELECTION VIEW,
             else  -- NORMAL VIEW
+              track_tb.stored = nil
               reaper.SetItemStateChunk(item, track_items_table[i], false) -- SETTING NORMAL VERSION
             end
         end
@@ -843,9 +847,10 @@ end
 ---  BUTTONS FUNCTIONS   ------------------------------------------------------
 -------------------------------------------------------------------------------
 view_ts.onClick = function()
+  if all.num == 1 then return end
   if view_ts.num == 0 then view_ts.num = 1 view = 1 else view_ts.num = 0 view = 0 end
+  
   local tbl
-  --local tbl = get_folder(reaper.BR_GetMediaTrackByGUID(0,cur_sel[1].guid)) or multi_tracks or {cur_sel[1].guid} --FOLDER - MULTITRACK - TRACK 
   if get_folder(reaper.BR_GetMediaTrackByGUID(0,cur_sel[1].guid)) then
     tbl = get_folder(reaper.BR_GetMediaTrackByGUID(0,cur_sel[1].guid))
   elseif #multi_tracks ~= 0 then
@@ -854,10 +859,13 @@ view_ts.onClick = function()
     tbl = {cur_sel[1].guid}
   end
   
-  --if view_ts.num == 0 then view_ts.num = 1 view = 1 else view_ts.num = 0 view = 0 end
   if view == 1 then 
-    cur_ts_items = {} 
     stored_version = {}
+    
+    for i = 1,#tbl do
+      local track = find_guid(tbl[i]) 
+      track.stored_num = track.num
+    end
     
       for i = 1,#tbl do
         local items = {}
@@ -871,8 +879,13 @@ view_ts.onClick = function()
       restoreTrackItems(stored_version[i].guid, stored_version[i].num)
     end  
     stored_version = nil
-    cur_ts_items = nil
+    --cur_ts_items = nil
     reaper.PreventUIRefresh(-1)
+    for i = 1,#tbl do
+      local track = find_guid(tbl[i]) 
+      track.stored_num = nil
+    end
+    
   end
 end
 
@@ -929,27 +942,26 @@ copy.onRClick = function()
                 end
 function multi_or_single_edit(tbl)
   reaper.PreventUIRefresh(1)
-  --local sel
   local items = {}
   --GET ITEMS--------------
     for i = 1, #tbl do
+      if view == 1 then
+        for k = 1 ,#find_guid(tbl[i]).stored do
+          items[#items+1] = find_guid(tbl[i]).stored[k]
+        end
+      end
       if all.num == 0 then -- SINGLE VIEW
         for j = 1,  reaper.CountTrackMediaItems( reaper.BR_GetMediaTrackByGUID( 0, tbl[i] ) ) do
           local item = reaper.GetTrackMediaItem( reaper.BR_GetMediaTrackByGUID( 0, tbl[i] ), j-1 )
           if get_time_sel() and get_items_in_ts(item) and view == 0 then items[#items+1] = get_items_in_ts(item) --end --  IF ITEM IS IN TIME SELECTION
           elseif not get_time_sel() and reaper.IsMediaItemSelected( item ) == true and view == 0 then items[#items+1] = item-- sel=true-- IF ITEM IS SELECTED, MAKE FLAG SEL TRUE
-          --elseif not get_time_sel() and not sel then  items[#items+1] = item -- EVERY ITEM IN VERSION IF THERE IS NO TIME SELECTION AND NO FLAG SEL
-          elseif view == 1 then
-            items = cur_ts_items
           end
         end
-        --if view == 1 then items[#items+1] = show_ts_version(item) end
       else -- MULTIVIEW
         local cur_items = mute_view(find_guid(tbl[i]))
         for i = 1, #cur_items do
         if get_time_sel() and get_items_in_ts(cur_items[i]) then items[#items+1] = get_items_in_ts(cur_items[i])
         elseif not get_time_sel() and reaper.IsMediaItemSelected(cur_items[i]) == true then items[#items+1] = cur_items[i]
-        --elseif not get_time_sel() and not sel then items[#items+1] = cur_items[i]
         end
       end
     end
@@ -984,13 +996,13 @@ function multi_or_single_edit(tbl)
       local destination 
       for i = 1, #data do
         local tr_tbl = find_guid(data[i].tr_guid)
+        
         if view == 1 then -- IF VIEW TIME SELECTION MODE IS ON SET DESTINATION TO IT
-          for j = 1 , #stored_version do
-            destination = has_id(tr_tbl,stored_version[j].ver_id)
-          end
+          destination = tr_tbl.stored_num--has_id(tr_tbl,stored_version[j].ver_id)
         else
           destination = tr_tbl.dest
         end
+        
         local tr_guid = tr_tbl.guid
         local tr = reaper.BR_GetMediaTrackByGUID( 0, tr_guid )  
     
@@ -1027,80 +1039,13 @@ function multi_or_single_edit(tbl)
           restoreTrackItems(tr_guid,stored_num) -- restore previous version
         end
       end
-    
-    
-      --[[
-      if reaper.IsMediaItemSelected( item ) == true then reaper.SetMediaItemSelected( item, false ) end
-      
-      if all.num == 1 then   -- IF WE ARE IN MULTI VIEW
-        fipm_item = reaper.AddMediaItemToTrack(  reaper.BR_GetMediaTrackByGUID( 0,tr_guid ) )
-        reaper.SetItemStateChunk(fipm_item, chunk[1], false)
-        local destination_chunk = tr_tbl.ver[tr_tbl.dest].chunk
-        for j = 1, #chunk do destination_chunk[#destination_chunk+1] = chunk[j] end     
-        
-        update_fipm(tr_tbl) -- update FIPM (arrange new item)
-        
-        reaper.SetMediaItemSelected( fipm_item, true ) -- select it so command below can work
-        reaper.Main_OnCommand(40930,0) -- trim content behind item 
-        
-        local stored_num = tr_tbl.num -- store current num
-        local items = mute_view(tr_tbl,fipm_item) -- get items of version we just pasted item
-          local fipm_chunk = {}
-            for j = 1, #items do
-              local _, item_chunk = reaper.GetItemStateChunk(items[j], '')  -- gets its chunk             
-              fipm_chunk[#fipm_chunk+1] = pattern(item_chunk) -- add it to chunk table
-            end
-            tr_tbl.ver[tr_tbl.dest].chunk = fipm_chunk -- replace whole chunk with new one (we need this because we trim content behind certain item)
-        reaper.SetMediaItemSelected( fipm_item, false )
-        
-        restoreTrackItems(tr_guid,stored_num)
-      else  -- IF WE ARE IN NORMAL VERSION VIEW
-        
-        local stored_num = tr_tbl.num -- store current version num
-        restoreTrackItems(tr_guid,tr_tbl.dest) -- set version we will modify
-        local fipm_item = reaper.AddMediaItemToTrack(  reaper.BR_GetMediaTrackByGUID( 0,tr_guid ) )
-        reaper.SetItemStateChunk(fipm_item, chunk[1], false)
-        reaper.SetMediaItemSelected( fipm_item, true )
-        reaper.Main_OnCommand(40930,0) -- trim content behind item 
-        reaper.SetMediaItemSelected( fipm_item, false )
-        tr_tbl.ver[tr_tbl.dest].chunk = getTrackItems(tr) -- store chunk to version we are modifyng
-        restoreTrackItems(tr_guid,stored_num) -- restore previous version
-      end 
-      -]]
-      
-      
-      
-      
-      
-       
-      --destination_chunk = getTrackItems(reaper.BR_GetMediaTrackByGUID( 0, tr_guid))
-        
-      --[[
-      if parent then -- MULTI EDIT
-        if has_id(tr_tbl,parent.ver[parent.dest].ver_id) then -- if folder ver_id matches childrens ver_id (MULTI EDIT)
-          local dest = has_id(tr_tbl,parent.ver[parent.dest].ver_id) 
-          destination_chunk = tr_tbl.ver[dest].chunk 
-        end          
-      else  -- SINGLE EDIT
-        destination_chunk = tr_tbl.ver[tr_tbl.dest].chunk
-      end
-      
-      for i = 1, #chunk do destination_chunk[#destination_chunk+1] = chunk[i]
-        if all.num == 1 then
-          reaper.SetItemStateChunk(fipm_item, chunk[i], false)
-          if tr_tbl.num ~= get_num_from_cordinate2(tr_tbl,fipm_item) then reaper.SetMediaItemInfo_Value(fipm_item, "B_MUTE", 1 ) end -- mute newly created comp items (for preventing double playback)            
-        end
-      end
-      ]]
-      --update_fipm(tr_tbl)
-    --end
     reaper.PreventUIRefresh(-1)
     reaper.UpdateArrange()
 end               
 copy.onClick = function()
                 if view == 0 and cur_sel[1].dest == cur_sel[1].num then return end -- prevent adding chunk of current version to current version
                 ------------------------------
-                local tbl
+                --local tbl
                 if multi_edit.num == 1 then --else tbl = {cur_sel[1].guid} end
                   multi_or_single_edit(multi_tracks)
                 else
@@ -1173,7 +1118,16 @@ all.onClick = function ()
   reaper.PreventUIRefresh(1)
   if all.num == 0 then all.num = 1 else all.num = 0 end
   
-  local tracks = get_folder(cur_tr) or {cur_sel[1].guid}
+  local tracks
+    if get_folder(reaper.BR_GetMediaTrackByGUID(0,cur_sel[1].guid)) then
+      tracks = get_folder(reaper.BR_GetMediaTrackByGUID(0,cur_sel[1].guid))
+    elseif #multi_tracks ~= 0 then
+      tracks = multi_tracks
+    else
+      tracks = {cur_sel[1].guid}
+    end
+  
+  
   if get_folder(cur_tr) then 
     cur_sel[1].fipm = all.num 
     reaper.SetMediaTrackInfo_Value( cur_tr, "B_FREEMODE", cur_sel[1].fipm)
@@ -1758,7 +1712,7 @@ function title_and_button_upd(tr)
   local retval, name = reaper.GetSetMediaTrackInfo_String(tr, "P_NAME", "", false) 
   local tr_num = math.floor(reaper.GetMediaTrackInfo_Value( tr, "IP_TRACKNUMBER" ))
   if cur_sel[1] and cur_sel[1].dest > 0 and #cur_sel[1].ver ~= 0 then copy.lbl = "To - " .. cur_sel[1].ver[cur_sel[1].dest].name end
-  if view == 1 then copy.lbl = "To - Current" end
+  if view == 1 then copy.lbl = "To - " .. cur_sel[1].ver[cur_sel[1].stored_num].name end
   --Wnd_Title = tr_num .. " : " .. name
  -- local title = Title:new(55,15,70,20, 0.2,0.2,1.0,0, tr_num .. " : " .. name, "Arial",15,{0.7, 0.9, 1, 1}, 0 )
  -- local title_TB = {title}
