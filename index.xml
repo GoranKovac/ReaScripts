@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="746f7a9e4ab85f8443abf2bcce01d51321daa2e6" name="Sexan_Scripts">
+<index version="1" commit="c3a5e1b6bd6e21d696452dcbbb83b11594f12f7a" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track versions.lua" type="script" desc="Track versions.lua">
       <metadata>
@@ -228,6 +228,10 @@
       <version name="0.5" author="SeXan" time="2018-10-03T15:53:04Z">
         <changelog><![CDATA[+ Fix copy to destination bug with time selection items geting copied twice]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/746f7a9e4ab85f8443abf2bcce01d51321daa2e6/Alpha/Sexan_TrackVersionWIP.lua</source>
+      </version>
+      <version name="0.6" author="SeXan" time="2018-10-03T16:28:13Z">
+        <changelog><![CDATA[+ When comping overlaping items will trim]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/c3a5e1b6bd6e21d696452dcbbb83b11594f12f7a/Alpha/Sexan_TrackVersionWIP.lua</source>
       </version>
     </reapack>
   </category>
