@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="383a9958ae09ada79e4553c30a01eff4f629a825" name="Sexan_Scripts">
+<index version="1" commit="746f7a9e4ab85f8443abf2bcce01d51321daa2e6" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track versions.lua" type="script" desc="Track versions.lua">
       <metadata>
@@ -224,6 +224,10 @@
         <changelog><![CDATA[+ More fixes to copy to destination for multitracks and view time selection
 + In View all version mode,view time selection mode is not allowed]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/383a9958ae09ada79e4553c30a01eff4f629a825/Alpha/Sexan_TrackVersionWIP.lua</source>
+      </version>
+      <version name="0.5" author="SeXan" time="2018-10-03T15:53:04Z">
+        <changelog><![CDATA[+ Fix copy to destination bug with time selection items geting copied twice]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/746f7a9e4ab85f8443abf2bcce01d51321daa2e6/Alpha/Sexan_TrackVersionWIP.lua</source>
       </version>
     </reapack>
   </category>
