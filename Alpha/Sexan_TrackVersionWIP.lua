@@ -5,14 +5,13 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.4
+ * Version: 0.5
 --]]
  
 --[[
  * Changelog:
- * v0.4 (2018-03-10)
-  + More fixes to copy to destination for multitracks and view time selection
-  + In View all version mode,view time selection mode is not allowed
+ * v0.5 (2018-03-10)
+  + Fix copy to destination bug with time selection items geting copied twice
 
 --]]
 
@@ -978,7 +977,7 @@ function multi_or_single_edit(tbl)
       local tr_tbl = find_guid(tr_guid)
       
       if get_time_sel() and view == 0 then 
-        fipm_item, chunk = make_item_from_ts(tr_tbl,item,tr)
+        fipm_item, chunk = make_item_from_ts(tr_tbl,item,tr,"skip")
         data[#data+1] = {tr_guid = tr_guid, chunk = chunk}
       elseif view == 1 then
         chunk = check_item_guid(tr_tbl,item)
@@ -1027,6 +1026,7 @@ function multi_or_single_edit(tbl)
           tr_tbl.ver[destination].chunk = fipm_chunk -- replace whole chunk with new one (we need this because we trim content behind certain item)
           reaper.SetMediaItemSelected( fipm_item, false )
           restoreTrackItems(tr_guid,stored_num)
+          
         else
           local stored_num = tr_tbl.num -- store current version num
           restoreTrackItems(tr_guid,destination) -- set version we will modify
@@ -1038,6 +1038,7 @@ function multi_or_single_edit(tbl)
           tr_tbl.ver[destination].chunk = getTrackItems(tr) -- store chunk to version we are modifyng
           restoreTrackItems(tr_guid,stored_num) -- restore previous version
         end
+        --update_fipm(tr_tbl) -- update FIPM (arrange new item)
       end
     reaper.PreventUIRefresh(-1)
     reaper.UpdateArrange()
@@ -1768,7 +1769,7 @@ end
 --------------------------------------------------------
 ---  Function MAKE ITEMS BASED TIME SELECTION (SWIPING)--
 --------------------------------------------------------
-function make_item_from_ts(tbl,item,track)
+function make_item_from_ts(tbl,item,track,job)
   local filename,clonedsource
   local take =  reaper.GetMediaItemTake( item, 0 )
   local source = reaper.GetMediaItemTake_Source( take )
@@ -1798,6 +1799,11 @@ function make_item_from_ts(tbl,item,track)
   
   local _, swipe_chunk = reaper.GetItemStateChunk(swipedItem, '')
   swipe_chunk = {pattern(swipe_chunk)}
+  
+  if job then -- remove added item if needed (calling from multiedit function)
+    local track = reaper.BR_GetMediaTrackByGUID(0,tbl.guid)
+    reaper.DeleteTrackMediaItem(track, swipedItem) 
+  end
   
   return swipedItem,swipe_chunk
 end
