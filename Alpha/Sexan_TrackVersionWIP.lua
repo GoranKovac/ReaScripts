@@ -5,13 +5,13 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.6
+ * Version: 0.7
 --]]
  
 --[[
  * Changelog:
- * v0.6 (2018-03-10)
-  + When comping overlaping items will trim
+ * v0.7 (2018-03-10)
+  + Apply all editing to folders (copy to destination,view time selection items,comping)
 
 --]]
 
@@ -852,6 +852,7 @@ view_ts.onClick = function()
   local tbl
   if get_folder(reaper.BR_GetMediaTrackByGUID(0,cur_sel[1].guid)) then
     tbl = get_folder(reaper.BR_GetMediaTrackByGUID(0,cur_sel[1].guid))
+    tbl[#tbl+1] = cur_sel[1].guid -- add main folder to table (get_folder excludes first track (folder))
   elseif #multi_tracks ~= 0 then
     tbl = multi_tracks
   else
@@ -1012,7 +1013,7 @@ function multi_or_single_edit(tbl)
           for j = 1, #data[i].chunk do destination_chunk[#destination_chunk+1] = data[i].chunk[j] end     
               
           update_fipm(tr_tbl) -- update FIPM (arrange new item)
-              
+          ---------- TRIM ITEMS BEHIND IF ITEMS OVERLAP    
           reaper.SetMediaItemSelected( fipm_item, true ) -- select it so command below can work
           reaper.Main_OnCommand(40930,0) -- trim content behind item 
               
@@ -1044,12 +1045,20 @@ end
 copy.onClick = function()
                 if view == 0 and cur_sel[1].dest == cur_sel[1].num then return end -- prevent adding chunk of current version to current version
                 ------------------------------
-                --local tbl
-                if multi_edit.num == 1 then --else tbl = {cur_sel[1].guid} end
-                  multi_or_single_edit(multi_tracks)
-                else
-                  multi_or_single_edit({cur_sel[1].guid})
-                end
+                if get_folder(reaper.BR_GetMediaTrackByGUID(0,cur_sel[1].guid)) then
+                   tbl = get_folder(reaper.BR_GetMediaTrackByGUID(0,cur_sel[1].guid))
+                   tbl[#tbl+1] = cur_sel[1].guid -- add main folder to table (get_folder excludes first track (folder))
+                 elseif #multi_tracks ~= 0 and multi_edit.num == 1 then
+                   tbl = multi_tracks
+                 else
+                   tbl = {cur_sel[1].guid}
+                 end                
+                
+                --if multi_edit.num == 1 then --else tbl = {cur_sel[1].guid} end
+                  multi_or_single_edit(tbl)
+                --else
+                --  multi_or_single_edit({cur_sel[1].guid})
+                --end
           end
  
 duplicate.onClick = function()
@@ -1120,7 +1129,7 @@ all.onClick = function ()
   local tracks
     if get_folder(reaper.BR_GetMediaTrackByGUID(0,cur_sel[1].guid)) then
       tracks = get_folder(reaper.BR_GetMediaTrackByGUID(0,cur_sel[1].guid))
-    elseif #multi_tracks ~= 0 then
+    elseif #multi_tracks ~= 0 and multi_edit.num == 1 then
       tracks = multi_tracks
     else
       tracks = {cur_sel[1].guid}
@@ -1711,7 +1720,7 @@ function title_and_button_upd(tr)
   local retval, name = reaper.GetSetMediaTrackInfo_String(tr, "P_NAME", "", false) 
   local tr_num = math.floor(reaper.GetMediaTrackInfo_Value( tr, "IP_TRACKNUMBER" ))
   if cur_sel[1] and cur_sel[1].dest > 0 and #cur_sel[1].ver ~= 0 then copy.lbl = "To - " .. cur_sel[1].ver[cur_sel[1].dest].name end
-  if view == 1 then copy.lbl = "To - " .. cur_sel[1].ver[cur_sel[1].stored_num].name end
+  if view == 1 then copy.lbl = "To - Current" end --.. cur_sel[1].ver[cur_sel[1].stored_num].name end
   --Wnd_Title = tr_num .. " : " .. name
  -- local title = Title:new(55,15,70,20, 0.2,0.2,1.0,0, tr_num .. " : " .. name, "Arial",15,{0.7, 0.9, 1, 1}, 0 )
  -- local title_TB = {title}
@@ -1813,10 +1822,10 @@ function comping(tbl)
     local tsStart, tsEnd = get_time_sel()
     
     local tracks = tbl
-    if folder then tracks = get_folder(cur_tr) end
-    
+        
     for i = 1, #tracks do
       local track =  reaper.BR_GetMediaTrackByGUID(0,tracks[i]) -- get curent track
+      local tr_folder = reaper.GetMediaTrackInfo_Value(track, "I_FOLDERDEPTH")
       local tr_tbl = find_guid(tracks[i])
       local unmuted_items = mute_view(tr_tbl)
       local tsitems = {}
@@ -1827,8 +1836,6 @@ function comping(tbl)
           tsitems[#tsitems+1] = get_items_in_ts(unmuted_items[i])
         end
       end
-     
-      --if #tsitems == 0 then return end
     
       for i = 1, #tsitems do
         local tsitem = tsitems[i]
@@ -1842,15 +1849,16 @@ function comping(tbl)
         reaper.Undo_BeginBlock()
         local swipedItem, swipe_chunk = make_item_from_ts(tr_tbl,tsitem,track)
         local num = has_id(tr_tbl, cur_comp_id)
+        
+        --if tr_folder == 1 then BBBBBBBBB = tr_tbl.guid end
           
           if not num then --and is_folder ~= 1 then
             local cur_num = tr_tbl.num -- store current selected version
             create_button("COMP",tr_tbl.guid,swipe_chunk,cur_comp_id) -- 1 is to insert at first position
-            --else create_button("COMP",tr_tbl.guid,get_folder(track),cur_comp_id) -- child is a folder
             tr_tbl.num = cur_num -- prevent switching to latest created version while creating new comp
-          else    
-            tr_tbl.ver[num].chunk[#tr_tbl.ver[num].chunk+1] = swipe_chunk[1]
-            
+          else
+            if tr_folder ~= 1 then tr_tbl.ver[num].chunk[#tr_tbl.ver[num].chunk+1] = swipe_chunk[1] end
+            ---------- TRIM ITEMS BEHIND IF ITEMS OVERLAP
             update_fipm(tr_tbl) -- update FIPM (arrange new item)
             reaper.SetMediaItemSelected( swipedItem, true ) -- select it so command below can work
             reaper.Main_OnCommand(40930,0) -- trim content behind item
@@ -1870,18 +1878,17 @@ function comping(tbl)
       
       end
       
-      if folder then
-        local f_num = has_id(cur_sel[1], cur_comp_id)
+      ----- CREATE FOLDERS AND SUBFOLDERS
+      if tr_folder == 1 then
+        local f_num = has_id(tr_tbl, cur_comp_id)
         if not f_num then
-          local cur_num = cur_sel[1].num -- store current selected version 
-          create_button("COMP",cur_sel[1].guid,get_folder(cur_tr),cur_comp_id)
-          cur_sel[1].num = cur_num 
+          local cur_num = tr_tbl.num -- store current selected version 
+          create_button("COMP",tr_tbl.guid,get_folder(track),cur_comp_id)
+          tr_tbl.num = cur_num 
         end
       end
-      
     update_fipm(tr_tbl)
   end
-  
     prevStart,prevEnd = tsStart,tsEnd
     reaper.UpdateArrange()
     reaper.Undo_EndBlock( "Swipe comp", 0 )
@@ -1975,7 +1982,19 @@ function main()
             auto_save(last_action)
             if last_action:find("remove tracks") then track_deleted()  -- run only if action "Remove tracks" is found
             elseif last_action:find("recorded media") then takes_to_version() -- IF REC_TAKES IS ENABLED MAKE VERSIONS FROM TAKE
-            elseif last_action:find("time selection change") and comp.num == 1 then if multi_edit.num == 1 and #multi_tracks ~= 0 then tracks = multi_tracks else tracks = {cur_sel[1].guid} end comping(tracks)
+            elseif last_action:find("time selection change") and comp.num == 1 then 
+              local tracks
+              if get_folder(reaper.BR_GetMediaTrackByGUID(0,cur_sel[1].guid)) then
+                tracks = get_folder(reaper.BR_GetMediaTrackByGUID(0,cur_sel[1].guid))
+                tracks[#tracks+1] = cur_sel[1].guid -- add main folder to table (get_folder excludes first track (folder))
+              elseif #multi_tracks ~= 0 and multi_edit.num == 1 then
+                tracks = multi_tracks
+              else
+                tracks = {cur_sel[1].guid}
+              end
+              comping(tracks)
+            --if multi_edit.num == 1 and #multi_tracks ~= 0 then tracks = multi_tracks else tracks = {cur_sel[1].guid} end comping(tracks)
+            
             elseif ( last_action:find("change media item selection") or last_action:find("change track selection") ) and all.num == 1 then
               mute_view(cur_sel[1])
                 if multi_edit.num == 1 then 
