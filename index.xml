@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="9a361ff860518d9f9b581166f73f8773c7a5e477" name="Sexan_Scripts">
+<index version="1" commit="9545a51a1ed43c19285847345cdb14db0c95e3b0" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track versions.lua" type="script" desc="Track versions.lua">
       <metadata>
@@ -211,6 +211,10 @@
       <version name="0.1" author="SeXan" time="2018-10-02T19:44:02Z">
         <changelog><![CDATA[+ multiedit,comping,view all versions,view time selection version etc]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/9a361ff860518d9f9b581166f73f8773c7a5e477/Alpha/Sexan_TrackVersionWIP.lua</source>
+      </version>
+      <version name="0.2" author="SeXan" time="2018-10-03T08:29:03Z">
+        <changelog><![CDATA[+ Fixed copy to destination behavior for both single and multiview. If items overlap the will be trimed]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/9545a51a1ed43c19285847345cdb14db0c95e3b0/Alpha/Sexan_TrackVersionWIP.lua</source>
       </version>
     </reapack>
   </category>
