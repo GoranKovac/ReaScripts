@@ -5,13 +5,13 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.1
+ * Version: 0.2
 --]]
  
 --[[
  * Changelog:
- * v0.1 (2018-02-10)
-  + multiedit,comping,view all versions,view time selection version etc
+ * v0.2 (2018-03-10)
+  + Fixed copy to destination behavior for both single and multiview. If items overlap the will be trimed
 
 --]]
 
@@ -926,7 +926,7 @@ copy.onRClick = function()
                 end
 function multi_or_single_edit(tbl)
   reaper.PreventUIRefresh(1)
-  local sel
+  --local sel
   local items = {}
   --GET ITEMS--------------
     for i = 1, #tbl do
@@ -948,40 +948,80 @@ function multi_or_single_edit(tbl)
       end
     end
   end
-  sel = nil
+  --sel = nil
   --SET ITEMS TO DESTINATION (MULTI EDIT)
   local parent = find_guid(multi_parent)
   local destination_chunk
     for i = 1, #items do
-      local swiped_item, chunk, fipm_item
+      local chunk, fipm_item
       local item = items[i]
       local tr =  reaper.GetMediaItemTrack( item )
       local tr_guid = reaper.GetTrackGUID( tr )
       local tr_tbl = find_guid(tr_guid)
       
-      if get_time_sel() then fipm_item, chunk = make_item_from_ts(tr_tbl,item,tr)
+      if get_time_sel() then 
+        fipm_item, chunk = make_item_from_ts(tr_tbl,item,tr)
       else
         chunk = check_item_guid(tr_tbl,item)
         chunk = {pattern(chunk)} -- add it to chunk table
         fipm_item = reaper.AddMediaItemToTrack(  reaper.BR_GetMediaTrackByGUID( 0,tr_guid ) )
       end
-        if parent then -- MULTI EDIT
-          if has_id(tr_tbl,parent.ver[parent.dest].ver_id) then -- if folder ver_id matches childrens ver_id (MULTI EDIT)
-            local dest = has_id(tr_tbl,parent.ver[parent.dest].ver_id) 
-            destination_chunk = tr_tbl.ver[dest].chunk 
-          end          
-        else  -- SINGLE EDIT
-          destination_chunk = tr_tbl.ver[tr_tbl.dest].chunk
-        end
+      reaper.SetItemStateChunk(fipm_item, chunk[1], false)
+      
+      local destination_chunk = tr_tbl.ver[tr_tbl.dest].chunk
+      for j = 1, #chunk do destination_chunk[#destination_chunk+1] = chunk[j] end
+      
+      if reaper.IsMediaItemSelected( item ) == true then reaper.SetMediaItemSelected( item, false ) end
+      
+      if all.num == 1 then   -- IF WE ARE IN MULTI VIEW     
+        update_fipm(tr_tbl) -- update FIPM (arrange new item)
+        
+        reaper.SetMediaItemSelected( fipm_item, true ) -- select it so command below can work
+        reaper.Main_OnCommand(40930,0) -- trim content behind item 
+        
+        local stored_num = tr_tbl.num -- store current num
+        local items = mute_view(tr_tbl,fipm_item) -- get items of version we just pasted item
+          local fipm_chunk = {}
+            for j = 1, #items do
+              local _, item_chunk = reaper.GetItemStateChunk(items[j], '')  -- gets its chunk             
+              fipm_chunk[#fipm_chunk+1] = pattern(item_chunk) -- add it to chunk table
+            end
+            tr_tbl.ver[tr_tbl.dest].chunk = fipm_chunk -- replace whole chunk with new one (we need this because we trim content behind certain item)
+        reaper.SetMediaItemSelected( fipm_item, false )
+        
+        restoreTrackItems(tr_guid,stored_num)
+      else  -- IF WE ARE IN NORMAL VERSION VIEW
+        local stored_num = tr_tbl.num
+        restoreTrackItems(tr_guid,tr_tbl.dest)
+        reaper.SetMediaItemSelected( fipm_item, true )
+        reaper.Main_OnCommand(40930,0) -- trim content behind item 
+        reaper.SetMediaItemSelected( fipm_item, false )
+        tr_tbl.ver[tr_tbl.dest].chunk = getTrackItems(tr)
+        restoreTrackItems(tr_guid,stored_num)  
+      end  
+      --destination_chunk = getTrackItems(reaper.BR_GetMediaTrackByGUID( 0, tr_guid))
+        
+      --[[
+      if parent then -- MULTI EDIT
+        if has_id(tr_tbl,parent.ver[parent.dest].ver_id) then -- if folder ver_id matches childrens ver_id (MULTI EDIT)
+          local dest = has_id(tr_tbl,parent.ver[parent.dest].ver_id) 
+          destination_chunk = tr_tbl.ver[dest].chunk 
+        end          
+      else  -- SINGLE EDIT
+        destination_chunk = tr_tbl.ver[tr_tbl.dest].chunk
+      end
+      
       for i = 1, #chunk do destination_chunk[#destination_chunk+1] = chunk[i]
         if all.num == 1 then
           reaper.SetItemStateChunk(fipm_item, chunk[i], false)
           if tr_tbl.num ~= get_num_from_cordinate2(tr_tbl,fipm_item) then reaper.SetMediaItemInfo_Value(fipm_item, "B_MUTE", 1 ) end -- mute newly created comp items (for preventing double playback)            
         end
       end
-      update_fipm(tr_tbl)
+      ]]
+      --update_fipm(tr_tbl)
     end
     reaper.PreventUIRefresh(-1)
+    reaper.UpdateArrange()
 end               
 copy.onClick = function()
                 if cur_sel[1].dest == cur_sel[1].num then return end -- prevent adding chunk of current version to current version
