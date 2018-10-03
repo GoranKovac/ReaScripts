@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="0262fe572ea53b7274192d32e4bfbba6ca3e3397" name="Sexan_Scripts">
+<index version="1" commit="8de654a1ec95e1cb8a676b3127815294fa1e62f4" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track versions.lua" type="script" desc="Track versions.lua">
       <metadata>
@@ -236,6 +236,11 @@
       <version name="0.7" author="SeXan" time="2018-10-03T18:17:56Z">
         <changelog><![CDATA[+ Apply all editing to folders (copy to destination,view time selection items,comping)]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/0262fe572ea53b7274192d32e4bfbba6ca3e3397/Alpha/Sexan_TrackVersionWIP.lua</source>
+      </version>
+      <version name="0.8" author="SeXan" time="2018-10-03T19:06:46Z">
+        <changelog><![CDATA[+ Minor code fix/simplification
++ Fixed bug when deactivating View time selection versions changing versions would not update for few clicks]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/8de654a1ec95e1cb8a676b3127815294fa1e62f4/Alpha/Sexan_TrackVersionWIP.lua</source>
       </version>
     </reapack>
   </category>
