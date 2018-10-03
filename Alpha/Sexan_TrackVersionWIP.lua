@@ -5,13 +5,14 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.7
+ * Version: 0.8
 --]]
  
 --[[
  * Changelog:
- * v0.7 (2018-03-10)
-  + Apply all editing to folders (copy to destination,view time selection items,comping)
+ * v0.8 (2018-03-10)
+  + Minor code fix/simplification
+  + Fixed bug when deactivating View time selection versions changing versions would not update for few clicks
 
 --]]
 
@@ -789,17 +790,11 @@ function restoreTrackItems(track, num, job)
   ----- IF WE ARE IN VIEW TIME SELECTION MODE SET THE SAVED VERSION/SOURCE STATIC
   if view == 1 then
     track_tb.stored = {}
-    cur_ts_items = {} 
-    for i = 1 ,#stored_version do
-      local tr_tbl = find_guid(stored_version[i].guid)
-        if has_id(tr_tbl,stored_version[i].ver_id) then
-          local _, items = has_id(tr_tbl,stored_version[i].ver_id)
-          for j = 1 , #items do
-            if track_tb.guid == stored_version[i].guid then -- MAKE SURE ITEMS ARE ON SAME TRACK (ELSE ITEMS GET MIXED UP)
-              reaper.SetItemStateChunk(reaper.AddMediaItemToTrack(track), items[j], false) -- set saved source (version)
-            end
-          end
-       end
+    if has_id(track_tb,track_tb.stored_version) then
+      local _, items = has_id(track_tb,track_tb.stored_version)
+      for j = 1 , #items do
+        reaper.SetItemStateChunk(reaper.AddMediaItemToTrack(track), items[j], false) -- set saved source (version)
+      end
     end
   end
   -------------------------------------------------------------------------------------------------------------------
@@ -817,10 +812,7 @@ function restoreTrackItems(track, num, job)
           track_tb.num = num
           local item = reaper.AddMediaItemToTrack(track)
             if view == 1 then -- TIME SELECTION VIEW
-              for j = 1 , #stored_version do
-                --if AAA[j].ver_id ~= track_tb.ver[track_tb.num].ver_id and track_tb.guid == AAA[j].guid then reaper.SetItemStateChunk(item, track_items_table[i], false) end -- PREVENT ADDING SAME VERSION AS SOURCE (THEY GET OVERLAPED) and make sure items get on right track
-                if track_tb.guid == stored_version[j].guid and stored_version[j].ver_id ~= track_tb.ver[track_tb.num].ver_id then reaper.SetItemStateChunk(item, track_items_table[i], false) end -- PREVENT ADDING SAME VERSION AS SOURCE (THEY GET OVERLAPED) and make sure items get on right track
-              end
+              if track_tb.stored_version ~= track_tb.ver[track_tb.num].ver_id then reaper.SetItemStateChunk(item, track_items_table[i], false) end -- PREVENT ADDING SAME VERSION AS SOURCE              
               if ts_item_position(item) then track_tb.stored[#track_tb.stored+1] = show_ts_version(item) else reaper.DeleteTrackMediaItem(track, item) end -- TIMESELECTION VIEW,
             else  -- NORMAL VIEW
               track_tb.stored = nil
@@ -860,37 +852,25 @@ view_ts.onClick = function()
   end
   
   if view == 1 then 
-    stored_version = {}
-    
     for i = 1,#tbl do
       local track = find_guid(tbl[i]) 
       track.stored_num = track.num
+      track.stored_version = track.ver[track.num].ver_id
     end
-    
-      for i = 1,#tbl do
-        local items = {}
-        local track = find_guid(tbl[i]) 
-        local id = track.ver[track.num].ver_id
-        stored_version[#stored_version+1]= {guid = track.guid, num = track.num, ver_id = id}
-      end
-  else -- restore saved version/source
+  else
     reaper.PreventUIRefresh(1)
-    for i = 1 , #stored_version do
-      restoreTrackItems(stored_version[i].guid, stored_version[i].num)
-    end  
-    stored_version = nil
-    --cur_ts_items = nil
-    reaper.PreventUIRefresh(-1)
     for i = 1,#tbl do
-      local track = find_guid(tbl[i]) 
+      local track = find_guid(tbl[i])
+      restoreTrackItems(track.guid, track.stored_num)
+      track.last_num = track_num -- does not update few click if not here
       track.stored_num = nil
+      track.stored_version = nil
     end
-    
+    reaper.PreventUIRefresh(-1)
   end
 end
 
 empty.onClick = function()
-                  --if cur_sel[1] then new_empty() end
                   if empty.lbl:find("Folder") then
                     on_click_function(create_folder,"V")
                   else
@@ -1540,7 +1520,6 @@ function create_button(name,guid,chunk,ver_id,num,env,fipm,dest)
                             for j = 1, #child.ver do
                               if child.ver[j].ver_id == p_vid then
                                 local c_chunk = child.ver[j].chunk
-                                --c_chunk = check_item_guid(TrackTB,val,c_chunk)
                                 local c_name = child.ver[j].name
                                 local c_vid = child.ver[j].ver_id .. duplicate_num
                                 local duplicate_num = naming(child,"D",child.ver[j].ver_id)-- .. " - " .. box.ver[get_val].name
