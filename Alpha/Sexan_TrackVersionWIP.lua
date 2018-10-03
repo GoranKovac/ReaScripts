@@ -5,13 +5,13 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.5
+ * Version: 0.6
 --]]
  
 --[[
  * Changelog:
- * v0.5 (2018-03-10)
-  + Fix copy to destination bug with time selection items geting copied twice
+ * v0.6 (2018-03-10)
+  + When comping overlaping items will trim
 
 --]]
 
@@ -736,7 +736,7 @@ function on_click_function(button,name)
       button(tr, version_name, reaper.genGuid(),"track") -- "track" to exclued creating folder chunk in gettrackitems function (would result a crash)
       
       --if not find_guid(guid) then return 
-      if #find_guid(guid).ver == 1 then goto JUMP end
+      if #find_guid(guid).ver == 1 then goto JUMP end -- make two version on start main one and empty one
       --elseif find_guid(guid) then new_empty() end
       --elseif #find_guid(guid).ver == 1 and name == "D" then goto JUMP --end -- create two versions at once
       --end
@@ -997,7 +997,7 @@ function multi_or_single_edit(tbl)
         local tr_tbl = find_guid(data[i].tr_guid)
         
         if view == 1 then -- IF VIEW TIME SELECTION MODE IS ON SET DESTINATION TO IT
-          destination = tr_tbl.stored_num--has_id(tr_tbl,stored_version[j].ver_id)
+          destination = tr_tbl.stored_num
         else
           destination = tr_tbl.dest
         end
@@ -1026,7 +1026,6 @@ function multi_or_single_edit(tbl)
           tr_tbl.ver[destination].chunk = fipm_chunk -- replace whole chunk with new one (we need this because we trim content behind certain item)
           reaper.SetMediaItemSelected( fipm_item, false )
           restoreTrackItems(tr_guid,stored_num)
-          
         else
           local stored_num = tr_tbl.num -- store current version num
           restoreTrackItems(tr_guid,destination) -- set version we will modify
@@ -1038,7 +1037,6 @@ function multi_or_single_edit(tbl)
           tr_tbl.ver[destination].chunk = getTrackItems(tr) -- store chunk to version we are modifyng
           restoreTrackItems(tr_guid,stored_num) -- restore previous version
         end
-        --update_fipm(tr_tbl) -- update FIPM (arrange new item)
       end
     reaper.PreventUIRefresh(-1)
     reaper.UpdateArrange()
@@ -1215,7 +1213,7 @@ function bool_to_number(value)
   return value and 1 or 0
 end
 -------------------------------------------------------------------------------
----  Function DONT KNOW WHY THE FUCK IS THIS HERE ANYWAY ----------------------
+---  Function DONT KNOW WHY THE FUCK IS THIS HERE ALSO ------------------------
 -------------------------------------------------------------------------------
 function to_bool(value)
   if value == 1 then return true else return false end
@@ -1839,6 +1837,8 @@ function comping(tbl)
         if ItemTrack ~= track then return end -- if sel item track is not the same as sel track end
         if cur_comp_id == tr_tbl.ver[tr_tbl.num].ver_id then return end -- DO NOT ALLOW CREATING COMP OF ITSELF (IF COMP IS SELECTED JUST TO PREVIEW)     
       
+        if reaper.IsMediaItemSelected( tsitem ) == true then reaper.SetMediaItemSelected( tsitem, false ) end -- deselect selected item version if selected (because we will need to trim with selected ones)
+      
         reaper.Undo_BeginBlock()
         local swipedItem, swipe_chunk = make_item_from_ts(tr_tbl,tsitem,track)
         local num = has_id(tr_tbl, cur_comp_id)
@@ -1848,8 +1848,22 @@ function comping(tbl)
             create_button("COMP",tr_tbl.guid,swipe_chunk,cur_comp_id) -- 1 is to insert at first position
             --else create_button("COMP",tr_tbl.guid,get_folder(track),cur_comp_id) -- child is a folder
             tr_tbl.num = cur_num -- prevent switching to latest created version while creating new comp
-          else
+          else    
             tr_tbl.ver[num].chunk[#tr_tbl.ver[num].chunk+1] = swipe_chunk[1]
+            
+            update_fipm(tr_tbl) -- update FIPM (arrange new item)
+            reaper.SetMediaItemSelected( swipedItem, true ) -- select it so command below can work
+            reaper.Main_OnCommand(40930,0) -- trim content behind item
+            local stored_num = tr_tbl.num -- store current num
+            local items = mute_view(tr_tbl,swipedItem) -- get items of version we just pasted item
+            local fipm_chunk = {}
+              for j = 1, #items do
+                local _, item_chunk = reaper.GetItemStateChunk(items[j], '')  -- gets its chunk             
+                fipm_chunk[#fipm_chunk+1] = pattern(item_chunk) -- add it to chunk table
+              end    
+            reaper.SetMediaItemSelected( swipedItem, false )
+            tr_tbl.ver[num].chunk = fipm_chunk -- replace whole chunk with new one (because we trimmed)
+            restoreTrackItems(tr_tbl.guid,stored_num) -- restore it
           end
              
         if tr_tbl.num ~= get_num_from_cordinate2(tr_tbl,swipedItem) then reaper.SetMediaItemInfo_Value( swipedItem, "B_MUTE", 1 ) end -- mute newly created comp items (for preventing double playback)
