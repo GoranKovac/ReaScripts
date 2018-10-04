@@ -5,13 +5,13 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.9
+ * Version: 0.10
 --]]
  
 --[[
  * Changelog:
- * v0.9 (2018-04-10)
-  + Fix duplicate creating empty versions
+ * v0.10 (2018-04-10)
+  + Fix Make versions from loop recording trigerring by itself when recording
 
 --]]
 
@@ -21,8 +21,9 @@ local time_sel_test = true
 local manual_naming = false
 local color = 0 -- 1 for checkboxes, 2 for fonts , 3 for both, 0 for default
 local store_original = true -- set enable-disable storing original version
-local auto_loop_rec = true -- make versions from recorded takes
+local auto_loop_rec = false -- make versions from recorded takes
 --------------------------------------------------------------------------
+--local last_transport
 local multi_tracks = {}
 local last_tr_h = nil
 local Wnd_W,Wnd_H = 320,240
@@ -1322,7 +1323,7 @@ function envelope(tbl,data)
                         
                     elseif r_click_menu.num == 3 then --- Save version
                         for i = #tbl.env , 1, -1 do
-                          if tbl.env[i].id == env_id then tbl.env[i][env_type] = get_env("get") end -- remove from main button
+                          if tbl.env[i].id == env_id then tbl.env[i][env_type] = get_env("get") end -- save
                         end
                     end
   end
@@ -1670,7 +1671,7 @@ function takes_to_version()
   reaper.PreventUIRefresh(1)
   local rec_tb = {}
   
-  --reaper.Main_OnCommand(41329,0) -- New Recordings Create New items in separate Lanes
+  reaper.Main_OnCommand(41329,0) -- New Recordings Create New items in separate Lanes
  
   for j = reaper.CountSelectedMediaItems( 0 ),1, -1 do   -- reverse because is error prone to deleting shit inside
     local s_item = reaper.GetSelectedMediaItem(0, j-1)
@@ -1882,10 +1883,7 @@ end
 --------------------------------------------------------------------------------
 function get_transport()
   local trans, loop = reaper.GetPlayState(), reaper.GetSetRepeat(-1)
-  if trans&5 == 5 then -- if recording
-    if reaper.GetToggleCommandState( 41329 ) == 0 then reaper.Main_OnCommand(41329,0) end -- if create new lanes when recording is off turn it on
-  end
-  if trans&5 == 5 and loop == 1 then return true end
+  if trans&5 == 5 and loop == 1 then last_transport = true end
 end
 --------------------------------------------------------------------------------
 ---  Function AUTO SAVE --------------------------------------------------------
@@ -1923,7 +1921,22 @@ local ignore =  {"marquee item selection","change media item selection","unselec
                 end
               track.ver[track.num].chunk = chunk
             end
-        end   
+        end
+      elseif last_action:find("envelope") then
+      --[[
+      local sel_env = reaper.GetSelectedEnvelope( 0 )
+      if not sel_env then return end
+      local track, index, index2 = reaper.Envelope_GetParentTrack( sel_env ) -- get envelopes main track
+      local track_guid = reaper.GetTrackGUID( track )
+      local tr_tbl = find_guid(track_guid)
+      
+      local env_type = ch_box1.ver[ch_box1.num]
+      local env_num = tr_tbl.env[ch_box1.ver[ch_box1.num]]
+      --if env_num == 0 then return end
+      --local env_id = tr_tbl.env[env_num].id --selected
+      --  for i = #tr_tbl.env , 1, -1 do
+      --    if tr_tbl.env[i].id == env_id then tr_tbl.env[i][env_type] = get_env("get") end -- save
+      --  end
     end
   end
 end
@@ -2019,6 +2032,7 @@ end
 ---  Function MAIN -------------------------------------------------------------
 --------------------------------------------------------------------------------
 function main()
+  get_transport()
   local sel_item
   local sel_tr = reaper.GetSelectedTrack(0,0) -- get track 
     if sel_tr then
@@ -2053,7 +2067,7 @@ function main()
             last_action = reaper.Undo_CanUndo2(0):lower()
             auto_save(last_action)
             if last_action:find("remove tracks") then track_deleted()  -- run only if action "Remove tracks" is found
-            elseif last_action:find("recorded media") then takes_to_version() -- IF REC_TAKES IS ENABLED MAKE VERSIONS FROM TAKE
+            elseif last_action:find("recorded media") and last_transport and get_time_sel() and auto_loop_rec == true then takes_to_version() last_transport = nil -- IF REC_TAKES IS ENABLED MAKE VERSIONS FROM TAKE
             --elseif last_action:find("change media item selection") and multi_edit.num == 1 then edit_group_track_or_item(sel_item)
             --elseif last_action:find("envelope") and multi_edit.num == 1 then edit_group_track_envelope()
             elseif last_action:find("time selection change") and comp.num == 1 then 
