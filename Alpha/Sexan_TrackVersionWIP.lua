@@ -5,14 +5,13 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.8
+ * Version: 0.9
 --]]
  
 --[[
  * Changelog:
- * v0.8 (2018-03-10)
-  + Minor code fix/simplification
-  + Fixed bug when deactivating View time selection versions changing versions would not update for few clicks
+ * v0.9 (2018-04-10)
+  + Fix duplicate creating empty versions
 
 --]]
 
@@ -24,6 +23,7 @@ local color = 0 -- 1 for checkboxes, 2 for fonts , 3 for both, 0 for default
 local store_original = true -- set enable-disable storing original version
 local auto_loop_rec = true -- make versions from recorded takes
 --------------------------------------------------------------------------
+local multi_tracks = {}
 local last_tr_h = nil
 local Wnd_W,Wnd_H = 320,240
 local cur_tr, get_val, sel_item, folder
@@ -730,17 +730,17 @@ function on_click_function(button,name)
       ::JUMP::                     
       local tr = reaper.GetSelectedTrack(0, i-1)
       local guid = reaper.GetTrackGUID(tr)
-      if find_guid(guid) then new_empty(guid) end
       local version_name = naming(find_guid(guid),name) -- first one is duplicate
+      if find_guid(guid) and name == "V" then new_empty(guid) end
       if not version_name then return end
       if reaper.GetMediaTrackInfo_Value(tr, "I_FOLDERDEPTH") == 1 then version_name = "F - " .. version_name end  
       button(tr, version_name, reaper.genGuid(),"track") -- "track" to exclued creating folder chunk in gettrackitems function (would result a crash)
       
       --if not find_guid(guid) then return 
-      if #find_guid(guid).ver == 1 then goto JUMP end -- make two version on start main one and empty one
+      if #find_guid(guid).ver == 1 then goto JUMP --end -- make two version on start main one and empty one
       --elseif find_guid(guid) then new_empty() end
       --elseif #find_guid(guid).ver == 1 and name == "D" then goto JUMP --end -- create two versions at once
-      --end
+      end
     end
     pass_name = nil
 end
@@ -845,7 +845,7 @@ view_ts.onClick = function()
   if get_folder(reaper.BR_GetMediaTrackByGUID(0,cur_sel[1].guid)) then
     tbl = get_folder(reaper.BR_GetMediaTrackByGUID(0,cur_sel[1].guid))
     tbl[#tbl+1] = cur_sel[1].guid -- add main folder to table (get_folder excludes first track (folder))
-  elseif #multi_tracks ~= 0 then
+  elseif #multi_tracks ~= 0 and multi_edit.num == 1 then
     tbl = multi_tracks
   else
     tbl = {cur_sel[1].guid}
@@ -879,10 +879,10 @@ empty.onClick = function()
                   reaper.UpdateArrange()
 end
 
-multi_tracks = {}
 multi_edit.onClick = function()
     if multi_edit.num == 0 then multi_edit.num = 1 else multi_edit.num = 0 end
 end
+local group = {}
 multi_edit.onRClick = function()
                       local me_menu = Menu:new(multi_edit.x,multi_edit.y,multi_edit.w,multi_edit.h,0.6,0.6,0.6,0.3,"","Arial",15,{0.7, 0.9, 1, 1},-1,{"Add Track","Remove Track"})
                       local me_menu_TB = {me_menu}
@@ -904,7 +904,15 @@ multi_edit.onRClick = function()
                           return
                         end
                       end
-                      
+                      local tgroup = {}
+                      for i = 1, reaper.CountSelectedTracks() do 
+                        local sel_tr = reaper.GetTrackGUID(reaper.GetSelectedTrack(0,i-1))
+                          if me_menu.num == 1 then -- ADD TRACK
+                          tgroup[#tgroup+1]= sel_tr
+                          end
+                      end
+                      group[#group+1]=tgroup
+                      tgroup=nil
                      -- if #multi_tracks ~= 0 then CHANGE COLOR OF BUTTON end
 end
 
@@ -1025,21 +1033,17 @@ end
 copy.onClick = function()
                 if view == 0 and cur_sel[1].dest == cur_sel[1].num then return end -- prevent adding chunk of current version to current version
                 ------------------------------
+                local tbl
                 if get_folder(reaper.BR_GetMediaTrackByGUID(0,cur_sel[1].guid)) then
-                   tbl = get_folder(reaper.BR_GetMediaTrackByGUID(0,cur_sel[1].guid))
-                   tbl[#tbl+1] = cur_sel[1].guid -- add main folder to table (get_folder excludes first track (folder))
-                 elseif #multi_tracks ~= 0 and multi_edit.num == 1 then
-                   tbl = multi_tracks
-                 else
-                   tbl = {cur_sel[1].guid}
-                 end                
-                
-                --if multi_edit.num == 1 then --else tbl = {cur_sel[1].guid} end
-                  multi_or_single_edit(tbl)
-                --else
-                --  multi_or_single_edit({cur_sel[1].guid})
-                --end
-          end
+                  tbl = get_folder(reaper.BR_GetMediaTrackByGUID(0,cur_sel[1].guid))
+                  tbl[#tbl+1] = cur_sel[1].guid -- add main folder to table (get_folder excludes first track (folder))
+                elseif #multi_tracks ~= 0 and multi_edit.num == 1 then
+                  tbl = multi_tracks
+                else
+                  tbl = {cur_sel[1].guid}
+                end 
+                multi_or_single_edit(tbl)
+end
  
 duplicate.onClick = function()
                 if empty.lbl:find("Folder") then
@@ -1924,6 +1928,94 @@ local ignore =  {"marquee item selection","change media item selection","unselec
   end
 end
 --------------------------------------------------------------------------------
+---  Function GET GROUP PRIORITY -----------------------------------------------
+--------------------------------------------------------------------------------
+function priority(guid)
+  local tr_group
+  local test = {}
+  -- GET ALL GROUP WHICH CONTAINS SELECTED TRACK
+  for i = 1,#group do
+    if has_value2(group[i], guid) then
+      test[#test+1] = {group = i,num = has_value2(group[i], guid)}
+    end
+  end
+  -- IF THE TRACK IS IN MOST TOP OF THE GROUP SELECT THAT GROUP
+  -- PRIORITY GOES FROM TOP TO BOTTOM, PRIORITY IS SET ON WHICH GROUP THE TRACK IS FIRST :
+  -- FOR EXAMPLE SELECTED TRACK IS X
+  -- GROUP1: 1 2 3 4 X
+  -- GROUP2: 1 2 X
+  -- GROUP3: X 1 2 
+  -- IF THE TRACK IS SELECTED IT WILL RETURN GROUP 3
+  for i = 1,#test do
+    local ref = test[1].num
+    if test[i].num < test[1].num then tr_group = test[i].group
+    elseif #test == 1 then tr_group = test[i].group   
+    end 
+  end
+  return tr_group
+end
+--------------------------------------------------------------------------------
+---  Function EDIT GROUP TRACKS OR ITEM ----------------------------------------
+--------------------------------------------------------------------------------
+function edit_group_track_envelope()
+  if multi_edit.num == 0 then return end
+  local sel_env = reaper.GetSelectedEnvelope( 0 )
+  if not sel_env then return end
+  local retval, env_chunk = reaper.GetEnvelopeStateChunk(sel_env, "", true)
+  local track, index, index2 = reaper.Envelope_GetParentTrack( sel_env ) -- get envelopes main track
+  local track_guid = reaper.GetTrackGUID( track )
+  local prio = priority(track_guid) -- check track group
+  local tr_group = group[prio]
+    for i = 1, #tr_group do
+      if tr_group[i] ~= track_guid then
+        reaper.BR_EnvSetProperties( envelope, active, visible, armed, inLane, laneHeight, defaultShape, faderScaling )
+        local tr =  reaper.BR_GetMediaTrackByGUID( 0, tr_group[i] )
+        local env = reaper.GetTrackEnvelopeByName( tr, ch_box1.ver[ch_box1.num] )
+        --local env = reaper.GetTrackEnvelopeByChunkName( tr, "<VOLENV2" ) 
+        reaper.SetEnvelopeStateChunk(env, env_chunk, false )
+      end
+    end
+end
+--------------------------------------------------------------------------------
+---  Function EDIT GROUP TRACKS OR ITEM ----------------------------------------
+--------------------------------------------------------------------------------
+function edit_group_track_or_item(sel_item)
+  if not cur_sel[1] then return end
+  if not sel_item then return end
+  reaper.PreventUIRefresh(1)
+  local prio = priority(cur_sel[1].guid)
+  
+  local sitem_lenght =  reaper.GetMediaItemInfo_Value( sel_item, "D_LENGTH" ) 
+  local sitem_start = reaper.GetMediaItemInfo_Value( sel_item, "D_POSITION")
+  local sitem_dur = sitem_lenght + sitem_start
+  
+  local tr_group = group[prio]
+  for i = 1, #tr_group do
+      if tr_group[i] ~= cur_sel[1].guid then
+      local tr =  reaper.BR_GetMediaTrackByGUID( 0, tr_group[i] )
+      local track = find_guid(tr_group[i])
+        if cur_sel[1].num == track.num then
+          for j = 1, reaper.CountTrackMediaItems(  reaper.BR_GetMediaTrackByGUID( 0, tr_group[i] ) ) do
+            local item = reaper.GetTrackMediaItem( reaper.BR_GetMediaTrackByGUID( 0, tr_group[i] ), j-1 )
+            local item_lenght =  reaper.GetMediaItemInfo_Value( item, "D_LENGTH" ) 
+            local item_start = reaper.GetMediaItemInfo_Value( item, "D_POSITION")
+            local item_dur = item_lenght + item_start
+            
+            if (item_start >= sitem_start) and (item_start < sitem_dur) and (item_dur <= sitem_dur) then
+            
+            if item ~= cur_sel then 
+              reaper.SetMediaItemSelected( item, true )
+              --reaper.SetTrackSelected( tr, true ) -- IF WE WANT TRACK SELECTION
+            end
+          end
+        end
+      end
+    end
+  end  
+  reaper.PreventUIRefresh(-1)
+  reaper.UpdateTimeline()
+end
+--------------------------------------------------------------------------------
 ---  Function MAIN -------------------------------------------------------------
 --------------------------------------------------------------------------------
 function main()
@@ -1931,6 +2023,7 @@ function main()
   local sel_tr = reaper.GetSelectedTrack(0,0) -- get track 
     if sel_tr then
       cur_tr = sel_tr
+      sel_item = reaper.GetSelectedMediaItem(0,0)
       title_and_button_upd(sel_tr) -- update title name (track name) buttons etc
       folder = to_bool(reaper.GetMediaTrackInfo_Value(cur_tr, "I_FOLDERDEPTH"))
       local tr_h =  reaper.GetMediaTrackInfo_Value(cur_tr, "I_WNDH")
@@ -1954,13 +2047,15 @@ function main()
     end
     local tracks
     local proj_change_count = reaper.GetProjectStateChangeCount(0)
-      if proj_change_count > last_proj_change_count then      
+      if proj_change_count > last_proj_change_count then
         local last_action = reaper.Undo_CanUndo2(0)
           if last_action == nil then return end
             last_action = reaper.Undo_CanUndo2(0):lower()
             auto_save(last_action)
             if last_action:find("remove tracks") then track_deleted()  -- run only if action "Remove tracks" is found
             elseif last_action:find("recorded media") then takes_to_version() -- IF REC_TAKES IS ENABLED MAKE VERSIONS FROM TAKE
+            --elseif last_action:find("change media item selection") and multi_edit.num == 1 then edit_group_track_or_item(sel_item)
+            --elseif last_action:find("envelope") and multi_edit.num == 1 then edit_group_track_envelope()
             elseif last_action:find("time selection change") and comp.num == 1 then 
               local tracks
               if get_folder(reaper.BR_GetMediaTrackByGUID(0,cur_sel[1].guid)) then
