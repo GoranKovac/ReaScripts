@@ -5,13 +5,15 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.10
+ * Version: 0.11
 --]]
  
 --[[
  * Changelog:
- * v0.10 (2018-04-10)
-  + Fix Make versions from loop recording trigerring by itself when recording
+ * v0.11 (2018-06-10)
+  + Re-coded the whole envelope code to work as tracks version. Envelopes stored with old version of the script will not work with this version
+  + Added autosave for envelopes
+  + Fixed bug when changing item media source via item properties not saving new file
 
 --]]
 
@@ -39,7 +41,7 @@ local env_type =  {
                     [6] = {name = "Width" .. " " .. "(Pre-FX)",   v = 0},
                     [7] = {name = "Trim"  .. " " .. "Volume",     v = 0},
                     [8] = {name = "Mute",                         v = 0},
-                    [9] = {name = "Last_menu",                    v = 1}
+                    [9] = {name = "Last_menu",                    v = "Volume"}
                   }
 ----------------------------------------------
 -- Pickle.lua
@@ -1085,12 +1087,12 @@ delete.onClick = function()
                     reaper.PreventUIRefresh(-1)
 end
 
-ch_box1.onRClick = function()                  
-                  cur_sel[1].env["Last_menu"] = ch_box1.num -- set last checked menu
+ch_box1.onRClick = function()          
+                  cur_sel[1].env["Last_menu"] = ch_box1.ver[ch_box1.num] -- set last checked menu
 end
 
 ch_box1.onClick = function()
-                  get_env() -- save envelope
+                  create_envelope()
 end
 
 menu_btn.onClick = function()
@@ -1152,6 +1154,7 @@ comp.onClick = function ()
     cur_comp_id = nil
   end
 end
+
 -------------------------------------------------------------------------------
 ---  Function SORT ITEMS IN FIPM MODE  ----------------------------------------
 -------------------------------------------------------------------------------
@@ -1215,7 +1218,36 @@ end
 -------------------------------------------------------------------------------
 ---  Function GET TRACK ENVELOPE ----------------------------------------------
 -------------------------------------------------------------------------------
+function create_envelope()
+  reaper.Undo_BeginBlock()
+  ::JUMP::
+  if #set_env_box(cur_sel[1],"get_lenght") > 1 then -- if its a new version create default one
+    reaper.Main_OnCommand(40332,0) -- select all points
+    reaper.Main_OnCommand(40333,0) -- remove all points
+  end
+  local env_chunk, env_name, env_AI = get_env("get")
+  local track = find_guid(cur_sel[1].guid)
+  track.env[#track.env+1] = { [env_name] = env_chunk , name = env_name .. " " .. #set_env_box(cur_sel[1],"get_lenght")+1, id = reaper.genGuid()}
+  
+  track.env[ch_box1.ver[ch_box1.num]] = #set_env_box(cur_sel[1],"get_lenght")
+  box_env.num = track.env[ch_box1.ver[ch_box1.num]]
+  
+  envelope(track.guid)
+  
+  -- create new default envelope
+  if #set_env_box(cur_sel[1],"get_lenght") == 1 then
+    reaper.Main_OnCommand(40332,0) -- select all points
+    reaper.Main_OnCommand(40333,0) -- remove all points
+    goto JUMP
+  end
+  reaper.Undo_EndBlock( "ReaTV: CreateEnvVer",0 )
+  reaper.Undo_OnStateChange( "ReaTV CreateEnvVer" )
+end
+-------------------------------------------------------------------------------
+---  Function GET TRACK ENVELOPE chunk----------------------------------------------
+-------------------------------------------------------------------------------
 function get_env(job)
+  local AI = {}
   local env, env_name, retval
   local tr = reaper.BR_GetMediaTrackByGUID(0,cur_sel[1].guid)
   local envs = reaper.CountTrackEnvelopes(tr)
@@ -1232,19 +1264,48 @@ function get_env(job)
   end
   if not env then return end
   
-  local retval, strNeedBig = reaper.GetEnvelopeStateChunk(env, "", true)
-  local visible = string.find(strNeedBig, "VIS 1")
+  local AI_info = {"D_POOL_ID","D_POSITION","D_LENGTH","D_STARTOFFS","D_PLAYRATE","D_BASELINE","D_AMPLITUDE","D_LOOPSRC"}
+  ---------------- AUTOMATION ITEMS zip them to one string
+  local AI_chunk = {}
+  for i = 1 , reaper.CountAutomationItems( env ) do
+    local string = nil
+    for j = 1 , #AI_info do
+      local AI_item = reaper.GetSetAutomationItemInfo( env, i-1, AI_info[j],0,false )
+      if string == nil then string = AI_item 
+      else string = string .. ":" .. AI_item
+      end
+    end
+      AI_chunk[#AI_chunk+1] = string
+  end
+  ---------------- AUTOMATION ITEMS extract them
+  local AIdata = {}
+  for i = 1, #AI_chunk do
+    AIdata[i] = {}
+    local num = 1
+    for value in string.gmatch(AI_chunk[i], "[^:]+") do
+      AIdata[i][AI_info[num]] = tonumber(value)
+      num = num + 1
+    end
+  end
   
+  local retval, str = reaper.GetEnvelopeStateChunk(env, "", true)
+  local visible = string.find(str, "VIS 1")
   if not visible then return end
   
-  reaper.Main_OnCommand(40331,0) -- unselect all points
+  --reaper.Main_OnCommand(40331,0) -- unselect all points
+  local env_point_count = reaper.CountEnvelopePoints(env)
+    for i = 0, env_point_count - 1 do
+      local retval, time, valueOut, shape, tension, selectedOut = reaper.GetEnvelopePoint(env,i)
+      if selectedOut then
+        reaper.SetEnvelopePoint( env, i, timeIn, valueIn, shapeIn, tensionIn, false, noSortIn )
+      end
+    end
+  
   local retval, str = reaper.GetEnvelopeStateChunk(env, "", true) -- save current envelope chunk
+  
   local trim = string.find(str, "PT") -- find where point chunk begins
-  str = string.sub(str, trim-2) -- trim it before (we save only envelope points)
-  local track = find_guid(cur_sel[1].guid)
-  if job then return str end
-  track.env[#track.env+1] = { [env_name] = str , name = env_name .. " " .. #set_env_box(cur_sel[1],"get_lenght")+1, id = reaper.genGuid()}
-  track.env[ch_box1.ver[ch_box1.num]] = #set_env_box(cur_sel[1],"get_lenght")
+  str = string.sub(str, trim-1) -- trim it before (we save only envelope points)
+  return str,env_name,AI_chunk
 end
 --------------------------------------------------------------------------------
 ---  Function CHECKBOX FILTER TABLE  -------------------------------------------
@@ -1253,11 +1314,10 @@ function set_env_box(tbl,job)
   if not tbl then return end
   local temp = {}  
   for i = 1 , #tbl.env do
-    if type(tbl.env[i]) ~= "number" and tbl.env[i][ch_box1.ver[ch_box1.num]] then 
+    if type(tbl.env[i]) ~= "number" and tbl.env[i][tbl.env["Last_menu"]] then --return i 
       temp[#temp+1]= tbl.env[i] -- add env table from main track to temp table
     end
   end
-  if not job then envelope(tbl,temp) end
   return temp
 end
 --------------------------------------------------------------------------------
@@ -1266,25 +1326,21 @@ end
 function set_envelope_chunk(env,point_chunk)
   local _, str = reaper.GetEnvelopeStateChunk(env, "", true)
   local trim = string.find(str, "PT")
-  str = string.sub(str, 0,trim-3) -- trim it after
+  str = string.sub(str, 0,trim-1) -- trim it after
   local env_chunk = str .. point_chunk
   return env_chunk
 end
 --------------------------------------------------------------------------------
 ---  Function SET ENVELOPE VERSION  --------------------------------------------
 --------------------------------------------------------------------------------
-function envelope(tbl,data) 
-  ch_box1.num = tbl.env["Last_menu"] -- restore last checked menu
-  if not tbl then return end
-  box_env.num, box_env.ver = tbl.env[ch_box1.ver[ch_box1.num]], data -- set stored num from main table (Volume,Pan,Width), set data table as ver
-  local tr = reaper.BR_GetMediaTrackByGUID(0,tbl.guid)
-
+function envelope(guid)  
   box_env.onClick = function()
-                  local env = reaper.GetTrackEnvelopeByName( tr, ch_box1.ver[ch_box1.num] ) 
+                  local env = reaper.GetTrackEnvelopeByName(reaper.BR_GetMediaTrackByGUID(0,box_env.guid), ch_box1.ver[ch_box1.num] ) 
                   local point_chunk = box_env.ver[box_env.num][ch_box1.ver[ch_box1.num]]
                   local env_chunk = set_envelope_chunk(env,point_chunk)
                   reaper.SetEnvelopeStateChunk(env, env_chunk, false )
-                  tbl.env[ch_box1.ver[ch_box1.num]] = box_env.num -- change check in original table                  
+                  local tbl = find_guid(box_env.guid)
+                  tbl.env[tbl.env["Last_menu"]] = box_env.num -- change check in original table                  
   end
   
   box_env.onRClick = function()
@@ -1292,6 +1348,8 @@ function envelope(tbl,data)
                                                                           {"Delete Version","Rename Version","Save current version"})
                     local menu_TB = {r_click_menu}
                     DRAW_M(menu_TB)
+                    
+                    local tbl = find_guid(box_env.guid)
                     local env_id = box_env.ver[box_env.num].id --selected
                     local env_id_h = box_env.ver[get_val].id --highlighted
                     local env_type = ch_box1.ver[ch_box1.num]
@@ -1309,7 +1367,7 @@ function envelope(tbl,data)
                       end
                       if box_env.num ~= 0 then
                         local point_chunk = box_env.ver[box_env.num][ch_box1.ver[ch_box1.num]]
-                        local env = reaper.GetTrackEnvelopeByName( tr, ch_box1.ver[ch_box1.num] )
+                        local env = reaper.GetTrackEnvelopeByName( reaper.BR_GetMediaTrackByGUID(0,box_env.guid), ch_box1.ver[ch_box1.num] )
                         local env_chunk = set_envelope_chunk(env,point_chunk)
                         reaper.SetEnvelopeStateChunk(env, env_chunk, false )
                       end
@@ -1327,21 +1385,42 @@ function envelope(tbl,data)
                         end
                     end
   end
-  ------------------- AUTOSELECT ENVELOPE MENU BASED ON SELECTED TRACKS ENVELOPE -------------------
+end
+-------------------------------------------------------------------------------------------------------------
+---  Function SHOW SELECTED ENVELOPE ------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------
+function select_env(tr)
+------------------- AUTOSELECT ENVELOPE MENU BASED ON SELECTED TRACKS ENVELOPE -------------------
+  if not tr then return end
+  local temp = {}
+  
+  for i = 1 , #tr.env do
+    if type(tr.env[i]) ~= "number" and tr.env[i][tr.env["Last_menu"]] then 
+      temp[#temp+1] = tr.env[i] -- add env table from main track to temp table
+    end
+  end
+  local cur = tr.env["Last_menu"]
+  
+  for i = 1 ,#ch_box1.ver do
+    if ch_box1.ver[i] == cur then ch_box1.num = i end
+  end
+  
+  box_env.num = tr.env[ch_box1.ver[ch_box1.num]]
+  box_env.guid = tr.guid
+  box_env.ver = temp
+
+  -- SHOW CURRENTLY SELECTED ENVELOPE
   local sametrack
   local sel_env = reaper.GetSelectedEnvelope( 0 ) -- if envelope is selected 
     if sel_env then
       local retval, env_name = reaper.GetEnvelopeName(sel_env, "")
       local env_tr = reaper.BR_EnvAlloc( sel_env, false )
-      if reaper.GetTrackGUID(reaper.BR_EnvGetParentTrack( env_tr )) ~= cur_sel[1].guid then sametrack = true end--or ch_box1.ver[ch_box1.num] ~= env_name then end -- do not create envelope version if from other track or does not match current checbox name
-        
-        for i = 1 , #ch_box1.ver do 
-          if env_name == ch_box1.ver[i] then tbl.env["Last_menu"] = i end
-        end
+      if reaper.GetTrackGUID(reaper.BR_EnvGetParentTrack( env_tr )) ~= tr.guid then sametrack = true end--or ch_box1.ver[ch_box1.num] ~= env_name then end -- do not create envelope version if from other track or does not match current checbox name
+      tr.env["Last_menu"] = env_name
     end
- 
+    
   if not sametrack then DRAW_C(env) end -- if other track envelope is selected do not show versions
-  if reaper.CountSelectedTracks() < 2 then DRAW_CH(CheckBox_TB) end -- disable checbox envelope button if multiple tracks selected
+  if not sametrack and reaper.CountSelectedTracks() < 2 then DRAW_CH(CheckBox_TB) end -- disable checbox envelope button if multiple tracks selected
 end
 --------------------------------------------------------------------------------------------
 function literalize(str) -- http://stackoverflow.com/questions/1745448/lua-plain-string-gsub
@@ -1412,7 +1491,11 @@ function create_button(name,guid,chunk,ver_id,num,env,fipm,dest)
     for i = 1, #env_type do
       env_tb[env_type[i].name] = env_type[i].v
     end
+  else
+    envelope(guid) -- add functions to buttons
+    box_env.num = env[env["Last_menu"]]
   end
+  
   local tr = reaper.BR_GetMediaTrackByGUID( 0, guid )
   local box = Radio_Btns:new(116,46,120,20,  0.2,0.2,1.0,0.7, "","Arial",15,{0.7, 0.9, 1, 1},1, {v_table}, guid , env_tb, fipm, dest)
   if not find_guid(guid) then -- if ID does not exist in the table create new checklist
@@ -1893,7 +1976,8 @@ local tracks_tbl = {}
 --if not cur_sel[1] or folder or cur_sel[1].num == 0 then return end
 local ignore =  {"marquee item selection","change media item selection","unselect all items","remove material behind selected items" } -- undo which will ignore auto save
   if not has_undo(ignore,last_action) then
-    if last_action:find("item") or last_action:find("recorded media") or last_action:find("midi editor: insert notes") then
+    --reaper.Undo_BeginBlock()
+    if last_action:find("item") or last_action:find("recorded media") or last_action:find("midi editor: insert notes") or last_action:find("change source media") then
       local cnt = reaper.CountSelectedMediaItems(0)
       ---- if no items are selected (track only)
       if cnt == 0 and not folder then tracks_tbl[#tracks_tbl+1] = cur_sel[1] end
@@ -1922,21 +2006,26 @@ local ignore =  {"marquee item selection","change media item selection","unselec
               track.ver[track.num].chunk = chunk
             end
         end
-      elseif last_action:find("envelope") then
-      --[[
+    elseif last_action:find("envelope") then
+      if not cur_sel[1] then return end
+      if #box_env.ver == 0 then return end -- if there is no env versions
+      local tr_tbl = cur_sel[1]
+      
       local sel_env = reaper.GetSelectedEnvelope( 0 )
       if not sel_env then return end
-      local track, index, index2 = reaper.Envelope_GetParentTrack( sel_env ) -- get envelopes main track
-      local track_guid = reaper.GetTrackGUID( track )
-      local tr_tbl = find_guid(track_guid)
       
-      local env_type = ch_box1.ver[ch_box1.num]
-      local env_num = tr_tbl.env[ch_box1.ver[ch_box1.num]]
-      --if env_num == 0 then return end
-      --local env_id = tr_tbl.env[env_num].id --selected
-      --  for i = #tr_tbl.env , 1, -1 do
-      --    if tr_tbl.env[i].id == env_id then tr_tbl.env[i][env_type] = get_env("get") end -- save
-      --  end
+      local env_track, index, index2 = reaper.Envelope_GetParentTrack( sel_env ) -- get envelopes main track
+      --local env_tr = reaper.BR_EnvAlloc( sel_env, false )
+      local env_track_guid = reaper.GetTrackGUID( env_track )
+      if tr_tbl.guid ~= env_track_guid then return end -- if track is not the same
+      
+      local env_id = box_env.ver[box_env.num].id --selected version
+      local cur_env = tr_tbl.env["Last_menu"]
+        
+      for i = #tr_tbl.env , 1, -1 do
+        if tr_tbl.env[i].id == env_id then tr_tbl.env[i][cur_env] = get_env("get") end -- save
+      end
+     
     end
   end
 end
@@ -2043,7 +2132,8 @@ function main()
       local tr_h =  reaper.GetMediaTrackInfo_Value(cur_tr, "I_WNDH")
       cur_sel[1] = find_guid(reaper.GetTrackGUID(sel_tr)) -- VIEW CURRENT SELECTED TRACK VERSIONS
       all.num = reaper.GetMediaTrackInfo_Value( cur_tr, "B_FREEMODE" ) -- check if track is in FIP mode (highlight button)       
-      set_env_box(cur_sel[1])
+      --set_env_box(cur_sel[1]) -- show envelope versions
+      select_env(cur_sel[1]) -- show envelope versions
       set_color(sel_tr,cur_sel[1],color) 
       if cur_sel[1] and #cur_sel[1].ver > 1 then DRAW_B(all_tb) DRAW_B(Copy) else reaper.SetMediaTrackInfo_Value( cur_tr, "B_FREEMODE",0 ) end -- if there are more than 1 version show all version buttons (else disable FIPM)
       if all.num == 1 then DRAW_B(comp_tb)
