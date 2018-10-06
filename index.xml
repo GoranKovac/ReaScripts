@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="2805de395b0cbb5e63f539325044dff4bfc6fc75" name="Sexan_Scripts">
+<index version="1" commit="8737ddc8057023770bc99f647fda1c6d81b3f8ec" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track versions.lua" type="script" desc="Track versions.lua">
       <metadata>
@@ -259,6 +259,10 @@
       <version name="0.12" author="SeXan" time="2018-10-06T17:12:52Z">
         <changelog><![CDATA[+ Minor bug fixed with creating new envelopes (not creating default one if there is only 1 version)]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/2805de395b0cbb5e63f539325044dff4bfc6fc75/Alpha/Sexan_TrackVersionWIP.lua</source>
+      </version>
+      <version name="0.13" author="SeXan" time="2018-10-06T19:57:14Z">
+        <changelog><![CDATA[+ Fixed items not updating when renaming file VIA "Rename file..." in media item properties]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/8737ddc8057023770bc99f647fda1c6d81b3f8ec/Alpha/Sexan_TrackVersionWIP.lua</source>
       </version>
     </reapack>
   </category>
