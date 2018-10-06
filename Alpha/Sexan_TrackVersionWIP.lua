@@ -5,15 +5,13 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.11
+ * Version: 0.12
 --]]
  
 --[[
  * Changelog:
- * v0.11 (2018-06-10)
-  + Re-coded the whole envelope code to work as tracks version. Envelopes stored with old version of the script will not work with this version
-  + Added autosave for envelopes
-  + Fixed bug when changing item media source via item properties not saving new file
+ * v0.12 (2018-06-10)
+  + Minor bug fixed with creating new envelopes (not creating default one if there is only 1 version)
 
 --]]
 
@@ -1221,7 +1219,7 @@ end
 function create_envelope()
   reaper.Undo_BeginBlock()
   ::JUMP::
-  if #set_env_box(cur_sel[1],"get_lenght") > 1 then -- if its a new version create default one
+  if #set_env_box(cur_sel[1],"get_lenght") >= 1 then -- if its a new version create default one
     reaper.Main_OnCommand(40332,0) -- select all points
     reaper.Main_OnCommand(40333,0) -- remove all points
   end
