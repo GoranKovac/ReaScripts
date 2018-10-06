@@ -5,13 +5,13 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.12
+ * Version: 0.13
 --]]
  
 --[[
  * Changelog:
- * v0.12 (2018-06-10)
-  + Minor bug fixed with creating new envelopes (not creating default one if there is only 1 version)
+ * v0.13 (2018-06-10)
+  + Fixed items not updating when renaming file VIA "Rename file..." in media item properties
 
 --]]
 
@@ -1264,23 +1264,28 @@ function get_env(job)
   
   local AI_info = {"D_POOL_ID","D_POSITION","D_LENGTH","D_STARTOFFS","D_PLAYRATE","D_BASELINE","D_AMPLITUDE","D_LOOPSRC"}
   ---------------- AUTOMATION ITEMS zip them to one string
-  local AI_chunk = {}
+  AI_chunk = {}
+  local AI_points = {}
   for i = 1 , reaper.CountAutomationItems( env ) do
-    local string = nil
+    local chunk = nil
     for j = 1 , #AI_info do
       local AI_item = reaper.GetSetAutomationItemInfo( env, i-1, AI_info[j],0,false )
-      if string == nil then string = AI_item 
-      else string = string .. ":" .. AI_item
+      if chunk == nil then chunk = AI_item 
+      else chunk = chunk .. ":" .. AI_item
       end
     end
-      AI_chunk[#AI_chunk+1] = string
+      for k = 1 ,reaper.CountEnvelopePointsEx( env, i-1 ) do
+        local retval, time, value, shape, tension, selected = reaper.GetEnvelopePointEx( env, i-1, k-1 )
+        AI_points[#AI_points+1] = {retval = retval, time = time, value = value , shape = shape, tension = tension, selected = selected }
+      end
+      AI_chunk[#AI_chunk+1] = {chunk = chunk, points = AI_points}
   end
   ---------------- AUTOMATION ITEMS extract them
   local AIdata = {}
   for i = 1, #AI_chunk do
     AIdata[i] = {}
     local num = 1
-    for value in string.gmatch(AI_chunk[i], "[^:]+") do
+    for value in string.gmatch(AI_chunk[i].chunk, "[^:]+") do
       AIdata[i][AI_info[num]] = tonumber(value)
       num = num + 1
     end
@@ -1975,7 +1980,7 @@ local tracks_tbl = {}
 local ignore =  {"marquee item selection","change media item selection","unselect all items","remove material behind selected items" } -- undo which will ignore auto save
   if not has_undo(ignore,last_action) then
     --reaper.Undo_BeginBlock()
-    if last_action:find("item") or last_action:find("recorded media") or last_action:find("midi editor: insert notes") or last_action:find("change source media") then
+    if last_action:find("item") or last_action:find("recorded media") or last_action:find("midi editor: insert notes") or last_action:find("change source media") or last_action:find("rename source media") then
       local cnt = reaper.CountSelectedMediaItems(0)
       ---- if no items are selected (track only)
       if cnt == 0 and not folder then tracks_tbl[#tracks_tbl+1] = cur_sel[1] end
@@ -2004,7 +2009,7 @@ local ignore =  {"marquee item selection","change media item selection","unselec
               track.ver[track.num].chunk = chunk
             end
         end
-    elseif last_action:find("envelope") then
+    elseif last_action:find("envelope") or last_action:find("edit automation item") then
       if not cur_sel[1] then return end
       if #box_env.ver == 0 then return end -- if there is no env versions
       local tr_tbl = cur_sel[1]
