@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="50b7a45485ef9e878f0e30c812cac26fe0346a4a" name="Sexan_Scripts">
+<index version="1" commit="10c958477b94114d74342fff9488691acf823529" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track versions.lua" type="script" desc="Track versions.lua">
       <metadata>
@@ -269,6 +269,10 @@
 + Added support for AUTOMATION ITEMS. Really early implementation,still have some issues (like loops source)
 + Fixed crash when selecting item envelopes]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/50b7a45485ef9e878f0e30c812cac26fe0346a4a/Alpha/Sexan_TrackVersionWIP.lua</source>
+      </version>
+      <version name="0.15" author="SeXan" time="2018-10-09T13:30:03Z">
+        <changelog><![CDATA[+ Fixed data not storing if created with Unsaved project and then Saved (via Save as)]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/10c958477b94114d74342fff9488691acf823529/Alpha/Sexan_TrackVersionWIP.lua</source>
       </version>
     </reapack>
   </category>
