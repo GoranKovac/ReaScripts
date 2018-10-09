@@ -5,15 +5,14 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.14
+ * Version: 0.15
 --]]
  
 --[[
  * Changelog:
- * v0.14 (2018-09-10)
-  + Fixed crash when creating or deleting not visible envelopes
-  + Added support for AUTOMATION ITEMS. Really early implementation,still have some issues (like loops source)
-  + Fixed crash when selecting item envelopes
+ * v0.15 (2018-09-10)
+  + Fixed data not storing if created with Unsaved project and then Saved (via Save as)
+
 --]]
 
 -- USER SETTINGS
@@ -2199,10 +2198,14 @@ function edit_group_track_or_item(sel_item)
   reaper.PreventUIRefresh(-1)
   reaper.UpdateTimeline()
 end
+function check_project_save()
+  reaper.MarkProjectDirty( 0 )
+end
 --------------------------------------------------------------------------------
 ---  Function MAIN -------------------------------------------------------------
 --------------------------------------------------------------------------------
 function main()
+  --check_project()
   get_transport()
   local sel_item
   local sel_tr = reaper.GetSelectedTrack(0,0) -- get track 
@@ -2296,6 +2299,7 @@ end
 
 function exit()
   --track_deleted()
+  check_project_save()
   save_tracks()
   store_gui()
   gfx.quit()
