@@ -5,14 +5,15 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.13
+ * Version: 0.14
 --]]
  
 --[[
  * Changelog:
- * v0.13 (2018-06-10)
-  + Fixed items not updating when renaming file VIA "Rename file..." in media item properties
-
+ * v0.14 (2018-09-10)
+  + Fixed crash when creating or deleting not visible envelopes
+  + Added support for AUTOMATION ITEMS. Really early implementation,still have some issues (like loops source)
+  + Fixed crash when selecting item envelopes
 --]]
 
 -- USER SETTINGS
@@ -1217,19 +1218,24 @@ end
 ---  Function GET TRACK ENVELOPE ----------------------------------------------
 -------------------------------------------------------------------------------
 function create_envelope()
+  local track = find_guid(cur_sel[1].guid)   
   reaper.Undo_BeginBlock()
   ::JUMP::
   if #set_env_box(cur_sel[1],"get_lenght") >= 1 then -- if its a new version create default one
+    remove_AI(track.guid)
     reaper.Main_OnCommand(40332,0) -- select all points
     reaper.Main_OnCommand(40333,0) -- remove all points
   end
-  local env_chunk, env_name, env_AI = get_env("get")
-  local track = find_guid(cur_sel[1].guid)
-  track.env[#track.env+1] = { [env_name] = env_chunk , name = env_name .. " " .. #set_env_box(cur_sel[1],"get_lenght")+1, id = reaper.genGuid()}
+  local env_chunk, env_name, env_AI = get_env()
+  if not env_chunk then return end
+  track.env[#track.env+1] = { [env_name] = env_chunk, AI = env_AI, name = env_name .. " " .. #set_env_box(cur_sel[1],"get_lenght")+1, id = reaper.genGuid()}
+  
+  if #env_AI == 0 then track.env[#track.env].AI = nil end
   
   track.env[ch_box1.ver[ch_box1.num]] = #set_env_box(cur_sel[1],"get_lenght")
   box_env.num = track.env[ch_box1.ver[ch_box1.num]]
-  
+  track.last_env_num = box_env.num -- causes switch to hang if not se (we use this to lower cpu usage (not to trigger activating same version if already activated)
+   
   envelope(track.guid)
   
   -- create new default envelope
@@ -1239,7 +1245,7 @@ function create_envelope()
     goto JUMP
   end
   reaper.Undo_EndBlock( "ReaTV: CreateEnvVer",0 )
-  reaper.Undo_OnStateChange( "ReaTV CreateEnvVer" )
+  reaper.Undo_OnStateChange( "ReaTV: CreateEnvVer" )
 end
 -------------------------------------------------------------------------------
 ---  Function GET TRACK ENVELOPE chunk----------------------------------------------
@@ -1257,14 +1263,14 @@ function get_env(job)
     
   local sel_env = reaper.GetSelectedEnvelope( 0 ) --- for checking if other tracks envelope is selected
   if sel_env then 
-    local env_tr = reaper.BR_EnvAlloc( sel_env, false )
-    if reaper.GetTrackGUID(reaper.BR_EnvGetParentTrack( env_tr )) ~= cur_sel[1].guid then return end -- do not create envelope version if from other track  
+    local env_track, index, index2 = reaper.Envelope_GetParentTrack( sel_env ) -- get envelopes main track
+    if reaper.GetTrackGUID(env_track) ~= cur_sel[1].guid then return end -- do not create envelope version if from other track
   end
   if not env then return end
   
   local AI_info = {"D_POOL_ID","D_POSITION","D_LENGTH","D_STARTOFFS","D_PLAYRATE","D_BASELINE","D_AMPLITUDE","D_LOOPSRC"}
   ---------------- AUTOMATION ITEMS zip them to one string
-  AI_chunk = {}
+  local AI_chunk = {}
   local AI_points = {}
   for i = 1 , reaper.CountAutomationItems( env ) do
     local chunk = nil
@@ -1274,28 +1280,24 @@ function get_env(job)
       else chunk = chunk .. ":" .. AI_item
       end
     end
-      for k = 1 ,reaper.CountEnvelopePointsEx( env, i-1 ) do
-        local retval, time, value, shape, tension, selected = reaper.GetEnvelopePointEx( env, i-1, k-1 )
-        AI_points[#AI_points+1] = {retval = retval, time = time, value = value , shape = shape, tension = tension, selected = selected }
-      end
-      AI_chunk[#AI_chunk+1] = {chunk = chunk, points = AI_points}
+      -- get all AI points
+   -- if not job then
+    --  for k = 1 ,reaper.CountEnvelopePointsEx( env, i-1 ) do
+        --local retval, time, value, shape, tension, selected = reaper.GetEnvelopePointEx( env, i-1, k-1 )
+        --AI_points[#AI_points+1] = {retval = retval, time = time, value = value , shape = shape, tension = tension, selected = selected }
+    --  end
+      --AI_chunk[#AI_chunk+1] = pickle({chunk = chunk, points = AI_points})
+   -- end
+      AI_chunk[#AI_chunk+1] = pickle({chunk = chunk})
+    if job == "empty" then reaper.GetSetAutomationItemInfo( env, i-1, "D_UISEL", 1, true ) end
   end
-  ---------------- AUTOMATION ITEMS extract them
-  local AIdata = {}
-  for i = 1, #AI_chunk do
-    AIdata[i] = {}
-    local num = 1
-    for value in string.gmatch(AI_chunk[i].chunk, "[^:]+") do
-      AIdata[i][AI_info[num]] = tonumber(value)
-      num = num + 1
-    end
-  end
+  
+  if job == "empty" then reaper.Main_OnCommand(42088,0) end  
   
   local retval, str = reaper.GetEnvelopeStateChunk(env, "", true)
   local visible = string.find(str, "VIS 1")
   if not visible then return end
-  
-  --reaper.Main_OnCommand(40331,0) -- unselect all points
+ 
   local env_point_count = reaper.CountEnvelopePoints(env)
     for i = 0, env_point_count - 1 do
       local retval, time, valueOut, shape, tension, selectedOut = reaper.GetEnvelopePoint(env,i)
@@ -1327,23 +1329,90 @@ end
 ---  Function MERGE ENVELOPE CHUNKS  -------------------------------------------
 --------------------------------------------------------------------------------
 function set_envelope_chunk(env,point_chunk)
-  local _, str = reaper.GetEnvelopeStateChunk(env, "", true)
+  local ret, str = reaper.GetEnvelopeStateChunk(env, "", true)
+  if not ret then return end
   local trim = string.find(str, "PT")
   str = string.sub(str, 0,trim-1) -- trim it after
   local env_chunk = str .. point_chunk
   return env_chunk
 end
 --------------------------------------------------------------------------------
+---  Function UNPACK AND ADD AUTOMATION ITEMS  ---------------------------------
+--------------------------------------------------------------------------------
+function unpack_AI(AI_chunk,env)
+local AI_info = {"D_POOL_ID","D_POSITION","D_LENGTH","D_STARTOFFS","D_PLAYRATE","D_BASELINE","D_AMPLITUDE","D_LOOPSRC"}
+---------------- AUTOMATION ITEMS extract them
+local AIdata = {}  
+  for i = 1, #AI_chunk do
+    local AI = unpickle(AI_chunk[i])
+    AIdata[i] = {}
+    local num = 1
+    for value in string.gmatch(AI.chunk, "[^:]+") do
+      AIdata[i][AI_info[num]] = tonumber(value)
+      num = num + 1
+    end
+    AIdata[i].points = AI.points
+  end
+  reaper.Undo_BeginBlock()
+  reaper.PreventUIRefresh(1)
+  for i = 1, #AIdata do
+    reaper.InsertAutomationItem( env, -1, AIdata[i][AI_info[2]], AIdata[i][AI_info[3]] )
+    --- insert points
+       --for j = 1, #AIdata[i].points do
+       --  reaper.InsertEnvelopePointEx( env, i-1, AIdata[i].points[j]["time"], AIdata[i].points[j]["value"], AIdata[i].points[j]["shape"], AIdata[i].points[j]["tension"],0)
+       --end
+    for j = 1 , #AI_info do
+      local AI_item = reaper.GetSetAutomationItemInfo( env, i-1, AI_info[j],AIdata[i][AI_info[j]],true )
+    end
+    --- insert points
+    --for j = 1, #AIdata[i].points do
+    --  reaper.InsertEnvelopePointEx( env, i-1, AIdata[i].points[j]["time"], AIdata[i].points[j]["value"], AIdata[i].points[j]["shape"], AIdata[i].points[j]["tension"],0 )
+    --end
+  end
+  reaper.PreventUIRefresh(-1)
+  reaper.Undo_EndBlock( "ReaTV: AI-ins",8)
+  --reaper.Undo_OnStateChange( "ReaTV: AI-ins" )
+end
+--------------------------------------------------------------------------------
+---  Function REMOVE AI ITEMS  -------------------------------------------------
+--------------------------------------------------------------------------------
+function remove_AI(guid)
+  local tr = reaper.BR_GetMediaTrackByGUID(0,guid)
+  local env
+  local envs = reaper.CountTrackEnvelopes(tr)
+    for i = 0, envs-1 do
+      env = reaper.GetTrackEnvelope(tr, i)
+      local retval, env_name = reaper.GetEnvelopeName(env, "")
+      if env_name == ch_box1.ver[ch_box1.num] then break end -- save only envelope that menu shows (VOLUME-PAN etc)
+    end
+
+  for i = 1 , reaper.CountAutomationItems( env ) do
+    reaper.GetSetAutomationItemInfo( env, i-1, "D_UISEL", 1, true )
+  end
+  reaper.Main_OnCommand(42088,0)
+end
+--------------------------------------------------------------------------------
 ---  Function SET ENVELOPE VERSION  --------------------------------------------
 --------------------------------------------------------------------------------
 function envelope(guid)  
   box_env.onClick = function()
+                  local tbl = find_guid(box_env.guid)
+                  local tr = reaper.BR_GetMediaTrackByGUID(0,box_env.guid)
+                  if tbl.last_env_num ~= box_env.num then
                   local env = reaper.GetTrackEnvelopeByName(reaper.BR_GetMediaTrackByGUID(0,box_env.guid), ch_box1.ver[ch_box1.num] ) 
+                  remove_AI(box_env.guid)
                   local point_chunk = box_env.ver[box_env.num][ch_box1.ver[ch_box1.num]]
                   local env_chunk = set_envelope_chunk(env,point_chunk)
                   reaper.SetEnvelopeStateChunk(env, env_chunk, false )
-                  local tbl = find_guid(box_env.guid)
-                  tbl.env[tbl.env["Last_menu"]] = box_env.num -- change check in original table                  
+                  --local tbl = find_guid(box_env.guid)
+                  --tbl.env[tbl.env["Last_menu"]] = box_env.num -- change check in original table
+                  --if tbl.last_env_num ~= box_env.num then
+                  if box_env.ver[box_env.num].AI then --AAA = box_env.ver[box_env.num].AI end
+                    unpack_AI(box_env.ver[box_env.num].AI,env)
+                  end 
+                  tbl.env[tbl.env["Last_menu"]] = box_env.num 
+                  tbl.last_env_num = box_env.num 
+                  end
   end
   
   box_env.onRClick = function()
@@ -1417,8 +1486,9 @@ function select_env(tr)
   local sel_env = reaper.GetSelectedEnvelope( 0 ) -- if envelope is selected 
     if sel_env then
       local retval, env_name = reaper.GetEnvelopeName(sel_env, "")
-      local env_tr = reaper.BR_EnvAlloc( sel_env, false )
-      if reaper.GetTrackGUID(reaper.BR_EnvGetParentTrack( env_tr )) ~= tr.guid then sametrack = true end--or ch_box1.ver[ch_box1.num] ~= env_name then end -- do not create envelope version if from other track or does not match current checbox name
+      local env_track, index, index2 = reaper.Envelope_GetParentTrack( sel_env )
+      if not env_track then return end
+      if reaper.GetTrackGUID(env_track) ~= tr.guid then sametrack = true end--or ch_box1.ver[ch_box1.num] ~= env_name then end -- do not create envelope version if from other track or does not match current checbox name
       tr.env["Last_menu"] = env_name
     end
     
@@ -1918,9 +1988,7 @@ function comping(tbl)
       
         reaper.Undo_BeginBlock()
         local swipedItem, swipe_chunk = make_item_from_ts(tr_tbl,tsitem,track)
-        local num = has_id(tr_tbl, cur_comp_id)
-        
-        --if tr_folder == 1 then BBBBBBBBB = tr_tbl.guid end
+        local num = has_id(tr_tbl, cur_comp_id)        
           
           if not num then --and is_folder ~= 1 then
             local cur_num = tr_tbl.num -- store current selected version
@@ -1975,12 +2043,13 @@ end
 ---  Function AUTO SAVE --------------------------------------------------------
 --------------------------------------------------------------------------------
 function auto_save(last_action)
+reaper.PreventUIRefresh(1)
 local tracks_tbl = {}
 --if not cur_sel[1] or folder or cur_sel[1].num == 0 then return end
 local ignore =  {"marquee item selection","change media item selection","unselect all items","remove material behind selected items" } -- undo which will ignore auto save
   if not has_undo(ignore,last_action) then
-    --reaper.Undo_BeginBlock()
-    if last_action:find("item") or last_action:find("recorded media") or last_action:find("midi editor: insert notes") or last_action:find("change source media") or last_action:find("rename source media") then
+    if not last_action:find("automation item") and last_action:find("item") or last_action:find("recorded media") or last_action:find("midi editor: insert notes") or last_action:find("change source media") or last_action:find("rename source media") then
+      --if last_action:find("automation item") then return end
       local cnt = reaper.CountSelectedMediaItems(0)
       ---- if no items are selected (track only)
       if cnt == 0 and not folder then tracks_tbl[#tracks_tbl+1] = cur_sel[1] end
@@ -2009,7 +2078,8 @@ local ignore =  {"marquee item selection","change media item selection","unselec
               track.ver[track.num].chunk = chunk
             end
         end
-    elseif last_action:find("envelope") or last_action:find("edit automation item") then
+    elseif last_action:find("envelope") or last_action:find("automation item") then
+      if last_action:find("select automation item") then return end
       if not cur_sel[1] then return end
       if #box_env.ver == 0 then return end -- if there is no env versions
       local tr_tbl = cur_sel[1]
@@ -2018,19 +2088,28 @@ local ignore =  {"marquee item selection","change media item selection","unselec
       if not sel_env then return end
       
       local env_track, index, index2 = reaper.Envelope_GetParentTrack( sel_env ) -- get envelopes main track
-      --local env_tr = reaper.BR_EnvAlloc( sel_env, false )
       local env_track_guid = reaper.GetTrackGUID( env_track )
       if tr_tbl.guid ~= env_track_guid then return end -- if track is not the same
       
       local env_id = box_env.ver[box_env.num].id --selected version
       local cur_env = tr_tbl.env["Last_menu"]
         
-      for i = #tr_tbl.env , 1, -1 do
-        if tr_tbl.env[i].id == env_id then tr_tbl.env[i][cur_env] = get_env("get") end -- save
+      for i = 1, #tr_tbl.env do
+        if tr_tbl.env[i].id == env_id then
+        local env_chunk, env_name, env_AI = get_env("empty")
+          tr_tbl.env[i][cur_env] = env_chunk 
+          if #env_AI ~= 0 then 
+            tr_tbl.env[i].AI = env_AI
+            --unpack_AI(tr_tbl.env[i].AI,sel_env)
+          elseif tr_tbl.env[i].AI then
+            unpack_AI(tr_tbl.env[i].AI,sel_env)
+          end
+        end -- save
       end
      
     end
   end
+reaper.PreventUIRefresh(-1)
 end
 --------------------------------------------------------------------------------
 ---  Function GET GROUP PRIORITY -----------------------------------------------
