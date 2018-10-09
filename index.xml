@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="8737ddc8057023770bc99f647fda1c6d81b3f8ec" name="Sexan_Scripts">
+<index version="1" commit="50b7a45485ef9e878f0e30c812cac26fe0346a4a" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track versions.lua" type="script" desc="Track versions.lua">
       <metadata>
@@ -263,6 +263,12 @@
       <version name="0.13" author="SeXan" time="2018-10-06T19:57:14Z">
         <changelog><![CDATA[+ Fixed items not updating when renaming file VIA "Rename file..." in media item properties]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/8737ddc8057023770bc99f647fda1c6d81b3f8ec/Alpha/Sexan_TrackVersionWIP.lua</source>
+      </version>
+      <version name="0.14" author="SeXan" time="2018-10-09T09:28:47Z">
+        <changelog><![CDATA[+ Fixed crash when creating or deleting not visible envelopes
++ Added support for AUTOMATION ITEMS. Really early implementation,still have some issues (like loops source)
++ Fixed crash when selecting item envelopes]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/50b7a45485ef9e878f0e30c812cac26fe0346a4a/Alpha/Sexan_TrackVersionWIP.lua</source>
       </version>
     </reapack>
   </category>
