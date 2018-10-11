@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="519a624a4f2e807f16b7d4f434f5c7884a513182" name="Sexan_Scripts">
+<index version="1" commit="e5161ad6ac1592cedcc92e2dbe00ca292602e718" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track versions.lua" type="script" desc="Track versions.lua">
       <metadata>
@@ -280,6 +280,11 @@
 + New save behavior (test for data loss when script crashes)
 + Instead of saving to reaperextstate now it save to a txt file]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/519a624a4f2e807f16b7d4f434f5c7884a513182/Alpha/Sexan_TrackVersionWIP.lua</source>
+      </version>
+      <version name="0.17" author="SeXan" time="2018-10-11T14:30:19Z">
+        <changelog><![CDATA[+ Recoded some parts of FIPM to work without removing all items on track
++ Fixed data incorect store when switching project tabs or opening different projects]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/e5161ad6ac1592cedcc92e2dbe00ca292602e718/Alpha/Sexan_TrackVersionWIP.lua</source>
       </version>
     </reapack>
   </category>
