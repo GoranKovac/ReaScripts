@@ -5,16 +5,14 @@
  * Licence: GPL v3
  * REAPER: 5.0
  * Extensions: None
- * Version: 0.16
+ * Version: 0.17
 --]]
  
 --[[
  * Changelog:
- * v0.16 (2018-11-10)
-  + Added Arrange MODE (something something FL,something something Cubendo has it also? Studio one?)
-  + When ARRANGE MODE is activated you can "SEND" versions to different locations (markers)
-  + New save behavior (test for data loss when script crashes)
-  + Instead of saving to reaperextstate now it save to a txt file
+ * v0.17 (2018-11-10)
+  + Recoded some parts of FIPM to work without removing all items on track
+  + Fixed data incorect store when switching project tabs or opening different projects
 
 --]]
 
@@ -26,7 +24,8 @@ local color = 0 -- 1 for checkboxes, 2 for fonts , 3 for both, 0 for default
 local store_original = true -- set enable-disable storing original version
 local auto_loop_rec = false -- make versions from recorded takes
 --------------------------------------------------------------------------
---local last_transport
+local retval, last_project = reaper.EnumProjects( -1, "" )
+local last_transport
 local multi_tracks = {}
 local last_tr_h = nil
 local Wnd_W,Wnd_H = 320,240
@@ -511,7 +510,7 @@ local function save_tracks()
   for k, v in ipairs(TrackTB) do
     all_button_states[#all_button_states+1] = {guid = v.guid, ver = v.ver, num = v.num, env = v.env, fipm = v.fipm, dest = v.dest}
   end 
-  if #all_button_states == 0 then return end
+  if #all_button_states == 0 then return end -- do not allow storing empty table
   local stored_data = pickle(all_button_states)
   --reaper.SetProjExtState(0, "Track_Versions", "States", store_data)
   save_to_file(stored_data)
@@ -815,11 +814,10 @@ function restoreTrackItems(track, num, job)
   end
   
   if arrange.num == 1 then
-    local retval, isrgn, pos, rgnend, name, markrgnindexnumber = reaper.EnumProjectMarkers( track_tb.dest-1 ) -- get selected marker
+    local cretval, num_markers, num_regions = reaper.CountProjectMarkers( 0 )
+    if num_markers == 0 then return end
     if #track_items_table == 0 then -- if chunk is empty remove that item from arrange move
       remove_items_from_marker(pos,track,track_items_table)
-    elseif check_marker() == 0 then -- allow adding removing standard versions while in arrange mode (if we are before 1st marker)
-      remove_items_from_marker(pos,track,nil,"remove")
     end
   end
   
@@ -853,13 +851,13 @@ function restoreTrackItems(track, num, job)
               if ts_item_position(item) then track_tb.stored[#track_tb.stored+1] = show_ts_version(item) else reaper.DeleteTrackMediaItem(track, item) end -- TIMESELECTION VIEW,
             else  -- NORMAL VIEW
               track_tb.stored = nil
-              if arrange.num == 0 or (arrange.num == 1 and check_marker() == 0) then
+              if arrange.num == 0 then
                 reaper.SetItemStateChunk(item, track_items_table[i], false) -- SETTING NORMAL VERSION
               else -- IF ARRANGE MOODE IS ACTIVATER
-                  local retval, isrgn, pos, rgnend, name, markrgnindexnumber = reaper.EnumProjectMarkers( track_tb.dest-1 ) -- get selected marker
-                  remove_items_from_marker(pos,track)
-                  local chunk = string.gsub(track_items_table[i], "POSITION (%d*%.?%d+)", "POSITION " .. pos) -- set on marker location
-                  reaper.SetItemStateChunk(item,chunk, false) -- SETTING NORMAL VERSION
+                local retval, isrgn, pos, rgnend, name, markrgnindexnumber = reaper.EnumProjectMarkers( track_tb.dest-1 ) -- get selected marker
+                remove_items_from_marker(pos,track)
+                local chunk = string.gsub(track_items_table[i], "POSITION (%d*%.?%d+)", "POSITION " .. pos) -- set on marker location
+                reaper.SetItemStateChunk(item,chunk, false) -- SETTING NORMAL VERSION
               end
             end
         end
@@ -883,6 +881,7 @@ end
 -------------------------------------------------------------------------------
 arrange.onClick = function()
   local tbl
+  if not cur_sel[1] then return end
   if arrange.num == 0 then arrange.num = 1 else
     if get_folder(reaper.BR_GetMediaTrackByGUID(0,cur_sel[1].guid)) then
       tbl = get_folder(reaper.BR_GetMediaTrackByGUID(0,cur_sel[1].guid))
@@ -1108,18 +1107,14 @@ end
 -------------------------------------------------------------------------------
 ---  Function REMOVE/SWITCH ITEMS FROM MARKER IF THEY EXIST -------------------
 -------------------------------------------------------------------------------
-function remove_items_from_marker(m_pos,track,tbl,job) 
+function remove_items_from_marker(m_pos,track,tbl)  
   for i = reaper.CountTrackMediaItems( track ), 1, -1 do -- ITS ALWAYS BETTER TO REVERSE WHEN DELETING STUFF INSIDE
     local item = reaper.GetTrackMediaItem(track,i-1)
     local item_start = reaper.GetMediaItemInfo_Value( item, "D_POSITION")
-    if item_start == m_pos then -- there is item on that marker position
+    if item_start == m_pos and not job then -- there is item on that marker position
       reaper.DeleteTrackMediaItem(track, item)
-    elseif item_start == m_pos and tbl then
+    elseif item_start == m_pos and tbl and not job then -- emtpy chunk, remove it from marker
       reaper.DeleteTrackMediaItem(track, item)
-    elseif job and check_marker() == 0 then
-      if item_start ~= m_pos then
-     --   reaper.DeleteTrackMediaItem(track, item)
-      end
     end
   end
 end
@@ -1218,8 +1213,7 @@ all.onClick = function ()
       tracks = multi_tracks
     else
       tracks = {cur_sel[1].guid}
-    end
-  
+    end  
   
   if get_folder(cur_tr) then 
     cur_sel[1].fipm = all.num 
@@ -1232,8 +1226,10 @@ all.onClick = function ()
     reaper.SetMediaTrackInfo_Value( tr, "B_FREEMODE", track.fipm)
     local num_items = reaper.CountTrackMediaItems(tr)
       if all.num == 0 then
-        for i = 1, num_items, 1 do reaper.DeleteTrackMediaItem(tr, reaper.GetTrackMediaItem(tr,0)) end -- remove all items from track       
-        if track.num == 0 then restoreTrackItems(tracks[i], 0,{}) else restoreTrackItems(track.guid, track.num) end
+        for i = num_items, 1, -1 do --reaper.DeleteTrackMediaItem(tr, reaper.GetTrackMediaItem(tr,0)) end -- remove all items from track
+          local item = reaper.GetTrackMediaItem(tr,i-1)
+          if reaper.GetMediaItemInfo_Value( item, "B_MUTE" ) == 1 then reaper.DeleteTrackMediaItem(tr,item) end
+        end
       else   
         sort_fipm(track,tr)
       end
@@ -1257,9 +1253,12 @@ end
 -------------------------------------------------------------------------------
 function sort_fipm(tbl,tr)
   if not tbl then return end
+  local cur_items = {}
   reaper.PreventUIRefresh(1)
   local num_items = reaper.CountTrackMediaItems(tr)
-  for i = 1, num_items, 1 do reaper.DeleteTrackMediaItem(tr, reaper.GetTrackMediaItem(tr,0)) end -- remove all items from track            
+    
+  for i = 1 ,num_items do cur_items[#cur_items+1] = reaper.BR_GetMediaItemGUID(reaper.GetTrackMediaItem(tr,i-1)) end -- add curent items in view in table so we can use it
+        
   local track_h =  reaper.GetMediaTrackInfo_Value( tr, "I_WNDH")
   local offset = 0
   if track_h <= 42 then offset = 15 end
@@ -1268,8 +1267,19 @@ function sort_fipm(tbl,tr)
       local chunk = tbl.ver[i].chunk
       local chunk_items_num = #tbl.ver
         for j = 1 , #chunk do
-          local item = reaper.AddMediaItemToTrack(tr)
-          reaper.SetItemStateChunk(item, chunk[j], false) -- set all versions on same track
+          local item_ch_guid = "{"..tbl.ver[i].chunk[j]:match('{(%S+)}').."}"
+          local table_item = reaper.BR_GetMediaItemByGUID( 0, item_ch_guid )          
+          local item,exist
+            for k = 1, #cur_items do
+              if cur_items[k] == item_ch_guid then -- use curent item in track instead inserting and adding chunk to it
+                item = reaper.BR_GetMediaItemByGUID( 0, cur_items[k] )-- cur_items[k]
+                exist = true
+              end
+            end
+              if not exist then
+                item = reaper.AddMediaItemToTrack(tr)
+                reaper.SetItemStateChunk(item, chunk[j], false) -- set all versions on same track
+              end
           local item_h_FIPM = (1 - (chunk_items_num-1) * item_bar_h) / chunk_items_num
           local set_item_H = reaper.SetMediaItemInfo_Value(item, "F_FREEMODE_H", item_h_FIPM ) -- set item height (divide with number of items)
           local set_item_Y = reaper.SetMediaItemInfo_Value(item, "F_FREEMODE_Y", ((i-1) * (item_h_FIPM + item_bar_h))) -- add Y position
@@ -1940,6 +1950,8 @@ function title_and_button_upd(tr)
   local tr_num = math.floor(reaper.GetMediaTrackInfo_Value( tr, "IP_TRACKNUMBER" ))
   if arrange.num == 0 and cur_sel[1] and cur_sel[1].dest > 0 and #cur_sel[1].ver ~= 0 then copy.lbl = "To - " .. cur_sel[1].ver[cur_sel[1].dest].name end  
   if arrange.num == 1 and cur_sel[1] then
+    local cretval, num_markers, num_regions = reaper.CountProjectMarkers( 0 )
+    if num_markers == 0 then return end
     local retval, isrgn, pos, rgnend, mname, markrgnindexnumber = reaper.EnumProjectMarkers( cur_sel[1].dest-1 )
     if mname == "" then mname = cur_sel[1].dest end
     copy.lbl = "To - " .. mname
@@ -2128,6 +2140,7 @@ end
 --------------------------------------------------------------------------------
 function auto_save(last_action)
 reaper.PreventUIRefresh(1)
+local save
 local tracks_tbl = {}
 --if not cur_sel[1] or folder or cur_sel[1].num == 0 then return end
 local ignore =  {"marquee item selection","change media item selection","unselect all items","remove material behind selected items" } -- undo which will ignore auto save
@@ -2301,18 +2314,26 @@ function check_marker()
       elseif ec_pos == mpos then cur_marker = retval
       end
   end
+  if cur_marker == 0 then cur_marker = 1 end
   return cur_marker
 end
 --------------------------------------------------------------------------------
----  Function remove non marker ------------------------------------------------
+---  Function check project    -------------------------------------------------
 --------------------------------------------------------------------------------
-function remove_non_marker_items(track)
-  
+function check_project()
+  local retval, cur_project = reaper.EnumProjects( -1, "" )
+  if last_project ~= cur_project then
+    save_path = reaper.GetProjectPath("").."/"
+    fn = save_path.."TrackVersionDATA.txt"
+    --restore()
+    last_project = cur_project
+  end      
 end
 --------------------------------------------------------------------------------
 ---  Function MAIN -------------------------------------------------------------
 --------------------------------------------------------------------------------
 function main()
+  check_project() -- track if we are on same project so we do not overide saved data
   get_transport()
   local sel_item
   local sel_tr = reaper.GetSelectedTrack(0,0) -- get track 
