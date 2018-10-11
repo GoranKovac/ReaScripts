@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="10c958477b94114d74342fff9488691acf823529" name="Sexan_Scripts">
+<index version="1" commit="519a624a4f2e807f16b7d4f434f5c7884a513182" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track versions.lua" type="script" desc="Track versions.lua">
       <metadata>
@@ -273,6 +273,13 @@
       <version name="0.15" author="SeXan" time="2018-10-09T13:30:03Z">
         <changelog><![CDATA[+ Fixed data not storing if created with Unsaved project and then Saved (via Save as)]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/10c958477b94114d74342fff9488691acf823529/Alpha/Sexan_TrackVersionWIP.lua</source>
+      </version>
+      <version name="0.16" author="SeXan" time="2018-10-11T08:02:35Z">
+        <changelog><![CDATA[+ Added Arrange MODE (something something FL,something something Cubendo has it also? Studio one?)
++ When ARRANGE MODE is activated you can "SEND" versions to different locations (markers)
++ New save behavior (test for data loss when script crashes)
++ Instead of saving to reaperextstate now it save to a txt file]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/519a624a4f2e807f16b7d4f434f5c7884a513182/Alpha/Sexan_TrackVersionWIP.lua</source>
       </version>
     </reapack>
   </category>
