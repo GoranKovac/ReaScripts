@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="e5161ad6ac1592cedcc92e2dbe00ca292602e718" name="Sexan_Scripts">
+<index version="1" commit="117d9cf9c81e4438589d5033829d085c102d1242" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track versions.lua" type="script" desc="Track versions.lua">
       <metadata>
@@ -375,6 +375,21 @@
       </metadata>
       <version name="1.01" author="SeXan" time="2017-07-13T12:49:05Z">
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/e46e203d5b205689742ae26940d8ce4b7addc5de/Other/Sexan_Remove%20in%20order%20time%20selection%20items%20tracks.lua</source>
+      </version>
+    </reapack>
+    <reapack name="Sexan_Show midi note name in tooltip.lua" type="script" desc="Show midi note name in tooltip.lua">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 Show tooltip with note name and position under mouse cursor Requested by nofish\par}
+}
+]]></description>
+      </metadata>
+      <version name="1.0" author="SeXan" time="2018-11-15T15:33:15Z">
+        <changelog><![CDATA[+ Initial release]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/117d9cf9c81e4438589d5033829d085c102d1242/Other/Sexan_Show%20midi%20note%20name%20in%20tooltip.lua</source>
       </version>
     </reapack>
   </category>
