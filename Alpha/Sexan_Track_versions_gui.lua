@@ -1,14 +1,18 @@
 --[[
-    * Description: Track Versions V2
-    * Version: 0.0.1
-    * Author: 
-    * Changelog:
-       + Initial Release of new port
-    * Links:
-       + Forum Thread https://forum.cockos.com/showthread.php?t=203828&page=7
-    * About:
-       + ProTools style playlist with many more features 
-]]--
+ * ReaScript Name: Sexan_Track_versions_v2_gui.lua
+ * About: Protools style playlist, track versions (Cubase)
+ * Author: SeXan
+ * Licence: GPL v3
+ * REAPER: 5.0
+ * Extensions: None
+ * Version: 0.0.1
+--]]
+ 
+--[[
+ * Changelog:
+ * v0.0.1 (2019-02-22)
+  + Initial release of new port code
+--]]
 
 
 package.path = debug.getinfo(1,"S").source:match[[^@?(.*[\/])[^\/]-$]] .."?.lua;" -- GET DIRECTORY FOR REQUIRE

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="117d9cf9c81e4438589d5033829d085c102d1242" name="Sexan_Scripts">
+<index version="1" commit="ad59b56335dddc0b1932b62802f89dfa0f02a8db" name="Sexan_Scripts">
   <category name="Alpha">
-    <reapack name="Sexan_Track versions.lua" type="script" desc="Track versions.lua">
+    <reapack name="OLD_Sexan_Track versions.lua" type="script" desc="Track versions.lua">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -11,194 +11,13 @@
 }
 ]]></description>
       </metadata>
-      <version name="0.1" author="SeXan" time="2018-02-28T10:13:15Z">
-        <changelog><![CDATA[+ Initial release]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/c5fa16f718e09aeef913fe7e0c0239095dd97b31/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.2" author="SeXan" time="2018-02-28T10:48:30Z">
-        <changelog><![CDATA[+ Hide save button if on folder]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/7f4f6f966cdfc2e4f249b464139d27359a46250a/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.3" author="SeXan" time="2018-02-28T16:22:53Z">
-        <changelog><![CDATA[+ Added checking for deleted track]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/af9ae505a2bcdc4754e66ae4a26266d61871fcb6/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.31" author="SeXan" time="2018-02-28T16:54:27Z">
-        <changelog><![CDATA[+ Fixed but with deleting code where script would crash if subfolder is deleted]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/f6e8daf276876bed4392efad546c5d20719af92c/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.32" author="SeXan" time="2018-02-28T17:32:03Z">
-        <changelog><![CDATA[+ Fixed bug when creating multiple same versions if multiple tracks are created
-+ Fixed selecting track items]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/2dcea166ce82e59f7ca296f2309d714ad025f8e0/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.33" author="SeXan" time="2018-02-28T18:24:50Z">
-        <changelog><![CDATA[+ Fixed another minor bug with deleted checking (subfolders with no data would not be removed)]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/db9bc3e40109f3b1df67f85fdb8411ba8e2bf4c7/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.34" author="SeXan" time="2018-03-01T08:48:29Z">
-        <changelog><![CDATA[+ Allow saving empty version of track which will automatically be called "Empty"]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/c5f5fbf4d35cf3de7ba229f9eae84f9f04b71e17/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.35" author="SeXan" time="2018-03-01T20:37:01Z">
-        <changelog><![CDATA[+ Fixed saving changes on folder versions]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/ffb50fce57a902f7ca1a624a80383b45d1272dd0/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.36" author="SeXan" time="2018-03-01T21:42:54Z">
-        <changelog><![CDATA[+ Fixed saving multiselected folders]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/a07541f1bb93c82ea120b7f53e600e6bc55a28f6/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.37" author="SeXan" time="2018-03-01T21:53:24Z">
-        <changelog><![CDATA[+ Fixed small bug when saving folder that contains subfolders]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/1cd34a6d6ea720f63306335ac697be7ce56cd31d/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.4" author="SeXan" time="2018-03-03T15:11:47Z">
-        <changelog><![CDATA[+ added initial support for envelope versions (Volume,Pan,Width)]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/a4ec2c75fb52f67cb21068f966608e886e0c86fa/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.41" author="SeXan" time="2018-03-03T15:21:39Z">
-        <changelog><![CDATA[+ added initial support for envelope versions (Volume,Pan,Width)]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/62db6c3a491ddbc8401e2c094a5fc9f54632f914/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.42" author="SeXan" time="2018-03-03T18:29:31Z">
-        <changelog><![CDATA[+ added all track envelope types versions
-+ fixed bug when creating multiselection version folder and track (would crash),now when multiselecting tracks folders get priority over tracks
-+ show envelope menu only if there is saved envelope
-+ mouse wheel support on envelope menu box
-+ automatically show envelope menu if that envelope is selected
-+ fixed bug when selecting other tracks envelope would crash the script]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/bccfd198fd1adb6b91c0323bb63440c30b2428fe/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.43" author="SeXan" time="2018-03-04T14:28:08Z">
-        <changelog><![CDATA[+ one envelope button (left click saves , right click opens menu)
-+ Right click on envelope version removes it
-+ disabled saving envelopes if multiple tracks are selected (for now)
-+ envelope code improvement
-+ fixed incorect removing of envelopes versions
-+ fixed envelope restoration after removing
-+ disabled showing envelope versions if envelope of other track is selected
-+ show selected envelope version if selected, if not then choose selection
-+ saving envelopes do not require selecting it]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/2bbff83af8035aa567cd11967e431640c42ed73e/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.44" author="SeXan" time="2018-03-04T14:36:30Z">
-        <changelog><![CDATA[+ one envelope button (left click saves , right click opens menu)
-+ Right click on envelope version removes it
-+ disabled saving envelopes if multiple tracks are selected (for now)
-+ envelope code improvement
-+ fixed incorect removing of envelopes versions
-+ fixed envelope restoration after removing
-+ disabled showing envelope versions if envelope of other track is selected
-+ show selected envelope version if selected, if not then choose selection
-+ saving envelopes do not require selecting it  
-+ fixed small bug that would crash the script]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/980681792f7c201bfe042b419c24bf400f2a75ae/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.45" author="SeXan" time="2018-03-04T14:46:32Z">
-        <changelog><![CDATA[+ do not allow storing envelope if not visible]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/1cc716287f2bc0a646dbb53fec347ce68daf5912/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.47" author="SeXan" time="2018-03-04T15:06:02Z">
-        <changelog><![CDATA[+ Mousewheel support on envelope menu
-+ Disable saving envelopes if multiple tracks selected]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/0aae0f5839406f68fc0c6b6d7b513e9a93cb0f94/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.48" author="SeXan" time="2018-03-04T15:54:57Z">
-        <changelog><![CDATA[+ envelope right click menu]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/ced901dde8a5b097d7e9feeb42e516318d2f60a3/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.5" author="SeXan" time="2018-03-04T17:51:39Z">
-        <changelog><![CDATA[+ GUI Stores position (dock,x,y)
-+ added user option to color font,checkboxes or both]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/c8b7c8043ebd9d8f7465e67733446b164bb94ea6/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.50" author="SeXan" time="2018-03-04T17:52:26Z">
-        <changelog><![CDATA[+ GUI Stores position (dock,x,y)
-+ added user option to color font,checkboxes or both]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/c4c260871036ae6d58f6dd27c8a2f2e2179e54de/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.51" author="SeXan" time="2018-03-04T18:11:30Z">
-        <changelog><![CDATA[+ fixed global store settings loop because of deleted tracks
-+ now its run only when deleted tracks action is found]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/a5c73f8144e4f24a6dd12d0a23dae028bbb47c2b/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.52" author="SeXan" time="2018-03-04T18:46:47Z">
-        <changelog><![CDATA[+ manual naming changes and fixes]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/4fc49d5154d31a7451e6dc31f44e61bed1c5abe1/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.53" author="SeXan" time="2018-03-04T19:08:40Z">
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/522bf689f11c96e963bd91e6da1feb42b123e3c3/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.54" author="SeXan" time="2018-03-04T20:07:41Z">
-        <changelog><![CDATA[+ More naming fixes and crash fix
-+ user option to store original track]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/df8b148bcd743b9328af90d85a928288489c2869/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.55" author="SeXan" time="2018-03-04T20:28:29Z">
-        <changelog><![CDATA[+ Stupid errors with naming]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/696d6474054adaaac63985e6c02ef824bcd55d55/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.56" author="SeXan" time="2018-03-04T20:31:20Z">
-        <changelog><![CDATA[+ spk77 weird folders fix]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/83292e867797c6d91e7e58e271b5badd06636524/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.57" author="SeXan" time="2018-03-04T20:43:55Z">
-        <changelog><![CDATA[+ removed store original setting]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/21b0187abc79ff4e66d10b5cba27d2be47d952d0/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.58" author="SeXan" time="2018-03-05T12:19:23Z">
-        <changelog><![CDATA[+ store original track user setting
-+ fixed crash when multiselected tracks do not have same number of versions
-+ fixed manual naming 
-+ prevent renaming original version]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/64d489062854ed5cfe19d865d8bd01f5251a0802/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.59" author="SeXan" time="2018-03-05T17:48:05Z">
-        <changelog><![CDATA[+ More fixes for hopi and top secret new code inside]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/1f51575c5dbf6e63d8639c0d5e4d36c5acddde00/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.60" author="SeXan" time="2018-03-05T19:41:52Z">
-        <changelog><![CDATA[+ Recording in takes set every take to individual version
-+ fixed storing gui  ]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/5513b838b661da439d642852594bd98f2792b4e9/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.61" author="SeXan" time="2018-03-05T19:53:59Z">
-        <changelog><![CDATA[+ disable creating take versions if there is only 1 take 
-+ major bug with gui]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/c43108bf055f1b75ba7a0937ca09e20beae75076/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.62" author="SeXan" time="2018-03-05T20:01:19Z">
-        <changelog><![CDATA[+ one more error]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/096cbdddf68bd82d78244e9dbe85845ac0c3760e/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.63" author="SeXan" time="2018-03-05T21:43:51Z">
-        <changelog><![CDATA[+ one more error]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/c186447ca0be32fb791a49b00e98a70f14495d05/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.64" author="SeXan" time="2018-03-06T12:57:12Z">
-        <changelog><![CDATA[+ disable take version for now
-+ fixed empty crash]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/4aa393d9885a50c2c4da6e2ab5885d06fd9dea3d/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.65" author="SeXan" time="2018-03-06T21:41:46Z">
-        <changelog><![CDATA[+ fixed bugs with right click menus
-+ little gui rearange
-+ single save/folder save button based on what type of track is selected
-+ added selected track name to GUI
-+ fixed rec takes to version (thx Spk77)]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/23edd3a2f890604749450f812b229b2b59d1fa4b/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.66" author="SeXan" time="2018-03-06T23:20:59Z">
-        <changelog><![CDATA[+ allow storing empty tracks]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/c32308b127273a3e9f99b59fb61daad7bba91d34/Alpha/Sexan_Track%20versions.lua</source>
-      </version>
-      <version name="0.67" author="SeXan" time="2018-03-07T11:48:03Z">
+      <version name="0.67" author="SeXan" time="2019-02-22T17:57:07Z">
         <changelog><![CDATA[+ Added time selection version (can be created only if version exist)
 + fixed crash when deleting version after empty is clicked]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/44e637c64a12dc09d7f78db3f09831d5b7bb71e1/Alpha/Sexan_Track%20versions.lua</source>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/a847d26be5b6fede75b2d00939ffc3822f113136/Alpha/OLD_Sexan_Track%20versions.lua</source>
       </version>
     </reapack>
-    <reapack name="Sexan_TrackVersionWIP.lua" type="script" desc="TrackVersionsWIP.lua">
+    <reapack name="OLD_Sexan_TrackVersionWIP.lua" type="script" desc="TrackVersionsWIP.lua">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -208,83 +27,17 @@
 }
 ]]></description>
       </metadata>
-      <version name="0.1" author="SeXan" time="2018-10-02T19:44:02Z">
-        <changelog><![CDATA[+ multiedit,comping,view all versions,view time selection version etc]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/9a361ff860518d9f9b581166f73f8773c7a5e477/Alpha/Sexan_TrackVersionWIP.lua</source>
-      </version>
-      <version name="0.2" author="SeXan" time="2018-10-03T08:29:03Z">
-        <changelog><![CDATA[+ Fixed copy to destination behavior for both single and multiview. If items overlap the will be trimed]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/9545a51a1ed43c19285847345cdb14db0c95e3b0/Alpha/Sexan_TrackVersionWIP.lua</source>
-      </version>
-      <version name="0.3" author="SeXan" time="2018-10-03T12:04:56Z">
-        <changelog><![CDATA[+ More fixes to copy to destination & while in view time selection versions,copy to will copy to current version of time selection view]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/76cb62ea98da8ed5397f0526948c6fff4b34f744/Alpha/Sexan_TrackVersionWIP.lua</source>
-      </version>
-      <version name="0.4" author="SeXan" time="2018-10-03T15:33:54Z">
-        <changelog><![CDATA[+ More fixes to copy to destination for multitracks and view time selection
-+ In View all version mode,view time selection mode is not allowed]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/383a9958ae09ada79e4553c30a01eff4f629a825/Alpha/Sexan_TrackVersionWIP.lua</source>
-      </version>
-      <version name="0.5" author="SeXan" time="2018-10-03T15:53:04Z">
-        <changelog><![CDATA[+ Fix copy to destination bug with time selection items geting copied twice]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/746f7a9e4ab85f8443abf2bcce01d51321daa2e6/Alpha/Sexan_TrackVersionWIP.lua</source>
-      </version>
-      <version name="0.6" author="SeXan" time="2018-10-03T16:28:13Z">
-        <changelog><![CDATA[+ When comping overlaping items will trim]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/c3a5e1b6bd6e21d696452dcbbb83b11594f12f7a/Alpha/Sexan_TrackVersionWIP.lua</source>
-      </version>
-      <version name="0.7" author="SeXan" time="2018-10-03T18:17:56Z">
-        <changelog><![CDATA[+ Apply all editing to folders (copy to destination,view time selection items,comping)]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/0262fe572ea53b7274192d32e4bfbba6ca3e3397/Alpha/Sexan_TrackVersionWIP.lua</source>
-      </version>
-      <version name="0.8" author="SeXan" time="2018-10-03T19:06:46Z">
-        <changelog><![CDATA[+ Minor code fix/simplification
-+ Fixed bug when deactivating View time selection versions changing versions would not update for few clicks]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/8de654a1ec95e1cb8a676b3127815294fa1e62f4/Alpha/Sexan_TrackVersionWIP.lua</source>
-      </version>
-      <version name="0.9" author="SeXan" time="2018-10-04T20:44:14Z">
-        <changelog><![CDATA[+ Fix duplicate creating empty versions]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/6f02544a90acce474cba60696129c75d80e0252a/Alpha/Sexan_TrackVersionWIP.lua</source>
-      </version>
-      <version name="0.10" author="SeXan" time="2018-10-04T22:01:12Z">
-        <changelog><![CDATA[+ Fix Make versions from loop recording trigerring by itself when recording]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/38ea7ec41881f7a9a3de78b124717fdd59c9677b/Alpha/Sexan_TrackVersionWIP.lua</source>
-      </version>
-      <version name="0.11" author="SeXan" time="2018-10-06T17:05:50Z">
-        <changelog><![CDATA[+ Re-coded the whole envelope code to work as tracks version. Envelopes stored with old version of the script will not work with this version
-+ Added autosave for envelopes
-+ Fixed bug when changing item media source via item properties not saving new file]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/77bb9a3d909f385dd6a0893ecd77db085327e476/Alpha/Sexan_TrackVersionWIP.lua</source>
-      </version>
-      <version name="0.12" author="SeXan" time="2018-10-06T17:12:52Z">
-        <changelog><![CDATA[+ Minor bug fixed with creating new envelopes (not creating default one if there is only 1 version)]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/2805de395b0cbb5e63f539325044dff4bfc6fc75/Alpha/Sexan_TrackVersionWIP.lua</source>
-      </version>
-      <version name="0.13" author="SeXan" time="2018-10-06T19:57:14Z">
-        <changelog><![CDATA[+ Fixed items not updating when renaming file VIA "Rename file..." in media item properties]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/8737ddc8057023770bc99f647fda1c6d81b3f8ec/Alpha/Sexan_TrackVersionWIP.lua</source>
-      </version>
-      <version name="0.14" author="SeXan" time="2018-10-09T09:28:47Z">
-        <changelog><![CDATA[+ Fixed crash when creating or deleting not visible envelopes
-+ Added support for AUTOMATION ITEMS. Really early implementation,still have some issues (like loops source)
-+ Fixed crash when selecting item envelopes]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/50b7a45485ef9e878f0e30c812cac26fe0346a4a/Alpha/Sexan_TrackVersionWIP.lua</source>
-      </version>
-      <version name="0.15" author="SeXan" time="2018-10-09T13:30:03Z">
-        <changelog><![CDATA[+ Fixed data not storing if created with Unsaved project and then Saved (via Save as)]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/10c958477b94114d74342fff9488691acf823529/Alpha/Sexan_TrackVersionWIP.lua</source>
-      </version>
-      <version name="0.16" author="SeXan" time="2018-10-11T08:02:35Z">
-        <changelog><![CDATA[+ Added Arrange MODE (something something FL,something something Cubendo has it also? Studio one?)
-+ When ARRANGE MODE is activated you can "SEND" versions to different locations (markers)
-+ New save behavior (test for data loss when script crashes)
-+ Instead of saving to reaperextstate now it save to a txt file]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/519a624a4f2e807f16b7d4f434f5c7884a513182/Alpha/Sexan_TrackVersionWIP.lua</source>
-      </version>
-      <version name="0.17" author="SeXan" time="2018-10-11T14:30:19Z">
+      <version name="0.17" author="SeXan" time="2019-02-22T17:57:07Z">
         <changelog><![CDATA[+ Recoded some parts of FIPM to work without removing all items on track
 + Fixed data incorect store when switching project tabs or opening different projects]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/e5161ad6ac1592cedcc92e2dbe00ca292602e718/Alpha/Sexan_TrackVersionWIP.lua</source>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/a847d26be5b6fede75b2d00939ffc3822f113136/Alpha/OLD_Sexan_TrackVersionWIP.lua</source>
+      </version>
+    </reapack>
+    <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track Versions V2">
+      <metadata/>
+      <version name="0.0.1" time="2019-02-22T17:56:09Z">
+        <changelog><![CDATA[Initial Release of new port]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/b605f49c9564c8a29fb1b19393a26744e9e37eb0/Alpha/Sexan_Track_versions_gui.lua</source>
       </version>
     </reapack>
   </category>
