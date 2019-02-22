@@ -5,7 +5,7 @@
  @Licence: GPL v3
  @REAPER: 5.0
  @Extensions: SWS, JS API
- @version: 0.0.1
+ @version 0.0.1
  @provides
     Sexan_Track_versions_core.lua
 --]]
