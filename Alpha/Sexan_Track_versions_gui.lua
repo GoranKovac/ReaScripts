@@ -1,13 +1,13 @@
 --[[
- @ReaScript Name: Sexan_Track_versions_v2_gui.lua
- @About: Protools style playlist, track versions (Cubase)
- @Author: SeXan
- @Licence: GPL v3
- @REAPER: 5.0
- @Extensions: SWS, JS API
- @version 0.0.1
- @provides
-    Sexan_Track_versions_core.lua
+ * eaScript Name: Sexan_Track_versions_v2_gui.lua
+ * About: Protools style playlist, track versions (Cubase)
+ * Author: SeXan
+ * Licence: GPL v3
+ * REAPER: 5.0
+ * Extensions: SWS, JS API
+ * Version: 0.0.1
+ * Provides
+    Alpha/Sexan_Track_versions_core.lua
 --]]
  
 --[[
