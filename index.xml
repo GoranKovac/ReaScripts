@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="ef88c739278ad42f3637f2781206da047e126c06" name="Sexan_Scripts">
+<index version="1" commit="de31261699c85c8e1e0d8169c7ab1d711b395247" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="OLD_Sexan_Track versions.lua" type="script" desc="Track versions.lua">
       <metadata>
@@ -45,7 +45,7 @@
       </metadata>
       <version name="0.0.1" time="2019-02-22T17:56:09Z" author="SeXan">
         <changelog><![CDATA[+ Initial release of new port code]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/ef88c739278ad42f3637f2781206da047e126c06/Alpha/Sexan_Track_versions_gui.lua</source>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/de31261699c85c8e1e0d8169c7ab1d711b395247/Alpha/Sexan_Track_versions_gui.lua</source>
       </version>
     </reapack>
   </category>
