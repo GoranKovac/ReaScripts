@@ -7,8 +7,7 @@
  * Extensions: SWS, JS API
  * Version: 0.0.1
  * Provides  
-    [nomain] .
-    [main ] Sexan_Track_versions_core.lua
+    [nomain] Sexan_Track_versions_core.lua
 --]]
  
 --[[
