@@ -6,8 +6,9 @@
  * REAPER: 5.0
  * Extensions: SWS, JS API
  * Version: 0.0.1
- * Provides
-    Alpha/Sexan_Track_versions_core.lua
+ * Provides  
+    [nomain] .
+    [main ]Alpha/Sexan_Track_versions_core.lua
 --]]
  
 --[[
