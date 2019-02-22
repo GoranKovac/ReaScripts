@@ -6,6 +6,8 @@
  * REAPER: 5.0
  * Extensions: None
  * Version: 0.0.1
+ * provides
+    Sexan_Track_versions_core.lua
 --]]
  
 --[[
