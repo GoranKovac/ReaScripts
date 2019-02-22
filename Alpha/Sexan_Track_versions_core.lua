@@ -1,3 +1,5 @@
+-- NoIndex: true
+
 TrackTB = {}
 track_window = reaper.JS_Window_Find("trackview", true) -- GET TRACK VIEW
 track_window_dc = reaper.JS_GDI_GetWindowDC( track_window )
