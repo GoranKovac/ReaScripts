@@ -8,7 +8,7 @@
  * Version: 0.0.1
  * Provides  
     [nomain] .
-    [main ]Alpha/Sexan_Track_versions_core.lua
+    [main ] Sexan_Track_versions_core.lua
 --]]
  
 --[[
