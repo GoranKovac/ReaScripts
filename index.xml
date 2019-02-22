@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="ad59b56335dddc0b1932b62802f89dfa0f02a8db" name="Sexan_Scripts">
+<index version="1" commit="a6e8f5d67bf886d195255d908deb6d42b7ae73e2" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="OLD_Sexan_Track versions.lua" type="script" desc="Track versions.lua">
       <metadata>
@@ -33,8 +33,16 @@
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/a847d26be5b6fede75b2d00939ffc3822f113136/Alpha/OLD_Sexan_TrackVersionWIP.lua</source>
       </version>
     </reapack>
-    <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track Versions V2">
-      <metadata/>
+    <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Sexan_Track_versions_v2_gui.lua">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 Protools style playlist, track versions (Cubase)\par}
+}
+]]></description>
+      </metadata>
       <version name="0.0.1" time="2019-02-22T17:56:09Z">
         <changelog><![CDATA[Initial Release of new port]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/b605f49c9564c8a29fb1b19393a26744e9e37eb0/Alpha/Sexan_Track_versions_gui.lua</source>
