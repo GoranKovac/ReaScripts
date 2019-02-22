@@ -1,13 +1,13 @@
 --[[
-    Description: Track Versions V2
-    Version: 0.0.1
-    Author: 
-    Changelog:
-        Initial Release of new port
-    Links:
-        Forum Thread https://forum.cockos.com/showthread.php?t=203828&page=7
-    About:
-       ProTools style playlist with many more features 
+    * Description: Track Versions V2
+    * Version: 0.0.1
+    * Author: 
+    * Changelog:
+       + Initial Release of new port
+    * Links:
+       + Forum Thread https://forum.cockos.com/showthread.php?t=203828&page=7
+    * About:
+       + ProTools style playlist with many more features 
 ]]--
 
 
