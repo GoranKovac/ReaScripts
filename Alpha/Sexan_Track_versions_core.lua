@@ -979,6 +979,8 @@ function naming(tbl, string, dupli, job, cur_env)
     data = tbl[cur_env]
   elseif job == "fx" then
     data = tbl.fx
+  elseif job == "comp" then
+    data = tbl.data
   end
   if not data then
     return "Main"
@@ -1573,7 +1575,7 @@ function comping(tbl, mousepos)
       local swipedItem, swipe_chunk = make_item_from_ts(tr_tbl, tsitem, track) -- MAKE NEW ITEM FROM TIME SELECTION
       local num = has_id(tr_tbl, cur_comp_id) -- FIND COMP VER_ID IF EXISTS
       if not num then -- IF COMP VERSION DOES NOT EXISTS
-        local version_name = naming(tr_tbl, "Comp")
+        local version_name = naming(tr_tbl, "Comp", nil, "comp")
         create_button(version_name, tr_tbl.guid, swipe_chunk, cur_comp_id, tr_tbl.data.num) -- CREATE NEW COMP VERRSION
         local FIPM_bar, FIPM_item, ver_cnt = get_fipm_value(tr_tbl) -- PREPARE FOR NEW ITEM IN FIPM
         local set_item_H = reaper.SetMediaItemInfo_Value(swipedItem, "F_FREEMODE_H", FIPM_item) -- SET NEW ITEM HEIGHT
