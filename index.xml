@@ -44,8 +44,8 @@
 ]]></description>
       </metadata>
       <version name="0.0.1" time="2019-02-22T17:56:09Z" author="SeXan">
-        <changelog><![CDATA[+ Initial release of new port code]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/de31261699c85c8e1e0d8169c7ab1d711b395247/Alpha/Sexan_Track_versions_gui.lua</source>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/debc068cf76ebd729475274825c77298dc58485a/Alpha/Sexan_Track_versions_gui.lua</source>
+        <source file="Sexan_Track_versions_core.lua">https://github.com/GoranKovac/ReaScripts/raw/debc068cf76ebd729475274825c77298dc58485a/Alpha/Sexan_Track_versions_core.lua</source>
       </version>
     </reapack>
   </category>
