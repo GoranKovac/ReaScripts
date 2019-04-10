@@ -1,5 +1,4 @@
 local W,H = 5000,5000
-
 local ASbmp = reaper.JS_LICE_CreateBitmap( true, W, H )
 --local ASbmpDC = reaper.JS_LICE_GetDC(ASbmp)
 local combineBmp = reaper.JS_LICE_CreateBitmap( true, W, H )
@@ -72,21 +71,18 @@ local click_start,click_end
 local first_tr,last_tr
 area_tracks = {} -- table for items
 local function mouse_click(click,time,tr,grid)
-  if not tr then return end
   if click == 1 then down = true   
     if not hold then
       click_start = grid or time -- GET TIME WHEN MOUSE IS CLICKED
-      first_tr = tr  -- GET FIRST CLICKED TRACK
       hold = true
     end 
   end
   if down then
     if not has_val(area_tracks, tr) then area_tracks[#area_tracks+1]=tr  -- add track to table if does not exits
     else
-    last_num = has_val(area_tracks, tr) -- get last track
+    local last_num = has_val(area_tracks, tr) -- get last track
     if last_num < #area_tracks then table.remove(area_tracks,#area_tracks) end -- if last track is no longer in table remove it
-    end 
-    last_tr = tr -- GET LAST TRACK WHILE MOUSE DOWN
+    end
     click_end = grid or time -- GET TIME WHILE MOUSE IS DOWN
     
     if click == 0 then 
@@ -169,7 +165,22 @@ local function keys()
   end
 end
 
-function get_items_in_ts(item,s_start,s_end)
+local function split_item(item, time_s, time_e)
+  if not item then return end
+  local s_item_first = reaper.SplitMediaItem( item, time_e )
+  local s_item_last = reaper.SplitMediaItem( item, time_s )
+  if s_item_first and s_item_last then
+    return s_item_last
+  elseif s_item_last and not s_item_first then
+    return s_item_last
+  elseif s_item_first and not s_item_last then
+    return item
+  elseif not s_item_first and not s_item_last then
+    return item
+  end
+end
+
+local function get_items_in_ts(item,s_start,s_end)
   local tsStart, tsEnd = s_start,s_end
   local item_start = reaper.GetMediaItemInfo_Value(item,"D_POSITION")
   local item_len = reaper.GetMediaItemInfo_Value(item,"D_LENGTH")
@@ -181,7 +192,7 @@ function get_items_in_ts(item,s_start,s_end)
   end
 end
 
-function count_items(s_start,s_end,a_tr)
+local function count_items(a_tr)
   local items = {}
   for i = 0, reaper.CountTrackMediaItems( a_tr ) do
     local item = reaper.GetTrackMediaItem( a_tr, i-1 )
@@ -190,9 +201,28 @@ function count_items(s_start,s_end,a_tr)
   return items
 end
 
+local function job(key,c_start,c_end)
+  for i = 1 , #area_tracks do
+    local a_tr = area_tracks[i]
+    local items = count_items(a_tr)
+    for j = 1, #items do
+      local item = items[j]
+      if key == "del" then
+        local as_item = get_items_in_ts(item,c_start,c_end) -- FIND IF THERE ARE ITEMS IN AREA SELECTION
+        local s_item = split_item(as_item, c_start,c_end) -- SPLIT AND RETURN SPLIT ITEM
+        if s_item then reaper.DeleteTrackMediaItem( a_tr, s_item ) end -- DELETE ITEM
+      elseif key == "copy" then
+      
+      elseif key == "paste" then
+      
+      end
+    end
+  end
+  reaper.UpdateArrange()  
+end
+
 local function main()
-  local proj_state = reaper.GetProjectStateChangeCount( 0 )  
-  
+  local proj_state = reaper.GetProjectStateChangeCount( 0 ) 
   local closest_grid
   local window, segment, details = reaper.BR_GetMouseCursorContext()
   local tr = reaper.BR_GetMouseCursorContext_Track()
@@ -211,14 +241,12 @@ local function main()
   local _, scroll, _, _, _ = reaper.JS_Window_GetScrollInfo(track_window, "SB_VERT") -- GET VERTICAL SCROLL
   local _, x_view_start, y_view_start, _, y_view_end = reaper.JS_Window_GetRect(track_window) -- GET TRACK VIEW Y COORDINATES 
   ------------------------------------------------------------------------------------------------------- 
-  if tr then
-    c_start,c_end = mouse_click(m_click,mouse_time_pos,tr,closest_grid) -- GET CLICKED TRACKS, MOUSE TIME RANGE
-  end
+  local c_start,c_end = mouse_click(m_click,mouse_time_pos,tr,closest_grid) -- GET CLICKED TRACKS, MOUSE TIME RANGE
   -------------------------------------------------------------------------------------------------------
-  local tr_y_start,tr_y_end = get_track_y_range(y_view_start,scroll,first_tr)  -- GET CLICKED TRACK Y RANGE (FIRST_TRACK)
-  local last_tr_y_start,last_tr_y_end = get_track_y_range(y_view_start,scroll,last_tr)  -- GET TRACK UNDER MOUSE Y RANGE (LAST_TRACK)
+  local tr_y_start,tr_y_end = get_track_y_range(y_view_start,scroll,area_tracks[1])  -- GET CLICKED TRACK Y RANGE (FIRST_TRACK)
+  local last_tr_y_start,last_tr_y_end = get_track_y_range(y_view_start,scroll,area_tracks[#area_tracks])  -- GET TRACK UNDER MOUSE Y RANGE (LAST_TRACK)
   -------------------------------------------------------------------------------------------------------
-  local mouse_in = get_mouse_y_pos_in_track(last_tr, x_view_start, cur_m_x, cur_m_y, tr_y_start, tr_y_end) -- CHECKS THE MOUSE POSITION IN THE TRACK, RETURNS IF THE MOUSE IS IN UPPER HALF OF THE TRACK 
+  local mouse_in = get_mouse_y_pos_in_track(area_tracks[1], x_view_start, cur_m_x, cur_m_y, tr_y_start, tr_y_end) -- CHECKS THE MOUSE POSITION IN THE TRA 
    ------------------ CURRENT HORRIBLE! WORKAROUND TO MAKE NORMAL BLITTING AND DRAWING
   if last_proj_state ~= proj_state then
     change = true
@@ -230,30 +258,12 @@ local function main()
   --local change = status(c_start,c_end,zoom_lvl,scroll,Arr_start_time,Arr_end_time) -- CHECK IF X,Y,ZOOM ETC CHANGED IN PROJECT (WOULD BE USED FOR DRAWING ONLY WHEN THERE IS A CHANGE IN THE PROJECT)
   
   --if change then reaper.JS_GDI_Blit(ASbmpDC, 0, 0, track_window_dc, 0, 0, 5000, 5000) end -- BLIT HERE ONLY ON CHANGE
-  
-  local area_W,area_H,area_X,area_Y = area_coordinates(c_start, c_end, zoom_lvl, Arr_pixel, last_tr_y_end, tr_y_start ,y_view_start ,last_tr_y_start , tr_y_end) 
-  
-  draw_area_selection(area_X,area_Y,area_W,area_H)
-  press = keys() 
-  if press and area_W then
-    for j = 1 , #area_tracks do
-    local a_tr = area_tracks[j]
-    local items = count_items(s_start,s_end,a_tr)
-      for i = 1, #items do
-        local item = items[i]
-        local item2 = get_items_in_ts(item,c_start,c_end)
-        if item2 then
-          reaper.SplitMediaItem( item2, c_end ) -- FIRST CUT AT END
-          local last_it = reaper.SplitMediaItem( item2, c_start )-- or reaper.SplitMediaItem( item2, c_end ) or item2-- THEN CUT BEGINING, SPLIT ALWAYS SELECT RIGHT SIDED ITEM
-          if last_it then
-          reaper.DeleteTrackMediaItem( a_tr, last_it )
-          end
-        end
-      end
-    end   
-    reaper.UpdateArrange()
+  press = keys()
+  if #area_tracks ~= 0 then
+    local area_W,area_H,area_X,area_Y = area_coordinates(c_start, c_end, zoom_lvl, Arr_pixel, last_tr_y_end, tr_y_start ,y_view_start ,last_tr_y_start , tr_y_end)  
+    draw_area_selection(area_X,area_Y,area_W,area_H) 
+    if press then job("del",c_start,c_end) end
   end
-  
   reaper.defer(main)
 end
 
