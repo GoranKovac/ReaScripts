@@ -1,9 +1,9 @@
------------------------------AREA SEL BITMAP
 local W,H = 5000,5000
 
 local ASbmp = reaper.JS_LICE_CreateBitmap( true, W, H )
+--local ASbmpDC = reaper.JS_LICE_GetDC(ASbmp)
 local combineBmp = reaper.JS_LICE_CreateBitmap( true, W, H )
-local combineBmpDC = reaper.JS_LICE_GetDC(combineBmp )
+--local combineBmpDC = reaper.JS_LICE_GetDC(combineBmp )
 local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
 local mixer_wnd = reaper.JS_Window_Find("mixer", true) -- GET MIXEWR I GUESS
 local track_window = reaper.JS_Window_Find("trackview", true) -- GET TRACK VIEW
@@ -59,9 +59,18 @@ local function get_mouse_y_pos_in_track(tr,xV,mX,mY,tYs,tYe)
   end 
 end
 
+local function has_val(tab, val)
+  for i = 1 , #tab do
+    local in_table = tab[i]
+    if in_table == val then return i end
+  end
+return false
+end
+
 local down,hold
 local click_start,click_end
 local first_tr,last_tr
+area_tracks = {} -- table for items
 local function mouse_click(click,time,tr,grid)
   if not tr then return end
   if click == 1 then down = true   
@@ -71,7 +80,12 @@ local function mouse_click(click,time,tr,grid)
       hold = true
     end 
   end
-  if down then 
+  if down then
+    if not has_val(area_tracks, tr) then area_tracks[#area_tracks+1]=tr  -- add track to table if does not exits
+    else
+    last_num = has_val(area_tracks, tr) -- get last track
+    if last_num < #area_tracks then table.remove(area_tracks,#area_tracks) end -- if last track is no longer in table remove it
+    end 
     last_tr = tr -- GET LAST TRACK WHILE MOUSE DOWN
     click_end = grid or time -- GET TIME WHILE MOUSE IS DOWN
     
@@ -88,6 +102,7 @@ local function mouse_click(click,time,tr,grid)
       return click_start,click_end  -- RETURN NORMAL
     end
   else
+    area_tracks = {}
   end
   
 end
@@ -117,7 +132,7 @@ local function area_coordinates(c_start,c_end,zoom_lvl,Arr_pixel,last_tr_y_end,t
   local xEnd  = to_pixel(c_end,zoom_lvl)
   
   local area_width = xEnd - xStart
-  local area_y_start
+  local area_y_start,area_height
   
   if last_tr_y_start >= tr_y_start then -- EXPAND TO BOTTOM
     area_height = last_tr_y_end - tr_y_start
@@ -146,6 +161,35 @@ local function draw_area_selection(aX,aY,aW,aH)
   --reaper.JS_GDI_Blit(track_window_dc, 0, 0, combineBmpDC, 0, 0, 5000, 5000 )
 end
 
+local del = 0x2E
+local function keys()
+  local OK, state = reaper.JS_VKeys_GetState()
+  if state:byte(del) ~= 0 then
+    return true
+  end
+end
+
+function get_items_in_ts(item,s_start,s_end)
+  local tsStart, tsEnd = s_start,s_end
+  local item_start = reaper.GetMediaItemInfo_Value(item,"D_POSITION")
+  local item_len = reaper.GetMediaItemInfo_Value(item,"D_LENGTH")
+  local item_dur = item_start + item_len
+  if (tsStart >= item_start and tsStart <= item_dur) or -- if time selection start is in item
+     (tsEnd >= item_start and tsEnd <= item_dur) or
+     (tsStart <= item_start and tsEnd >= item_dur)then -- if time selection end is in the item
+    return item
+  end
+end
+
+function count_items(s_start,s_end,a_tr)
+  local items = {}
+  for i = 0, reaper.CountTrackMediaItems( a_tr ) do
+    local item = reaper.GetTrackMediaItem( a_tr, i-1 )
+    items[#items+1]= item
+  end
+  return items
+end
+
 local function main()
   local proj_state = reaper.GetProjectStateChangeCount( 0 )  
   
@@ -171,27 +215,44 @@ local function main()
     c_start,c_end = mouse_click(m_click,mouse_time_pos,tr,closest_grid) -- GET CLICKED TRACKS, MOUSE TIME RANGE
   end
   -------------------------------------------------------------------------------------------------------
-  tr_y_start,tr_y_end = get_track_y_range(y_view_start,scroll,first_tr)  -- GET CLICKED TRACK Y RANGE (FIRST_TRACK)
-  last_tr_y_start,last_tr_y_end = get_track_y_range(y_view_start,scroll,last_tr)  -- GET TRACK UNDER MOUSE Y RANGE (LAST_TRACK)
+  local tr_y_start,tr_y_end = get_track_y_range(y_view_start,scroll,first_tr)  -- GET CLICKED TRACK Y RANGE (FIRST_TRACK)
+  local last_tr_y_start,last_tr_y_end = get_track_y_range(y_view_start,scroll,last_tr)  -- GET TRACK UNDER MOUSE Y RANGE (LAST_TRACK)
   -------------------------------------------------------------------------------------------------------
   local mouse_in = get_mouse_y_pos_in_track(last_tr, x_view_start, cur_m_x, cur_m_y, tr_y_start, tr_y_end) -- CHECKS THE MOUSE POSITION IN THE TRACK, RETURNS IF THE MOUSE IS IN UPPER HALF OF THE TRACK 
-  
-  ------------------ CURRENT HORRIBLE! WORKAROUND TO MAKE NORMAL BLITTING AND DRAWING
+   ------------------ CURRENT HORRIBLE! WORKAROUND TO MAKE NORMAL BLITTING AND DRAWING
   if last_proj_state ~= proj_state then
     change = true
     last_proj_state = proj_state
   else
     change = nil
   end
-   -----------------------------------
   
   --local change = status(c_start,c_end,zoom_lvl,scroll,Arr_start_time,Arr_end_time) -- CHECK IF X,Y,ZOOM ETC CHANGED IN PROJECT (WOULD BE USED FOR DRAWING ONLY WHEN THERE IS A CHANGE IN THE PROJECT)
   
   --if change then reaper.JS_GDI_Blit(ASbmpDC, 0, 0, track_window_dc, 0, 0, 5000, 5000) end -- BLIT HERE ONLY ON CHANGE
   
-  area_W,area_H,area_X,area_Y = area_coordinates(c_start, c_end, zoom_lvl, Arr_pixel, last_tr_y_end, tr_y_start ,y_view_start ,last_tr_y_start , tr_y_end) 
+  local area_W,area_H,area_X,area_Y = area_coordinates(c_start, c_end, zoom_lvl, Arr_pixel, last_tr_y_end, tr_y_start ,y_view_start ,last_tr_y_start , tr_y_end) 
   
-  draw_area_selection(area_X,area_Y,area_W,area_H) 
+  draw_area_selection(area_X,area_Y,area_W,area_H)
+  press = keys() 
+  if press and area_W then
+    for j = 1 , #area_tracks do
+    local a_tr = area_tracks[j]
+    local items = count_items(s_start,s_end,a_tr)
+      for i = 1, #items do
+        local item = items[i]
+        local item2 = get_items_in_ts(item,c_start,c_end)
+        if item2 then
+          reaper.SplitMediaItem( item2, c_end ) -- FIRST CUT AT END
+          local last_it = reaper.SplitMediaItem( item2, c_start )-- or reaper.SplitMediaItem( item2, c_end ) or item2-- THEN CUT BEGINING, SPLIT ALWAYS SELECT RIGHT SIDED ITEM
+          if last_it then
+          reaper.DeleteTrackMediaItem( a_tr, last_it )
+          end
+        end
+      end
+    end   
+    reaper.UpdateArrange()
+  end
   
   reaper.defer(main)
 end
@@ -211,5 +272,5 @@ end
 
 reaper.atexit(exit)
 
-cOK = reaper.JS_Composite(track_window, 0, 0, W, H, combineBmp, 0, 0, W, H)
+local cOK = reaper.JS_Composite(track_window, 0, 0, W, H, combineBmp, 0, 0, W, H)
 main()
