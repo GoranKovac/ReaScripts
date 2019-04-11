@@ -69,7 +69,7 @@ end
 local down,hold
 local click_start,click_end
 local first_tr,last_tr
-area_tracks = {} -- table for items
+area_tracks = {} -- TABLE FOR AS TRACKS
 local function mouse_click(click,time,tr,grid)
   if click == 1 then down = true   
     if not hold then
@@ -87,7 +87,6 @@ local function mouse_click(click,time,tr,grid)
     
     if click == 0 then 
       down,hold = nil
-      change = false
     end
   end 
   
@@ -105,19 +104,18 @@ end
 
 local prev_start,prev_end,prev_scroll
 local prev_Arr_start_time,prev_Arr_end_time = reaper.GetSet_ArrangeView2( 0, false,0,0)
-local prev_lvl = reaper.GetHZoomLevel()
+local prev_proj_state = reaper.GetProjectStateChangeCount( 0 )
 
-local function status(c_start,c_end,zoom_lvl,scroll,Arr_start_time,Arr_end_time)
-  local proj_state = reaper.GetProjectStateChangeCount( 0 )  
-  if c_start ~= prev_start or 
-    c_end ~= prev_end or 
-    zoom_lvl ~= prev_lvl or 
-    scroll ~= prev_scroll or 
-    Arr_start_time ~= prev_Arr_start_time or 
-    Arr_end_time ~= prev_Arr_end_time or
-    last_proj_state ~= proj_state
-    then 
-    prev_start, prev_end, prev_lvl, prev_scroll, prev_Arr_start_time, prev_Arr_end_time, last_proj_state = c_start, c_end, zoom_lvl, scroll, Arr_start_time, Arr_end_time, proj_state 
+local function status(c_end,Arr_start_time,Arr_end_time)
+  local proj_state = reaper.GetProjectStateChangeCount( 0 )
+  if prev_Arr_start_time ~= Arr_start_time or prev_Arr_end_time ~= Arr_end_time  then
+    prev_Arr_start_time,prev_Arr_end_time = Arr_start_time,Arr_end_time
+    return true
+  elseif prev_end ~= c_end then 
+    prev_end = c_end 
+    return true
+  elseif prev_proj_state ~= proj_state then
+    prev_proj_state = proj_state
     return true
   end 
 end
@@ -176,7 +174,7 @@ local function split_item(item, time_s, time_e)
   elseif s_item_first and not s_item_last then
     return item
   elseif not s_item_first and not s_item_last then
-    return item
+    -- return item -- BREAKS DELETING, NEED TO FIX IT (GETS MULTILPLE ITEMS)
   end
 end
 
@@ -248,22 +246,19 @@ local function main()
   -------------------------------------------------------------------------------------------------------
   local mouse_in = get_mouse_y_pos_in_track(area_tracks[1], x_view_start, cur_m_x, cur_m_y, tr_y_start, tr_y_end) -- CHECKS THE MOUSE POSITION IN THE TRA 
    ------------------ CURRENT HORRIBLE! WORKAROUND TO MAKE NORMAL BLITTING AND DRAWING
-  if last_proj_state ~= proj_state then
-    change = true
-    last_proj_state = proj_state
-  else
-    change = nil
-  end
   
-  --local change = status(c_start,c_end,zoom_lvl,scroll,Arr_start_time,Arr_end_time) -- CHECK IF X,Y,ZOOM ETC CHANGED IN PROJECT (WOULD BE USED FOR DRAWING ONLY WHEN THERE IS A CHANGE IN THE PROJECT)
-  
+  draw = status(c_end,Arr_start_time,Arr_end_time) -- CHECK IF X,Y,ARRANGE VIEW ETC CHANGED IN PROJECT (WOULD BE USED FOR DRAWING ONLY WHEN THERE IS A CHANGE IN THE PROJECT)
+   
   --if change then reaper.JS_GDI_Blit(ASbmpDC, 0, 0, track_window_dc, 0, 0, 5000, 5000) end -- BLIT HERE ONLY ON CHANGE
-  press = keys()
-  if #area_tracks ~= 0 then
-    local area_W,area_H,area_X,area_Y = area_coordinates(c_start, c_end, zoom_lvl, Arr_pixel, last_tr_y_end, tr_y_start ,y_view_start ,last_tr_y_start , tr_y_end)  
-    draw_area_selection(area_X,area_Y,area_W,area_H) 
-    if press then job("del",c_start,c_end) end
+  local press = keys()
+  
+  local area_W,area_H,area_X,area_Y = area_coordinates(c_start, c_end, zoom_lvl, Arr_pixel, last_tr_y_end, tr_y_start ,y_view_start ,last_tr_y_start , tr_y_end)  
+  
+  if #area_tracks ~= 0 and draw then
+    draw_area_selection(area_X,area_Y,area_W,area_H)
   end
+  
+  if press then job("del",c_start,c_end) end
   reaper.defer(main)
 end
 
