@@ -245,8 +245,7 @@ local function main()
   local last_tr_y_start,last_tr_y_end = get_track_y_range(y_view_start,scroll,area_tracks[#area_tracks])  -- GET TRACK UNDER MOUSE Y RANGE (LAST_TRACK)
   -------------------------------------------------------------------------------------------------------
   local mouse_in = get_mouse_y_pos_in_track(area_tracks[1], x_view_start, cur_m_x, cur_m_y, tr_y_start, tr_y_end) -- CHECKS THE MOUSE POSITION IN THE TRA 
-   ------------------ CURRENT HORRIBLE! WORKAROUND TO MAKE NORMAL BLITTING AND DRAWING
-  
+    
   draw = status(c_start, c_end,Arr_start_time,Arr_end_time) -- CHECK IF X,Y,ARRANGE VIEW ETC CHANGED IN PROJECT (WOULD BE USED FOR DRAWING ONLY WHEN THERE IS A CHANGE IN THE PROJECT)
   
   if draw then
