@@ -106,13 +106,13 @@ local prev_start,prev_end,prev_scroll
 local prev_Arr_start_time,prev_Arr_end_time = reaper.GetSet_ArrangeView2( 0, false,0,0)
 local prev_proj_state = reaper.GetProjectStateChangeCount( 0 )
 
-local function status(c_end,Arr_start_time,Arr_end_time)
+local function status(c_start,c_end,Arr_start_time,Arr_end_time)
   local proj_state = reaper.GetProjectStateChangeCount( 0 )
   if prev_Arr_start_time ~= Arr_start_time or prev_Arr_end_time ~= Arr_end_time  then
     prev_Arr_start_time,prev_Arr_end_time = Arr_start_time,Arr_end_time
     return true
-  elseif prev_end ~= c_end then 
-    prev_end = c_end 
+  elseif prev_end ~= c_end or prev_start ~= c_start then 
+    prev_start, prev_end = c_start, c_end 
     return true
   elseif prev_proj_state ~= proj_state then
     prev_proj_state = proj_state
@@ -247,9 +247,12 @@ local function main()
   local mouse_in = get_mouse_y_pos_in_track(area_tracks[1], x_view_start, cur_m_x, cur_m_y, tr_y_start, tr_y_end) -- CHECKS THE MOUSE POSITION IN THE TRA 
    ------------------ CURRENT HORRIBLE! WORKAROUND TO MAKE NORMAL BLITTING AND DRAWING
   
-  draw = status(c_end,Arr_start_time,Arr_end_time) -- CHECK IF X,Y,ARRANGE VIEW ETC CHANGED IN PROJECT (WOULD BE USED FOR DRAWING ONLY WHEN THERE IS A CHANGE IN THE PROJECT)
-   
-  --if change then reaper.JS_GDI_Blit(ASbmpDC, 0, 0, track_window_dc, 0, 0, 5000, 5000) end -- BLIT HERE ONLY ON CHANGE
+  draw = status(c_start, c_end,Arr_start_time,Arr_end_time) -- CHECK IF X,Y,ARRANGE VIEW ETC CHANGED IN PROJECT (WOULD BE USED FOR DRAWING ONLY WHEN THERE IS A CHANGE IN THE PROJECT)
+  
+  if draw then
+    -- BLIT SOMETHING HERE ?
+  end
+    --if draw then reaper.JS_GDI_Blit(ASbmpDC, 0, 0, track_window_dc, 0, 0, 5000, 5000) end -- BLIT HERE ONLY ON CHANGE
   local press = keys()
   
   local area_W,area_H,area_X,area_Y = area_coordinates(c_start, c_end, zoom_lvl, Arr_pixel, last_tr_y_end, tr_y_start ,y_view_start ,last_tr_y_start , tr_y_end)  
