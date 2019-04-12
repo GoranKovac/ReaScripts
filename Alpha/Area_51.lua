@@ -1,8 +1,7 @@
 local W,H = 5000,5000
-local ASbmp = reaper.JS_LICE_CreateBitmap( true, W, H )
---local ASbmpDC = reaper.JS_LICE_GetDC(ASbmp)
+local bm = reaper.JS_LICE_CreateBitmap(true, 1, 1)
+reaper.JS_LICE_Clear(bm, 0x77AA0000)
 local combineBmp = reaper.JS_LICE_CreateBitmap( true, W, H )
---local combineBmpDC = reaper.JS_LICE_GetDC(combineBmp )
 local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
 local mixer_wnd = reaper.JS_Window_Find("mixer", true) -- GET MIXEWR I GUESS
 local track_window = reaper.JS_Window_Find("trackview", true) -- GET TRACK VIEW
@@ -143,23 +142,31 @@ local function area_coordinates(c_start,c_end,zoom_lvl,Arr_pixel,last_tr_y_end,t
 end
 
 local function draw_area_selection(aX,aY,aW,aH)
-  if not aW then return end
-  reaper.JS_LICE_Clear(combineBmp, 0)
-  reaper.JS_LICE_Blit(combineBmp, 0, 0, ASbmp, 0, 0, 5000, 5000, 1, "COPY" ) 
-  reaper.JS_LICE_FillRect(combineBmp, aX,aY,aW,aH, 0xFF0000, 0.5, "COPY")
+  reaper.JS_Composite(track_window, aX, aY, aW, aH, bm, 0, 0, 1, 1)
   reaper.JS_Window_InvalidateRect(track_window, 0, 0, W, H, true)
-  
-  -- OLD API CODE
-  --reaper.JS_LICE_Blit(combineBmp, 0, 0, ASbmp, 0, 0, 5000, 5000, 1, "COPY")
-  --reaper.JS_LICE_FillRect(combineBmp, aX,aY,W,H, 0xFF0000, 0.5, "COPY")
-  --reaper.JS_GDI_Blit(track_window_dc, 0, 0, combineBmpDC, 0, 0, 5000, 5000 )
 end
 
-local del = 0x2E
-local function keys()
+local test_keys = { {0x2E, "del", false}, {0x31, "copy", false,false,true}, {0x32, "paste", false}}
+
+local function keys(c_start,c_end) 
   local OK, state = reaper.JS_VKeys_GetState()
-  if state:byte(del) ~= 0 then
-    return true
+  for i = 1, #test_keys do
+    if state:byte(test_keys[i][1]) ~= 0 then
+      local up_time = reaper.time_precise()
+      if not test_keys[i][3] then test_keys[i][3] = true --end -- press
+        job(test_keys[i][2],c_start,c_end)
+        test_keys[i][3] = true
+      end
+      if test_keys[i][5] then test_keys[i][5] = false down_time = reaper.time_precise() end -- release
+      if test_keys[i][5] == false then 
+        local hold_time = up_time - down_time
+        if hold_time > 0.2 then test_keys[i][4] = true end
+      end -- hold
+    else
+      test_keys[i][3] = false
+      test_keys[i][4] = false
+      test_keys[i][5] = true
+    end
   end
 end
 
@@ -174,7 +181,7 @@ local function split_item(item, time_s, time_e)
   elseif s_item_first and not s_item_last then
     return item
   elseif not s_item_first and not s_item_last then
-    -- return item -- BREAKS DELETING, NEED TO FIX IT (GETS MULTILPLE ITEMS)
+    return item
   end
 end
 
@@ -247,33 +254,28 @@ local function main()
   local mouse_in = get_mouse_y_pos_in_track(area_tracks[1], x_view_start, cur_m_x, cur_m_y, tr_y_start, tr_y_end) -- CHECKS THE MOUSE POSITION IN THE TRA 
     
   draw = status(c_start, c_end,Arr_start_time,Arr_end_time) -- CHECK IF X,Y,ARRANGE VIEW ETC CHANGED IN PROJECT (WOULD BE USED FOR DRAWING ONLY WHEN THERE IS A CHANGE IN THE PROJECT)
-  
-  if draw then
-    -- BLIT SOMETHING HERE ?
-  end
-    --if draw then reaper.JS_GDI_Blit(ASbmpDC, 0, 0, track_window_dc, 0, 0, 5000, 5000) end -- BLIT HERE ONLY ON CHANGE
-  local press = keys()
+    
+  keys(c_start,c_end)
   
   local area_W,area_H,area_X,area_Y = area_coordinates(c_start, c_end, zoom_lvl, Arr_pixel, last_tr_y_end, tr_y_start ,y_view_start ,last_tr_y_start , tr_y_end)  
   
   if #area_tracks ~= 0 and draw then
     draw_area_selection(area_X,area_Y,area_W,area_H)
   end
-  
-  if press then job("del",c_start,c_end) end
+    
   reaper.defer(main)
 end
 
 function exit()
-    reaper.JS_Composite_Unlink(track_window, combineBmp)
+    reaper.JS_Composite_Unlink(track_window,bm)
     -- The extension will automatically unlink any destroyed bitmap,
     --    and will destroy any remaining bitmap when REAPER quits,
     --    so there shouldn't be memory leaks.
-    reaper.JS_LICE_DestroyBitmap(ASbmp) 
-    reaper.JS_LICE_DestroyBitmap(combineBmp)
+    reaper.JS_LICE_DestroyBitmap(bm) 
+    --reaper.JS_LICE_DestroyBitmap(combineBmp)
     -- Re-paint to clear the window
     if reaper.ValidatePtr(track_window, "HWND") then 
-        reaper.JS_Window_InvalidateRect(track_window, 0, 0, W, H, true) 
+      reaper.JS_Window_InvalidateRect(track_window, 0, 0, W, H, true) 
     end
 end
 
