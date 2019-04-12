@@ -1,7 +1,7 @@
 local W,H = 5000,5000
 local bm = reaper.JS_LICE_CreateBitmap(true, 1, 1)
 reaper.JS_LICE_Clear(bm, 0x77AA0000)
-local combineBmp = reaper.JS_LICE_CreateBitmap( true, W, H )
+local combineBmp = reaper.JS_LICE_CreateBitmap( true, 1, 1 )
 local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
 local mixer_wnd = reaper.JS_Window_Find("mixer", true) -- GET MIXEWR I GUESS
 local track_window = reaper.JS_Window_Find("trackview", true) -- GET TRACK VIEW
@@ -146,30 +146,6 @@ local function draw_area_selection(aX,aY,aW,aH)
   reaper.JS_Window_InvalidateRect(track_window, 0, 0, W, H, true)
 end
 
-local test_keys = { {0x2E, "del", false}, {0x31, "copy", false,false,true}, {0x32, "paste", false}}
-
-local function keys(c_start,c_end) 
-  local OK, state = reaper.JS_VKeys_GetState()
-  for i = 1, #test_keys do
-    if state:byte(test_keys[i][1]) ~= 0 then
-      local up_time = reaper.time_precise()
-      if not test_keys[i][3] then test_keys[i][3] = true --end -- press
-        job(test_keys[i][2],c_start,c_end)
-        test_keys[i][3] = true
-      end
-      if test_keys[i][5] then test_keys[i][5] = false down_time = reaper.time_precise() end -- release
-      if test_keys[i][5] == false then 
-        local hold_time = up_time - down_time
-        if hold_time > 0.2 then test_keys[i][4] = true end
-      end -- hold
-    else
-      test_keys[i][3] = false
-      test_keys[i][4] = false
-      test_keys[i][5] = true
-    end
-  end
-end
-
 local function split_item(item, time_s, time_e)
   if not item then return end
   local s_item_first = reaper.SplitMediaItem( item, time_e )
@@ -206,24 +182,47 @@ local function count_items(a_tr)
   return items
 end
 
-local function job(key,c_start,c_end)
+local function job(key,c_start,c_end) 
   for i = 1 , #area_tracks do
     local a_tr = area_tracks[i]
-    local items = count_items(a_tr)
-    for j = 1, #items do
-      local item = items[j]
-      if key == "del" then
+    if key == "del" then
+      
+      local items = count_items(a_tr)
+      for j = 1, #items do
+        local item = items[j]
         local as_item = get_items_in_ts(item,c_start,c_end) -- FIND IF THERE ARE ITEMS IN AREA SELECTION
         local s_item = split_item(as_item, c_start,c_end) -- SPLIT AND RETURN SPLIT ITEM
         if s_item then reaper.DeleteTrackMediaItem( a_tr, s_item ) end -- DELETE ITEM
-      elseif key == "copy" then
-      
-      elseif key == "paste" then
-      
       end
+    elseif key == "copy" then
+    elseif key == "paste" then
     end
   end
   reaper.UpdateArrange()  
+end
+
+local test_keys = { {0x2E, "del", false}, {0x31, "copy", false,false,true}, {0x32, "paste", false}}
+
+local function keys(c_start,c_end) 
+  local OK, state = reaper.JS_VKeys_GetState()
+  for i = 1, #test_keys do
+    if state:byte(test_keys[i][1]) ~= 0 then
+      local up_time = reaper.time_precise()
+      if not test_keys[i][3] then test_keys[i][3] = true --end -- press
+        job(test_keys[i][2],c_start,c_end)
+        test_keys[i][3] = true
+      end
+      if test_keys[i][5] then test_keys[i][5] = false down_time = reaper.time_precise() end -- release
+      if test_keys[i][5] == false then 
+        local hold_time = up_time - down_time
+        if hold_time > 0.2 then test_keys[i][4] = true end
+      end -- hold
+    else
+      test_keys[i][3] = false
+      test_keys[i][4] = false
+      test_keys[i][5] = true
+    end
+  end
 end
 
 local function main()
