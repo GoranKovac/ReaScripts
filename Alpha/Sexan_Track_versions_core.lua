@@ -1,7 +1,8 @@
 -- NoIndex: true
 
 TrackTB = {}
-track_window = reaper.JS_Window_Find("trackview", true) -- GET TRACK VIEW
+--track_window = reaper.JS_Window_Find("trackview", true) -- GET TRACK VIEW
+track_window = reaper.JS_Window_FindChildByID(reaper.GetMainHwnd(), 0x3E8) -- all platforms (win,osx...)
 track_window_dc = reaper.JS_GDI_GetWindowDC(track_window)
 main_wnd = reaper.GetMainHwnd() -- MAIN WINDOW
 mixer_wnd = reaper.JS_Window_Find("mixer", true) -- mixer
@@ -248,6 +249,7 @@ function priority(guid)
   local tr_group
   local test = {}
   -- GET ALL GROUP WHICH CONTAINS SELECTED TRACK
+  if not TrackTB.groups then return end
   for i = 1, #TrackTB.groups do
     if has_undo(TrackTB.groups[i], guid) then
       test[#test + 1] = {group = i, num = has_undo(TrackTB.groups[i], guid)}
@@ -516,18 +518,18 @@ function get_track_y_range(y_view_start, scroll, cur_tr)
   return y_start, y_end -- RETURN SELECTED TRACKS Y START & END
 end
 --------------------------------------
----  Function GET SELECTED TRACKS  ---
+---  Function GET SELECTED TRACKS  ---      NEED TO FIX MULTISELECTION (breakes folders)
 --------------------------------------
 function get_tracks()
   local sel_tr_count, tracks = reaper.CountSelectedTracks(0), {}
   for i = 1, sel_tr_count do
     local tr = reaper.GetSelectedTrack(0, i - 1)
     local tr_guid = reaper.GetTrackGUID(tr)
-    if get_folder(tr) then
-      tracks = get_folder(tr) -- FOLDER
-    else
+   -- if get_folder(tr) then
+      --tracks = get_folder(tr) -- FOLDER
+   -- else
       tracks[#tracks + 1] = tr_guid -- SINGLE TRACK OR SELECTED TRACKS
-    end
+   -- end
   end
   return tracks
 end
@@ -579,6 +581,7 @@ end
 ---  Function FIND ID  ---
 --------------------------
 function has_id(tab, val)
+  if not tab then return end
   for i = 1, #tab.data do
     local in_table = tab.data[i].ver_id
     if in_table == val then
@@ -649,7 +652,7 @@ function delete_from_table(tbl, val, guid, tab, cur_env)
       local child = find_guid(tbl[val].chunk[i]) -- GET CHILD TABLE
       if has_id(child, id) then -- IF IDs MATCH
         local child_num = has_id(child, id)
-        delete_from_table(child, child_num) -- SEND AGAIN TO DELETE TRACK (CHILD)
+        delete_from_table(child.data, child_num, child.guid) -- SEND AGAIN TO DELETE TRACK (CHILD)
       end
     end
     table.remove(tbl, val) -- FEMOVE FOLDER
@@ -692,7 +695,7 @@ function delete_from_table(tbl, val, guid, tab, cur_env)
   if check_for_emtpy_table(cur_tbl) == 0 then
     table.remove(TrackTB, num)
   end -- DELETE CURRENT TABLE ONLY IF THERE IS NO DATA INSIDE (ONLY GUID LEFT)
-  save_tracks()
+  save_tracks() 
 end
 -----------------------------------------------------
 ---  Function GET ITEM LANE FROM ITEM SELECTION   ---
@@ -940,7 +943,6 @@ local function new_empty(guid)
       return
     end
     child.data.num = #child.data
-    --child.data.num,child.data.fipm = #child.data, 0
     reaper.SetMediaTrackInfo_Value(reaper.BR_GetMediaTrackByGUID(0, childs[i]), "B_FREEMODE", 0) -- disable FIPM
   end
 end
@@ -1268,12 +1270,12 @@ function create_folder(tr, version_name, ver_id)
   if reaper.GetMediaTrackInfo_Value(tr, "I_FOLDERDEPTH") ~= 1 then
     return
   end
-  local trim_name = string.sub(version_name, 5) -- exclue "F -" from main folder
+  --local trim_name = string.sub(version_name, 5) -- exclue "F -" from main folder
   local childs = get_folder(tr)
   for i = 1, #childs do
-    create_child = create_track(reaper.BR_GetMediaTrackByGUID(0, childs[i]), version_name, ver_id) -- create childs
+    create_child = create_track(reaper.BR_GetMediaTrackByGUID(0, childs[i]), "F - " .. version_name, ver_id) -- create childs
   end
-  create_track(tr, trim_name, ver_id) -- create FOLDER only if childs have item chunk (note "empty")
+  create_track(tr, version_name, ver_id) -- create FOLDER only if childs have item chunk (note "empty")
 end
 -----------------------------------------------------
 ---  Function Create Button from TRACK SELECTION  ---
@@ -1306,9 +1308,9 @@ function on_click_function(button, name, tab, duplicate)
     if not version_name then
       return
     end
-    if reaper.GetMediaTrackInfo_Value(tr, "I_FOLDERDEPTH") == 1 then
-      version_name = "F - " .. version_name
-    end
+    --if reaper.GetMediaTrackInfo_Value(tr, "I_FOLDERDEPTH") == 1 then
+    --  version_name = "F - " .. version_name
+    --end
     button(tr, version_name, reaper.genGuid(), "track") -- "track" to exclued creating folder chunk in gettrackitems function (would result a crash
     if #find_guid(guid).data == 1 then -- MAKE 2 VERSION ON START (IF TRACK HAS NO VERSIONS)
       if name == "V" then
@@ -1402,9 +1404,9 @@ function restoreTrackItems(track, num)
     if reaper.BR_GetMediaTrackByGUID(0, track_items_table[i]) then -- FOLDER (ITS CHUNKS ARE TRACK GUIDS (CHILDS)
       track_tb.data.num = num -- check parent version --
       local child = find_guid(track_items_table[i]) -- get child
-      if has_id(child, track_tb.data[track_tb.data.num].ver_id) then -- SET ONLY CHILDS THAT HAVE SAME VER_ID AS FOLDER
+      if has_id(child, track_tb.data[track_tb.data.num].ver_id) then -- SET ONLY CHILDS THAT HAVE SAME VER_ID AS FOLDER 
         local pointer = has_id(child, track_tb.data[track_tb.data.num].ver_id)
-        child.data.num, child.data.dest = pointer, track_tb.data.dest -- FOLLOW PARENT NUM AND DEST (MAYBE FIRST ONE IS NOT NECCESARY SINCE WE ARE SETING IT BELOW AGAIN)
+        child.data.num, child.data.dest = pointer, track_tb.data.dest -- FOLLOW PARENT NUM AND DEST (MAYBE FIRST ONE IS NOT NECCESARY SINCE WE ARE SETING IT BELOW AGAIN) 
         restoreTrackItems(track_items_table[i], pointer) -- SEND INDIVIDUAL CHILDS TO SAME FUNCTION
       end
     else
@@ -1701,7 +1703,7 @@ function auto_save(last_action, current, guid, mousepos)
           return
         end -- IF TRACK HAS NO DATA DO NOTHING
         local _, _, _, fipm = get_track_info(track.guid)
-        if last_action:find("change media item selection") then
+        if last_action:find("change media item selection") or last_action:find("change track selection") then
           return
         end -- DO NOT SAVE DATA IF WE ARE ONLY CHANGING ITEM SELECTION
         if fipm == 0 then -- if multi view is disable
