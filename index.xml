@@ -1,38 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="0f223b263354314391b385f9016d738d1e71dc2f" name="Sexan_Scripts">
+<index version="1" commit="8c5887bcec370b945e0b0d640a25e3988297c7b5" name="Sexan_Scripts">
   <category name="Alpha">
-    <reapack name="OLD_Sexan_Track versions.lua" type="script" desc="Track versions.lua">
-      <metadata>
-        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
-{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
-\widowctrl\hyphauto
-
-{\pard \ql \f0 \sa180 \li0 \fi0 Protools style playlist, track versions (Cubase)\par}
-}
-]]></description>
-      </metadata>
-      <version name="0.67" author="SeXan" time="2019-02-22T17:57:07Z">
-        <changelog><![CDATA[+ Added time selection version (can be created only if version exist)
-+ fixed crash when deleting version after empty is clicked]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/a847d26be5b6fede75b2d00939ffc3822f113136/Alpha/OLD_Sexan_Track%20versions.lua</source>
-      </version>
-    </reapack>
-    <reapack name="OLD_Sexan_TrackVersionWIP.lua" type="script" desc="TrackVersionsWIP.lua">
-      <metadata>
-        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
-{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
-\widowctrl\hyphauto
-
-{\pard \ql \f0 \sa180 \li0 \fi0 Protools style playlist, track versions (Cubase)\par}
-}
-]]></description>
-      </metadata>
-      <version name="0.17" author="SeXan" time="2019-02-22T17:57:07Z">
-        <changelog><![CDATA[+ Recoded some parts of FIPM to work without removing all items on track
-+ Fixed data incorect store when switching project tabs or opening different projects]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/a847d26be5b6fede75b2d00939ffc3822f113136/Alpha/OLD_Sexan_TrackVersionWIP.lua</source>
-      </version>
-    </reapack>
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
@@ -51,6 +19,11 @@
         <changelog><![CDATA[Fixed comp versions wrongly named MAIN instead of CompX]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/0f223b263354314391b385f9016d738d1e71dc2f/Alpha/Sexan_Track_versions_gui.lua</source>
         <source file="Sexan_Track_versions_core.lua">https://github.com/GoranKovac/ReaScripts/raw/0f223b263354314391b385f9016d738d1e71dc2f/Alpha/Sexan_Track_versions_core.lua</source>
+      </version>
+      <version name="0.0.3" author="SeXan" time="2019-04-14T08:36:42Z">
+        <changelog><![CDATA[Fixed folder crashing,improved folder behavior,fixed OSX window issue]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/8c5887bcec370b945e0b0d640a25e3988297c7b5/Alpha/Sexan_Track_versions_gui.lua</source>
+        <source file="Sexan_Track_versions_core.lua">https://github.com/GoranKovac/ReaScripts/raw/8c5887bcec370b945e0b0d640a25e3988297c7b5/Alpha/Sexan_Track_versions_core.lua</source>
       </version>
     </reapack>
   </category>
