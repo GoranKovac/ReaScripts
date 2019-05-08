@@ -1,13 +1,13 @@
 package.path = debug.getinfo(1,"S").source:match[[^@?(.*[\/])[^\/]-$]] .."?.lua;" -- GET DIRECTORY FOR REQUIRE
 require("Area_51_Functions") -- AREA FUNCTIONS SCRIPT
 local Areas = {}
+local active_as
 local W,H = 5000,5000
 local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
 local track_window = reaper.JS_Window_FindChildByID(main_wnd, 1000) -- GET TRACK VIEW
 local mixer_wnd = reaper.JS_Window_Find("mixer", true) -- GET MIXER -- tHIS NEEDS TO BE CONVERTED TO ID , AND I STILL DO NOT KNOW HOW TO FIND THEM
 
-
-
+local A
 local function test()
   local a = reaper.new_array({}, 1000)
   A = {}
@@ -19,7 +19,6 @@ local function test()
     local vis = reaper.JS_Window_IsVisible(handl)
     if reaper.JS_Window_GetParent(reaper.JS_Window_GetParent(handl)) ~= mixer_wnd then --and vis then
       if reaper.ValidatePtr(track, "MediaTrack*") or reaper.ValidatePtr(track, "TrackEnvelope*") then
-        --local GUID = reaper.GetTrackGUID( track )
         local _, _, top, _, bottom = reaper.JS_Window_GetClientRect(handl)
         A[tostring(track)] = {t = top, b = bottom, h = bottom - top}
       end
@@ -27,35 +26,51 @@ local function test()
   end
 end
 
-local function GetTrackFromRange(y_t, y_b) -- GET ALL TRACKS IN MOUSE RANGE
-  local range_tracks = {} -- TABLE FOR TRACKS IN RANGE
-  local trackview_window
-  local _, _, arr_top = reaper.JS_Window_GetRect(track_window)
-  local window = reaper.JS_Window_GetRelated(track_window, "NEXT")
-  while window do
-    local _, _, top = reaper.JS_Window_GetRect(window)
-    if top == arr_top then trackview_window = reaper.JS_Window_GetRelated(window, "CHILD") end
-    window = reaper.JS_Window_GetRelated(window, "NEXT")
-  end 
-    -- loop over track and envelope windows 
-  local window = reaper.JS_Window_GetRelated(trackview_window, "CHILD")
-  while window do
-    if reaper.JS_Window_IsVisible(window) then
-      -- windows visible in arrange view only
-      local _, _, top, _, bottom = reaper.JS_Window_GetRect(window)
-      if top >= y_t and bottom <= y_b then -- IF TRACK IS IN THE MOUSE ZONE RANGE 
-        local pointer = reaper.JS_Window_GetLongPtr(window, "USERDATA")
-        if reaper.ValidatePtr(pointer, "MediaTrack*") then
-          if not has_val(range_tracks, pointer) then range_tracks[#range_tracks+1] = pointer end -- ADD TRACKS TO TABLE IF THEY ARE NOT ALREADY THERE
-        elseif  reaper.ValidatePtr(pointer, "TrackEnvelope*") then
-          --local retval, index, index2 = reaper.Envelope_GetParentTrack(pointer) -- GET PARENT TRACK OF ENVELOPE
-          if not has_val(range_tracks, pointer) then range_tracks[#range_tracks+1] = pointer end
-        end
-      end
+local function new_GetTrackFromRange(y_t, y_b)
+  local range_tracks = {}
+  for k , v in pairs(A) do
+    if v.t >= y_t and v.b <= y_b then
+      range_tracks[#range_tracks+1] = k
     end
-  window = reaper.JS_Window_GetRelated(window, "NEXT") --> window or nil
   end
   return range_tracks
+end
+
+local l_r_s,l_r_e
+A1 = 0
+local function GetTrackFromRange(y_t, y_b) -- GET ALL TRACKS IN MOUSE RANGE
+  if l_r_s ~= y_t or l_r_e ~= y_b then
+    local range_tracks = {} -- TABLE FOR TRACKS IN RANGE
+    local trackview_window
+    local _, _, arr_top = reaper.JS_Window_GetRect(track_window)
+    local window = reaper.JS_Window_GetRelated(track_window, "NEXT")
+    while window do
+      local _, _, top = reaper.JS_Window_GetRect(window)
+      if top == arr_top then trackview_window = reaper.JS_Window_GetRelated(window, "CHILD") end
+      window = reaper.JS_Window_GetRelated(window, "NEXT")
+    end 
+      -- loop over track and envelope windows 
+    local window = reaper.JS_Window_GetRelated(trackview_window, "CHILD")
+    while window do
+      A1 = A1 + 1
+      if reaper.JS_Window_IsVisible(window) then
+        -- windows visible in arrange view only
+        local _, _, top, _, bottom = reaper.JS_Window_GetRect(window)
+        if top >= y_t and bottom <= y_b then -- IF TRACK IS IN THE MOUSE ZONE RANGE 
+          local pointer = reaper.JS_Window_GetLongPtr(window, "USERDATA")
+          if reaper.ValidatePtr(pointer, "MediaTrack*") then
+            if not has_val(range_tracks, pointer) then range_tracks[#range_tracks+1] = pointer end -- ADD TRACKS TO TABLE IF THEY ARE NOT ALREADY THERE
+          elseif  reaper.ValidatePtr(pointer, "TrackEnvelope*") then
+            --local retval, index, index2 = reaper.Envelope_GetParentTrack(pointer) -- GET PARENT TRACK OF ENVELOPE
+            if not has_val(range_tracks, pointer) then range_tracks[#range_tracks+1] = pointer end
+          end
+        end
+      end
+    window = reaper.JS_Window_GetRelated(window, "NEXT") --> window or nil
+    end
+    l_r_s,l_r_e = y_t, y_b
+    return range_tracks 
+  end
 end
 
 local function GetTrackFromPoint() --> Track, segment
@@ -100,29 +115,6 @@ local function project_info()
   return zoom_lvl, Arr_start_time, Arr_end_time, Arr_pixel, x_view_start, y_view_start, x_view_end, y_view_end, proj_state, scroll, scroll_b
 end
 
-
-local function get_track_y_range(tbl)
-  local totalh = 0
-  local _, top, bottom, first_y_top
-  local retval, found = reaper.JS_Window_ListAllChild(main_wnd)
-    for adr in found:gmatch("%w+") do
-      local handl = reaper.JS_Window_HandleFromAddress(tonumber(adr))
-      local track = reaper.JS_Window_GetLongPtr(handl, "USER")
-      local vis = reaper.JS_Window_IsVisible(handl)
-      if reaper.JS_Window_GetParent(reaper.JS_Window_GetParent(handl)) ~= mixer_wnd and vis then
-        for i = 1 ,#tbl do
-          if track == tbl[i].track then
-            _, _, top, _, bottom = reaper.JS_Window_GetRect(handl)
-            totalh = totalh + (bottom - top)
-            if not first_y_top then first_y_top = top end -- GET FIRST TRACK Y_TOP
-            if top < first_y_top then first_y_top = top end -- IF NEXT TOP IS ABOVE CURRENT Y_TOP THEN SWITCH 
-          end 
-        end
-      end  
-    end
-  return first_y_top, totalh, bottom -- RETURN TRACKS Y START & END & TOTAL HEIGHT
-end
-
 local prev_start,prev_end
 local function check_draw(c_start,c_end)
   if prev_end ~= c_end or prev_start ~= c_start then 
@@ -131,7 +123,7 @@ local function check_draw(c_start,c_end)
   end
 end
 
-function new_track_y_range(tbl)
+local function new_track_y_range(tbl)
   local totalh = 0
   local t, b, h, first_top
   for i = 1, #tbl do
@@ -177,8 +169,7 @@ end
 
 function area_selection:update_xywh()
   local zoom_lvl, Arr_start_time, Arr_end_time, Arr_pixel, x_view_start, y_view_start, x_view_end, y_view_end = project_info() 
-  
-  --local y, h = get_track_y_range(self.tracks)
+
   local y, h = new_track_y_range(self.tracks) -- NEW TRACK RANGE (FIND IT FROM TABLE)
   if not y then y = 0 end -- FIX BECAUSE FUNCTION ABOVE DOES NOT RETURN Y IF THE TRACK IS NOT IN VIEW
   
@@ -200,7 +191,7 @@ end
 local function get_mouse_y_pos_in_track(tr, mY)
   if tr == nil then return end
   local tr_tbl = {[1] = {track = tr}}
-  local tYs, tr_h = get_track_y_range(tr_tbl)
+  local tYs, tr_h = new_track_y_range(tr_tbl)
   local mouse_in_track = (mY - tYs)
   if mouse_in_track < tr_h / 2 then return true else return false end -- IF MOUSE IS IN UPPER HALF OF THE TRACK RETURN TRUE, IF IN LOWER PART RETURN FALSE
 end
@@ -252,29 +243,38 @@ local function make_as(tbl, click)
     cur_area.sel_start, cur_area.sel_end, cur_area.tracks = as_sel_start, as_sel_end, as_info -- UPDATE IT
   end
 end
-
-local as_guid
-local function get_range_info(click_start, click_end, guid, click, r_s, r_e)
+A2 = 0
+local mouse_range_tracks
+local l_click_start, l_click_end
+local function get_range_info(click_start, click_end, as_guid, click, r_s, r_e)
   local click_start, click_end = check_reverse(click_start, click_end)
-  local mouse_range_tracks = GetTrackFromRange(r_s, r_e) -- GET ALL TRACKS IN MOUSE RANGE
+  local mouse_range_tracks1 = GetTrackFromRange(r_s, r_e) -- GET ALL TRACKS IN MOUSE RANGE
+  
+  if mouse_range_tracks1 then mouse_range_tracks = mouse_range_tracks1 end
   local as_items = {}
-  for i = 1, #mouse_range_tracks do
-    local as_tr = mouse_range_tracks[i]
-    local tr_as_items, tr_as_env, tr_as_AI, retval, env_name
-    if reaper.ValidatePtr(as_tr, "MediaTrack*") then
-      tr_as_items = get_items_in_as(as_tr, click_start, click_end) -- TRACK ITEMS
-    elseif reaper.ValidatePtr(as_tr, "TrackEnvelope*") then
-      retval, env_name = reaper.GetEnvelopeName( mouse_range_tracks[i])
-      tr_as_env = get_as_tr_env_pts(as_tr, click_start, click_end) -- NORMAL ENVELOPES
-      tr_as_AI = get_as_tr_AI(as_tr, click_start, click_end) -- AUTOMATION ITEMS
+  if l_click_start ~= click_start or l_click_end ~= click_end then
+    for i = 1, #mouse_range_tracks do
+      A2 = A2 + 1
+      local as_tr = mouse_range_tracks[i]
+      local tr_as_items, tr_as_env, tr_as_AI, retval, env_name
+      local items_bm = {}
+      if reaper.ValidatePtr(as_tr, "MediaTrack*") then
+        tr_as_items = get_items_in_as(as_tr, click_start, click_end) -- TRACK ITEMS 
+      elseif reaper.ValidatePtr(as_tr, "TrackEnvelope*") then
+        retval, env_name = reaper.GetEnvelopeName( mouse_range_tracks[i])
+        tr_as_env = get_as_tr_env_pts(as_tr, click_start, click_end) -- NORMAL ENVELOPES
+        tr_as_AI = get_as_tr_AI(as_tr, click_start, click_end) -- AUTOMATION ITEMS
+      end
+      as_items[#as_items + 1] = {track = mouse_range_tracks[i], items = tr_as_items, items_bm = items_bm, env_name = env_name, points = tr_as_env, AIs = tr_as_AI}
     end
-    as_items[#as_items + 1] = {track = mouse_range_tracks[i], items = tr_as_items, env_name = env_name, points = tr_as_env, AIs = tr_as_AI}
+    
+    if click_start ~= click_end then 
+      drawing = check_draw(click_start,click_end)
+      make_as({click_start, click_end, as_items, as_guid}, click ) -- ONLY MAKE AS IF THERE IS RANGE
+    end
+    l_click_start, l_click_end = click_start, click_end
   end
   
-  if click_start ~= click_end then 
-    drawing = check_draw(click_start,click_end)
-    make_as({click_start, click_end, as_items, as_guid}, click ) -- ONLY MAKE AS IF THERE IS RANGE
-  end
 end
 
 local function top_bot(top_start, top_end, bot_start, bot_end)
@@ -289,6 +289,7 @@ local down,hold
 local click_start,click_end
 local top_start, top_end, bot_start, bot_end
 local r_s, r_e
+local as_guid
 --- THIS BELOW COULD BE BETTER WRITTEN
 local function mouse_click(click, pos, mouse_in, mouse_r_start, mouse_r_end, AS_AT_MOUSE)
   if block then return end  
@@ -342,7 +343,7 @@ function keys(tr, pos)
         if vk[i].name == "ESC" then remove_as_from_tbl(Areas,"DELETE")
         elseif vk[i].name == "1" or vk[i].name == "2" or vk[i].name == "3" then
           select_as(vk[i].name)
-        --elseif vk[i].name == "5" then copy = not copy
+          elseif vk[i].name == "5" then copy = not copy
         else
         --if vk[i].name == "ESC" then get_as_info(Areas,"ESC") end
         --get_as_info(Areas,vk[i].name, tr, pos)
@@ -369,7 +370,7 @@ local function mouse_as(m_tr, time) -- RETURN GUID OF AS UNDER MOUSE CURSOR
   end
 end
 
-items_bm = {}
+local items_bm = {}
 local function draw_item_shadow(mouse_time_pos, zoom_lvl, y_view_start, Arr_pixel)
   if not active_as then return end
   for i = 1, #active_as.tracks do
@@ -381,11 +382,12 @@ local function draw_item_shadow(mouse_time_pos, zoom_lvl, y_view_start, Arr_pixe
         local item = active_as.tracks[i].items[j]
         if items_bm[i][j] == nil then items_bm[i][j] = reaper.JS_LICE_CreateBitmap(true, 1, 1); reaper.JS_LICE_Clear(items_bm[i][j], 0x66557788) end   
         local new_item_start, new_item_lenght = as_item_position(item, active_as.sel_start, active_as.sel_end, mouse_time_pos)
-        reaper.JS_Composite(track_window, math.floor(new_item_start * zoom_lvl) - Arr_pixel, (i_y - y_view_start), math.floor(new_item_lenght * zoom_lvl), i_b - i_y, items_bm[i][j], 0, 0, 1, 1)
-        reaper.JS_Window_InvalidateRect(track_window, 0, 0, W, H, false)
+        --reaper.JS_Composite(track_window, math.floor(new_item_start * zoom_lvl) - Arr_pixel, (i_y - y_view_start), math.floor(new_item_lenght * zoom_lvl), i_b - i_y, items_bm[i][j], 0, 0, 1, 1)
+        --reaper.JS_Window_InvalidateRect(track_window, 0, 0, W, H, false)
       end
     end
   end
+  --reaper.JS_Window_InvalidateRect(track_window, 0, 0, W, H, false)
 end
 
 local function main()
@@ -422,8 +424,17 @@ function exit() -- DESTROY BITMAPS ON REAPER EXIT
     local bm = Areas[i].bm
     reaper.JS_Composite_Unlink(track_window,bm)
     reaper.JS_LICE_DestroyBitmap(bm)
+    for j = 1, #Areas[i].tracks do
+      if Areas[i].tracks[j].items_bm then
+        for k = 1 , #Areas[i].tracks[j].items_bm do
+          reaper.JS_Composite_Unlink(track_window,Areas[i].tracks[j].items_bm[k])
+          reaper.JS_LICE_DestroyBitmap(Areas[i].tracks[j].items_bm[k])
+        end
+      end
   end
-
+ 
+  end
+  
   if reaper.ValidatePtr(track_window, "HWND") then 
     reaper.JS_Window_InvalidateRect(track_window, 0, 0, W, H, true) 
   end
