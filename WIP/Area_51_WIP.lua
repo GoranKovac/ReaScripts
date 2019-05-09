@@ -1,10 +1,12 @@
 package.path = debug.getinfo(1,"S").source:match[[^@?(.*[\/])[^\/]-$]] .."?.lua;" -- GET DIRECTORY FOR REQUIRE
 require("Area_51_Functions") -- AREA FUNCTIONS SCRIPT
+
 local Areas = {}
 local active_as
 local W,H = 5000,5000
 local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
 local track_window = reaper.JS_Window_FindChildByID(main_wnd, 1000) -- GET TRACK VIEW
+local track_window_dc = reaper.JS_GDI_GetWindowDC( track_window )
 local mixer_wnd = reaper.JS_Window_Find("mixer", true) -- GET MIXER -- tHIS NEEDS TO BE CONVERTED TO ID , AND I STILL DO NOT KNOW HOW TO FIND THEM
 
 local A
@@ -17,7 +19,7 @@ local function test()
     local handl = reaper.JS_Window_HandleFromAddress(adr)
     local track = reaper.JS_Window_GetLongPtr(handl, "USER")
     local vis = reaper.JS_Window_IsVisible(handl)
-    if reaper.JS_Window_GetParent(reaper.JS_Window_GetParent(handl)) ~= mixer_wnd then --and vis then
+    if reaper.JS_Window_GetParent(reaper.JS_Window_GetParent(handl)) ~= mixer_wnd then
       if reaper.ValidatePtr(track, "MediaTrack*") or reaper.ValidatePtr(track, "TrackEnvelope*") then
         local _, _, top, _, bottom = reaper.JS_Window_GetClientRect(handl)
         A[tostring(track)] = {t = top, b = bottom, h = bottom - top}
@@ -26,7 +28,7 @@ local function test()
   end
 end
 
-local function new_GetTrackFromRange(y_t, y_b)
+local function new_GetTrackFromRange(y_t, y_b) -- USELESS BECAUSE CANNOT GET TRACK FROM MAIN TRACKS TBL (ITS CONVERTED TO STRING SINCE USER DATA CANNOT BE KEY, AND ENVELOPES DO NOT HAVE GUID SO FUCK IT NANCY)
   local range_tracks = {}
   for k , v in pairs(A) do
     if v.t >= y_t and v.b <= y_b then
@@ -37,7 +39,6 @@ local function new_GetTrackFromRange(y_t, y_b)
 end
 
 local l_r_s,l_r_e
-A1 = 0
 local function GetTrackFromRange(y_t, y_b) -- GET ALL TRACKS IN MOUSE RANGE
   if l_r_s ~= y_t or l_r_e ~= y_b then
     local range_tracks = {} -- TABLE FOR TRACKS IN RANGE
@@ -52,7 +53,6 @@ local function GetTrackFromRange(y_t, y_b) -- GET ALL TRACKS IN MOUSE RANGE
       -- loop over track and envelope windows 
     local window = reaper.JS_Window_GetRelated(trackview_window, "CHILD")
     while window do
-      A1 = A1 + 1
       if reaper.JS_Window_IsVisible(window) then
         -- windows visible in arrange view only
         local _, _, top, _, bottom = reaper.JS_Window_GetRect(window)
@@ -124,16 +124,17 @@ local function check_draw(c_start,c_end)
 end
 
 local function new_track_y_range(tbl)
+  local zoom_lvl, Arr_start_time, Arr_end_time, Arr_pixel, x_view_start, y_view_start, x_view_end, y_view_end, proj_state, scroll, scroll_b = project_info() 
   local totalh = 0
-  local t, b, h, first_top
-  for i = 1, #tbl do
+  local t, b, h, first_top, nt
+  for i = #tbl , 1, -1 do -- NEEDS TO BE REVERSED OR IT DRAWS WEIRD
     local track = tbl[i].track
     t, b, h = A[tostring(track)].t, A[tostring(track)].b, A[tostring(track)].h
     totalh = totalh + h
-    if not first_top then first_top = t end -- GET FIRST TRACK Y_TOP
-    if t < first_top then first_top = t end
+    if t ~= 2344 then nt = t else totalh = totalh - h end -- FIX FOR WHEN THE TOP OF AS IS OUT PROJECT TOP IT WOULD EXPAND THE BOTTOM WHEN THE TOP TRACK IS OUT OF VIEW
   end
-  return first_top, totalh, b
+  if totalh == 0 then nt = 0 end
+  return nt, totalh, b
 end
 
 local prev_total_pr_h, prev_Arr_end_time, prev_proj_state, last_zoom_lvl, last_scroll, last_tr, last_scroll_b
@@ -170,9 +171,7 @@ end
 function area_selection:update_xywh()
   local zoom_lvl, Arr_start_time, Arr_end_time, Arr_pixel, x_view_start, y_view_start, x_view_end, y_view_end = project_info() 
 
-  local y, h = new_track_y_range(self.tracks) -- NEW TRACK RANGE (FIND IT FROM TABLE)
-  if not y then y = 0 end -- FIX BECAUSE FUNCTION ABOVE DOES NOT RETURN Y IF THE TRACK IS NOT IN VIEW
-  
+  local y, h = new_track_y_range(self.tracks) -- NEW TRACK RANGE (FIND IT FROM TABLE) 
   y = y - y_view_start
   
   local xStart = math.floor(self.sel_start * zoom_lvl) -- convert time to pixel 
@@ -180,7 +179,7 @@ function area_selection:update_xywh()
    
   local w = xEnd - xStart -- CREATE/UPDATE W
   local x = xStart - Arr_pixel -- CREATE/UPDATE X
-  self:draw(x, y, w, h) -- REDRAW AFTER UPDATE
+  self:draw(x, y, w, h)-- REDRAW AFTER UPDATE
 end
 
 function area_selection:draw(x, y, w, h)
@@ -232,6 +231,7 @@ end
 local function make_as(tbl, click)
   local as_sel_start, as_sel_end, as_info, as_guid = tbl[1], tbl[2], tbl[3], tbl[4]
   -- MAKE NEW AREA CLASS
+  if as_sel_start == as_sel_end then return end
   if not has_guid(Areas, as_guid) then
     Areas[#Areas+1] = area_selection:new(as_info, as_sel_start, as_sel_end, as_guid) -- CREATE NEW CLASS ONLY IF DOES NOT EXIST
     active_as = Areas[#Areas] 
@@ -243,7 +243,7 @@ local function make_as(tbl, click)
     cur_area.sel_start, cur_area.sel_end, cur_area.tracks = as_sel_start, as_sel_end, as_info -- UPDATE IT
   end
 end
-A2 = 0
+
 local mouse_range_tracks
 local l_click_start, l_click_end
 local function get_range_info(click_start, click_end, as_guid, click, r_s, r_e)
@@ -251,10 +251,12 @@ local function get_range_info(click_start, click_end, as_guid, click, r_s, r_e)
   local mouse_range_tracks1 = GetTrackFromRange(r_s, r_e) -- GET ALL TRACKS IN MOUSE RANGE
   
   if mouse_range_tracks1 then mouse_range_tracks = mouse_range_tracks1 end
+  
   local as_items = {}
+  
   if l_click_start ~= click_start or l_click_end ~= click_end then
+    
     for i = 1, #mouse_range_tracks do
-      A2 = A2 + 1
       local as_tr = mouse_range_tracks[i]
       local tr_as_items, tr_as_env, tr_as_AI, retval, env_name
       local items_bm = {}
@@ -272,6 +274,7 @@ local function get_range_info(click_start, click_end, as_guid, click, r_s, r_e)
       drawing = check_draw(click_start,click_end)
       make_as({click_start, click_end, as_items, as_guid}, click ) -- ONLY MAKE AS IF THERE IS RANGE
     end
+    
     l_click_start, l_click_end = click_start, click_end
   end
   
@@ -292,7 +295,7 @@ local r_s, r_e
 local as_guid
 --- THIS BELOW COULD BE BETTER WRITTEN
 local function mouse_click(click, pos, mouse_in, mouse_r_start, mouse_r_end, AS_AT_MOUSE)
-  if block then return end  
+  if resize then return end  
   if (click == 1 or click == 9) and mouse_in then down = true
     if not hold then
       top_start, top_end = mouse_r_start, mouse_r_end -- MOUSE RANGE START
@@ -336,7 +339,7 @@ local vk = {
             {code = 0x35, name = '5', press = false, hold = false, release = true}
             }
 function keys(tr, pos) 
-  local OK, state = reaper.JS_VKeys_GetState()
+  local state = reaper.JS_VKeys_GetState(0)
   for i = 1, #vk do
     if state:byte(vk[i].code) ~= 0 then 
       if not vk[i].press then vk[i].press = true --end -- PRESS
@@ -371,23 +374,160 @@ local function mouse_as(m_tr, time) -- RETURN GUID OF AS UNDER MOUSE CURSOR
 end
 
 local items_bm = {}
-local function draw_item_shadow(mouse_time_pos, zoom_lvl, y_view_start, Arr_pixel)
+local function draw_item_shadow(mouse_time_pos, zoom_lvl, y_view_start, Arr_pixel, m_tr, cur_m_x, cur_m_y, x_view_start)
+  --if not copy then return end
   if not active_as then return end
-  for i = 1, #active_as.tracks do
-    if active_as.tracks[i].items then
-      local track = active_as.tracks[i].track
-      local i_y, i_h, i_b = A[tostring(track)].t, A[tostring(track)].h, A[tostring(track)].b
-      if not items_bm[i] then items_bm[i] = {} end
-      for j = 1, #active_as.tracks[i].items do
-        local item = active_as.tracks[i].items[j]
-        if items_bm[i][j] == nil then items_bm[i][j] = reaper.JS_LICE_CreateBitmap(true, 1, 1); reaper.JS_LICE_Clear(items_bm[i][j], 0x66557788) end   
-        local new_item_start, new_item_lenght = as_item_position(item, active_as.sel_start, active_as.sel_end, mouse_time_pos)
-        --reaper.JS_Composite(track_window, math.floor(new_item_start * zoom_lvl) - Arr_pixel, (i_y - y_view_start), math.floor(new_item_lenght * zoom_lvl), i_b - i_y, items_bm[i][j], 0, 0, 1, 1)
-        --reaper.JS_Window_InvalidateRect(track_window, 0, 0, W, H, false)
+  if m_tr then
+    t_y, t_h, t_b = 0, 0, 0
+    for i = 1, #active_as.tracks do
+      --local track = active_as.tracks[i].track
+      if active_as.tracks[i].items then
+        local track = active_as.tracks[i].track
+        if not first then first = track end
+        local tr_offset = get_track_offset(first,m_tr) 
+        local tr_num_offset = reaper.GetMediaTrackInfo_Value(track, "IP_TRACKNUMBER") + tr_offset
+        track = reaper.GetTrack( 0, (tr_num_offset) - 1 )
+        
+        if track then
+          atrack = track
+        else
+          local last_tr = reaper.CountSelectedTracks( 0 )
+          Alast_tr =  reaper.GetTrack( 0, last_tr )
+          o_y, o_h, o_b = A[tostring(Alast_tr)].t, A[tostring(Alast_tr)].h, A[tostring(Alast_tr)].b 
+          t_h = t_h + o_h
+        end
+        
+        local i_y, i_h, i_b = A[tostring(atrack)].t + t_h, A[tostring(atrack)].h + t_h, A[tostring(atrack)].b + t_h
+        if not items_bm[i] then items_bm[i] = {} end
+        
+        for j = 1, #active_as.tracks[i].items do
+          local item = active_as.tracks[i].items[j]
+          if items_bm[i][j] == nil then items_bm[i][j] = reaper.JS_LICE_CreateBitmap(true, 1, 1); reaper.JS_LICE_Clear(items_bm[i][j], 0x66557788) end
+          local new_item_start, new_item_lenght = as_item_position(item, active_as.sel_start, active_as.sel_end, mouse_time_pos)
+          reaper.JS_Composite(track_window, math.floor(new_item_start * zoom_lvl) - Arr_pixel, (i_y - y_view_start), math.floor(new_item_lenght * zoom_lvl), i_b - i_y, items_bm[i][j], 0, 0, 1, 1)
+        end
       end
     end
   end
-  --reaper.JS_Window_InvalidateRect(track_window, 0, 0, W, H, false)
+  reaper.JS_Window_InvalidateRect(track_window, 0, 0, W, H, false)
+end
+
+function get_track_offset(as_tr,m_tr)
+  if not m_tr then return end
+  local offset
+  local m_tr = reaper.GetMediaTrackInfo_Value(m_tr, "IP_TRACKNUMBER")
+  local as_tr = reaper.GetMediaTrackInfo_Value(as_tr, "IP_TRACKNUMBER")
+  offset = (m_tr - as_tr)
+  return offset
+end
+
+local function mouse_in_as(m_tr, m_time) -- RETURN GUID OF AS UNDER MOUSE CURSOR
+  if #Areas == 0 then return end
+  for i = 1, #Areas do
+    if m_time >= Areas[i].sel_start and m_time <= Areas[i].sel_end then
+      for j = 1, #Areas[i].tracks do
+        local as_tr = Areas[i].tracks[j].track
+        if as_tr == m_tr then return Areas[i] end
+      end
+    end
+  end
+end
+
+local function find_zone(tbl,pos)
+  if resize then return end
+  for k,v in pairs(tbl) do
+    if pos >= v[1] and pos <= v[2] then return k, v end
+  end
+end
+
+local function mouse_time_offset(pos)
+  local pos_offset = 0
+  if not l_pos then l_pos = pos end
+  if l_pos ~= pos then
+    pos_offset = pos - l_pos
+    l_pos = pos
+  end
+  return pos_offset
+end
+
+local zone_bm = reaper.JS_LICE_CreateBitmap(true, 1, 1); reaper.JS_LICE_Clear(zone_bm, 0x55557788)
+local cur_z, cur_as
+local l_zone
+local function as_zones(m_tr, m_time, as_under_mouse, click) -- GET AS ZONE PART (LEFT - CENTER - RIGHT)
+  if not as_under_mouse then
+    if l_zone then -- DELETE ZONE BM IF WE ARE OUT OF RANGE
+      reaper.JS_Composite_Unlink(track_window,zone_bm) 
+      reaper.JS_Window_InvalidateRect(track_window, 0, 0, W, H, false)
+      l_zone = nil
+      zone, zone_info = nil, nil
+    end
+  end
+  
+  if drawing then return end
+  
+  local zoom_lvl, Arr_start_time, Arr_end_time, Arr_pixel, x_view_start, y_view_start, x_view_end, y_view_end, state, scroll = project_info() 
+  local range = 0.25
+  
+  if as_under_mouse then
+    local zones = { 
+                     ["L"] = {as_under_mouse.sel_start, as_under_mouse.sel_start + range},
+                     ["R"] = {as_under_mouse.sel_end - range, as_under_mouse.sel_end},
+                     ["C"] = {as_under_mouse.sel_start + (range *2 ), as_under_mouse.sel_end - (range *2 )}
+                  }
+    local zone,zone_info = find_zone(zones, m_time)
+    if zone then
+        if click == 1 then
+          resize = true
+          if zone == "C" then
+            local offc = mouse_time_offset(m_time)
+            as_under_mouse.sel_start = as_under_mouse.sel_start + offc
+            as_under_mouse.sel_end = as_under_mouse.sel_end + offc
+          elseif zone == "L" then
+            local offl = mouse_time_offset(m_time)
+            as_under_mouse.sel_start = as_under_mouse.sel_start + offl
+          elseif zone == "R" then
+            local offr = mouse_time_offset(m_time)
+            as_under_mouse.sel_end = as_under_mouse.sel_end + offr
+          end
+            as_under_mouse:update_xywh()
+        else
+          resize = nil
+        end
+      if l_zone ~= zone then -- DRAW ZONE ONLY IF WE ARE ON IT AND ONLY ONCE
+        local xStart = math.floor(zone_info[1] * zoom_lvl) -- convert time to pixel 
+        local xEnd  = math.floor(zone_info[2] * zoom_lvl) -- convert time to pixel  
+         
+        local w = xEnd - xStart -- CREATE/UPDATE W
+        local x = xStart - Arr_pixel -- CREATE/UPDATE X
+        local y, h = new_track_y_range(as_under_mouse.tracks)
+        
+        if zone == "C" then h = math.floor((range * 2) * zoom_lvl) end
+        y = y - y_view_start
+        reaper.JS_Composite(track_window, x, y, w, h, zone_bm, 0, 0, 1, 1)
+        reaper.JS_Window_InvalidateRect(track_window, 0, 0, W, H, false)
+        l_zone = zone
+      end
+    end
+  end
+end
+
+local cur_z, cur_as
+local function resize_as(as, mouse_time_pos, click, zone, zoom_lvl) 
+  if as then 
+    cur_as, cur_z = as, zone
+  end
+  if click == 1 and cur_as then
+  local zoom_lvl, Arr_start_time, Arr_end_time, Arr_pixel, x_view_start, y_view_start, x_view_end, y_view_end, state, scroll = project_info() 
+    resize = true
+    if cur_z == "L" then cur_as.sel_start = mouse_time_pos
+    elseif cur_z == "R" then cur_as.sel_end = mouse_time_pos 
+    end
+    cur_as:update_xywh() -- update current
+  else
+    resize = nil
+    cur_z = nil
+    cur_as = nil
+  end
 end
 
 local function main()
@@ -400,9 +540,15 @@ local function main()
   local mouse_in = get_mouse_y_pos_in_track(tr, cur_m_y) -- CHECKS THE MOUSE POSITION IN THE TRACK (UPPER PART TRUE, LOWER PART FALSE)
   local pos = (reaper.GetToggleCommandState(1157) == 1) and reaper.SnapToGrid(0, mouse_time_pos) or mouse_time_pos -- FINAL POSITION IS SNAP IF ENABLED OF FREE MOUSE POSITION
   
-  mouse_click(m_click, pos, mouse_in, r_start, r_end, AS_AT_MOUSE) -- GET CLICKED TRACKS, MOUSE TIME RANGE
+  local as_under_mouse = mouse_in_as(tr, pos)
   
-  draw_item_shadow(pos, zoom_lvl, y_view_start, Arr_pixel)
+  cur_zone, as = as_zones(tr, pos, as_under_mouse, m_click)
+  
+  --resize_as(as, pos, m_click, cur_zone) 
+  
+  mouse_click(m_click, pos, mouse_in, r_start, r_end, AS_AT_MOUSE) -- GET CLICKED TRACKS, MOUSE TIME RANGE
+    
+  draw_item_shadow(pos, zoom_lvl, y_view_start, Arr_pixel, tr, cur_m_x, cur_m_y, x_view_start)
   
   DRAW_AREA(Areas) -- DRAW THIS BAD BOYS
   
