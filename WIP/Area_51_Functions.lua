@@ -155,7 +155,6 @@ function get_as_tr_env_pts(as_tr, as_start, as_end)
     end
   end
   if #env_points ~= 0 then return env_points end
-  reaper.UpdateTimeline()
 end
 
 local AI_info = {"D_POOL_ID", "D_POSITION", "D_LENGTH", "D_STARTOFFS", "D_PLAYRATE", "D_BASELINE", "D_AMPLITUDE", "D_LOOPSRC", "D_UISEL", "D_POOL_QNLEN"}
@@ -181,7 +180,7 @@ function validate_as_items(tbl)
 end
 
 function get_as_info(tbl,key,m_tr,mouse_time_pos)
-  reaper.PreventUIRefresh(1)
+  --reaper.PreventUIRefresh(1)
   --for i = 1, #tbl do
     local as_start, as_end = tbl.sel_start, tbl.sel_end
      for j = 1, #tbl.tracks do
@@ -206,6 +205,6 @@ function get_as_info(tbl,key,m_tr,mouse_time_pos)
       end
     end
   --end
-  reaper.PreventUIRefresh(-1)
-  reaper.UpdateArrange() 
+  --reaper.PreventUIRefresh(-1)
+  --reaper.UpdateArrange() 
 end
