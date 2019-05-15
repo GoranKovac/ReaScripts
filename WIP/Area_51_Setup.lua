@@ -61,7 +61,7 @@ local function main()
       v.press = true
       keys[#keys+1] = v.name
       temp[k] = v
-    else
+    else 
       v.press = false
       v.press = false
     end
@@ -76,15 +76,14 @@ local function main()
   end
   
   for i = 1, #groups do
-    groups[i].all_press = true
-    for k,v in pairs(groups[i]) do
-      if type(k) ~= "string" then -- AVOID ".all_press"
-        if not v.press then groups[i].all_press = false break end
-      end
-    end
     drawline(string.format(" Key Group: " .. i .. " => %s - %s", groups[i].keys, string.upper(tostring(groups[i].all_press))))
+ 
+    if groups[i].keys == table.concat(keys, ' + ') then
+      groups[i].all_press = true
+    else
+      groups[i].all_press = false
+    end
   end
-  
   
   gfx.y = 35
   drawline(" KEYS FOR INTERCEPTING - Press Return to CONFIRM"); nl()
