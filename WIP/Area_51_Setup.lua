@@ -87,7 +87,7 @@ local function main()
   
   
   gfx.y = 35
-  drawline(" KEYS FOR INTERCEPTING "); nl()
+  drawline(" KEYS FOR INTERCEPTING - Press Return to CONFIRM"); nl()
   drawline(string.format(" Keys => %s", table.concat(keys, ' + '))); nl()
   
   reaper.defer(main)
