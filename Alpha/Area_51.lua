@@ -210,7 +210,7 @@ end
 local test_keys = { {0x2E, "del", false,false,true} }
 
 local function keys(c_start,c_end) 
-  local OK, state = reaper.JS_VKeys_GetState()
+  local state = reaper.JS_VKeys_GetState(0)
   for i = 1, #test_keys do
     if state:byte(test_keys[i][1]) ~= 0 then
       local up_time = reaper.time_precise()
