@@ -3,7 +3,7 @@ local bm = reaper.JS_LICE_CreateBitmap(true, 1, 1)
 reaper.JS_LICE_Clear(bm, 0x77AA0000)
 local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
 local mixer_wnd = reaper.JS_Window_Find("mixer", true) -- GET MIXEWR I GUESS
-local track_window = reaper.JS_Window_Find("trackview", true) -- GET TRACK VIEW
+local track_window    = reaper.JS_Window_FindChildByID(main_wnd, 1000)
 
 local function get_track_zoom_offset(tr,y_end,h,scroll)
     local retval, list = reaper.JS_Window_ListAllChild(main_wnd)
