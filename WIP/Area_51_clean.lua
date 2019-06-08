@@ -6,6 +6,41 @@ require("Area_51_functions")                                     -- AREA CLASS S
 require("Area_51_input")                                         -- AREA INPUT HANDLING/SETUP
 require("Area_51_mouse")  
 
+crash = function (errObject)
+
+  local byLine = "([^\r\n]*)\r?\n?"
+  local trimPath = "[\\/]([^\\/]-:%d+:.+)$"
+  local err = errObject   and string.match(errObject, trimPath)
+                          or  "Couldn't get error message."
+
+  local trace = debug.traceback()
+  local stack = {}
+  for line in string.gmatch(trace, byLine) do
+    local str = string.match(line, trimPath) or line
+    stack[#stack + 1] = str
+  end
+
+  local name = ({reaper.get_action_context()})[2]:match("([^/\\_]+)$")
+
+  local ret = reaper.ShowMessageBox(
+      name.." has crashed!\n\n"..
+      "Would you like to have a crash report printed "..
+      "to the Reaper console?",
+      "Oops",
+      4
+    )
+
+  if ret == 6 then
+    reaper.ShowConsoleMsg(
+      "Error: "..err.."\n\n"..
+      "Stack traceback:\n\t"..table.concat(stack, "\n\t", 2).."\n\n"..
+      "Reaper:       \t"..reaper.GetAppVersion().."\n"..
+      "Platform:     \t"..reaper.GetOS()
+    )
+  end
+end
+
+
 local main_wnd        = reaper.GetMainHwnd()                            -- GET MAIN WINDOW
 local track_window    = reaper.JS_Window_FindChildByID(main_wnd, 1000)  -- GET TRACK VIEW
 local track_window_dc = reaper.JS_GDI_GetWindowDC( track_window )
@@ -519,7 +554,10 @@ function find_highest_tr(val, job)
   return tr, min
 end
 
+
 local function Main()
+  xpcall( function()
+  
   GetTracksXYH_Info()                                               -- GET XYH INFO OF ALL TRACKS
   
   mouse = GetMouseInfo(mouse_coord())
@@ -535,6 +573,7 @@ local function Main()
   
   if copy and #Areas_TB ~= 0 then generic_table_find() end
   reaper.defer(Main)
+  end, crash)
 end
 
 function Exit()                                                      -- DESTROY ALL BITMAPS ON REAPER EXIT
