@@ -206,7 +206,7 @@ function GetMouseInfo(x, y, p)
     OnMouseUp(LB_DOWN, RB_DOWN)
   end
   
-  --draw_gui()
+  draw_gui()
  
   --gfx.update()
   --reaper.defer(mainloop)
