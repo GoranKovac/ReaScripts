@@ -86,7 +86,7 @@ end
 
 local prev_total_pr_h, prev_Arr_end_time, prev_proj_state, last_scroll, last_scroll_b, last_pr_t, last_pr_h
 function Status()                                                  -- THIS IS USED TO CHECK CHANGES IN THE PROJECT FOR DRAWING
-  local last_pr_tr = reaper.GetTrack(0,reaper.CountTracks(0)-1)
+  local last_pr_tr = get_last_visible_track()
   local zoom_lvl, Arr_start_time, Arr_end_time, Arr_pixel, x_view_start, y_view_start, x_view_end, y_view_end, proj_state, scroll, scroll_b = Project_info() 
   
   if prev_Arr_end_time ~= Arr_end_time then                        -- THIS ONE ALWAYS CHANGES WHEN ZOOMING IN OUT
@@ -177,13 +177,26 @@ local function GetTrackFromPoint()
   end
 end
 
+function get_last_visible_track()
+  local last_tr = reaper.GetTrack(0,reaper.CountTracks(0)-1)
+  
+  if not reaper.IsTrackVisible( last_tr, false ) then
+    for i = reaper.CountTracks(0), 1, -1 do
+      local track = reaper.GetTrack(0, i-1)
+      if reaper.IsTrackVisible( track, false ) then return track end 
+    end
+  end
+  return last_tr
+end
+
 function GetTrackTBH(tbl)
   local total_h = 0
   local t, b, h
   
   for i = #tbl , 1, -1 do                                            -- NEEDS TO BE REVERSED OR IT DRAWS SOME WEIRD SHIT
     local track = tbl[i].track
-    if TBH[track].vis then
+    
+    if TBH[track] and TBH[track].vis then                            -- RETURN ONLY VISIBLE TRACKS (THAT ARE CURRENT ARRANGE VIEW NOT TRACK MANAGER HIDDINE RELATED)
       t, b, h = TBH[track].t, TBH[track].b, TBH[track].h
       total_h = total_h + h
     end
@@ -333,8 +346,6 @@ local function CreateAreaFromCoordinates(m_r_t, m_r_b)
   elseif mouse.l_up and CREATING then
     local last_as = Areas_TB[#Areas_TB]
     local info = GetAreaInfo(last_as)
-    --local tracks = GetTrackFromMouseRange(last_as.y, last_as.y + last_as.h)             -- GET TRACK RANGE
-    --local info   = GetRangeInfo(tracks, last_as.time_start,  last_as.time_end)          -- GATHER ALL INFO
     
     Areas_TB[#Areas_TB].info = info                                                     -- ADD INFO TO TABLEST NOT NORMAL FAST, LIKE FLICK AND SHIT)
     
@@ -356,38 +367,49 @@ function GetEnvOffset_MatchCriteria(tr, env)
   return tr
 end
 
+local function find_visible_tracks(cur_offset_id) -- RETURN FIRST VISIBLE TRACK
+  for i = cur_offset_id, reaper.CountTracks(0) do
+    local track = reaper.GetTrack(0,i-1)
+    if reaper.IsTrackVisible( track, false ) then return i else end
+  end
+end
+
 function generic_track_offset(as_tr, first_track)
   --  GET ALL ENVELOPE TRACKS PARENT MEDIA TRACKS (SINCE ENVELOPE TRACKS HAVE NO ID WHICH WE USE TO MAKE OFFSET)
   if reaper.ValidatePtr(as_tr,       "TrackEnvelope*") then as_tr        = reaper.Envelope_GetParentTrack( as_tr )       end
   if reaper.ValidatePtr(first_track, "TrackEnvelope*") then first_track  = reaper.Envelope_GetParentTrack( first_track ) end
-  if reaper.ValidatePtr(mouse.tr,   "TrackEnvelope*") then mouse.tr    = reaper.Envelope_GetParentTrack( mouse.tr )   end
+  if reaper.ValidatePtr(mouse.tr,   "TrackEnvelope*")  then mouse.tr     = reaper.Envelope_GetParentTrack( mouse.tr )    end
   
-  local first_track_id  = reaper.CSurf_TrackToID( first_track,  false )
-  local as_tr_id        = reaper.CSurf_TrackToID( as_tr,        false )
-  local m_tr_id         = reaper.CSurf_TrackToID( mouse.tr,    false )
+  local first_track_id        = reaper.CSurf_TrackToID( first_track,  false )
+  local as_tr_id              = reaper.CSurf_TrackToID( as_tr,        false )
+  local m_tr_id               = reaper.CSurf_TrackToID( mouse.tr,    false )
   
-  local as_tr_offset    = m_tr_id   - first_track_id                              -- GET OFFSET BETWEEN MOUSE AND FIRST ITEM POSITION
-  local as_pos_offset   = as_tr_id  + as_tr_offset                                -- ADD MOUSE OFFSET TO CURRENT TRACK ID
+  local as_tr_offset          = m_tr_id   - first_track_id                                 -- GET OFFSET BETWEEN MOUSE AND FIRST ITEM POSITION
+  local as_pos_offset         = as_tr_id  + as_tr_offset                                   -- ADD MOUSE OFFSET TO CURRENT TRACK ID
+ 
+  local last_project_tr       = get_last_visible_track()
+  local last_project_tr_id    = reaper.CSurf_TrackToID( last_project_tr, false )
   
-  local new_as_tr       = as_pos_offset < reaper.CountTracks(0) and               -- POSITION ITEMS TO MOUSE POSITION
-                          reaper.CSurf_TrackFromID(as_pos_offset, false) or
-                          reaper.CSurf_TrackFromID(reaper.CountTracks(0), false)
+  as_pos_offset = find_visible_tracks(as_pos_offset,last_project_tr_id) or as_pos_offset   -- FIND FIRST AVAILABLE VISIBLE TRACK IF HIDDEN
+ 
+  local new_as_tr             = as_pos_offset < last_project_tr_id and                     -- POSITION ITEMS TO MOUSE POSITION
+                                reaper.CSurf_TrackFromID(as_pos_offset, false) or
+                                last_project_tr
   
-  local under_last_tr   = (as_pos_offset - reaper.CountTracks(0) > 0) and as_pos_offset - reaper.CountTracks(0) -- HOW MANY TRACKS BELOW LAST PROJECT TRACK IS THE OFFSET
-  
+  local under_last_tr         = (as_pos_offset - last_project_tr_id > 0) and as_pos_offset - last_project_tr_id -- HOW MANY TRACKS BELOW LAST PROJECT TRACK IS THE OFFSET
   return new_as_tr, under_last_tr
 end
 
 function lowest_start()
   local min = Areas_TB[1].time_start
   for i = 1, #Areas_TB do
-    if Areas_TB[i].time_start < min then min = Areas_TB[i].time_start end -- FIND LOWEST (FIRST) TIME SEL START
+    if Areas_TB[i].time_start < min then min = Areas_TB[i].time_start end                   -- FIND LOWEST (FIRST) TIME SEL START
   end
   return min
 end
 
 local function generic_table_find(job)
-  local as_tbl = active_as and {active_as} or Areas_TB                      -- ACTIVE AS OR WHOLE AREA TABLE
+  local as_tbl = active_as and {active_as} or Areas_TB                                      -- ACTIVE AS OR WHOLE AREA TABLE
   
   for a = 1, #as_tbl do
     local tbl = as_tbl[a]
