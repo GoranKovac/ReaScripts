@@ -45,6 +45,7 @@ local main_wnd        = reaper.GetMainHwnd()                            -- GET M
 local track_window    = reaper.JS_Window_FindChildByID(main_wnd, 1000)  -- GET TRACK VIEW
 local track_window_dc = reaper.JS_GDI_GetWindowDC( track_window )
 local mixer_wnd       = reaper.JS_Window_Find("mixer", true)            -- GET MIXER -- tHIS NEEDS TO BE CONVERTED TO ID , AND I STILL DO NOT KNOW HOW TO FIND THEM
+
 local Areas_TB = {}
 --local active_as
 local Key_TB = {}
@@ -178,6 +179,7 @@ local function GetTrackFromPoint()
 end
 
 function get_last_visible_track()
+  if reaper.CountTracks(0) == 0 then return end
   local last_tr = reaper.GetTrack(0,reaper.CountTracks(0)-1)
   
   if not reaper.IsTrackVisible( last_tr, false ) then
@@ -195,12 +197,12 @@ function GetTrackTBH(tbl)
   
   for i = #tbl , 1, -1 do                                            -- NEEDS TO BE REVERSED OR IT DRAWS SOME WEIRD SHIT
     local track = tbl[i].track
-    
     if TBH[track] and TBH[track].vis then                            -- RETURN ONLY VISIBLE TRACKS (THAT ARE CURRENT ARRANGE VIEW NOT TRACK MANAGER HIDDINE RELATED)
       t, b, h = TBH[track].t, TBH[track].b, TBH[track].h
       total_h = total_h + h
     end
   end
+  
   if total_h == 0 then t = 0 end
   return t, total_h, b
 end
@@ -333,7 +335,7 @@ local function CreateAreaFromCoordinates(m_r_t, m_r_b)
   end  
  
   if mouse.l_down then
-    if copy then copy_mode() end                                                       -- DISABLE COPY MODE IF ENABLED
+    if copy then copy_mode() end                                                        -- DISABLE COPY MODE IF ENABLED
     
     DRAWING = Check_change(as_left, as_right, as_top, as_bot)
     
@@ -378,7 +380,7 @@ function generic_track_offset(as_tr, first_track)
   --  GET ALL ENVELOPE TRACKS PARENT MEDIA TRACKS (SINCE ENVELOPE TRACKS HAVE NO ID WHICH WE USE TO MAKE OFFSET)
   if reaper.ValidatePtr(as_tr,       "TrackEnvelope*") then as_tr        = reaper.Envelope_GetParentTrack( as_tr )       end
   if reaper.ValidatePtr(first_track, "TrackEnvelope*") then first_track  = reaper.Envelope_GetParentTrack( first_track ) end
-  if reaper.ValidatePtr(mouse.tr,   "TrackEnvelope*")  then mouse.tr     = reaper.Envelope_GetParentTrack( mouse.tr )    end
+  if reaper.ValidatePtr(mouse.tr,    "TrackEnvelope*") then mouse.tr     = reaper.Envelope_GetParentTrack( mouse.tr )    end
   
   local first_track_id        = reaper.CSurf_TrackToID( first_track,  false )
   local as_tr_id              = reaper.CSurf_TrackToID( as_tr,        false )
@@ -447,7 +449,6 @@ function DrawItemGhosts(item_data, item_track, as_start, as_end, pos_offset, fir
   local off_h                       = under_last_tr and TBH[offset_track].h * under_last_tr or 0  -- IF OFFSET TRACKS ARE BELOW LAST PROJECT TRACK MULTIPLY HEIGHT BY THAT NUMBER AND ADD IT TO GHOST
   if TBH[offset_track] then   -- THIS IS NEEDED FOR PASTE FUNCTION OR IT WILL CRASH
     local track_t, track_b, track_h   = TBH[offset_track].t + off_h, TBH[offset_track].b, TBH[offset_track].h
-    
     for i = 1, #item_data do  
       local item                      = item_data[i]
       local item_start, item_lenght   = item_blit(item, as_start, as_end, pos)
@@ -549,9 +550,6 @@ local function check_keys()
 end
 
 function find_highest_tr(val, job)
-  local first_tr = val
-  local min, tr = TBH[first_tr].t, first_tr
-  
   for i = 1, #Areas_TB do
     local tbl = Areas_TB[i]
     
@@ -559,23 +557,18 @@ function find_highest_tr(val, job)
       
       if not tbl.info[j].items and not tbl.info.env_name and job == "track" then
         local as_tr = tbl.info[j].track
-        local cur_min = TBH[as_tr].t
-        if cur_min < min then min, tr = cur_min, as_tr end
+        return as_tr
       elseif tbl.info[j].items then
         local as_tr = tbl.info[j].track
-        local cur_min = TBH[as_tr].t
-        if cur_min < min then min, tr = cur_min, as_tr end 
+        return as_tr
       elseif tbl.info[j].env_name then
         local as_tr = tbl.info[j].track
-        local cur_min = TBH[as_tr].t
-        if cur_min < min then min, tr = cur_min, as_tr end 
+        return as_tr
       end
       
     end
   end
-  return tr, min
 end
-
 
 local function Main()
   xpcall( function()
