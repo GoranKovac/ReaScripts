@@ -31,7 +31,7 @@ local mouse = {
                 p = 0,
                 tr = "",
                 r_t = 0, r_b = 0,
-                
+                x = 0, y = 0,
                 otr = "", 
                 ort = 0, orb = 0,
                 op = 0,
@@ -178,7 +178,7 @@ end
 --------------
 
 function GetMouseInfo(x, y, p)
-  mouse.x, mouse.y, mouse.p = x, y, p
+  mouse.x, mouse.y, mouse.p = x or mouse.x, y or mouse.y, p or mouse.p
   mouse.l_click   = false
   mouse.r_click   = false
   mouse.l_dclick  = false
@@ -214,4 +214,3 @@ function GetMouseInfo(x, y, p)
 end
 
 init()
-
