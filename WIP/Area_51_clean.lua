@@ -165,7 +165,7 @@ local function GetTrackFromPoint()
         local pointer = reaper.JS_Window_GetLongPtr(window, "USERDATA")
         if reaper.ValidatePtr(pointer, "MediaTrack*") then                             -- ON MEDIA TRACK
           if reaper.GetMediaTrackInfo_Value(pointer, "I_FOLDERDEPTH") == 1 then 
-                _, _, bottom = get_folder(pointer)
+              --  _, _, bottom = get_folder(pointer)
           end
           return pointer, top, bottom  --> Track, segment
         elseif  reaper.ValidatePtr(pointer, "TrackEnvelope*") then                     -- ON ENVELOPE TRACK
