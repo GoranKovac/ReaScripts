@@ -46,7 +46,7 @@ local track_window    = reaper.JS_Window_FindChildByID(main_wnd, 1000)  -- GET T
 local track_window_dc = reaper.JS_GDI_GetWindowDC( track_window )
 local mixer_wnd       = reaper.JS_Window_Find("mixer", true)            -- GET MIXER -- tHIS NEEDS TO BE CONVERTED TO ID , AND I STILL DO NOT KNOW HOW TO FIND THEM
 
-local Areas_TB = {}
+Areas_TB = {}
 --local active_as
 local Key_TB = {}
 
@@ -165,7 +165,7 @@ local function GetTrackFromPoint()
         local pointer = reaper.JS_Window_GetLongPtr(window, "USERDATA")
         if reaper.ValidatePtr(pointer, "MediaTrack*") then                             -- ON MEDIA TRACK
           if reaper.GetMediaTrackInfo_Value(pointer, "I_FOLDERDEPTH") == 1 then 
-              --  _, _, bottom = get_folder(pointer)
+           --     _, _, bottom = get_folder(pointer)
           end
           return pointer, top, bottom  --> Track, segment
         elseif  reaper.ValidatePtr(pointer, "TrackEnvelope*") then                     -- ON ENVELOPE TRACK
@@ -207,11 +207,11 @@ function GetTrackTBH(tbl)
   return t, total_h, b
 end
 
-local function GetTrackZoneInfo(tr, m_y)
-  if tr == nil then return end
-  local tr_y, tr_h      = TBH[tr].t, TBH[tr].h
-  local mouse_in_track  = (m_y - tr_y)
-  if mouse_in_track < tr_h / 2 then return true else return false end
+local function GetTrackZoneInfo()
+  if not mouse.otr then return end
+  
+  local tr_t, tr_b, tr_h = TBH[mouse.otr].t, TBH[mouse.otr].b, TBH[mouse.otr].h
+  if mouse.oy > tr_t and mouse.oy < tr_b and mouse.oy - tr_t < tr_h / 2 then return true else return false end
 end
 
 local function Check_top_bot(top_start, top_end, bot_start, bot_end)            -- CHECK IF VALUES GOT REVERSED 
@@ -327,24 +327,27 @@ local function CreateAreaFromCoordinates(m_r_t, m_r_b)
   local as_left,  as_right  = Check_left_right(mouse.op, mouse.p)                       -- CHECK IF START & END TIMES ARE REVERSED
   local x_s,      x_e       = Check_left_right(mouse.ox, mouse.x)                       -- CHECK IF X START & END ARE REVERSED
  
-  if mouse.l_click then                                                                 -- IF LAST MOUSE CLICK WAS DOWN
-    guid = mouse.Shift() and reaper.genGuid() or "single"
-    if not mouse.Shift() then 
-      for k,v in pairs(ghosts) do reaper.JS_LICE_DestroyBitmap(v.bm) k = nil end        -- DELETE GHOSTS AS IS RESET (STARTS FROM 1)
-    end
+  if mouse.l_click then                                           -- IF LAST MOUSE CLICK WAS DOWN
+    guid = mouse.Shift() and reaper.genGuid() or "single"    
   end  
- 
-  if mouse.l_down then
-    if copy then copy_mode() end                                                        -- DISABLE COPY MODE IF ENABLED
+  
+  if mouse.l_down and GetTrackZoneInfo() then                                    -- ALLOW DRAWING ONLY IF IN UPPER PART OF THE TRACK
     
     DRAWING = Check_change(as_left, as_right, as_top, as_bot)
     
     if DRAWING then
       CREATING = true
+        
+        if copy then      -- DISABLE COPY MODE IF ENABLED
+          copy_mode()
+          if not mouse.Shift() then 
+            for k,v in pairs(ghosts) do reaper.JS_LICE_DestroyBitmap(v.bm) k = nil end        -- DELETE GHOSTS AS IS RESET (STARTS FROM 1)
+          end
+        end
+         
       local x, y, w, h = x_s, as_top, x_e - x_s, as_bot - as_top
       CreateArea(x, y, w, h, guid, as_left,  as_right)
-    end
-      
+    end 
   elseif mouse.l_up and CREATING then
     local last_as = Areas_TB[#Areas_TB]
     local info = GetAreaInfo(last_as)
@@ -378,13 +381,14 @@ end
 
 function generic_track_offset(as_tr, first_track)
   --  GET ALL ENVELOPE TRACKS PARENT MEDIA TRACKS (SINCE ENVELOPE TRACKS HAVE NO ID WHICH WE USE TO MAKE OFFSET)
+  local cur_m_tr = mouse.tr   -- ADD TEMP MOUSE TRACK (DO NOT CONVERT
   if reaper.ValidatePtr(as_tr,       "TrackEnvelope*") then as_tr        = reaper.Envelope_GetParentTrack( as_tr )       end
   if reaper.ValidatePtr(first_track, "TrackEnvelope*") then first_track  = reaper.Envelope_GetParentTrack( first_track ) end
-  if reaper.ValidatePtr(mouse.tr,    "TrackEnvelope*") then mouse.tr     = reaper.Envelope_GetParentTrack( mouse.tr )    end
+  if reaper.ValidatePtr(cur_m_tr,    "TrackEnvelope*") then cur_m_tr     = reaper.Envelope_GetParentTrack( cur_m_tr )    end
   
-  local first_track_id        = reaper.CSurf_TrackToID( first_track,  false )
-  local as_tr_id              = reaper.CSurf_TrackToID( as_tr,        false )
-  local m_tr_id               = reaper.CSurf_TrackToID( mouse.tr,    false )
+  local first_track_id        = reaper.CSurf_TrackToID( first_track, false )
+  local as_tr_id              = reaper.CSurf_TrackToID( as_tr,       false )
+  local m_tr_id               = reaper.CSurf_TrackToID( cur_m_tr,    false )
   
   local as_tr_offset          = m_tr_id   - first_track_id                                 -- GET OFFSET BETWEEN MOUSE AND FIRST ITEM POSITION
   local as_pos_offset         = as_tr_id  + as_tr_offset                                   -- ADD MOUSE OFFSET TO CURRENT TRACK ID
@@ -392,7 +396,7 @@ function generic_track_offset(as_tr, first_track)
   local last_project_tr       = get_last_visible_track()
   local last_project_tr_id    = reaper.CSurf_TrackToID( last_project_tr, false )
   
-  as_pos_offset = find_visible_tracks(as_pos_offset,last_project_tr_id) or as_pos_offset   -- FIND FIRST AVAILABLE VISIBLE TRACK IF HIDDEN
+        as_pos_offset         = find_visible_tracks(as_pos_offset,last_project_tr_id) or as_pos_offset   -- FIND FIRST AVAILABLE VISIBLE TRACK IF HIDDEN
  
   local new_as_tr             = as_pos_offset < last_project_tr_id and                     -- POSITION ITEMS TO MOUSE POSITION
                                 reaper.CSurf_TrackFromID(as_pos_offset, false) or
