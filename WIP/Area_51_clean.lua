@@ -327,23 +327,19 @@ local function CreateAreaFromCoordinates(m_r_t, m_r_b)
   local as_left,  as_right  = Check_left_right(mouse.op, mouse.p)                       -- CHECK IF START & END TIMES ARE REVERSED
   local x_s,      x_e       = Check_left_right(mouse.ox, mouse.x)                       -- CHECK IF X START & END ARE REVERSED
  
-  if mouse.l_click then                                           -- IF LAST MOUSE CLICK WAS DOWN
+  if mouse.l_click then                                                                 -- IF LAST MOUSE CLICK WAS DOWN
     guid = mouse.Shift() and reaper.genGuid() or "single"    
   end  
   
-  if mouse.l_down and GetTrackZoneInfo() then                                    -- ALLOW DRAWING ONLY IF IN UPPER PART OF THE TRACK
+  if mouse.l_down and GetTrackZoneInfo() then                                           -- ALLOW DRAWING ONLY IF IN UPPER PART OF THE TRACK
     
     DRAWING = Check_change(as_left, as_right, as_top, as_bot)
     
     if DRAWING then
       CREATING = true
         
-        if copy then      -- DISABLE COPY MODE IF ENABLED
-          copy_mode()
-          if not mouse.Shift() then 
-            for k,v in pairs(ghosts) do reaper.JS_LICE_DestroyBitmap(v.bm) k = nil end        -- DELETE GHOSTS AS IS RESET (STARTS FROM 1)
-          end
-        end
+        if copy then copy_mode() end                                                    -- DISABLE COPY MODE IF ENABLED
+        if not mouse.Shift() then RemoveAsFromTable(Areas_TB, "single") end             -- REMOVE ALL CREATED AS AND GHOSTS IF SHIFT IS NOT PRESSED (FOR MULTI CREATING AS)
          
       local x, y, w, h = x_s, as_top, x_e - x_s, as_bot - as_top
       CreateArea(x, y, w, h, guid, as_left,  as_right)
