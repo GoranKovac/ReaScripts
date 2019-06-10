@@ -99,20 +99,19 @@ function as_item_position(item, as_start, as_end, mouse_time_pos)
   local new_start, new_item_lenght, offset
   if tsStart < item_start and tsEnd > item_start and tsEnd < item_dur then
     ----- IF TS START IS OUT OF ITEM BUT TS END IS IN THEN COPY ONLY PART FROM TS START TO ITEM END
-    new_start, new_item_lenght, offset = (item_start-tsStart) + cur_pos, tsEnd - item_start, 0
+    local new_start, new_item_lenght, offset = (item_start-tsStart) + cur_pos, tsEnd - item_start, 0
     return new_start, new_item_lenght, offset, item
   elseif tsStart < item_dur and tsStart > item_start and tsEnd > item_dur then
     ------ IF START IS IN ITEM AND TS END IS OUTSIDE ITEM COPY PART FROM TS START TO TS END
-    new_start, new_item_lenght, offset = cur_pos, item_dur - tsStart, (tsStart - item_start)
+    local new_start, new_item_lenght, offset = cur_pos, item_dur - tsStart, (tsStart - item_start)
     return new_start, new_item_lenght, offset, item
   elseif tsStart >= item_start and tsEnd <= item_dur then
     ------ IF BOTH TS START AND TS END ARE IN ITEM
-    --new_start, new_item_lenght, offset = tsStart + cur_pos , tsEnd - tsStart, (tsStart - item_start)
-    new_start, new_item_lenght, offset = cur_pos , tsEnd - tsStart, (tsStart - item_start)
+    local new_start, new_item_lenght, offset = cur_pos , tsEnd - tsStart, (tsStart - item_start)
     return new_start, new_item_lenght, offset, item
   elseif tsStart <= item_start and tsEnd >= item_dur then -- >= NEW
     ------ IF BOTH TS START AND END ARE OUTSIDE OF THE ITEM
-    new_start, new_item_lenght, offset = (item_start-tsStart) + cur_pos, item_lenght, 0
+    local new_start, new_item_lenght, offset = (item_start-tsStart) + cur_pos, item_lenght, 0
     return new_start, new_item_lenght, offset, item
   end
   
@@ -123,64 +122,26 @@ function env_prop(env)
   local active, visible, armed, inLane, laneHeight, defaultShape, minValue, maxValue, centerValue, type, faderScaling = reaper.BR_EnvGetProperties(br_env, true, true, true, true, 0, 0, 0, 0, 0, 0, true)
 end
 
-function insert_edge_points(env, as_time_tbl, offset, src_tr)
-  
+function insert_edge_points(env, as_time_tbl, offset, src_tr, del)
+  if not reaper.ValidatePtr(env, "TrackEnvelope*") then return end -- DO NOT ALLOW MEDIA TRACK HERE
   local edge_pts = {}
   
-    local retval, value_st, dVdS, ddVdS, dddVdS = reaper.Envelope_Evaluate( env, as_time_tbl[1] + offset, 0, 0 ) -- DESTINATION START POINT
+    local retval, value_st, dVdS, ddVdS, dddVdS = reaper.Envelope_Evaluate( env, as_time_tbl[1] + offset, 0, 0 )  -- DESTINATION START POINT
     reaper.InsertEnvelopePoint(env, as_time_tbl[1] + offset - 0.001, value_st, 0, 0, true, true)
-    local retval, value_et, dVdS, ddVdS, dddVdS = reaper.Envelope_Evaluate( env, as_time_tbl[2] + offset, 0, 0 ) -- DESTINATION END POINT
+    local retval, value_et, dVdS, ddVdS, dddVdS = reaper.Envelope_Evaluate( env, as_time_tbl[2] + offset, 0, 0 )  -- DESTINATION END POINT
     reaper.InsertEnvelopePoint(env, as_time_tbl[2] + offset + 0.001, value_et, 0, 0, true, true)
     
     reaper.DeleteEnvelopePointRange( env, as_time_tbl[1] + offset, as_time_tbl[2]+ offset )
     
-    local retval, value_s, dVdS, ddVdS, dddVdS = reaper.Envelope_Evaluate( src_tr, as_time_tbl[1], 0, 0 )  -- SOURCE START POINT
+    if del then return end
+    local retval, value_s, dVdS, ddVdS, dddVdS = reaper.Envelope_Evaluate( src_tr, as_time_tbl[1], 0, 0 )         -- SOURCE START POINT
     reaper.InsertEnvelopePoint(env, as_time_tbl[1] + offset + 0.001, value_s, 0, 0, true, false)
     
-    local retval, value_e, dVdS, ddVdS, dddVdS = reaper.Envelope_Evaluate( src_tr, as_time_tbl[2], 0, 0 )  -- SOURCE END POINT
+    local retval, value_e, dVdS, ddVdS, dddVdS = reaper.Envelope_Evaluate( src_tr, as_time_tbl[2], 0, 0 )         -- SOURCE END POINT
     reaper.InsertEnvelopePoint(env, as_time_tbl[2] + offset - 0.001, value_e, 0, 0, true, false)
    
 end
 
-function paste_env(tbl, mouse_tr, mouse_time_pos, active_as)
-  if not mouse_tr then return end -- DO NOT PASTE IF MOUSE IS OUT OF ARRANGE WINDOW 
-  local first_as_tr_in_all = find_highest_tr()
-  
-  for i = 1, #tbl do 
-    local tbl2 = active_as or tbl[i]              -- USE ACTIVE_AS TBL OR MAIN ONE WITH ALL OF THEM
-    local pos = mouse_time_pos 
-    local offset_paste =  (pos - tbl2.time_start)
-    if i > 1 then pos = pos + (tbl2.time_start - tbl[1].time_start) end -- IF i > 1 THAT MEANS WE ARE PASTING ALL AS AT ONCE, ELSE PASTE ACTIVE AS
-    
-    for j = 1 ,#tbl2.info do
-      
-      if tbl2.info[j].env_points then
-        local as_tr = tbl2.info[j].track
-        local offset , tr = GetTrackOffset(as_tr, mouse_tr, first_as_tr_in_all, tbl2.info[#tbl2.info].track)
-        local env_t, env_b, env_h, tr_env = GetEnvOffset_MatchCriteria(tr, tbl2.info[j].env_name,tbl2.info[j].track,j)
-        if tr_env then
-        insert_edge_points(tr_env, {tbl2.time_start, tbl2.time_end}, offset_paste, as_tr)
-        if reaper.ValidatePtr(tr, "MediaTrack*") then -- NOT NEEDED MAYBE
-          for l = 1 ,#tbl2.info[j].env_points do
-            local env = tbl2.info[j].env_points[l]
-            reaper.InsertEnvelopePoint( 
-                                        tr_env, 
-                                        env.time + offset_paste, 
-                                        env.value, 
-                                        env.shape, 
-                                        env.tension, 
-                                        env.selected, 
-                                        true
-                                      )
-          end
-          reaper.Envelope_SortPoints( tr_env )
-        end
-        end
-      end
-    end
-  end
-end
-   
 local function create_item(item, tr, as_start, as_end, mouse_time_pos)
   local filename, clonedsource
   local take = reaper.GetMediaItemTake(item, 0)
@@ -214,7 +175,6 @@ end
 
 function paste(items, item_track, as_start, as_end, pos_offset, first_track)
   if not mouse.tr then return end -- DO NOT PASTE IF MOUSE IS OUT OF ARRANGE WINDOW
-  reaper.PreventUIRefresh(1)
   
   local offset_track, under_last_tr = generic_track_offset(item_track, first_track)
   
@@ -228,10 +188,47 @@ function paste(items, item_track, as_start, as_end, pos_offset, first_track)
     local mouse_offset = pos_offset + mouse.p 
     create_item(item, offset_track, as_start, as_end, mouse_offset) -- CREATE ITEMS AT NEW POSITION
   end
-        
- reaper.PreventUIRefresh(-1)
 end
 
+function paste_env(env_track, env_name, env_data, as_start, as_end, pos_offset, first_env_tr)
+  if not mouse.tr then return end                                                                                 -- DO NOT PASTE IF MOUSE IS OUT OF ARRANGE WINDOW
+  
+  local offset_track, under_last_tr = generic_track_offset(env_track, first_env_tr)
+  local env_offset                  = GetEnvOffset_MatchCriteria(offset_track, env_name)
+  
+  if under_last_tr and under_last_tr > 0 then 
+    for t = 1, under_last_tr do reaper.InsertTrackAtIndex(( reaper.GetNumTracks() ), true ) end                   -- IF THE TRACKS ARE BELOW LAST TRACK OF THE PROJECT CREATE HAT TRACKS
+    offset_track = reaper.GetTrack(0,reaper.GetNumTracks()-1)
+  end
+  
+  local env_paste_offset  = mouse.p - as_start                                                                    -- OFFSET BETWEEN ENVELOPE START AND MOUSE POSITION
+  local mouse_offset      = env_paste_offset + pos_offset                                                         -- OFFSET BETWEEN MOUSE POSITION AND NEXT AREA SELECTION
+  
+  if env_offset and reaper.ValidatePtr(env_offset, "TrackEnvelope*") then                                         -- IF TRACK HAS ENVELOPES PASTE THEM 
+    insert_edge_points(env_offset, {as_start, as_end}, mouse_offset, env_track)                                   -- INSERT EDGE POINTS AT CURRENT ENVELOE VALUE AND DELETE WHOLE RANGE INSIDE (DO NOT ALLOW MIXING ENVELOPE POINTS AND THAT WEIRD SHIT)
+    for i = 1 ,#env_data do
+      local env = env_data[i]
+      reaper.InsertEnvelopePoint( 
+                                  env_offset, 
+                                  env.time + mouse_offset, 
+                                  env.value, 
+                                  env.shape, 
+                                  env.tension, 
+                                  env.selected, 
+                                  true
+                                )
+    end
+    reaper.Envelope_SortPoints( env_offset )
+  elseif env_offset and reaper.ValidatePtr(env_offset, "MediaTrack*") then
+    
+  end
+end
+
+function del_env(env_track, as_start, as_end, offset, job)
+  local as_time_tbl = {as_start, as_end}
+  insert_edge_points(env_track, as_time_tbl, offset, nil, job)
+end
+   
 function AreaDo(tbl,job)
   reaper.PreventUIRefresh(1)
   for a = 1, #tbl do
@@ -256,6 +253,8 @@ function AreaDo(tbl,job)
         local env_name      = info.env_name
         local env_data      = info.env_points
         
+        if job == "PASTE" then paste_env(env_track, env_name, env_data, as_start, as_end, pos_offset, first_tr) end
+        if job == "del"   then del_env(env_track, as_start, as_end, pos_offset, job) reaper.Envelope_SortPoints( env_track ) end
       end
     end
     if job == "del" then tbl.info = GetAreaInfo(tbl) end
