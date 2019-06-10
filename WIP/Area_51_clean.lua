@@ -40,13 +40,12 @@ crash = function (errObject)
   end
 end
 
-
 local main_wnd        = reaper.GetMainHwnd()                            -- GET MAIN WINDOW
 local track_window    = reaper.JS_Window_FindChildByID(main_wnd, 1000)  -- GET TRACK VIEW
 local track_window_dc = reaper.JS_GDI_GetWindowDC( track_window )
 local mixer_wnd       = reaper.JS_Window_Find("mixer", true)            -- GET MIXER -- tHIS NEEDS TO BE CONVERTED TO ID , AND I STILL DO NOT KNOW HOW TO FIND THEM
 
-Areas_TB = {}
+local Areas_TB = {}
 --local active_as
 local Key_TB = {}
 
@@ -158,10 +157,10 @@ local function GetTrackFromPoint()
   end
   local window = reaper.JS_Window_GetRelated(trackview_window, "CHILD")
   while window do
-    if reaper.JS_Window_IsVisible(window) then -- DO NOT ALLOW TRACKING MOUSE IF THERE IS WINDOW IN FRONT OF ARRANGE AND MOUSE IS ON IT
+    if reaper.JS_Window_IsVisible(window) then                                         -- DO NOT ALLOW TRACKING MOUSE IF THERE IS WINDOW IN FRONT OF ARRANGE AND MOUSE IS ON IT
       local _, _, top, _, bottom = reaper.JS_Window_GetRect(window)
       
-      if top <= mouse.y and bottom > mouse.y then                                              -- IF MOUSE IN THE TRACK
+      if top <= mouse.y and bottom > mouse.y then                                      -- IF MOUSE IN THE TRACK
         local pointer = reaper.JS_Window_GetLongPtr(window, "USERDATA")
         if reaper.ValidatePtr(pointer, "MediaTrack*") then                             -- ON MEDIA TRACK
           if reaper.GetMediaTrackInfo_Value(pointer, "I_FOLDERDEPTH") == 1 then 
@@ -266,6 +265,7 @@ local function GetGhosts(data, as_start, as_end)
       local bm = reaper.JS_LICE_CreateBitmap(true, round((as_end - as_start) * zoom_lvl), env_h)
       local dc = reaper.JS_LICE_GetDC(bm)
       local env_ghost_id = tostring(tr) .. as_start
+      
       reaper.JS_GDI_Blit(
                           dc, 0, 0, track_window_dc, 
                           round(as_start * zoom_lvl) - Arr_pixel, 
@@ -316,8 +316,8 @@ end
 
 function GetAreaInfo(tbl)
   local y_t, y_b, as_start, as_end = tbl.y, tbl.y + tbl.h, tbl.time_start, tbl.time_end
-  local tracks = GetTrackFromMouseRange(y_t, y_b)             -- GET TRACK RANGE
-  local info   = GetRangeInfo(tracks, as_start, as_end)          -- GATHER ALL INFO
+  local tracks = GetTrackFromMouseRange(y_t, y_b)                 -- GET TRACK RANGE
+  local info   = GetRangeInfo(tracks, as_start, as_end)           -- GATHER ALL INFO
   return info
 end
 
@@ -394,9 +394,9 @@ function generic_track_offset(as_tr, first_track)
   local last_project_tr       = get_last_visible_track()
   local last_project_tr_id    = reaper.CSurf_TrackToID( last_project_tr, false )
   
-        as_pos_offset         = find_visible_tracks(as_pos_offset,last_project_tr_id) or as_pos_offset   -- FIND FIRST AVAILABLE VISIBLE TRACK IF HIDDEN
+        as_pos_offset         = find_visible_tracks(as_pos_offset,last_project_tr_id) or as_pos_offset    -- FIND FIRST AVAILABLE VISIBLE TRACK IF HIDDEN
  
-  local new_as_tr             = as_pos_offset < last_project_tr_id and                     -- POSITION ITEMS TO MOUSE POSITION
+  local new_as_tr             = as_pos_offset < last_project_tr_id and                                    -- POSITION ITEMS TO MOUSE POSITION
                                 reaper.CSurf_TrackFromID(as_pos_offset, false) or
                                 last_project_tr
   
@@ -419,7 +419,7 @@ local function generic_table_find(job)
     local tbl = as_tbl[a]
     
     local pos_offset        = 0
-          pos_offset        = pos_offset + (tbl.time_start - lowest_start()) --  OFFSET AREA SELECTIONS TO MOUSE POSITION
+          pos_offset        = pos_offset + (tbl.time_start - lowest_start())                --  OFFSET AREA SELECTIONS TO MOUSE POSITION
     local as_start, as_end  = tbl.time_start, tbl.time_end
     
     for i = 1, #tbl.info do
@@ -449,7 +449,7 @@ function DrawItemGhosts(item_data, item_track, as_start, as_end, pos_offset, fir
   
   local offset_track, under_last_tr = generic_track_offset(item_track, first_track)
   local off_h                       = under_last_tr and TBH[offset_track].h * under_last_tr or 0  -- IF OFFSET TRACKS ARE BELOW LAST PROJECT TRACK MULTIPLY HEIGHT BY THAT NUMBER AND ADD IT TO GHOST
-  if TBH[offset_track] then   -- THIS IS NEEDED FOR PASTE FUNCTION OR IT WILL CRASH
+  if TBH[offset_track] then                                                                       -- THIS IS NEEDED FOR PASTE FUNCTION OR IT WILL CRASH
     local track_t, track_b, track_h   = TBH[offset_track].t + off_h, TBH[offset_track].b, TBH[offset_track].h
     for i = 1, #item_data do  
       local item                      = item_data[i]
@@ -465,8 +465,8 @@ function DrawItemGhosts(item_data, item_track, as_start, as_end, pos_offset, fir
                            ghosts[item_ghost_id].bm,                                      
                            0,                                               -- x
                            0,                                               -- y
-                           ghosts[item_ghost_id].l,                                  -- w
-                           ghosts[item_ghost_id].h - 19                              -- h
+                           ghosts[item_ghost_id].l,                         -- w
+                           ghosts[item_ghost_id].h - 19                     -- h
                          ) 
     end
   end
@@ -478,7 +478,7 @@ function DrawEnvGhosts(env_track, env_name, as_start, as_end, pos_offset, first_
   local offset_track, under_last_tr = generic_track_offset(env_track, first_env_tr)
   local off_h                       = under_last_tr and TBH[offset_track].h * under_last_tr or 0  -- IF OFFSET TRACKS ARE BELOW LAST PROJECT TRACK MULTIPLY HEIGHT BY THAT NUMBER AND ADD IT TO GHOST
   local env_offset                  = GetEnvOffset_MatchCriteria(offset_track, env_name)
-  if TBH[env_offset] then           -- THIS IS NEEDED FOR PASTE FUNCTION OR IT WILL CRASH
+  if TBH[env_offset] then                                                                         -- THIS IS NEEDED FOR PASTE FUNCTION OR IT WILL CRASH
     local track_t, track_b, track_h   = TBH[env_offset].t + off_h, TBH[env_offset].b, TBH[env_offset].h
     
     local env_ghost_id = tostring(env_track) .. as_start
@@ -501,11 +501,10 @@ end
 function mouse_coord()
   local zoom_lvl, Arr_start_time, Arr_end_time, Arr_pixel, x_view_start, y_view_start, x_view_end, y_view_end, state, scroll = Project_info()  
   local x, y  = reaper.GetMousePosition()
-  local mouse_time_pos    = ((x - x_view_start) / zoom_lvl) + Arr_start_time
-        mouse_time_pos    = (mouse_time_pos > 0) and mouse_time_pos or 0
+  local mouse_time_pos  = ((x - x_view_start) / zoom_lvl) + Arr_start_time
+        mouse_time_pos  = (mouse_time_pos > 0) and mouse_time_pos or 0
   local pos = (reaper.GetToggleCommandState(1157) == 1) and reaper.SnapToGrid(0, mouse_time_pos) or mouse_time_pos -- FINAL POSITION IS SNAP IF ENABLED OF FREE MOUSE POSITION
-  
-        x = (reaper.GetToggleCommandState(1157) == 1) and (round(pos * zoom_lvl)+ x_view_start)-Arr_pixel  or x
+        x   = (reaper.GetToggleCommandState(1157) == 1) and (round(pos * zoom_lvl) + x_view_start )- Arr_pixel or x
   return x, y, pos
 end
 
@@ -519,7 +518,7 @@ function copy_mode()
   end
 end
 
-function copy_paste()GetTracksXYH_Info()GetTracksXYH_Info()GetTracksXYH_Info()
+function copy_paste()
   if copy and #Areas_TB ~= 0 then
     local tbl = active_as and {active_as} or Areas_TB
     AreaDo(tbl,"PASTE")
