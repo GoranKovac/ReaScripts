@@ -224,21 +224,19 @@ function paste_env(env_track, env_name, env_data, as_start, as_end, pos_offset, 
   end
 end
 
-function del_env(env_track, as_start, as_end, offset, job)
+function del_env(env_track, as_start, as_end, pos_offset, job)
   local as_time_tbl = {as_start, as_end}
-  
+ 
   local first_env = reaper.GetEnvelopePointByTime( env_track, as_start)
   local last_env  = reaper.GetEnvelopePointByTime( env_track, as_end )+1
   
   local retval1, time1, value1, shape1, tension1, selected1 = reaper.GetEnvelopePoint( env_track, first_env )
   local retval2, time2, value2, shape2, tension2, selected2 = reaper.GetEnvelopePoint( env_track, last_env )
   
-  if value1 == 0 then
-    reaper.DeleteEnvelopePointRange( env_track, as_start + offset, as_end )
-  elseif value2 == 0 then 
-    reaper.DeleteEnvelopePointRange( env_track, as_start + offset, as_end )
-  elseif value1 ~= 0 and value2 ~= 0 then
-    insert_edge_points(env_track, as_time_tbl, offset, nil, job)
+  if value1 == 0 or value2 == 0  then
+    reaper.DeleteEnvelopePointRange( env_track, as_start , as_end )
+  else
+    insert_edge_points(env_track, as_time_tbl, 0, nil, job)
   end
 end
    
