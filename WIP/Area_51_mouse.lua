@@ -29,10 +29,10 @@ local mouse = {
                 dx = 0, dy = 0,
                 ox = 0, oy = 0, 
                 p = 0,
-                tr = "",
+                tr = nil,
                 r_t = 0, r_b = 0,
                 x = 0, y = 0,
-                otr = "", 
+                otr = nil, 
                 ort = 0, orb = 0,
                 op = 0,
                 
