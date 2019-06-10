@@ -207,7 +207,7 @@ function GetTrackTBH(tbl)
 end
 
 local function GetTrackZoneInfo()
-  if not mouse.otr then return end
+  if not mouse.otr or not TBH[mouse.otr] then return end
   
   local tr_t, tr_b, tr_h = TBH[mouse.otr].t, TBH[mouse.otr].b, TBH[mouse.otr].h
   if mouse.oy > tr_t and mouse.oy < tr_b and mouse.oy - tr_t < tr_h / 2 then return true else return false end
