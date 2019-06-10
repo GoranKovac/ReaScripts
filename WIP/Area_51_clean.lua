@@ -248,7 +248,8 @@ local function GetGhosts(data, as_start, as_end)
         local item_start, item_lenght = item_blit(item, as_start, as_end)
         local bm = reaper.JS_LICE_CreateBitmap(true, round(item_lenght * zoom_lvl), item_h)
         local dc = reaper.JS_LICE_GetDC(bm)
-         
+        local item_ghost_id = tostring(item) .. as_start 
+        
         reaper.JS_GDI_Blit(
                              dc, 0, 0, track_window_dc,                        -- SOURCE - DESTINATION
                              round(item_start    * zoom_lvl) - Arr_pixel,      -- X
@@ -256,7 +257,7 @@ local function GetGhosts(data, as_start, as_end)
                              round(item_lenght   * zoom_lvl),                  -- W
                              item_h - 19                                       -- H (-19 TO COMPENSATE ITEM BAR REMOVING)
                           )                  
-        ghosts[item] =  {bm =  bm , dc = dc, h = item_h, l = round(item_lenght   * zoom_lvl)}
+        ghosts[item_ghost_id] =  {bm =  bm , dc = dc, h = item_h, l = round(item_lenght   * zoom_lvl)}
       end
       
     elseif data[i].env_name then
@@ -293,6 +294,7 @@ function GetRangeInfo(tbl, as_start, as_end)
 end
 
 local function RemoveAsFromTable(tab, val)
+  if #tab == 0 then return end
   for i = #tab , 1, -1 do
     local in_table = tab[i].guid
     
@@ -452,6 +454,7 @@ function DrawItemGhosts(item_data, item_track, as_start, as_end, pos_offset, fir
     for i = 1, #item_data do  
       local item                      = item_data[i]
       local item_start, item_lenght   = item_blit(item, as_start, as_end, pos)
+      local item_ghost_id = tostring(item) .. as_start 
       local mouse_offset = pos_offset + (mouse.p - as_start) + item_start       
       reaper.JS_Composite(
                            track_window,                              
@@ -459,11 +462,11 @@ function DrawItemGhosts(item_data, item_track, as_start, as_end, pos_offset, fir
                            track_t - y_view_start + 0,                      -- Y
                            round(item_lenght * zoom_lvl),                   -- W
                            track_h,                                         -- H
-                           ghosts[item].bm,                                      
+                           ghosts[item_ghost_id].bm,                                      
                            0,                                               -- x
                            0,                                               -- y
-                           ghosts[item].l,                                  -- w
-                           ghosts[item].h - 19                              -- h
+                           ghosts[item_ghost_id].l,                                  -- w
+                           ghosts[item_ghost_id].h - 19                              -- h
                          ) 
     end
   end
