@@ -191,6 +191,7 @@ function get_last_visible_track()
 end
 
 function GetTrackTBH(tbl)
+  if not tbl then return end
   local total_h = 0
   local t, b, h
   
@@ -508,13 +509,27 @@ function mouse_coord()
   return x, y, pos
 end
 
-function copy_mode()
-  copy = not copy
-  if not copy and #Areas_TB ~= 0 then
+------------------------ INTERCEPT TEST
+function copy_mode(key)
+  copy = #Areas_TB ~= 0 and not copy
+  if not copy then
     for k, v in pairs(ghosts) do
       reaper.JS_Composite_Unlink(track_window,  v.bm) 
     end
+    
+    for i = 1 ,#Key_TB do
+      if Key_TB[i].func then
+        Key_TB[i]:intercept(-1)
+      end
+    end
+    
     refresh_reaper()
+  else
+    for i = 1 ,#Key_TB do
+      if Key_TB[i].name == "COPY" or Key_TB[i].name == "PASTE" then
+        Key_TB[i]:intercept(1)
+      end
+    end
   end
 end
 
@@ -543,7 +558,7 @@ local function check_keys()
   local key = Track_keys(Key_TB,Areas_TB)
   if key then 
     if key.DOWN then
-      if key.DOWN.func then key.DOWN.func() end
+      if key.DOWN.func then key.DOWN.func(key.DOWN) end
       if key.DOWN.name == "X" then del() end
     elseif key.HOLD then
     elseif key.UP then
@@ -572,6 +587,53 @@ function find_highest_tr(val, job)
   end
 end
 
+function project_mouse_info2()
+  local window, segment, details = reaper.BR_GetMouseCursorContext()
+  if details == "env_point" then
+  return details
+  end
+end
+
+local function TranslateRange(value, oldMin, oldMax, newMin, newMax)
+    local oldRange = oldMax - oldMin;
+    local newRange = newMax - newMin;
+    local newValue = ((value - oldMin) * newRange / oldRange) + newMin;
+    return newValue
+end
+
+function someting_weird_at_env_bottom(val)                                                        -- THAT WEIRD EMPTY BOTTOM OF THE ENVELOPE TRACK
+  local weird
+  if val >= 52 then weird = 14
+  elseif val < 52 and val >= 48 then weird = 13 
+  elseif val < 48 and val >= 44 then weird = 12
+  elseif val < 44 and val >= 40 then weird = 11
+  elseif val < 40 and val >= 36 then weird = 10
+  elseif val < 36 and val >= 32 then weird = 9
+  elseif val < 32 and val >= 28 then weird = 8
+  elseif val < 28 then weird = 7
+  end
+  return weird
+end
+
+function project_mouse_info()
+  local zoom_lvl =  reaper.GetHZoomLevel()
+  if reaper.ValidatePtr(mouse.tr, "TrackEnvelope*") then
+  
+    local alloc_env =  reaper.BR_EnvAlloc( mouse.tr, true )
+    local active, visible, armed, inLane, laneHeight, defaultShape, minValue,  maxValue, centerValue, type_, faderScaling = reaper.BR_EnvGetProperties( alloc_env )
+    
+    local tr_t, tr_b, tr_h = TBH[mouse.tr].t, TBH[mouse.tr].b, TBH[mouse.tr].h
+    local lower_env_h_offset = someting_weird_at_env_bottom(tr_h)                                 -- VISUAL OFFSET OF ENVELOPE RANGE AND TRACK (THAT EMPTY LOWER PART OF 7-14 PIXELS,DEPENDING ON HEIGHT
+    
+    local env_val = reaper.BR_EnvValueAtPos( alloc_env, mouse.p )                                 -- GET ENV VALUE AT MOUSE POSITION
+    local env_p_y = TranslateRange(env_val, minValue, maxValue, tr_b - lower_env_h_offset, tr_t)  -- CONVERT THAT VALUE TO Y PIXEL POSITION
+    
+    if mouse.y <= env_p_y + 8 and mouse.y >= env_p_y - 4 then return "POINT" end                  -- FIND IF MOUSE IS IN THAT PIXEL RANGE (ADD 8 AND 4 PIXELS)
+    
+    reaper.BR_EnvFree( alloc_env, true )
+  end
+end
+
 local function Main()
   xpcall( function()
   
@@ -581,10 +643,10 @@ local function Main()
   if GetTrackFromPoint() then mouse.tr, mouse.r_t, mouse.r_b = GetTrackFromPoint() end
   
   check_keys()
- 
+  
   if ZONE then zone(ZONE) end
   
-  if not ZONE then CreateAreaFromCoordinates(mouse.r_t, mouse.r_b) end        -- CREATE AS IF IN ARRANGE WINDOW AND NON AS ZONES ARE CLICKED
+  if not ZONE and not mouse.detail then CreateAreaFromCoordinates(mouse.r_t, mouse.r_b) end        -- CREATE AS IF IN ARRANGE WINDOW AND NON AS ZONES ARE CLICKED
   
   Draw(Areas_TB, track_window)                                      -- DRAWING CLASS 
   
@@ -610,7 +672,7 @@ for i = 1, 255 do
   elseif i == 32  then name = "Space"
   elseif i == 20  then name = "Caps-Lock"
   elseif i == 27  then name = "ESC" func = remove
-  elseif i == 9   then name = "TAB" func = test     
+  elseif i == 9   then name = "TAB"   
   elseif i == 192 then name = "~"
   elseif i == 91  then name = "Win"
   elseif i == 45  then name = "Insert"
