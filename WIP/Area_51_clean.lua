@@ -46,7 +46,7 @@ local track_window_dc = reaper.JS_GDI_GetWindowDC( track_window )
 local mixer_wnd       = reaper.JS_Window_Find("mixer", true)            -- GET MIXER -- tHIS NEEDS TO BE CONVERTED TO ID , AND I STILL DO NOT KNOW HOW TO FIND THEM
 
 local Areas_TB = {}
---local active_as
+local active_as
 local Key_TB = {}
 
 function msg(m) reaper.ShowConsoleMsg(tostring(m) .. "\n") end
@@ -406,9 +406,12 @@ function generic_track_offset(as_tr, first_track)
 end
 
 function lowest_start()
-  local min = Areas_TB[1].time_start
-  for i = 1, #Areas_TB do
-    if Areas_TB[i].time_start < min then min = Areas_TB[i].time_start end                   -- FIND LOWEST (FIRST) TIME SEL START
+  local as_tbl = active_as and {active_as} or Areas_TB
+  
+  local min = as_tbl[1].time_start
+  
+  for i = 1, #as_tbl do
+    if as_tbl[i].time_start < min then min = as_tbl[i].time_start end                   -- FIND LOWEST (FIRST) TIME SEL START
   end
   return min
 end
@@ -560,6 +563,13 @@ local function check_keys()
     if key.DOWN then
       if key.DOWN.func then key.DOWN.func(key.DOWN) end
       if key.DOWN.name == "X" then del() end
+      if tonumber(key.DOWN.name) then 
+        local num = tonumber(key.DOWN.name)
+        active_as = Areas_TB[num] and Areas_TB[num] or nil
+        for k, v in pairs(ghosts) do
+          reaper.JS_Composite_Unlink(track_window,  v.bm) 
+        end
+      end
     elseif key.HOLD then
     elseif key.UP then
     end
@@ -567,8 +577,10 @@ local function check_keys()
 end
 
 function find_highest_tr(val, job)
-  for i = 1, #Areas_TB do
-    local tbl = Areas_TB[i]
+  local as_tbl = active_as and {active_as} or Areas_TB
+  
+  for i = 1, #as_tbl do
+    local tbl = as_tbl[i]
     
     for j = 1, #tbl.info do
       
@@ -584,13 +596,6 @@ function find_highest_tr(val, job)
       end
       
     end
-  end
-end
-
-function project_mouse_info2()
-  local window, segment, details = reaper.BR_GetMouseCursorContext()
-  if details == "env_point" then
-  return details
   end
 end
 
