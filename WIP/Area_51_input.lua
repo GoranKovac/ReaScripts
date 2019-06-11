@@ -29,15 +29,9 @@ function extended(Child, Parent)
   setmetatable(Child,{__index = Parent})
 end
 
-function Element:intercept(key_codes,key_int)
-  if #as ~= 0 then
-    for i = 1, #key_codes do
-     -- reaper.JS_VKeys_Intercept(key_codes[i], key_int)
-    end
-  else
-    for i = 1 , 255 do
-    --  reaper.JS_VKeys_Intercept(i, -1)
-    end  
+function Element:intercept(int)
+  for i = 1, #self.ID do
+    reaper.JS_VKeys_Intercept(self.ID[i], int)
   end
 end
 
