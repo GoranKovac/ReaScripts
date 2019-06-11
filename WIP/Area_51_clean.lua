@@ -516,22 +516,14 @@ end
 function copy_mode(key)
   copy = #Areas_TB ~= 0 and not copy
   if not copy then
-    for k, v in pairs(ghosts) do
-      reaper.JS_Composite_Unlink(track_window,  v.bm) 
-    end
     
-    for i = 1 ,#Key_TB do
-      if Key_TB[i].func then
-        Key_TB[i]:intercept(-1)
-      end
-    end
+    for k, v in pairs(ghosts) do reaper.JS_Composite_Unlink(track_window,  v.bm) end  -- REMOVE GHOSTS
+    for i = 1 ,#Key_TB do if Key_TB[i].func then Key_TB[i]:intercept(-1) end  end     -- RELEASE INTRECEPT
     
-    refresh_reaper()
+    refresh_reaper()                                                                  -- REFRESH SCREEN FROM GHOST REMOVING
   else
     for i = 1 ,#Key_TB do
-      if Key_TB[i].name == "COPY" or Key_TB[i].name == "PASTE" then
-        Key_TB[i]:intercept(1)
-      end
+      if Key_TB[i].name == "COPY" or Key_TB[i].name == "PASTE" then Key_TB[i]:intercept(1) end -- INTERCEPT 
     end
   end
 end
@@ -540,20 +532,19 @@ function copy_paste()
   if copy and #Areas_TB ~= 0 then
     local tbl = active_as and {active_as} or Areas_TB
     AreaDo(tbl,"PASTE")
-    GetTracksXYH_Info()
+    GetTracksXYH_Info()                                                                 -- REFRESH MAIN TABLE TRACKS (IF PASTE CREATED NEW TRACKS)
   end
 end
 
 function del()
   local tbl = active_as and {active_as} or Areas_TB
-  if #tbl ~= 0 then
-    AreaDo(tbl,"del")
-  end
+  if #tbl ~= 0 then AreaDo(tbl,"del")end
 end
 
 function remove()
-  if copy then copy_mode() end
+  if copy then copy_mode() end                                                         -- DISABLE COPY MODE
   RemoveAsFromTable(Areas_TB, "Delete")
+  active_as = nil
   refresh_reaper()
 end
 
@@ -563,13 +554,13 @@ local function check_keys()
     if key.DOWN then
       if key.DOWN.func then key.DOWN.func(key.DOWN) end
       if key.DOWN.name == "X" then del() end
-      if tonumber(key.DOWN.name) then 
+      
+      if tonumber(key.DOWN.name) then -- ACTIVE AS
         local num = tonumber(key.DOWN.name)
         active_as = Areas_TB[num] and Areas_TB[num] or nil
-        for k, v in pairs(ghosts) do
-          reaper.JS_Composite_Unlink(track_window,  v.bm) 
-        end
+        for k, v in pairs(ghosts) do reaper.JS_Composite_Unlink(track_window,  v.bm) end -- REFRESH GHOSTS
       end
+      
     elseif key.HOLD then
     elseif key.UP then
     end
