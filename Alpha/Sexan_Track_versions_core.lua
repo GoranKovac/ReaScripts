@@ -1661,8 +1661,8 @@ function auto_save(last_action, current, guid, mousepos)
         last_action:find("rename source media")
      then
       --------------------- ITEMS
-      if not current then
-        return
+      if not current then current =  reaper.GetSelectedTrack( 0, 0 )
+        --return
       end
       local cur_track = reaper.GetTrackGUID(current)
       if not find_guid(cur_track) or not find_guid(cur_track).data then
