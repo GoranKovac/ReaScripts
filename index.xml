@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="ac47c313b49cc11510d18e0e0973c18cdf7d620d" name="Sexan_Scripts">
+<index version="1" commit="0d7d45e49991f48e1e4fa27e03aa08e6b0e474c0" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -29,6 +29,11 @@
         <changelog><![CDATA[Fixed autosave not accounting current track, added Save Button for manual saving]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/ac47c313b49cc11510d18e0e0973c18cdf7d620d/Alpha/Sexan_Track_versions_gui.lua</source>
         <source file="Sexan_Track_versions_core.lua">https://github.com/GoranKovac/ReaScripts/raw/ac47c313b49cc11510d18e0e0973c18cdf7d620d/Alpha/Sexan_Track_versions_core.lua</source>
+      </version>
+      <version name="0.0.5" author="SeXan" time="2019-06-21T14:37:38Z">
+        <changelog><![CDATA[Added global save to save button]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/0d7d45e49991f48e1e4fa27e03aa08e6b0e474c0/Alpha/Sexan_Track_versions_gui.lua</source>
+        <source file="Sexan_Track_versions_core.lua">https://github.com/GoranKovac/ReaScripts/raw/0d7d45e49991f48e1e4fa27e03aa08e6b0e474c0/Alpha/Sexan_Track_versions_core.lua</source>
       </version>
     </reapack>
   </category>
