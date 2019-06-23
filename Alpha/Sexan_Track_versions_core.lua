@@ -1654,11 +1654,11 @@ function auto_save(last_action, current, guid, mousepos)
     if last_action:find("remove tracks") then
       validate_guid()
     end -- TRACK HAS BEEN DELETED IN REAPER
-    if
-      not last_action:find("automation item") and last_action:find("item") or last_action:find("recorded media") or
+    if not last_action:find("automation item") and last_action:find("item") or last_action:find("recorded media") or
         last_action:find("midi editor: insert notes") or
         last_action:find("change source media") or
-        last_action:find("rename source media")
+        last_action:find("rename source media") or
+        last_action:find("custom")
      then
       --------------------- ITEMS
       if not current then current =  reaper.GetSelectedTrack( 0, 0 )
