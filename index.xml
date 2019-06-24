@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="5e08d3e05833aa8b4614ccd32f34dc63d8eeac40" name="Sexan_Scripts">
+<index version="1" commit="0efdff6edaf8af3b4ce623499eb42979e0899c81" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -39,6 +39,11 @@
         <changelog><![CDATA[Added custom actions to autosave]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/5e08d3e05833aa8b4614ccd32f34dc63d8eeac40/Alpha/Sexan_Track_versions_gui.lua</source>
         <source file="Sexan_Track_versions_core.lua">https://github.com/GoranKovac/ReaScripts/raw/5e08d3e05833aa8b4614ccd32f34dc63d8eeac40/Alpha/Sexan_Track_versions_core.lua</source>
+      </version>
+      <version name="0.0.7" author="SeXan" time="2019-06-24T18:46:41Z">
+        <changelog><![CDATA[Fixed issue for my buddy with rendering midi stuff]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/0efdff6edaf8af3b4ce623499eb42979e0899c81/Alpha/Sexan_Track_versions_gui.lua</source>
+        <source file="Sexan_Track_versions_core.lua">https://github.com/GoranKovac/ReaScripts/raw/0efdff6edaf8af3b4ce623499eb42979e0899c81/Alpha/Sexan_Track_versions_core.lua</source>
       </version>
     </reapack>
   </category>
