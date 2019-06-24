@@ -1658,7 +1658,8 @@ function auto_save(last_action, current, guid, mousepos)
         last_action:find("midi editor: insert notes") or
         last_action:find("change source media") or
         last_action:find("rename source media") or
-        last_action:find("custom")
+        last_action:find("custom") or
+        last_action:find("take")
      then
       --------------------- ITEMS
       if not current then current =  reaper.GetSelectedTrack( 0, 0 )
