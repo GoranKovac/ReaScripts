@@ -192,7 +192,7 @@ function init()
   gfx.clear = 3355443  -- matches with "FUSION: Pro&Clean Theme :: BETA 01" http://forum.cockos.com/showthread.php?t=155329
   -- (Double click in ReaScript IDE to open the link)
 
-  GetMouseInfo()
+  MouseInfo()
 end
 
 
@@ -200,7 +200,7 @@ end
 -- Mainloop --
 --------------
 
-function GetMouseInfo(x, y, p)
+function MouseInfo(x, y, p)
   mouse.x, mouse.y, mouse.p = x or mouse.x, y or mouse.y, p or mouse.p
   mouse.l_click   = false
   mouse.r_click   = false

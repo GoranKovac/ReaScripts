@@ -115,10 +115,12 @@ function Element:track()
   elseif mouse.l_up then ZONE = nil --end
   end
   ]]
+  --[[
     if self:mouseDown() and not ZONE then ZONE = self:zoneIN(mouse.ox, mouse.oy) end
     if ZONE and mouse.l_down then transform = zone(ZONE,self)
     elseif ZONE and mouse.l_up then self.info = GetAreaInfo(transform) ZONE = nil transform = nil
     end
+    ]]
 end
 ----------------------------------------------------------------------------------------------------
 ---   Create Element Child Classes(Button,Slider,Knob)   -------------------------------------------

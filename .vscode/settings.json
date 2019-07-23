@@ -1,3 +1,13 @@
 {
-    "lua.targetVersion": "5.3"
+    "lua.targetVersion": "5.3",
+    "Lua.diagnostics.globals": [
+        "reaper",
+        "gfx",
+        "GUI",
+        "undo",
+        "_"
+    ],
+    "Lua.diagnostics.disable": [
+        "lowercase-global"
+    ]
 }
