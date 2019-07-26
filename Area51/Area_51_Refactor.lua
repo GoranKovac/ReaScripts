@@ -78,7 +78,7 @@ end
 
 local function Get_Set_Position_In_Arrange(x, y, w)
    local zoom_lvl = reaper.GetHZoomLevel() -- HORIZONTAL ZOOM LEVEL
-   local Arr_start_time, Arr_end_time = reaper.GetSet_ArrangeView2(0, false, 0, 0) -- GET ARRANGE VIEW
+   local Arr_start_time, _ = reaper.GetSet_ArrangeView2(0, false, 0, 0) -- GET ARRANGE VIEW
    local Arr_pixel = Round(Arr_start_time * zoom_lvl) -- ARRANGE VIEW POSITION CONVERT TO PIXELS
    local _, x_view_start, y_view_start, x_view_end, y_view_end = reaper.JS_Window_GetRect(track_window) -- GET TRACK WINDOW X-Y Selection
 
@@ -92,7 +92,7 @@ local function Get_Set_Position_In_Arrange(x, y, w)
    end
 end
 
-local prev_total_pr_h, prev_Arr_end_time, prev_proj_state, last_scroll, last_scroll_b, last_pr_t, last_pr_h
+local prev_Arr_end_time, prev_proj_state, last_scroll, last_scroll_b, last_pr_t, last_pr_h
 function Arrange_view_info(x, y, w)
    local last_pr_tr = get_last_visible_track()
    local proj_state = reaper.GetProjectStateChangeCount(0) -- PROJECT STATE
@@ -198,17 +198,16 @@ function GetTrackTBH(tbl)
    if not tbl then
       return
    end
-   local total_h = 0
-   local t, b, h
+   local total_h, t, h = 0, 0, 0
    for i = #tbl, 1, -1 do -- NEEDS TO BE REVERSED OR IT DRAWS SOME WEIRD SHIT
       local track = tbl[i].track
       if TBH[track] and TBH[track].vis then -- RETURN ONLY VISIBLE TRACKS (THAT ARE CURRENT ARRANGE VIEW NOT TRACK MANAGER HIDDINE RELATED)
-         t, b, h = TBH[track].t, TBH[track].b, TBH[track].h
+         t, h = TBH[track].t, TBH[track].h
          total_h = total_h + h
       end
    end
    t = total_h == 0 and 0 or t
-   return t, total_h, b
+   return t, total_h
 end
 
 local function Mouse_in_arrange()
@@ -224,7 +223,6 @@ function GetTrackZoneInfo() -- MODIFIED
    end
    local detail = ReaperCursors()
    local tr_t, tr_b, tr_h = TBH[mouse.tr].t, TBH[mouse.tr].b, TBH[mouse.tr].h
-
    if Mouse_in_arrange() then
       if mouse.y > tr_t and mouse.y < tr_b then --  TRACK ZONE (UPPER/LOWER HALF)
          local upper_half = (mouse.y - tr_t < tr_h / 2) and true
@@ -317,7 +315,7 @@ local function GetGhosts(data, as_start, as_end)
             dc = dc,
             p = as_start,
             l = w,
-            h = h,
+            h = h
          }
       end
    end
@@ -655,7 +653,6 @@ local function check_undo_history()
          return
       end
       last_action = last_action:lower()
-
       if last_action:find("remove tracks") then
          ValidateRemovedTracks()
       elseif
@@ -717,12 +714,12 @@ local function check_keys()
          if key.DOWN.name == "X" then
             del()
          end
-         if tonumber(key.DOWN.name) then -- ACTIVE AS
+         if tonumber(key.DOWN.name) then
             local num = tonumber(key.DOWN.name)
             active_as = Areas_TB[num] and Areas_TB[num] or nil
-            for k, v in pairs(ghosts) do
+            for _, v in pairs(ghosts) do
                reaper.JS_Composite_Unlink(track_window, v.bm)
-            end -- REFRESH GHOSTS
+            end
          end
       elseif key.HOLD then
       elseif key.UP then
@@ -765,7 +762,7 @@ function Exit() -- DESTROY ALL BITMAPS ON REAPER EXIT
    for i = 1, #Areas_TB do
       reaper.JS_LICE_DestroyBitmap(Areas_TB[i].bm)
    end
-   for k, v in pairs(ghosts) do
+   for _, v in pairs(ghosts) do
       reaper.JS_LICE_DestroyBitmap(v.bm)
    end
    if reaper.ValidatePtr(track_window, "HWND") then
