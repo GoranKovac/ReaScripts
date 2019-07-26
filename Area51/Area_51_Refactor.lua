@@ -536,20 +536,22 @@ local function generic_table_find(job)
          elseif sel_info.env_name then
             local env_track = sel_info.track
             local env_name = sel_info.env_name
-            local env_data = sel_info.env_points
+            --local env_data = sel_info.env_points -- CURENTLY UNUSED
             if copy then
                DrawEnvGhosts(env_track, env_name, as_start, as_end, pos_offset, first_tr)
             end
          end
       end
    end
-   if copy then
-      refresh_reaper()
-   end
 end
 
 local function Composite(src_x, src_y, src_w, src_h, dest, dest_x, dest_y, dest_w, dest_h)
    reaper.JS_Composite(track_window, src_x, src_y, src_w, src_h, dest, dest_x, dest_y, dest_w, dest_h)
+   if mouse.x ~= prev_mouse_x or mouse.y ~= prev_mouse_y then -- MINIMIZE FLICKERING
+      refresh_reaper()
+      prev_mouse_x = mouse.x
+      prev_mouse_y = mouse.y
+   end
 end
 
 function DrawItemGhosts(item_data, item_track, as_start, as_end, pos_offset, first_track)
@@ -574,7 +576,7 @@ function DrawEnvGhosts(env_track, env_name, as_start, as_end, pos_offset, first_
    local off_h = under_last_tr and TBH[offset_track].h * under_last_tr or 0 -- IF OFFSET TRACKS ARE BELOW LAST PROJECT TRACK MULTIPLY HEIGHT BY THAT NUMBER AND ADD IT TO GHOST
    local env_tr_offset = GetEnvOffset_MatchCriteria(offset_track, env_name)
    --env_tr_offset = reaper.ValidatePtr(mouse.tr,"TrackEnvelope*") and env_mouse_offset(offset_track, env_name, env_first_tr) or env_tr_offset
-   if TBH[env_tr_offset] then -- THIS IS NEEDED FOR PASTE FUNCTION OR IT WILL CRASH
+   if TBH[env_tr_offset] then
       local track_t, _, track_h = TBH[env_tr_offset].t + off_h, TBH[env_tr_offset].b, TBH[env_tr_offset].h
       local env_ghost_id = tostring(env_track) .. as_start
       if ghosts[env_ghost_id] then
