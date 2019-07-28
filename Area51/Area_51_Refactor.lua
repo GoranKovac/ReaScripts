@@ -210,9 +210,9 @@ function GetTrackTBH(tbl)
    return t, total_h
 end
 
-local function Mouse_in_arrange()
+function Mouse_in_arrange()
    local _, x_view_start, y_view_start, x_view_end, y_view_end = reaper.JS_Window_GetRect(track_window) -- GET TRACK WINDOW X-Y Selection
-   if (mouse.y >= y_view_start and mouse.y <= y_view_end) and (mouse.x >= x_view_start and mouse.x <= x_view_end) then
+   if (mouse.oy >= y_view_start and mouse.oy <= y_view_end) and (mouse.ox >= x_view_start and mouse.ox <= x_view_end) then
       return true
    end
 end
@@ -379,7 +379,9 @@ local function CreateAreaFromSelection()
    if reaper.JS_Window_GetForeground() ~= main_wnd then
       return
    end -- RETURN IF SOME WINDOW IS IN FRONT OF ARRANGE (MOUSE IS OVER ANOTHER WINDOW). PREVENTS DRAWING AS WHILE MOVING WINDOWS IN FRONT OF ARRANGE
-
+   if not Mouse_in_arrange() then
+      return
+   end
    local as_top, as_bot = Check_top_bot(mouse.ort, mouse.orb, mouse.r_t, mouse.r_b) -- RANGE ON MOUSE CLICK HOLD AND RANGE WHILE MOUSE HOLD
    local as_left, as_right = Check_left_right(mouse.op, mouse.p) -- CHECK IF START & END TIMES ARE REVERSED
    local x_s, x_e = Check_left_right(mouse.ox, mouse.x) -- CHECK IF X START & END ARE REVERSED
@@ -590,9 +592,8 @@ function MouseData()
    local zoom_lvl, Arr_start_time, Arr_pixel, x_view_start = Get_Set_Position_In_Arrange()
    local x, y = reaper.GetMousePosition()
    local mouse_time_pos = ((x - x_view_start) / zoom_lvl) + Arr_start_time
-   mouse_time_pos = (mouse_time_pos > 0) and mouse_time_pos or 0
-   local pos = (reaper.GetToggleCommandState(1157) == 1) and reaper.SnapToGrid(0, mouse_time_pos) or mouse_time_pos -- FINAL POSITION IS SNAP IF ENABLED OF FREE MOUSE POSITION
-   x = (reaper.GetToggleCommandState(1157) == 1) and (Round(pos * zoom_lvl) + x_view_start) - Arr_pixel or x
+   local pos = (reaper.GetToggleCommandState(1157) == 1 and mouse_time_pos >= 0) and reaper.SnapToGrid(0, mouse_time_pos) or mouse_time_pos -- FINAL POSITION IS SNAP IF ENABLED OF FREE MOUSE POSITION
+   x = ((reaper.GetToggleCommandState(1157) == 1) and pos >= 0) and (Round(pos * zoom_lvl) + x_view_start) - Arr_pixel or x
    return x, y, pos
 end
 
