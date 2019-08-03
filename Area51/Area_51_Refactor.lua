@@ -44,7 +44,7 @@ local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
 local track_window = reaper.JS_Window_FindChildByID(main_wnd, 1000) -- GET TRACK VIEW
 local track_window_dc = reaper.JS_GDI_GetWindowDC(track_window)
 local mixer_wnd = reaper.JS_Window_Find("mixer", true) -- GET MIXER -- tHIS NEEDS TO BE CONVERTED TO ID, AND I STILL DO NOT KNOW HOW TO FIND THEM
-local Areas_TB = {}
+Areas_TB = {}
 local Key_TB = {}
 local active_as
 local last_proj_change_count = reaper.GetProjectStateChangeCount(0)
@@ -88,7 +88,7 @@ local function Get_Set_Position_In_Arrange(x, y, w)
       w = Round(w * zoom_lvl)
       return x, y, w
    else
-      return zoom_lvl, Arr_start_time, Arr_pixel, x_view_start
+      return zoom_lvl, Arr_start_time, Arr_pixel, x_view_start, y_view_start
    end
 end
 
@@ -141,7 +141,7 @@ local function Get_Tracks(pointer)
    end
 end
 
-local function GetTracksFromMouse(t, b)
+local function GetTracksFromMouse(y, area)
    local trackview_window
    local range_tracks = {}
    local _, _, arr_top = reaper.JS_Window_GetRect(track_window)
@@ -157,15 +157,15 @@ local function GetTracksFromMouse(t, b)
    while window do
       if reaper.JS_Window_IsVisible(window) then
          local _, _, top, _, bottom = reaper.JS_Window_GetRect(window)
-         if t then
-            if top >= t and bottom <= b then
-               local pointer = reaper.JS_Window_GetLongPtr(window, "USERDATA")
+         if area then
+            if top >= area[1] and bottom <= area[2] then
+                local pointer = reaper.JS_Window_GetLongPtr(window, "USERDATA")
                if not Has_val(range_tracks, pointer) then
                   range_tracks[#range_tracks + 1] = {track = Get_Tracks(pointer)}
                end
             end
          else
-            if top <= mouse.y and bottom > mouse.y then
+            if top <= y and bottom > y then
                local pointer = reaper.JS_Window_GetLongPtr(window, "USERDATA")
                return Get_Tracks(pointer), top, bottom
             end
@@ -173,7 +173,7 @@ local function GetTracksFromMouse(t, b)
       end
       window = reaper.JS_Window_GetRelated(window, "NEXT")
    end
-   if t then
+   if area then
       return range_tracks
    end
 end
@@ -213,7 +213,9 @@ end
 function Mouse_in_arrange()
    local _, x_view_start, y_view_start, x_view_end, y_view_end = reaper.JS_Window_GetRect(track_window) -- GET TRACK WINDOW X-Y Selection
    if (mouse.oy >= y_view_start and mouse.oy <= y_view_end) and (mouse.ox >= x_view_start and mouse.ox <= x_view_end) then
-      return true
+      if GetTracksFromMouse(mouse.oy) then
+         return true
+      end
    end
 end
 
@@ -289,7 +291,7 @@ local function GetGhosts(data, as_start, as_end)
             local item_start, item_lenght = item_blit(item, as_start, as_end)
             local x, y, w = Get_Set_Position_In_Arrange(item_start, (item_t + item_bar), item_lenght)
             local h = item_h
-            local bm = reaper.JS_LICE_CreateBitmap(true, w, item_h)
+            local bm = reaper.JS_LICE_CreateBitmap(true, w, h)
             local dc = reaper.JS_LICE_GetDC(bm)
             local item_ghost_id = tostring(item) .. as_start
             GDIBlit(dc, x, y, w, (h - 19))
@@ -298,7 +300,9 @@ local function GetGhosts(data, as_start, as_end)
                dc = dc,
                p = x,
                l = w,
-               h = h
+               h = h,
+               i_s = item_start,
+               i_l = item_lenght
             }
          end
       elseif data[i].env_points then
@@ -367,21 +371,18 @@ function GetSelectionInfo(tbl)
       return
    end
    local area_top, area_bot, area_start, area_end = tbl.y, tbl.y + tbl.h, tbl.time_start, tbl.time_end
-   local tracks = GetTracksFromMouse(area_top, area_bot) -- GET TRACK RANGE
+   local tracks = GetTracksFromMouse(nil, {area_top, area_bot}) -- GET TRACK RANGE
    local data = GetTrackData(tracks, area_start, area_end) -- GATHER ALL INFO
    return data
 end
 
 local function CreateAreaFromSelection()
-   if not mouse.ort or not mouse.r_t then
-      return
-   end -- RETURN IF THERE WAS NO MOUSE CLICK OR CLICK WAS MADE OUTSIDE TRACKS
-   if reaper.JS_Window_GetForeground() ~= main_wnd then
-      return
-   end -- RETURN IF SOME WINDOW IS IN FRONT OF ARRANGE (MOUSE IS OVER ANOTHER WINDOW). PREVENTS DRAWING AS WHILE MOVING WINDOWS IN FRONT OF ARRANGE
    if not Mouse_in_arrange() then
       return
    end
+   if reaper.JS_Window_GetForeground() ~= main_wnd then
+      return
+   end -- RETURN IF SOME WINDOW IS IN FRONT OF ARRANGE (MOUSE IS OVER ANOTHER WINDOW). PREVENTS DRAWING AS WHILE MOVING WINDOWS IN FRONT OF ARRANGE
    local as_top, as_bot = Check_top_bot(mouse.ort, mouse.orb, mouse.r_t, mouse.r_b) -- RANGE ON MOUSE CLICK HOLD AND RANGE WHILE MOUSE HOLD
    local as_left, as_right = Check_left_right(mouse.op, mouse.p) -- CHECK IF START & END TIMES ARE REVERSED
    local x_s, x_e = Check_left_right(mouse.ox, mouse.x) -- CHECK IF X START & END ARE REVERSED
@@ -481,7 +482,7 @@ function generic_track_offset(as_tr, offset_tr)
    local as_tr_id = reaper.CSurf_TrackToID(as_tr, false)
    local m_tr_id = reaper.CSurf_TrackToID(cur_m_tr, false)
 
-   if mouse.y > mouse.r_b and GetTracksFromMouse(mouse.r_b, mouse.y) then
+   if mouse.y > mouse.r_b and GetTracksFromMouse(nil, {mouse.r_b, mouse.y}) then
       m_tr_id = reaper.CSurf_TrackToID(cur_m_tr, false) + 1
    end -- IF MOUSE IS BELOW LAST PROJECT TRACK INCREASE MOUSE ID FOR OFFSET
 
@@ -561,10 +562,9 @@ function DrawItemGhosts(item_data, item_track, as_start, as_end, pos_offset, fir
       local track_t, _, track_h = TBH[offset_track].t + off_h, TBH[offset_track].b, TBH[offset_track].h
       for i = 1, #item_data do
          local item = item_data[i]
-         local item_start, item_lenght = item_blit(item, as_start, as_end)
          local item_ghost_id = tostring(item) .. as_start
-         local mouse_offset = pos_offset + (mouse.p - as_start) + item_start
-         local x, y, w = Get_Set_Position_In_Arrange(mouse_offset, track_t, item_lenght)
+         local mouse_offset = pos_offset + (mouse.p - as_start) + ghosts[item_ghost_id].i_s
+         local x, y, w = Get_Set_Position_In_Arrange(mouse_offset, track_t, ghosts[item_ghost_id].i_l)
          local h = track_h
          Composite(x, y, w, h, ghosts[item_ghost_id].bm, 0, 0, ghosts[item_ghost_id].l, ghosts[item_ghost_id].h - 19)
       end
@@ -588,13 +588,17 @@ function DrawEnvGhosts(env_track, env_name, as_start, as_end, pos_offset, first_
    end
 end
 
-function MouseData()
-   local zoom_lvl, Arr_start_time, Arr_pixel, x_view_start = Get_Set_Position_In_Arrange()
-   local x, y = reaper.GetMousePosition()
-   local mouse_time_pos = ((x - x_view_start) / zoom_lvl) + Arr_start_time
-   local pos = (reaper.GetToggleCommandState(1157) == 1 and mouse_time_pos >= 0) and reaper.SnapToGrid(0, mouse_time_pos) or mouse_time_pos -- FINAL POSITION IS SNAP IF ENABLED OF FREE MOUSE POSITION
-   x = ((reaper.GetToggleCommandState(1157) == 1) and pos >= 0) and (Round(pos * zoom_lvl) + x_view_start) - Arr_pixel or x
-   return x, y, pos
+function Lock_Mouse_XYP_To_Arrange()
+   local zoom_lvl, Arr_start_time, Arr_pixel, x_view_start, y_view_start = Get_Set_Position_In_Arrange()
+   local mouse_pos = ((mouse.x - x_view_start) / zoom_lvl) + Arr_start_time
+   mouse.p = mouse_pos >= 0 and mouse_pos or 0
+   mouse.x = mouse_pos >= 0 and mouse.x or x_view_start
+   mouse.y = mouse.y >= y_view_start and mouse.y or y_view_start
+   if reaper.GetToggleCommandState(1157) == 1 then
+      mouse.p = reaper.SnapToGrid(0, mouse.p)
+      mouse.x = (Round(mouse.p * zoom_lvl) + x_view_start) - Arr_pixel
+      mouse.ox = (Round(mouse.op * zoom_lvl) + x_view_start) - Arr_pixel
+   end
 end
 
 function find_highest_tr(job)
@@ -732,9 +736,12 @@ local function Main()
    xpcall(
       function()
          GetTracksXYH() -- GET XYH INFO OF ALL TRACKS
-         mouse = MouseInfo(MouseData())
-         if GetTracksFromMouse() then
-            mouse.tr, mouse.r_t, mouse.r_b = GetTracksFromMouse()
+
+         mouse = MouseInfo()
+         Lock_Mouse_XYP_To_Arrange()
+
+         if GetTracksFromMouse(mouse.y) then
+            mouse.tr, mouse.r_t, mouse.r_b = GetTracksFromMouse(mouse.y)
          end
 
          check_keys()

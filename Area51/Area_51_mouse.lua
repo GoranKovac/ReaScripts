@@ -10,7 +10,7 @@ end
 -- Mouse table --
 -----------------
 local cnt = 0
-local mouse = {  
+local mouse = {
                 -- Constants
                 LB    = 1,
                 RB    = 2,
@@ -23,7 +23,7 @@ local mouse = {
                         if mask == nil then 
                           return reaper.JS_Mouse_GetState(95) end
                         return reaper.JS_Mouse_GetState(95)&mask == mask
-                      end, 
+                      end,
                 
                 lb_down = function() return reaper.JS_Mouse_GetState(95) &1 == 1 end,
                 rb_down = function() return reaper.JS_Mouse_GetState(95) &2 == 2 end,
@@ -40,17 +40,24 @@ local mouse = {
                          end
                          end,
                 uptime = 0,
-                wheel = cnt, 
+                wheel = cnt,
                 
-                last_x = -1, last_y = -1, last_tr = nil,
-                dx = 0, dy = 0,
-                ox = 0, oy = 0, 
+                last_x = -1,
+                last_y = -1,
+                last_tr = nil,
+                dx = 0,
+                dy = 0,
+                ox = 0,
+                oy = 0,
                 p = 0,
                 tr = nil,
-                r_t = 0, r_b = 0,
-                x = 0, y = 0,
-                otr = nil, 
-                ort = 0, orb = 0,
+                r_t = 0,
+                r_b = 0,
+                x = 0,
+                y = 0,
+                otr = nil,
+                ort = 0,
+                orb = 0,
                 op = 0,
                 detail = false,
                 rx = 0,
@@ -76,7 +83,7 @@ function OnMouseDown(lmb_down, rmb_down)
     mouse.last_RMB_state = true
     mouse.r_click = true
   end
-  
+
   mouse.ox, mouse.oy = mouse.x, mouse.y -- mouse click coordinates
   mouse.ort, mouse.orb, mouse.otr = mouse.r_t, mouse.r_b, mouse.tr
   mouse.op = mouse.p
@@ -103,21 +110,16 @@ function OnMouseHold(lmb_down, rmb_down)
     mouse.r_down = rmb_down and true
     mouse.dx = mouse.x - mouse.ox
     mouse.dy = mouse.y - mouse.oy
-    
+
     mouse.rx = mouse.x - mouse.last_x
     mouse.last_x, mouse.last_y = mouse.x, mouse.y
     mouse.last_tr = mouse.tr
 end
 
---------------------------------------
---Functions related to this example --
---------------------------------------
-
--- Draw values from "mouse table"
 function draw_sorted_table(orig_table, sorted_table)
   local st = sorted_table
   local t = orig_table
-  
+
   for i,n in ipairs(st) do
     gfx.set(0.8,0.8,0.8,0.8)
     if type(t[st[i]]) ~= "function" then
@@ -132,7 +134,7 @@ function draw_sorted_table(orig_table, sorted_table)
       gfx.set(0.8,1,1,1)
       gfx.printf(tostring(t[st[i]])) -- print value
       gfx.x = 10
-     
+
       -- add vertical spaces
       if i == 5 or i == 8 or i == 12 or i == 14 or i == 16 or i == 23 or i == 23 or i == 26 then
         gfx.y = gfx.y + gfx.texth
@@ -141,67 +143,45 @@ function draw_sorted_table(orig_table, sorted_table)
       gfx.y = gfx.y + gfx.texth
     end
   end
-  
+
 end
 
-
--- Sort table alphabetically
 function sorted_table(t)
   local st = {} -- sorted table
-  for n in pairs(t) do 
+  for n in pairs(t) do
     st[#st+1] = n
   end
   table.sort(st)
   return st
 end
 
-
--- create a sorted array (= "mouse table keys" are sorted alphabetically and put to an array)
 local sorted_mouse_t = sorted_table(mouse) -- call sorted_table function -> store to "sorted_mouse_t"
 
-
--- GUI drawing function
 function draw_gui()
   gfx.x = 10
   gfx.y = 10
- 
-  -- Draw mouse table keys and values
   gfx.x = 10
   draw_sorted_table(mouse, sorted_mouse_t)
- 
 end
 
--- GUI table --------------------------------------------
---   contains GUI related settings (some basic user definable settings), initial values etc.
----------------------------------------------------------
 local gui = {}
 
 function init()
-  
-  -- Add stuff to "gui" table
   gui.settings = {}                 -- Add "settings" table to "gui" table 
   gui.settings.font_size = 20       -- font size
   gui.settings.docker_id = 0        -- try 0, 1, 257, 513, 1027 etc.
-  
-  ---------------------------
-  -- Initialize gfx window --
-  ---------------------------
-  
+
   gfx.init("", 380, 700, gui.settings.docker_id)
   gfx.setfont(1,"Arial", gui.settings.font_size)
   gfx.clear = 3355443  -- matches with "FUSION: Pro&Clean Theme :: BETA 01" http://forum.cockos.com/showthread.php?t=155329
-  -- (Double click in ReaScript IDE to open the link)
 
   MouseInfo()
 end
 
-
---------------
--- Mainloop --
---------------
-
 function MouseInfo(x, y, p)
-  mouse.x, mouse.y, mouse.p = x or mouse.x, y or mouse.y, p or mouse.p
+  mouse.x, mouse.y = reaper.GetMousePosition()
+  mouse.p = mouse.p or 0
+  --mouse.x, mouse.y, mouse.p = x or mouse.x, y or mouse.y, p or mouse.p
   mouse.l_click   = false
   mouse.r_click   = false
   mouse.l_dclick  = false
@@ -216,7 +196,7 @@ function MouseInfo(x, y, p)
   local LB_DOWN = mouse.lb_down()           -- Get current left mouse button state
   local RB_DOWN = mouse.rb_down()           -- Get current right mouse button state
  -- mouse.x, mouse.y = reaper.GetMousePosition()
-  
+
   -- (modded Schwa's GUI example)
   if (LB_DOWN and not RB_DOWN) or (RB_DOWN and not LB_DOWN) then   -- LMB or RMB pressed down?
     if (mouse.last_LMB_state == false and not RB_DOWN) or (mouse.last_RMB_state == false and not LB_DOWN) then
@@ -227,13 +207,13 @@ function MouseInfo(x, y, p)
     else
       OnMouseHold(LB_DOWN,RB_DOWN)
     end
-      
+
   elseif not LB_DOWN and mouse.last_RMB_state or not RB_DOWN and mouse.last_LMB_state then
     OnMouseUp(LB_DOWN, RB_DOWN)
   end
-  
+
   draw_gui()
- 
+
   --gfx.update()
   --reaper.defer(mainloop)
   return mouse

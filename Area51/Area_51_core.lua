@@ -240,6 +240,21 @@ function GetTrackTBH(tbl)
     end
     return t, total_h, b
 end
+function Get_Set_Position_In_Arrange(x, y, w)
+    local zoom_lvl = reaper.GetHZoomLevel() -- HORIZONTAL ZOOM LEVEL
+    local Arr_start_time, _ = reaper.GetSet_ArrangeView2(0, false, 0, 0) -- GET ARRANGE VIEW
+    local Arr_pixel = Round(Arr_start_time * zoom_lvl) -- ARRANGE VIEW POSITION CONVERT TO PIXELS
+    local _, x_view_start, y_view_start, x_view_end, y_view_end = reaper.JS_Window_GetRect(track_window) -- GET TRACK WINDOW X-Y Selection
+ 
+    if x or y or w then
+       x = Round(x * zoom_lvl) - Arr_pixel
+       y = y - y_view_start
+       w = Round(w * zoom_lvl)
+       return x, y, w
+    else
+       return zoom_lvl, Arr_start_time, Arr_pixel, x_view_start, y_view_end
+    end
+ end
 --reaper.JS_WindowMessage_Intercept(track_window, "WM_LBUTTONDOWN", true)
 function GetTrackZoneInfo() -- MODIFIED
     if not mouse.tr or not TBH[mouse.tr] then
