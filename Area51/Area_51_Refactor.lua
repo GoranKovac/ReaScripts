@@ -211,8 +211,14 @@ function GetTrackTBH(tbl)
 end
 
 function Mouse_in_arrange()
+   -- IF SOME WINDOW IS IN FRONT OF MOUSE RETURN
+   if reaper.JS_Window_GetForeground() ~= main_wnd then
+      return
+   end
    local _, x_view_start, y_view_start, x_view_end, y_view_end = reaper.JS_Window_GetRect(track_window) -- GET TRACK WINDOW X-Y Selection
+   -- IS MOUSE IN ARRANGE VIEW COORDINATES
    if (mouse.oy >= y_view_start and mouse.oy <= y_view_end) and (mouse.ox >= x_view_start and mouse.ox <= x_view_end) then
+      -- IF MOUSE IS OVER TRACK (THIS IS CHECK IF WE ARE IN ARRANGE VIEW BUT WE ARE BELLOW LAST TRACK)
       if GetTracksFromMouse(mouse.oy) then
          return true
       end
@@ -380,9 +386,6 @@ local function CreateAreaFromSelection()
    if not Mouse_in_arrange() then
       return
    end
-   if reaper.JS_Window_GetForeground() ~= main_wnd then
-      return
-   end -- RETURN IF SOME WINDOW IS IN FRONT OF ARRANGE (MOUSE IS OVER ANOTHER WINDOW). PREVENTS DRAWING AS WHILE MOVING WINDOWS IN FRONT OF ARRANGE
    local as_top, as_bot = Check_top_bot(mouse.ort, mouse.orb, mouse.r_t, mouse.r_b) -- RANGE ON MOUSE CLICK HOLD AND RANGE WHILE MOUSE HOLD
    local as_left, as_right = Check_left_right(mouse.op, mouse.p) -- CHECK IF START & END TIMES ARE REVERSED
    local x_s, x_e = Check_left_right(mouse.ox, mouse.x) -- CHECK IF X START & END ARE REVERSED
@@ -588,7 +591,7 @@ function DrawEnvGhosts(env_track, env_name, as_start, as_end, pos_offset, first_
    end
 end
 
-function Lock_Mouse_XYP_To_Arrange()
+function Mouse_Data_From_Arrange()
    local zoom_lvl, Arr_start_time, Arr_pixel, x_view_start, y_view_start = Get_Set_Position_In_Arrange()
    local mouse_pos = ((mouse.x - x_view_start) / zoom_lvl) + Arr_start_time
    mouse.p = mouse_pos >= 0 and mouse_pos or 0
@@ -598,6 +601,9 @@ function Lock_Mouse_XYP_To_Arrange()
       mouse.p = reaper.SnapToGrid(0, mouse.p)
       mouse.x = (Round(mouse.p * zoom_lvl) + x_view_start) - Arr_pixel
       mouse.ox = (Round(mouse.op * zoom_lvl) + x_view_start) - Arr_pixel
+   end
+   if GetTracksFromMouse(mouse.y) then
+      mouse.tr, mouse.r_t, mouse.r_b = GetTracksFromMouse(mouse.y)
    end
 end
 
@@ -736,18 +742,10 @@ local function Main()
    xpcall(
       function()
          GetTracksXYH() -- GET XYH INFO OF ALL TRACKS
-
          mouse = MouseInfo()
-         Lock_Mouse_XYP_To_Arrange()
-
-         if GetTracksFromMouse(mouse.y) then
-            mouse.tr, mouse.r_t, mouse.r_b = GetTracksFromMouse(mouse.y)
-         end
-
+         Mouse_Data_From_Arrange()
          check_keys()
-
          GetTrackZoneInfo()
-
          if not ZONE and not BLOCK then
             CreateAreaFromSelection()
          end -- CREATE AS IF IN ARRANGE WINDOW AND NON AS ZONES ARE CLICKED
