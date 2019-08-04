@@ -201,12 +201,12 @@ function Menu:draw_body(tbl)
 end
 
 function Track(tbl)
-  for key, area in pairs(tbl) do
+  for _, area in pairs(tbl) do
     area:track()
   end
 end
 
-function Draw(tbl, window)
+function Draw(tbl)
   Track(tbl)
   local is_view_changed = Arrange_view_info()
   if is_view_changed and not DRAWING then

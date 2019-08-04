@@ -71,11 +71,13 @@ end
 local TBH
 function GetTracksXYH()
    TBH = {}
+   local _, x_view_start, y_view_start, x_view_end, y_view_end = reaper.JS_Window_GetRect(track_window)
    for i = 1 , reaper.CountTracks(0) do
       local tr = reaper.GetTrack(0, i-1)
       local tr_h = reaper.GetMediaTrackInfo_Value( tr, "I_TCPH" )
-      local tr_t = reaper.GetMediaTrackInfo_Value( tr, "I_TCPY" )
+      local tr_t = reaper.GetMediaTrackInfo_Value( tr, "I_TCPY" ) + y_view_start
       local tr_b = tr_t + tr_h
+      TBH[tr] = {t = tr_t, b = tr_b, h = tr_h}
       for j = 1 , reaper.CountTrackEnvelopes(tr) do
          local env = reaper.GetTrackEnvelope(tr, j-1)
          local env_h = reaper.GetEnvelopeInfo_Value(env,"I_TCPH")
@@ -83,32 +85,29 @@ function GetTracksXYH()
          local env_b = env_t + env_h
          TBH[env] = {t = env_t, b = env_b, h = env_h}
       end
-      TBH[tr] = {t = tr_t, b = tr_b, h = tr_h}
    end
 end
 
 local function GetTracksFromRange(y_t, y_b)
    local range_tracks = {}
    for track, _ in pairs(TBH) do
-      if y_t >= TBH[track].t and y_b <= TBH[track].b then
+      if TBH[track].t >= y_t and TBH[track].b <= y_b then
          if not Has_val(range_tracks, track) then
-            range_tracks[#range_tracks + 1] = {track = Get_Tracks(track)}
+            range_tracks[#range_tracks + 1] = {track = track}
          end
       end
    end
    return range_tracks
 end
 
-local function GetTracksFromMouse(y, area)
-   local track, env_info = reaper.GetTrackFromPoint( mouse.x, y )
+local function GetTracksFromMouse(x, y)
+   local track, env_info = reaper.GetTrackFromPoint(x, y)
    if track and env_info == 0 then
       return track, TBH[track].t, TBH[track].b, TBH[track].h
    elseif track and env_info == 1 then
-      local _, x_view_start, y_view_start, x_view_end, y_view_end = reaper.JS_Window_GetRect(track_window)
-      y = y - y_view_start
       for i = 1 , reaper.CountTrackEnvelopes(track) do
          local env = reaper.GetTrackEnvelope(track, i-1)
-         if TBH[env].t <= y and TBH[env].b > y then
+         if TBH[env].t <= y and TBH[env].b >= y then
             return env, TBH[env].t, TBH[env].b, TBH[env].h
          end
       end
@@ -181,12 +180,12 @@ function GetTrackTBH(tbl)
    local total_h, t, h = 0, 0, 0
    for i = #tbl, 1, -1 do -- NEEDS TO BE REVERSED OR IT DRAWS SOME WEIRD SHIT
       local track = tbl[i].track
-      if TBH[track] and TBH[track].vis then -- RETURN ONLY VISIBLE TRACKS (THAT ARE CURRENT ARRANGE VIEW NOT TRACK MANAGER HIDDINE RELATED)
+      if TBH[track] then
          t, h = TBH[track].t, TBH[track].h
          total_h = total_h + h
       end
    end
-   t = total_h == 0 and 0 or t
+  -- t = total_h == 0 and 0 or t
    return t, total_h
 end
 
@@ -199,8 +198,8 @@ function Mouse_in_arrange()
    -- IS MOUSE IN ARRANGE VIEW COORDINATES
    if (mouse.oy >= y_view_start and mouse.oy <= y_view_end) and (mouse.ox >= x_view_start and mouse.ox <= x_view_end) then
       -- IF MOUSE IS OVER TRACK (THIS IS CHECK IF WE ARE IN ARRANGE VIEW BUT WE ARE BELLOW LAST TRACK)
-      if GetTracksFromMouse(mouse.oy) then
-         local tr = GetTracksFromMouse(mouse.oy)
+      if GetTracksFromMouse(mouse.ox, mouse.oy) then
+         local tr = GetTracksFromMouse(mouse.ox, mouse.oy)
          local tr_t, _, tr_h = TBH[tr].t, TBH[tr].b, TBH[tr].h
          if (mouse.oy - tr_t < tr_h / 2) then
             return "UPPER"
@@ -360,7 +359,7 @@ function GetSelectionInfo(tbl)
       return
    end
    local area_top, area_bot, area_start, area_end = tbl.y, tbl.y + tbl.h, tbl.time_start, tbl.time_end
-   local tracks = GetTracksFromMouse(nil, {area_top, area_bot}) -- GET TRACK RANGE
+   local tracks = GetTracksFromRange(area_top, area_bot) -- GET TRACK RANGE
    local data = GetTrackData(tracks, area_start, area_end) -- GATHER ALL INFO
    return data
 end
@@ -407,6 +406,19 @@ local function CreateAreaFromSelection()
    end
 end
 
+local function find_visible_tracks(cur_offset_id) -- RETURN FIRST VISIBLE TRACK
+   if cur_offset_id == 0 then
+      return 1
+   end -- TO DO FIX
+   for i = cur_offset_id, reaper.CountTracks(0) do
+      local track = reaper.GetTrack(0, i - 1)
+      if reaper.IsTrackVisible(track, false) then
+         return i
+      else
+      end
+   end
+end
+
 function GetEnvOffset_MatchCriteria(tr, env)
    for i = 1, reaper.CountTrackEnvelopes(tr) do
       local tr_env = reaper.GetTrackEnvelope(tr, i - 1)
@@ -437,19 +449,6 @@ function env_mouse_offset(tr, env_name, first_env)
    end
 end
 
-local function find_visible_tracks(cur_offset_id) -- RETURN FIRST VISIBLE TRACK
-   if cur_offset_id == 0 then
-      return 1
-   end -- TO DO FIX
-   for i = cur_offset_id, reaper.CountTracks(0) do
-      local track = reaper.GetTrack(0, i - 1)
-      if reaper.IsTrackVisible(track, false) then
-         return i
-      else
-      end
-   end
-end
-
 function generic_track_offset(as_tr, offset_tr)
    --  GET ALL ENVELOPE TRACKS PARENT MEDIA TRACKS (SINCE ENVELOPE TRACKS HAVE NO ID WHICH WE USE TO MAKE OFFSET)
    local cur_m_tr = mouse.tr -- ADD TEMP MOUSE TRACK (DO NOT CONVERT) BELOW
@@ -468,7 +467,7 @@ function generic_track_offset(as_tr, offset_tr)
    local as_tr_id = reaper.CSurf_TrackToID(as_tr, false)
    local m_tr_id = reaper.CSurf_TrackToID(cur_m_tr, false)
 
-   if mouse.y > mouse.r_b and GetTracksFromMouse(nil, {mouse.r_b, mouse.y}) then
+   if mouse.y > mouse.r_b and GetTracksFromRange(mouse.r_b, mouse.y) then
       m_tr_id = reaper.CSurf_TrackToID(cur_m_tr, false) + 1
    end -- IF MOUSE IS BELOW LAST PROJECT TRACK INCREASE MOUSE ID FOR OFFSET
 
@@ -588,8 +587,8 @@ function Mouse_Data_From_Arrange()
 
    mouse = MouseInfo(x,y,p)
    mouse.detail = ReaperCursors()
-   if GetTracksFromMouse(mouse.y) then
-      mouse.tr, mouse.r_t, mouse.r_b = GetTracksFromMouse(mouse.y)
+   if GetTracksFromMouse(mouse.x, mouse.y) then
+      mouse.tr, mouse.r_t, mouse.r_b = GetTracksFromMouse(mouse.x, mouse.y)
    end
 end
 
