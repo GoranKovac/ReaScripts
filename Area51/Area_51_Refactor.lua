@@ -142,15 +142,18 @@ local function Get_Tracks(pointer)
 end
 
 local function GetTracksFromRange(y)
-   for k, _ in pairs(TBH) do
-      if y >= TBH[k].t and y <= TBH[k].b then
-
+   local range_tracks = {}
+   for track, _ in pairs(TBH) do
+      if y >= TBH[track].t and y <= TBH[track].b then
+         if not Has_val(range_tracks, track) then
+            range_tracks[#range_tracks + 1] = {track = Get_Tracks(track)}
+         end
       end
    end
+   return range_tracks
 end
 
 local function GetTracksFromMouse(y, area)
-   GetTracksFromRange()
    local track, env_info = reaper.GetTrackFromPoint( mouse.x, y )
    if track and env_info == 0 then
       return track, TBH[track].t, TBH[track].b, TBH[track].h
