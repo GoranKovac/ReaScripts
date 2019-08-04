@@ -57,25 +57,7 @@ local ceil, floor = math.ceil, math.floor
 function Round(n)
    return n % 1 >= 0.5 and ceil(n) or floor(n)
 end
---[[
-local TBH
-function GetTracksXYH()
-   TBH = {}
-   local array = reaper.new_array({}, 1000)
-   reaper.JS_Window_ArrayAllChild(reaper.GetMainHwnd(), array)
-   local t = array.table()
-   for _, adr in ipairs(t) do
-      local handl = reaper.JS_Window_HandleFromAddress(adr)
-      local track = reaper.JS_Window_GetLongPtr(handl, "USER")
-      if reaper.JS_Window_GetParent(reaper.JS_Window_GetParent(handl)) ~= mixer_wnd then
-         if reaper.ValidatePtr(track, "MediaTrack*") or reaper.ValidatePtr(track, "TrackEnvelope*") then
-            local _, _, top, _, bottom = reaper.JS_Window_GetClientRect(handl)
-            TBH[track] = {t = top, b = bottom, h = bottom - top, vis = reaper.JS_Window_IsVisible(handl)}
-         end
-      end
-   end
-end
-]]
+
 local TBH
 function GetTracksXYH()
    TBH = {}
@@ -158,45 +140,17 @@ local function Get_Tracks(pointer)
       return pointer
    end
 end
---[[
-local function GetTracksFromMouse(y, area)
-   local trackview_window
-   local range_tracks = {}
-   local _, _, arr_top = reaper.JS_Window_GetRect(track_window)
-   local window = reaper.JS_Window_GetRelated(track_window, "NEXT")
-   while window do
-      local _, _, top = reaper.JS_Window_GetRect(window)
-      if top == arr_top then
-         trackview_window = reaper.JS_Window_GetRelated(window, "CHILD")
+
+local function GetTracksFromRange(y)
+   for k, _ in pairs(TBH) do
+      if y >= TBH[k].t and y <= TBH[k].b then
+
       end
-      window = reaper.JS_Window_GetRelated(window, "NEXT")
-   end
-   local window = reaper.JS_Window_GetRelated(trackview_window, "CHILD")
-   while window do
-      if reaper.JS_Window_IsVisible(window) then
-         local _, _, top, _, bottom = reaper.JS_Window_GetRect(window)
-         if area then
-            if top >= area[1] and bottom <= area[2] then
-                local pointer = reaper.JS_Window_GetLongPtr(window, "USERDATA")
-               if not Has_val(range_tracks, pointer) then
-                  range_tracks[#range_tracks + 1] = {track = Get_Tracks(pointer)}
-               end
-            end
-         else
-            if top <= y and bottom > y then
-               local pointer = reaper.JS_Window_GetLongPtr(window, "USERDATA")
-               return Get_Tracks(pointer), top, bottom
-            end
-         end
-      end
-      window = reaper.JS_Window_GetRelated(window, "NEXT")
-   end
-   if area then
-      return range_tracks
    end
 end
-]]
+
 local function GetTracksFromMouse(y, area)
+   GetTracksFromRange()
    local track, env_info = reaper.GetTrackFromPoint( mouse.x, y )
    if track and env_info == 0 then
       return track, TBH[track].t, TBH[track].b, TBH[track].h
@@ -211,6 +165,7 @@ local function GetTracksFromMouse(y, area)
       end
    end
 end
+
 function get_last_visible_track()
    if reaper.CountTracks(0) == 0 then
       return
