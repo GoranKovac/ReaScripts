@@ -58,6 +58,16 @@ function Round(n)
    return n % 1 >= 0.5 and ceil(n) or floor(n)
 end
 
+local function Has_val(tab, val, guid)
+   local val_n = guid and guid or val
+   for i = 1, #tab do
+      local in_table = guid and tab[i].guid or tab[i]
+      if in_table == val_n then
+         return tab[i]
+      end
+   end
+end
+
 local TBH
 function GetTracksXYH()
    TBH = {}
@@ -74,6 +84,34 @@ function GetTracksXYH()
          TBH[env] = {t = env_t, b = env_b, h = env_h}
       end
       TBH[tr] = {t = tr_t, b = tr_b, h = tr_h}
+   end
+end
+
+local function GetTracksFromRange(y_t, y_b)
+   local range_tracks = {}
+   for track, _ in pairs(TBH) do
+      if y_t >= TBH[track].t and y_b <= TBH[track].b then
+         if not Has_val(range_tracks, track) then
+            range_tracks[#range_tracks + 1] = {track = Get_Tracks(track)}
+         end
+      end
+   end
+   return range_tracks
+end
+
+local function GetTracksFromMouse(y, area)
+   local track, env_info = reaper.GetTrackFromPoint( mouse.x, y )
+   if track and env_info == 0 then
+      return track, TBH[track].t, TBH[track].b, TBH[track].h
+   elseif track and env_info == 1 then
+      local _, x_view_start, y_view_start, x_view_end, y_view_end = reaper.JS_Window_GetRect(track_window)
+      y = y - y_view_start
+      for i = 1 , reaper.CountTrackEnvelopes(track) do
+         local env = reaper.GetTrackEnvelope(track, i-1)
+         if TBH[env].t <= y and TBH[env].b > y then
+            return env, TBH[env].t, TBH[env].b, TBH[env].h
+         end
+      end
    end
 end
 
@@ -116,55 +154,6 @@ function Arrange_view_info(x, y, w)
          last_pr_h = TBH[last_pr_tr].h
          last_pr_t = TBH[last_pr_tr].t
          return true
-      end
-   end
-end
-
-local function Has_val(tab, val, guid)
-   local val_n = guid and guid or val
-   for i = 1, #tab do
-      local in_table = guid and tab[i].guid or tab[i]
-      if in_table == val_n then
-         return tab[i]
-      end
-   end
-end
-
-local function Get_Tracks(pointer)
-   if reaper.ValidatePtr(pointer, "MediaTrack*") then
-      --[[if reaper.GetMediaTrackInfo_Value(pointer, "I_FOLDERDEPTH") == 1 then
-    end]]
-      -- TODO: ADD FOLDERS
-      return pointer
-   elseif reaper.ValidatePtr(pointer, "TrackEnvelope*") then
-      return pointer
-   end
-end
-
-local function GetTracksFromRange(y)
-   local range_tracks = {}
-   for track, _ in pairs(TBH) do
-      if y >= TBH[track].t and y <= TBH[track].b then
-         if not Has_val(range_tracks, track) then
-            range_tracks[#range_tracks + 1] = {track = Get_Tracks(track)}
-         end
-      end
-   end
-   return range_tracks
-end
-
-local function GetTracksFromMouse(y, area)
-   local track, env_info = reaper.GetTrackFromPoint( mouse.x, y )
-   if track and env_info == 0 then
-      return track, TBH[track].t, TBH[track].b, TBH[track].h
-   elseif track and env_info == 1 then
-      local _, x_view_start, y_view_start, x_view_end, y_view_end = reaper.JS_Window_GetRect(track_window)
-      y = y - y_view_start
-      for i = 1 , reaper.CountTrackEnvelopes(track) do
-         local env = reaper.GetTrackEnvelope(track, i-1)
-         if TBH[env].t <= y and TBH[env].b > y then
-            return env, TBH[env].t, TBH[env].b, TBH[env].h
-         end
       end
    end
 end
