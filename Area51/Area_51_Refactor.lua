@@ -44,7 +44,7 @@ local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
 local track_window = reaper.JS_Window_FindChildByID(main_wnd, 1000) -- GET TRACK VIEW
 local track_window_dc = reaper.JS_GDI_GetWindowDC(track_window)
 local mixer_wnd = reaper.JS_Window_Find("mixer", true) -- GET MIXER -- tHIS NEEDS TO BE CONVERTED TO ID, AND I STILL DO NOT KNOW HOW TO FIND THEM
-Areas_TB = {}
+local Areas_TB = {}
 local Key_TB = {}
 local active_as
 local last_proj_change_count = reaper.GetProjectStateChangeCount(0)
@@ -90,13 +90,23 @@ end
 
 local function GetTracksFromRange(y_t, y_b)
    local range_tracks = {}
+   local sort_tracks = {}
    for track, _ in pairs(TBH) do
       if TBH[track].t >= y_t and TBH[track].b <= y_b then
-         if not Has_val(range_tracks, track) then
-            range_tracks[#range_tracks + 1] = {track = track}
-         end
+         local num = reaper.GetMediaTrackInfo_Value( track, "IP_TRACKNUMBER" )
+         sort_tracks[#sort_tracks+1] = num
       end
    end
+   table.sort(
+      sort_tracks,
+         function(a, b)
+            return a < b
+         end
+      )
+      for i = 1, #sort_tracks do
+         local track =  reaper.CSurf_TrackFromID( sort_tracks[i], false )
+         range_tracks[#range_tracks + 1] = {track = track}
+      end
    return range_tracks
 end
 
