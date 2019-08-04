@@ -43,7 +43,6 @@ end
 local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
 local track_window = reaper.JS_Window_FindChildByID(main_wnd, 1000) -- GET TRACK VIEW
 local track_window_dc = reaper.JS_GDI_GetWindowDC(track_window)
-local mixer_wnd = reaper.JS_Window_Find("mixer", true) -- GET MIXER -- tHIS NEEDS TO BE CONVERTED TO ID, AND I STILL DO NOT KNOW HOW TO FIND THEM
 local Areas_TB = {}
 local Key_TB = {}
 local active_as
@@ -72,16 +71,16 @@ local TBH
 function GetTracksXYH()
    TBH = {}
    local _, x_view_start, y_view_start, x_view_end, y_view_end = reaper.JS_Window_GetRect(track_window)
-   for i = 1 , reaper.CountTracks(0) do
-      local tr = reaper.GetTrack(0, i-1)
-      local tr_h = reaper.GetMediaTrackInfo_Value( tr, "I_TCPH" )
-      local tr_t = reaper.GetMediaTrackInfo_Value( tr, "I_TCPY" ) + y_view_start
+   for i = 1, reaper.CountTracks(0) do
+      local tr = reaper.GetTrack(0, i - 1)
+      local tr_h = reaper.GetMediaTrackInfo_Value(tr, "I_TCPH")
+      local tr_t = reaper.GetMediaTrackInfo_Value(tr, "I_TCPY") + y_view_start
       local tr_b = tr_t + tr_h
       TBH[tr] = {t = tr_t, b = tr_b, h = tr_h}
-      for j = 1 , reaper.CountTrackEnvelopes(tr) do
-         local env = reaper.GetTrackEnvelope(tr, j-1)
-         local env_h = reaper.GetEnvelopeInfo_Value(env,"I_TCPH")
-         local env_t = reaper.GetEnvelopeInfo_Value(env,"I_TCPY") + tr_t
+      for j = 1, reaper.CountTrackEnvelopes(tr) do
+         local env = reaper.GetTrackEnvelope(tr, j - 1)
+         local env_h = reaper.GetEnvelopeInfo_Value(env, "I_TCPH")
+         local env_t = reaper.GetEnvelopeInfo_Value(env, "I_TCPY") + tr_t
          local env_b = env_t + env_h
          TBH[env] = {t = env_t, b = env_b, h = env_h}
       end
@@ -93,20 +92,20 @@ local function GetTracksFromRange(y_t, y_b)
    local sort_tracks = {}
    for track, _ in pairs(TBH) do
       if TBH[track].t >= y_t and TBH[track].b <= y_b then
-         local num = reaper.GetMediaTrackInfo_Value( track, "IP_TRACKNUMBER" )
-         sort_tracks[#sort_tracks+1] = num
+         local num = reaper.GetMediaTrackInfo_Value(track, "IP_TRACKNUMBER")
+         sort_tracks[#sort_tracks + 1] = num
       end
    end
    table.sort(
       sort_tracks,
-         function(a, b)
-            return a < b
-         end
-      )
-      for i = 1, #sort_tracks do
-         local track =  reaper.CSurf_TrackFromID( sort_tracks[i], false )
-         range_tracks[#range_tracks + 1] = {track = track}
+      function(a, b)
+         return a < b
       end
+   )
+   for i = 1, #sort_tracks do
+      local track = reaper.CSurf_TrackFromID(sort_tracks[i], false)
+      range_tracks[#range_tracks + 1] = {track = track}
+   end
    return range_tracks
 end
 
@@ -115,8 +114,8 @@ local function GetTracksFromMouse(x, y)
    if track and env_info == 0 then
       return track, TBH[track].t, TBH[track].b, TBH[track].h
    elseif track and env_info == 1 then
-      for i = 1 , reaper.CountTrackEnvelopes(track) do
-         local env = reaper.GetTrackEnvelope(track, i-1)
+      for i = 1, reaper.CountTrackEnvelopes(track) do
+         local env = reaper.GetTrackEnvelope(track, i - 1)
          if TBH[env].t <= y and TBH[env].b >= y then
             return env, TBH[env].t, TBH[env].b, TBH[env].h
          end
@@ -195,7 +194,6 @@ function GetTrackTBH(tbl)
          total_h = total_h + h
       end
    end
-  -- t = total_h == 0 and 0 or t
    return t, total_h
 end
 
@@ -234,11 +232,13 @@ function GetTrackZoneInfo()
                reaper.JS_WindowMessage_PassThrough(track_window, "WM_LBUTTONDOWN", true)
             end
          end
-         if mouse.detail == "MOVE" or mouse.detail == "FADE L" or mouse.detail == "FADE R" or mouse.detail == "DRAW"then
+         if mouse.detail == "MOVE" or mouse.detail == "FADE L" or mouse.detail == "FADE R" or mouse.detail == "DRAW" then
             BLOCK = true
          end
       else
-         if BLOCK then BLOCK = nil end
+         if BLOCK then
+            BLOCK = nil
+         end
       end
    end
 end
@@ -595,7 +595,7 @@ function Mouse_Data_From_Arrange()
       x = mouse_pos >= 0 and (Round(p * zoom_lvl) + x_view_start) - Arr_pixel or x
    end
 
-   mouse = MouseInfo(x,y,p)
+   mouse = MouseInfo(x, y, p)
    mouse.detail = ReaperCursors()
    if GetTracksFromMouse(mouse.x, mouse.y) then
       mouse.tr, mouse.r_t, mouse.r_b = GetTracksFromMouse(mouse.x, mouse.y)
@@ -742,7 +742,7 @@ local function Main()
          --GetTrackZoneInfo()
          --msg(Mouse_in_arrange())
          check_keys()
-         
+
          if not ZONE and not BLOCK then
             CreateAreaFromSelection()
          end -- CREATE AS IF IN ARRANGE WINDOW AND NON AS ZONES ARE CLICKED
