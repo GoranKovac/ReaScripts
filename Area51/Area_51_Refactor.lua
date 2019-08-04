@@ -57,7 +57,7 @@ local ceil, floor = math.ceil, math.floor
 function Round(n)
    return n % 1 >= 0.5 and ceil(n) or floor(n)
 end
-
+--[[
 local TBH
 function GetTracksXYH()
    TBH = {}
@@ -75,13 +75,31 @@ function GetTracksXYH()
       end
    end
 end
+]]
+local TBH
+function GetTracksXYH()
+   TBH = {}
+   for i = 1 , reaper.CountTracks(0) do
+      local tr = reaper.GetTrack(0, i-1)
+      local tr_h = reaper.GetMediaTrackInfo_Value( tr, "I_TCPH" )
+      local tr_t = reaper.GetMediaTrackInfo_Value( tr, "I_TCPY" )
+      local tr_b = tr_t + tr_h
+      for j = 1 , reaper.CountTrackEnvelopes(tr) do
+         local env = reaper.GetTrackEnvelope(tr, j-1)
+         local env_h = reaper.GetEnvelopeInfo_Value(env,"I_TCPH")
+         local env_t = reaper.GetEnvelopeInfo_Value(env,"I_TCPY") + tr_t
+         local env_b = env_t + env_h
+         TBH[env] = {t = env_t, b = env_b, h = env_h}
+      end
+      TBH[tr] = {t = tr_t, b = tr_b, h = tr_h}
+   end
+end
 
 local function Get_Set_Position_In_Arrange(x, y, w)
    local zoom_lvl = reaper.GetHZoomLevel() -- HORIZONTAL ZOOM LEVEL
    local Arr_start_time, _ = reaper.GetSet_ArrangeView2(0, false, 0, 0) -- GET ARRANGE VIEW
    local Arr_pixel = Round(Arr_start_time * zoom_lvl) -- ARRANGE VIEW POSITION CONVERT TO PIXELS
    local _, x_view_start, y_view_start, x_view_end, y_view_end = reaper.JS_Window_GetRect(track_window) -- GET TRACK WINDOW X-Y Selection
-
    if x or y or w then
       x = Round(x * zoom_lvl) - Arr_pixel
       y = y - y_view_start
@@ -140,7 +158,7 @@ local function Get_Tracks(pointer)
       return pointer
    end
 end
-
+--[[
 local function GetTracksFromMouse(y, area)
    local trackview_window
    local range_tracks = {}
@@ -177,7 +195,22 @@ local function GetTracksFromMouse(y, area)
       return range_tracks
    end
 end
-
+]]
+local function GetTracksFromMouse(y, area)
+   local track, env_info = reaper.GetTrackFromPoint( mouse.x, y )
+   if track and env_info == 0 then
+      return track, TBH[track].t, TBH[track].b, TBH[track].h
+   elseif track and env_info == 1 then
+      local _, x_view_start, y_view_start, x_view_end, y_view_end = reaper.JS_Window_GetRect(track_window)
+      y = y - y_view_start
+      for i = 1 , reaper.CountTrackEnvelopes(track) do
+         local env = reaper.GetTrackEnvelope(track, i-1)
+         if TBH[env].t <= y and TBH[env].b > y then
+            return env, TBH[env].t, TBH[env].b, TBH[env].h
+         end
+      end
+   end
+end
 function get_last_visible_track()
    if reaper.CountTracks(0) == 0 then
       return
@@ -220,33 +253,36 @@ function Mouse_in_arrange()
    if (mouse.oy >= y_view_start and mouse.oy <= y_view_end) and (mouse.ox >= x_view_start and mouse.ox <= x_view_end) then
       -- IF MOUSE IS OVER TRACK (THIS IS CHECK IF WE ARE IN ARRANGE VIEW BUT WE ARE BELLOW LAST TRACK)
       if GetTracksFromMouse(mouse.oy) then
+         local tr = GetTracksFromMouse(mouse.oy)
+         local tr_t, _, tr_h = TBH[tr].t, TBH[tr].b, TBH[tr].h
+         if (mouse.oy - tr_t < tr_h / 2) then
+            return "UPPER"
+         elseif (mouse.oy - tr_t > tr_h / 2) then
+            return "LOWER"
+         end
          return true
       end
    end
 end
 
-function GetTrackZoneInfo() -- MODIFIED
-   if not mouse.tr or not TBH[mouse.tr] then
-      return
-   end
-   local detail = ReaperCursors()
-   local tr_t, tr_b, tr_h = TBH[mouse.tr].t, TBH[mouse.tr].b, TBH[mouse.tr].h
+function GetTrackZoneInfo()
    if Mouse_in_arrange() then
-      if mouse.y > tr_t and mouse.y < tr_b then --  TRACK ZONE (UPPER/LOWER HALF)
-         local upper_half = (mouse.y - tr_t < tr_h / 2) and true
-         local lower_half = (mouse.y - tr_t > tr_h / 2) and true
-
-         if detail == "EDGE L" or detail == "EDGE R" then
-            reaper.JS_WindowMessage_PassThrough(track_window, "WM_LBUTTONDOWN", false)
-         else
-            reaper.JS_WindowMessage_PassThrough(track_window, "WM_LBUTTONDOWN", true)
+      local track_part = Mouse_in_arrange()
+      if mouse.l_down then
+         if mouse.detail == "EDGE L" or mouse.detail == "EDGE R" then
+            if track_part == "LOWER" then
+               msg("LOW")
+               reaper.JS_WindowMessage_PassThrough(track_window, "WM_LBUTTONDOWN", false)
+            elseif track_part == "UPPER" then
+               msg("HI")
+               reaper.JS_WindowMessage_PassThrough(track_window, "WM_LBUTTONDOWN", true)
+            end
          end
-
-         if detail == "MOVE" or detail == "FADE L" or detail == "FADE R" then
+         if mouse.detail == "MOVE" or mouse.detail == "FADE L" or mouse.detail == "FADE R" or mouse.detail == "DRAW"then
             BLOCK = true
-         else
-            BLOCK = nil
          end
+      else
+         if BLOCK then BLOCK = nil end
       end
    end
 end
@@ -593,15 +629,18 @@ end
 
 function Mouse_Data_From_Arrange()
    local zoom_lvl, Arr_start_time, Arr_pixel, x_view_start, y_view_start = Get_Set_Position_In_Arrange()
-   local mouse_pos = ((mouse.x - x_view_start) / zoom_lvl) + Arr_start_time
-   mouse.p = mouse_pos >= 0 and mouse_pos or 0
-   mouse.x = mouse_pos >= 0 and mouse.x or x_view_start
-   mouse.y = mouse.y >= y_view_start and mouse.y or y_view_start
+   local x, y = reaper.GetMousePosition()
+   local mouse_pos = ((x - x_view_start) / zoom_lvl) + Arr_start_time
+   p = mouse_pos >= 0 and mouse_pos or 0
+   x = mouse_pos >= 0 and x or x_view_start
+   y = y >= y_view_start and y or y_view_start
    if reaper.GetToggleCommandState(1157) == 1 then
-      mouse.p = reaper.SnapToGrid(0, mouse.p)
-      mouse.x = (Round(mouse.p * zoom_lvl) + x_view_start) - Arr_pixel
-      mouse.ox = (Round(mouse.op * zoom_lvl) + x_view_start) - Arr_pixel
+      p = reaper.SnapToGrid(0, mouse_pos)
+      x = mouse_pos >= 0 and (Round(p * zoom_lvl) + x_view_start) - Arr_pixel or x
    end
+
+   mouse = MouseInfo(x,y,p)
+   mouse.detail = ReaperCursors()
    if GetTracksFromMouse(mouse.y) then
       mouse.tr, mouse.r_t, mouse.r_b = GetTracksFromMouse(mouse.y)
    end
@@ -742,10 +781,12 @@ local function Main()
    xpcall(
       function()
          GetTracksXYH() -- GET XYH INFO OF ALL TRACKS
-         mouse = MouseInfo()
+         --mouse = MouseInfo()
          Mouse_Data_From_Arrange()
+         --GetTrackZoneInfo()
+         --msg(Mouse_in_arrange())
          check_keys()
-         GetTrackZoneInfo()
+         
          if not ZONE and not BLOCK then
             CreateAreaFromSelection()
          end -- CREATE AS IF IN ARRANGE WINDOW AND NON AS ZONES ARE CLICKED

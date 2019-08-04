@@ -88,7 +88,6 @@ function OnMouseDown(lmb_down, rmb_down)
   mouse.ort, mouse.orb, mouse.otr = mouse.r_t, mouse.r_b, mouse.tr
   mouse.op = mouse.p
   mouse.cap_count = 0       -- reset mouse capture count
-  mouse.detail = GetTrackZoneInfo() or false
 end
 
 
@@ -179,9 +178,7 @@ function init()
 end
 
 function MouseInfo(x, y, p)
-  mouse.x, mouse.y = reaper.GetMousePosition()
-  mouse.p = mouse.p or 0
-  --mouse.x, mouse.y, mouse.p = x or mouse.x, y or mouse.y, p or mouse.p
+  mouse.x, mouse.y, mouse.p = x or mouse.x, y or mouse.y, p or mouse.p
   mouse.l_click   = false
   mouse.r_click   = false
   mouse.l_dclick  = false
