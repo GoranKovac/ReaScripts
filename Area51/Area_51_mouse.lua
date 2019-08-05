@@ -27,7 +27,7 @@ local mouse = {
                 
                 lb_down = function() return reaper.JS_Mouse_GetState(95) &1 == 1 end,
                 rb_down = function() return reaper.JS_Mouse_GetState(95) &2 == 2 end,
-                
+                --[[
                 get_wheel = function()
                       --  if reaper.JS_Mouse_GetState(95)  &8 == 8 then
                         local peekOK, _, time, keys, rotate, x, y = reaper.JS_WindowMessage_Peek(track_window, "WM_MOUSEWHEEL")
@@ -39,6 +39,7 @@ local mouse = {
                         --  msg(cnt)
                          end
                          end,
+                         ]]
                 uptime = 0,
                 wheel = cnt,
                 
@@ -47,6 +48,7 @@ local mouse = {
                 last_tr = nil,
                 dx = 0,
                 dy = 0,
+                dp = 0,
                 ox = 0,
                 oy = 0,
                 p = 0,
@@ -109,6 +111,7 @@ function OnMouseHold(lmb_down, rmb_down)
     mouse.r_down = rmb_down and true
     mouse.dx = mouse.x - mouse.ox
     mouse.dy = mouse.y - mouse.oy
+    mouse.dp = mouse.p - mouse.op
 
     mouse.rx = mouse.x - mouse.last_x
     mouse.last_x, mouse.last_y = mouse.x, mouse.y
@@ -186,7 +189,7 @@ function MouseInfo(x, y, p)
   mouse.r_up      = false
   mouse.l_down    = false
   mouse.r_down    = false
-  mouse.get_wheel()
+  --mouse.get_wheel()
   --if  mouse.Shift() then
  -- mouse.wheel = (mouse.wheel ~= 0 ) and mouse.wheel + mouse.get_wheel() or 1
   --end

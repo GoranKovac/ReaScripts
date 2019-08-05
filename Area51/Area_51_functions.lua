@@ -1,19 +1,19 @@
 function move_items_envs(tbl, offset)
-  for i = 1, #tbl.info do
-    if tbl.info[i].items then
-      for j = 1, #tbl.info[i].items do
-        local as_track = tbl.info[i].track
-        local as_item = tbl.info[i].items[j]
+  for i = 1, #tbl.sel_info do
+    if tbl.sel_info[i].items then
+      for j = 1, #tbl.sel_info[i].items do
+        local as_track = tbl.sel_info[i].track
+        local as_item = tbl.sel_info[i].items[j]
         local as_item_pos = reaper.GetMediaItemInfo_Value(as_item, "D_POSITION")
         reaper.SetMediaItemInfo_Value(as_item, "D_POSITION", as_item_pos + offset)
         reaper.MoveMediaItemToTrack(as_item, as_track)
       end
-    elseif tbl.info[i].env_points then
-      for j = 1, #tbl.info[i].env_points do
-        local env = tbl.info[i].env_points[j]
+    elseif tbl.sel_info[i].env_points then
+      for j = 1, #tbl.sel_info[i].env_points do
+        local env = tbl.sel_info[i].env_points[j]
         env.time = env.time + offset
         reaper.SetEnvelopePoint(
-          tbl.info[i].track,
+          tbl.sel_info[i].track,
           env.id,
           env.time,
           env.val,
@@ -29,12 +29,12 @@ end
 
 local function add_info_to_edge(tbl)
   local tracks = {}
-  for i = 1, #tbl.info do
-    tracks[#tracks + 1] = {track = tbl.info[i].track}
+  for i = 1, #tbl.sel_info do
+    tracks[#tracks + 1] = {track = tbl.sel_info[i].track}
   end
 
   local info = GetRangeInfo(tracks, tbl.time_start, tbl.time_end)
-  tbl.info = info
+  tbl.sel_info = info
 end
 
 function item_blit(item, as_start, as_end, pos)
@@ -282,7 +282,7 @@ function AreaDo(tbl, job)
       end
     end
     if job == "del" then
-      tbl.info = GetAreaInfo(tbl)
+      tbl.sel_info = GetAreaInfo(tbl)
     end
   end
   reaper.PreventUIRefresh(-1)

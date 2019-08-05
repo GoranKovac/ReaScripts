@@ -92,11 +92,11 @@ function GetTracksXYH()
    end
 end
 
-local function GetTracksFromRange(y_t, y_b)
+function GetTracksFromRange(y_t, y_b)
    local range_tracks = {}
-   for track, _ in pairs(TBH) do
-      if TBH[track].t >= y_t and TBH[track].b <= y_b then
-         range_tracks[#range_tracks+1] = {track = track, v = TBH[track].t}
+   for track, coords in pairs(TBH) do
+      if coords.t >= y_t and coords.b <= y_b then
+         range_tracks[#range_tracks+1] = {track = track, v = coords.t}
       end
    end
    table.sort(
@@ -106,7 +106,7 @@ local function GetTracksFromRange(y_t, y_b)
       end
    )
    for i = 1, #range_tracks do
-      range_tracks[i].v = nil
+      range_tracks[i] = {track = range_tracks[i].track}
    end
    return range_tracks
 end
@@ -330,7 +330,7 @@ local function GetGhosts(data, as_start, as_end)
    end
 end
 
-function GetTrackData(tbl, as_start, as_end)
+local function GetTrackData(tbl, as_start, as_end)
    for i = 1, #tbl do
       if reaper.ValidatePtr(tbl[i].track, "MediaTrack*") then
          tbl[i].items = get_items_in_as(tbl[i].track, as_start, as_end) -- TRACK MEDIA ITEMS
@@ -381,11 +381,19 @@ function GetSelectionInfo(tbl)
    return data
 end
 
+function convert_time_to_pixel(t_start, t_end)
+   local zoom_lvl, Arr_start_time, Arr_pixel, x_view_start, y_view_start = Get_Set_Position_In_Arrange()
+   local x_s = Round(t_start * zoom_lvl) -- convert time to pixel
+   local x_e = Round(t_end * zoom_lvl) -- convert time to pixel
+   local x = (x_s - Arr_pixel) + x_view_start
+   local w = x_e - x_s
+   return x, w
+end
+
 local function CreateAreaFromSelection()
    if not ARRANGE then return end
    local as_top, as_bot = Check_top_bot(mouse.ort, mouse.orb, mouse.r_t, mouse.r_b) -- RANGE ON MOUSE CLICK HOLD AND RANGE WHILE MOUSE HOLD
    local as_left, as_right = Check_left_right(mouse.op, mouse.p) -- CHECK IF START & END TIMES ARE REVERSED
-   local x_s, x_e = Check_left_right(mouse.ox, mouse.x) -- CHECK IF X START & END ARE REVERSED
 
    if mouse.l_down then
       DRAWING = Check_change(as_left, as_right, as_top, as_bot)
@@ -395,7 +403,7 @@ local function CreateAreaFromSelection()
          if guid == nil then
             guid = mouse.Shift() and reaper.genGuid() or "single"
          end
-
+         
          if copy then
             copy_mode()
          end -- DISABLE COPY MODE IF ENABLED
@@ -403,8 +411,9 @@ local function CreateAreaFromSelection()
             RemoveAsFromTable(Areas_TB, "single")
          end -- REMOVE ALL CREATED AS AND GHOSTS IF SHIFT IS NOT PRESSED (FOR MULTI CREATING AS)
 
-         local x, y, w, h = x_s, as_top, x_e - x_s, as_bot - as_top
-         CreateAreaTable(x, y, w, h, guid, as_left, as_right)
+         local x, w = convert_time_to_pixel(as_left, as_right)
+         local y, h = as_top, as_bot - as_top
+         CreateAreaTable(x, y, w, h, guid, as_left, as_right,as_left, as_right)
       end
    elseif mouse.l_up and CREATING then
       local last_as = Areas_TB[#Areas_TB]
@@ -493,7 +502,6 @@ function generic_track_offset(as_tr, offset_tr)
 
    local as_tr_offset = m_tr_id - offset_tr_id -- GET OFFSET BETWEEN MOUSE AND FIRST ITEM POSITION (NOTE : IF WE ARE IN ZONE THEN WE USE LAST_MOUSE_TR DELTA WITH MOUSE_TR
    local as_pos_offset = as_tr_id + as_tr_offset -- ADD MOUSE OFFSET TO CURRENT TRACK ID
-
    as_pos_offset = find_visible_tracks(as_pos_offset) or as_pos_offset -- FIND FIRST AVAILABLE VISIBLE TRACK IF HIDDEN
 
    local new_as_tr =

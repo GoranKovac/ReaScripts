@@ -14,7 +14,6 @@ function Element:new(x, y, w, h, guid, time_start, time_end, info, norm_val, nor
   elm.info, elm.time_start, elm.time_end = info, time_start, time_end
   elm.norm_val = norm_val
   elm.norm_val2 = norm_val2
-  ----------------------
   setmetatable(elm, self)
   self.__index = self
   return elm
@@ -24,16 +23,56 @@ function extended(Child, Parent)
   setmetatable(Child, {__index = Parent})
 end
 
+function Element:zone(z)
+  if mouse.l_down then
+    if z[1] == "L" then
+      local new_L = z[2] + mouse.dp
+      self.time_start = new_L
+      self.x, self.w = convert_time_to_pixel(new_L, self.time_end)
+    elseif z[1] == "R" then
+      local new_R = z[2] + mouse.dp
+      self.time_end = new_R
+      self.x, self.w = convert_time_to_pixel(self.time_start, new_R)
+    elseif z[1] == "C" then
+      local new_L = z[2] + mouse.dp
+      local new_R = z[3] + mouse.dp
+
+      local offset = (new_L - self.time_start) -- GET MOVE OFFSET FOR ITEMS 
+      move_items_envs(self, offset) -- MOVE ITEMS BEFORE WE UPDATE THE AREA SO OFFSET CAN REFRESH
+
+      self.time_start, self.time_end = new_L, new_R
+      self.x, self.w = convert_time_to_pixel(new_L, new_R)
+
+      for i = 1, #self.sel_info do
+        local offset_tr = generic_track_offset(self.sel_info[i].track, mouse.last_tr)
+        self.sel_info[i].track = offset_tr
+      end
+      self.y, self.h = GetTrackTBH(self.sel_info)
+    elseif z[1] == "T" then
+      local rd = (mouse.r_t - mouse.ort)
+      local new_y, new_h = z[2] + rd, z[3] - rd
+      self.sel_info = GetTracksFromRange(new_y, new_y + new_h)
+      self.y, self.h = new_y, new_h
+    elseif z[1] == "B" then
+      local rd = (mouse.r_b - mouse.orb)
+      local new_h = z[3] + rd
+      self.sel_info = GetTracksFromRange(self.y, self.y + new_h)
+      self.h = new_h
+    end
+  else
+    ZONE = nil
+    test = nil
+    ARRANGE = nil
+    if z[1] == "L" or z[1] == "R" or z[1] == "T" or z[1] == "B" then
+      self.sel_info = GetSelectionInfo(self) -- UPDATE AREAS INFORMATION
+    end
+  end
+  self:draw()
+end
+
 function Element:update_xywh()
-  local _, x_view_start, y_view_start = reaper.JS_Window_GetRect(track_window)
-  local zoom_lvl = reaper.GetHZoomLevel()
-  local Arr_start = reaper.GetSet_ArrangeView2(0, false, 0, 0)
-  local Arr_pixel = Round(Arr_start * zoom_lvl)
-  local x_s = Round(self.time_start * zoom_lvl) -- convert time to pixel
-  local x_e = Round(self.time_end * zoom_lvl) -- convert time to pixel
-  self.x = (x_s - Arr_pixel) + x_view_start -- NEED TO ADD X VIEW START AND THEN REMOVE IT WHEN DRAWING OR MOUSE CORDINATES ARE WRONG
+  self.x, self.w = convert_time_to_pixel(self.time_start, self.time_end)
   self.y, self.h = GetTrackTBH(self.sel_info) -- FIND NEW TRACKS HEIGHT AND Y IF CHANGED
-  self.w = x_e - x_s
   self:draw()
 end
 
@@ -56,7 +95,7 @@ function Element:zoneIN(x, y)
     elseif y <= self.y + self.h and y >= (self.y + self.h) - range2 then
       return "BL"
     end
-    return {"L", self.x, self.w}
+    return {"L", self.time_start, self.time_end - self.time_start}
   end
 
   if x >= (self.x + self.w - range2) and x <= self.x + self.w then
@@ -65,7 +104,7 @@ function Element:zoneIN(x, y)
     elseif y <= self.y + self.h and y >= (self.y + self.h) - range2 then
       return "BR"
     end
-    return {"R", self.x + self.w, self.w}
+    return {"R", self.time_end, self.time_end - self.time_start}
   end
 
   if y >= self.y and y <= self.y + range2 then
@@ -77,15 +116,10 @@ function Element:zoneIN(x, y)
 
   if x > (self.x + range2) and x < (self.x + self.w - range2) then
     if y > self.y + range2 and y < (self.y + self.h) - range2 then
-      return {"C", self.x, self.w, self.y}
+      return {"C", self.time_start, self.time_end, self.y}
     end
   end
 end
---[[
-function Element:mouseZONE()
-  return mouse.l_down and self:zoneIN(mouse.ox, mouse.oy)
-end
-]]
 
 function Element:mouseZONE()
   return self:zoneIN(mouse.ox, mouse.oy)
@@ -120,24 +154,14 @@ function Element:track()
     return
   end
   if self:mouseDown() then
-    --ZONE = self:mouseDown()
-  else
-    --ZONE = nil
-  end
-  --[[
-  if mouse.l_down and self:mouseDown() and self:mouseZONE() then
-    ZONE = true
-    zone(self:mouseZONE(),self)
-    --msg(self:mouseZONE())
-  elseif mouse.l_up then ZONE = nil --end
-  end
-  ]]
-  --[[
-    if self:mouseDown() and not ZONE then ZONE = self:zoneIN(mouse.ox, mouse.oy) end
-    if ZONE and mouse.l_down then transform = zone(ZONE,self)
-    elseif ZONE and mouse.l_up then self.info = GetAreaInfo(transform) ZONE = nil transform = nil
+    if not ZONE then
+      ZONE = self:mouseZONE()
+      test = self
     end
-    ]]
+  end
+  if ZONE and self.guid == test.guid then
+    test:zone(ZONE)
+  end -- PREVENT OTHER AREAS TRIGGERING THIS LOOP AGAIN
 end
 ----------------------------------------------------------------------------------------------------
 ---   Create Element Child Classes(Button,Slider,Knob)   -------------------------------------------
@@ -171,7 +195,7 @@ function Menu:draw_body(tbl)
 
   self.x, self.y, self.w, self.h = tbl.x, tbl.y, tbl.w, tbl.h
   self.x, self.y, self.w, self.h = self.x + Round(self.w / 2), self.y, Round(self.w / 2), 15
-   --math.ceil(h/4)
+  --math.ceil(h/4)
   reaper.JS_Composite(track_window, (self.x) - x_view_start, self.y - y_view_start, self.w, self.h, self.bm, 0, 0, 1, 1) -- DRAW BACKGROUND
 
   local step = Round(self.w / (self.norm_val))
