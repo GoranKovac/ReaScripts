@@ -71,6 +71,11 @@ local TBH
 function GetTracksXYH()
    TBH = {}
    local _, x_view_start, y_view_start, x_view_end, y_view_end = reaper.JS_Window_GetRect(track_window)
+   local master_tr = reaper.GetMasterTrack(0)
+   local m_tr_h = reaper.GetMediaTrackInfo_Value(master_tr, "I_TCPH")
+   local m_tr_t = reaper.GetMediaTrackInfo_Value(master_tr, "I_TCPY") + y_view_start
+   local m_tr_b = m_tr_t + m_tr_h
+   TBH[master_tr] = {t = m_tr_t, b = m_tr_b, h = m_tr_h}
    for i = 1, reaper.CountTracks(0) do
       local tr = reaper.GetTrack(0, i - 1)
       local tr_h = reaper.GetMediaTrackInfo_Value(tr, "I_TCPH")
@@ -89,22 +94,19 @@ end
 
 local function GetTracksFromRange(y_t, y_b)
    local range_tracks = {}
-   local sort_tracks = {}
    for track, _ in pairs(TBH) do
       if TBH[track].t >= y_t and TBH[track].b <= y_b then
-         local num = reaper.GetMediaTrackInfo_Value(track, "IP_TRACKNUMBER")
-         sort_tracks[#sort_tracks + 1] = num
+         range_tracks[#range_tracks+1] = {track = track, v = TBH[track].t}
       end
    end
    table.sort(
-      sort_tracks,
+      range_tracks,
       function(a, b)
-         return a < b
+         return a.v < b.v
       end
    )
-   for i = 1, #sort_tracks do
-      local track = reaper.CSurf_TrackFromID(sort_tracks[i], false)
-      range_tracks[#range_tracks + 1] = {track = track}
+   for i = 1, #range_tracks do
+      range_tracks[i].v = nil
    end
    return range_tracks
 end
@@ -202,11 +204,13 @@ function Mouse_in_arrange()
    if reaper.JS_Window_GetForeground() ~= main_wnd then
       return
    end
+   --ARRANGE = false
    local _, x_view_start, y_view_start, x_view_end, y_view_end = reaper.JS_Window_GetRect(track_window) -- GET TRACK WINDOW X-Y Selection
    -- IS MOUSE IN ARRANGE VIEW COORDINATES
-   if (mouse.oy >= y_view_start and mouse.oy <= y_view_end) and (mouse.ox >= x_view_start and mouse.ox <= x_view_end) then
+   if (mouse.oy >= y_view_start and mouse.oy <= y_view_end) and (mouse.ox >= x_view_start and mouse.ox <= x_view_end) and mouse.l_down then
       -- IF MOUSE IS OVER TRACK (THIS IS CHECK IF WE ARE IN ARRANGE VIEW BUT WE ARE BELLOW LAST TRACK)
       if GetTracksFromMouse(mouse.ox, mouse.oy) then
+         --[[
          local tr = GetTracksFromMouse(mouse.ox, mouse.oy)
          local tr_t, _, tr_h = TBH[tr].t, TBH[tr].b, TBH[tr].h
          if (mouse.oy - tr_t < tr_h / 2) then
@@ -214,6 +218,10 @@ function Mouse_in_arrange()
          elseif (mouse.oy - tr_t > tr_h / 2) then
             return "LOWER"
          end
+         return true
+      end
+      ]]
+         ARRANGE = true
          return true
       end
    end
@@ -375,9 +383,7 @@ function GetSelectionInfo(tbl)
 end
 
 local function CreateAreaFromSelection()
-   if not Mouse_in_arrange() then
-      return
-   end
+   if not ARRANGE then return end
    local as_top, as_bot = Check_top_bot(mouse.ort, mouse.orb, mouse.r_t, mouse.r_b) -- RANGE ON MOUSE CLICK HOLD AND RANGE WHILE MOUSE HOLD
    local as_left, as_right = Check_left_right(mouse.op, mouse.p) -- CHECK IF START & END TIMES ARE REVERSED
    local x_s, x_e = Check_left_right(mouse.ox, mouse.x) -- CHECK IF X START & END ARE REVERSED
@@ -412,7 +418,9 @@ local function CreateAreaFromSelection()
             return a.y < b.y
          end
       ) -- SORT AREA TABLE BY Y POSITION (LOWEST TO HIGHEST)
-      CREATING, guid, DRAWING = nil, nil, nil
+      CREATING, guid, DRAWING, ARRANGE = nil, nil, nil, nil
+   elseif mouse.l_up and ARRANGE then
+      ARRANGE = nil
    end
 end
 
@@ -586,15 +594,18 @@ end
 function Mouse_Data_From_Arrange()
    local zoom_lvl, Arr_start_time, Arr_pixel, x_view_start, y_view_start = Get_Set_Position_In_Arrange()
    local x, y = reaper.GetMousePosition()
-   local mouse_pos = ((x - x_view_start) / zoom_lvl) + Arr_start_time
-   p = mouse_pos >= 0 and mouse_pos or 0
-   x = mouse_pos >= 0 and x or x_view_start
-   y = y >= y_view_start and y or y_view_start
+   local p = ((x - x_view_start) / zoom_lvl) + Arr_start_time
+
    if reaper.GetToggleCommandState(1157) == 1 then
-      p = reaper.SnapToGrid(0, mouse_pos)
-      x = mouse_pos >= 0 and (Round(p * zoom_lvl) + x_view_start) - Arr_pixel or x
+      p = p >= 0 and reaper.SnapToGrid(0, p) or p
+      x = (Round(p * zoom_lvl) + x_view_start) - Arr_pixel
    end
 
+   if Mouse_in_arrange() then
+      p = p >= Arr_start_time and p or Arr_start_time
+      x = x >= x_view_start and x or x_view_start
+      y = y >= y_view_start and y or y_view_start
+   end
    mouse = MouseInfo(x, y, p)
    mouse.detail = ReaperCursors()
    if GetTracksFromMouse(mouse.x, mouse.y) then
