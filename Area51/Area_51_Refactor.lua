@@ -204,7 +204,6 @@ function Mouse_in_arrange()
    if reaper.JS_Window_GetForeground() ~= main_wnd then
       return
    end
-   --ARRANGE = false
    local _, x_view_start, y_view_start, x_view_end, y_view_end = reaper.JS_Window_GetRect(track_window) -- GET TRACK WINDOW X-Y Selection
    -- IS MOUSE IN ARRANGE VIEW COORDINATES
    if (mouse.oy >= y_view_start and mouse.oy <= y_view_end) and (mouse.ox >= x_view_start and mouse.ox <= x_view_end) and mouse.l_down then
@@ -388,14 +387,14 @@ local function CreateAreaFromSelection()
    local as_left, as_right = Check_left_right(mouse.op, mouse.p) -- CHECK IF START & END TIMES ARE REVERSED
    local x_s, x_e = Check_left_right(mouse.ox, mouse.x) -- CHECK IF X START & END ARE REVERSED
 
-   if mouse.l_click then -- IF LAST MOUSE CLICK WAS DOWN
-      guid = mouse.Shift() and reaper.genGuid() or "single"
-   end
    if mouse.l_down then
       DRAWING = Check_change(as_left, as_right, as_top, as_bot)
 
       if DRAWING then
          CREATING = true
+         if guid == nil then
+            guid = mouse.Shift() and reaper.genGuid() or "single"
+         end
 
          if copy then
             copy_mode()
@@ -748,10 +747,8 @@ local function Main()
    xpcall(
       function()
          GetTracksXYH() -- GET XYH INFO OF ALL TRACKS
-         --mouse = MouseInfo()
          Mouse_Data_From_Arrange()
          --GetTrackZoneInfo()
-         --msg(Mouse_in_arrange())
          check_keys()
 
          if not ZONE and not BLOCK then

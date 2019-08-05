@@ -81,9 +81,14 @@ function Element:zoneIN(x, y)
     end
   end
 end
-
+--[[
 function Element:mouseZONE()
   return mouse.l_down and self:zoneIN(mouse.ox, mouse.oy)
+end
+]]
+
+function Element:mouseZONE()
+  return self:zoneIN(mouse.ox, mouse.oy)
 end
 
 function Element:mouseIN()
@@ -110,10 +115,14 @@ function Element:mouseM_Down()
   --return m_state&64==64 and self:pointIN(mouse_ox, mouse_oy)
 end
 --------
-local transform
 function Element:track()
   if CREATING then
     return
+  end
+  if self:mouseDown() then
+    --ZONE = self:mouseDown()
+  else
+    --ZONE = nil
   end
   --[[
   if mouse.l_down and self:mouseDown() and self:mouseZONE() then
