@@ -1,3 +1,64 @@
+--[[local function transform_env(tbl, trans_zone, m_time, cur_m_y , mouse_offset, off2)
+  local size_offset = size_offset(cur_m_y)
+  local pt_fist, pt_last
+  for i = 1 ,#tbl do
+    local track = tbl[i].track
+    if reaper.ValidatePtr(track, "TrackEnvelope*") then
+      if tbl[i].points then
+        if trans_zone == "L" then
+          pt_fist = tbl[i].points[#tbl[i].points].time
+          pt_last = tbl[i].points[1].time
+        elseif trans_zone == "R" then
+          pt_fist = tbl[i].points[1].time
+          pt_last = tbl[i].points[#tbl[i].points].time
+        elseif trans_zone == "C" then  
+          Aef2 = tbl[i].points[1].value
+          Ael2 = tbl[i].points[#tbl[i].points].value
+        end
+        for j = 1, #tbl[i].points do
+          local p_t = tbl[i].points[j].time
+          local p_v = tbl[i].points[j].value
+          if trans_zone == "L" or trans_zone == "R" then
+            local off_LR = TranslateRange(p_t, pt_fist, pt_last, pt_fist, pt_last + mouse_offset)
+            tbl[i].points[j].time = off_LR
+          end
+          if trans_zone == "C" then
+            --Aef2 = tbl[i].points[1].value
+            --Ael2 = tbl[i].points[#tbl[i].points].value
+            Atest =  reaper.ScaleToEnvelopeMode( 0, off2 )
+            Aoff_C = TranslateRange(p_v, Aef2, Ael2, Aef2, Ael2 - (Atest))
+            tbl[i].points[j].value = Aoff_C 
+          end
+          if trans_zone == "TL" then
+            --local warp_offset = get_warp_offset(as_under_mouse.sel_start, as_under_mouse.sel_end, as_under_mouse.tracks[j].points[i].time, off2) * 0.01
+            --as_under_mouse.tracks[j].points[i].value = as_under_mouse.tracks[j].points[i].value - warp_offset
+          end
+          if trans_zone == "TR" then
+            local warp_offset = get_warp_offset(as_under_mouse.sel_start, as_under_mouse.sel_end, tbl[i].points[j].time, off2) * 0.01
+            tbl[i].points[j].value = tbl[i].points[j].value - warp_offset
+          end
+          reaper.SetEnvelopePoint( tbl[i].track, tbl[i].points[j].id, tbl[i].points[j].time , tbl[i].points[j].value, tbl[i].points[j].shape, tbl[i].points[j].tension, true, true )
+        end
+      end
+    end
+  end
+
+end]]
+
+local function TranslateRange(value, oldMin, oldMax, newMin, newMax)
+  local oldRange = oldMax - oldMin;
+  local newRange = newMax - newMin;
+  local newValue = ((value - oldMin) * newRange / oldRange) + newMin;
+  return newValue
+end
+
+local function get_warp_offset(as_start,as_end,point_time,offset)
+  local lenght = as_end - as_start
+  local distance = point_time - as_start
+  local x = ( offset * (point_time - as_start)) / lenght
+  return x
+end
+
 function move_items_envs(tbl, offset)
   for i = 1, #tbl.sel_info do
     if tbl.sel_info[i].items then
