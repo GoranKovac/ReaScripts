@@ -6,10 +6,7 @@ reaper.JS_WindowMessage_Intercept(track_window, "WM_MOUSEWHEEL", true)
 function msg(m)
   return reaper.ShowConsoleMsg(tostring(m) .. "\n")
 end
------------------
--- Mouse table --
------------------
-local cnt = 0
+
 local mouse = {
                 -- Constants
                 LB    = 1,
@@ -27,24 +24,11 @@ local mouse = {
                 
                 lb_down = function() return reaper.JS_Mouse_GetState(95) &1 == 1 end,
                 rb_down = function() return reaper.JS_Mouse_GetState(95) &2 == 2 end,
-                --[[
-                get_wheel = function()
-                      --  if reaper.JS_Mouse_GetState(95)  &8 == 8 then
-                        local peekOK, _, time, keys, rotate, x, y = reaper.JS_WindowMessage_Peek(track_window, "WM_MOUSEWHEEL")
-                         if not start_time then start_time = time end
-                         if start_time ~= time then
-                          local rotate_new = rotate > 0 and 120 or -120
-                          start_time = time
-                          cnt = cnt + 120/rotate_new > 0 and cnt + 120/rotate_new or 0
-                        --  msg(cnt)
-                         end
-                         end,
-                         ]]
                 uptime = 0,
-                wheel = cnt,
                 
                 last_x = -1,
                 last_y = -1,
+                last_p = -1,
                 last_tr = nil,
                 dx = 0,
                 dy = 0,
@@ -63,6 +47,8 @@ local mouse = {
                 op = 0,
                 detail = false,
                 rx = 0,
+                ry = 0,
+                rp = 0,
                 
                 last_LMB_state = false,
                 last_RMB_state = false,
@@ -114,7 +100,9 @@ function OnMouseHold(lmb_down, rmb_down)
     mouse.dp = mouse.p - mouse.op
 
     mouse.rx = mouse.x - mouse.last_x
-    mouse.last_x, mouse.last_y = mouse.x, mouse.y
+    mouse.ry = mouse.y - mouse.last_y
+    mouse.rp = mouse.p - mouse.last_p
+    mouse.last_x, mouse.last_y, mouse.last_p = mouse.x, mouse.y, mouse.p
     mouse.last_tr = mouse.tr
 end
 
@@ -176,8 +164,6 @@ function init()
   gfx.init("", 380, 700, gui.settings.docker_id)
   gfx.setfont(1,"Arial", gui.settings.font_size)
   gfx.clear = 3355443  -- matches with "FUSION: Pro&Clean Theme :: BETA 01" http://forum.cockos.com/showthread.php?t=155329
-
-  MouseInfo()
 end
 
 function MouseInfo(x, y, p)
@@ -189,15 +175,9 @@ function MouseInfo(x, y, p)
   mouse.r_up      = false
   mouse.l_down    = false
   mouse.r_down    = false
-  --mouse.get_wheel()
-  --if  mouse.Shift() then
- -- mouse.wheel = (mouse.wheel ~= 0 ) and mouse.wheel + mouse.get_wheel() or 1
-  --end
   local LB_DOWN = mouse.lb_down()           -- Get current left mouse button state
   local RB_DOWN = mouse.rb_down()           -- Get current right mouse button state
- -- mouse.x, mouse.y = reaper.GetMousePosition()
 
-  -- (modded Schwa's GUI example)
   if (LB_DOWN and not RB_DOWN) or (RB_DOWN and not LB_DOWN) then   -- LMB or RMB pressed down?
     if (mouse.last_LMB_state == false and not RB_DOWN) or (mouse.last_RMB_state == false and not LB_DOWN) then
       OnMouseDown(LB_DOWN, RB_DOWN)
@@ -212,12 +192,11 @@ function MouseInfo(x, y, p)
     OnMouseUp(LB_DOWN, RB_DOWN)
   end
 
-  draw_gui()
+  if debug == true then draw_gui()  gfx.update() end
 
-  --gfx.update()
-  --reaper.defer(mainloop)
   return mouse
 end
 
-init()
+if debug == true then init() end
+MouseInfo()
 

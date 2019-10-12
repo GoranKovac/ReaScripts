@@ -6,6 +6,8 @@ require("Area_51_functions") -- AREA CLASS SCRIPT
 require("Area_51_input") -- AREA INPUT HANDLING/SETUP
 require("Area_51_mouse")
 
+--debug = false
+
 crash = function(errObject)
    local byLine = "([^\r\n]*)\r?\n?"
    local trimPath = "[\\/]([^\\/]-:%d+:.+)$"
@@ -43,7 +45,7 @@ end
 local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
 local track_window = reaper.JS_Window_FindChildByID(main_wnd, 1000) -- GET TRACK VIEW
 local track_window_dc = reaper.JS_GDI_GetWindowDC(track_window)
-local Areas_TB = {}
+Areas_TB = {}
 local Key_TB = {}
 local active_as
 local last_proj_change_count = reaper.GetProjectStateChangeCount(0)
@@ -71,11 +73,14 @@ local TBH
 function GetTracksXYH()
    TBH = {}
    local _, x_view_start, y_view_start, x_view_end, y_view_end = reaper.JS_Window_GetRect(track_window)
-   local master_tr = reaper.GetMasterTrack(0)
-   local m_tr_h = reaper.GetMediaTrackInfo_Value(master_tr, "I_TCPH")
-   local m_tr_t = reaper.GetMediaTrackInfo_Value(master_tr, "I_TCPY") + y_view_start
-   local m_tr_b = m_tr_t + m_tr_h
-   TBH[master_tr] = {t = m_tr_t, b = m_tr_b, h = m_tr_h}
+   -- ONLY ADD MASTER TRACK IF VISIBLE IN TCP
+   if reaper.GetMasterTrackVisibility() == 1 then
+      local master_tr = reaper.GetMasterTrack(0)
+      local m_tr_h = reaper.GetMediaTrackInfo_Value(master_tr, "I_TCPH")
+      local m_tr_t = reaper.GetMediaTrackInfo_Value(master_tr, "I_TCPY") + y_view_start
+      local m_tr_b = m_tr_t + m_tr_h
+      TBH[master_tr] = {t = m_tr_t, b = m_tr_b, h = m_tr_h} 
+   end
    for i = 1, reaper.CountTracks(0) do
       local tr = reaper.GetTrack(0, i - 1)
       local tr_h = reaper.GetMediaTrackInfo_Value(tr, "I_TCPH")
@@ -189,6 +194,12 @@ function GetTrackTBH(tbl)
       return
    end
    local total_h, t, h = 0, 0, 0
+   -- GET INFO FROM FIRST AND LAST TRACK FROM TABLE
+   if TBH[tbl[1].track] and TBH[tbl[#tbl].track] then
+      t = TBH[tbl[1].track].t
+      total_h = TBH[tbl[#tbl].track].b - TBH[tbl[1].track].t
+   end
+   --[[
    for i = #tbl, 1, -1 do -- NEEDS TO BE REVERSED OR IT DRAWS SOME WEIRD SHIT
       local track = tbl[i].track
       if TBH[track] then
@@ -196,6 +207,8 @@ function GetTrackTBH(tbl)
          total_h = total_h + h
       end
    end
+   --msg(t .. " " .. total_h .. " - " .. t1 .. " " .. total_h2)
+   ]]
    return t, total_h
 end
 
@@ -330,6 +343,47 @@ local function GetGhosts(data, as_start, as_end)
    end
 end
 
+local function split_by_line(str)
+   local t = {}
+   for line in string.gmatch(str, "[^\r\n]+") do
+       t[#t + 1] = line
+   end
+   return t
+end
+
+local function edit_chunk(str, org, new)
+   local chunk = string.gsub(str, org, new)
+   return chunk
+end
+
+function get_set_envelope_chunk(track, env, as_start, as_end, mouse_offset)
+   local ret, chunk = reaper.GetTrackStateChunk(track, "", false)
+   local ret2, env_chunk = reaper.GetEnvelopeStateChunk(env, "")
+
+   chunk = split_by_line(chunk)
+   env_chunk = split_by_line(env_chunk)
+
+   for i = 1, #env_chunk do
+       if i < 8 then
+           table.insert(chunk, #chunk, env_chunk[i]) -- INSERT FIRST 7 LINES INTO TRACK CHUNK (DEFAULT INFO WITH FIRST POINT)
+       else
+           local time, val, something, selected = env_chunk[i]:match("([%d%.]+)%s([%d%.]+)%s([%d%.]+)%s([%d%.]+)")
+           if time then
+               time = tonumber(time)
+               if time >= as_start and time <= as_end then
+                   local new_time = time + mouse_offset
+                   env_chunk[i] = edit_chunk(env_chunk[i], time, new_time)
+                   table.insert(chunk, #chunk, env_chunk[i])
+               end
+           end
+       end
+   end
+
+   local chunk = table.concat(chunk, "\n")
+   reaper.SetTrackStateChunk(track, chunk, false)
+   reaper.UpdateTimeline()
+end
+
 local function GetTrackData(tbl, as_start, as_end)
    for i = 1, #tbl do
       if reaper.ValidatePtr(tbl[i].track, "MediaTrack*") then
@@ -360,10 +414,10 @@ end
 
 local function CreateAreaTable(x, y, w, h, guid, time_start, time_end)
    if not Has_val(Areas_TB, nil, guid) then
-      Areas_TB[#Areas_TB + 1] = AreaSelection:new(x, y, w, h, guid, time_start, time_end) -- CREATE NEW CLASS ONLY IF DOES NOT EXIST
+      Areas_TB[#Areas_TB + 1] = AreaSelection:new(x, y, w, h, guid, time_start, time_end - time_start) -- CREATE NEW CLASS ONLY IF DOES NOT EXIST
    else
       Areas_TB[#Areas_TB].time_start = time_start
-      Areas_TB[#Areas_TB].time_end = time_end
+      Areas_TB[#Areas_TB].time_dur = time_end - time_start
       Areas_TB[#Areas_TB].x = x
       Areas_TB[#Areas_TB].y = y
       Areas_TB[#Areas_TB].w = w
@@ -375,7 +429,7 @@ function GetSelectionInfo(tbl)
    if not tbl then
       return
    end
-   local area_top, area_bot, area_start, area_end = tbl.y, tbl.y + tbl.h, tbl.time_start, tbl.time_end
+   local area_top, area_bot, area_start, area_end = tbl.y, tbl.y + tbl.h, tbl.time_start, tbl.time_start + tbl.time_dur
    local tracks = GetTracksFromRange(area_top, area_bot) -- GET TRACK RANGE
    local data = GetTrackData(tracks, area_start, area_end) -- GATHER ALL INFO
    return data
@@ -403,7 +457,7 @@ local function CreateAreaFromSelection()
          if guid == nil then
             guid = mouse.Shift() and reaper.genGuid() or "single"
          end
-         
+
          if copy then
             copy_mode()
          end -- DISABLE COPY MODE IF ENABLED
@@ -413,13 +467,13 @@ local function CreateAreaFromSelection()
 
          local x, w = convert_time_to_pixel(as_left, as_right)
          local y, h = as_top, as_bot - as_top
-         CreateAreaTable(x, y, w, h, guid, as_left, as_right,as_left, as_right)
+         CreateAreaTable(x, y, w, h, guid, as_left, as_right)
       end
    elseif mouse.l_up and CREATING then
       local last_as = Areas_TB[#Areas_TB]
       local sel_info = GetSelectionInfo(last_as)
       Areas_TB[#Areas_TB].sel_info = sel_info
-      GetGhosts(sel_info, last_as.time_start, last_as.time_end) -- MAKE ITEM GHOSTS
+      GetGhosts(sel_info, last_as.time_start, last_as.time_start + last_as.time_dur) -- MAKE ITEM GHOSTS
       table.sort(
          Areas_TB,
          function(a, b)
@@ -475,7 +529,14 @@ function env_mouse_offset(tr, env_name, first_env)
    end
 end
 
-function generic_track_offset(as_tr, offset_tr)
+function env_to_track(tr)
+   if reaper.ValidatePtr(tr, "TrackEnvelope*") then
+      return reaper.Envelope_GetParentTrack(tr)
+   end
+   return tr
+end
+
+function generic_track_offset(as_tr, offset_tr, job)--, first_tr, num)
    --  GET ALL ENVELOPE TRACKS PARENT MEDIA TRACKS (SINCE ENVELOPE TRACKS HAVE NO ID WHICH WE USE TO MAKE OFFSET)
    local cur_m_tr = mouse.tr -- ADD TEMP MOUSE TRACK (DO NOT CONVERT) BELOW
 
@@ -500,7 +561,7 @@ function generic_track_offset(as_tr, offset_tr)
    local last_project_tr = get_last_visible_track()
    local last_project_tr_id = reaper.CSurf_TrackToID(last_project_tr, false)
 
-   local as_tr_offset = m_tr_id - offset_tr_id -- GET OFFSET BETWEEN MOUSE AND FIRST ITEM POSITION (NOTE : IF WE ARE IN ZONE THEN WE USE LAST_MOUSE_TR DELTA WITH MOUSE_TR
+   local as_tr_offset = m_tr_id - offset_tr_id 
    local as_pos_offset = as_tr_id + as_tr_offset -- ADD MOUSE OFFSET TO CURRENT TRACK ID
    as_pos_offset = find_visible_tracks(as_pos_offset) or as_pos_offset -- FIND FIRST AVAILABLE VISIBLE TRACK IF HIDDEN
 
@@ -508,6 +569,9 @@ function generic_track_offset(as_tr, offset_tr)
       as_pos_offset < last_project_tr_id and -- POSITION ITEMS TO MOUSE POSITION
       reaper.CSurf_TrackFromID(as_pos_offset, false) or
       last_project_tr
+
+   --if job then new_as_tr = as_pos_offset < last_project_tr reaper.CSurf_TrackFromID(as_pos_offset, false) end
+   --if as_pos_offset == last_project_tr_id+1 then return as_tr end
 
    local under_last_tr = (as_pos_offset - last_project_tr_id > 0) and as_pos_offset - last_project_tr_id -- HOW MANY TRACKS BELOW LAST PROJECT TRACK IS THE OFFSET
    return new_as_tr, under_last_tr
@@ -532,7 +596,7 @@ local function generic_table_find(job)
 
       local pos_offset = 0
       pos_offset = pos_offset + (tbl.time_start - lowest_start()) --  OFFSET AREA SELECTIONS TO MOUSE POSITION
-      local as_start, as_end = tbl.time_start, tbl.time_end
+      local as_start, as_dur = tbl.time_start, tbl.time_dur
 
       for i = 1, #tbl.sel_info do
          local sel_info = tbl.sel_info[i]
@@ -542,14 +606,14 @@ local function generic_table_find(job)
             local item_track = sel_info.track
             local item_data = sel_info.items
             if copy then
-               DrawItemGhosts(item_data, item_track, as_start, as_end, pos_offset, first_tr)
+               DrawItemGhosts(item_data, item_track, as_start, as_dur, pos_offset, first_tr)
             end
          elseif sel_info.env_name then
             local env_track = sel_info.track
             local env_name = sel_info.env_name
             --local env_data = sel_info.env_points -- CURENTLY UNUSED
             if copy then
-               DrawEnvGhosts(env_track, env_name, as_start, as_end, pos_offset, first_tr)
+               DrawEnvGhosts(env_track, env_name, as_start, as_dur, pos_offset, first_tr)
             end
          end
       end
@@ -591,14 +655,19 @@ function DrawEnvGhosts(env_track, env_name, as_start, as_end, pos_offset, first_
       local env_ghost_id = tostring(env_track) .. as_start
       if ghosts[env_ghost_id] then
          local mouse_offset = pos_offset + (mouse.p - as_start) + ghosts[env_ghost_id].p
-         local x, y, w = Get_Set_Position_In_Arrange(mouse_offset, track_t, (as_end - as_start))
+         local x, y, w = Get_Set_Position_In_Arrange(mouse_offset, track_t, as_end)
          local h = track_h
          Composite(x, y, w, h, ghosts[env_ghost_id].bm, 0, 0, ghosts[env_ghost_id].l, ghosts[env_ghost_id].h)
       end
    end
 end
 
-function Mouse_Data_From_Arrange()
+function check_limit(val, limit)
+   val = val >= limit and val or limit
+   return val
+end
+
+local function Mouse_Data_From_Arrange()
    local zoom_lvl, Arr_start_time, Arr_pixel, x_view_start, y_view_start = Get_Set_Position_In_Arrange()
    local x, y = reaper.GetMousePosition()
    local p = ((x - x_view_start) / zoom_lvl) + Arr_start_time
@@ -613,6 +682,7 @@ function Mouse_Data_From_Arrange()
       x = x >= x_view_start and x or x_view_start
       y = y >= y_view_start and y or y_view_start
    end
+   
    mouse = MouseInfo(x, y, p)
    mouse.detail = ReaperCursors()
    if GetTracksFromMouse(mouse.x, mouse.y) then
@@ -728,6 +798,13 @@ function remove()
    refresh_reaper()
 end
 
+function del()
+   local tbl = active_as and {active_as} or Areas_TB
+   if #tbl ~= 0 then
+       AreaDo(tbl, "del")
+   end
+end
+
 local function check_keys()
    local key = Track_keys(Key_TB, Areas_TB)
    if key then
@@ -786,6 +863,11 @@ function Exit() -- DESTROY ALL BITMAPS ON REAPER EXIT
    end
    if reaper.ValidatePtr(track_window, "HWND") then
       refresh_reaper()
+   end
+   for i = 1, #Key_TB do
+      if Key_TB[i].func then
+         Key_TB[i]:intercept(-1)
+      end
    end
 end
 

@@ -55,8 +55,34 @@ end
 local function get_warp_offset(as_start,as_end,point_time,offset)
   local lenght = as_end - as_start
   local distance = point_time - as_start
-  local x = ( offset * (point_time - as_start)) / lenght
+  local x = ( offset * distance) / lenght
+  --local x = ( offset * (point_time - as_start)) / lenght
   return x
+end
+
+function item_vals(item)
+  local item_lenght = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
+  local item_start = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
+  local item_dur = item_lenght + item_start
+  return item_start, item_lenght
+end
+
+local function stretch_items(items, as_start, as_end)
+   local item_start_1, item_lenght_1 = item_vals(items[1])
+   local item_start_2, item_lenght_2 = item_vals(items[#items])
+  for i = 1, #items do
+    local item = items[i]
+    local item_start, item_lenght = item_vals(item)
+    local take = reaper.GetMediaItemTake(item, 0)
+    local rate = reaper.GetMediaItemTakeInfo_Value( take, "D_PLAYRATE" )
+    local new_rate = TranslateRange(item_start, item_start_1, item_start_2, item_start_1, item_start_2 + mouse.rp )
+    local new_rate2 = TranslateRange(item_lenght, item_lenght_1, item_lenght_2, item_lenght_1, item_lenght_2 + mouse.rp)
+    msg(new_rate)
+    --reaper.SetMediaItemTakeInfo_Value( take, "D_PLAYRATE", rate + (mouse.rp * 0.0001) )
+    reaper.SetMediaItemInfo_Value( item, "D_LENGTH",new_rate2)
+    reaper.SetMediaItemInfo_Value( item, "D_POSITION",new_rate)
+
+  end
 end
 
 function move_items_envs(tbl, offset)
@@ -307,13 +333,13 @@ function del_env(env_track, as_start, as_end, pos_offset, job)
 end
 
 function AreaDo(tbl, job)
-  reaper.PreventUIRefresh(1)
+  --reaper.PreventUIRefresh(1)
   for a = 1, #tbl do
     local tbl = tbl[a]
 
     local pos_offset = 0
     pos_offset = pos_offset + (tbl.time_start - lowest_start()) --  OFFSET AREA SELECTIONS TO MOUSE POSITION
-    local as_start, as_end = tbl.time_start, tbl.time_end
+    local as_start, as_end = tbl.time_start, tbl.time_start + tbl.time_dur
 
     for i = 1, #tbl.sel_info do
       local info = tbl.sel_info[i]
@@ -327,6 +353,9 @@ function AreaDo(tbl, job)
         end
         if job == "del" or job == "split" then
           split_or_delete_items(item_track, item_data, as_start, as_end, job)
+        end
+        if job == "stretch" then
+          stretch_items(item_data, as_start, as_end)
         end
       elseif info.env_name then
         local env_track = info.track
@@ -343,11 +372,12 @@ function AreaDo(tbl, job)
       end
     end
     if job == "del" then
-      tbl.sel_info = GetAreaInfo(tbl)
+      tbl.sel_info = GetSelectionInfo(tbl)
     end
   end
-  reaper.PreventUIRefresh(-1)
-  reaper.UpdateTimeline()
+  --reaper.PreventUIRefresh(-1)
+  --reaper.UpdateTimeline()
+  reaper.UpdateArrange()
 end
 
 function get_and_show_take_envelope(take, envelope_name)

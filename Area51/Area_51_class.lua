@@ -6,12 +6,12 @@ local Element = {}
 function color()
 end
 
-function Element:new(x, y, w, h, guid, time_start, time_end, info, norm_val, norm_val2)
+function Element:new(x, y, w, h, guid, time_start, time_dur, info, norm_val, norm_val2)
   local elm = {}
   elm.x, elm.y, elm.w, elm.h = x, y, w, h
   elm.guid, elm.bm = guid, reaper.JS_LICE_CreateBitmap(true, 1, 1)
   reaper.JS_LICE_Clear(elm.bm, 0x66002244)
-  elm.info, elm.time_start, elm.time_end = info, time_start, time_end
+  elm.info, elm.time_start, elm.time_dur = info, time_start, time_dur
   elm.norm_val = norm_val
   elm.norm_val2 = norm_val2
   setmetatable(elm, self)
@@ -28,35 +28,63 @@ function Element:zone(z)
     if z[1] == "L" then
       local new_L = z[2] + mouse.dp
       self.time_start = new_L
-      self.x, self.w = convert_time_to_pixel(new_L, self.time_end)
+      self.time_start = self.time_start >= 0 and self.time_start or 0
+      self.time_start = self.time_start <= z[3] and self.time_start or z[3]
+      self.x, self.w = convert_time_to_pixel(self.time_start, z[3])
     elseif z[1] == "R" then
       local new_R = z[2] + mouse.dp
-      self.time_end = new_R
-      self.x, self.w = convert_time_to_pixel(self.time_start, new_R)
+      self.time_dur = new_R
+      self.time_dur = self.time_dur >= 0 and self.time_dur or 0
+      _, self.w = convert_time_to_pixel(0, self.time_dur)
+      --AreaDo({self},"stretch")
     elseif z[1] == "C" then
-      local new_L = z[2] + mouse.dp
-      local new_R = z[3] + mouse.dp
+      local tracks = z[5]
+      local new_L = z[2] + mouse.dp >= 0 and z[2] + mouse.dp or 0
+      local offset = (new_L - self.time_start) -- GET MOVE OFFSET FOR ITEMS
+      self.time_start = new_L
+      self.time_start = self.time_start >= 0 and self.time_start or 0
+      self.x = convert_time_to_pixel(self.time_start, 0)
 
-      local offset = (new_L - self.time_start) -- GET MOVE OFFSET FOR ITEMS 
-      move_items_envs(self, offset) -- MOVE ITEMS BEFORE WE UPDATE THE AREA SO OFFSET CAN REFRESH
+      local last_project_tr = get_last_visible_track()
+      local last_project_tr_id = reaper.CSurf_TrackToID(last_project_tr, false)
+      local mouse_delta = reaper.CSurf_TrackToID(env_to_track(mouse.tr), false) - reaper.CSurf_TrackToID(env_to_track(mouse.last_tr), false)
 
-      self.time_start, self.time_end = new_L, new_R
-      self.x, self.w = convert_time_to_pixel(new_L, new_R)
+      -- OFFSET TRACKS BASED ON AREA POSITION (TRACKS FOLLOW AREA)
+      if mouse_delta ~= 0 then
+        -- IF ZONE GOES BELLOW LAST PROJECT TRACK INSERT NEW TRACK THERE
+        --if reaper.CSurf_TrackToID(env_to_track(tracks[#tracks].track), false) + mouse_delta > last_project_tr_id then
+          --reaper.InsertTrackAtIndex(last_project_tr_id, true)
+          --GetTracksXYH()
+        --end
+        
+        local skip
+        for i = 1, #tracks do
+          if reaper.ValidatePtr(tracks[i].track, "TrackEnvelope*") then -- IF THERE IS ENVELOPE TRACK IN TABLE DO NOT MOVE UP/DOWN
+            skip = true
+            break
+          end
+        end
+        
+        if not skip then -- IF THERE IS NO ENVELOPE TRACK SELECTED
+          -- PREVENT TRACKS TO GO BELLOW OR ABOVE FIRST/LAST PROJECT TRACK 
+          if reaper.CSurf_TrackToID(env_to_track(tracks[1].track), false) + mouse_delta >= 1 and
+            reaper.CSurf_TrackToID(env_to_track(tracks[#tracks].track), false) + mouse_delta <= (last_project_tr_id) then
+            for i = 1, #tracks do --for i = #tracks, 1, -1 do
+              self.sel_info[i].track = generic_track_offset(tracks[i].track, mouse.last_tr)
+            end
+          end
+        end
 
-      for i = 1, #self.sel_info do
-        local offset_tr = generic_track_offset(self.sel_info[i].track, mouse.last_tr)
-        self.sel_info[i].track = offset_tr
       end
       self.y, self.h = GetTrackTBH(self.sel_info)
+      move_items_envs(self, offset) -- MOVE ITEMS BEFORE WE UPDATE THE AREA SO OFFSET CAN REFRESH
     elseif z[1] == "T" then
       local rd = (mouse.r_t - mouse.ort)
       local new_y, new_h = z[2] + rd, z[3] - rd
-      self.sel_info = GetTracksFromRange(new_y, new_y + new_h)
       self.y, self.h = new_y, new_h
     elseif z[1] == "B" then
       local rd = (mouse.r_b - mouse.orb)
       local new_h = z[3] + rd
-      self.sel_info = GetTracksFromRange(self.y, self.y + new_h)
       self.h = new_h
     end
   else
@@ -71,7 +99,7 @@ function Element:zone(z)
 end
 
 function Element:update_xywh()
-  self.x, self.w = convert_time_to_pixel(self.time_start, self.time_end)
+  self.x, self.w = convert_time_to_pixel(self.time_start, self.time_start + self.time_dur)
   self.y, self.h = GetTrackTBH(self.sel_info) -- FIND NEW TRACKS HEIGHT AND Y IF CHANGED
   self:draw()
 end
@@ -95,7 +123,7 @@ function Element:zoneIN(x, y)
     elseif y <= self.y + self.h and y >= (self.y + self.h) - range2 then
       return "BL"
     end
-    return {"L", self.time_start, self.time_end - self.time_start}
+    return {"L", self.time_start, self.time_start + self.time_dur}
   end
 
   if x >= (self.x + self.w - range2) and x <= self.x + self.w then
@@ -104,7 +132,7 @@ function Element:zoneIN(x, y)
     elseif y <= self.y + self.h and y >= (self.y + self.h) - range2 then
       return "BR"
     end
-    return {"R", self.time_end, self.time_end - self.time_start}
+    return {"R", self.time_dur, self.time_start}
   end
 
   if y >= self.y and y <= self.y + range2 then
@@ -116,7 +144,7 @@ function Element:zoneIN(x, y)
 
   if x > (self.x + range2) and x < (self.x + self.w - range2) then
     if y > self.y + range2 and y < (self.y + self.h) - range2 then
-      return {"C", self.time_start, self.time_end, self.y}
+      return {"C", self.time_start, self.time_dur, self.y, self.sel_info}
     end
   end
 end
@@ -162,6 +190,8 @@ function Element:track()
   if ZONE and self.guid == test.guid then
     test:zone(ZONE)
   end -- PREVENT OTHER AREAS TRIGGERING THIS LOOP AGAIN
+  if self:mouseIN() then
+  end
 end
 ----------------------------------------------------------------------------------------------------
 ---   Create Element Child Classes(Button,Slider,Knob)   -------------------------------------------
@@ -173,14 +203,15 @@ extended(Rng_Slider, Element)
 Menu = {}
 extended(Menu, Element)
 
-local Menu_TB = {Menu:new(0, 0, 0, 0, "H", nil, nil, nil, 8)}
+Menu_TB = {Menu:new(0, 0, 0, 0, "H", nil, nil, nil, 8)}
+SLD_TB = {Rng_Slider:new(0, 0, 0, 0, "H", nil, nil, nil, 8)}
 
 function Rng_Slider:draw_body()
   local _, x_view_start, y_view_start = reaper.JS_Window_GetRect(track_window)
   local x, y, w, h = self.x, self.y, self.w, self.h
   local val = h * self.norm_val
   local val2 = h * self.norm_val2
-  reaper.JS_Composite(track_window, self.x - x_view_start, self.y - y_view_start, self.w, self.h, self.bm, 0, 0, 1, 1)
+  reaper.JS_Composite(track_window, self.x - x_view_start, self.y - y_view_start, self.w, self.h, m_bm, 0, 0, 1, 1)
   refresh_reaper()
 end
 
@@ -197,14 +228,15 @@ function Menu:draw_body(tbl)
   self.x, self.y, self.w, self.h = self.x + Round(self.w / 2), self.y, Round(self.w / 2), 15
   --math.ceil(h/4)
   reaper.JS_Composite(track_window, (self.x) - x_view_start, self.y - y_view_start, self.w, self.h, self.bm, 0, 0, 1, 1) -- DRAW BACKGROUND
-
+  refresh_reaper()
   local step = Round(self.w / (self.norm_val))
-  if self:pointIN(m_x, m_y) then
+
+  if self:pointIN(mouse.x, mouse.y) then
     for i = 0, self.norm_val - 1 do
       local w_offest = 0
       w_offest = Round(w_offest + (step * i))
-      if m_x > self.x + w_offest and m_x < (self.x + w_offest + step) then
-        A1 = i + 1
+      if mouse.x > self.x + w_offest and mouse.x < (self.x + w_offest + step) then
+       -- A1 = i + 1
         reaper.JS_Composite(
           track_window,
           (self.x + w_offest) - x_view_start,
@@ -219,18 +251,20 @@ function Menu:draw_body(tbl)
         )
       end
     end
-    if last_num ~= A1 then
+    --[[if last_num ~= A1 then
       refresh_reaper()
       last_num = A1
     end
-    last_menu_in = true
+    last_menu_in = true]]
+    
   else
-    if last_menu_in then
+    --if last_menu_in then
       reaper.JS_Composite_Unlink(track_window, m_bm)
       refresh_reaper()
-      last_menu_in = nil
-    end
+      --last_menu_in = nil
+    --end
   end
+  
 end
 
 function Track(tbl)
@@ -254,3 +288,4 @@ end
 function refresh_reaper()
   reaper.JS_Window_InvalidateRect(track_window, 0, 0, 5000, 5000, false)
 end
+
