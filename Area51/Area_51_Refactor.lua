@@ -117,6 +117,7 @@ function GetTracksFromRange(y_t, y_b)
 end
 
 local function GetTracksFromMouse(x, y)
+   if x and y then
    local track, env_info = reaper.GetTrackFromPoint(x, y)
    if track and env_info == 0 then
       return track, TBH[track].t, TBH[track].b, TBH[track].h
@@ -128,6 +129,7 @@ local function GetTracksFromMouse(x, y)
          end
       end
    end
+end
 end
 
 local function Get_Set_Position_In_Arrange(x, y, w)
