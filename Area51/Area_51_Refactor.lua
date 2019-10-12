@@ -810,7 +810,7 @@ local function check_keys()
          if key.DOWN.func then
             key.DOWN.func(key.DOWN)
          end
-         if key.DOWN.name == "X" then
+         if key.DOWN.name == "Del" then
             del()
          end
          if tonumber(key.DOWN.name) then
