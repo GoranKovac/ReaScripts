@@ -366,6 +366,8 @@ function get_set_envelope_chunk(track, env, as_start, as_end, mouse_offset)
    for i = 1, #env_chunk do
        if i < 8 then
            table.insert(chunk, #chunk, env_chunk[i]) -- INSERT FIRST 7 LINES INTO TRACK CHUNK (DEFAULT INFO WITH FIRST POINT)
+       elseif i == #env_chunk then
+           table.insert(chunk, #chunk, env_chunk[i])
        else
            local time, val, something, selected = env_chunk[i]:match("([%d%.]+)%s([%d%.]+)%s([%d%.]+)%s([%d%.]+)")
            if time then
@@ -379,9 +381,8 @@ function get_set_envelope_chunk(track, env, as_start, as_end, mouse_offset)
        end
    end
 
-   local chunk = table.concat(chunk, "\n")
-   reaper.SetTrackStateChunk(track, chunk, false)
-   reaper.UpdateTimeline()
+   local new_chunk = table.concat(chunk, "\n")
+   reaper.SetTrackStateChunk(track, new_chunk, true)
 end
 
 local function GetTrackData(tbl, as_start, as_end)
