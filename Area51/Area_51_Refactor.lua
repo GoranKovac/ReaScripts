@@ -786,6 +786,13 @@ function remove()
    end -- DISABLE COPY MODE
    RemoveAsFromTable(Areas_TB, "Delete")
    active_as = nil
+   
+   for i = 1, #Key_TB do
+      if Key_TB[i].func then
+         Key_TB[i]:intercept(-1) -- RELEASE INTERCEPTS
+      end
+   end 
+
    refresh_reaper()
 end
 
