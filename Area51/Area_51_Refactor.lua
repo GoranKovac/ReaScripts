@@ -117,8 +117,10 @@ function GetTracksFromRange(y_t, y_b)
 end
 
 local function GetTracksFromMouse(x, y)
-   if x and y then
    local track, env_info = reaper.GetTrackFromPoint(x, y)
+
+   if track == reaper.GetMasterTrack( 0 ) and  reaper.GetMasterTrackVisibility() == 0 then return end -- IGNORE DOCKED MASTER TRACK
+
    if track and env_info == 0 then
       return track, TBH[track].t, TBH[track].b, TBH[track].h
    elseif track and env_info == 1 then
@@ -129,7 +131,6 @@ local function GetTracksFromMouse(x, y)
          end
       end
    end
-end
 end
 
 local function Get_Set_Position_In_Arrange(x, y, w)
@@ -195,23 +196,10 @@ function GetTrackTBH(tbl)
    if not tbl then
       return
    end
-   local total_h, t, h = 0, 0, 0
    -- GET INFO FROM FIRST AND LAST TRACK FROM TABLE
    if TBH[tbl[1].track] and TBH[tbl[#tbl].track] then
-      t = TBH[tbl[1].track].t
-      total_h = TBH[tbl[#tbl].track].b - TBH[tbl[1].track].t
+      return TBH[tbl[1].track].t, TBH[tbl[#tbl].track].b - TBH[tbl[1].track].t
    end
-   --[[
-   for i = #tbl, 1, -1 do -- NEEDS TO BE REVERSED OR IT DRAWS SOME WEIRD SHIT
-      local track = tbl[i].track
-      if TBH[track] then
-         t, h = TBH[track].t, TBH[track].h
-         total_h = total_h + h
-      end
-   end
-   --msg(t .. " " .. total_h .. " - " .. t1 .. " " .. total_h2)
-   ]]
-   return t, total_h
 end
 
 function Mouse_in_arrange()
