@@ -333,7 +333,7 @@ function del_env(env_track, as_start, as_end, pos_offset, job)
 end
 
 function AreaDo(tbl, job)
-  --reaper.PreventUIRefresh(1)
+  reaper.PreventUIRefresh(1)
   for a = 1, #tbl do
     local tbl = tbl[a]
 
@@ -375,8 +375,8 @@ function AreaDo(tbl, job)
       tbl.sel_info = GetSelectionInfo(tbl)
     end
   end
-  --reaper.PreventUIRefresh(-1)
-  --reaper.UpdateTimeline()
+  reaper.PreventUIRefresh(-1)
+  reaper.UpdateTimeline()
   reaper.UpdateArrange()
 end
 
