@@ -456,7 +456,6 @@ function split_or_delete_items(as_tr, as_items_tbl, as_start, as_end, key)
 
   for i = #as_items_tbl, 1, -1 do
     local item = as_items_tbl[i]
-
     if key == "del" or key == "split" then
       local s_item_first = reaper.SplitMediaItem(item, as_end)
       local s_item_last = reaper.SplitMediaItem(item, as_start)

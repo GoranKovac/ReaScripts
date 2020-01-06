@@ -208,14 +208,14 @@ end
 ----------------------------------------------------------------------------------------------------
 AreaSelection = {}
 extended(AreaSelection, Element)
-Rng_Slider = {}
-extended(Rng_Slider, Element)
-Menu = {}
-extended(Menu, Element)
+--Rng_Slider = {}
+--extended(Rng_Slider, Element)
+--Menu = {}
+--extended(Menu, Element)
 
-Menu_TB = {Menu:new(0, 0, 0, 0, "H", nil, nil, nil, 8)}
-SLD_TB = {Rng_Slider:new(0, 0, 0, 0, "H", nil, nil, nil, 8)}
-
+--Menu_TB = {Menu:new(0, 0, 0, 0, "H", nil, nil, nil, 8)}
+--SLD_TB = {Rng_Slider:new(0, 0, 0, 0, "H", nil, nil, nil, 8)}
+--[[
 function Rng_Slider:draw_body()
   local _, x_view_start, y_view_start = reaper.JS_Window_GetRect(track_window)
   local x, y, w, h = self.x, self.y, self.w, self.h
@@ -265,7 +265,7 @@ function Menu:draw_body(tbl)
       refresh_reaper()
       last_num = A1
     end
-    last_menu_in = true]]
+    last_menu_in = true
     
   else
     --if last_menu_in then
@@ -276,7 +276,7 @@ function Menu:draw_body(tbl)
   end
   
 end
-
+]]
 function Track(tbl)
   for _, area in pairs(tbl) do
     area:track()
