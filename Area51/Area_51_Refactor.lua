@@ -244,6 +244,7 @@ function Mouse_in_arrange()
    end
 end
 
+--[[
 local WML_intercept = reaper.JS_WindowMessage_Intercept(track_window, "WM_LBUTTONDOWN", false)
 
 function pass_thru()
@@ -251,6 +252,7 @@ function pass_thru()
    local xc, yc = reaper.JS_Window_ScreenToClient(track_window, x1, y1)
    reaper.JS_WindowMessage_Post(track_window, "WM_LBUTTONDOWN", 1, 0, xc, yc)
 end
+]]
 
 function GetTrackZoneInfo(track_part)
    --if Mouse_in_arrange() then
@@ -1099,7 +1101,7 @@ local function Main()
          check_keys()
          
          --if not mouse.Ctrl() and not mouse.Shift() and mouse.l_down then
-            pass_thru()
+         --   pass_thru()
          --end
 
          if not ZONE and not BLOCK then
