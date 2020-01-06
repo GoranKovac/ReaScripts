@@ -277,7 +277,7 @@ function paste(items, item_track, as_start, as_end, pos_offset, first_track)
   --end
 end
 
-function paste_env(env_track, env_name, env_data, as_start, as_end, pos_offset, first_env_tr)
+function paste_env(env_track, env_name, env_data, as_start, as_end, pos_offset, first_env_tr, num)
   if not mouse.tr or not env_data then
     return
   end -- DO NOT PASTE IF MOUSE IS OUT OF ARRANGE WINDOW
@@ -291,8 +291,11 @@ function paste_env(env_track, env_name, env_data, as_start, as_end, pos_offset, 
     offset_track = reaper.GetTrack(0, reaper.GetNumTracks() - 1)
   end
 
-  local env_offset = GetEnvOffset_MatchCriteria(offset_track, env_name)
-
+  --local env_offset = GetEnvOffset_MatchCriteria(offset_track, env_name) -- OLD ONE
+  --local env_offset = GetEnvOffset_MatchCriteria(offset_track, env_name, env_track, env_first_tr) --or offset_track
+  local env_offset = GetEnvOffset_MouseOverride(offset_track, env_name, nil, num) --or GetEnvOffset_MatchCriteria(offset_track, env_name)
+  --local env_tr_offset = GetEnvOffset_MouseOverride(offset_track, env_name, mov_offset, num)
+  --msg(env_offset)
   local env_paste_offset = mouse.p - as_start -- OFFSET BETWEEN ENVELOPE START AND MOUSE POSITION
   local mouse_offset = env_paste_offset + pos_offset -- OFFSET BETWEEN MOUSE POSITION AND NEXT AREA SELECTION
 
@@ -363,7 +366,7 @@ function AreaDo(tbl, job)
         local env_data = info.env_points
 
         if job == "PASTE" then
-          paste_env(env_track, env_name, env_data, as_start, as_end, pos_offset, first_tr)
+          paste_env(env_track, env_name, env_data, as_start, as_end, pos_offset, first_tr, #tbl.sel_info)
         end
         if job == "del" then
           del_env(env_track, as_start, as_end, pos_offset, job)

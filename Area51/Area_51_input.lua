@@ -7,9 +7,9 @@ function Element:new(ID, name, func)
     elm.ID            = ID
     elm.name          = name
     elm.press         = function()  local start = true
-                                    for i = 1, #elm.ID do 
+                                    for i = 1, #elm.ID do
                                       if reaper.JS_VKeys_GetState(startTime-2):byte(elm.ID[i]) == 0 then start = false break -- BREAK IF NOT BOTH KEYS ARE PRESSED
-                                     end 
+                                     end
                                    end
                                    return start
                                    end
@@ -20,7 +20,7 @@ function Element:new(ID, name, func)
     elm.func          = func
     ----------------------
     setmetatable(elm, self)
-    self.__index = self 
+    self.__index = self
     return elm
 end
 
@@ -37,10 +37,10 @@ function Element:intercept(int)
   end
 end
 
-function Element:onKeyDown(kd) 
-  if kd and self.last_key_down == false then 
+function Element:onKeyDown(kd)
+  if kd and self.last_key_down == false then
     self.down_time = os.clock()
-    self.last_key_down = true 
+    self.last_key_down = true
     self.last_key_up   = false
     key["DOWN"] = self
     return self
@@ -64,7 +64,7 @@ end
 
 function Element:GetKey()
   local KEY_DOWN = self.press()
-  
+
   if KEY_DOWN then
     if self.last_key_up == true and self.last_key_down == false then
       self:onKeyDown(KEY_DOWN)
@@ -76,16 +76,16 @@ function Element:GetKey()
   elseif not KEY_DOWN and self.last_key_up == false and self.last_key_down == true then
     self:OnKeyUp(KEY_DOWN)
   end
-  
+
 end
 
 function Track_keys(tbl)
   local prevCycleTime = thisCycleTime or startTime
   thisCycleTime = reaper.time_precise()
- 
-  key = {} 
-  
-  for k,v in pairs(tbl) do v:GetKey() end 
-  
+
+  key = {}
+
+  for k,v in pairs(tbl) do v:GetKey() end
+
   if key.DOWN or key.UP or key.HOLD then return key end
 end

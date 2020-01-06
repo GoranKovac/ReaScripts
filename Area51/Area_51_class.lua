@@ -38,9 +38,10 @@ function Element:zone(z)
       _, self.w = convert_time_to_pixel(0, self.time_dur)
       --AreaDo({self},"stretch")
     elseif z[1] == "C" then
+      move = true
       local tracks = z[5]
       local new_L = z[2] + mouse.dp >= 0 and z[2] + mouse.dp or 0
-      local offset = (new_L - self.time_start) -- GET MOVE OFFSET FOR ITEMS
+      --offset = (new_L - self.time_start) -- GET MOVE OFFSET FOR ITEMS
       self.time_start = new_L
       self.time_start = self.time_start >= 0 and self.time_start or 0
       self.x = convert_time_to_pixel(self.time_start, 0)
@@ -51,11 +52,6 @@ function Element:zone(z)
 
       -- OFFSET TRACKS BASED ON AREA POSITION (TRACKS FOLLOW AREA)
       if mouse_delta ~= 0 then
-        -- IF ZONE GOES BELLOW LAST PROJECT TRACK INSERT NEW TRACK THERE
-        --if reaper.CSurf_TrackToID(env_to_track(tracks[#tracks].track), false) + mouse_delta > last_project_tr_id then
-          --reaper.InsertTrackAtIndex(last_project_tr_id, true)
-          --GetTracksXYH()
-        --end
         
         local skip
         for i = 1, #tracks do
@@ -74,10 +70,16 @@ function Element:zone(z)
             end
           end
         end
-
+        
       end
       self.y, self.h = GetTrackTBH(self.sel_info)
-      move_items_envs(self, offset) -- MOVE ITEMS BEFORE WE UPDATE THE AREA SO OFFSET CAN REFRESH
+      for i = 1, #self.sel_info do
+        if self.sel_info[i].items then
+          DrawItemGhosts(self.sel_info[i].items, self.sel_info[i].track, z[2], self.time_dur, 0, mouse.tr, self.time_start - z[2])
+        elseif self.sel_info[i].env_name then
+          DrawEnvGhosts(self.sel_info[i].track, self.sel_info[i].env_name, z[2], self.time_dur, 0, mouse.tr, self.time_start - z[2])
+        end
+      end
     elseif z[1] == "T" then
       local rd = (mouse.r_t - mouse.ort)
       local new_y, new_h = z[2] + rd, z[3] - rd
@@ -88,12 +90,20 @@ function Element:zone(z)
       self.h = new_h
     end
   else
+    move = nil
     ZONE = nil
     test = nil
     ARRANGE = nil
     if z[1] == "L" or z[1] == "R" or z[1] == "T" or z[1] == "B" then
       self.sel_info = GetSelectionInfo(self) -- UPDATE AREAS INFORMATION
+      GetGhosts(self.sel_info, self.time_start, self.time_start + self.time_dur, "update", z[2])
+    elseif z[1] == "C" then
+      move_items_envs(self, self.time_start - z[2]) -- MOVE ITEMS BEFORE WE UPDATE THE AREA SO OFFSET CAN REFRESH
+      UnlinkGhosts()
+      self.sel_info = GetSelectionInfo(self)
+      GetGhosts(self.sel_info, self.time_start, self.time_start + self.time_dur, "update", z[2])
     end
+    --GetGhosts(self.sel_info, self.time_start, self.time_start + self.time_dur, "update", z[2])
   end
   self:draw()
 end
