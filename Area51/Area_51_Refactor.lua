@@ -45,7 +45,7 @@ end
 local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
 local track_window = reaper.JS_Window_FindChildByID(main_wnd, 1000) -- GET TRACK VIEW
 local track_window_dc = reaper.JS_GDI_GetWindowDC(track_window)
-local Areas_TB = {}
+Areas_TB = {}
 local Key_TB = {}
 local active_as
 local last_proj_change_count = reaper.GetProjectStateChangeCount(0)
@@ -920,13 +920,15 @@ local function Mouse_Data_From_Arrange()
       x = (Round(p * zoom_lvl) + x_view_start) - Arr_pixel
    end
 
+   mouse = MouseInfo(x, y, p)
+
    if Mouse_in_arrange() then
-      p = p >= Arr_start_time and p or Arr_start_time
-      x = x >= x_view_start and x or x_view_start
-      y = y >= y_view_start and y or y_view_start
+      mouse.p = p >= Arr_start_time and p or Arr_start_time
+      mouse.x = x >= x_view_start and x or x_view_start
+      mouse.y = y >= y_view_start and y or y_view_start
    end
 
-   mouse = MouseInfo(x, y, p)
+   --mouse = MouseInfo(x, y, p)
    mouse.detail = ReaperCursors()
    if GetTracksFromMouse(mouse.x, mouse.y) then
       mouse.tr, mouse.r_t, mouse.r_b = GetTracksFromMouse(mouse.x, mouse.y)
