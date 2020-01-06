@@ -327,9 +327,8 @@ end
 -- GET ITEM PEAKS
 function Item_GetPeaks(item, item_start, item_len, w)
    local take = reaper.GetActiveTake(item)
-
+   w = w > 0 and w or 1 -- FIX CRASHING IF WITH IS LESS THAN 1 PIXEL
    local scaled_len = item_len/ item_len * w
-
    local PCM_source = reaper.GetMediaItemTake_Source(take)
    local n_chans = reaper.GetMediaSourceNumChannels(PCM_source)
 
