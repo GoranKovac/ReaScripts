@@ -76,6 +76,7 @@ local TBH
 function GetTracksXYH()
    TBH = {}
    local _, x_view_start, y_view_start, x_view_end, y_view_end = reaper.JS_Window_GetRect(track_window)
+
    -- ONLY ADD MASTER TRACK IF VISIBLE IN TCP
    if reaper.GetMasterTrackVisibility() == 1 then
       local master_tr = reaper.GetMasterTrack(0)
