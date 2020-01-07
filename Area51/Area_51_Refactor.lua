@@ -1079,7 +1079,7 @@ local function Main()
          check_keys() -- GET PRESSED KEYS AND THEIR FUNCTIONS
 
          if mouse.l_down then
-            if not ZONE then
+            if not A_M_Block then
                if not mouse.Ctrl_Shift_Alt() and not mouse.Ctrl_Shift() then
          --if (not mouse.Ctrl() and not mouse.Shift()) and mouse.l_down then
                   pass_thru()

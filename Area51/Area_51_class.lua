@@ -201,6 +201,8 @@ function Element:track()
     test:zone(ZONE)
   end -- PREVENT OTHER AREAS TRIGGERING THIS LOOP AGAIN
 
+  A_M_Block = self:mouseIN() or self:mouseDown() or ZONE and true or nil
+  
   if self:mouseIN() or self:mouseDown() then
   end
 end
