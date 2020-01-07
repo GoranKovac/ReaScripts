@@ -486,14 +486,14 @@ function get_env(as_tr, as_start, as_end)
   for i = 1, reaper.CountTrackEnvelopes(as_tr) do
     local tr = reaper.GetTrackEnvelope(as_tr, i - 1)
 
-    for i = 1, reaper.CountEnvelopePoints(tr) do
-      local retval, time, value, shape, tension, selected = reaper.GetEnvelopePoint(tr, i - 1)
+    for j = 1, reaper.CountEnvelopePoints(tr) do
+      local retval, time, value, shape, tension, selected = reaper.GetEnvelopePoint(tr, j - 1)
 
       if time >= as_start and time <= as_end then
-        reaper.SetEnvelopePoint(tr, i - 1, _, _, _, _, true, _)
+        reaper.SetEnvelopePoint(tr, j - 1, _, _, _, _, true, _)
 
         env_points[#env_points + 1] = {
-          id = i - 1,
+          id = j - 1,
           retval = retval,
           time = time,
           value = value,

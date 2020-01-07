@@ -164,7 +164,7 @@ function Element:mouseZONE()
 end
 
 function Element:mouseIN()
-  return mouse.l_down == false and self:pointIN(mouse.x, mouse.y)
+  return self:pointIN(mouse.x, mouse.y) --mouse.l_down == false and self:pointIN(mouse.x, mouse.y)
 end
 ------------------------
 function Element:mouseDown()
@@ -200,7 +200,8 @@ function Element:track()
   if ZONE and self.guid == test.guid then
     test:zone(ZONE)
   end -- PREVENT OTHER AREAS TRIGGERING THIS LOOP AGAIN
-  if self:mouseIN() then
+
+  if self:mouseIN() or self:mouseDown() then
   end
 end
 ----------------------------------------------------------------------------------------------------
@@ -208,75 +209,7 @@ end
 ----------------------------------------------------------------------------------------------------
 AreaSelection = {}
 extended(AreaSelection, Element)
---Rng_Slider = {}
---extended(Rng_Slider, Element)
---Menu = {}
---extended(Menu, Element)
 
---Menu_TB = {Menu:new(0, 0, 0, 0, "H", nil, nil, nil, 8)}
---SLD_TB = {Rng_Slider:new(0, 0, 0, 0, "H", nil, nil, nil, 8)}
---[[
-function Rng_Slider:draw_body()
-  local _, x_view_start, y_view_start = reaper.JS_Window_GetRect(track_window)
-  local x, y, w, h = self.x, self.y, self.w, self.h
-  local val = h * self.norm_val
-  local val2 = h * self.norm_val2
-  reaper.JS_Composite(track_window, self.x - x_view_start, self.y - y_view_start, self.w, self.h, m_bm, 0, 0, 1, 1)
-  refresh_reaper()
-end
-
-local m_bm = reaper.JS_LICE_CreateBitmap(true, 1, 1)
-reaper.JS_LICE_Clear(m_bm, 0x33005511)
-local last_num = 0
-function Menu:draw_body(tbl)
-  if not tbl then
-    return
-  end
-  local _, x_view_start, y_view_start = reaper.JS_Window_GetRect(track_window)
-
-  self.x, self.y, self.w, self.h = tbl.x, tbl.y, tbl.w, tbl.h
-  self.x, self.y, self.w, self.h = self.x + Round(self.w / 2), self.y, Round(self.w / 2), 15
-  --math.ceil(h/4)
-  reaper.JS_Composite(track_window, (self.x) - x_view_start, self.y - y_view_start, self.w, self.h, self.bm, 0, 0, 1, 1) -- DRAW BACKGROUND
-  refresh_reaper()
-  local step = Round(self.w / (self.norm_val))
-
-  if self:pointIN(mouse.x, mouse.y) then
-    for i = 0, self.norm_val - 1 do
-      local w_offest = 0
-      w_offest = Round(w_offest + (step * i))
-      if mouse.x > self.x + w_offest and mouse.x < (self.x + w_offest + step) then
-       -- A1 = i + 1
-        reaper.JS_Composite(
-          track_window,
-          (self.x + w_offest) - x_view_start,
-          self.y - y_view_start,
-          step,
-          self.h,
-          m_bm,
-          0,
-          0,
-          1,
-          1
-        )
-      end
-    end
-    --[[if last_num ~= A1 then
-      refresh_reaper()
-      last_num = A1
-    end
-    last_menu_in = true
-    
-  else
-    --if last_menu_in then
-      reaper.JS_Composite_Unlink(track_window, m_bm)
-      refresh_reaper()
-      --last_menu_in = nil
-    --end
-  end
-  
-end
-]]
 function Track(tbl)
   for _, area in pairs(tbl) do
     area:track()

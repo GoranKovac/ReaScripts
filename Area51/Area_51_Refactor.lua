@@ -1,10 +1,10 @@
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 package.cursor = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "Cursors\\" -- GET DIRECTORY FOR CURSORS
 
-require("Area_51_class") -- AREA FUNCTIONS SCRIPT
-require("Area_51_functions") -- AREA CLASS SCRIPT
-require("Area_51_input") -- AREA INPUT HANDLING/SETUP
-require("Area_51_mouse")
+require("Area_51_class")      -- AREA FUNCTIONS SCRIPT
+require("Area_51_functions")  -- AREA CLASS SCRIPT
+require("Area_51_input")      -- AREA KEYBOARD INPUT HANDLING
+require("Area_51_mouse")      -- AREA MOUSE INPUT HANDLING
 
 --debug = false
 
@@ -45,7 +45,7 @@ end
 local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
 local track_window = reaper.JS_Window_FindChildByID(main_wnd, 1000) -- GET TRACK VIEW
 local track_window_dc = reaper.JS_GDI_GetWindowDC(track_window)
-Areas_TB = {}
+local Areas_TB = {}
 local Key_TB = {}
 local active_as
 local last_proj_change_count = reaper.GetProjectStateChangeCount(0)
@@ -76,7 +76,6 @@ local TBH
 function GetTracksXYH()
    TBH = {}
    local _, x_view_start, y_view_start, x_view_end, y_view_end = reaper.JS_Window_GetRect(track_window)
-
    -- ONLY ADD MASTER TRACK IF VISIBLE IN TCP
    if reaper.GetMasterTrackVisibility() == 1 then
       local master_tr = reaper.GetMasterTrack(0)
@@ -105,7 +104,6 @@ end
 -- WHEN AREA IS CREATED (MOUSE IS SWIPED) IT LOOKS FOR TRACKS FROM AREA TOP TO AREA BOTTOM
 function GetTracksFromRange(y_t, y_b)
    local range_tracks = {}
-
    -- FIND TRACKS IN THAT RANGE
    for track, coords in pairs(TBH) do
       if coords.t >= y_t and coords.b <= y_b then
@@ -245,36 +243,23 @@ function Mouse_in_arrange()
    end
 end
 
---[[
+
 local WML_intercept = reaper.JS_WindowMessage_Intercept(track_window, "WM_LBUTTONDOWN", false)
+local prevTime = 0 -- or script start time
 
 function pass_thru()
-   local x1, y1 = reaper.GetMousePosition()
-   local xc, yc = reaper.JS_Window_ScreenToClient(track_window, x1, y1)
-   reaper.JS_WindowMessage_Post(track_window, "WM_LBUTTONDOWN", 1, 0, xc, yc)
+   local pOK, pass, time, wLow, wHigh, lLow, lHigh = reaper.JS_WindowMessage_Peek(track_window, "WM_LBUTTONDOWN")
+   if pOK and time > prevTime then
+       prevTime = time
+       reaper.JS_WindowMessage_Post(track_window, "WM_LBUTTONDOWN", wLow, wHigh, lLow, lHigh)
+   end
 end
-]]
 
 function GetTrackZoneInfo(track_part)
-   --if Mouse_in_arrange() then
-    --  local track_part = Mouse_in_arrange()
       if mouse.l_down then
-         --if mouse.detail ~= "EDGE L" or mouse.detail == "EDGE R" then
-            if track_part == "LOWER" then
-               BLOCK = true
-              -- pass_thru()
-               --AM_intecept = true
-               --local xc, yc = reaper.JS_Window_ScreenToClient(track_window, mouse.x, mouse.y)
-               --reaper.JS_WindowMessage_Post(track_window, "WM_LBUTTONDOWN", 1, 0, xc, yc)
-           -- elseif track_part == "UPPER" then
-                --BLOCK = true
-               --reaper.JS_WindowMessage_PassThrough(track_window, "WM_LBUTTONDOWN", true)
-               --msg("HI")
-              -- reaper.JS_WindowMessage_Intercept( track_window, "WM_LBUTTONDOWN", true)
-               --reaper.JS_WindowMessage_PassThrough(track_window, "WM_LBUTTONDOWN", true)
-            end
-         --end
-
+         if track_part == "LOWER" then
+            BLOCK = true
+         end
          if mouse.detail == "MOVE" or mouse.detail == "FADE L" or mouse.detail == "FADE R" then --or mouse.detail == "DRAW"
             BLOCK = true
          end
@@ -332,7 +317,6 @@ function Item_GetPeaks(item, item_start, item_len, w)
    local scaled_len = item_len/ item_len * w
    local PCM_source = reaper.GetMediaItemTake_Source(take)
    local n_chans = reaper.GetMediaSourceNumChannels(PCM_source)
-
    local peakrate = scaled_len/item_len
    local n_spls = math.floor(item_len * peakrate + 0.5) -- its Peak Samples  
    local want_extra_type = -1  -- 's' char
@@ -406,45 +390,44 @@ function draw_env(env_tr, env, bm, x,y,w,h)
 
       reaper.JS_LICE_Line( bm, e_x - x, e_y, e_x1 - x, e_y1, 0xFF00FFFF,1, "COPY", true )
       reaper.JS_LICE_FillCircle( bm, e_x - x, e_y, 2, 0xFF00FFFF,1, "COPY", true )
-
    end
  end
 
  -- DRAW ITEM PEAKS TO GHOST IMAGE
- function draw_peak(peaks, bm, x, y, w, h)
+function draw_peak(peaks, bm, x, y, w, h)
    local chan_count = #peaks
-   if chan_count > 0 then
+      if chan_count > 0 then
       local channel_h = h / chan_count
       local channel_half_h = 0.5 * channel_h
-     for chan = 1, chan_count do
-       local t = peaks[chan]
-       local channel_y1 = y + channel_h*(chan-1)
-       local channel_y2 = channel_y1 + channel_h
-       local channel_center_y = channel_y1 + (0.5*channel_h)
-       for i = 1, #t-1 do
-         local max_peak = channel_center_y - (t[i] * channel_half_h)
-         local min_peak = channel_center_y - (t[i+1] * channel_half_h)
+      for chan = 1, chan_count do
+         local t = peaks[chan]
+         local channel_y1 = y + channel_h*(chan-1)
+         local channel_y2 = channel_y1 + channel_h
+         local channel_center_y = channel_y1 + (0.5*channel_h)
+         for i = 1, #t-1 do
+            local max_peak = channel_center_y - (t[i] * channel_half_h)
+            local min_peak = channel_center_y - (t[i+1] * channel_half_h)
 
-         if max_peak < channel_center_y and max_peak < channel_y1 then
-           max_peak = channel_y1
-         else
-           if max_peak > channel_center_y and max_peak > channel_y2 then
-             max_peak = channel_y2
-           end
-         end
+            if max_peak < channel_center_y and max_peak < channel_y1 then
+               max_peak = channel_y1
+            else
+               if max_peak > channel_center_y and max_peak > channel_y2 then
+                  max_peak = channel_y2
+               end
+            end
 
-         if min_peak < channel_center_y and min_peak < channel_y1 then
-           min_peak = channel_y1
-         else
-           if min_peak > channel_center_y and min_peak > channel_y2 then
-             min_peak = channel_y2
-           end
+            if min_peak < channel_center_y and min_peak < channel_y1 then
+               min_peak = channel_y1
+            else
+               if min_peak > channel_center_y and min_peak > channel_y2 then
+                  min_peak = channel_y2
+               end
+            end
+            reaper.JS_LICE_Line( bm, 0.5*i, max_peak, 0.5*i, min_peak, 0xFF00FFFF,1, "COPY", true )
          end
-         reaper.JS_LICE_Line( bm, 0.5*i, max_peak, 0.5*i, min_peak, 0xFF00FFFF,1, "COPY", true )
-       end
-     end
+      end
    end
- end
+end
 
 -- FOR VISUALISING COPY AND PASTE GET CURRENT AREAS ITEMS/ENVELOPE IMAGES 
 -- THIS IS CALLED ONLY ONCE WHEN INITIAL AREA IS CREATED
@@ -667,13 +650,13 @@ local function CreateAreaFromSelection()
       if DRAWING then
          CREATING = true
          if guid == nil then
-            guid = mouse.Shift() and reaper.genGuid() or "single"
+            guid = mouse.Ctrl_Shift_Alt() and reaper.genGuid() or "single"
          end
 
          if copy then
             copy_mode()
          end -- DISABLE COPY MODE IF ENABLED
-         if not mouse.Shift() then
+         if not mouse.Ctrl_Shift_Alt() then
             RemoveAsFromTable(Areas_TB, "single")
          end -- REMOVE ALL CREATED AS AND GHOSTS IF SHIFT IS NOT PRESSED (FOR MULTI CREATING AS)
 
@@ -711,7 +694,6 @@ local function find_visible_tracks(cur_offset_id) -- RETURN FIRST VISIBLE TRACK
    end
 end
 
---function GetEnvOffset_MatchCriteria(tr, env)
 function GetEnvNum(tr, env)
    for i = 1, reaper.CountTrackEnvelopes(tr) do
       local tr_env = reaper.GetTrackEnvelope(tr, i - 1)
@@ -928,7 +910,6 @@ local function Mouse_Data_From_Arrange()
       mouse.y = y >= y_view_start and y or y_view_start
    end
 
-   --mouse = MouseInfo(x, y, p)
    mouse.detail = ReaperCursors()
    if GetTracksFromMouse(mouse.x, mouse.y) then
       mouse.tr, mouse.r_t, mouse.r_b = GetTracksFromMouse(mouse.x, mouse.y)
@@ -996,7 +977,7 @@ local function check_undo_history()
          ValidateRemovedTracks()
       elseif
          last_action:find("toggle track volume/pan/mute envelopes") or
-            last_action:find("track envelope active/visible/armed change")
+         last_action:find("track envelope active/visible/armed change")
        then
       -- TO DO
       -- CHECK ENVELOPES
@@ -1024,18 +1005,7 @@ function copy_mode(key)
       for _, v in pairs(ghosts) do
          reaper.JS_Composite_Unlink(track_window, v.bm)
       end -- REMOVE GHOSTS
-      for i = 1, #Key_TB do
-         if Key_TB[i].func then
-            Key_TB[i]:intercept(-1)
-         end
-      end -- RELEASE INTRECEPT
       refresh_reaper() -- REFRESH SCREEN FROM GHOST REMOVING
-   else
-      for i = 1, #Key_TB do
-         if Key_TB[i].name == "COPY" or Key_TB[i].name == "PASTE" then
-            Key_TB[i]:intercept(1)
-         end -- INTERCEPT
-      end
    end
 end
 
@@ -1053,20 +1023,35 @@ function remove()
    end -- DISABLE COPY MODE
    RemoveAsFromTable(Areas_TB, "Delete")
    active_as = nil
-   
-   for i = 1, #Key_TB do
-      if Key_TB[i].func then
-         Key_TB[i]:intercept(-1) -- RELEASE INTERCEPTS
-      end
-   end 
-
    refresh_reaper()
 end
 
 function del()
    local tbl = active_as and {active_as} or Areas_TB
    if #tbl ~= 0 then
-       AreaDo(tbl, "del")
+      AreaDo(tbl, "del")
+   end
+end
+
+function select_as()
+   local num = tonumber(key.DOWN.name)
+   active_as = Areas_TB[num] and Areas_TB[num] or nil
+   for _, v in pairs(ghosts) do
+      reaper.JS_Composite_Unlink(track_window, v.bm)
+   end
+   refresh_reaper()
+end
+
+local intercept_keys = -1
+function intercept_reaper_key(tbl)
+   local val = #tbl ~= 0 and 1 or -1
+   if val ~= intercept_keys then
+      for i = 1, #Key_TB do
+         if Key_TB[i].func then
+            Key_TB[i]:intercept(val) -- INTERCEPT OR RELEASE INTERCEPT
+         end
+      end
+      intercept_keys = val
    end
 end
 
@@ -1075,18 +1060,7 @@ local function check_keys()
    if key then
       if key.DOWN then
          if key.DOWN.func then
-            key.DOWN.func(key.DOWN)
-         end
-         if key.DOWN.name == "Del" then
-            del()
-         end
-         if tonumber(key.DOWN.name) then
-            local num = tonumber(key.DOWN.name)
-            active_as = Areas_TB[num] and Areas_TB[num] or nil
-            for _, v in pairs(ghosts) do
-               reaper.JS_Composite_Unlink(track_window, v.bm)
-            end
-            refresh_reaper()
+            key.DOWN.func()
          end
       elseif key.HOLD then
       elseif key.UP then
@@ -1098,18 +1072,25 @@ local function Main()
    xpcall(
       function()
          GetTracksXYH() -- GET XYH INFO OF ALL TRACKS
-         Mouse_Data_From_Arrange()
+         Mouse_Data_From_Arrange() -- GET MOUSE INFO
          --GetTrackZoneInfo(Mouse_in_arrange())
-         check_keys()
          
-         --if not mouse.Ctrl() and not mouse.Shift() and mouse.l_down then
-         --   pass_thru()
-         --end
+         intercept_reaper_key(Areas_TB) -- WATCH TO INTERCEPT KEYS WHEN AREA IS DRAWN (ON SCREEN)
+         check_keys() -- GET PRESSED KEYS AND THEIR FUNCTIONS
+
+         if mouse.l_down then
+            if not ZONE then
+               if not mouse.Ctrl_Shift_Alt() and not mouse.Ctrl_Shift() then
+         --if (not mouse.Ctrl() and not mouse.Shift()) and mouse.l_down then
+                  pass_thru()
+               end
+            end
+         end
 
          if not ZONE and not BLOCK then
-          --  if mouse.Ctrl() and mouse.Shift() then
-            CreateAreaFromSelection()
-          --  end
+            if mouse.Ctrl_Shift() then --and mouse.Shift() then
+               CreateAreaFromSelection()
+            end
          end -- CREATE AS IF IN ARRANGE WINDOW AND NON AS ZONES ARE CLICKED
 
          Draw(Areas_TB, track_window) -- DRAWING CLASS
@@ -1145,6 +1126,9 @@ end
 for i = 1, 255 do
    local func
    local name = string.char(i)
+   if type(tonumber(name)) == "number" then
+      func = select_as
+   end
    if i == 16 then
       name = "Shift"
    elseif i == 17 then
@@ -1172,6 +1156,7 @@ for i = 1, 255 do
       name = "Insert"
    elseif i == 46 then
       name = "Del"
+      func = del
    elseif i == 36 then
       name = "Home"
    elseif i == 35 then

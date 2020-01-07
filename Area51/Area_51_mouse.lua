@@ -14,7 +14,8 @@ local mouse = {
                 Ctrl  = function() return reaper.JS_Mouse_GetState(95)  &4 == 4  end,
                 Shift = function() return reaper.JS_Mouse_GetState(95)  &8 == 8  end,
                 Alt   = function() return reaper.JS_Mouse_GetState(95) &16 == 16 end,
-                
+                Ctrl_Shift = function() return reaper.JS_Mouse_GetState(95) &12 == 12 end,
+                Ctrl_Shift_Alt = function() return reaper.JS_Mouse_GetState(95) &28 == 28 end,
                 -- "cap" function
                 cap = function (mask)
                         if mask == nil then 
@@ -199,4 +200,3 @@ end
 
 if debug == true then init() end
 MouseInfo()
-
