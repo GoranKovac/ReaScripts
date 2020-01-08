@@ -164,7 +164,7 @@ function Element:mouseZONE()
 end
 
 function Element:mouseIN()
-  return self:pointIN(mouse.x, mouse.y) --mouse.l_down == false and self:pointIN(mouse.x, mouse.y)
+  return mouse.l_down == false and self:pointIN(mouse.x, mouse.y) --self:pointIN(mouse.x, mouse.y)
 end
 ------------------------
 function Element:mouseDown()
@@ -216,6 +216,7 @@ extended(AreaSelection, Element)
 function Track(tbl)
   for _, area in pairs(tbl) do
     area:track()
+    if area:mouseIN() or area:mouseDown() then return end
   end
 end
 

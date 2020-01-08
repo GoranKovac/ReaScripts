@@ -1094,6 +1094,9 @@ local function Main()
             if mouse.Ctrl_Shift() then --and mouse.Shift() then
                CreateAreaFromSelection()
             end
+            if mouse.Ctrl_Shift() and not mouse.Ctrl_Shift_Alt() and mouse.l_click then -- REMOVE AREAS ON CLICK
+               remove()
+            end
          end -- CREATE AS IF IN ARRANGE WINDOW AND NON AS ZONES ARE CLICKED
 
          Draw(Areas_TB, track_window) -- DRAWING CLASS
