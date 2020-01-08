@@ -52,7 +52,7 @@ function Element:zone(z)
 
       -- OFFSET TRACKS BASED ON AREA POSITION (TRACKS FOLLOW AREA)
       if mouse_delta ~= 0 then
-        
+
         local skip
         for i = 1, #tracks do
           if reaper.ValidatePtr(tracks[i].track, "TrackEnvelope*") then -- IF THERE IS ENVELOPE TRACK IN TABLE DO NOT MOVE UP/DOWN
@@ -60,7 +60,7 @@ function Element:zone(z)
             break
           end
         end
-        
+
         if not skip then -- IF THERE IS NO ENVELOPE TRACK SELECTED
           -- PREVENT TRACKS TO GO BELLOW OR ABOVE FIRST/LAST PROJECT TRACK 
           if reaper.CSurf_TrackToID(env_to_track(tracks[1].track), false) + mouse_delta >= 1 and
@@ -70,7 +70,7 @@ function Element:zone(z)
             end
           end
         end
-        
+
       end
       self.y, self.h = GetTrackTBH(self.sel_info)
       for i = 1, #self.sel_info do
@@ -191,6 +191,7 @@ function Element:track()
   if CREATING then
     return
   end
+
   if self:mouseDown() then
     if not ZONE then
       ZONE = self:mouseZONE()
@@ -202,8 +203,8 @@ function Element:track()
   end -- PREVENT OTHER AREAS TRIGGERING THIS LOOP AGAIN
 
   A_M_Block = self:mouseIN() or self:mouseDown() or ZONE and true or nil
-  
-  if self:mouseIN() or self:mouseDown() then
+
+  if self:mouseIN() then
   end
 end
 ----------------------------------------------------------------------------------------------------

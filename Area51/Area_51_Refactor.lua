@@ -1,12 +1,12 @@
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 package.cursor = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "Cursors\\" -- GET DIRECTORY FOR CURSORS
 
+debug = false
+
 require("Area_51_class")      -- AREA FUNCTIONS SCRIPT
 require("Area_51_functions")  -- AREA CLASS SCRIPT
 require("Area_51_input")      -- AREA KEYBOARD INPUT HANDLING
 require("Area_51_mouse")      -- AREA MOUSE INPUT HANDLING
-
---debug = false
 
 crash = function(errObject)
    local byLine = "([^\r\n]*)\r?\n?"
@@ -248,6 +248,9 @@ local WML_intercept = reaper.JS_WindowMessage_Intercept(track_window, "WM_LBUTTO
 local prevTime = 0 -- or script start time
 
 function pass_thru()
+   if reaper.JS_Window_GetForeground() ~= main_wnd then
+      return
+   end
    local pOK, pass, time, wLow, wHigh, lLow, lHigh = reaper.JS_WindowMessage_Peek(track_window, "WM_LBUTTONDOWN")
    if pOK and time > prevTime then
        prevTime = time

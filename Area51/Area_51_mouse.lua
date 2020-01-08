@@ -22,11 +22,11 @@ local mouse = {
                           return reaper.JS_Mouse_GetState(95) end
                         return reaper.JS_Mouse_GetState(95)&mask == mask
                       end,
-                
+
                 lb_down = function() return reaper.JS_Mouse_GetState(95) &1 == 1 end,
                 rb_down = function() return reaper.JS_Mouse_GetState(95) &2 == 2 end,
                 uptime = 0,
-                
+
                 last_x = -1,
                 last_y = -1,
                 last_p = -1,
@@ -50,10 +50,10 @@ local mouse = {
                 rx = 0,
                 ry = 0,
                 rp = 0,
-                
+
                 last_LMB_state = false,
                 last_RMB_state = false,
-                
+
                 l_click = false,
                 r_click = false,
                 l_dclick = false,
@@ -62,7 +62,7 @@ local mouse = {
                 l_down = false,
                 r_down = false
               }
-        
+
 function OnMouseDown(lmb_down, rmb_down)
   if not rmb_down and lmb_down and mouse.last_LMB_state == false then
     mouse.last_LMB_state = true
@@ -158,6 +158,7 @@ end
 local gui = {}
 
 function init()
+  if debug == true then
   gui.settings = {}                 -- Add "settings" table to "gui" table 
   gui.settings.font_size = 20       -- font size
   gui.settings.docker_id = 0        -- try 0, 1, 257, 513, 1027 etc.
@@ -165,6 +166,7 @@ function init()
   gfx.init("", 380, 700, gui.settings.docker_id)
   gfx.setfont(1,"Arial", gui.settings.font_size)
   gfx.clear = 3355443  -- matches with "FUSION: Pro&Clean Theme :: BETA 01" http://forum.cockos.com/showthread.php?t=155329
+  end
 end
 
 function MouseInfo(x, y, p)
@@ -194,9 +196,10 @@ function MouseInfo(x, y, p)
   end
 
   if debug == true then draw_gui()  gfx.update() end
-
+  --draw_gui()  gfx.update()
   return mouse
 end
 
-if debug == true then init() end
+--if debug == true then init() end
+init()
 MouseInfo()
