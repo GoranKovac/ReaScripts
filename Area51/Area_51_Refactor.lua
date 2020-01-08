@@ -1026,6 +1026,7 @@ function remove()
    end -- DISABLE COPY MODE
    RemoveAsFromTable(Areas_TB, "Delete")
    active_as = nil
+   A_M_Block = nil
    refresh_reaper()
 end
 
