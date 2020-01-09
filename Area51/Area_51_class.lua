@@ -42,9 +42,14 @@ function Element:zone(z)
       local tracks = z[5]
       local new_L = z[2] + mouse.dp >= 0 and z[2] + mouse.dp or 0
       --offset = (new_L - self.time_start) -- GET MOVE OFFSET FOR ITEMS
-      self.time_start = new_L
-      self.time_start = self.time_start >= 0 and self.time_start or 0
-      self.x = convert_time_to_pixel(self.time_start, 0)
+      
+      if not mouse.Ctrl() then
+        self.time_start = new_L
+        self.time_start = self.time_start >= 0 and self.time_start or 0
+        self.x = convert_time_to_pixel(self.time_start, 0)
+      end
+      
+      local temp_area_ghost = convert_time_to_pixel(new_L, 0)
 
       local last_project_tr = get_last_visible_track()
       local last_project_tr_id = reaper.CSurf_TrackToID(last_project_tr, false)
@@ -75,11 +80,12 @@ function Element:zone(z)
       self.y, self.h = GetTrackTBH(self.sel_info)
       for i = 1, #self.sel_info do
         if self.sel_info[i].items then
-          DrawItemGhosts(self.sel_info[i].items, self.sel_info[i].track, z[2], self.time_dur, 0, mouse.tr, self.time_start - z[2])
+          DrawItemGhosts(self.sel_info[i].items, self.sel_info[i].track, z[2], self.time_dur, 0, mouse.tr, new_L - z[2])
         elseif self.sel_info[i].env_name then
-          DrawEnvGhosts(self.sel_info[i].track, self.sel_info[i].env_name, z[2], self.time_dur, 0, mouse.tr, self.time_start - z[2])
+          DrawEnvGhosts(self.sel_info[i].track, self.sel_info[i].env_name, z[2], self.time_dur, 0, mouse.tr, new_L - z[2])
         end
       end
+      self:draw(temp_area_ghost)
     elseif z[1] == "T" then
       local rd = (mouse.r_t - mouse.ort)
       local new_y, new_h = z[2] + rd, z[3] - rd
@@ -98,14 +104,19 @@ function Element:zone(z)
       self.sel_info = GetSelectionInfo(self) -- UPDATE AREAS INFORMATION
       GetGhosts(self.sel_info, self.time_start, self.time_start + self.time_dur, "update", z[2])
     elseif z[1] == "C" then
-      move_items_envs(self, self.time_start - z[2]) -- MOVE ITEMS BEFORE WE UPDATE THE AREA SO OFFSET CAN REFRESH
+      if mouse.Ctrl() then
+        local new_L = z[2] + mouse.dp >= 0 and z[2] + mouse.dp or 0
+        AreaDo({self}, "PASTE",new_L)
+      else
+        move_items_envs(self, self.time_start - z[2]) -- MOVE ITEMS BEFORE WE UPDATE THE AREA SO OFFSET CAN REFRESH
+      end
       UnlinkGhosts()
       self.sel_info = GetSelectionInfo(self)
       GetGhosts(self.sel_info, self.time_start, self.time_start + self.time_dur, "update", z[2])
     end
     --GetGhosts(self.sel_info, self.time_start, self.time_start + self.time_dur, "update", z[2])
   end
-  self:draw()
+  if z[1] ~= "C" then self:draw() end
 end
 
 function Element:update_xywh()
@@ -114,7 +125,9 @@ function Element:update_xywh()
   self:draw()
 end
 
-function Element:draw()
+function Element:draw(x,y)
+  self.x = x or self.x
+  self.y = y or self.y
   local _, x_view_start, y_view_start = reaper.JS_Window_GetRect(track_window)
   reaper.JS_Composite(track_window, self.x - x_view_start, self.y - y_view_start, self.w, self.h, self.bm, 0, 0, 1, 1)
   refresh_reaper()

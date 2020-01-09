@@ -255,10 +255,12 @@ local function create_item(item, tr, as_start, as_end, mouse_time_pos)
   reaper.SetMediaItemInfo_Value(new_Item, "D_VOL", item_volume)
 end
 
-function paste(items, item_track, as_start, as_end, pos_offset, first_track)
+function paste(items, item_track, as_start, as_end, pos_offset, first_track,drag_offset)
   if not mouse.tr then
     return
   end -- DO NOT PASTE IF MOUSE IS OUT OF ARRANGE WINDOW
+
+  local first_track = drag_offset and mouse.tr or first_track
 
   local offset_track, under_last_tr = generic_track_offset(item_track, first_track)
   if under_last_tr and under_last_tr > 0 then
@@ -273,16 +275,18 @@ function paste(items, item_track, as_start, as_end, pos_offset, first_track)
   -- local wheel_offset = (w-1) * (as_end - as_start)
   for i = 1, #items do
     local item = items[i]
-    local mouse_offset = pos_offset + mouse.p -- + wheel_offset
+    local mouse_offset = drag_offset and drag_offset or pos_offset + mouse.p -- + wheel_offset
     create_item(item, offset_track, as_start, as_end, mouse_offset) -- CREATE ITEMS AT NEW POSITION
   end
   --end
 end
 
-function paste_env(env_track, env_name, env_data, as_start, as_end, pos_offset, first_env_tr, num)
+function paste_env(env_track, env_name, env_data, as_start, as_end, pos_offset, first_env_tr, num, drag_offset) -- drag offset is not used, only as a flag for drag move here
   if not mouse.tr or not env_data then
     return
   end -- DO NOT PASTE IF MOUSE IS OUT OF ARRANGE WINDOW
+
+  local first_env_tr = drag_offset and mouse.tr or first_env_tr
 
   local offset_track, under_last_tr = generic_track_offset(env_track, first_env_tr)
 
@@ -293,13 +297,9 @@ function paste_env(env_track, env_name, env_data, as_start, as_end, pos_offset, 
     offset_track = reaper.GetTrack(0, reaper.GetNumTracks() - 1)
   end
 
-  --local env_offset = GetEnvOffset_MatchCriteria(offset_track, env_name) -- OLD ONE
-  --local env_offset = GetEnvOffset_MatchCriteria(offset_track, env_name, env_track, env_first_tr) --or offset_track
   local env_offset = GetEnvOffset_MouseOverride(offset_track, env_name, nil, num) --or GetEnvOffset_MatchCriteria(offset_track, env_name)
-  --local env_tr_offset = GetEnvOffset_MouseOverride(offset_track, env_name, mov_offset, num)
-  --msg(env_offset)
   local env_paste_offset = mouse.p - as_start -- OFFSET BETWEEN ENVELOPE START AND MOUSE POSITION
-  local mouse_offset = env_paste_offset + pos_offset -- OFFSET BETWEEN MOUSE POSITION AND NEXT AREA SELECTION
+  local mouse_offset = drag_offset and mouse.dp or env_paste_offset + pos_offset -- OFFSET BETWEEN MOUSE POSITION AND NEXT AREA SELECTION
 
   if env_offset and reaper.ValidatePtr(env_offset, "TrackEnvelope*") then -- IF TRACK HAS ENVELOPES PASTE THEM
     insert_edge_points(env_offset, {as_start, as_end}, mouse_offset, env_track) -- INSERT EDGE POINTS AT CURRENT ENVELOE VALUE AND DELETE WHOLE RANGE INSIDE (DO NOT ALLOW MIXING ENVELOPE POINTS AND THAT WEIRD SHIT)
@@ -337,7 +337,7 @@ function del_env(env_track, as_start, as_end, pos_offset, job)
   end
 end
 
-function AreaDo(tbl, job)
+function AreaDo(tbl, job,off)
   reaper.Undo_BeginBlock()
   reaper.PreventUIRefresh(1)
   for a = 1, #tbl do
@@ -355,7 +355,7 @@ function AreaDo(tbl, job)
         local item_track = info.track
         local item_data = info.items
         if job == "PASTE" then
-          paste(info.items, item_track, as_start, as_end, pos_offset, first_tr)
+          paste(info.items, item_track, as_start, as_end, pos_offset, first_tr,off)
         end
         if job == "del" or job == "split" then
           split_or_delete_items(item_track, item_data, as_start, as_end, job)
@@ -369,7 +369,7 @@ function AreaDo(tbl, job)
         local env_data = info.env_points
 
         if job == "PASTE" then
-          paste_env(env_track, env_name, env_data, as_start, as_end, pos_offset, first_tr, #tbl.sel_info)
+          paste_env(env_track, env_name, env_data, as_start, as_end, pos_offset, first_tr, #tbl.sel_info, off)
         end
         if job == "del" then
           del_env(env_track, as_start, as_end, pos_offset, job)
