@@ -86,6 +86,7 @@ local function stretch_items(items, as_start, as_end)
 end
 
 function move_items_envs(tbl, offset)
+  reaper.Undo_BeginBlock()
   for i = 1, #tbl.sel_info do
     if tbl.sel_info[i].items then
       for j = 1, #tbl.sel_info[i].items do
@@ -112,6 +113,7 @@ function move_items_envs(tbl, offset)
       end
     end
   end
+  reaper.Undo_EndBlock("AREA51 MOVE", 4)
 end
 
 local function add_info_to_edge(tbl)
@@ -336,6 +338,7 @@ function del_env(env_track, as_start, as_end, pos_offset, job)
 end
 
 function AreaDo(tbl, job)
+  reaper.Undo_BeginBlock()
   reaper.PreventUIRefresh(1)
   for a = 1, #tbl do
     local tbl = tbl[a]
@@ -378,6 +381,7 @@ function AreaDo(tbl, job)
       tbl.sel_info = GetSelectionInfo(tbl)
     end
   end
+  reaper.Undo_EndBlock("AREA51 " .. job, 4)
   reaper.PreventUIRefresh(-1)
   reaper.UpdateTimeline()
   reaper.UpdateArrange()
