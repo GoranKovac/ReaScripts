@@ -1039,6 +1039,13 @@ function del()
    end
 end
 
+function as_split()
+   local tbl = active_as and {active_as} or Areas_TB
+   if #tbl ~= 0 then
+      AreaDo(tbl, "split")
+   end
+end
+
 function select_as()
    local num = tonumber(key.DOWN.name)
    active_as = Areas_TB[num] and Areas_TB[num] or nil
@@ -1136,6 +1143,9 @@ for i = 1, 255 do
    local name = string.char(i)
    if type(tonumber(name)) == "number" then
       func = select_as
+   end
+   if name == "S" then
+      func = as_split
    end
    if i == 16 then
       name = "Shift"

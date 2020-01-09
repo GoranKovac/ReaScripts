@@ -337,7 +337,7 @@ function del_env(env_track, as_start, as_end, pos_offset, job)
   end
 end
 
-function AreaDo(tbl, job,off)
+function AreaDo(tbl, job, off)
   reaper.Undo_BeginBlock()
   reaper.PreventUIRefresh(1)
   for a = 1, #tbl do
