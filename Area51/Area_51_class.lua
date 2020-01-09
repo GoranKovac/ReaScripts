@@ -41,14 +41,13 @@ function Element:zone(z)
       move = true
       local tracks = z[5]
       local new_L = z[2] + mouse.dp >= 0 and z[2] + mouse.dp or 0
-      --offset = (new_L - self.time_start) -- GET MOVE OFFSET FOR ITEMS
-      
+
       if not mouse.Ctrl() then -- DRAG COPY
         self.time_start = new_L
         self.time_start = self.time_start >= 0 and self.time_start or 0
         self.x = convert_time_to_pixel(self.time_start, 0)
       end
-      
+
       local temp_area_ghost = convert_time_to_pixel(new_L, 0) -- TEMPORARY AREA GRAPHICS SO WE DO NOT MOVE THE ORIGINAL ONE SINCE IT CHANGE THE DATA OF THE TABLE 
 
       local last_project_tr = get_last_visible_track()
@@ -107,6 +106,9 @@ function Element:zone(z)
       if mouse.Ctrl() then
         local new_L = z[2] + mouse.dp >= 0 and z[2] + mouse.dp or 0
         AreaDo({self}, "PASTE",new_L)
+        self.time_start = new_L
+        self.time_start = self.time_start >= 0 and self.time_start or 0
+        self.x = convert_time_to_pixel(self.time_start, 0)
       else
         move_items_envs(self, self.time_start - z[2]) -- MOVE ITEMS BEFORE WE UPDATE THE AREA SO OFFSET CAN REFRESH
       end
@@ -125,9 +127,10 @@ function Element:update_xywh()
   self:draw()
 end
 
-function Element:draw(x,y)
+function Element:draw(x,y,h)
   self.x = x or self.x
   self.y = y or self.y
+  self.h = h or self.h
   local _, x_view_start, y_view_start = reaper.JS_Window_GetRect(track_window)
   reaper.JS_Composite(track_window, self.x - x_view_start, self.y - y_view_start, self.w, self.h, self.bm, 0, 0, 1, 1)
   refresh_reaper()
