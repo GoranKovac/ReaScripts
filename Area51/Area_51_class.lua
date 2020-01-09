@@ -43,13 +43,13 @@ function Element:zone(z)
       local new_L = z[2] + mouse.dp >= 0 and z[2] + mouse.dp or 0
       --offset = (new_L - self.time_start) -- GET MOVE OFFSET FOR ITEMS
       
-      if not mouse.Ctrl() then
+      if not mouse.Ctrl() then -- DRAG COPY
         self.time_start = new_L
         self.time_start = self.time_start >= 0 and self.time_start or 0
         self.x = convert_time_to_pixel(self.time_start, 0)
       end
       
-      local temp_area_ghost = convert_time_to_pixel(new_L, 0)
+      local temp_area_ghost = convert_time_to_pixel(new_L, 0) -- TEMPORARY AREA GRAPHICS SO WE DO NOT MOVE THE ORIGINAL ONE SINCE IT CHANGE THE DATA OF THE TABLE 
 
       local last_project_tr = get_last_visible_track()
       local last_project_tr_id = reaper.CSurf_TrackToID(last_project_tr, false)
@@ -85,7 +85,7 @@ function Element:zone(z)
           DrawEnvGhosts(self.sel_info[i].track, self.sel_info[i].env_name, z[2], self.time_dur, 0, mouse.tr, new_L - z[2])
         end
       end
-      self:draw(temp_area_ghost)
+      self:draw(temp_area_ghost) -- TEMPORARY AREA GRAPHICS SO WE DO NOT MOVE THE ORIGINAL ONE SINCE IT CHANGE THE DATA OF THE TABLE 
     elseif z[1] == "T" then
       local rd = (mouse.r_t - mouse.ort)
       local new_y, new_h = z[2] + rd, z[3] - rd

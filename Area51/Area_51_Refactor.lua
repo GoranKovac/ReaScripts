@@ -1,7 +1,7 @@
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 package.cursor = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "Cursors\\" -- GET DIRECTORY FOR CURSORS
 
-debug = true
+debug = false
 
 require("Area_51_class")      -- AREA FUNCTIONS SCRIPT
 require("Area_51_functions")  -- AREA CLASS SCRIPT
