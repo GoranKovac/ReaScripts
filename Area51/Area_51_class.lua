@@ -43,12 +43,12 @@ function Element:zone(z)
       local new_L = z[2] + mouse.dp >= 0 and z[2] + mouse.dp or 0
 
       if not mouse.Ctrl() then -- DRAG COPY
-        if not SPLIT then
-          AreaDo({self}, "split") -- split selection
-          self.sel_info = GetSelectionInfo(self) -- get new info on seleciton
-          GetGhosts(self.sel_info, self.time_start, self.time_start + self.time_dur, "update", z[2])
-          SPLIT = true --set split flag
-        end
+        --if not SPLIT then
+          --AreaDo({self}, "split") -- split selection
+          --self.sel_info = GetSelectionInfo(self) -- get new info on seleciton
+          --GetGhosts(self.sel_info, self.time_start, self.time_start + self.time_dur, "update", z[2])
+          --SPLIT = true --set split flag
+        --end
         --end
         self.time_start = new_L
         self.time_start = self.time_start >= 0 and self.time_start or 0
@@ -118,6 +118,11 @@ function Element:zone(z)
         self.time_start = self.time_start >= 0 and self.time_start or 0
         self.x = convert_time_to_pixel(self.time_start, 0)
       else
+        --split_or_delete_items(nil, as_items_tbl, as_start, as_end, key)
+        --AreaDo({self}, "split") -- split selection
+        --self.sel_info = GetSelectionInfo(self) -- get new info on seleciton
+          --GetGhosts(self.sel_info, self.time_start, self.time_start + self.time_dur, "update", z[2])
+          --SPLIT = true --set split flag
         move_items_envs(self, self.time_start - z[2]) -- MOVE ITEMS BEFORE WE UPDATE THE AREA SO OFFSET CAN REFRESH
       end
       UnlinkGhosts()

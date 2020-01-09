@@ -453,6 +453,7 @@ function get_items_in_as(as_tr, as_start, as_end, as_items)
   end
 end
 
+
 function split_or_delete_items(as_tr, as_items_tbl, as_start, as_end, key)
   if not as_items_tbl then
     return
