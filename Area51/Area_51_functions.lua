@@ -522,7 +522,8 @@ function get_as_tr_env_pts(as_tr, as_start, as_end)
     local retval, time, value, shape, tension, selected = reaper.GetEnvelopePoint(as_tr, i - 1)
 
     if time >= as_start and time <= as_end then
-      reaper.SetEnvelopePoint(as_tr, i - 1, _, _, _, _, true, _)
+      --reaper.SetEnvelopePoint(as_tr, i - 1, _, _, _, _, true, _)
+      reaper.SetEnvelopePoint(as_tr, i - 1, time, value, shape, tension, true, true)
 
       env_points[#env_points + 1] = {
         id = i - 1,
@@ -534,7 +535,8 @@ function get_as_tr_env_pts(as_tr, as_start, as_end)
         selected = true
       }
     elseif (time > as_start and time > as_end) or (time < as_start and time < as_end) then
-      reaper.SetEnvelopePoint(as_tr, i - 1, _, _, _, _, false, _)
+      --reaper.SetEnvelopePoint(as_tr, i - 1, _, _, _, _, false, _)
+      reaper.SetEnvelopePoint(as_tr, i - 1, time, value, shape, tension, false, true)
     end
   end
 
