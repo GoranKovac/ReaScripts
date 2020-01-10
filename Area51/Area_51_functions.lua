@@ -116,16 +116,6 @@ function move_items_envs(tbl, offset)
   reaper.Undo_EndBlock("AREA51 MOVE", 4)
 end
 
-local function add_info_to_edge(tbl)
-  local tracks = {}
-  for i = 1, #tbl.sel_info do
-    tracks[#tracks + 1] = {track = tbl.sel_info[i].track}
-  end
-
-  local info = GetRangeInfo(tracks, tbl.time_start, tbl.time_end)
-  tbl.sel_info = info
-end
-
 function item_blit(item, as_start, as_end, pos)
   local tsStart, tsEnd = as_start, as_end
   local item_lenght = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
@@ -228,7 +218,6 @@ local function create_item(item, tr, as_start, as_end, mouse_time_pos, job)
   local m_type = reaper.GetMediaSourceType(source, "")
   local item_volume = reaper.GetMediaItemInfo_Value(item, "D_VOL")
   local new_Item = reaper.AddMediaItemToTrack(tr)
-   ---
   local new_Take = reaper.AddTakeToMediaItem(new_Item)
 
   if m_type:find("MIDI") then -- MIDI COPIES GET INTO SAME POOL IF JUST SETTING CHUNK SO WE NEED TO SET NEW POOL ID TO NEW COPY
