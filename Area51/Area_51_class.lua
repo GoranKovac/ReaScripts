@@ -43,7 +43,7 @@ function Element:zone(z)
       local tracks = z[5]
       local new_L = z[2] + mouse.dp >= 0 and z[2] + mouse.dp or 0
 
-      if not mouse.Ctrl() then -- DRAG COPY
+      if not mouse.Ctrl() and false then -- DRAG COPY, disabled updating area start while dragging
         --if not SPLIT then
           --AreaDo({self}, "split") -- split selection
           --self.sel_info = GetSelectionInfo(self) -- get new info on seleciton
@@ -119,14 +119,11 @@ function Element:zone(z)
         self.time_start = self.time_start >= 0 and self.time_start or 0
         self.x = convert_time_to_pixel(self.time_start, 0)
       else
-        --for i = 1, #z[5] do
-        --  split_or_delete_items(nil, z[5][i].items, z[2], z[2]+z[3], "del")
-        --end
-        --AreaDo({self}, "split") -- split selection
-        --self.sel_info = GetSelectionInfo(self) -- get new info on seleciton
-          --GetGhosts(self.sel_info, self.time_start, self.time_start + self.time_dur, "update", z[2])
-          --SPLIT = true --set split flag
-        move_items_envs(self, self.time_start - z[2]) -- MOVE ITEMS BEFORE WE UPDATE THE AREA SO OFFSET CAN REFRESH
+        local new_L = z[2] + mouse.dp >= 0 and z[2] + mouse.dp or 0
+        AreaDo({self}, "move",new_L)
+        self.time_start = new_L
+        self.time_start = self.time_start >= 0 and self.time_start or 0
+        self.x = convert_time_to_pixel(self.time_start, 0)
       end
       UnlinkGhosts()
       self.sel_info = GetSelectionInfo(self)
