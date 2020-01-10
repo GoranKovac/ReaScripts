@@ -461,6 +461,7 @@ function split_or_delete_items(as_tr, as_items_tbl, as_start, as_end, key)
 
   for i = #as_items_tbl, 1, -1 do
     local item = as_items_tbl[i]
+    --local as_tr =  reaper.GetMediaItem_Track( as_tr )
     if key == "del" or key == "split" then
       local s_item_first = reaper.SplitMediaItem(item, as_end)
       local s_item_last = reaper.SplitMediaItem(item, as_start)
@@ -468,13 +469,13 @@ function split_or_delete_items(as_tr, as_items_tbl, as_start, as_end, key)
       -- ITEMS FOR DELETING
       if key == "del" then
         if s_item_first and s_item_last then
-          reaper.DeleteTrackMediaItem(as_tr, s_item_last)
+          reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( s_item_last ), s_item_last) --reaper.DeleteTrackMediaItem(as_tr, s_item_last)
         elseif s_item_last and not s_item_first then
-          reaper.DeleteTrackMediaItem(as_tr, s_item_last)
+          reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( s_item_last ), s_item_last) -- reaper.DeleteTrackMediaItem(as_tr, s_item_last)
         elseif s_item_first and not s_item_last then
-          reaper.DeleteTrackMediaItem(as_tr, item)
+          reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( item ), item) -- reaper.DeleteTrackMediaItem(as_tr, item)
         elseif not s_item_first and not s_item_last then
-          reaper.DeleteTrackMediaItem(as_tr, item)
+          reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( item ), item) -- reaper.DeleteTrackMediaItem(as_tr, item)
         end
       end
     end
