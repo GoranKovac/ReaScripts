@@ -350,7 +350,6 @@ function AreaDo(tbl, job, off)
     for i = 1, #tbl.sel_info do
       local info = tbl.sel_info[i]
       local first_tr = find_highest_tr(info.track)
-
       if info.items then
         local item_track = info.track
         local item_data = info.items
@@ -363,6 +362,10 @@ function AreaDo(tbl, job, off)
         if job == "stretch" then
           stretch_items(item_data, as_start, as_end)
         end
+        if job == "move" then
+          paste(info.items, item_track, as_start, as_end, pos_offset, first_tr,off)
+          split_or_delete_items(item_track, item_data, as_start, as_end , 'del')
+        end
       elseif info.env_name then
         local env_track = info.track
         local env_name = info.env_name
@@ -372,6 +375,11 @@ function AreaDo(tbl, job, off)
           paste_env(env_track, env_name, env_data, as_start, as_end, pos_offset, first_tr, #tbl.sel_info, off)
         end
         if job == "del" then
+          del_env(env_track, as_start, as_end, pos_offset, job)
+          reaper.Envelope_SortPoints(env_track)
+        end
+        if job == "move" then
+          paste_env(env_track, env_name, env_data, as_start, as_end, pos_offset, first_tr, #tbl.sel_info, off)
           del_env(env_track, as_start, as_end, pos_offset, job)
           reaper.Envelope_SortPoints(env_track)
         end
