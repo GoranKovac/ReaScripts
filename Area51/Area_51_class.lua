@@ -112,19 +112,15 @@ function Element:zone(z)
       self.sel_info = GetSelectionInfo(self) -- UPDATE AREAS INFORMATION
       GetGhosts(self.sel_info, self.time_start, self.time_start + self.time_dur, "update", z[2])
     elseif z[1] == "C" then
+      local new_L = z[2] + mouse.dp >= 0 and z[2] + mouse.dp or 0
       if mouse.Ctrl() then
-        local new_L = z[2] + mouse.dp >= 0 and z[2] + mouse.dp or 0
         AreaDo({self}, "PASTE",new_L)
-        self.time_start = new_L
-        self.time_start = self.time_start >= 0 and self.time_start or 0
-        self.x = convert_time_to_pixel(self.time_start, 0)
       else
-        local new_L = z[2] + mouse.dp >= 0 and z[2] + mouse.dp or 0
         AreaDo({self}, "move",new_L)
-        self.time_start = new_L
-        self.time_start = self.time_start >= 0 and self.time_start or 0
-        self.x = convert_time_to_pixel(self.time_start, 0)
       end
+      self.time_start = new_L
+      self.time_start = self.time_start >= 0 and self.time_start or 0
+      self.x = convert_time_to_pixel(self.time_start, 0)
       UnlinkGhosts()
       self.sel_info = GetSelectionInfo(self)
       GetGhosts(self.sel_info, self.time_start, self.time_start + self.time_dur, "update", z[2])

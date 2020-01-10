@@ -335,6 +335,7 @@ function del_env(env_track, as_start, as_end, pos_offset, job)
   else
     insert_edge_points(env_track, as_time_tbl, 0, nil, job)
   end
+  reaper.Envelope_SortPoints(env_track)
 end
 
 function AreaDo(tbl, job, off)
@@ -376,12 +377,10 @@ function AreaDo(tbl, job, off)
         end
         if job == "del" then
           del_env(env_track, as_start, as_end, pos_offset, job)
-          reaper.Envelope_SortPoints(env_track)
         end
         if job == "move" then
           paste_env(env_track, env_name, env_data, as_start, as_end, pos_offset, first_tr, #tbl.sel_info, off)
           del_env(env_track, as_start, as_end, pos_offset, job)
-          reaper.Envelope_SortPoints(env_track)
         end
       end
     end
