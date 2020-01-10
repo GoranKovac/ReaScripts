@@ -263,7 +263,7 @@ function paste(items, item_track, as_start, as_end, pos_offset, first_track, dra
   local first_track = drag_offset and mouse.tr or first_track
 
   local offset_track, under_last_tr = generic_track_offset(item_track, first_track)
-  if under_last_tr and under_last_tr > 0 then
+  if not job and under_last_tr and under_last_tr > 0 then
     for t = 1, under_last_tr do
       reaper.InsertTrackAtIndex((reaper.GetNumTracks()), true)
     end
@@ -293,7 +293,7 @@ function paste_env(env_track, env_name, env_data, as_start, as_end, pos_offset, 
 
   local offset_track, under_last_tr = generic_track_offset(env_track, first_env_tr)
 
-  if under_last_tr and under_last_tr > 0 then
+  if not job and under_last_tr and under_last_tr > 0 then
     for t = 1, under_last_tr do
       reaper.InsertTrackAtIndex((reaper.GetNumTracks()), true)
     end -- IF THE TRACKS ARE BELOW LAST TRACK OF THE PROJECT CREATE HAT TRACKS
@@ -375,8 +375,9 @@ function AreaDo(tbl, job, off)
           stretch_items(item_data, as_start, as_end)
         end
         if job == "move" then
-          local target_items = get_items_in_as(item_track, mouse.dp + as_start, mouse.dp + as_end) -- GET ITEMS ON TARGET AREA
-          split_or_delete_items(item_track, target_items, mouse.dp + as_start, mouse.dp + as_end , 'del') -- DELETE ITEMS IN TARGET AREA
+          --reaper.Main_OnCommand( 42206, 0 )
+          --local target_items = get_items_in_as(item_track, mouse.dp + as_start, mouse.dp + as_end) -- GET ITEMS ON TARGET AREA
+         -- split_or_delete_items(item_track, target_items, mouse.dp + as_start, mouse.dp + as_end , 'del') -- DELETE ITEMS IN TARGET AREA
           paste(info.items, item_track, as_start, as_end, pos_offset, first_tr, off) -- PASTE ORIGINAL ITEMS
           split_or_delete_items(item_track, item_data, as_start, as_end , 'del') -- DELETE ITEMS FROM ORIGINAL POSITION
         end
@@ -551,7 +552,6 @@ function get_as_tr_env_pts(as_tr, as_start, as_end)
     local retval, time, value, shape, tension, selected = reaper.GetEnvelopePoint(as_tr, i - 1)
 
     if time >= as_start and time <= as_end then
-      --reaper.SetEnvelopePoint(as_tr, i - 1, _, _, _, _, true, _)
       reaper.SetEnvelopePoint(as_tr, i - 1, time, value, shape, tension, true, true)
 
       env_points[#env_points + 1] = {
@@ -564,7 +564,6 @@ function get_as_tr_env_pts(as_tr, as_start, as_end)
         selected = true
       }
     elseif (time > as_start and time > as_end) or (time < as_start and time < as_end) then
-      --reaper.SetEnvelopePoint(as_tr, i - 1, _, _, _, _, false, _)
       reaper.SetEnvelopePoint(as_tr, i - 1, time, value, shape, tension, false, true)
     end
   end
