@@ -274,6 +274,8 @@ function paste(items, item_track, as_start, as_end, pos_offset, first_track, dra
   if job == "duplicate" then
     offset_track = item_track
   end
+
+  
   -- for w = 1 , mouse.wheel do
   -- local wheel_offset = (w-1) * (as_end - as_start)
   for i = 1, #items do
@@ -370,8 +372,10 @@ function AreaDo(tbl, job, off)
           stretch_items(item_data, as_start, as_end)
         end
         if job == "move" then
-          paste(info.items, item_track, as_start, as_end, pos_offset, first_tr, off)
-          split_or_delete_items(item_track, item_data, as_start, as_end , 'del')
+          local target_items = get_items_in_as(item_track, mouse.dp + as_start, mouse.dp + as_end) -- GET ITEMS ON TARGET AREA
+          split_or_delete_items(item_track, target_items, mouse.dp + as_start, mouse.dp + as_end , 'del') -- DELETE ITEMS IN TARGET AREA
+          paste(info.items, item_track, as_start, as_end, pos_offset, first_tr, off) -- PASTE ORIGINAL ITEMS
+          split_or_delete_items(item_track, item_data, as_start, as_end , 'del') -- DELETE ITEMS FROM ORIGINAL POSITION
         end
       elseif info.env_name then
         local env_track = info.track
