@@ -274,8 +274,6 @@ function paste(items, item_track, as_start, as_end, pos_offset, first_track, dra
   if job == "duplicate" then
     offset_track = item_track
   end
-
-  
   -- for w = 1 , mouse.wheel do
   -- local wheel_offset = (w-1) * (as_end - as_start)
   for i = 1, #items do
@@ -286,7 +284,7 @@ function paste(items, item_track, as_start, as_end, pos_offset, first_track, dra
   --end
 end
 
-function paste_env(env_track, env_name, env_data, as_start, as_end, pos_offset, first_env_tr, num, drag_offset) -- drag offset is not used, only as a flag for drag move here
+function paste_env(env_track, env_name, env_data, as_start, as_end, pos_offset, first_env_tr, num, drag_offset, job) -- drag offset is not used, only as a flag for drag move here
   if not mouse.tr or not env_data then
     return
   end -- DO NOT PASTE IF MOUSE IS OUT OF ARRANGE WINDOW
@@ -305,6 +303,11 @@ function paste_env(env_track, env_name, env_data, as_start, as_end, pos_offset, 
   local env_offset = GetEnvOffset_MouseOverride(offset_track, env_name, nil, num) --or GetEnvOffset_MatchCriteria(offset_track, env_name)
   local env_paste_offset = mouse.p - as_start -- OFFSET BETWEEN ENVELOPE START AND MOUSE POSITION
   local mouse_offset = drag_offset and mouse.dp or env_paste_offset + pos_offset -- OFFSET BETWEEN MOUSE POSITION AND NEXT AREA SELECTION
+
+  if job == "duplicate" then
+    mouse_offset = as_end - as_start
+    env_offset = env_track
+  end
 
   if env_offset and reaper.ValidatePtr(env_offset, "TrackEnvelope*") then -- IF TRACK HAS ENVELOPES PASTE THEM
     insert_edge_points(env_offset, {as_start, as_end}, mouse_offset, env_track) -- INSERT EDGE POINTS AT CURRENT ENVELOE VALUE AND DELETE WHOLE RANGE INSIDE (DO NOT ALLOW MIXING ENVELOPE POINTS AND THAT WEIRD SHIT)
@@ -391,6 +394,9 @@ function AreaDo(tbl, job, off)
         if job == "move" then
           paste_env(env_track, env_name, env_data, as_start, as_end, pos_offset, first_tr, #tbl.sel_info, off)
           del_env(env_track, as_start, as_end, pos_offset, job)
+        end
+        if job == "duplicate" then
+          paste_env(env_track, env_name, env_data, as_start, as_end, pos_offset, first_tr, #tbl.sel_info, off, job)
         end
       end
     end
