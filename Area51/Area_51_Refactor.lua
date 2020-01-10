@@ -244,7 +244,6 @@ function Mouse_in_arrange()
    end
 end
 
-
 local WML_intercept = reaper.JS_WindowMessage_Intercept(track_window, "WM_LBUTTONDOWN", false)
 local prevTime = 0 -- or script start time
 
@@ -309,10 +308,6 @@ local function Check_change(s_start, s_end, r_start, r_end)
       prev_r_start, prev_r_end = r_start, r_end
       return "RANGE Y"
    end
-end
-
-local function GDIBlit(dest, x, y, w, h)
-   reaper.JS_GDI_Blit(dest, 0, 0, track_window_dc, x, y, w, h)
 end
 
 -- GET ITEM PEAKS
@@ -464,16 +459,14 @@ function GetGhosts(data, as_start, as_end, job, old_time)
                   i_l = item_lenght,
                }
             else
-               --if as_start ~= old_time then -- need to fix this
-                  reaper.JS_LICE_Clear( ghosts[item_ghost_id].bm, 0 )
-                  reaper.JS_LICE_FillRect( ghosts[item_ghost_id].bm, 0, 0, w, h, 0xFF002244, 0.5, "COPY" )
-                  draw_peak(peaks, ghosts[item_ghost_id].bm, ghosts[item_ghost_id].p, 0, ghosts[item_ghost_id].l, item_h-19)
-                  ghosts[item_ghost_id].p = x
-                  ghosts[item_ghost_id].l = w
-                  ghosts[item_ghost_id].h = h
-                  ghosts[item_ghost_id].i_s = item_start
-                  ghosts[item_ghost_id].i_l = item_lenght
-               --end
+               reaper.JS_LICE_Clear( ghosts[item_ghost_id].bm, 0 )
+               reaper.JS_LICE_FillRect( ghosts[item_ghost_id].bm, 0, 0, w, h, 0xFF002244, 0.5, "COPY" )
+               draw_peak(peaks, ghosts[item_ghost_id].bm, ghosts[item_ghost_id].p, 0, ghosts[item_ghost_id].l, item_h-19)
+               ghosts[item_ghost_id].p = x
+               ghosts[item_ghost_id].l = w
+               ghosts[item_ghost_id].h = h
+               ghosts[item_ghost_id].i_s = item_start
+               ghosts[item_ghost_id].i_l = item_lenght
             end
          end
       elseif data[i].env_points then
@@ -482,7 +475,6 @@ function GetGhosts(data, as_start, as_end, job, old_time)
          local x, y, w = Get_Set_Position_In_Arrange(as_start, env_t, (as_end - as_start))
          local h = env_h
          local env_ghost_id = tostring(tr) --.. as_start
-         --if job == "get" then
          if not ghosts[env_ghost_id] then
             local bm = reaper.JS_LICE_CreateBitmap(true, w, env_h)
             reaper.JS_LICE_FillRect( bm, 0, 0, w, h, 0xFF002244, 0.5, "COPY" )
@@ -497,7 +489,6 @@ function GetGhosts(data, as_start, as_end, job, old_time)
                id_time = as_start + (as_end - as_start)
             }
          else
-         --elseif job == "update" then
             for k, v in pairs(ghosts) do
                if k == env_ghost_id and v.id_time == old_time then
                   reaper.JS_LICE_DestroyBitmap(v.bm) -- WE NEED TO CREATE NEW BITMAP ALWAYS BECAUSE UNLIKE ITEMS THAT ALWAYS HAVE SAME LENGHT, ENVELOPE DO NOT HAVE THAT
@@ -698,9 +689,7 @@ function GetEnvNum(tr, env)
          return tr_env, i -- MATCH MODE
       end
    end
---   return tr
 end
-
 
 function GetEnvOffset_MouseOverride(tr, env, mov_offset, num)
    local window, segment, details  = reaper.BR_GetMouseCursorContext()
@@ -820,7 +809,6 @@ local function generic_table_find(job)
          elseif sel_info.env_points then
             local env_track = sel_info.track
             local env_name = sel_info.env_name
-            --local env_data = sel_info.env_points -- CURENTLY UNUSED
             if copy then
                DrawEnvGhosts(env_track, env_name, as_start, as_dur, pos_offset, first_tr, nil, #tbl.sel_info)
             end
@@ -848,7 +836,6 @@ function DrawItemGhosts(item_data, item_track, as_start, as_end, pos_offset, fir
          local item_guid = reaper.BR_GetMediaItemGUID( item )
          local item_ghost_id = item_guid--tostring(item) --.. as_start
          if ghosts[item_ghost_id] then --and ghosts[item_ghost_id].id_time == as_start then
-            --local ghost_id_time = ghosts[item_ghost_id].id_time
             local mouse_offset = pos_offset + (mouse.p - as_start) + ghosts[item_ghost_id].i_s
             local move_offset = mov_offset and mov_offset + ghosts[item_ghost_id].i_s
             mouse_offset = move_offset or mouse_offset
@@ -867,7 +854,6 @@ function DrawEnvGhosts(env_track, env_name, as_start, as_end, pos_offset, first_
    local env_ghost_id = tostring(env_track) --.. as_start
    if TBH[env_tr_offset] then
       local track_t, _, track_h = TBH[env_tr_offset].t + off_h, TBH[env_tr_offset].b, TBH[env_tr_offset].h
-      --local env_ghost_id = tostring(env_track) --.. as_start
       if ghosts[env_ghost_id] and ghosts[env_ghost_id].id_time == as_start + as_end then
          local mouse_offset = pos_offset + (mouse.p - as_start) + ghosts[env_ghost_id].p
          local move_offset = mov_offset and mov_offset + ghosts[env_ghost_id].p
@@ -1083,15 +1069,12 @@ local function Main()
       function()
          GetTracksXYH() -- GET XYH INFO OF ALL TRACKS
          Mouse_Data_From_Arrange() -- GET MOUSE INFO
-         --GetTrackZoneInfo(Mouse_in_arrange())
-         
          intercept_reaper_key(Areas_TB) -- WATCH TO INTERCEPT KEYS WHEN AREA IS DRAWN (ON SCREEN)
          check_keys() -- GET PRESSED KEYS AND THEIR FUNCTIONS
 
          if mouse.l_down then
             if not A_M_Block then
                if not mouse.Ctrl_Shift_Alt() and not mouse.Ctrl_Shift() then
-         --if (not mouse.Ctrl() and not mouse.Shift()) and mouse.l_down then
                   pass_thru()
                end
             end
@@ -1186,7 +1169,7 @@ end
 
 Key_TB[#Key_TB + 1] = Key:new({17, 67}, "COPY", copy_mode, true) -- COPY (TOGGLE)
 Key_TB[#Key_TB + 1] = Key:new({17, 86}, "PASTE", copy_paste) -- PASTE
-Key_TB[#Key_TB + 1] = Key:new({17, 68}, "PASTE", duplicate) -- PASTE
+Key_TB[#Key_TB + 1] = Key:new({17, 68}, "DUPLICATE", duplicate) -- PASTE
 
 reaper.atexit(Exit)
 Main()

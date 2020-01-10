@@ -128,9 +128,7 @@ function Element:draw(x,y,h)
   self.x = x or self.x
   self.y = y or self.y
   self.h = h or self.h
-  --local _, x_view_start, y_view_start = reaper.JS_Window_GetRect(track_window)
   local sx, sy = reaper.JS_Window_ScreenToClient( track_window, self.x, self.y ) -- PREPARE TEST FOR OSX
-  --reaper.JS_Composite(track_window, self.x - x_view_start, self.y - y_view_start, self.w, self.h, self.bm, 0, 0, 1, 1)
   reaper.JS_Composite(track_window, sx, sy, self.w, self.h, self.bm, 0, 0, 1, 1)
   refresh_reaper()
 end
@@ -250,4 +248,3 @@ end
 function refresh_reaper()
   reaper.JS_Window_InvalidateRect(track_window, 0, 0, 5000, 5000, false)
 end
-
