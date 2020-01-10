@@ -110,7 +110,6 @@ end
 function draw_sorted_table(orig_table, sorted_table)
   local st = sorted_table
   local t = orig_table
-
   for i,n in ipairs(st) do
     gfx.set(0.8,0.8,0.8,0.8)
     if type(t[st[i]]) ~= "function" then
@@ -121,16 +120,12 @@ function draw_sorted_table(orig_table, sorted_table)
         end
       end
       gfx.printf("mouse."..tostring(n)..":\t  ") -- print key
-      --end
       gfx.set(0.8,1,1,1)
       gfx.printf(tostring(t[st[i]])) -- print value
       gfx.x = 10
-
-      -- add vertical spaces
       if i == 5 or i == 8 or i == 12 or i == 14 or i == 16 or i == 23 or i == 23 or i == 26 then
         gfx.y = gfx.y + gfx.texth
       end
-      -- move to next line
       gfx.y = gfx.y + gfx.texth
     end
   end
@@ -196,10 +191,8 @@ function MouseInfo(x, y, p)
   end
 
   if mouse_debug == true then draw_gui()  gfx.update() end
-  --draw_gui()  gfx.update()
   return mouse
 end
 
---if debug == true then init() end
 init()
 MouseInfo()
