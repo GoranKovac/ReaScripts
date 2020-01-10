@@ -30,6 +30,7 @@ function Element:zone(z)
       self.time_start = new_L
       self.time_start = self.time_start >= 0 and self.time_start or 0
       self.time_start = self.time_start <= z[3] and self.time_start or z[3]
+      self.time_dur = z[3] - new_L
       self.x, self.w = convert_time_to_pixel(self.time_start, z[3])
     elseif z[1] == "R" then
       local new_R = z[2] + mouse.dp
@@ -143,8 +144,10 @@ function Element:draw(x,y,h)
   self.x = x or self.x
   self.y = y or self.y
   self.h = h or self.h
-  local _, x_view_start, y_view_start = reaper.JS_Window_GetRect(track_window)
-  reaper.JS_Composite(track_window, self.x - x_view_start, self.y - y_view_start, self.w, self.h, self.bm, 0, 0, 1, 1)
+  --local _, x_view_start, y_view_start = reaper.JS_Window_GetRect(track_window)
+  local sx, sy = reaper.JS_Window_ScreenToClient( track_window, self.x, self.y ) -- PREPARE TEST FOR OSX
+  --reaper.JS_Composite(track_window, self.x - x_view_start, self.y - y_view_start, self.w, self.h, self.bm, 0, 0, 1, 1)
+  reaper.JS_Composite(track_window, sx, sy, self.w, self.h, self.bm, 0, 0, 1, 1)
   refresh_reaper()
 end
 
