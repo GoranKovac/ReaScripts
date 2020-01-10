@@ -160,7 +160,7 @@ function item_blit(item, as_start, as_end, pos)
   end
 end
 
-function as_item_position(item, as_start, as_end, mouse_time_pos)
+function as_item_position(item, as_start, as_end, mouse_time_pos, job)
   local cur_pos = mouse_time_pos
 
   if job == "duplicate" then
@@ -221,7 +221,7 @@ function insert_edge_points(env, as_time_tbl, offset, src_tr, del)
   reaper.InsertEnvelopePoint(env, as_time_tbl[2] + offset - 0.001, value_e, 0, 0, true, false)
 end
 
-local function create_item(item, tr, as_start, as_end, mouse_time_pos)
+local function create_item(item, tr, as_start, as_end, mouse_time_pos, job)
   local filename, clonedsource
   local take = reaper.GetMediaItemTake(item, 0)
   local source = reaper.GetMediaItemTake_Source(take)
@@ -242,7 +242,7 @@ local function create_item(item, tr, as_start, as_end, mouse_time_pos)
     clonedsource = reaper.PCM_Source_CreateFromFile(filename)
   end
 
-  local new_item_start, new_item_lenght, offset = as_item_position(item, as_start, as_end, mouse_time_pos)
+  local new_item_start, new_item_lenght, offset = as_item_position(item, as_start, as_end, mouse_time_pos, job)
   reaper.SetMediaItemInfo_Value(new_Item, "D_POSITION", new_item_start)
   reaper.SetMediaItemInfo_Value(new_Item, "D_LENGTH", new_item_lenght)
   local newTakeOffset = reaper.GetMediaItemTakeInfo_Value(take, "D_STARTOFFS")
@@ -255,7 +255,7 @@ local function create_item(item, tr, as_start, as_end, mouse_time_pos)
   reaper.SetMediaItemInfo_Value(new_Item, "D_VOL", item_volume)
 end
 
-function paste(items, item_track, as_start, as_end, pos_offset, first_track,drag_offset)
+function paste(items, item_track, as_start, as_end, pos_offset, first_track, drag_offset, job)
   if not mouse.tr then
     return
   end -- DO NOT PASTE IF MOUSE IS OUT OF ARRANGE WINDOW
@@ -271,12 +271,15 @@ function paste(items, item_track, as_start, as_end, pos_offset, first_track,drag
     offset_track = reaper.GetTrack(0, reaper.GetNumTracks() - 1)
   end
 
+  if job == "duplicate" then
+    offset_track = item_track
+  end
   -- for w = 1 , mouse.wheel do
   -- local wheel_offset = (w-1) * (as_end - as_start)
   for i = 1, #items do
     local item = items[i]
     local mouse_offset = drag_offset and drag_offset or pos_offset + mouse.p -- + wheel_offset
-    create_item(item, offset_track, as_start, as_end, mouse_offset) -- CREATE ITEMS AT NEW POSITION
+    create_item(item, offset_track, as_start, as_end, mouse_offset, job) -- CREATE ITEMS AT NEW POSITION
   end
   --end
 end
@@ -354,8 +357,11 @@ function AreaDo(tbl, job, off)
       if info.items then
         local item_track = info.track
         local item_data = info.items
+        if job == "duplicate" then
+          paste(info.items, item_track, as_start, as_end, pos_offset, first_tr, off, job)
+        end
         if job == "PASTE" then
-          paste(info.items, item_track, as_start, as_end, pos_offset, first_tr,off)
+          paste(info.items, item_track, as_start, as_end, pos_offset, first_tr, off)
         end
         if job == "del" or job == "split" then
           split_or_delete_items(item_track, item_data, as_start, as_end, job)
@@ -364,7 +370,7 @@ function AreaDo(tbl, job, off)
           stretch_items(item_data, as_start, as_end)
         end
         if job == "move" then
-          paste(info.items, item_track, as_start, as_end, pos_offset, first_tr,off)
+          paste(info.items, item_track, as_start, as_end, pos_offset, first_tr, off)
           split_or_delete_items(item_track, item_data, as_start, as_end , 'del')
         end
       elseif info.env_name then
@@ -384,7 +390,11 @@ function AreaDo(tbl, job, off)
         end
       end
     end
-    if job == "del" then
+    if job == "duplicate" then
+      tbl.time_start = tbl.time_start + tbl.time_dur
+      tbl.x, tbl.w = convert_time_to_pixel(tbl.time_start, tbl.time_dur)
+    end
+    if job == "del" or job == "duplicate" then
       tbl.sel_info = GetSelectionInfo(tbl)
     end
   end

@@ -712,8 +712,6 @@ end
 
 
 function GetEnvOffset_MouseOverride(tr, env, mov_offset, num)
-   --local retval, m_env_name, m_env_par
-   --local env_t, env_b, env_h, f_env
    local window, segment, details  = reaper.BR_GetMouseCursorContext()
    local m_env, _ = reaper.BR_GetMouseCursorContext_Envelope()
 
@@ -1032,6 +1030,13 @@ function remove()
    refresh_reaper()
 end
 
+function duplicate()
+   local tbl = active_as and {active_as} or Areas_TB
+   if #tbl ~= 0 then
+      AreaDo(tbl, "duplicate")
+   end
+end
+
 function del()
    local tbl = active_as and {active_as} or Areas_TB
    if #tbl ~= 0 then
@@ -1189,6 +1194,7 @@ end
 
 Key_TB[#Key_TB + 1] = Key:new({17, 67}, "COPY", copy_mode, true) -- COPY (TOGGLE)
 Key_TB[#Key_TB + 1] = Key:new({17, 86}, "PASTE", copy_paste) -- PASTE
+Key_TB[#Key_TB + 1] = Key:new({17, 68}, "PASTE", duplicate) -- PASTE
 
 reaper.atexit(Exit)
 Main()
