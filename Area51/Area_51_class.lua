@@ -95,8 +95,9 @@ function Element:zone(z)
       self.h = new_h
     end
   else
+    ZONE_BUFFER = nil
     ZONE = nil
-    test = nil
+    TEMP_AREA = nil
     ARRANGE = nil
     if z[1] == "L" or z[1] == "R" or z[1] == "T" or z[1] == "B" then
     elseif z[1] == "C" then
@@ -201,6 +202,8 @@ function Element:mouseM_Down()
   --return m_state&64==64 and self:pointIN(mouse_ox, mouse_oy)
 end
 --------
+local ZONE_BUFFER
+local TEMP_AREA
 function Element:track()
   if CREATING then
     return
@@ -208,12 +211,13 @@ function Element:track()
 
   if self:mouseDown() then
     if not ZONE then
-      ZONE = self:mouseZONE()
-      test = self
+      ZONE_BUFFER = self:mouseZONE()
+      ZONE = self:mouseZONE()[1]
+      TEMP_AREA = self
     end
   end
-  if ZONE and self.guid == test.guid then
-    test:zone(ZONE)
+  if ZONE and self.guid == TEMP_AREA.guid then
+    TEMP_AREA:zone(ZONE_BUFFER)
   end -- PREVENT OTHER AREAS TRIGGERING THIS LOOP AGAIN
 
   A_M_Block = self:mouseIN() or self:mouseDown() or ZONE and true or nil
