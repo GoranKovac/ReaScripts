@@ -39,18 +39,10 @@ function Element:zone(z)
       _, self.w = convert_time_to_pixel(0, self.time_dur)
       --AreaDo({self},"stretch")
     elseif z[1] == "C" then
-      move = true
       local tracks = z[5]
       local new_L = z[2] + mouse.dp >= 0 and z[2] + mouse.dp or 0
 
       if not mouse.Ctrl() and false then -- DRAG COPY, disabled updating area start while dragging
-        --if not SPLIT then
-          --AreaDo({self}, "split") -- split selection
-          --self.sel_info = GetSelectionInfo(self) -- get new info on seleciton
-          --GetGhosts(self.sel_info, self.time_start, self.time_start + self.time_dur, "update", z[2])
-          --SPLIT = true --set split flag
-        --end
-        --end
         self.time_start = new_L
         self.time_start = self.time_start >= 0 and self.time_start or 0
         self.x = convert_time_to_pixel(self.time_start, 0)
@@ -104,7 +96,6 @@ function Element:zone(z)
     end
   else
     SPLIT = nil
-    move = nil
     ZONE = nil
     test = nil
     ARRANGE = nil
