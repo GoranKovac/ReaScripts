@@ -436,7 +436,7 @@ end
 
 -- FOR VISUALISING COPY AND PASTE GET CURRENT AREAS ITEMS/ENVELOPE IMAGES 
 -- THIS IS CALLED ONLY ONCE WHEN INITIAL AREA IS CREATED
-local ghosts = {}
+ghosts = {}
 function GetGhosts(data, as_start, as_end, job, old_time)
    for i = 1, #data do
       if data[i].items then
@@ -445,42 +445,35 @@ function GetGhosts(data, as_start, as_end, job, old_time)
          local item_bar = (item_h > 42) and 15 or 0
          for j = 1, #data[i].items do
             local item = data[i].items[j]
+            local item_guid = reaper.BR_GetMediaItemGUID( item )
             local item_start, item_lenght = item_blit(item, as_start, as_end)
             local x, y, w = Get_Set_Position_In_Arrange(item_start, (item_t), item_lenght) --(item_t + item_bar)
             local h = item_h
             local peaks = Item_GetPeaks(item, item_start, item_lenght, w)
-            local item_ghost_id = tostring(item) --.. as_start
+            local item_ghost_id = item_guid--tostring(item) --.. as_start
             if not ghosts[item_ghost_id] then
                local bm = reaper.JS_LICE_CreateBitmap(true, w, h)
-               --local dc = reaper.JS_LICE_GetDC(bm)
-               --local item_ghost_id = tostring(item) --.. as_start
-               -------------------------
                reaper.JS_LICE_FillRect( bm, 0, 0, w, h, 0xFF002244, 0.5, "COPY" )
                draw_peak(peaks, bm, x, 0, w, item_h-19)
-               --reaper.JS_LICE_Clear( bm, color )
-               ---------------------------
-               --GDIBlit(dc, x, y, w, (h - 19))
-            --if not ghosts[item_ghost_id] then
                ghosts[item_ghost_id] = {
                   bm = bm,
-                  --dc = dc,
                   p = x,
                   l = w,
                   h = h,
                   i_s = item_start,
                   i_l = item_lenght,
-                  id_time = as_start
                }
             else
-               if ghosts[item_ghost_id].id_time == old_time then
-                  --GDIBlit(dc, x, y, w, (h - 19))
-                     ghosts[item_ghost_id].p = x
-                     ghosts[item_ghost_id].l = w
-                     ghosts[item_ghost_id].h = h
-                     ghosts[item_ghost_id].i_s = item_start
-                     ghosts[item_ghost_id].i_l = item_lenght
-                     ghosts[item_ghost_id].id_time = as_start
-                  end
+               --if as_start ~= old_time then -- need to fix this
+                  reaper.JS_LICE_Clear( ghosts[item_ghost_id].bm, 0 )
+                  reaper.JS_LICE_FillRect( ghosts[item_ghost_id].bm, 0, 0, w, h, 0xFF002244, 0.5, "COPY" )
+                  draw_peak(peaks, ghosts[item_ghost_id].bm, ghosts[item_ghost_id].p, 0, ghosts[item_ghost_id].l, item_h-19)
+                  ghosts[item_ghost_id].p = x
+                  ghosts[item_ghost_id].l = w
+                  ghosts[item_ghost_id].h = h
+                  ghosts[item_ghost_id].i_s = item_start
+                  ghosts[item_ghost_id].i_l = item_lenght
+               --end
             end
          end
       elseif data[i].env_points then
@@ -488,37 +481,35 @@ function GetGhosts(data, as_start, as_end, job, old_time)
          local env_t, env_h = TBH[tr].t, TBH[tr].h
          local x, y, w = Get_Set_Position_In_Arrange(as_start, env_t, (as_end - as_start))
          local h = env_h
-         --local bm = reaper.JS_LICE_CreateBitmap(true, w, env_h)
-         --local dc = reaper.JS_LICE_GetDC(bm)
          local env_ghost_id = tostring(tr) --.. as_start
-         --GDIBlit(dc, x, y, w, h)
-        
-         if job == "get" then
+         --if job == "get" then
+         if not ghosts[env_ghost_id] then
             local bm = reaper.JS_LICE_CreateBitmap(true, w, env_h)
             reaper.JS_LICE_FillRect( bm, 0, 0, w, h, 0xFF002244, 0.5, "COPY" )
             local dc = reaper.JS_LICE_GetDC(bm)
             draw_env(tr, data[i].env_points, bm,x,y,w,h)
-            --GDIBlit(dc, x, y, w, h)
             ghosts[env_ghost_id] = {
                bm = bm,
-               dc = dc,
                p = as_start,
                l = w,
                h = h,
-               id_time = as_start
+               x = x,
+               id_time = as_start + (as_end - as_start)
             }
-         elseif job == "update" then
+         else
+         --elseif job == "update" then
             for k, v in pairs(ghosts) do
                if k == env_ghost_id and v.id_time == old_time then
-                  --reaper.JS_LICE_Clear(ghosts[env_ghost_id].bm, 0xFFFFFF00)
-                  --reaper.JS_LICE_DestroyBitmap(ghosts[env_ghost_id].bm)
-                  --local bm = reaper.JS_LICE_CreateBitmap(true, w, env_h)
-                  --local dc = reaper.JS_LICE_GetDC(bm)
-                  --GDIBlit(ghosts[env_ghost_id].dc, x, y, w, h)
+                  reaper.JS_LICE_DestroyBitmap(v.bm) -- WE NEED TO CREATE NEW BITMAP ALWAYS BECAUSE UNLIKE ITEMS THAT ALWAYS HAVE SAME LENGHT, ENVELOPE DO NOT HAVE THAT
+                  local bm = reaper.JS_LICE_CreateBitmap(true, w, env_h)
+                  reaper.JS_LICE_FillRect( bm, 0, 0, w, h, 0xFF002244, 0.5, "COPY" )
+                  draw_env(tr, data[i].env_points, bm, x, y, w, h)
+                  v.bm = bm
                   v.p = as_start
                   v.l = w
                   v.h = h
-                  v.id_time = as_start
+                  v.x = x
+                  v.id_time = as_start + (as_end - as_start)
                end
             end
          end
@@ -854,8 +845,9 @@ function DrawItemGhosts(item_data, item_track, as_start, as_end, pos_offset, fir
       local track_t, _, track_h = TBH[offset_track].t + off_h, TBH[offset_track].b, TBH[offset_track].h
       for i = 1, #item_data do
          local item = item_data[i]
-         local item_ghost_id = tostring(item) --.. as_start
-         if ghosts[item_ghost_id] and ghosts[item_ghost_id].id_time == as_start then
+         local item_guid = reaper.BR_GetMediaItemGUID( item )
+         local item_ghost_id = item_guid--tostring(item) --.. as_start
+         if ghosts[item_ghost_id] then --and ghosts[item_ghost_id].id_time == as_start then
             --local ghost_id_time = ghosts[item_ghost_id].id_time
             local mouse_offset = pos_offset + (mouse.p - as_start) + ghosts[item_ghost_id].i_s
             local move_offset = mov_offset and mov_offset + ghosts[item_ghost_id].i_s
@@ -876,7 +868,7 @@ function DrawEnvGhosts(env_track, env_name, as_start, as_end, pos_offset, first_
    if TBH[env_tr_offset] then
       local track_t, _, track_h = TBH[env_tr_offset].t + off_h, TBH[env_tr_offset].b, TBH[env_tr_offset].h
       --local env_ghost_id = tostring(env_track) --.. as_start
-      if ghosts[env_ghost_id] and ghosts[env_ghost_id].id_time == as_start then
+      if ghosts[env_ghost_id] and ghosts[env_ghost_id].id_time == as_start + as_end then
          local mouse_offset = pos_offset + (mouse.p - as_start) + ghosts[env_ghost_id].p
          local move_offset = mov_offset and mov_offset + ghosts[env_ghost_id].p
          mouse_offset = move_offset or mouse_offset

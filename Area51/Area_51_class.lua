@@ -29,11 +29,11 @@ function Element:zone(z)
       local new_L = z[2] + mouse.dp
       self.time_start = new_L
       self.time_start = self.time_start >= 0 and self.time_start or 0
-      self.time_start = self.time_start <= z[3] and self.time_start or z[3]
-      self.time_dur = z[3] - new_L
-      self.x, self.w = convert_time_to_pixel(self.time_start, z[3])
+      self.time_start = self.time_start <= (z[3]+z[2]) and self.time_start or (z[3]+z[2])
+      self.time_dur = (z[3]+z[2]) - new_L
+      self.x, self.w = convert_time_to_pixel(self.time_start, (z[3]+z[2]))
     elseif z[1] == "R" then
-      local new_R = z[2] + mouse.dp
+      local new_R = z[3] + mouse.dp
       self.time_dur = new_R
       self.time_dur = self.time_dur >= 0 and self.time_dur or 0
       _, self.w = convert_time_to_pixel(0, self.time_dur)
@@ -95,28 +95,26 @@ function Element:zone(z)
       self.h = new_h
     end
   else
-    SPLIT = nil
     ZONE = nil
     test = nil
     ARRANGE = nil
     if z[1] == "L" or z[1] == "R" or z[1] == "T" or z[1] == "B" then
-      self.sel_info = GetSelectionInfo(self) -- UPDATE AREAS INFORMATION
-      GetGhosts(self.sel_info, self.time_start, self.time_start + self.time_dur, "update", z[2])
+      --self.sel_info = GetSelectionInfo(self) -- UPDATE AREAS INFORMATION
+      --GetGhosts(self.sel_info, self.time_start, self.time_start + self.time_dur, "update", z[2] + (z[3]+z[2]))
     elseif z[1] == "C" then
       local new_L = z[2] + mouse.dp >= 0 and z[2] + mouse.dp or 0
       if mouse.Ctrl() then
-        AreaDo({self}, "PASTE",new_L)
+        AreaDo({self}, "PASTE", new_L)
       else
-        AreaDo({self}, "move",new_L)
+        AreaDo({self}, "move", new_L)
       end
       self.time_start = new_L
       self.time_start = self.time_start >= 0 and self.time_start or 0
       self.x = convert_time_to_pixel(self.time_start, 0)
       UnlinkGhosts()
-      self.sel_info = GetSelectionInfo(self)
-      GetGhosts(self.sel_info, self.time_start, self.time_start + self.time_dur, "update", z[2])
     end
-    --GetGhosts(self.sel_info, self.time_start, self.time_start + self.time_dur, "update", z[2])
+    self.sel_info = GetSelectionInfo(self)
+    GetGhosts(self.sel_info, self.time_start, self.time_start + self.time_dur, "update", z[2] + z[3])
   end
   if z[1] ~= "C" then self:draw() end
 end
@@ -151,7 +149,7 @@ function Element:zoneIN(x, y)
     elseif y <= self.y + self.h and y >= (self.y + self.h) - range2 then
       return "BL"
     end
-    return {"L", self.time_start, self.time_start + self.time_dur}
+    return {"L", self.time_start, self.time_dur}
   end
 
   if x >= (self.x + self.w - range2) and x <= self.x + self.w then
@@ -160,14 +158,14 @@ function Element:zoneIN(x, y)
     elseif y <= self.y + self.h and y >= (self.y + self.h) - range2 then
       return "BR"
     end
-    return {"R", self.time_dur, self.time_start}
+    return {"R", self.time_start, self.time_dur}--{"R", self.time_dur, self.time_start}
   end
 
   if y >= self.y and y <= self.y + range2 then
-    return {"T", self.y, self.h}
+    return {"T", self.y, self.h, self.time_start + self.time_dur}
   end
   if y <= self.y + self.h and y >= (self.y + self.h) - range2 then
-    return {"B", self.y, self.h}
+    return {"B", self.y, self.h, self.time_start + self.time_dur}
   end
 
   if x > (self.x + range2) and x < (self.x + self.w - range2) then
@@ -221,9 +219,6 @@ function Element:track()
   end -- PREVENT OTHER AREAS TRIGGERING THIS LOOP AGAIN
 
   A_M_Block = self:mouseIN() or self:mouseDown() or ZONE and true or nil
-
-  if self:mouseIN() then
-  end
 end
 ----------------------------------------------------------------------------------------------------
 ---   Create Element Child Classes(Button,Slider,Knob)   -------------------------------------------
