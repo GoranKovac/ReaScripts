@@ -99,8 +99,6 @@ function Element:zone(z)
     test = nil
     ARRANGE = nil
     if z[1] == "L" or z[1] == "R" or z[1] == "T" or z[1] == "B" then
-      --self.sel_info = GetSelectionInfo(self) -- UPDATE AREAS INFORMATION
-      --GetGhosts(self.sel_info, self.time_start, self.time_start + self.time_dur, "update", z[2] + (z[3]+z[2]))
     elseif z[1] == "C" then
       local new_L = z[2] + mouse.dp >= 0 and z[2] + mouse.dp or 0
       if mouse.Ctrl() then

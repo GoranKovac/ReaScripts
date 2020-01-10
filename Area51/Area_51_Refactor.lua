@@ -436,7 +436,7 @@ end
 
 -- FOR VISUALISING COPY AND PASTE GET CURRENT AREAS ITEMS/ENVELOPE IMAGES 
 -- THIS IS CALLED ONLY ONCE WHEN INITIAL AREA IS CREATED
-ghosts = {}
+local ghosts = {}
 function GetGhosts(data, as_start, as_end, job, old_time)
    for i = 1, #data do
       if data[i].items then
