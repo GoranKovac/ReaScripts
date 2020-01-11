@@ -181,6 +181,38 @@ function as_item_position(item, as_start, as_end, mouse_time_pos, job)
     return new_start, new_item_lenght, offset, item
   end
 end
+--[[
+
+  NEED TO REFACTOR THESE TWO INTO ONLY ONE
+
+]]
+function as_item_position2(item_lenght, item_start, item_dur, as_start, as_end, mouse_time_pos)
+  local cur_pos = mouse_time_pos
+  if job == "duplicate" then
+    cur_pos = as_end
+  end
+
+  local tsStart, tsEnd = as_start, as_end
+
+  local new_start, new_item_lenght, offset
+  if tsStart < item_start and tsEnd > item_start and tsEnd < item_dur then
+    ----- IF TS START IS OUT OF ITEM BUT TS END IS IN THEN COPY ONLY PART FROM TS START TO ITEM END
+    local new_start, new_item_lenght, offset = (item_start - tsStart) + cur_pos, tsEnd - item_start, 0
+    return new_start, new_item_lenght, offset, item
+  elseif tsStart < item_dur and tsStart > item_start and tsEnd > item_dur then
+    ------ IF START IS IN ITEM AND TS END IS OUTSIDE ITEM COPY PART FROM TS START TO TS END
+    local new_start, new_item_lenght, offset = cur_pos, item_dur - tsStart, (tsStart - item_start)
+    return new_start, new_item_lenght, offset, item
+  elseif tsStart >= item_start and tsEnd <= item_dur then
+    ------ IF BOTH TS START AND TS END ARE IN ITEM
+    local new_start, new_item_lenght, offset = cur_pos, tsEnd - tsStart, (tsStart - item_start)
+    return new_start, new_item_lenght, offset, item
+  elseif tsStart <= item_start and tsEnd >= item_dur then -- >= NEW
+    ------ IF BOTH TS START AND END ARE OUTSIDE OF THE ITEM
+    local new_start, new_item_lenght, offset = (item_start - tsStart) + cur_pos, item_lenght, 0
+    return new_start, new_item_lenght, offset, item
+  end
+end
 
 function env_prop(env)
   br_env = reaper.BR_EnvAlloc(env, false)
@@ -209,39 +241,6 @@ function insert_edge_points(env, as_time_tbl, offset, src_tr, del)
 
   local retval, value_e, dVdS, ddVdS, dddVdS = reaper.Envelope_Evaluate(src_tr, as_time_tbl[2], 0, 0) -- SOURCE END POINT
   reaper.InsertEnvelopePoint(env, as_time_tbl[2] + offset - 0.001, value_e, 0, 0, true, false)
-end
-
-local function create_item(item, tr, as_start, as_end, mouse_time_pos, job)
-  local filename, clonedsource
-  local take = reaper.GetMediaItemTake(item, 0)
-  local source = reaper.GetMediaItemTake_Source(take)
-  local m_type = reaper.GetMediaSourceType(source, "")
-  local item_volume = reaper.GetMediaItemInfo_Value(item, "D_VOL")
-  local new_Item = reaper.AddMediaItemToTrack(tr)
-  local new_Take = reaper.AddTakeToMediaItem(new_Item)
-
-  if m_type:find("MIDI") then -- MIDI COPIES GET INTO SAME POOL IF JUST SETTING CHUNK SO WE NEED TO SET NEW POOL ID TO NEW COPY
-    local _, chunk = reaper.GetItemStateChunk(item, "")
-    local pool_guid = string.match(chunk, "POOLEDEVTS {(%S+)}"):gsub("%-", "%%-")
-    local new_pool_guid = reaper.genGuid():sub(2, -2) -- MIDI ITEM
-    chunk = string.gsub(chunk, pool_guid, new_pool_guid)
-    reaper.SetItemStateChunk(new_Item, chunk, false)
-  else -- NORMAL TRACK ITEMS
-    filename = reaper.GetMediaSourceFileName(source, "")
-    clonedsource = reaper.PCM_Source_CreateFromFile(filename)
-  end
-
-  local new_item_start, new_item_lenght, offset = as_item_position(item, as_start, as_end, mouse_time_pos, job)
-  reaper.SetMediaItemInfo_Value(new_Item, "D_POSITION", new_item_start)
-  reaper.SetMediaItemInfo_Value(new_Item, "D_LENGTH", new_item_lenght)
-  local newTakeOffset = reaper.GetMediaItemTakeInfo_Value(take, "D_STARTOFFS")
-  reaper.SetMediaItemTakeInfo_Value(new_Take, "D_STARTOFFS", newTakeOffset + offset)
-
-  if m_type:find("MIDI") == nil then
-    reaper.SetMediaItemTake_Source(new_Take, clonedsource)
-  end
-
-  reaper.SetMediaItemInfo_Value(new_Item, "D_VOL", item_volume)
 end
 
 function paste(items, item_track, as_start, as_end, pos_offset, first_track, drag_offset, job)
@@ -337,62 +336,76 @@ end
 function AreaDo(tbl, job, off)
   reaper.Undo_BeginBlock()
   reaper.PreventUIRefresh(1)
+  --off = off or 0
   for a = 1, #tbl do
     local tbl = tbl[a]
 
     local pos_offset = 0
     pos_offset = pos_offset + (tbl.time_start - lowest_start()) --  OFFSET AREA SELECTIONS TO MOUSE POSITION
     local as_start, as_end = tbl.time_start, tbl.time_start + tbl.time_dur
+    local area_offset = off and off - as_start or as_start -- THIS PREVENTED COPY MODE TO WORK
 
+    local delete_source = false
+    local delete_target = false
+    local copy_items_and_envelopes = false
+    local split_only = false
+
+    --JOBS
+    if job == 'move' then
+      delete_source = true
+      delete_target = true
+      copy_items_and_envelopes = true
+    elseif job == 'PASTE' then
+      delete_target = not copy and true or false -- DO NOT DELETE TARGET IF WE ARE IN COPY PASTE MODE
+      copy_items_and_envelopes = true
+    elseif job == 'del' then
+      delete_source = true
+    elseif job == 'split' then
+      --delete_source = false
+      split_only = true
+    elseif job == 'duplicate' then
+      delete_target = true
+      area_offset = tbl.time_dur
+      off = as_end
+      copy_items_and_envelopes = true
+    end
+
+    --FILL ITEM BUFFERS AND CLEANUP AREAS
     for i = 1, #tbl.sel_info do
       local info = tbl.sel_info[i]
       local first_tr = find_highest_tr(info.track)
+
       if info.items then
         local item_track = info.track
         local item_data = info.items
-        if job == "duplicate" then
-          paste(info.items, item_track, as_start, as_end, pos_offset, first_tr, off, job)
+
+        --FILL ITEM BUFFERS TO COPY
+        local item_buffers = copy_items_and_envelopes and copy_area_items_into_buffer(item_track, item_data, as_start, as_end)
+        -- JOB OPERATIONS
+        if delete_source then
+          split_or_delete_items(item_track, item_data, as_start, as_end, 'del')
         end
-        if job == "PASTE" then
-          paste(info.items, item_track, as_start, as_end, pos_offset, first_tr, off, job)
+        if delete_target then
+          split_or_delete_items(item_track, nil, as_start + area_offset, as_end + area_offset, 'del') -- WE ARE SENDING NIL AS ITEM_TABLE, SO THE FUNCTION WILL SEARCH FOR ITEMS BASED ON TRACK AND TIME (THIS IS TARGET AREA)
         end
-        if job == "del" or job == "split" then
-          split_or_delete_items(item_track, item_data, as_start, as_end, job)
+        if split_only then
+          split_or_delete_items(item_track, item_data, as_start, as_end, 'split')
         end
-        if job == "stretch" then
-          stretch_items(item_data, as_start, as_end)
-        end
-        if job == "move" then
-          --reaper.Main_OnCommand( 42206, 0 )
-          --local target_items = get_items_in_as(item_track, mouse.dp + as_start, mouse.dp + as_end) -- GET ITEMS ON TARGET AREA
-         -- split_or_delete_items(item_track, target_items, mouse.dp + as_start, mouse.dp + as_end , 'del') -- DELETE ITEMS IN TARGET AREA
-          paste(info.items, item_track, as_start, as_end, pos_offset, first_tr, off) -- PASTE ORIGINAL ITEMS
-          split_or_delete_items(item_track, item_data, as_start, as_end , 'del') -- DELETE ITEMS FROM ORIGINAL POSITION
+        if copy_items_and_envelopes then
+          paste_item_buffer(item_buffers, item_track, as_start, as_end, pos_offset, first_tr, off, job)
         end
       elseif info.env_name then
-        local env_track = info.track
-        local env_name = info.env_name
-        local env_data = info.env_points
-
-        if job == "PASTE" then
-          paste_env(env_track, env_name, env_data, as_start, as_end, pos_offset, first_tr, #tbl.sel_info, off)
-        end
-        if job == "del" then
-          del_env(env_track, as_start, as_end, pos_offset, job)
-        end
-        if job == "move" then
-          paste_env(env_track, env_name, env_data, as_start, as_end, pos_offset, first_tr, #tbl.sel_info, off)
-          del_env(env_track, as_start, as_end, pos_offset, job)
-        end
-        if job == "duplicate" then
-          paste_env(env_track, env_name, env_data, as_start, as_end, pos_offset, first_tr, #tbl.sel_info, off, job)
-        end
+        --local envelope_buffers = copy_items_and_envelopes and copy_area_env_into_buffer(item_track, item_data, as_start, as_end)
+        --FILL ENVELOPE BUFFERS HERE
       end
     end
-    if job == "duplicate" then
+
+    --PASTE ENVELOPE BUFFERS
+    if job == 'duplicate' then --OFFSET TABLE ON DUPLICATE
       tbl.time_start = tbl.time_start + tbl.time_dur
       tbl.x, tbl.w = convert_time_to_pixel(tbl.time_start, tbl.time_dur)
     end
+
     if job == "del" or job == "duplicate" then
       tbl.sel_info = GetSelectionInfo(tbl)
     end
@@ -402,6 +415,140 @@ function AreaDo(tbl, job, off)
   reaper.UpdateTimeline()
   reaper.UpdateArrange()
 end
+
+--BUFFER RELATED FUNCTIONS
+function copy_area_items_into_buffer(track, items, as_start, as_end)
+  local item_buffer = {}
+  for i = 1, #items do
+    local item = items[i]
+    local itemObj = {}
+    itemObj.track = track
+
+    local filename, clonedsource
+    local take = reaper.GetMediaItemTake(item, 0)
+    local source = reaper.GetMediaItemTake_Source(take)
+
+    itemObj.m_type = reaper.GetMediaSourceType(source, "")
+    itemObj.item_volume = reaper.GetMediaItemInfo_Value(item, "D_VOL")
+
+    itemObj.item_lenght = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
+    itemObj.item_start = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
+    itemObj.item_dur = itemObj.item_lenght + itemObj.item_start
+    itemObj.loop_source =  reaper.GetMediaItemInfo_Value( item, 'B_LOOPSRC' )
+
+    itemObj.take_offset = reaper.GetMediaItemTakeInfo_Value(take, "D_STARTOFFS")
+    itemObj.rate = reaper.GetMediaItemTakeInfo_Value( take, "D_PLAYRATE" )
+
+    if itemObj.m_type:find("MIDI") then -- MIDI COPIES GET INTO SAME POOL IF JUST SETTING CHUNK SO WE NEED TO SET NEW POOL ID TO NEW COPY
+      itemObj.type = 'MIDI'
+      local _, chunk = reaper.GetItemStateChunk(item, "")
+
+      local pool_guid = string.match(chunk, "POOLEDEVTS {(%S+)}"):gsub("%-", "%%-")
+      local new_pool_guid = reaper.genGuid():sub(2, -2) -- MIDI ITEM
+
+      chunk = string.gsub(chunk, pool_guid, new_pool_guid)
+      itemObj.chunk = chunk
+    else -- NORMAL TRACK ITEMS
+      itemObj.type = "TRACK_ITEM"
+      itemObj.filename = reaper.GetMediaSourceFileName(source, "")
+      itemObj.clonedsource = reaper.PCM_Source_CreateFromFile(itemObj.filename)
+    end
+
+    table.insert( item_buffer, itemObj )
+  end
+
+  return item_buffer
+end
+
+function paste_item_buffer(items, item_track, as_start, as_end, pos_offset, first_track, drag_offset, job)
+  if not mouse.tr then
+    return
+  end -- DO NOT PASTE IF MOUSE IS OUT OF ARRANGE WINDOW
+
+  local first_track = drag_offset and mouse.tr or first_track
+  local offset_track, under_last_tr = generic_track_offset(item_track, first_track)
+
+  if job == "PASTE" then
+    if under_last_tr and under_last_tr > 0 then
+      for t = 1, under_last_tr do
+        reaper.InsertTrackAtIndex((reaper.GetNumTracks()), true)
+      end
+      -- IF THE TRACKS ARE BELOW LAST TRACK OF THE PROJECT CREATE HAT TRACKS
+      offset_track = reaper.GetTrack(0, reaper.GetNumTracks() - 1)
+    end
+  end
+
+  if job == "duplicate" then
+    offset_track = item_track
+  end
+
+  for i = 1, #items do
+    local item = items[i]
+    local mouse_offset = drag_offset and drag_offset or pos_offset + mouse.p -- + wheel_offset
+    create_item_from_buffer_info(item, offset_track, as_start, as_end, mouse_offset) -- CREATE ITEMS AT NEW POSITION
+  end
+end
+
+function create_item_from_buffer_info(item, offset_track, as_start, as_end, mouse_time_pos)
+  local track = offset_track
+
+  local new_Item = reaper.AddMediaItemToTrack(track)
+  local new_Take = reaper.AddTakeToMediaItem(new_Item)
+
+  if item.type == 'MIDI' then
+    reaper.SetItemStateChunk(new_Item, item.chunk, false)
+  end
+
+  local new_item_start, new_item_lenght, offset = as_item_position2(item.item_lenght, item.item_start, item.item_dur, as_start, as_end, mouse_time_pos)
+  reaper.SetMediaItemInfo_Value(new_Item, "D_POSITION", new_item_start)
+  reaper.SetMediaItemInfo_Value(new_Item, "D_LENGTH", new_item_lenght)
+  reaper.SetMediaItemTakeInfo_Value(new_Take, "D_PLAYRATE" , item.rate)
+  reaper.SetMediaItemTakeInfo_Value(new_Take, "D_STARTOFFS", item.take_offset + offset) --Need to calculate offset better for items with different playrates
+
+  if item.m_type:find("MIDI") == nil then
+    reaper.SetMediaItemTake_Source(new_Take, item.clonedsource)
+  end
+
+  reaper.SetMediaItemInfo_Value(new_Item, "D_VOL", item.item_volume)
+  reaper.SetMediaItemInfo_Value(new_Item, 'B_LOOPSRC', item.loop_source)
+end
+
+--RANGE FUNCTIONS
+--[[
+function get_items_in_range(track, start_pos, end_pos)
+	local items_in_range = {}
+  local track_item_count = reaper.CountTrackMediaItems(track)
+  local floating_point_threshold = 0.000001
+
+	for i = 0, track_item_count-1 do
+    local item = reaper.GetTrackMediaItem(track, i)
+		local item_position = reaper.GetMediaItemInfo_Value(item, 'D_POSITION')
+    local item_length = reaper.GetMediaItemInfo_Value(item, 'D_LENGTH')
+
+		local item_end_position = item_position + item_length - floating_point_threshold
+		item_position = item_position + floating_point_threshold
+
+		local item_overlaps_start = is_between(start_pos, item_position, item_end_position)
+		local item_overlaps_end = is_between(end_pos, item_position, item_end_position)
+
+    if (is_between(start_pos, item_position, item_end_position) or is_between(end_pos, item_position, item_end_position)) or 
+      (item_position >= start_pos and item_end_position <= end_pos) then --item is in range
+
+      table.insert(items_in_range, item) 
+    end
+  end
+
+	return items_in_range
+end
+
+function is_between(x, a,b)
+	if x >= a and x <=b then
+		return true
+	else
+		return false
+	end
+end
+]]
 
 function get_and_show_take_envelope(take, envelope_name)
   local env = reaper.GetTakeEnvelopeByName(take, envelope_name)
@@ -469,10 +616,11 @@ function get_items_in_as(as_tr, as_start, as_end, as_items)
   end
 end
 
-
 function split_or_delete_items(as_tr, as_items_tbl, as_start, as_end, key)
+  -- IF FUNCTION DOEST NOT GET ITEM TABLE IT LOOKS FOR ITEMS ON TARGET AREA, ELSE LOOKS FOR ITEMS IN SOURCE AREA
   if not as_items_tbl then
-    return
+    as_items_tbl = get_items_in_as(as_tr, as_start, as_end)
+    if not as_items_tbl then return end -- IF FUNCTION ABOVE DOES NOT RETURN ANY ITEMS THEN EXIT THE FUNCTION SINCE WE HAVE NOT ITEMS TO WORK WITH
   end
 
   for i = #as_items_tbl, 1, -1 do
@@ -481,7 +629,6 @@ function split_or_delete_items(as_tr, as_items_tbl, as_start, as_end, key)
     if key == "del" or key == "split" then
       local s_item_first = reaper.SplitMediaItem(item, as_end)
       local s_item_last = reaper.SplitMediaItem(item, as_start)
-
       -- ITEMS FOR DELETING
       if key == "del" then
         if s_item_first and s_item_last then
