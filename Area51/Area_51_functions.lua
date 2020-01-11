@@ -370,6 +370,9 @@ function AreaDo(tbl, job, off)
       copy_items_and_envelopes = true
     end
 
+    if job == "del" or job == "duplicate" and #tbl > 1 then -- NEED TO ALSO UPDATE SELECTION INFO BEFORE THE JOB TO PREVENT BUGS WHEN USING CONSECUTIVE AREAS THAT OVERLAP
+      tbl.sel_info = GetSelectionInfo(tbl)
+    end
     --FILL ITEM BUFFERS AND CLEANUP AREAS
     for i = 1, #tbl.sel_info do
       local info = tbl.sel_info[i]
@@ -421,42 +424,29 @@ function copy_area_items_into_buffer(track, items, as_start, as_end)
   local item_buffer = {}
   for i = 1, #items do
     local item = items[i]
-    local itemObj = {}
-    itemObj.track = track
-
-    local filename, clonedsource
     local take = reaper.GetMediaItemTake(item, 0)
     local source = reaper.GetMediaItemTake_Source(take)
+    
+    local item_obj = {}
+    local _, chunk = reaper.GetItemStateChunk(item, "")
 
-    itemObj.m_type = reaper.GetMediaSourceType(source, "")
-    itemObj.item_volume = reaper.GetMediaItemInfo_Value(item, "D_VOL")
-
-    itemObj.item_lenght = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
-    itemObj.item_start = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
-    itemObj.item_dur = itemObj.item_lenght + itemObj.item_start
-    itemObj.loop_source =  reaper.GetMediaItemInfo_Value( item, 'B_LOOPSRC' )
-
-    itemObj.take_offset = reaper.GetMediaItemTakeInfo_Value(take, "D_STARTOFFS")
-    itemObj.rate = reaper.GetMediaItemTakeInfo_Value( take, "D_PLAYRATE" )
-
-    if itemObj.m_type:find("MIDI") then -- MIDI COPIES GET INTO SAME POOL IF JUST SETTING CHUNK SO WE NEED TO SET NEW POOL ID TO NEW COPY
-      itemObj.type = 'MIDI'
-      local _, chunk = reaper.GetItemStateChunk(item, "")
-
+    item_obj.m_type = reaper.GetMediaSourceType(source, "")
+    if item_obj.m_type:find("MIDI") then
       local pool_guid = string.match(chunk, "POOLEDEVTS {(%S+)}"):gsub("%-", "%%-")
       local new_pool_guid = reaper.genGuid():sub(2, -2) -- MIDI ITEM
-
       chunk = string.gsub(chunk, pool_guid, new_pool_guid)
-      itemObj.chunk = chunk
-    else -- NORMAL TRACK ITEMS
-      itemObj.type = "TRACK_ITEM"
-      itemObj.filename = reaper.GetMediaSourceFileName(source, "")
-      itemObj.clonedsource = reaper.PCM_Source_CreateFromFile(itemObj.filename)
     end
-
-    table.insert( item_buffer, itemObj )
+    
+    item_obj.track = track
+    item_obj.chunk = chunk
+    item_obj.item_lenght = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
+    item_obj.item_start = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
+    item_obj.take_offset = reaper.GetMediaItemTakeInfo_Value(take, "D_STARTOFFS")
+    item_obj.item_dur = item_obj.item_lenght + item_obj.item_start
+    
+    table.insert( item_buffer, item_obj )
   end
-
+  
   return item_buffer
 end
 
@@ -494,23 +484,13 @@ function create_item_from_buffer_info(item, offset_track, as_start, as_end, mous
 
   local new_Item = reaper.AddMediaItemToTrack(track)
   local new_Take = reaper.AddTakeToMediaItem(new_Item)
-
-  if item.type == 'MIDI' then
-    reaper.SetItemStateChunk(new_Item, item.chunk, false)
-  end
-
-  local new_item_start, new_item_lenght, offset = as_item_position2(item.item_lenght, item.item_start, item.item_dur, as_start, as_end, mouse_time_pos)
-  reaper.SetMediaItemInfo_Value(new_Item, "D_POSITION", new_item_start)
-  reaper.SetMediaItemInfo_Value(new_Item, "D_LENGTH", new_item_lenght)
-  reaper.SetMediaItemTakeInfo_Value(new_Take, "D_PLAYRATE" , item.rate)
+  reaper.SetItemStateChunk(new_Item, item.chunk, true)
+  
+  local new_item_start, new_item_lenght, offset = as_item_position2(item.item_lenght, item.item_start, item.item_dur, as_start, as_end, mouse_time_pos) 
   reaper.SetMediaItemTakeInfo_Value(new_Take, "D_STARTOFFS", item.take_offset + offset) --Need to calculate offset better for items with different playrates
-
-  if item.m_type:find("MIDI") == nil then
-    reaper.SetMediaItemTake_Source(new_Take, item.clonedsource)
-  end
-
-  reaper.SetMediaItemInfo_Value(new_Item, "D_VOL", item.item_volume)
-  reaper.SetMediaItemInfo_Value(new_Item, 'B_LOOPSRC', item.loop_source)
+  
+  reaper.SetMediaItemInfo_Value(new_Item, "D_POSITION", new_item_start) 
+  reaper.SetMediaItemInfo_Value(new_Item, "D_LENGTH", new_item_lenght) 
 end
 
 --RANGE FUNCTIONS
