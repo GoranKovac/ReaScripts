@@ -250,7 +250,6 @@ function paste(items, item_track, as_start, as_end, pos_offset, first_track, dra
   end -- DO NOT PASTE IF MOUSE IS OUT OF ARRANGE WINDOW
 
   local first_track = drag_offset and mouse.tr or first_track
-
   local offset_track, under_last_tr = generic_track_offset(item_track, first_track)
   if not job and under_last_tr and under_last_tr > 0 then
     for t = 1, under_last_tr do
@@ -282,7 +281,7 @@ function paste_env(env_track, env_name, env_data, as_start, as_end, pos_offset, 
 
   local offset_track, under_last_tr = generic_track_offset(env_track, first_env_tr)
 
-  if not job and under_last_tr and under_last_tr > 0 then
+  if job and under_last_tr and under_last_tr > 0 then
     for t = 1, under_last_tr do
       reaper.InsertTrackAtIndex((reaper.GetNumTracks()), true)
     end -- IF THE TRACKS ARE BELOW LAST TRACK OF THE PROJECT CREATE HAT TRACKS
@@ -355,7 +354,7 @@ function AreaDo(tbl, job, off)
           paste(info.items, item_track, as_start, as_end, pos_offset, first_tr, off, job)
         end
         if job == "PASTE" then
-          paste(info.items, item_track, as_start, as_end, pos_offset, first_tr, off)
+          paste(info.items, item_track, as_start, as_end, pos_offset, first_tr, off, job)
         end
         if job == "del" or job == "split" then
           split_or_delete_items(item_track, item_data, as_start, as_end, job)

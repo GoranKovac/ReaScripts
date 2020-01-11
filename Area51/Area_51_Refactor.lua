@@ -310,6 +310,33 @@ local function Check_change(s_start, s_end, r_start, r_end)
    end
 end
 
+
+function get_MIDI_notes(item, item_start, item_len)
+   local take = reaper.GetActiveTake(item)
+   local item_end = item_start + item_len
+   local t = {}
+   local ret, notecnt = reaper.MIDI_CountEvts(take)
+   for i=1, notecnt do
+      local retval, selected, muted, startppqpos, endppqpos, chan, pitch, vel = reaper.MIDI_GetNote(take, i-1)
+      local startppqpos_to_proj_time = reaper.MIDI_GetProjTimeFromPPQPos(take, startppqpos)
+
+      if startppqpos_to_proj_time < item_start then
+         startppqpos_to_proj_time = item_start
+      elseif startppqpos_to_proj_time > item_end then
+         break
+      end
+
+      local endppqpos_to_proj_time = reaper.MIDI_GetProjTimeFromPPQPos(take, endppqpos)
+      if endppqpos_to_proj_time > item_end then
+         endppqpos_to_proj_time = item_end
+      end
+
+      t[#t+1] = startppqpos_to_proj_time
+      t[#t+1] = endppqpos_to_proj_time
+      t[#t+1] = pitch
+   end
+   return t
+end
 -- GET ITEM PEAKS
 function Item_GetPeaks(item, item_start, item_len, w)
    local take = reaper.GetActiveTake(item)
@@ -392,7 +419,21 @@ function draw_env(env_tr, env, bm, x,y,w,h)
       reaper.JS_LICE_FillCircle( bm, e_x - x, e_y, 2, 0xFF00FFFF,1, "COPY", true )
    end
  end
-
+-- DRAW MIDI NOTES TO GHOST IMAGE
+ function draw_midi(notes,bm, x, y, w, h)
+   note = item.peaks
+   note_h = h/128
+   if note_h < 1 then note_h = 1 end
+   for i=1, #note, 3 do
+      startppq, endppq, pitch = note[i], note[i+1], note[i+2]
+      startppq = pos + (startppq-item.pos)/items_len * w
+      endppq = pos + (endppq-item.pos)/items_len * w
+      note_w = endppq-startppq
+      if note_w < 1 then note_w = 1 end
+      --gfx.rect(startppq, y2-(pitch/128*h)-note_h, note_w, note_h, 1)
+      --reaper.JS_LICE_Line( bm, 0.5*i, max_peak, 0.5*i, note_h, 0xFF00FFFF,1, "COPY", true )
+   end
+end
  -- DRAW ITEM PEAKS TO GHOST IMAGE
 function draw_peak(peaks, bm, x, y, w, h)
    local chan_count = #peaks
@@ -445,6 +486,7 @@ function GetGhosts(data, as_start, as_end, job, old_time)
             local x, y, w = Get_Set_Position_In_Arrange(item_start, (item_t), item_lenght) --(item_t + item_bar)
             local h = item_h
             local peaks = Item_GetPeaks(item, item_start, item_lenght, w)
+            --local midi_notes = get_MIDI_notes(item, item_start, item_lenght)
             local item_ghost_id = item_guid--tostring(item) --.. as_start
             if not ghosts[item_ghost_id] then
                local bm = reaper.JS_LICE_CreateBitmap(true, w, h)
@@ -726,7 +768,7 @@ function GetEnvOffset_MouseOverride(tr, env, mov_offset, num)
       end
       return tr
    end
-   if mov_offset then return tr end -- IF WE ARE MOVING AREA 
+   if mov_offset then return tr end -- IF WE ARE MOVING AREA
  end
 
 function env_to_track(tr)
@@ -1089,7 +1131,6 @@ local function Main()
             end
          end -- CREATE AS IF IN ARRANGE WINDOW AND NON AS ZONES ARE CLICKED
          Draw(Areas_TB, track_window) -- DRAWING CLASS
-
          if copy and #Areas_TB ~= 0 then
             generic_table_find()
          end

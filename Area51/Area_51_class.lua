@@ -1,5 +1,6 @@
 local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
 local track_window = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8) -- GET TRACK VIEW
+local cur_path = package.cursor
 
 local Element = {}
 
@@ -155,7 +156,7 @@ function Element:zoneIN(x, y)
     elseif y <= self.y + self.h and y >= (self.y + self.h) - range2 then
       return "BR"
     end
-    return {"R", self.time_start, self.time_dur}--{"R", self.time_dur, self.time_start}
+    return {"R", self.time_start, self.time_dur}
   end
 
   if y >= self.y and y <= self.y + range2 then
@@ -173,7 +174,7 @@ function Element:zoneIN(x, y)
 end
 
 function Element:mouseZONE()
-  return self:zoneIN(mouse.ox, mouse.oy)
+  return self:zoneIN(mouse.ox, mouse.oy) -- mouse.ox, mouse.oy
 end
 
 function Element:mouseIN()
@@ -184,7 +185,7 @@ function Element:mouseDown()
   return mouse.l_down and self:pointIN(mouse.ox, mouse.oy)
 end
 --------
-function Element:mouseUp() -- its actual for sliders and knobs only!
+function Element:mouseUp() 
   return mouse.l_up and self:pointIN(mouse.ox, mouse.oy)
 end
 --------
@@ -214,11 +215,13 @@ function Element:track()
       TEMP_AREA = self
     end
   end
+
   if ZONE and self.guid == TEMP_AREA.guid then
     TEMP_AREA:zone(ZONE_BUFFER)
   end -- PREVENT OTHER AREAS TRIGGERING THIS LOOP AGAIN
 
   A_M_Block = self:mouseIN() or self:mouseDown() or ZONE and true or nil
+
 end
 ----------------------------------------------------------------------------------------------------
 ---   Create Element Child Classes(Button,Slider,Knob)   -------------------------------------------
