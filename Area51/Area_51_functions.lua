@@ -382,7 +382,7 @@ function AreaDo(tbl, job, off)
         local item_track = info.track
         local item_data = info.items
         local item_buffers = copy_items_and_envelopes and copy_area_items_into_buffer(item_track, item_data, as_start, as_end)
-        
+
         if delete_source then
           split_or_delete_items(item_track, item_data, as_start, as_end, 'del')
         end
@@ -421,7 +421,7 @@ function AreaDo(tbl, job, off)
     if job == "del" or job == "duplicate" then
       tbl.sel_info = GetSelectionInfo(tbl)
       if job == "duplicate" then
-        GetGhosts(tbl.sel_info, tbl.time_start , tbl.time_start + tbl.time_dur, "update", tbl.time_start + tbl.time_dur) -- UPDATE GHOST POSITION
+        GetGhosts(tbl.sel_info, tbl.time_start , tbl.time_start + tbl.time_dur, "update", (tbl.time_start - area_offset) + tbl.time_dur) -- UPDATE GHOST POSITION
       end
     end
   end
