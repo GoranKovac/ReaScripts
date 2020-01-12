@@ -550,7 +550,7 @@ function GetGhosts(data, as_start, as_end, job, old_time)
 end
 
 -- FOR CHUNK EDITING
-local function split_by_line(str)
+function split_by_line(str)
    local t = {}
    for line in string.gmatch(str, "[^\r\n]+") do
        t[#t + 1] = line

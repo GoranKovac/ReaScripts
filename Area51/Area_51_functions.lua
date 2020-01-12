@@ -439,49 +439,47 @@ function copy_area_items_into_buffer(track, items, as_start, as_end)
 
     local item_obj = {}
     item_obj.m_type = reaper.GetMediaSourceType(source, "")
-    
-    local chunk = ({reaper.GetItemStateChunk( item, '', false )})[2]
-    
-    local item_is_MIDI = item_obj.m_type:find('MIDI')
-    local chunk_lines = {}
-    for line in chunk:gmatch('[^\r\n]+') do
-      chunk_lines[#chunk_lines + 1] = line
-    end
 
-    for i = 1, #chunk_lines do
-      local line = chunk_lines[i]
+    local chunk = ({reaper.GetItemStateChunk( item, '', false )})[2]
+
+    local item_is_MIDI = item_obj.m_type:find('MIDI')
+
+    local chunk_lines = split_by_line(chunk)
+
+    for j = 1, #chunk_lines do
+      local line = chunk_lines[j]
       if string.match(line, 'IGUID {(%S+)}') then
         local new_guid = reaper.genGuid()
-        chunk_lines[i] = 'IGUID ' .. new_guid
+        chunk_lines[j] = 'IGUID ' .. new_guid
       elseif string.match(line, "GUID {(%S+)}") then
         local new_guid = reaper.genGuid()
-        chunk_lines[i] = 'GUID ' .. new_guid
+        chunk_lines[j] = 'GUID ' .. new_guid
       end
-      
+
       if item_is_MIDI then
         if string.match(line, "POOLEDEVTS {(%S+)}") then
           local new_guid = reaper.genGuid()
-          chunk_lines[i] = 'POOLEDEVTS' .. new_guid
+          chunk_lines[j] = 'POOLEDEVTS' .. new_guid
         end
-        
+
         if line == 'TAKE' then
-          for j = i+1, #chunk_lines do -- scan chunk ahead to modify take chunk
-            local take_line = chunk_lines[j]
-            
+          for k = j+1, #chunk_lines do -- scan chunk ahead to modify take chunk
+            local take_line = chunk_lines[k]
+
             if string.match( take_line, 'POOLEDEVTS' ) then
               local new_guid = reaper.genGuid()
-              chunk_lines[j] = 'POOLEDEVTS ' .. new_guid
+              chunk_lines[k] = 'POOLEDEVTS ' .. new_guid
             elseif string.match( take_line , 'GUID' ) then
               local new_guid = reaper.genGuid()
-              chunk_lines[j] = 'GUID ' .. new_guid
+              chunk_lines[k] = 'GUID ' .. new_guid
             end
-            
+
             if take_line == '>' then
-              i = j
+              j = k
               goto take_chunk_break
             end
           end
-          
+
           ::take_chunk_break::
         end
       end
@@ -496,7 +494,7 @@ function copy_area_items_into_buffer(track, items, as_start, as_end)
     item_obj.take_offset = reaper.GetMediaItemTakeInfo_Value(take, "D_STARTOFFS")
     item_obj.item_dur = item_obj.item_lenght + item_obj.item_start
 
-    table.insert( item_buffer, item_obj )
+    item_buffer[i] = item_obj
   end
 
   return item_buffer
