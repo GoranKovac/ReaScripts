@@ -453,21 +453,17 @@ function copy_area_items_into_buffer(track, items, as_start, as_end)
     for i = 1, #chunk_lines do
       local line = chunk_lines[i]
       if string.match(line, 'IGUID {(%S+)}') then
-        local new_guid = reaper.genGuid():sub(2, -2)
+        local new_guid = reaper.genGuid()
         chunk_lines[i] = 'IGUID ' .. new_guid
       elseif string.match(line, "GUID {(%S+)}") then
-        local new_guid = reaper.genGuid():sub(2, -2)
+        local new_guid = reaper.genGuid()
         chunk_lines[i] = 'GUID ' .. new_guid
       end
       
       if item_is_MIDI then
         if string.match(line, "POOLEDEVTS {(%S+)}") then
-          --local new_guid = reaper.genGuid():sub(2, -2)
-          --chunk_lines[i] = 'POOLEDEVTS' .. new_guid
-          --REPLACING THE POOLEDEVTS HERE WITH A NEW GUID DOES NOT WORK WHEN THERE ARE TAKES FOR SOME REASON, IT WORKS WHEN THERE ARE NO TAKES
-          --MIGHT NEED TO FIGURE OUT WHY IN THE FUTURE, FOR THE TIME BEING EMPTYING OUT THE LINE FROM THE CHUNK WORKS
-          
-          chunk_lines[i] = ''
+          local new_guid = reaper.genGuid()
+          chunk_lines[i] = 'POOLEDEVTS' .. new_guid
         end
         
         if line == 'TAKE' then
@@ -475,10 +471,10 @@ function copy_area_items_into_buffer(track, items, as_start, as_end)
             local take_line = chunk_lines[j]
             
             if string.match( take_line, 'POOLEDEVTS' ) then
-              local new_guid = reaper.genGuid():sub(2, -2)
-              chunk_lines[j] = 'zPOOLEDEVTS ' .. new_guid
+              local new_guid = reaper.genGuid()
+              chunk_lines[j] = 'POOLEDEVTS ' .. new_guid
             elseif string.match( take_line , 'GUID' ) then
-              local new_guid = reaper.genGuid():sub(2, -2)
+              local new_guid = reaper.genGuid()
               chunk_lines[j] = 'GUID ' .. new_guid
             end
             
