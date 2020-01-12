@@ -335,7 +335,6 @@ end
 function AreaDo(tbl, job, off)
   reaper.Undo_BeginBlock()
   reaper.PreventUIRefresh(1)
-  --off = off or 0
   for a = 1, #tbl do
     local tbl = tbl[a]
 
