@@ -438,20 +438,59 @@ function copy_area_items_into_buffer(track, items, as_start, as_end)
     local source = reaper.GetMediaItemTake_Source(take)
 
     local item_obj = {}
-    local _, chunk = reaper.GetItemStateChunk(item, "")
-
     item_obj.m_type = reaper.GetMediaSourceType(source, "")
-    if item_obj.m_type:find("MIDI") then
-      -- TODO: NEED TO FIX ALL MIDI TAKE GUIDS - NOW ONLY FIRST TAKE GETS NEW GUID OTHERS GET POOLED
-      local pool_guid = string.match(chunk, "POOLEDEVTS {(%S+)}"):gsub("%-", "%%-")
-      local new_pool_guid = reaper.genGuid():sub(2, -2) -- MIDI ITEM
-      chunk = string.gsub(chunk, pool_guid, new_pool_guid)
+    
+    local chunk = ({reaper.GetItemStateChunk( item, '', false )})[2]
+    
+    local item_is_MIDI = item_obj.m_type:find('MIDI')
+    local chunk_lines = {}
+    for line in chunk:gmatch('[^\r\n]+') do
+      chunk_lines[#chunk_lines + 1] = line
     end
 
+    for i = 1, #chunk_lines do
+      local line = chunk_lines[i]
+      if string.match(line, 'IGUID {(%S+)}') then
+        local new_guid = reaper.genGuid()
+        chunk_lines[i] = 'IGUID ' .. new_guid
+      elseif string.match(line, "GUID {(%S+)}") then
+        local new_guid = reaper.genGuid()
+        chunk_lines[i] = 'GUID ' .. new_guid
+      end
+      
+      if item_is_MIDI then
+        if string.match(line, "POOLEDEVTS {(%S+)}") then
+          local new_guid = reaper.genGuid()
+          chunk_lines[i] = 'POOLEDEVTS' .. new_guid
+        end
+        
+        if line == 'TAKE' then
+          for j = i+1, #chunk_lines do -- scan chunk ahead to modify take chunk
+            local take_line = chunk_lines[j]
+            
+            if string.match( take_line, 'POOLEDEVTS' ) then
+              local new_guid = reaper.genGuid()
+              chunk_lines[j] = 'POOLEDEVTS ' .. new_guid
+            elseif string.match( take_line , 'GUID' ) then
+              local new_guid = reaper.genGuid()
+              chunk_lines[j] = 'GUID ' .. new_guid
+            end
+            
+            if take_line == '>' then
+              i = j
+              goto take_chunk_break
+            end
+          end
+          
+          ::take_chunk_break::
+        end
+      end
+    end
+
+    chunk = table.concat(chunk_lines, "\n")
+
     item_obj.track = track
-    local item_guid = string.match(chunk, "IGUID {(%S+)}"):gsub("%-", "%%-")
-    local new_guid = reaper.genGuid():sub(2, -2) -- MIDI ITEM
-    item_obj.chunk = string.gsub(chunk, item_guid, new_guid) -- SINCE WE ARE COPYING CHUNKS NOW WE NEED TO CHANGE NEW ITEMS GUIDS OR THEY ARE "POOLED" -- FIXES ISSUE WITH GHOSTS DRAWING ONLY ORIGINAL ITEMS NOT PASTED ONES(GHOST DEPEND ON ITEM GUIDS)
+    item_obj.chunk = chunk
     item_obj.item_lenght = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
     item_obj.item_start = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
     item_obj.take_offset = reaper.GetMediaItemTakeInfo_Value(take, "D_STARTOFFS")
