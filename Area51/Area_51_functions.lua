@@ -411,6 +411,9 @@ function AreaDo(tbl, job, off)
 
     if job == "del" or job == "duplicate" then
       tbl.sel_info = GetSelectionInfo(tbl)
+      if job == "duplicate" then
+        GetGhosts(tbl.sel_info, tbl.time_start , tbl.time_start + tbl.time_dur, "update", tbl.time_start + tbl.time_dur) -- UPDATE GHOST POSITION
+      end
     end
   end
   reaper.Undo_EndBlock("AREA51 " .. job, 4)
@@ -426,7 +429,7 @@ function copy_area_items_into_buffer(track, items, as_start, as_end)
     local item = items[i]
     local take = reaper.GetMediaItemTake(item, 0)
     local source = reaper.GetMediaItemTake_Source(take)
-    
+
     local item_obj = {}
     local _, chunk = reaper.GetItemStateChunk(item, "")
 
@@ -436,17 +439,17 @@ function copy_area_items_into_buffer(track, items, as_start, as_end)
       local new_pool_guid = reaper.genGuid():sub(2, -2) -- MIDI ITEM
       chunk = string.gsub(chunk, pool_guid, new_pool_guid)
     end
-    
+
     item_obj.track = track
     item_obj.chunk = chunk
     item_obj.item_lenght = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
     item_obj.item_start = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
     item_obj.take_offset = reaper.GetMediaItemTakeInfo_Value(take, "D_STARTOFFS")
     item_obj.item_dur = item_obj.item_lenght + item_obj.item_start
-    
+
     table.insert( item_buffer, item_obj )
   end
-  
+
   return item_buffer
 end
 
