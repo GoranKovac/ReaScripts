@@ -381,10 +381,8 @@ function AreaDo(tbl, job, off)
       if info.items then
         local item_track = info.track
         local item_data = info.items
-
-        --FILL ITEM BUFFERS TO COPY
         local item_buffers = copy_items_and_envelopes and copy_area_items_into_buffer(item_track, item_data, as_start, as_end)
-        -- JOB OPERATIONS
+        
         if delete_source then
           split_or_delete_items(item_track, item_data, as_start, as_end, 'del')
         end
@@ -397,12 +395,23 @@ function AreaDo(tbl, job, off)
         if copy_items_and_envelopes then
           paste_item_buffer(item_buffers, item_track, as_start, as_end, pos_offset, first_tr, off, job)
         end
-      elseif info.env_name then
-        --local envelope_buffers = copy_items_and_envelopes and copy_area_env_into_buffer(item_track, item_data, as_start, as_end)
+      elseif info.env_points then
         --FILL ENVELOPE BUFFERS HERE
+        local env_track = info.track
+        local env_name = info.env_name
+        local env_data = info.env_points
+
+        if delete_source then
+          del_env(env_track, as_start, as_end, pos_offset, job)
+        end
+        if delete_target then
+          del_env(env_track, as_start + area_offset, as_end + area_offset, pos_offset, job)
+        end
+        if copy_items_and_envelopes then
+          paste_env(env_track, env_name, env_data, as_start, as_end, pos_offset, first_tr, #tbl.sel_info, off, job)
+        end
       end
     end
-
     --PASTE ENVELOPE BUFFERS
     if job == 'duplicate' then --OFFSET TABLE ON DUPLICATE
       tbl.time_start = tbl.time_start + tbl.time_dur
@@ -435,6 +444,7 @@ function copy_area_items_into_buffer(track, items, as_start, as_end)
 
     item_obj.m_type = reaper.GetMediaSourceType(source, "")
     if item_obj.m_type:find("MIDI") then
+      -- TODO: NEED TO FIX ALL MIDI TAKE GUIDS - NOW ONLY FIRST TAKE GETS NEW GUID OTHERS GET POOLED
       local pool_guid = string.match(chunk, "POOLEDEVTS {(%S+)}"):gsub("%-", "%%-")
       local new_pool_guid = reaper.genGuid():sub(2, -2) -- MIDI ITEM
       chunk = string.gsub(chunk, pool_guid, new_pool_guid)
