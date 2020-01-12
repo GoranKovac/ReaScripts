@@ -295,6 +295,10 @@ function paste_env(env_track, env_name, env_data, as_start, as_end, pos_offset, 
     env_offset = env_track
   end
 
+  if job == 'DRAG-PASTE' then
+    env_offset = env_track
+  end
+
   if env_offset and reaper.ValidatePtr(env_offset, "TrackEnvelope*") then -- IF TRACK HAS ENVELOPES PASTE THEM
     insert_edge_points(env_offset, {as_start, as_end}, mouse_offset, env_track) -- INSERT EDGE POINTS AT CURRENT ENVELOE VALUE AND DELETE WHOLE RANGE INSIDE (DO NOT ALLOW MIXING ENVELOPE POINTS AND THAT WEIRD SHIT)
     for i = 1, #env_data do
