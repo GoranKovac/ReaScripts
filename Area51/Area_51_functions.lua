@@ -441,7 +441,9 @@ function copy_area_items_into_buffer(track, items, as_start, as_end)
     end
 
     item_obj.track = track
-    item_obj.chunk = chunk
+    local item_guid = string.match(chunk, "IGUID {(%S+)}"):gsub("%-", "%%-")
+    local new_guid = reaper.genGuid():sub(2, -2) -- MIDI ITEM
+    item_obj.chunk = string.gsub(chunk, item_guid, new_guid) -- SINCE WE ARE COPYING CHUNKS NOW WE NEED TO CHANGE NEW ITEMS GUIDS OR THEY ARE "POOLED" -- FIXES ISSUE WITH GHOSTS DRAWING ONLY ORIGINAL ITEMS NOT PASTED ONES(GHOST DEPEND ON ITEM GUIDS)
     item_obj.item_lenght = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
     item_obj.item_start = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
     item_obj.take_offset = reaper.GetMediaItemTakeInfo_Value(take, "D_STARTOFFS")

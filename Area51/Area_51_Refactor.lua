@@ -520,7 +520,6 @@ function GetGhosts(data, as_start, as_end, job, old_time)
          if not ghosts[env_ghost_id] then
             local bm = reaper.JS_LICE_CreateBitmap(true, w, env_h)
             reaper.JS_LICE_FillRect( bm, 0, 0, w, h, 0xFF002244, 0.5, "COPY" )
-            local dc = reaper.JS_LICE_GetDC(bm)
             draw_env(tr, data[i].env_points, bm,x,y,w,h)
             ghosts[env_ghost_id] = {
                bm = bm,
