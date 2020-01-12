@@ -726,29 +726,18 @@ function GetEnvNum(tr, env)
    for i = 1, reaper.CountTrackEnvelopes(tr) do
       local tr_env = reaper.GetTrackEnvelope(tr, i - 1)
       local _, env_name = reaper.GetEnvelopeName(tr_env)
-      if env_name == env then
+      --if env_name == env then
+      if tr_env == env or env_name == env then
          return tr_env, i -- MATCH MODE
       end
    end
 end
 
 function GetEnvOffset_MouseOverride(tr, env, mov_offset, num)
-   local window, segment, details  = reaper.BR_GetMouseCursorContext()
-   local m_env, _ = reaper.BR_GetMouseCursorContext_Envelope()
-
+   local m_env = reaper.ValidatePtr(mouse.tr, "TrackEnvelope*") and mouse.tr or nil
    if m_env and not mov_offset and #Areas_TB == 1 then -- OVERRIDE MODE AND WE ARE NOT MOVING AREA AND THERE ARE IS ONLY ONE AREA (DISABLED IF THERE ARE MULTIPLE AREAS)
-      local m_num
-      local m_env_par           = reaper.Envelope_GetParentTrack( m_env )
-      local retval, m_env_name  = reaper.GetEnvelopeName(m_env)
-      for i = 1, reaper.CountTrackEnvelopes( tr ) do
-         local tr_env            = reaper.GetTrackEnvelope( tr, i-1 )
-         local _, env_name       = reaper.GetEnvelopeName(tr_env)
-         local env_par           = reaper.Envelope_GetParentTrack( tr_env )
-         if m_env_name == env_name and env_par == m_env_par then
-            m_num = i
-            break
-         end
-      end
+      local m_env_par = reaper.Envelope_GetParentTrack( m_env )
+      local _, m_num = GetEnvNum(tr, m_env)
       if m_num then
          local _, env_num = GetEnvNum(tr, env)
          if not env_num then return end
@@ -758,17 +747,12 @@ function GetEnvOffset_MouseOverride(tr, env, mov_offset, num)
          if tr_env_off then return tr_env_off end
      end
    else -- MATCH MODE
-      for i = 1, reaper.CountTrackEnvelopes(tr) do
-         local tr_env = reaper.GetTrackEnvelope(tr, i - 1)
-         local _, env_name = reaper.GetEnvelopeName(tr_env)
-         if env_name == env then
-            return tr_env, i -- MATCH MODE
-         end
-      end
+      local tr_env = GetEnvNum(tr, env)
+      if tr_env then return tr_env end
       return tr
    end
    if mov_offset then return tr end -- IF WE ARE MOVING AREA
- end
+end
 
 function env_to_track(tr)
    if reaper.ValidatePtr(tr, "TrackEnvelope*") then
