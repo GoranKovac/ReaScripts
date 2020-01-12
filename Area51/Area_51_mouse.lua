@@ -1,7 +1,4 @@
 local main_wnd        = reaper.GetMainHwnd()                            -- GET MAIN WINDOW
-local track_window    = reaper.JS_Window_FindChildByID(main_wnd, 1000)  -- GET TRACK VIEW
-
-reaper.JS_WindowMessage_Intercept(track_window, "WM_MOUSEWHEEL", true)
 
 function msg(m)
   return reaper.ShowConsoleMsg(tostring(m) .. "\n")
