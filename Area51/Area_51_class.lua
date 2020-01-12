@@ -104,7 +104,7 @@ function Element:zone(z)
     elseif z[1] == "C" then
       local new_L = z[2] + mouse.dp >= 0 and z[2] + mouse.dp or 0
       if mouse.Ctrl() then
-        AreaDo({self}, "PASTE", new_L)
+        AreaDo({self}, "DRAG-PASTE", new_L)
       else
         AreaDo({self}, "move", new_L)
       end

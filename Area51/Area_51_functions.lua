@@ -277,10 +277,9 @@ function paste_env(env_track, env_name, env_data, as_start, as_end, pos_offset, 
   end -- DO NOT PASTE IF MOUSE IS OUT OF ARRANGE WINDOW
 
   local first_env_tr = drag_offset and mouse.tr or first_env_tr
-
   local offset_track, under_last_tr = generic_track_offset(env_track, first_env_tr)
 
-  if job and under_last_tr and under_last_tr > 0 then
+  if job == 'PASTE' and under_last_tr and under_last_tr > 0 then
     for t = 1, under_last_tr do
       reaper.InsertTrackAtIndex((reaper.GetNumTracks()), true)
     end -- IF THE TRACKS ARE BELOW LAST TRACK OF THE PROJECT CREATE HAT TRACKS
@@ -355,7 +354,7 @@ function AreaDo(tbl, job, off)
       delete_source = true
       delete_target = true
       copy_items_and_envelopes = true
-    elseif job == 'PASTE' then
+    elseif job == 'PASTE' or job == 'DRAG-PASTE' then
       delete_target = not copy and true or false -- DO NOT DELETE TARGET IF WE ARE IN COPY PASTE MODE
       copy_items_and_envelopes = true
     elseif job == 'del' then
