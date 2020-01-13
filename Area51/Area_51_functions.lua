@@ -363,7 +363,6 @@ function AreaDo(tbl, job, off)
     elseif job == 'del' then
       delete_source = true
     elseif job == 'split' then
-      --delete_source = false
       split_only = true
     elseif job == 'duplicate' then
       delete_target = true
@@ -375,30 +374,43 @@ function AreaDo(tbl, job, off)
     if job == "del" or job == "duplicate" and #tbl > 1 then -- NEED TO ALSO UPDATE SELECTION INFO BEFORE THE JOB TO PREVENT BUGS WHEN USING CONSECUTIVE AREAS THAT OVERLAP
       tbl.sel_info = GetSelectionInfo(tbl)
     end
-    --FILL ITEM BUFFERS AND CLEANUP AREAS
+
+    local item_buffers = {}
+    local areas_to_clean = {}
     for i = 1, #tbl.sel_info do
       local info = tbl.sel_info[i]
       local first_tr = find_highest_tr(info.track)
-
+      
       if info.items then
         local item_track = info.track
         local item_data = info.items
-        local item_buffers = copy_items_and_envelopes and copy_area_items_into_buffer(item_track, item_data, as_start, as_end)
+        local selection_is_empty = #info.items == 0
+        local item_source_track = selection_is_empty and nil or reaper.GetMediaItem_Track(item_data[1])
 
-        if delete_source then
-          split_or_delete_items(item_track, item_data, as_start, as_end, 'del')
+        if copy_items_and_envelopes and selection_is_empty == false then --FILL THE ITEM BUFFERS
+          local item_buffer = copy_area_items_into_buffer(item_track, item_data, as_start, as_end)
+          item_buffer.b_track = item_track
+          item_buffer.i_data = item_data
+          item_buffer.first_tr = first_tr
+          table.insert(item_buffers, item_buffer)
         end
-        if delete_target then
-          split_or_delete_items(item_track, nil, as_start + area_offset, as_end + area_offset, 'del') -- WE ARE SENDING NIL AS ITEM_TABLE, SO THE FUNCTION WILL SEARCH FOR ITEMS BASED ON TRACK AND TIME (THIS IS TARGET AREA)
+        if delete_source or split_only then --CLEANUP SOURCE
+          local c_source = {}
+          c_source.track = item_source_track
+          c_source.d_start = as_start
+          c_source.d_end = as_end
+          c_source.item_data = item_data
+          table.insert(areas_to_clean, c_source)
         end
-        if split_only then
-          split_or_delete_items(item_track, item_data, as_start, as_end, 'split')
+        if delete_target == true then --CLEANUP TARGET
+          local c_target = {}
+          c_target.track = info.track
+          c_target.d_start = as_start + area_offset
+          c_target.d_end = as_end + area_offset
+          c_target.item_data = item_data
+          table.insert( areas_to_clean, c_target )
         end
-        if copy_items_and_envelopes then
-          paste_item_buffer(item_buffers, item_track, as_start, as_end, pos_offset, first_tr, off, job)
-        end
-      elseif info.env_points then
-        --FILL ENVELOPE BUFFERS HERE
+      elseif info.env_points then ----DO ENVELOPE JOBS
         local env_track = info.track
         local env_name = info.env_name
         local env_data = info.env_points
@@ -414,7 +426,22 @@ function AreaDo(tbl, job, off)
         end
       end
     end
-    --PASTE ENVELOPE BUFFERS
+
+    --CLEANUP AREAS
+    for i =1, #areas_to_clean do
+      local c_info = areas_to_clean[i]
+      local c_job = split_only and 'split' or 'del'
+      local c_data = split_only and c_info.item_data or nil
+      split_or_delete_items(c_info.track, c_data, c_info.d_start, c_info.d_end, c_job)
+    end
+
+    --DO ITEM JOBS
+    for i = 1, #item_buffers do
+      local item_buffer = item_buffers[i] 
+      paste_item_buffer(item_buffer, item_buffer.b_track, as_start, as_end, pos_offset, item_buffer.first_tr, off, job)
+    end
+
+    --UPDATE TABLE INFO
     if job == 'duplicate' then --OFFSET TABLE ON DUPLICATE
       tbl.time_start = tbl.time_start + tbl.time_dur
       tbl.x, tbl.w = convert_time_to_pixel(tbl.time_start, tbl.time_dur)
