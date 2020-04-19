@@ -4,14 +4,14 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.02
+ * Version: 0.03
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.02 (2020-04-19)
-   + New core offsets - using visible tracks order as new ID track order
+ * v0.03 (2020-04-19)
+   + Reintroduced chunks for copying data
 --]]
 
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
