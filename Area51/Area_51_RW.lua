@@ -10,8 +10,8 @@
 
 --[[
  * Changelog:
- * v0.01 (2020-04-19)
-   + Initial Release
+ * v0.02 (2020-04-19)
+   + New core offsets - using visible tracks order as new ID track order
 --]]
 
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE

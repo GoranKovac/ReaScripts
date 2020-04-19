@@ -1,7 +1,7 @@
 --[[
    * Author: SeXan
    * Licence: GPL v3
-   * Version: 0.01
+   * Version: 0.02
 	 * NoIndex: true
 --]]
 local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
