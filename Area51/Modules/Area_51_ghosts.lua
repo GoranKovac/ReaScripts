@@ -44,6 +44,7 @@ function Get_item_ghosts(tr, items, as_start, as_end)
 		local item_start = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
 		local item_lenght = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
 		local take = reaper.GetMediaItemTake(item, 0)
+		if not take then return end
 		local item_start, item_len = New_items_position_in_area(as_start, as_end, item_start, item_lenght)
 		local x, w = Convert_time_to_pixel(item_start, item_len)
 		local y, h = Get_tr_TBH(tr)

@@ -27,7 +27,6 @@ function Paste(tr, src_tr, data, t_start, t_dur, t_offset, job)
   create_item(tr, data.items, t_start, t_dur, offset, job)
   paste_env(tr, src_tr, data.env_points, t_start, t_dur, offset, job)
   Paste_AI(tr, src_tr, data.AI, t_start, t_dur, offset, job)
-  --update_all = true
   refresh_tracks = true
 end
 
@@ -44,12 +43,11 @@ function Area_function(tbl,func)
   if not tbl then return end -- IF THERE IS NO TABLE OR TABLE HAS NO DATA RETURN
     reaper.Undo_BeginBlock()
     reaper.PreventUIRefresh(1)
-    local tr_offset = copy and mouse_track_offset() or 0
+    local tr_offset = copy and mouse_track_offset2() or 0
 
     for a = 1, #tbl do
       local tbl_t = tbl[a]
       local area_pos_offset = 0
-
       area_pos_offset = area_pos_offset + (tbl_t.time_start - lowest_start()) --  OFFSET BETWEEN AREAS
       local total_pos_offset = mouse.p + area_pos_offset
 
@@ -63,6 +61,7 @@ function Area_function(tbl,func)
         if reaper.ValidatePtr(new_tr, "MediaTrack*") and reaper.ValidatePtr(target_track, "TrackEnvelope*") then
           new_tr = get_set_envelope_chunk(new_tr, target_track)
         end
+
 
         local off_tr = copy and new_tr or target_track -- OFFSET TRACK ONLY IF WE ARE IN COPY MODE
         _G[func](off_tr, target_track, sel_info_t, tbl_t.time_start, tbl_t.time_dur, total_pos_offset, func)
@@ -138,7 +137,7 @@ function Area_Drag(src_tbl, dst_tbl, src_time_tbl, dst_time_tbl, src_dst_offset,
   --reaper.PreventUIRefresh(1)
   local func = zone .. "_" .. action
   local clean = (action == "move" and src_dst_offset ~= 0) and Clean(dst_tbl.sel_info, src_tbl.sel_info, dst_time_tbl, src_time_tbl)
-  local tr_offset = mouse_track_offset(src_tbl.sel_info[1].track)
+  local tr_offset = mouse_track_offset2(src_tbl.sel_info[1].track)
 
   local new_area = {}
 

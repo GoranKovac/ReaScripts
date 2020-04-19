@@ -181,9 +181,23 @@ local function Check_undo_history()
    end
 end
 
+
+function get_invisible_tracks()
+   local cnt = 0
+   for i = 1, reaper.CountTracks(0) do
+      local tr = reaper.GetTrack(0, i - 1)
+      local tr_vis = reaper.IsTrackVisible(tr, false)
+      if tr_vis then
+         cnt = cnt + 1
+      end
+   end
+   return cnt
+end
+
 -- MAIN FUNCTION FOR FINDING TRACKS COORDINATES (RETURNS CLIENTS COORDINATES)
 local TBH
 function GetTracksXYH()
+   Avisible_tracks = 0
    if reaper.CountTracks(0) == 0 then return end
    TBH = {}
    -- ONLY ADD MASTER TRACK IF VISIBLE IN TCP
@@ -193,7 +207,7 @@ function GetTracksXYH()
       local m_tr_h = reaper.GetMediaTrackInfo_Value(master_tr, "I_TCPH")
       local m_tr_t = reaper.GetMediaTrackInfo_Value(master_tr, "I_TCPY")
       local m_tr_b = m_tr_t + m_tr_h
-      TBH[master_tr] = {t = m_tr_t, b = m_tr_b, h = m_tr_h}
+      TBH[master_tr] = {t = m_tr_t, b = m_tr_b, h = m_tr_h, vis = true, ID = 0}
       for j = 1, reaper.CountTrackEnvelopes(master_tr) do
          local m_env = reaper.GetTrackEnvelope(master_tr, j - 1)
          local m_env_h = reaper.GetEnvelopeInfo_Value(m_env, "I_TCPH")
@@ -208,16 +222,25 @@ function GetTracksXYH()
    local last_Tr_h = reaper.GetMediaTrackInfo_Value(last_Tr, "I_TCPH")
    local last_Tr_t = reaper.GetMediaTrackInfo_Value(last_Tr, "I_TCPY")
 
+   local visible_index = 0
    for i = 1, reaper.CountTracks(0) do
       local tr = reaper.GetTrack(0, i - 1)
-      local tr_vis = reaper.IsTrackVisible(tr, false) 
+      local tr_vis = reaper.IsTrackVisible(tr, false)
       local tr_h = reaper.GetMediaTrackInfo_Value(tr, "I_TCPH")
       local tr_t = reaper.GetMediaTrackInfo_Value(tr, "I_TCPY")
       local tr_b = tr_t + tr_h
-      TBH[tr] = {t = tr_t, b = tr_b, h = tr_h, used = false, vis = tr_vis}
+      if tr_vis then
+         visible_index = visible_index + 1
+         --Avisible_tracks = Avisible_tracks + 1
+      end
 
-      local last_Tr_b = (last_Tr_t + (last_Tr_total*i)) + last_Tr_total
-      TBH["INV" .. i] = {t = last_Tr_t + (last_Tr_total*i), b = last_Tr_b, h = last_Tr_total, used = false, vis = true}
+      local ID = tr_vis and visible_index or nil
+      TBH[tr] = {t = tr_t, b = tr_b, h = tr_h, used = false, vis = tr_vis, ID = ID}
+      if ID then
+         local last_Tr_b = (last_Tr_t + (last_Tr_total*ID)) + last_Tr_total
+         TBH["INV" .. ID] = {t = last_Tr_t + (last_Tr_total*ID), b = last_Tr_b, h = last_Tr_total, used = false, vis = true}
+      end
+
       for j = 1, reaper.CountTrackEnvelopes(tr) do
          local env = reaper.GetTrackEnvelope(tr, j - 1)
          local env_h = reaper.GetEnvelopeInfo_Value(env, "I_TCPH")
@@ -604,20 +627,20 @@ function Limit_offset_range(delta, first, last, min, max)
    return delta
 end
 
-function mouse_track_offset(first)
+function mouse_track_offset2(first)
    local tbl = Get_area_table()
    local _, m_cy = To_client(0, mouse.y)
 
-   local first_area = copy and reaper.CSurf_TrackToID(Convert_to_track(tbl[1].sel_info[1].track), false) or reaper.CSurf_TrackToID(Convert_to_track(first), false)
+   local first_area = copy and TBH[Convert_to_track(tbl[1].sel_info[1].track)].ID or TBH[Convert_to_track(first)].ID
 
    local last_project_tr = Get_last_visible_track()
    local l_y, l_h, l_b = Get_tr_TBH(last_project_tr)
 
    local cur_m_tr = mouse.last_tr
    local first_m_tr = copy and tbl[1].sel_info[1].track or mouse.otr
-   local cur_m_tr_num = reaper.CSurf_TrackToID(Convert_to_track(cur_m_tr), false)
+   local cur_m_tr_num = TBH[Convert_to_track(cur_m_tr)].ID
 
-   local first_m_tr_num = reaper.CSurf_TrackToID(Convert_to_track(first_m_tr), false)
+   local first_m_tr_num = TBH[Convert_to_track(first_m_tr)].ID
 
    local mouse_inv_tracks = (l_b ~= 0 and m_cy > l_b) and floor((m_cy - l_b) / l_h) + 1 or 0 -- IF MOUSE IS UNDER LAST PROJECT TRACK START COUTNING VOODOO
    local mouse_tr_offset = cur_m_tr_num - first_m_tr_num + mouse_inv_tracks
@@ -625,7 +648,7 @@ function mouse_track_offset(first)
    local master_tr_visibility = reaper.GetMasterTrackVisibility()
    local min_tr = (master_tr_visibility == 1 or master_tr_visibility == 3) and 0 or 1 -- if master track is visible lowest track id is 0
 
-   mouse_tr_offset = Limit_offset_range(mouse_tr_offset, first_area, first_area, min_tr, reaper.CountTracks(0) + 1 )-- LIMIT OFFSET RANGE TO FROM 1 TRACK IN PROJECT TO LAST TRACK + AREA SIZE
+   mouse_tr_offset = Limit_offset_range(mouse_tr_offset, first_area, first_area, min_tr, get_invisible_tracks()+1)-- LIMIT OFFSET RANGE TO FROM 1 TRACK IN PROJECT TO LAST TRACK + AREA SIZE
    return mouse_tr_offset
 end
 
@@ -635,43 +658,22 @@ function Validate_tracks_type(tbl,tr_type)
    end
 end
 
-local function find_visible_tracks2(cur_offset_id)
-   if cur_offset_id == 0 then return 0 end
-   for i = cur_offset_id, reaper.CountTracks(0)*2 do
-      local track = i < reaper.CountTracks(0) and reaper.GetTrack(0, i - 1) or "INV" .. i - reaper.CountTracks(0) --reaper.GetTrack(0, i - 1) and reaper.GetTrack(0, i - 1) or "INV" .. i - ((reaper.CountTracks(0)-1)/2) 
-      if TBH[track] and TBH[track].vis and not TBH[track].used then
-         TBH[track].used = true
-         return track
+local function  find_visible_tracks(num)
+   for k, v in pairs(TBH) do
+      if num <= get_invisible_tracks() then
+         if num == v.ID then
+            return k
+         end
+      else
+         return "INV" .. num - get_invisible_tracks()
       end
    end
 end
 
--- RETURN FIRST VISIBLE TRACK
-local function find_visible_tracks(cur_offset_id)
-   if cur_offset_id == 0 then return 0 end
-   for i = cur_offset_id, reaper.CountTracks(0) do
-      local track = reaper.GetTrack(0, i - 1)
-      if track and reaper.IsTrackVisible(track, false) then
-         return i
-      end
-   end
-end
-
--- CONVERT OFFSET TO TRACK AND CALCULATE HOW MANY TRACKS IS THE NEW TRACK UNDER LAST PROJECT TRACK
 function Track_from_offset(tr, offset)
-   local tr_num = reaper.CSurf_TrackToID(Convert_to_track(tr), false)
-   local last_vis_tr = Get_last_visible_track()
-   local last_num = reaper.CSurf_TrackToID(last_vis_tr, false)
-   local under = (tr_num + offset) > last_num and (tr_num + offset) - last_num or nil
-   local offset_tr = find_visible_tracks(tr_num + offset) or tr_num + offset -- FIND FIRST AVAILABLE VISIBLE TRACK IF HIDDEN
-   local new_tr = under and "INV" .. under or reaper.CSurf_TrackFromID(offset_tr, false)
-   return new_tr, under
-end
-
-function Track_from_offset2(first, offset)
-   local first_num = reaper.CSurf_TrackToID(Convert_to_track(first), false)
-   local offset_tr = find_visible_tracks2(first_num + offset)-- or last_num + (num+1)--+ first_num + offset + num -- FIND FIRST AVAILABLE VISIBLE TRACK IF HIDDEN
-   local under = type(offset_tr) == "string" and string.match(offset_tr,"%d+") or nil
+   local tr_num = TBH[Convert_to_track(tr)].ID
+   local under = (tr_num + offset) > get_invisible_tracks() and (tr_num + offset) - get_invisible_tracks() or nil
+   local offset_tr = find_visible_tracks(tr_num + offset) or Get_last_visible_track() -- IF THERE IS NO OFFSET_TR IT MEANS ITS UNDER LAST TRACK
    return offset_tr, under
 end
 

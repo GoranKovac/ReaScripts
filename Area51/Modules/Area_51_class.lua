@@ -71,17 +71,16 @@ function Element:update_zone(z)
         if (mouse.dp ~= 0 or mouse.tr ~= mouse.last_tr) and not drag_copy then
           if not split then Split_for_move(z[5]) split = true end
         end
-        local offset = mouse_track_offset(z[5].sel_info[1].track)
+        local offset = mouse_track_offset2(z[5].sel_info[1].track)
         local new_L = z[2] + mouse.dp >= 0 and z[2] + mouse.dp or 0
         self.time_start = new_L
         for i = 1, #z[5].sel_info do
           local new_tr = Track_from_offset(z[5].sel_info[i].track, offset)
-          --local new_tr = Track_from_offset2(z[5].sel_info[1].track, offset)
           new_tr = env_offset_new(z[5].sel_info, z[5].sel_info[i].track, new_tr, z[5].sel_info[i].env_name) or new_tr
           self.sel_info[i].track = new_tr
           self.y, self.h = GetTrackTBH(self.sel_info)
         end
-        z[5]:ghosts(self.time_start - z[2],self)
+        z[5]:ghosts(self.time_start - z[2])
     elseif z[1] == "T" then
       local rd = (mouse.last_r_t - mouse.ort)
       if (z[3] - rd) > 0 then
@@ -143,18 +142,13 @@ end
 function Element:ghosts(off_time)
   local temp_info = {}
   if not GHOST_UPDATE and not MOVE_AREA_UPDATE then return end
-  local offset = mouse_track_offset(self.sel_info[1].track)
+  local offset = mouse_track_offset2(self.sel_info[1].track)
   local area_offset = self.time_start - lowest_start() --  OFFSET AREA SELECTIONS TO MOUSE POSITION
   local mouse_offset = off_time and off_time or (mouse.p - self.time_start) + area_offset
-
   for i = 1, #self.sel_info do
     local new_tr = Track_from_offset(self.sel_info[i].track, offset)
-    --local new_tr = Track_from_offset2(self.sel_info[1].track, offset)
     new_tr = env_offset_new(self.sel_info, self.sel_info[i].track, new_tr, self.sel_info[i].env_name) or new_tr
     temp_info[i] = { track = new_tr }
-    --if target then
-    --  target.sel_info[i].track = new_tr
-    --end
     if self.sel_info[i].ghosts then
       for j = 1, #self.sel_info[i].ghosts do
         local ghost = self.sel_info[i].ghosts[j]
@@ -257,16 +251,13 @@ function Element:track()
     ZONE_BUFFER = self:mouseZONE()
     ZONE_BUFFER.guid = self.guid
     ZONE_BUFFER[5] = copy3(self)
-    --if mouse.Ctrl() then drag_copy = self.guid end
     if ZONE_BUFFER[1] == "C" then
       if mouse.Ctrl() then
         drag_copy = self.guid
-      else
-        move = self.guid
       end
       ZONE_BUFFER[5]:draw(1,1) -- DRAW STATIC COPiE
     end
-    --move = not drag_copy and self.guid or nil
+    move = not drag_copy and self.guid or nil
   end
 
   if copy then
