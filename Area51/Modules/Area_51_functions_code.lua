@@ -193,29 +193,33 @@ end
 
 function create_item(tr, data, as_start, as_dur, time_offset, job)
   if not data or tr == reaper.GetMasterTrack(0) then return end
-  local BUFFER = Buffer_area_data(data)
+  --local BUFFER = Buffer_area_data(data)
   --split_or_delete_items(tr, data, as_start + time_offset, as_dur, "Delete")
-  for i = 1, #BUFFER do
-    local item = BUFFER[i]
-    local item_start = item.start
-    local item_lenght = item.lenght
-    local item_volume = item.volume
+  for i = 1, #data do
+    local item = data[i]
+    local _, chunk = reaper.GetItemStateChunk( item, "", false )
+    local item_start = reaper.GetMediaItemInfo_Value( item, "D_POSITION" )
+    local item_lenght = reaper.GetMediaItemInfo_Value( item, "D_LENGTH" )
+    local new_start, new_lenght, new_source_offset = New_items_position_in_area(as_start, as_start + as_dur, item_start, item_lenght)
+
     local empty_item = reaper.AddMediaItemToTrack(tr)
-    for j = 1, #BUFFER[i] do
-      local take = BUFFER[i][j]
-      local take_startoffset = take.offset
-      local source = take.source
-      local new_take = reaper.AddTakeToMediaItem(empty_item)
-      local new_start, new_lenght, new_source_offset = New_items_position_in_area(as_start, as_start + as_dur, item_start, item_lenght)
-      reaper.SetMediaItemInfo_Value(empty_item, "D_POSITION", new_start + time_offset)
-      reaper.SetMediaItemInfo_Value(empty_item, "D_LENGTH", new_lenght)
-      reaper.SetMediaItemTakeInfo_Value(new_take, "D_STARTOFFS", take_startoffset + new_source_offset)
-      reaper.SetMediaItemTake_Source(new_take, source )
-      if take.active then
-        reaper.SetActiveTake( new_take )
-      end
+
+    reaper.SetItemStateChunk( empty_item, chunk, false )
+    reaper.SetMediaItemInfo_Value(empty_item, "D_POSITION", new_start + time_offset)
+    reaper.SetMediaItemInfo_Value(empty_item, "D_LENGTH", new_lenght)
+    reaper.GetSetMediaItemInfo_String( empty_item, "GUID", reaper.genGuid(), true )
+
+    for j = 1, reaper.CountTakes( item ) do
+      local take_org = reaper.GetMediaItemTake( item, j-1 )
+      local take_dst = reaper.GetMediaItemTake( empty_item, j-1 )
+      local take_startoffset = reaper.GetMediaItemTakeInfo_Value(take_org, "D_STARTOFFS")
+      reaper.GetSetMediaItemTakeInfo_String( take_dst, "GUID", reaper.genGuid(), true )
+      reaper.SetMediaItemTakeInfo_Value(take_dst, "D_STARTOFFS", take_startoffset + new_source_offset)
     end
-    reaper.SetMediaItemInfo_Value(empty_item, "D_VOL", item_volume)
+
+    reaper.SetMediaItemInfo_Value(empty_item, "B_UISEL", 1)
+    reaper.Main_OnCommand(41613, 0)
+    reaper.SetMediaItemInfo_Value(empty_item, "B_UISEL", 0)
   end
 end
 
