@@ -4,14 +4,14 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.05
+ * Version: 0.06
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.05 (2020-04-20)
-   + Temporary disable Updatetimeline (called along with updatearrange but hits cpu)
+ * v0.06 (2020-04-20)
+   + Fixed crash with mouse passing thru some windows in some situations (alt+tab)
 --]]
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 package.cursor = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "Cursors\\" -- GET DIRECTORY FOR CURSORS
@@ -100,8 +100,10 @@ function To_client(x,y)
 end
 
 function Get_window_under_mouse()
+   local windowUnderMouse = reaper.JS_Window_FromPoint(mouse.x, mouse.y)
+   if windowUnderMouse ~= track_window then return true end
    if mouse.l_down then
-      local windowUnderMouse = reaper.JS_Window_FromPoint(mouse.x, mouse.y)
+      --local windowUnderMouse = reaper.JS_Window_FromPoint(mouse.x, mouse.y)
       local old_windowUnderMouse = reaper.JS_Window_FromPoint(mouse.ox, mouse.oy)
       if windowUnderMouse then
          if windowUnderMouse ~= track_window then
