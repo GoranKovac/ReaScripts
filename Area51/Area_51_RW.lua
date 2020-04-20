@@ -13,7 +13,6 @@
  * v0.03 (2020-04-19)
    + Reintroduced chunks for copying data
 --]]
-
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 package.cursor = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "Cursors\\" -- GET DIRECTORY FOR CURSORS
 
@@ -182,7 +181,7 @@ local function Check_undo_history()
 end
 
 
-function get_invisible_tracks()
+local function get_invisible_tracks()
    local cnt = 0
    for i = 1, reaper.CountTracks(0) do
       local tr = reaper.GetTrack(0, i - 1)
@@ -194,10 +193,24 @@ function get_invisible_tracks()
    return cnt
 end
 
+-- SINCE TRACKS CAN BE HIDDEN, LAST VISIBLE TRACK COULD BE ANY NOT NECESSARY TAST PROJECT TRACK
+local function Get_last_visible_track()
+   if reaper.CountTracks(0) == 0 then return end
+   local last_tr = reaper.GetTrack(0, reaper.CountTracks(0) - 1)
+   if not reaper.IsTrackVisible(last_tr, false) then
+      for i = reaper.CountTracks(0), 1, -1 do
+         local track = reaper.GetTrack(0, i - 1)
+         if reaper.IsTrackVisible(track, false) then
+            return track
+         end
+      end
+   end
+   return last_tr
+end
+
 -- MAIN FUNCTION FOR FINDING TRACKS COORDINATES (RETURNS CLIENTS COORDINATES)
 local TBH
 function GetTracksXYH()
-   Avisible_tracks = 0
    if reaper.CountTracks(0) == 0 then return end
    TBH = {}
    -- ONLY ADD MASTER TRACK IF VISIBLE IN TCP
@@ -231,7 +244,6 @@ function GetTracksXYH()
       local tr_b = tr_t + tr_h
       if tr_vis then
          visible_index = visible_index + 1
-         --Avisible_tracks = Avisible_tracks + 1
       end
 
       local ID = tr_vis and visible_index or nil
@@ -274,7 +286,7 @@ function Get_area_table(name)
 end
 
 -- FINDS TRACKS THAT ARE IN AREA OR MOUSE SWIPED RANGE
-function GetTracksFromRange(y_t, y_b)
+local function GetTracksFromRange(y_t, y_b)
    local range_tracks = {}
    for track, coords in pairs(TBH) do
       if coords.t >= y_t and coords.b <= y_b and coords.h ~= 0 then
@@ -344,21 +356,6 @@ function Arrange_view_info()
          return true
       end
    end
-end
-
--- SINCE TRACKS CAN BE HIDDEN, LAST VISIBLE TRACK COULD BE ANY NOT NECESSARY TAST PROJECT TRACK
-function Get_last_visible_track()
-   if reaper.CountTracks(0) == 0 then return end
-   local last_tr = reaper.GetTrack(0, reaper.CountTracks(0) - 1)
-   if not reaper.IsTrackVisible(last_tr, false) then
-      for i = reaper.CountTracks(0), 1, -1 do
-         local track = reaper.GetTrack(0, i - 1)
-         if reaper.IsTrackVisible(track, false) then
-            return track
-         end
-      end
-   end
-   return last_tr
 end
 
 -- TOTAL HEIGHT OF AREA SELECTION IS FIRST TRACK IN THE CURRENT AREA AND LAST TRACK IN THE CURRENT AREA (RANGE)
@@ -575,7 +572,7 @@ function ValidateRemovedTracks()
 end
 
 -- GET ENVELOPE ID
-function GetEnvNum(env)
+local function GetEnvNum(env)
    if reaper.ValidatePtr(env, "MediaTrack*") then return end
    local par_tr = reaper.Envelope_GetParentTrack( env )
    for i = 1, reaper.CountTrackEnvelopes(par_tr) do
@@ -627,7 +624,7 @@ function Limit_offset_range(delta, first, last, min, max)
    return delta
 end
 
-function mouse_track_offset2(first)
+function mouse_track_offset(first)
    local tbl = Get_area_table()
    local _, m_cy = To_client(0, mouse.y)
 
@@ -658,22 +655,23 @@ function Validate_tracks_type(tbl,tr_type)
    end
 end
 
-local function  find_visible_tracks(num)
+local function find_visible_tracks(num, inv_tr_num)
    for k, v in pairs(TBH) do
-      if num <= get_invisible_tracks() then
+      if num <= inv_tr_num then
          if num == v.ID then
             return k
          end
       else
-         return "INV" .. num - get_invisible_tracks()
+         return "INV" .. num - inv_tr_num
       end
    end
 end
 
 function Track_from_offset(tr, offset)
+   local inv_tr_num = get_invisible_tracks()
    local tr_num = TBH[Convert_to_track(tr)].ID
-   local under = (tr_num + offset) > get_invisible_tracks() and (tr_num + offset) - get_invisible_tracks() or nil
-   local offset_tr = find_visible_tracks(tr_num + offset) or Get_last_visible_track() -- IF THERE IS NO OFFSET_TR IT MEANS ITS UNDER LAST TRACK
+   local under = (tr_num + offset) > inv_tr_num and (tr_num + offset) - inv_tr_num or nil
+   local offset_tr = find_visible_tracks(tr_num + offset, inv_tr_num) or Get_last_visible_track() -- IF THERE IS NO OFFSET_TR IT MEANS ITS UNDER LAST TRACK
    return offset_tr, under
 end
 

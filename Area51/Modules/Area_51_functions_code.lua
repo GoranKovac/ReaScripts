@@ -424,6 +424,7 @@ function split_by_line(str)
 end
 
 -- CREATE EMPTY ENVELOPE CHUNK FROM TEMPLATE, TAKE NEEDED VALUES FROM INCOMING ENV CHUNK
+local match = string.match
 function get_set_envelope_chunk(track, env)
   if reaper.ValidatePtr(track, "MediaTrack*") then--or reaper.ValidatePtr(track, "TrackEnvelope*") then return end
     local _, env_name = reaper.GetEnvelopeName( env )
@@ -431,7 +432,7 @@ function get_set_envelope_chunk(track, env)
     local ret, chunk = reaper.GetTrackStateChunk(track, "", false)
     local ret2, env_chunk = reaper.GetEnvelopeStateChunk(env, "")
     local env_center_val = env_prop(env, "centerValue")
-    local env_name_from_chunk = string.match(env_chunk, "[^\r\n]+")
+    local env_name_from_chunk = match(env_chunk, "[^\r\n]+")
     local chunk_template = env_name_from_chunk .."\nACT 1 -1\nVIS 1 1 1\nLANEHEIGHT 0 0\nARM 1\nDEFSHAPE 0 -1 -1\nPT 0 " .. env_center_val .. " 0\n>"
     local new_chunk = chunk:sub(1, -3) .. chunk_template .. "\n>"
     reaper.SetTrackStateChunk(track, new_chunk, true)
