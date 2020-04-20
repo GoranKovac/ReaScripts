@@ -4,14 +4,14 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.08
+ * Version: 0.09
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.08 (2020-04-20)
-   + Folder selections -- DRAW + Y/Z key
+ * v0.09 (2020-04-21)
+   + Fix envelopes not pasting in override on destination tracks
 --]]
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 package.cursor = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "Cursors\\" -- GET DIRECTORY FOR CURSORS
@@ -610,7 +610,7 @@ function env_offset_new(src_tr_tbl, old, tr, env_name)
          local tr_num = GetEnvNum(old)
          local first_area_tr_num = GetEnvNum(src_tr_tbl[1].track)
          local last_area_tr_num = GetEnvNum(src_tr_tbl[#src_tr_tbl].track)
-         local delta_test = Limit_offset_range(m_num - first_num, first_area_tr_num, last_area_tr_num, 0, reaper.CountTrackEnvelopes(Convert_to_track(first_tr))-1)
+         local delta_test = Limit_offset_range(m_num - first_num, first_area_tr_num, last_area_tr_num, 0, reaper.CountTrackEnvelopes(Convert_to_track(cur_tr))-1)--Convert_to_track(first_tr)
          local new_env = reaper.GetTrackEnvelope(tr, delta_test + tr_num)
          return new_env
       end

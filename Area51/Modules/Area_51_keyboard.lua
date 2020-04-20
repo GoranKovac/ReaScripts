@@ -213,16 +213,9 @@ for i = 1, 255 do
       name = "PG-Down"
    end
       Key_TB[#Key_TB + 1] = Key:new({i}, name, func)
-   --end
-   --[[
-   Key_TB[#Key_TB + 1] = Key:new({17, 67}, "COPY", "Copy_mode", true) -- COPY (TOGGLE)
-   Key_TB[#Key_TB + 1] = Key:new({17, 86}, "PASTE", "Copy_Paste") -- PASTE
-   Key_TB[#Key_TB + 1] = Key:new({17, 68}, "DUPLICATE", "Duplicate_area") -- PASTE
-   ]]
 
-   Key_TB[#Key_TB + 1] = Key:new({17,67}, "COPY", "Copy_mode", "Ctrl") -- COPY (TOGGLE)
-   Key_TB[#Key_TB + 1] = Key:new({17,86}, "PASTE", "Copy_Paste", "Ctrl") -- PASTE
-   Key_TB[#Key_TB + 1] = Key:new({17,68}, "DUPLICATE", "Duplicate_area","Ctrl") -- PASTE
-   Key_TB[#Key_TB + 1] = Key:new({16,17,89}, "FOLDER") -- PASTE
-
+      Key_TB[#Key_TB + 1] = Key:new({17,67}, "COPY", "Copy_mode", "Ctrl") -- COPY (TOGGLE)
+      Key_TB[#Key_TB + 1] = Key:new({17,86}, "PASTE", "Copy_Paste", "Ctrl") -- PASTE
+      Key_TB[#Key_TB + 1] = Key:new({17,68}, "DUPLICATE", "Duplicate_area","Ctrl") -- PASTE
+      Key_TB[#Key_TB + 1] = Key:new({89}, "FOLDER") -- PASTE
 end
