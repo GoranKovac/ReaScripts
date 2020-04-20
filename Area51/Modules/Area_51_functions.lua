@@ -1,10 +1,10 @@
 --[[
    * Author: SeXan
    * Licence: GPL v3
-   * Version: 0.04
+   * Version: 0.05
 	 * NoIndex: true
 --]]
-
+local reaper = reaper
 local refresh_tracks, update, update_all
 
 function Delete(tr, src_tr, data, t_start, t_dur, t_offset, job)
@@ -63,7 +63,6 @@ function Area_function(tbl,func)
           new_tr = get_set_envelope_chunk(new_tr, target_track)
         end
 
-
         local off_tr = copy and new_tr or target_track -- OFFSET TRACK ONLY IF WE ARE IN COPY MODE
         _G[func](off_tr, target_track, sel_info_t, tbl_t.time_start, tbl_t.time_dur, total_pos_offset, func)
       end
@@ -90,7 +89,7 @@ function Area_function(tbl,func)
     end
     reaper.Undo_EndBlock("A51 " .. func, 4)
     reaper.PreventUIRefresh(-1)
-    reaper.UpdateTimeline()
+    --reaper.UpdateTimeline()
     reaper.UpdateArrange()
 end
 
@@ -178,6 +177,6 @@ function Area_Drag(src_tbl, dst_tbl, src_time_tbl, dst_time_tbl, src_dst_offset,
 
   reaper.Undo_EndBlock("A51 " .. func, 4)
   --reaper.PreventUIRefresh(-1)
-  reaper.UpdateTimeline()
+  --reaper.UpdateTimeline()
   reaper.UpdateArrange()
 end

@@ -1,10 +1,10 @@
 --[[
    * Author: SeXan
    * Licence: GPL v3
-   * Version: 0.01
+   * Version: 0.05
 	 * NoIndex: true
 --]]
-
+local reaper = reaper
 local Key_TB = {}
 local key
 local intercept_keys = -1
@@ -31,8 +31,7 @@ function Element:new(ID, name, func, m_key)
    elm.name          = name
    elm.press         = function()  local start = true
                                  for i = 1, #elm.ID do
-                                    if reaper.JS_VKeys_GetState(startTime-2):byte(elm.ID[i]) == 0 then start = false break -- BREAK IF NOT BOTH KEYS ARE PRESSED
-                                    end
+                                    if reaper.JS_VKeys_GetState(startTime-2):byte(elm.ID[i]) == 0 then start = false break end-- BREAK IF NOT BOTH KEYS ARE PRESSED
                                  end
                                  return start
                                  end
@@ -140,7 +139,8 @@ function Track_keys()
 
   key = {}
 
-  for k,v in pairs(Key_TB) do v:GetKey() end
+  --for k,v in pairs(Key_TB) do v:GetKey() end
+  for i = 1, #Key_TB do Key_TB[i]:GetKey() end
 
   if key.DOWN then exec_func(key.DOWN) end
 end

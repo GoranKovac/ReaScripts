@@ -4,19 +4,18 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.04
+ * Version: 0.05
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.04 (2020-04-20)
-   + Reintroduced reaper.PreventUIRefresh
-   + Code optimization in visible track finding function
-   + Minor code cleanup and optimizations
+ * v0.05 (2020-04-20)
+   + Temporary disable Updatetimeline (called along with updatearrange but hits cpu)
 --]]
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 package.cursor = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "Cursors\\" -- GET DIRECTORY FOR CURSORS
+local reaper = reaper
 
 if not reaper.APIExists("JS_ReaScriptAPI_Version") then
   reaper.MB( "JS_ReaScriptAPI is required for this script", "Please download it from ReaPack", 0 )
@@ -28,7 +27,6 @@ if not reaper.APIExists("JS_ReaScriptAPI_Version") then
      return reaper.defer(function() end)
    end
 end
-
 require("Modules/Area_51_class")      -- AREA FUNCTIONS SCRIPT
 require("Modules/Area_51_ghosts")     -- AREA MOUSE INPUT HANDLING
 require("Modules/Area_51_keyboard")   -- AREA KEYBOARD INPUT HANDLING

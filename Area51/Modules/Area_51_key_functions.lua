@@ -1,10 +1,10 @@
 --[[
    * Author: SeXan
    * Licence: GPL v3
-   * Version: 0.01
+   * Version: 0.05
 	 * NoIndex: true
 --]]
-
+local reaper = reaper
 local prev_area
 
 function Remove()

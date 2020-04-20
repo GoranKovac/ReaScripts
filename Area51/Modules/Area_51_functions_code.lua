@@ -1,10 +1,10 @@
 --[[
    * Author: SeXan
    * Licence: GPL v3
-   * Version: 0.04
+   * Version: 0.05
 	 * NoIndex: true
 --]]
-
+local reaper = reaper
 function deselect_all_ai_on_track(env_track)
   for i = 0,  reaper.CountAutomationItems( env_track ) do
     reaper.GetSetAutomationItemInfo(env_track, i-1, "D_UISEL", 0, true) -- SET AI DESELECTED

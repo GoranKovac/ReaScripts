@@ -1,9 +1,10 @@
 --[[
    * Author: SeXan
    * Licence: GPL v3
-   * Version: 0.04
+   * Version: 0.05
 	 * NoIndex: true
 --]]
+local reaper = reaper
 local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
 local track_window = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8) -- GET TRACK VIEW
 
