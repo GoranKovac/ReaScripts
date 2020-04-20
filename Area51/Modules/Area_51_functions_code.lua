@@ -1,7 +1,7 @@
 --[[
    * Author: SeXan
    * Licence: GPL v3
-   * Version: 0.03
+   * Version: 0.04
 	 * NoIndex: true
 --]]
 

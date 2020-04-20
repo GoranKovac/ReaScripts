@@ -4,14 +4,16 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.03
+ * Version: 0.04
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.03 (2020-04-19)
-   + Reintroduced chunks for copying data
+ * v0.04 (2020-04-20)
+   + Reintroduced reaper.PreventUIRefresh
+   + Code optimization in visible track finding function
+   + Minor code cleanup and optimizations
 --]]
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 package.cursor = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "Cursors\\" -- GET DIRECTORY FOR CURSORS
