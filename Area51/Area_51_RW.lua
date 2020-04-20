@@ -4,13 +4,13 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.1
+ * Version: 0.10
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.1 (2020-04-21)
+ * v0.10 (2020-04-21)
    + Translate values between envelopes
 --]]
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
