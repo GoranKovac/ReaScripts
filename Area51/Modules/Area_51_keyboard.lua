@@ -143,6 +143,7 @@ function Track_keys()
   for i = 1, #Key_TB do Key_TB[i]:GetKey() end
 
   if key.DOWN then exec_func(key.DOWN) end
+  FOLDER_MOD = ((key.HOLD) and (key.HOLD.name == "FOLDER")) and true or nil
 end
 
 function Intercept_reaper_key(tbl)
@@ -222,5 +223,6 @@ for i = 1, 255 do
    Key_TB[#Key_TB + 1] = Key:new({17,67}, "COPY", "Copy_mode", "Ctrl") -- COPY (TOGGLE)
    Key_TB[#Key_TB + 1] = Key:new({17,86}, "PASTE", "Copy_Paste", "Ctrl") -- PASTE
    Key_TB[#Key_TB + 1] = Key:new({17,68}, "DUPLICATE", "Duplicate_area","Ctrl") -- PASTE
+   Key_TB[#Key_TB + 1] = Key:new({16,17,89}, "FOLDER") -- PASTE
 
 end

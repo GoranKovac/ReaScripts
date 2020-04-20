@@ -4,14 +4,14 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.07
+ * Version: 0.08
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.07 (2020-04-20)
-   + Fixed crash when moving or drag copy onto new tracks
+ * v0.08 (2020-04-20)
+   + Folder selections -- DRAW + Y/Z key
 --]]
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 package.cursor = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "Cursors\\" -- GET DIRECTORY FOR CURSORS
@@ -315,8 +315,15 @@ local function Get_track_under_mouse(x, y)
    local track, env_info = reaper.GetTrackFromPoint(x, y)
    if track == reaper.GetMasterTrack( 0 ) and reaper.GetMasterTrackVisibility() == 0 then return end -- IGNORE DOCKED MASTER TRACK
    if track and env_info == 0 then
-      return track, TBH[track].t, TBH[track].b, TBH[track].h
-     -- return track, TBH[track].t, TBH[Get_folder_last_child(track)].b -- reaper.GetMediaTrackInfo_Value(track, "I_FOLDERDEPTH") == 1 then
+      if not FOLDER_MOD then
+         return track, TBH[track].t, TBH[track].b, TBH[track].h
+      else
+         if reaper.GetMediaTrackInfo_Value(track, "I_FOLDERDEPTH") == 1 then
+            return track, TBH[track].t, TBH[Get_folder_last_child(track)].b
+         else
+            return track, TBH[track].t, TBH[track].b, TBH[track].h
+         end
+      end
    elseif track and env_info == 1 then
       for i = 1, reaper.CountTrackEnvelopes(track) do
          local env = reaper.GetTrackEnvelope(track, i - 1)

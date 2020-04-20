@@ -82,15 +82,19 @@ function Area_function(tbl,func)
       update_all = nil
     end
 
-    if refresh_tracks then
-      GetTracksXYH()
-      refresh_tracks = false
-    end
+    --if refresh_tracks then
+    --  GetTracksXYH()
+    --  refresh_tracks = false
+   -- end
   end
   reaper.Undo_EndBlock("A51 " .. func, 4)
   reaper.PreventUIRefresh(-1)
   --reaper.UpdateTimeline()
   reaper.UpdateArrange()
+  if refresh_tracks then
+    GetTracksXYH()      -- CALL AFTER PreventUIRefresh SINCE TRACK COORDINATE DO NOT UPDATE
+    refresh_tracks = false
+  end
 end
 
 ------------------------------------------- D R A G ----------------------------------------------------
@@ -138,7 +142,6 @@ function Area_Drag(src_tbl, dst_tbl, src_time_tbl, dst_time_tbl, src_dst_offset,
   reaper.PreventUIRefresh(1)
   local func = zone .. "_" .. action
   local clean = (action == "move" and src_dst_offset ~= 0) and Clean(dst_tbl.sel_info, src_tbl.sel_info, dst_time_tbl, src_time_tbl)
-  --local tr_offset = mouse_track_offset(src_tbl.sel_info[1].track)
 
   local new_area = {}
 
@@ -149,9 +152,6 @@ function Area_Drag(src_tbl, dst_tbl, src_time_tbl, dst_time_tbl, src_dst_offset,
 
     local new_tr, under = Track_from_offset(src_tr, tr_offset)
     new_tr = under and Insert_track(under) or new_tr
-   -- if under then
-   --   new_tr = Insert_track(under)
-    --end
     new_tr = env_offset_new(src_tbl.sel_info, src_tr, new_tr, src_tbl.sel_info[i].env_name) or new_tr
 
     if reaper.ValidatePtr(new_tr, "MediaTrack*") and reaper.ValidatePtr(src_tr, "TrackEnvelope*") then
