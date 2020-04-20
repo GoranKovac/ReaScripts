@@ -7,6 +7,7 @@
 
  -- TRANSLATION OF VARIOUS VALUES TO OTHER RANGE
  -- CURRENTLY IT IS USED TO CONVERT ENVELOPE POINTS VALUES TO PIXELS OF THE TRACK HEIGHT
+local reaper = reaper
 local function TranslateRange(value, oldMin, oldMax, newMin, newMax)
 	local oldRange = oldMax - oldMin;
 	local newRange = newMax - newMin;

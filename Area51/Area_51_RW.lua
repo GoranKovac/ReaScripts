@@ -27,6 +27,7 @@ if not reaper.APIExists("JS_ReaScriptAPI_Version") then
      return reaper.defer(function() end)
    end
 end
+
 require("Modules/Area_51_class")      -- AREA FUNCTIONS SCRIPT
 require("Modules/Area_51_ghosts")     -- AREA MOUSE INPUT HANDLING
 require("Modules/Area_51_keyboard")   -- AREA KEYBOARD INPUT HANDLING

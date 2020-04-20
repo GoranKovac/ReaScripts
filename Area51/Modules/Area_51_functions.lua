@@ -42,55 +42,55 @@ end
 function Area_function(tbl,func)
   if not tbl then return end -- IF THERE IS NO TABLE OR TABLE HAS NO DATA RETURN
   local tr_offset = copy and mouse_track_offset() or 0
-    reaper.Undo_BeginBlock()
-    reaper.PreventUIRefresh(1)
-    --local tr_offset = copy and mouse_track_offset() or 0
+  reaper.Undo_BeginBlock()
+  reaper.PreventUIRefresh(1)
+  --local tr_offset = copy and mouse_track_offset() or 0
 
-    for a = 1, #tbl do
-      local tbl_t = tbl[a]
-      local area_pos_offset = 0
-      area_pos_offset = area_pos_offset + (tbl_t.time_start - lowest_start()) --  OFFSET BETWEEN AREAS
-      local total_pos_offset = mouse.p + area_pos_offset
+  for a = 1, #tbl do
+    local tbl_t = tbl[a]
+    local area_pos_offset = 0
+    area_pos_offset = area_pos_offset + (tbl_t.time_start - lowest_start()) --  OFFSET BETWEEN AREAS
+    local total_pos_offset = mouse.p + area_pos_offset
 
-      for i = 1, #tbl_t.sel_info do	-- LOOP THRU AREA DATA
-        local sel_info_t = tbl_t.sel_info[i]
-        local target_track = sel_info_t.track -- AREA TRACK
-        local new_tr, under = Track_from_offset(target_track, tr_offset)
-        new_tr = under and Insert_track(under) or new_tr
-        new_tr = env_offset_new(tbl_t.sel_info, target_track, new_tr, tbl_t.sel_info[i].env_name) or new_tr
+    for i = 1, #tbl_t.sel_info do	-- LOOP THRU AREA DATA
+      local sel_info_t = tbl_t.sel_info[i]
+      local target_track = sel_info_t.track -- AREA TRACK
+      local new_tr, under = Track_from_offset(target_track, tr_offset)
+      new_tr = under and Insert_track(under) or new_tr
+      new_tr = env_offset_new(tbl_t.sel_info, target_track, new_tr, tbl_t.sel_info[i].env_name) or new_tr
 
-        if reaper.ValidatePtr(new_tr, "MediaTrack*") and reaper.ValidatePtr(target_track, "TrackEnvelope*") then
-          new_tr = get_set_envelope_chunk(new_tr, target_track)
-        end
-
-        local off_tr = copy and new_tr or target_track -- OFFSET TRACK ONLY IF WE ARE IN COPY MODE
-        _G[func](off_tr, target_track, sel_info_t, tbl_t.time_start, tbl_t.time_dur, total_pos_offset, func)
+      if reaper.ValidatePtr(new_tr, "MediaTrack*") and reaper.ValidatePtr(target_track, "TrackEnvelope*") then
+        new_tr = get_set_envelope_chunk(new_tr, target_track)
       end
 
-      if update then
-        tbl_t.time_start = (func == "Duplicate") and tbl_t.time_start + tbl_t.time_dur or tbl_t.time_start
-        tbl_t.sel_info = GetSelectionInfo(tbl_t)
-        update = nil
-      end
-
-      if update_all then
-        local areas_tbl = Get_area_table("Areas")
-        Ghost_unlink_or_destroy(areas_tbl, "Delete")
-        for i = 1, #areas_tbl do
-          areas_tbl[i].sel_info = GetSelectionInfo(areas_tbl[i])
-        end
-        update_all = nil
-      end
-
-      if refresh_tracks then
-        GetTracksXYH()
-        refresh_tracks = false
-      end
+      local off_tr = copy and new_tr or target_track -- OFFSET TRACK ONLY IF WE ARE IN COPY MODE
+      _G[func](off_tr, target_track, sel_info_t, tbl_t.time_start, tbl_t.time_dur, total_pos_offset, func)
     end
-    reaper.Undo_EndBlock("A51 " .. func, 4)
-    reaper.PreventUIRefresh(-1)
-    --reaper.UpdateTimeline()
-    reaper.UpdateArrange()
+
+    if update then
+      tbl_t.time_start = (func == "Duplicate") and tbl_t.time_start + tbl_t.time_dur or tbl_t.time_start
+      tbl_t.sel_info = GetSelectionInfo(tbl_t)
+      update = nil
+    end
+
+    if update_all then
+      local areas_tbl = Get_area_table("Areas")
+      Ghost_unlink_or_destroy(areas_tbl, "Delete")
+      for i = 1, #areas_tbl do
+        areas_tbl[i].sel_info = GetSelectionInfo(areas_tbl[i])
+      end
+      update_all = nil
+    end
+
+    if refresh_tracks then
+      GetTracksXYH()
+      refresh_tracks = false
+    end
+  end
+  reaper.Undo_EndBlock("A51 " .. func, 4)
+  reaper.PreventUIRefresh(-1)
+  --reaper.UpdateTimeline()
+  reaper.UpdateArrange()
 end
 
 ------------------------------------------- D R A G ----------------------------------------------------

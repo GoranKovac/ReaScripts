@@ -201,7 +201,6 @@ function create_item(tr, data, as_start, as_dur, time_offset, job)
     local item_start = reaper.GetMediaItemInfo_Value( item, "D_POSITION" )
     local item_lenght = reaper.GetMediaItemInfo_Value( item, "D_LENGTH" )
     local new_start, new_lenght, new_source_offset = New_items_position_in_area(as_start, as_start + as_dur, item_start, item_lenght)
-
     local empty_item = reaper.AddMediaItemToTrack(tr)
 
     reaper.SetItemStateChunk( empty_item, chunk, false )
