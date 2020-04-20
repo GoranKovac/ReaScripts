@@ -5,6 +5,14 @@
 	 * NoIndex: true
 --]]
 local reaper = reaper
+
+function TranslateRange(value, oldMin, oldMax, newMin, newMax)
+	local oldRange = oldMax - oldMin;
+	local newRange = newMax - newMin;
+	local newValue = ((value - oldMin) * newRange / oldRange) + newMin;
+	return newValue
+end
+
 function deselect_all_ai_on_track(env_track)
   for i = 0,  reaper.CountAutomationItems( env_track ) do
     reaper.GetSetAutomationItemInfo(env_track, i-1, "D_UISEL", 0, true) -- SET AI DESELECTED
@@ -150,12 +158,16 @@ function paste_env(tr, env_name, env_data, as_start, as_dur, time_offset, job)
   if tr and reaper.ValidatePtr(tr, "TrackEnvelope*") then -- IF TRACK HAS ENVELOPES PASTE THEM
     insert_edge_points(tr, as_start, as_dur, time_offset, job) -- INSERT EDGE POINTS AT CURRENT ENVELOE VALUE AND DELETE WHOLE RANGE INSIDE (DO NOT ALLOW MIXING ENVELOPE POINTS AND THAT WEIRD SHIT)
     del_env(tr, as_start, as_dur, time_offset)
+    local d_min = env_prop(tr,"minValue")
+    local d_max = env_prop(tr,"maxValue")
+    local s_min = env_prop(env_name,"minValue")
+    local s_max = env_prop(env_name,"maxValue")
     for i = 1, #env_data do
         local env = env_data[i]
         reaper.InsertEnvelopePoint(
           tr,
           env.time +  time_offset,
-          env.value,
+          TranslateRange(env.value,s_min,s_max,d_min,d_max),--env.value,
           env.shape,
           env.tension,
           env.selected,

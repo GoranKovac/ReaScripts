@@ -4,14 +4,14 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.09
+ * Version: 0.1
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.09 (2020-04-21)
-   + Fix envelopes not pasting in override on destination tracks
+ * v0.1 (2020-04-21)
+   + Translate values between envelopes
 --]]
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 package.cursor = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "Cursors\\" -- GET DIRECTORY FOR CURSORS

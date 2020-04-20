@@ -8,12 +8,6 @@
  -- TRANSLATION OF VARIOUS VALUES TO OTHER RANGE
  -- CURRENTLY IT IS USED TO CONVERT ENVELOPE POINTS VALUES TO PIXELS OF THE TRACK HEIGHT
 local reaper = reaper
-local function TranslateRange(value, oldMin, oldMax, newMin, newMax)
-	local oldRange = oldMax - oldMin;
-	local newRange = newMax - newMin;
-	local newValue = ((value - oldMin) * newRange / oldRange) + newMin;
-	return newValue
-end
 
  -- SINCE THERE IS NO NATIVE WAY TO GET AI LANE HEIGHT IT IS CALCULATED MANUALLY
 local function env_AI_lane(val)
