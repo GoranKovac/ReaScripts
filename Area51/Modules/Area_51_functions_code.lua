@@ -98,13 +98,17 @@ local AI_info = {
 function Paste_AI(tr, src_tr, data, t_start, t_dur, t_offset, job)
   if not data then return end
   if tr and reaper.ValidatePtr(tr, "TrackEnvelope*") then
+    local d_min = env_prop(tr,"minValue")
+    local d_max = env_prop(tr,"maxValue")
+    local s_min = env_prop(src_tr,"minValue")
+    local s_max = env_prop(src_tr,"maxValue")
     for i = 1, #data do
       if not data[i].info then return end
       local AI_offset = data[i].info["D_POSITION"]
       local Aidx = reaper.InsertAutomationItem( tr, -1, AI_offset + t_offset, data[i].info["D_LENGTH"])
       for j = 1, #data[i].points do
         local ai_point = data[i].points[j]
-          reaper.InsertEnvelopePointEx( tr, Aidx, ai_point.time + t_offset, ai_point.value, ai_point.shape, ai_point.tension, 0, true ) --(t_offset - t_start)
+          reaper.InsertEnvelopePointEx( tr, Aidx, ai_point.time + t_offset, TranslateRange(ai_point.value,s_min,s_max,d_min,d_max), ai_point.shape, ai_point.tension, 0, true ) --(t_offset - t_start)
       end
       reaper.Envelope_SortPointsEx( tr, Aidx )
       reaper.GetSetAutomationItemInfo(tr, Aidx, "D_UISEL", 0, true) -- DESELECT
