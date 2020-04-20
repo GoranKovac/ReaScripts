@@ -4,14 +4,14 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.06
+ * Version: 0.07
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.06 (2020-04-20)
-   + Fixed crash with mouse passing thru some windows in some situations (alt+tab)
+ * v0.07 (2020-04-20)
+   + Fixed crash when moving or drag copy onto new tracks
 --]]
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 package.cursor = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "Cursors\\" -- GET DIRECTORY FOR CURSORS

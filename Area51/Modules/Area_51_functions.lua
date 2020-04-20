@@ -148,9 +148,10 @@ function Area_Drag(src_tbl, dst_tbl, src_time_tbl, dst_time_tbl, src_dst_offset,
     --local dst_time_start, dst_time_dur = dst_time_tbl[1], dst_time_tbl[2]
 
     local new_tr, under = Track_from_offset(src_tr, tr_offset)
-    if under then
-      new_tr = Insert_track(under)
-    end
+    new_tr = under and Insert_track(under) or new_tr
+   -- if under then
+   --   new_tr = Insert_track(under)
+    --end
     new_tr = env_offset_new(src_tbl.sel_info, src_tr, new_tr, src_tbl.sel_info[i].env_name) or new_tr
 
     if reaper.ValidatePtr(new_tr, "MediaTrack*") and reaper.ValidatePtr(src_tr, "TrackEnvelope*") then
@@ -159,13 +160,7 @@ function Area_Drag(src_tbl, dst_tbl, src_time_tbl, dst_time_tbl, src_dst_offset,
     new_area[i] = {track = new_tr}
 
     _G[func](new_tr, src_tr, src_tbl.sel_info[i], src_time_start, src_time_dur, src_dst_offset)
-  end
-
-  GetTracksXYH()
-
-  local new_y, new_h = GetTrackTBH(new_area)  -- SINCE WE ARE MOVING AREA, IF THERE ARE NEW ADDED TRACKS CHANGE AREA TO THAT LOCATION
-  dst_tbl.y, dst_tbl.h = new_y, new_h
-
+  end 
   if update_all then
     local areas_tbl = Get_area_table("Areas")
     Ghost_unlink_or_destroy(areas_tbl, "Delete")
@@ -176,7 +171,11 @@ function Area_Drag(src_tbl, dst_tbl, src_time_tbl, dst_time_tbl, src_dst_offset,
   end
 
   reaper.Undo_EndBlock("A51 " .. func, 4)
-  --reaper.PreventUIRefresh(-1)
+  reaper.PreventUIRefresh(-1)
   --reaper.UpdateTimeline()
   reaper.UpdateArrange()
+
+  GetTracksXYH()
+  local new_y, new_h = GetTrackTBH(new_area)  -- SINCE WE ARE MOVING AREA, IF THERE ARE NEW ADDED TRACKS CHANGE AREA TO THAT LOCATION
+  dst_tbl.y, dst_tbl.h = new_y, new_h
 end
