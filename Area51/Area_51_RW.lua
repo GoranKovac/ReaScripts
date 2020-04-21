@@ -4,14 +4,14 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.21
+ * Version: 0.22
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.21 (2020-04-21)
-   + Tuned down calling JS_VKeys_GetState only once per cycle
+ * v0.22 (2020-04-21)
+   + Optimized keyboard call with checking previous-curent state
 --]]
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 package.cursor = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "Cursors\\" -- GET DIRECTORY FOR CURSORS

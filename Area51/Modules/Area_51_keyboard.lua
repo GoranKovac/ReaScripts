@@ -7,7 +7,7 @@
 local reaper = reaper
 local Key_TB = {}
 local key
-local key_state
+local key_state, last_key_state
 local intercept_keys = -1
 
 local startTime = reaper.time_precise()
@@ -135,16 +135,18 @@ function Element:GetKey()
 end
 
 function Track_keys()
-  local prevCycleTime = thisCycleTime or startTime
-  thisCycleTime = reaper.time_precise()
+   local prevCycleTime = thisCycleTime or startTime
+   thisCycleTime = reaper.time_precise()
    key_state = reaper.JS_VKeys_GetState(startTime-2)
-  key = {}
+   key = {}
 
-  --for k,v in pairs(Key_TB) do v:GetKey() end
-  for i = 1, #Key_TB do Key_TB[i]:GetKey() end
+   if key_state ~= last_key_state then
+      for i = 1, #Key_TB do Key_TB[i]:GetKey() end
+      last_key_state = key_state
+   end
 
-  if key.DOWN then exec_func(key.DOWN) end
-  FOLDER_MOD = ((key.HOLD) and (key.HOLD.name == "FOLDER")) and true or nil
+   if key.DOWN then exec_func(key.DOWN) end
+   FOLDER_MOD = ((key.HOLD) and (key.HOLD.name == "FOLDER")) and true or nil
 end
 
 function Intercept_reaper_key(tbl)
