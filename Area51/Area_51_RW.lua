@@ -4,13 +4,13 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.12
+ * Version: 0.13
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.12 (2020-04-21)
+ * v0.13 (2020-04-21)
    + Fix ghost not updating if mouse is outside of arrange (WINDOW IN FRONT ISSUE)
 --]]
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
