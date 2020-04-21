@@ -131,10 +131,10 @@ end
 
 A_DRAWCOUNT = 0
 function Element:draw(w,h,test,test2,test3,test4)
-  local test_w = test2 and test2 or self.w
   local test_x = test and test or self.x
-  local test_y=  test3 and test3 or self.y
-  local test_h=  test4 and test4 or self.h
+  local test_w = test2 and test2 or self.w
+  local test_y = test3 and test3 or self.y
+  local test_h = test4 and test4 or self.h
   reaper.JS_Composite(track_window, test_x, test_y, test_w, test_h, self.bm, 0, 0, w, h, true)
   --reaper.JS_Composite(track_window, self.x, self.y, self.w, self.h, self.bm, 0, 0, w, h, true)
   A_DRAWCOUNT = A_DRAWCOUNT + 1
@@ -298,7 +298,7 @@ function Track(tbl)
 
   for i = 1, #tbl do
     if tbl[i]:mouseIN() then
-      CUR_AREA_ZONE = tbl[i]:zoneIN(mouse.x,mouse.y)[1]
+      CUR_AREA_ZONE = not copy and tbl[i]:zoneIN(mouse.x,mouse.y)[1]
       break
     else
       CUR_AREA_ZONE = nil

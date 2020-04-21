@@ -30,6 +30,7 @@ function Copy_mode()
   GHOST_UPDATE = copy and 1 or false
   if copy then
     Set_copy_tbl(copy3(tbl))
+    Buffer_copy(Get_area_table("Copy"))
   end
   if not copy then
     Ghost_unlink_or_destroy(tbl, "Unlink")

@@ -4,14 +4,15 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.13
+ * Version: 0.14
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.13 (2020-04-21)
-   + Fix ghost not updating if mouse is outside of arrange (WINDOW IN FRONT ISSUE)
+ * v0.14 (2020-04-21)
+   + Buffer data in copy table
+   + Copy obays empty spaces (copy whole area as is)
 --]]
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 package.cursor = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "Cursors\\" -- GET DIRECTORY FOR CURSORS

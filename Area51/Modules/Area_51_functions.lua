@@ -42,9 +42,9 @@ end
 function Area_function(tbl,func)
   if not tbl then return end -- IF THERE IS NO TABLE OR TABLE HAS NO DATA RETURN
   local tr_offset = copy and Mouse_track_offset() or 0
+  local BUFFER = Get_area_table("Copy")
   reaper.Undo_BeginBlock()
   reaper.PreventUIRefresh(1)
-  --local tr_offset = copy and mouse_track_offset() or 0
 
   for a = 1, #tbl do
     local tbl_t = tbl[a]
@@ -64,7 +64,8 @@ function Area_function(tbl,func)
       end
 
       local off_tr = copy and new_tr or target_track -- OFFSET TRACK ONLY IF WE ARE IN COPY MODE
-      _G[func](off_tr, target_track, sel_info_t, tbl_t.time_start, tbl_t.time_dur, total_pos_offset, func)
+      _G[func](off_tr, target_track, BUFFER[a].sel_info[i], tbl_t.time_start, tbl_t.time_dur, total_pos_offset, func)
+      --_G[func](off_tr, target_track, sel_info_t, tbl_t.time_start, tbl_t.time_dur, total_pos_offset, func)
     end
 
     if update then
@@ -81,12 +82,8 @@ function Area_function(tbl,func)
       end
       update_all = nil
     end
-
-    --if refresh_tracks then
-    --  GetTracksXYH()
-    --  refresh_tracks = false
-   -- end
   end
+
   reaper.Undo_EndBlock("A51 " .. func, 4)
   reaper.PreventUIRefresh(-1)
   --reaper.UpdateTimeline()
@@ -160,7 +157,7 @@ function Area_Drag(src_tbl, dst_tbl, src_time_tbl, dst_time_tbl, src_dst_offset,
     new_area[i] = {track = new_tr}
 
     _G[func](new_tr, src_tr, src_tbl.sel_info[i], src_time_start, src_time_dur, src_dst_offset)
-  end 
+  end
   if update_all then
     local areas_tbl = Get_area_table("Areas")
     Ghost_unlink_or_destroy(areas_tbl, "Delete")
