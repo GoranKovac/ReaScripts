@@ -4,14 +4,14 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.15
+ * Version: 0.16
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.15 (2020-04-21)
-   + Buffer items to zone copy (for drag copy)
+ * v0.16 (2020-04-21)
+   + Fix intercept in copy mode
 --]]
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 package.cursor = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "Cursors\\" -- GET DIRECTORY FOR CURSORS
