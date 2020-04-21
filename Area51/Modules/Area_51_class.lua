@@ -72,7 +72,7 @@ function Element:update_zone(z)
         if (mouse.dp ~= 0 or mouse.tr ~= mouse.last_tr) and not drag_copy then
           if not split then Split_for_move(z[5]) split = true end
         end
-        local offset = mouse_track_offset(z[5].sel_info[1].track)
+        local offset = Mouse_track_offset(z[5].sel_info[1].track)
         local new_L = z[2] + mouse.dp >= 0 and z[2] + mouse.dp or 0
         self.time_start = new_L
         for i = 1, #z[5].sel_info do
@@ -143,7 +143,7 @@ end
 function Element:ghosts(off_time)
   local temp_info = {}
   if not GHOST_UPDATE and not MOVE_AREA_UPDATE then return end
-  local offset = mouse_track_offset(self.sel_info[1].track)
+  local offset = Mouse_track_offset(self.sel_info[1].track)
   local area_offset = self.time_start - lowest_start() --  OFFSET AREA SELECTIONS TO MOUSE POSITION
   local mouse_offset = off_time and off_time or (mouse.p - self.time_start) + area_offset
   for i = 1, #self.sel_info do

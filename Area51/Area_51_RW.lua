@@ -634,7 +634,7 @@ function Limit_offset_range(delta, first, last, min, max)
    return delta
 end
 
-function mouse_track_offset(first)
+function Mouse_track_offset(first)
    local tbl = Get_area_table()
    local _, m_cy = To_client(0, mouse.y)
 
