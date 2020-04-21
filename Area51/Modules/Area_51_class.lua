@@ -309,7 +309,6 @@ end
 function Draw(tbl)
   local is_view_changed = Arrange_view_info()
   local is_mouse_change = check_mouse_change()
-  A1 = is_mouse_change
 
   if is_mouse_change then
     GHOST_UPDATE = copy and 1
