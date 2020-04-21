@@ -7,6 +7,7 @@
 local reaper = reaper
 local Key_TB = {}
 local key
+local key_state
 local intercept_keys = -1
 
 local startTime = reaper.time_precise()
@@ -31,7 +32,7 @@ function Element:new(ID, name, func, m_key)
    elm.name          = name
    elm.press         = function()  local start = true
                                  for i = 1, #elm.ID do
-                                    if reaper.JS_VKeys_GetState(startTime-2):byte(elm.ID[i]) == 0 then start = false break end-- BREAK IF NOT BOTH KEYS ARE PRESSED
+                                    if key_state:byte(elm.ID[i]) == 0 then start = false break end-- BREAK IF NOT BOTH KEYS ARE PRESSED
                                  end
                                  return start
                                  end
@@ -118,7 +119,7 @@ end
 
 function Element:GetKey()
    local KEY_DOWN = self.press()
-   self.mod = modifier_name(reaper.JS_Mouse_GetState(95))
+   --self.mod = modifier_name(reaper.JS_Mouse_GetState(95))
 
    if KEY_DOWN then
       if self.last_key_up == true and self.last_key_down == false then
@@ -136,7 +137,7 @@ end
 function Track_keys()
   local prevCycleTime = thisCycleTime or startTime
   thisCycleTime = reaper.time_precise()
-
+   key_state = reaper.JS_VKeys_GetState(startTime-2)
   key = {}
 
   --for k,v in pairs(Key_TB) do v:GetKey() end
