@@ -4,14 +4,14 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.19
+ * Version: 0.20
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.19 (2020-04-21)
-   + Fix crash when duplicating items (duplicate does not need buffer)
+ * v0.20 (2020-04-21)
+   + Fix mouse offset not including total height of last track (with envelopes)
 --]]
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 package.cursor = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "Cursors\\" -- GET DIRECTORY FOR CURSORS
@@ -268,7 +268,7 @@ end
 
 function Get_tr_TBH(tr)
    if TBH[tr] then
-      return TBH[tr].t, TBH[tr].h, TBH[tr].b
+      return TBH[tr].t, TBH[tr].h, TBH[tr].b, TBH[tr].th
    end
 end
 
@@ -641,7 +641,10 @@ function Mouse_track_offset(first)
    local first_area = copy and TBH[Convert_to_track(tbl[1].sel_info[1].track)].ID or TBH[Convert_to_track(first)].ID
 
    local last_project_tr = Get_last_visible_track()
-   local l_y, l_h, l_b = Get_tr_TBH(last_project_tr)
+   local l_h = reaper.GetMediaTrackInfo_Value(last_project_tr, "I_WNDH") -- USE THIS BECAUSE TRACK MAY HAVE ENVELOPES
+   local l_y = reaper.GetMediaTrackInfo_Value(last_project_tr, "I_TCPY")
+   --local last_Tr_h = reaper.GetMediaTrackInfo_Value(last_project_tr, "I_TCPH")
+   --local l_y, l_h, l_b = Get_tr_TBH(last_project_tr)
 
    local cur_m_tr = mouse.last_tr
    local first_m_tr = copy and tbl[1].sel_info[1].track or mouse.otr
@@ -649,7 +652,8 @@ function Mouse_track_offset(first)
 
    local first_m_tr_num = TBH[Convert_to_track(first_m_tr)].ID
 
-   local mouse_inv_tracks = (l_b ~= 0 and m_cy > l_b) and floor((m_cy - l_b) / l_h) + 1 or 0 -- IF MOUSE IS UNDER LAST PROJECT TRACK START COUTNING VOODOO
+   -- local mouse_inv_tracks = (l_b ~= 0 and m_cy > l_b) and floor((m_cy - l_b) / l_h) + 1 or 0 -- IF MOUSE IS UNDER LAST PROJECT TRACK START COUTNING VOODOO
+   local mouse_inv_tracks = (l_y+l_h) ~= 0 and m_cy > (l_y+l_h) and floor((m_cy - (l_y+l_h)) / l_h) + 1 or 0 -- IF MOUSE IS UNDER LAST PROJECT TRACK START COUTNING VOODOO
    local mouse_tr_offset = cur_m_tr_num - first_m_tr_num + mouse_inv_tracks
 
    local master_tr_visibility = reaper.GetMasterTrackVisibility()
