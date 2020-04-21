@@ -4,14 +4,14 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.11
+ * Version: 0.12
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.11 (2020-04-21)
-   + Translate values between AI-s
+ * v0.12 (2020-04-21)
+   + Fix ghost not updating if mouse is outside of arrange (WINDOW IN FRONT ISSUE)
 --]]
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 package.cursor = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "Cursors\\" -- GET DIRECTORY FOR CURSORS
@@ -101,7 +101,7 @@ end
 
 function Get_window_under_mouse()
    local windowUnderMouse = reaper.JS_Window_FromPoint(mouse.x, mouse.y)
-   if windowUnderMouse ~= track_window then return true end
+   if windowUnderMouse ~= track_window and not copy then return true end
    if mouse.l_down then
       --local windowUnderMouse = reaper.JS_Window_FromPoint(mouse.x, mouse.y)
       local old_windowUnderMouse = reaper.JS_Window_FromPoint(mouse.ox, mouse.oy)

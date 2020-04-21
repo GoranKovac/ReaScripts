@@ -275,7 +275,7 @@ function Element:track()
     self:update_zone(ZONE_BUFFER)
   end
 
-  BLOCK = (not mouse.DRAW_AREA and CUR_AREA_ZONE) or ZONE_BUFFER and true or nil  -- GLOBAL BLOCKING FLAG IF MOUSE IS OVER AREA (ALSO USED TO INTERCEPT LMB CLICK)
+  BLOCK = (not mouse.DRAW_AREA or CUR_AREA_ZONE) or ZONE_BUFFER and true or nil  -- GLOBAL BLOCKING FLAG IF MOUSE IS OVER AREA (ALSO USED TO INTERCEPT LMB CLICK)
   A51_cursor = ZONE_BUFFER and ZONE_BUFFER[1] or CUR_AREA_ZONE
   Change_cursor(A51_cursor)
 end
@@ -309,6 +309,7 @@ end
 function Draw(tbl)
   local is_view_changed = Arrange_view_info()
   local is_mouse_change = check_mouse_change()
+  A1 = is_mouse_change
 
   if is_mouse_change then
     GHOST_UPDATE = copy and 1
