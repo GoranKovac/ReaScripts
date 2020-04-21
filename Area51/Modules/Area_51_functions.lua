@@ -64,7 +64,8 @@ function Area_function(tbl,func)
       end
 
       local off_tr = copy and new_tr or target_track -- OFFSET TRACK ONLY IF WE ARE IN COPY MODE
-      _G[func](off_tr, target_track, BUFFER[a].sel_info[i], tbl_t.time_start, tbl_t.time_dur, total_pos_offset, func)
+      local data = (#BUFFER ~= 0 and BUFFER[a].sel_info[i]) and BUFFER[a].sel_info[i] or sel_info_t
+      _G[func](off_tr, target_track, data, tbl_t.time_start, tbl_t.time_dur, total_pos_offset, func)
       --_G[func](off_tr, target_track, sel_info_t, tbl_t.time_start, tbl_t.time_dur, total_pos_offset, func)
     end
 
