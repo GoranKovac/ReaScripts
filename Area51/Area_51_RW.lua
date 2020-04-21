@@ -4,13 +4,13 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.14
+ * Version: 0.15
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.14 (2020-04-21)
+ * v0.15 (2020-04-21)
    + Buffer items to zone copy (for drag copy)
 --]]
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
