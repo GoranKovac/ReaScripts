@@ -4,14 +4,14 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.17
+ * Version: 0.18
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.17 (2020-04-21)
-   + Always obey area info when copying (if Area has no data, paste no data (delete destination)
+ * v0.18 (2020-04-21)
+   + Fix crash when new item buffer is empty
 --]]
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 package.cursor = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "Cursors\\" -- GET DIRECTORY FOR CURSORS
