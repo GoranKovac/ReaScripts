@@ -9,7 +9,8 @@ local refresh_tracks, update, update_all
 
 function Delete(tr, src_tr, data, t_start, t_dur, t_offset, job)
 	if not data then return end
-	split_or_delete_items(tr, data.items, t_start, t_dur, job)
+  split_or_delete_items(tr, data.items, t_start, t_dur, job)
+  insert_edge_points(tr, t_start, t_dur, 0)
   del_env(tr, t_start, t_dur, 0)
   del_AI(tr, nil, t_start, t_dur, 0)
 	update_all = true
@@ -66,7 +67,6 @@ function Area_function(tbl,func)
       local off_tr = copy and new_tr or target_track -- OFFSET TRACK ONLY IF WE ARE IN COPY MODE
       local data = (#BUFFER ~= 0 and BUFFER[a].sel_info[i]) and BUFFER[a].sel_info[i] or sel_info_t
       _G[func](off_tr, target_track, data, tbl_t.time_start, tbl_t.time_dur, total_pos_offset, func)
-      --_G[func](off_tr, target_track, sel_info_t, tbl_t.time_start, tbl_t.time_dur, total_pos_offset, func)
     end
 
     if update then

@@ -127,11 +127,7 @@ end
 
 function del_env(env_track, as_start, as_dur, offset)
   if reaper.ValidatePtr(env_track, "MediaTrack*") or type(env_track) == "string" then return end
-	--local first_env = reaper.GetEnvelopePointByTime(env_track, as_start)
-	--local last_env = reaper.GetEnvelopePointByTime(env_track, as_start + as_dur) + 1
-	--local retval1, time1, value1, shape1, tension1, selected1 = reaper.GetEnvelopePoint(env_track, first_env)
-	--local retval2, time2, value2, shape2, tension2, selected2 = reaper.GetEnvelopePoint(env_track, last_env)
-  reaper.DeleteEnvelopePointRange(env_track, as_start + offset, as_start + as_dur + offset)
+  reaper.DeleteEnvelopePointRange(env_track, as_start + offset + 0.001, as_start + as_dur + offset - 0.001)
 	reaper.Envelope_SortPoints(env_track)
 end
 
@@ -164,12 +160,12 @@ end
 
 function paste_env(tr, env_name, env_data, as_start, as_dur, time_offset, job)
   if not env_data then
-    insert_edge_points(tr, as_start, as_dur, time_offset, job)
+    insert_edge_points(tr, as_start, as_dur, time_offset)
     del_env(tr, as_start, as_dur, time_offset)
     return
   end
   if tr and reaper.ValidatePtr(tr, "TrackEnvelope*") then -- IF TRACK HAS ENVELOPES PASTE THEM
-    insert_edge_points(tr, as_start, as_dur, time_offset, job) -- INSERT EDGE POINTS AT CURRENT ENVELOE VALUE AND DELETE WHOLE RANGE INSIDE (DO NOT ALLOW MIXING ENVELOPE POINTS AND THAT WEIRD SHIT)
+    insert_edge_points(tr, as_start, as_dur, time_offset, env_data[1], env_data[#env_data], env_name) -- INSERT EDGE POINTS AT CURRENT ENVELOE VALUE AND DELETE WHOLE RANGE INSIDE (DO NOT ALLOW MIXING ENVELOPE POINTS AND THAT WEIRD SHIT)
     del_env(tr, as_start, as_dur, time_offset)
     local d_min = env_prop(tr,"minValue")
     local d_max = env_prop(tr,"maxValue")
@@ -338,14 +334,30 @@ function env_prop(env,val)
   return properties[val]
 end
 
-function insert_edge_points(env, as_start, as_dur, time_offset)
+function env_eval(env,time)
+  local retval, value_st, dVdS, ddVdS, dddVdS = reaper.Envelope_Evaluate(env, time + 0, 0, 0) -- DESTINATION START POINT
+  return value_st
+end
+
+function insert_edge_points(env, as_start, as_dur, time_offset, pt_s, pt_e, srt)
   if not reaper.ValidatePtr(env, "TrackEnvelope*") then return end -- DO NOT ALLOW MEDIA TRACK HERE
-  local edge_pts = {}
   local as_end = as_start + as_dur
-  local retval, value_st, dVdS, ddVdS, dddVdS = reaper.Envelope_Evaluate(env, as_start + 0, 0, 0) -- DESTINATION START POINT
+
+  local d_min = env_prop(env,"minValue")
+  local d_max = env_prop(env,"maxValue")
+
+  local s_min = srt and env_prop(srt,"minValue")
+  local s_max = srt and env_prop(srt,"maxValue")
+
+  local retval, value_st, dVdS, ddVdS, dddVdS = reaper.Envelope_Evaluate(env, as_start + time_offset, 0, 0) -- DESTINATION START POINT -- CURENT VALUE AT THAT POSITION
   reaper.InsertEnvelopePoint(env, as_start + time_offset - 0.001, value_st, 0, 0, true, true)
-  local retval, value_et, dVdS, ddVdS, dddVdS = reaper.Envelope_Evaluate(env, as_end + 0, 0, 0) -- DESTINATION END POINT
+  local retval, value_et, dVdS, ddVdS, dddVdS = reaper.Envelope_Evaluate(env, as_end + time_offset, 0, 0) -- DESTINATION END POINT -- CURENT VALUE AT THAT POSITION
   reaper.InsertEnvelopePoint(env, as_end + time_offset + 0.001, value_et, 0, 0, true, true)
+
+  if pt_s and pt_e then
+    reaper.InsertEnvelopePoint(env, as_start + time_offset - 0.001, TranslateRange(pt_s.value,s_min,s_max,d_min,d_max), 0, 0, true, true)
+    reaper.InsertEnvelopePoint(env, as_end + time_offset - 0.001, TranslateRange(pt_e.value,s_min,s_max,d_min,d_max), 0, 0, true, true)
+  end
   reaper.Envelope_SortPoints( env )
 end
 
