@@ -11,8 +11,7 @@
 --[[
  * Changelog:
  * v0.14 (2020-04-21)
-   + Buffer data in copy table
-   + Copy obays empty spaces (copy whole area as is)
+   + Buffer items to zone copy (for drag copy)
 --]]
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 package.cursor = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "Cursors\\" -- GET DIRECTORY FOR CURSORS

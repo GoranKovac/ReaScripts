@@ -252,6 +252,7 @@ function Element:track()
     ZONE_BUFFER = self:mouseZONE()
     ZONE_BUFFER.guid = self.guid
     ZONE_BUFFER[5] = copy3(self)
+    Buffer_copy({ZONE_BUFFER[5]})
     if ZONE_BUFFER[1] == "C" then
       if mouse.Ctrl() then
         drag_copy = self.guid
