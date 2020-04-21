@@ -191,11 +191,18 @@ function paste_env(tr, env_name, env_data, as_start, as_dur, time_offset, job)
   end
 end
 
+function get_chunk(item)
+  if item then
+    local _, chunk = reaper.GetItemStateChunk( item, "", false )
+    return chunk
+  end
+end
+
 function Buffer_area_data(data)
   if not data then return end
   for i = 1, #data do
     local item = data[i]
-    local _, chunk = reaper.GetItemStateChunk( item, "", false )
+    local chunk = get_chunk(item)
     data[i] = chunk
   end
 end
@@ -207,7 +214,7 @@ function create_item(tr, data, as_start, as_dur, time_offset, job)
   end
   split_or_delete_items(tr, data, as_start + time_offset, as_dur, "Delete")
   for i = 1, #data do
-    local chunk = data[i]
+    local chunk = type(data[i]) == "string" and data[i] or get_chunk(data[i]) -- DUPLICATE DOES NOT NEED BUFFER SO WE CONVERT ITEM TO CHUNK
     local empty_item = reaper.AddMediaItemToTrack(tr)
     reaper.SetItemStateChunk(empty_item, chunk, false )
 
