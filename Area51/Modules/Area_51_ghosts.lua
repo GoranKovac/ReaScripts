@@ -56,7 +56,8 @@ function Get_item_ghosts(tr, items, as_start, as_end)
 end
 
 function Get_AI_or_ENV_ghosts(env_tr, env_points, AI, as_start, as_end)
-	if not AI and not env_points then return end
+	--if not AI and not env_points then return end
+	--if not AI then return end
 	local ghosts = {}
 	Get_AI_ghosts(env_tr, AI, ghosts)
 	Get_env_ghosts(env_tr, env_points, ghosts, as_start, as_end)
@@ -79,15 +80,17 @@ function Get_AI_ghosts(env_tr, AI, ghosts)
 	return ghosts
 end
 
-function Get_env_ghosts(env_tr, env_points, ghosts)
-	if not env_points then return end
+function Get_env_ghosts(env_tr, env_points, ghosts, as_start, as_end)
+	--if not env_points then return end
 	local Element = Get_class_tbl()
-	local first_point, last_point, points_lenght = env_points[1].time, env_points[#env_points].time, (env_points[#env_points].time - env_points[1].time) -- DRAW ONLY WHERE ENVELOPES ARE INSTEAD OF WHOLE SELECTED AREA
-	local x, w = Convert_time_to_pixel(first_point, points_lenght)
+	--local first_point, last_point, points_lenght = env_points[1].time, env_points[#env_points].time, (env_points[#env_points].time - env_points[1].time) -- DRAW ONLY WHERE ENVELOPES ARE INSTEAD OF WHOLE SELECTED AREA
+	--local x, w = Convert_time_to_pixel(first_point, points_lenght)
+	local x, w = Convert_time_to_pixel(as_start, as_end-as_start)
 	local y, h = Get_tr_TBH(env_tr)
-	ghosts[#ghosts + 1] = Element:new(x, y, w, h, "ghost", first_point, points_lenght, {w, h}) -- {w, h} are stored ghost static w,h so they do not update
+	ghosts[#ghosts + 1] = Element:new(x, y, w, h, "ghost", as_start, as_end-as_start, {w, h}) -- {w, h} are stored ghost static w,h so they do not update
+	--ghosts[#ghosts + 1] = Element:new(x, y, w, h, "ghost", first_point, points_lenght, {w, h}) -- {w, h} are stored ghost static w,h so they do not update
 	reaper.JS_LICE_Clear(ghosts[#ghosts].bm, 0xAA002244)
-	Draw_env(env_tr, env_points, ghosts[#ghosts].bm, x, h)
+	Draw_env(env_tr, env_points, ghosts[#ghosts].bm, x, h,as_start, as_end)
 	return ghosts
 end
 
@@ -162,17 +165,22 @@ function Get_Item_Peaks(item, item_start, item_len)
 end
 
  -- DRAW ENVELOPE "PEAKS" TO GHOSTS IMAGE
-function Draw_env(env_tr, env, bm, x, h)
+function Draw_env(env_tr, env, bm, x, h, as_start, as_end)
 	local br_env = reaper.BR_EnvAlloc(env_tr, true)
 	local active, visible, armed, inLane, laneHeight, defaultShape, minValue, maxValue, centerValue, type, faderScaling, automationItemsOptions = reaper.BR_EnvGetProperties( br_env )
 	reaper.BR_EnvAlloc(env_tr, false)
 	local final_h = h - env_AI_lane(h)
 
-	for i = 1, #env-1 do
-		local e_x = env[i].time
-		local e_x1 = env[i+1].time
-		local e_y = env[i].value
-		local e_y1 = env[i+1].value
+	local retval, cur_as_start, dVdS, ddVdS, dddVdS = reaper.Envelope_Evaluate(env_tr, as_start, 0, 0) -- DESTINATION END POINT -- CURENT VALUE AT THAT POSITION
+	local retval, cur_as_end, dVdS, ddVdS, dddVdS = reaper.Envelope_Evaluate(env_tr, as_end, 0, 0) -- DESTINATION END POINT -- CURENT VALUE AT THAT POSITION
+
+	if not env then	env = { [1] = {time = as_start} } end
+	
+	for i = 0, #env do
+		local e_x = i > 0 and env[i].time or as_start
+		local e_x1 = i+1 <= #env and env[i+1].time or as_end
+		local e_y = i > 0 and env[i].value or cur_as_start
+		local e_y1 = i+1 <= #env and  env[i+1].value or cur_as_end
 
 		e_x = Convert_time_to_pixel(e_x,0,0) --e_x = Get_Set_Position_In_Arrange(e_x,0,0)
 		e_x1 = Convert_time_to_pixel(e_x1,0,0) --e_x1 = Get_Set_Position_In_Arrange(e_x1,0,0)

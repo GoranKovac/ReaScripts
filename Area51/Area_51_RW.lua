@@ -4,14 +4,14 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.26
+ * Version: 0.27
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.26 (2020-04-22)
-   + Added fader scaling mode for envelopes
+ * v0.27 (2020-04-22)
+   + Envelope ghosts now always show whole area instead of just points in area
 --]]
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 package.cursor = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "Cursors\\" -- GET DIRECTORY FOR CURSORS
@@ -505,7 +505,7 @@ local function GetTrackData(tbl, as_start, as_end)
          tbl[i].env_name = env_name -- ENVELOPE NAME
          tbl[i].env_points = get_as_tr_env_pts(tbl[i].track, as_start, as_end) -- ENVELOPE POINTS
          tbl[i].AI = get_as_tr_AI(tbl[i].track, as_start, as_end) -- AUTOMATION ITEMS
-         tbl[i].ghosts = Get_AI_or_ENV_ghosts(tbl[i].track, tbl[i].env_points, tbl[i].AI)
+         tbl[i].ghosts = Get_AI_or_ENV_ghosts(tbl[i].track, tbl[i].env_points, tbl[i].AI, as_start, as_end)
       end
    end
    return tbl

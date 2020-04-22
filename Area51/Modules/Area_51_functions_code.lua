@@ -226,7 +226,7 @@ function Check_env_scaling(src, dst, val)
   if mode_s ~= mode_d then
     if mode_s == 1 and mode_d == 0 then
       val = reaper.ScaleFromEnvelopeMode(1, val)
-    else
+    elseif mode_s == 0 and mode_d == 1 then
       val = reaper.ScaleToEnvelopeMode(1, val)
     end
   end
@@ -253,10 +253,11 @@ function paste_env(tr, env_name, env_data, as_start, as_dur, time_offset, job)
     for i = 1, #env_data do
         local env = env_data[i]
         local env_val = Check_env_scaling(env_name, tr, env.value)
+         -- msg(env_data[i].value .. " " .. env_val)
           reaper.InsertEnvelopePoint(
           tr,
           env.time +  time_offset,
-          TranslateRange(env_val,s_min,s_max,d_min,d_max),--env.value,
+          TranslateRange(env_val,s_min,s_max,d_min,d_max),
           env.shape,
           env.tension,
           env.selected,
