@@ -275,13 +275,24 @@ function Element:track()
   if ZONE_BUFFER and ZONE_BUFFER.guid == self.guid then
     self:update_zone(ZONE_BUFFER)
   end
-
   BLOCK = (not mouse.DRAW_AREA and CUR_AREA_ZONE) or ZONE_BUFFER and true or nil  -- GLOBAL BLOCKING FLAG IF MOUSE IS OVER AREA (ALSO USED TO INTERCEPT LMB CLICK)
   A51_cursor = ZONE_BUFFER and ZONE_BUFFER[1] or CUR_AREA_ZONE
   Change_cursor(A51_cursor)
 end
 
 function Track(tbl)
+
+  for i = 1, #tbl do
+    if tbl[i]:mouseIN() then
+      CUR_AREA_ZONE = not copy and tbl[i]:zoneIN(mouse.x,mouse.y)[1]
+      break
+    else
+      CUR_AREA_ZONE = nil
+    end
+  end
+
+  if WINDOW_IN_FRONT then Change_cursor(nil) return end
+
   for i = #tbl, 1, -1  do
     tbl[i]:track()
     if AREAS_UPDATE then
@@ -296,20 +307,14 @@ function Track(tbl)
   if DRAWING and #tbl ~= 0 then
     tbl[#tbl]:draw(1,1) -- UPDATE ONLY AS THAT IS DRAWING (LAST CREATED)
   end
-
-  for i = 1, #tbl do
-    if tbl[i]:mouseIN() then
-      CUR_AREA_ZONE = not copy and tbl[i]:zoneIN(mouse.x,mouse.y)[1]
-      break
-    else
-      CUR_AREA_ZONE = nil
-    end
-  end
 end
 
 function Draw(tbl)
   local is_view_changed = Arrange_view_info()
   local is_mouse_change = check_mouse_change()
+  WINDOW_IN_FRONT = Get_window_under_mouse()
+
+  --if WINDOW_IN_FRONT then return end
 
   if is_mouse_change then
     GHOST_UPDATE = copy and 1

@@ -4,14 +4,14 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.27
+ * Version: 0.28
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.27 (2020-04-22)
-   + Envelope ghosts now always show whole area instead of just points in area
+ * v0.28 (2020-04-22)
+   + Fix stuck areas/ghosts on move
 --]]
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 package.cursor = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "Cursors\\" -- GET DIRECTORY FOR CURSORS
@@ -100,19 +100,19 @@ function To_client(x,y)
 end
 
 function Get_window_under_mouse()
-   local windowUnderMouse = reaper.JS_Window_FromPoint(mouse.x, mouse.y)
-   if windowUnderMouse ~= track_window and not copy then return true end
-   if mouse.l_down then
+   --local windowUnderMouse = reaper.JS_Window_FromPoint(mouse.x, mouse.y)
+   --if windowUnderMouse ~= track_window and not copy then return true end
+   if mouse.l_click or mouse.l_down then
       --local windowUnderMouse = reaper.JS_Window_FromPoint(mouse.x, mouse.y)
       local old_windowUnderMouse = reaper.JS_Window_FromPoint(mouse.ox, mouse.oy)
-      if windowUnderMouse then
-         if windowUnderMouse ~= track_window then
-            return true
-         elseif old_windowUnderMouse then
+      --if windowUnderMouse then
+      --   if windowUnderMouse ~= track_window then
+      --      return true
+      --   elseif old_windowUnderMouse then
             if old_windowUnderMouse ~= track_window then
                return true
-            end
-         end
+       --     end
+      --   end
       end
    end
    return false
@@ -747,7 +747,7 @@ local function Main()
          mouse = MouseInfo()
          mouse.tr, mouse.r_t, mouse.r_b = Get_track_under_mouse(mouse.x, mouse.y)
          CHANGE = ARRANGE and Change() or false
-         WINDOW_IN_FRONT = Get_window_under_mouse()
+         --WINDOW_IN_FRONT = Get_window_under_mouse()
          Track_keys()
          Intercept_reaper_key(Areas_TB) -- WATCH TO INTERCEPT KEYS WHEN AREA IS DRAWN (ON SCREEN)
          Pass_thru()
