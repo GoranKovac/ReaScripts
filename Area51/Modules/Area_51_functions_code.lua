@@ -196,6 +196,8 @@ function insert_edge_points(env, as_start, as_dur, time_offset, pt_s, pt_e, srt)
   if pt_s and pt_e then
     local retval, value_s1t, dVdS, ddVdS, dddVdS = reaper.Envelope_Evaluate(srt, as_start, 0, 0) -- DESTINATION START POINT -- CURENT VALUE AT THAT POSITION
     local retval, value_e1t, dVdS, ddVdS, dddVdS = reaper.Envelope_Evaluate(srt, as_end, 0, 0) -- DESTINATION END POINT -- CURENT VALUE AT THAT POSITION
+    value_s1t = Check_env_scaling(srt, env, value_s1t)
+    value_e1t = Check_env_scaling(srt, env, value_e1t)
     reaper.InsertEnvelopePoint(env, as_start + time_offset + 0.00001, TranslateRange(value_s1t,s_min,s_max,d_min,d_max), 0, 0, true, true)
     reaper.InsertEnvelopePoint(env, as_end + time_offset - 0.00001, TranslateRange(value_e1t,s_min,s_max,d_min,d_max), 0, 0, true, true)
     --reaper.InsertEnvelopePoint(env, as_start + time_offset - 0.001, TranslateRange(pt_s.value,s_min,s_max,d_min,d_max), 0, 0, true, true)
@@ -217,6 +219,21 @@ function del_env(env_track, as_start, as_dur, offset)
 	reaper.Envelope_SortPoints(env_track)
 end
 
+function Check_env_scaling(src, dst, val)
+  local mode_s = reaper.GetEnvelopeScalingMode( src )
+  local mode_d = reaper.GetEnvelopeScalingMode( dst )
+
+  if mode_s ~= mode_d then
+    if mode_s == 1 and mode_d == 0 then
+      val = reaper.ScaleFromEnvelopeMode(1, val)
+    else
+      val = reaper.ScaleToEnvelopeMode(1, val)
+    end
+  end
+
+  return val
+end
+
 function paste_env(tr, env_name, env_data, as_start, as_dur, time_offset, job)
   if not env_data then
     --insert_edge_points(tr, as_start, as_dur, time_offset)
@@ -235,11 +252,11 @@ function paste_env(tr, env_name, env_data, as_start, as_dur, time_offset, job)
 
     for i = 1, #env_data do
         local env = env_data[i]
-        --local env_val = env_mode == 1 and reaper.ScaleFromEnvelopeMode(1, env_data[1].value) or env_data[1].value
-        reaper.InsertEnvelopePoint(
+        local env_val = Check_env_scaling(env_name, tr, env.value)
+          reaper.InsertEnvelopePoint(
           tr,
           env.time +  time_offset,
-          TranslateRange(env.value,s_min,s_max,d_min,d_max),--env.value,
+          TranslateRange(env_val,s_min,s_max,d_min,d_max),--env.value,
           env.shape,
           env.tension,
           env.selected,
