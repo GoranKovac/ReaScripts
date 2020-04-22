@@ -165,7 +165,7 @@ function Pass_thru()
    if mouse.l_down then
       if not BLOCK then
 		 if not mouse.Ctrl_Shift_Alt() and not mouse.Ctrl_Shift() then
-			if WINDOW_IN_FRONT then return end
+			if WINDOW_IN_FRONT or check_window_in_front() then return end
             local pOK, pass, time, wLow, wHigh, lLow, lHigh = reaper.JS_WindowMessage_Peek(track_window, "WM_LBUTTONDOWN")
             if pOK and time > prevTime then
                prevTime = time

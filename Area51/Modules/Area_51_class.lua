@@ -283,7 +283,7 @@ end
 function Track(tbl)
   for i = 1, #tbl do
     if tbl[i]:mouseIN() then
-      CUR_AREA_ZONE = not copy and tbl[i]:zoneIN(mouse.x,mouse.y)[1]
+      CUR_AREA_ZONE = (not copy and not check_window_in_front()) and tbl[i]:zoneIN(mouse.x,mouse.y)[1]
       break
     else
       CUR_AREA_ZONE = nil
@@ -311,7 +311,7 @@ end
 function Draw(tbl)
   local is_view_changed = Arrange_view_info()
   local is_mouse_change = check_mouse_change()
-  WINDOW_IN_FRONT = Get_window_under_mouse()
+  --WINDOW_IN_FRONT = Get_window_under_mouse()
 
   if is_mouse_change then
     GHOST_UPDATE = copy and 1

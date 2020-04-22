@@ -4,14 +4,14 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.29
+ * Version: 0.30
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.29 (2020-04-22)
-   + Change mouse cursor only if there is no window in front of area
+ * v0.30 (2020-04-22)
+   + Fixed mouse passthru with new window under mouse behavior
 --]]
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 package.cursor = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "Cursors\\" -- GET DIRECTORY FOR CURSORS
@@ -698,9 +698,12 @@ local reaper_cursors_list = {
    {530, "B"} -- FADE LEFT
 }
 
+function check_window_in_front()
+   if reaper.JS_Window_FromPoint(mouse.x, mouse.y) ~= track_window then return true end
+end
 function Change_cursor(zone)
    if mouse.DRAW_AREA then return end
-   if reaper.JS_Window_FromPoint(mouse.x, mouse.y) ~= track_window then zone = nil end
+   if check_window_in_front() then zone = nil end
    if zone then
       if not ICON_INT then
          reaper.JS_WindowMessage_Intercept(track_window, "WM_SETCURSOR", false)
@@ -739,7 +742,7 @@ local function Main()
          mouse = MouseInfo()
          mouse.tr, mouse.r_t, mouse.r_b = Get_track_under_mouse(mouse.x, mouse.y)
          CHANGE = ARRANGE and Change() or false
-         --WINDOW_IN_FRONT = Get_window_under_mouse()
+         WINDOW_IN_FRONT = Get_window_under_mouse()
          Track_keys()
          Intercept_reaper_key(Areas_TB) -- WATCH TO INTERCEPT KEYS WHEN AREA IS DRAWN (ON SCREEN)
          Pass_thru()
