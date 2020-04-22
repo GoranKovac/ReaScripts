@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="c1b3c846b9fa673b4688d814a8c7e0bd7d2fe257" name="Sexan_Scripts">
+<index version="1" commit="89e69339f5e38587fb145818d7cfa43146c21355" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -327,6 +327,17 @@
         <source file="Modules/Area_51_key_functions.lua">https://github.com/GoranKovac/ReaScripts/raw/c1b3c846b9fa673b4688d814a8c7e0bd7d2fe257/Area51/Modules/Area_51_key_functions.lua</source>
         <source file="Modules/Area_51_keyboard.lua">https://github.com/GoranKovac/ReaScripts/raw/c1b3c846b9fa673b4688d814a8c7e0bd7d2fe257/Area51/Modules/Area_51_keyboard.lua</source>
         <source file="Modules/Area_51_mouse.lua">https://github.com/GoranKovac/ReaScripts/raw/c1b3c846b9fa673b4688d814a8c7e0bd7d2fe257/Area51/Modules/Area_51_mouse.lua</source>
+      </version>
+      <version name="0.26" author="Sexan" time="2020-04-22T09:16:44Z">
+        <changelog><![CDATA[+ Added fader scaling mode for envelopes]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/89e69339f5e38587fb145818d7cfa43146c21355/Area51/Area_51_RW.lua</source>
+        <source file="Modules/Area_51_class.lua">https://github.com/GoranKovac/ReaScripts/raw/89e69339f5e38587fb145818d7cfa43146c21355/Area51/Modules/Area_51_class.lua</source>
+        <source file="Modules/Area_51_functions.lua">https://github.com/GoranKovac/ReaScripts/raw/89e69339f5e38587fb145818d7cfa43146c21355/Area51/Modules/Area_51_functions.lua</source>
+        <source file="Modules/Area_51_functions_code.lua">https://github.com/GoranKovac/ReaScripts/raw/89e69339f5e38587fb145818d7cfa43146c21355/Area51/Modules/Area_51_functions_code.lua</source>
+        <source file="Modules/Area_51_ghosts.lua">https://github.com/GoranKovac/ReaScripts/raw/89e69339f5e38587fb145818d7cfa43146c21355/Area51/Modules/Area_51_ghosts.lua</source>
+        <source file="Modules/Area_51_key_functions.lua">https://github.com/GoranKovac/ReaScripts/raw/89e69339f5e38587fb145818d7cfa43146c21355/Area51/Modules/Area_51_key_functions.lua</source>
+        <source file="Modules/Area_51_keyboard.lua">https://github.com/GoranKovac/ReaScripts/raw/89e69339f5e38587fb145818d7cfa43146c21355/Area51/Modules/Area_51_keyboard.lua</source>
+        <source file="Modules/Area_51_mouse.lua">https://github.com/GoranKovac/ReaScripts/raw/89e69339f5e38587fb145818d7cfa43146c21355/Area51/Modules/Area_51_mouse.lua</source>
       </version>
     </reapack>
   </category>
