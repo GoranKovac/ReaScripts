@@ -4,14 +4,14 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.30
+ * Version: 0.31
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.30 (2020-04-22)
-   + Fixed mouse passthru with new window under mouse behavior
+ * v0.31 (2020-04-22)
+   + Fixed drawing area still draws after releasing drawing modifier
 --]]
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 package.cursor = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "Cursors\\" -- GET DIRECTORY FOR CURSORS
@@ -524,7 +524,7 @@ local function CreateAreaFromSelection()
    local as_left, as_right = Check_left_right(mouse.op, mouse.p) -- CHECK IF START & END TIMES ARE REVERSED
    DRAWING = CHANGE
 
-   if mouse.l_down then
+   if mouse.l_down and mouse.DRAW_AREA then
       if DRAWING then
          CREATING = true
          if not guid then
@@ -535,7 +535,7 @@ local function CreateAreaFromSelection()
          local y, h = as_top, as_bot - as_top
          CreateAreaTable(x, y, w, h, guid, as_left, as_right)
       end
-   elseif mouse.l_up and CREATING then
+   elseif (mouse.l_up or not mouse.DRAW_AREA) and CREATING then --(mouse.l_up and CREATING) 
       Areas_TB[#Areas_TB].sel_info = GetSelectionInfo(Areas_TB[#Areas_TB])
       table.sort(
          Areas_TB,
