@@ -4,14 +4,15 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.24
+ * Version: 0.25
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.24 (2020-04-21)
-   + Edge points hell
+ * v0.25 (2020-04-21)
+   + More tweaks to edge points
+   + Disabled duplicate while in copy mode
 --]]
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 package.cursor = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "Cursors\\" -- GET DIRECTORY FOR CURSORS

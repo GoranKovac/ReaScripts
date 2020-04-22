@@ -49,6 +49,7 @@ function Copy_Paste()
 end
 
 function Duplicate_area()
+  if copy then return end -- DO NOT ALLOW DUPLICATE IN COPY MODE
   local tbl = Get_area_table()
   Area_function(tbl, "Duplicate")
 end

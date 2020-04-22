@@ -10,7 +10,7 @@ local refresh_tracks, update, update_all
 function Delete(tr, src_tr, data, t_start, t_dur, t_offset, job)
 	if not data then return end
   split_or_delete_items(tr, data.items, t_start, t_dur, job)
-  insert_edge_points(tr, t_start, t_dur, 0)
+  --insert_edge_points(tr, t_start, t_dur, 0)
   del_env(tr, t_start, t_dur, 0)
   del_AI(tr, nil, t_start, t_dur, 0)
 	update_all = true
