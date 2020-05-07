@@ -1,7 +1,7 @@
 --[[
    * Author: SeXan
    * Licence: GPL v3
-   * Version: 0.05
+   * Version: 0.06
 	 * NoIndex: true
 --]]
 local reaper = reaper
@@ -357,7 +357,6 @@ end
 function Move_items(tr, data, time_offset)
   if not data then return end
   for i = 1, #data do
-    msg(data[i])
     local item = data[i]
     local item_start = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
     reaper.SetMediaItemInfo_Value(item, "D_POSITION", item_start + time_offset)
