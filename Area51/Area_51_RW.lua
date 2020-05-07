@@ -4,14 +4,14 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.34
+ * Version: 0.35
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.34 (2020-05-07)
-   + ghost script update version
+ * v0.35 (2020-05-07)
+   + prevent executing move job if mouse position did not changed
 --]]
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 package.cursor = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "Cursors\\" -- GET DIRECTORY FOR CURSORS

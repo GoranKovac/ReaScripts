@@ -1,7 +1,7 @@
 --[[
    * Author: SeXan
    * Licence: GPL v3
-   * Version: 0.05
+   * Version: 0.06
 	 * NoIndex: true
 --]]
 local reaper = reaper
@@ -107,7 +107,9 @@ function Element:update_zone(z)
       action = "drag_copy"
     end
     if z[1] == "C" then
-      Area_Drag(z[5], self, {z[2], z[3]}, {self.time_start,self.time_dur}, self.time_start - z[2], z[1], action) -- MOVE AND DRAG COPY
+      if mouse.dp ~= 0 then
+        Area_Drag(z[5], self, {z[2], z[3]}, {self.time_start,self.time_dur}, self.time_start - z[2], z[1], action) -- MOVE AND DRAG COPY
+      end
       Ghost_unlink_or_destroy({self}, "Delete")
     end
 
