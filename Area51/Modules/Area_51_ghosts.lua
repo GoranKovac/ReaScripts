@@ -1,7 +1,7 @@
  --[[
    * Author: SeXan
    * Licence: GPL v3
-   * Version: 0.02
+   * Version: 0.03
 	 * NoIndex: true
 --]]
 
@@ -170,19 +170,19 @@ function Draw_env(env_tr, env, bm, x, h, as_start, as_end)
 	local maxValue = env_prop(env_tr,"maxValue")
 	local final_h = h - env_AI_lane(h)
 
-	local retval, cur_as_start, dVdS, ddVdS, dddVdS = reaper.Envelope_Evaluate(env_tr, as_start, 0, 0) -- DESTINATION END POINT -- CURENT VALUE AT THAT POSITION
-	local retval, cur_as_end, dVdS, ddVdS, dddVdS = reaper.Envelope_Evaluate(env_tr, as_end, 0, 0) -- DESTINATION END POINT -- CURENT VALUE AT THAT POSITION
+	--local retval, cur_as_start, dVdS, ddVdS, dddVdS = reaper.Envelope_Evaluate(env_tr, as_start, 0, 0) -- DESTINATION END POINT -- CURENT VALUE AT THAT POSITION
+	--local retval, cur_as_end, dVdS, ddVdS, dddVdS = reaper.Envelope_Evaluate(env_tr, as_end, 0, 0) -- DESTINATION END POINT -- CURENT VALUE AT THAT POSITION
 
-	if not env then	env = { [1] = {time = as_start} } end
+	--if not env then	env = { [1] = {time = as_start} } end
 
-	for i = 0, #env do
-		local e_x = i > 0 and env[i].time or as_start
-		local e_x1 = i+1 <= #env and env[i+1].time or as_end
-		local e_y = i > 0 and env[i].value or cur_as_start
-		local e_y1 = i+1 <= #env and  env[i+1].value or cur_as_end
+	for i = 1, #env-1 do
+		local e_x = env[i].time
+		local e_x1 = env[i+1].time
+		local e_y = env[i].value
+		local e_y1 = env[i+1].value
 
-		e_x = Convert_time_to_pixel(e_x,0,0)
-		e_x1 = Convert_time_to_pixel(e_x1,0,0)
+		e_x = Convert_time_to_pixel(e_x,0,0) --e_x = Get_Set_Position_In_Arrange(e_x,0,0)
+		e_x1 = Convert_time_to_pixel(e_x1,0,0) --e_x1 = Get_Set_Position_In_Arrange(e_x1,0,0)
 		e_y = TranslateRange(e_y, minValue, maxValue, final_h, 0)
 		e_y1 = TranslateRange(e_y1, minValue, maxValue, final_h, 0)
 
