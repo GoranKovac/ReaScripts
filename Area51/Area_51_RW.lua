@@ -4,15 +4,14 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.32
+ * Version: 0.33
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.32 (2020-05-07)
-   + Fixed crash in ghost code when selecting AIs
-   + Fix copy buffer for active_as
+ * v0.33 (2020-05-07)
+   + fix AI error
 --]]
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 package.cursor = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "Cursors\\" -- GET DIRECTORY FOR CURSORS

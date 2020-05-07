@@ -173,7 +173,7 @@ function Draw_env(env_tr, env, bm, x, h, as_start, as_end)
 	--local retval, cur_as_start, dVdS, ddVdS, dddVdS = reaper.Envelope_Evaluate(env_tr, as_start, 0, 0) -- DESTINATION END POINT -- CURENT VALUE AT THAT POSITION
 	--local retval, cur_as_end, dVdS, ddVdS, dddVdS = reaper.Envelope_Evaluate(env_tr, as_end, 0, 0) -- DESTINATION END POINT -- CURENT VALUE AT THAT POSITION
 
-	--if not env then	env = { [1] = {time = as_start} } end
+	if not env then	env = { [1] = {time = as_start} } end
 
 	for i = 1, #env-1 do
 		local e_x = env[i].time
