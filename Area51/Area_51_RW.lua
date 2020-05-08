@@ -4,14 +4,14 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.36
+ * Version: 0.37
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.36 (2020-05-07)
-   + remove debug msg
+ * v0.37 (2020-05-08)
+   + Added script toogle state
 --]]
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 package.cursor = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "Cursors\\" -- GET DIRECTORY FOR CURSORS
@@ -35,6 +35,10 @@ require("Modules/Area_51_mouse")      -- AREA MOUSE INPUT HANDLING
 require("Modules/Area_51_functions")  -- AREA FUNCTION CALL
 require("Modules/Area_51_functions_code")  -- AREA FUNCTIONS CODE
 require("Modules/Area_51_key_functions")  -- AREA KEY FUNCTIONS
+
+local _, _, section, cmdID = reaper.get_action_context()
+reaper.SetToggleCommandState( section, cmdID, 1 )
+reaper.RefreshToolbar2( section, cmdID )
 
 local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
 local track_window = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8) -- GET TRACK VIEW
@@ -770,6 +774,8 @@ function Exit() -- DESTROY ALL BITMAPS ON REAPER EXIT
    Release_reaper_keys()
    RemoveAsFromTable(Areas_TB, "Delete", "~=")
    DeleteCopy(CPY_TBL)
+   reaper.SetToggleCommandState( section, cmdID, 0 )
+   reaper.RefreshToolbar2( section, cmdID )
 end
 reaper.atexit(Exit)
 Main()
