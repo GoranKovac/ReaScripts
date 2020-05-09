@@ -4,14 +4,14 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.38
+ * Version: 0.39
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.38 (2020-05-08)
-   + Obey item selection fade
+ * v0.39 (2020-05-09)
+   + Add env fader scalling to ghosts
 --]]
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 package.cursor = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "Cursors\\" -- GET DIRECTORY FOR CURSORS

@@ -166,6 +166,8 @@ end
 
  -- DRAW ENVELOPE "PEAKS" TO GHOSTS IMAGE
 function Draw_env(env_tr, env, bm, x, h, as_start, as_end)
+	local env_mode = reaper.GetEnvelopeScalingMode( env_tr )
+
 	local minValue = env_prop(env_tr,"minValue")
 	local maxValue = env_prop(env_tr,"maxValue")
 	local final_h = h - env_AI_lane(h)
@@ -178,11 +180,11 @@ function Draw_env(env_tr, env, bm, x, h, as_start, as_end)
 	for i = 1, #env-1 do
 		local e_x = env[i].time
 		local e_x1 = env[i+1].time
-		local e_y = env[i].value
-		local e_y1 = env[i+1].value
+		local e_y = env_mode == 1 and reaper.ScaleFromEnvelopeMode(1, env[i].value) or env[i].value
+		local e_y1 = env_mode == 1 and reaper.ScaleFromEnvelopeMode(1, env[i+1].value) or env[i+1].value
 
-		e_x = Convert_time_to_pixel(e_x,0,0) --e_x = Get_Set_Position_In_Arrange(e_x,0,0)
-		e_x1 = Convert_time_to_pixel(e_x1,0,0) --e_x1 = Get_Set_Position_In_Arrange(e_x1,0,0)
+		e_x = Convert_time_to_pixel(e_x,0,0)
+		e_x1 = Convert_time_to_pixel(e_x1,0,0)
 		e_y = TranslateRange(e_y, minValue, maxValue, final_h, 0)
 		e_y1 = TranslateRange(e_y1, minValue, maxValue, final_h, 0)
 
