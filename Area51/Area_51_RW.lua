@@ -4,14 +4,14 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.37
+ * Version: 0.38
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.37 (2020-05-08)
-   + Added script toogle state
+ * v0.38 (2020-05-08)
+   + Obey item selection fade
 --]]
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 package.cursor = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "Cursors\\" -- GET DIRECTORY FOR CURSORS

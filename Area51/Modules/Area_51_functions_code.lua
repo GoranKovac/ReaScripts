@@ -1,7 +1,7 @@
 --[[
    * Author: SeXan
    * Licence: GPL v3
-   * Version: 0.06
+   * Version: 0.07
 	 * NoIndex: true
 --]]
 local reaper = reaper
@@ -297,11 +297,20 @@ function create_item(tr, data, as_start, as_dur, time_offset, job)
 
     local item_start = reaper.GetMediaItemInfo_Value( empty_item, "D_POSITION" )
     local item_lenght = reaper.GetMediaItemInfo_Value( empty_item, "D_LENGTH" )
-    local new_start, new_lenght, new_source_offset = New_items_position_in_area(as_start, as_start + as_dur, item_start, item_lenght)
+    local new_start, new_lenght, new_source_offset, fade = New_items_position_in_area(as_start, as_start + as_dur, item_start, item_lenght)
 
     reaper.SetMediaItemInfo_Value(empty_item, "D_POSITION", new_start + time_offset)
     reaper.SetMediaItemInfo_Value(empty_item, "D_LENGTH", new_lenght)
     reaper.GetSetMediaItemInfo_String( empty_item, "GUID", reaper.genGuid(), true )
+
+    if fade then
+      if fade == "END" or fade == "BOTH" then
+        reaper.SetMediaItemInfo_Value(empty_item, "D_FADEOUTLEN", 0.05) -- RESET FADE IN
+      end
+      if fade == "START" or fade == "BOTH" then
+        reaper.SetMediaItemInfo_Value(empty_item, "D_FADEINLEN", 0.05) -- RESET FADE IN
+      end
+    end
 
     for j = 1, reaper.CountTakes( empty_item ) do
       local take_dst = reaper.GetMediaItemTake( empty_item, j-1 )
@@ -349,15 +358,15 @@ function New_items_position_in_area(as_start, as_end, item_start, item_lenght)
   if tsStart < item_start and tsEnd > item_start and tsEnd < item_dur then
     ----- IF TS START IS OUT OF ITEM BUT TS END IS IN THEN COPY ONLY PART FROM TS START TO ITEM END
     local new_start, new_item_lenght, offset  = item_start, tsEnd - item_start, 0
-    return new_start, new_item_lenght, offset
+    return new_start, new_item_lenght, offset, "END"
   elseif tsStart < item_dur and tsStart > item_start and tsEnd > item_dur then
     ------ IF START IS IN ITEM AND TS END IS OUTSIDE ITEM COPY PART FROM TS START TO TS END
     local new_start, new_item_lenght, offset  = tsStart, item_dur - tsStart, (tsStart - item_start)
-    return new_start, new_item_lenght, offset
+    return new_start, new_item_lenght, offset, "START"
   elseif tsStart >= item_start and tsEnd <= item_dur then
     ------ IF BOTH TS START AND TS END ARE IN ITEM
     local new_start, new_item_lenght, offset  = tsStart, tsEnd - tsStart, (tsStart - item_start)
-    return new_start, new_item_lenght, offset
+    return new_start, new_item_lenght, offset, "BOTH"
   elseif tsStart <= item_start and tsEnd >= item_dur then -- >= NEW
     ------ IF BOTH TS START AND END ARE OUTSIDE OF THE ITEM
     local new_start, new_item_lenght, offset  = item_start, item_lenght, 0
