@@ -4,14 +4,14 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.39
+ * Version: 0.40
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.39 (2020-05-09)
-   + Add env fader scalling to ghosts
+ * v0.40 (2020-05-18)
+   + Potential fix for OSX tap thingy
 --]]
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 package.cursor = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "Cursors\\" -- GET DIRECTORY FOR CURSORS

@@ -1,7 +1,7 @@
 --[[
    * Author: SeXan
    * Licence: GPL v3
-   * Version: 0.05
+   * Version: 0.06
 	 * NoIndex: true
 --]]
 local reaper = reaper
@@ -166,10 +166,12 @@ function Pass_thru()
       if not BLOCK then
 		 if not mouse.Ctrl_Shift_Alt() and not mouse.Ctrl_Shift() then
 			if WINDOW_IN_FRONT or check_window_in_front() then return end
-            local pOK, pass, time, wLow, wHigh, lLow, lHigh = reaper.JS_WindowMessage_Peek(track_window, "WM_LBUTTONDOWN")
+			local pOK, pass, time, wLow, wHigh, lLow, lHigh = reaper.JS_WindowMessage_Peek(track_window, "WM_LBUTTONDOWN")
+			local pOK1, pass1, time1, wLow1, wHigh1, lLow1, lHigh1 = reaper.JS_WindowMessage_Peek(track_window, "WM_LBUTTONDBLCLK")
             if pOK and time > prevTime then
                prevTime = time
-               reaper.JS_WindowMessage_Post(track_window, "WM_LBUTTONDOWN", wLow, wHigh, lLow, lHigh)
+			   reaper.JS_WindowMessage_Post(track_window, "WM_LBUTTONDOWN", wLow, wHigh, lLow, lHigh)
+			   reaper.JS_WindowMessage_Post(track_window, "WM_LBUTTONDBLCLK", wLow1, wHigh1, lLow1, lHigh1)
             end
          end
       end
