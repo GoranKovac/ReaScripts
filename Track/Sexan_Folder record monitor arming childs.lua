@@ -17,7 +17,10 @@
 
 -- USER CONFIG AREA ---------------------------------------------------------
 
+
 local last_proj_change_count = reaper.GetProjectStateChangeCount(0)
+local last_proj = string.format("%s",reaper.EnumProjects(-1, ""))
+
 -- Returns a track's folder depth
 function get_track_folder_depth(track_index)
   local folder_depth = 0
@@ -39,7 +42,6 @@ function on_rec_arm_change(track_pointer, track_index)
   -- If this function is called, we know that:
   --   last touched track is a folder track (parent)
   --   rec-arm button was clicked on that track
-  
  
   -- call "get_track_folder_depth" to get the actual folder depth
   local parent_folder_depth = get_track_folder_depth(track_index)
@@ -113,10 +115,16 @@ end
 
 function main()
   local proj_change_count = reaper.GetProjectStateChangeCount(0)
+  local current_proj = string.format("%s",reaper.EnumProjects(-1, ""))
   if proj_change_count ~= last_proj_change_count then
-    local last_action = reaper.Undo_CanUndo2(0) -- get last action
-    if last_action ~= nil then      
-      on_project_state_change(last_action) -- call "on_project_state_change" to update something if needed
+    ---check if we are on the same project tab
+    if current_proj == last_proj then
+      local last_action = reaper.Undo_CanUndo2(0) -- get last action
+      if last_action ~= nil then 
+        on_project_state_change(last_action) -- call "on_project_state_change" to update something if needed
+      end
+    else 
+      last_proj = current_proj
     end
     last_proj_change_count = proj_change_count -- store "Project State Change Count" for the next pass
   end
