@@ -52,7 +52,7 @@ function on_rec_arm_change(track_pointer, track_index)
   for i = track_index + 1, reaper.CountTracks(0) do
     local child_track = reaper.GetTrack(0, i-1)
     
-    if last_a ==  "Toggle Track Record Arming" then
+    if last_a ==  "Toggle track record arming" then
        reaper.SetMediaTrackInfo_Value(child_track, "I_RECARM", parent_rec_arm) -- set track armed as folder
        local ret, child_state = reaper.GetTrackState(child_track) 
      local child_input = reaper.GetMediaTrackInfo_Value(child_track,"I_RECINPUT")
@@ -75,7 +75,7 @@ function on_rec_arm_change(track_pointer, track_index)
          end     
         end       
  
-    elseif last_a == "Toggle Track Recording Monitor" then
+    elseif last_a == "Toggle track recording monitor" then
            reaper.SetMediaTrackInfo_Value(child_track, "I_RECMON", parent_mon_arm) -- set monitor arm
     end   
     
@@ -96,7 +96,7 @@ end
 function on_project_state_change(last_action)
   last_a = last_action
   -- if last action (that changed the project state) was "Toggle Track Record Arming"...
-  if last_action == "Toggle Track Record Arming" or last_action == "Toggle Track Recording Monitor" then
+  if last_action == "Toggle track record arming" or last_action == "Toggle track recording monitor" then
     local last_touched_track = reaper.GetLastTouchedTrack() -- get last touched track's "track pointer"
     local last_touched_track_name, flags = reaper.GetTrackState(last_touched_track)
     local last_touched_track_index = reaper.CSurf_TrackToID(last_touched_track, false) - 1 -- get track index from "last touched track"
