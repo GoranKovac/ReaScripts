@@ -113,7 +113,7 @@ end
 
 function main()
   local proj_change_count = reaper.GetProjectStateChangeCount(0)
-  if proj_change_count > last_proj_change_count then
+  if proj_change_count ~= last_proj_change_count then
     local last_action = reaper.Undo_CanUndo2(0) -- get last action
     if last_action ~= nil then      
       on_project_state_change(last_action) -- call "on_project_state_change" to update something if needed
