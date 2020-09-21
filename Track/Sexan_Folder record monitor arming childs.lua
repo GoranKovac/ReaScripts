@@ -119,9 +119,9 @@ function main()
   if proj_change_count ~= last_proj_change_count then
     ---check if we are on the same project tab
     if current_proj == last_proj then
-      local last_action = reaper.Undo_CanUndo2(0):lower() -- get last action
+      local last_action = reaper.Undo_CanUndo2(0) -- get last action
       if last_action ~= nil then 
-        on_project_state_change(last_action) -- call "on_project_state_change" to update something if needed
+        on_project_state_change(last_action:lower()) -- call "on_project_state_change" to update something if needed
       end
     else 
       last_proj = current_proj
