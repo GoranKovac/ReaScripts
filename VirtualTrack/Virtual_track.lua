@@ -10,8 +10,8 @@
 
 --[[
  * Changelog:
- * v0.21 (2022-02-25)
-   + decoupled LICE_BM from VT_TB array to its own array VT_BITMAP_TB
+ * v0.22 (2022-02-25)
+   + Prevent deleting original/main version
 --]]
 
 local reaper = reaper
