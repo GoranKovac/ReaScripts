@@ -61,10 +61,11 @@ function Show_menu(tbl)
     reaper.UpdateArrange()
 end
 
-function Element:new(x, y, w, h, guid, info)
+function Element:new(x, y, w, h, rprobj, info)
     local elm = {}
     elm.x, elm.y, elm.w, elm.h = x, y, w, h
-    elm.guid = guid
+    elm.rprobj, elm.bm = rprobj, reaper.JS_LICE_CreateBitmap(true, elm.w, elm.h)
+    reaper.JS_LICE_Clear(elm.bm, 0x66002244)
     elm.info  = info
     elm.idx = 1;
     setmetatable(elm, self)
@@ -73,13 +74,13 @@ function Element:new(x, y, w, h, guid, info)
 end
 
 function Element:update_xywh()
-    self.y = Get_tr_TBH(self.guid)
+    self.y = Get_tr_TBH(self.rprobj)
     self:draw(1,1)
 end
 
 --A_DRAWCOUNT = 0
 function Element:draw(w,h)
-    reaper.JS_Composite(track_window, 0, self.y, self.w, self.h, Get_BM_table()[self.guid], 0, 0, w, h, true)
+    reaper.JS_Composite(track_window, 0, self.y, self.w, self.h, self.bm, 0, 0, w, h, true)
     --A_DRAWCOUNT = A_DRAWCOUNT + 1
 end
 

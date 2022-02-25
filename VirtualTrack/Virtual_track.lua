@@ -10,8 +10,11 @@
 
 --[[
  * Changelog:
- * v0.23 (2022-02-25)
-   + Utils modules and picke for serialization
+ * v0.24 (2022-02-25)
+   + Added storing to track P_EXT by sockmonkey
+   + Revered LICE_BITMAPS to main table
+   + Commented out HAS_GUID function (not sure if needed)
+   + Added storing to P_EXT at exit 
 --]]
 
 local reaper = reaper
@@ -35,11 +38,6 @@ require("Modules/Utils")
 local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
 local track_window = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8) -- GET TRACK VIEW
 local VT_TB = {}
-local VT_BITMAP_TB = {}
-
-function Get_BM_table()
-    return VT_BITMAP_TB
-end
 
 function To_screen(x,y)
     local sx, sy = reaper.JS_Window_ClientToScreen( track_window, x, y )
@@ -172,16 +170,16 @@ function Arrange_view_info()
     end
 end
 
-function Has_GUID(tbl, val)
-    if not tbl then return end
-    for i = 1, #tbl do
-        local in_table = tbl[i].guid
-        if in_table == val then
-            return i
-        end
-    end
-    return false
-end
+-- function Has_GUID(tbl, val)
+--     if not tbl then return end
+--     for i = 1, #tbl do
+--         local in_table = tbl[i].rprobj
+--         if in_table == val then
+--             return i
+--         end
+--     end
+--     return false
+-- end
 
 local function Exclude_Pattern(chunk)
     local patterns = {"SEL 0", "SEL 1"}
@@ -210,7 +208,7 @@ local function Get_Track_Items(track, job)
         items_chunk[#items_chunk + 1] = item_chunk
     end
     return items_chunk
-  end
+end
 
 local function env_prop(env,val)
     local br_env = reaper.BR_EnvAlloc(env, false)
@@ -395,6 +393,42 @@ local function Auto_save()
     last_proj_change_count = proj_change_count
 end
 
+local function Store_To_PEXT(el)
+    local storedTable = {}
+    storedTable.info = el.info;
+    storedTable.idx = math.floor(el.idx)
+    local serialized = tableToString(storedTable)
+    if reaper.ValidatePtr(el.rprobj, "MediaTrack*") then
+        reaper.GetSetMediaTrackInfo_String(el.rprobj, "P_EXT:VirtualTrack", serialized, true)
+    else
+        local rv, stored = reaper.GetSetEnvelopeInfo_String(el.rprobj, "P_EXT:VirtualTrack", serialized, true)
+    end
+end
+
+local function Restore_From_PEXT(el)
+    local rv, stored
+    if reaper.ValidatePtr(el.rprobj, "MediaTrack*") then
+        rv, stored = reaper.GetSetMediaTrackInfo_String(el.rprobj, "P_EXT:VirtualTrack", "", false)
+    else
+        rv, stored = reaper.GetSetEnvelopeInfo_String(el.rprobj, "P_EXT:VirtualTrack", "", false)
+    end
+    if rv == true and stored ~= nil then
+        local storedTable = stringToTable(stored)
+        if storedTable ~= nil then
+            el.info = storedTable.info
+            el.idx = storedTable.idx
+        end
+    end
+end
+
+function Serialize(track, el)
+    Store_To_PEXT(el)
+end
+
+function Deserialize(track, el)
+    Restore_From_PEXT(el)
+end
+
 local function Create_VT_Element()
     GetTracksXYH()
     ValidateRemovedTracks()
@@ -405,26 +439,26 @@ local function Create_VT_Element()
             local y = Get_tr_TBH(k)
             local tr_data = reaper.ValidatePtr(k, "MediaTrack*") and Get_Track_Items(k) or Get_Env_Chunk(k)
             VT_TB[k] = Element:new(0, y, 20, 20, k, {tr_data})
-            VT_BITMAP_TB[k] = reaper.JS_LICE_CreateBitmap(true, 20, 20)
-            reaper.JS_LICE_Clear(VT_BITMAP_TB[k], 0x66002244)
+            Restore_From_PEXT(VT_TB[k])
         end
     end
 end
 
+local function RunLoop()
+    Create_VT_Element()
+    Draw(VT_TB)
+    --Auto_save()
+    reaper.defer(RunLoop)
+end
+
 local function Main()
-    xpcall( function()
-        Create_VT_Element()
-        Draw(VT_TB)
-        --Auto_save()
-        reaper.defer(Main)
-        end,
-        crash
-    )
+    xpcall(RunLoop, crash)
 end
 
 function Exit() -- DESTROY ALL BITMAPS ON REAPER EXIT
-    for _, v in pairs(VT_BITMAP_TB) do
-        reaper.JS_LICE_DestroyBitmap(v) -- DESTROY BITMAPS FROM AS THAT WILL BE DELETED
+    for k, v in pairs(VT_TB) do
+        Store_To_PEXT(VT_TB[k]) -- STORE TO P_EXT AT EXIT
+        reaper.JS_LICE_DestroyBitmap(v.bm) -- DESTROY BITMAPS FROM AS THAT WILL BE DELETED
     end
 end
 reaper.atexit(Exit)

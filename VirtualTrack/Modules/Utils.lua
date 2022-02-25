@@ -5,97 +5,44 @@
 	 * NoIndex: true
 --]]
 
---------------------
----  Pickle.lua  ---
---------------------
-function pickle(t)
-  return Pickle:clone():pickle_(t)
+function tableToString(table)
+  return serializeTable(table)
 end
-Pickle = {clone = function(t)
-    local nt = {}
-    for i, v in pairs(t) do
-      nt[i] = v
-    end
-    return nt
-  end}
-function Pickle:pickle_(root)
-  if type(root) ~= "table" then
-    error("can only pickle tables, not " .. type(root) .. "s")
-  end
-  self._tableToRef = {}
-  self._refToTable = {}
-  local savecount = 0
-  self:ref_(root)
-  local s = ""
-  while #self._refToTable > savecount do
-    savecount = savecount + 1
-    local t = self._refToTable[savecount]
-    s = s .. "{\n"
-    for i, v in pairs(t) do
-      s = string.format("%s[%s]=%s,\n", s, self:value_(i), self:value_(v))
-    end
-    s = s .. "},\n"
-  end
-  return string.format("{%s}", s)
+
+function stringToTable(str)
+  local f, err = load("return "..str)
+  return f ~= nil and f() or nil
 end
-function Pickle:value_(v)
-  local vtype = type(v)
-  if vtype == "string" then
-    return string.format("%q", v)
-  elseif vtype == "number" then
-    return v
-  elseif vtype == "boolean" then
-    return tostring(v)
-  elseif vtype == "table" then
-    return "{" .. self:ref_(v) .. "}"
+
+function serializeTable(val, name, skipnewlines, depth)
+  skipnewlines = skipnewlines or false
+  depth = depth or 0
+  local tmp = string.rep(" ", depth)
+  if name then
+    if type(name) == "number" and math.floor(name) == name then
+      name = "[" .. name .. "]"
+    elseif not string.match(name, '^[a-zA-z_][a-zA-Z0-9_]*$') then
+      name = string.gsub(name, "'", "\\'")
+      name = "['".. name .. "']"
+    end
+    tmp = tmp .. name .. " = "
+  end
+  if type(val) == "table" then
+    tmp = tmp .. "{" .. (not skipnewlines and "\n" or "")
+    for k, v in pairs(val) do
+      tmp =  tmp .. serializeTable(v, k, skipnewlines, depth + 1) .. "," .. (not skipnewlines and "\n" or "")
+    end
+    tmp = tmp .. string.rep(" ", depth) .. "}"
+  elseif type(val) == "number" then
+    tmp = tmp .. tostring(val)
+  elseif type(val) == "string" then
+    tmp = tmp .. string.format("%q", val)
+  elseif type(val) == "boolean" then
+    tmp = tmp .. (val and "true" or "false")
   else
-    error("pickle a " .. type(v) .. " is not supported")
+    tmp = tmp .. "\"[inserializeable datatype:" .. type(val) .. "]\""
   end
-end
-function Pickle:ref_(t)
-  local ref = self._tableToRef[t]
-  if not ref then
-    if t == self then
-      error("can't pickle the pickle class")
-    end
-    table.insert(self._refToTable, t)
-    ref = #self._refToTable
-    self._tableToRef[t] = ref
-  end
-  return ref
-end
------------------
----  unpickle ---
------------------
-function unpickle(s)
-  if type(s) ~= "string" then
-    error("can't unpickle a " .. type(s) .. ", only strings")
-  end
-  local gentables = load("return " .. s)
-  local tables = gentables()
-  for tnum = 1, #tables do
-    local t = tables[tnum]
-    local tcopy = {}
-    for i, v in pairs(t) do
-      tcopy[i] = v
-    end
-    for i, v in pairs(tcopy) do
-      local ni, nv
-      if type(i) == "table" then
-        ni = tables[i[1]]
-      else
-        ni = i
-      end
-      if type(v) == "table" then
-        nv = tables[v[1]]
-      else
-        nv = v
-      end
-      t[i] = nil
-      t[ni] = nv
-    end
-  end
-  return tables[1]
+  return tmp
 end
 
 function MSG(m)
