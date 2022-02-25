@@ -10,8 +10,8 @@
 
 --[[
  * Changelog:
- * v0.2 (2022-02-25)
-   + added changes from sockmonkey
+ * v0.21 (2022-02-25)
+   + decoupled LICE_BM from VT_TB array to its own array VT_BITMAP_TB
 --]]
 
 local reaper = reaper
@@ -34,6 +34,11 @@ require("Modules/Mouse")
 local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
 local track_window = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8) -- GET TRACK VIEW
 local VT_TB = {}
+local VT_BITMAP_TB = {}
+
+function Get_BM_table()
+    return VT_BITMAP_TB
+end
 
 function To_screen(x,y)
     local sx, sy = reaper.JS_Window_ClientToScreen( track_window, x, y )
@@ -360,6 +365,8 @@ local function Create_VT_Element()
             local y = Get_tr_TBH(k)
             local tr_data = reaper.ValidatePtr(k, "MediaTrack*") and Get_Track_Items(k) or Get_Env_Chunk(k)
             VT_TB[k] = Element:new(0, y, 20, 20, k, {tr_data})
+            VT_BITMAP_TB[k] = reaper.JS_LICE_CreateBitmap(true, 20, 20)
+            reaper.JS_LICE_Clear(VT_BITMAP_TB[k], 0x66002244)
         end
     end
 end
@@ -375,8 +382,8 @@ local function Main()
 end
 
 function Exit() -- DESTROY ALL BITMAPS ON REAPER EXIT
-    for _, v in pairs(VT_TB) do
-        reaper.JS_LICE_DestroyBitmap(v.bm) -- DESTROY BITMAPS FROM AS THAT WILL BE DELETED
+    for _, v in pairs(VT_BITMAP_TB) do
+        reaper.JS_LICE_DestroyBitmap(v) -- DESTROY BITMAPS FROM AS THAT WILL BE DELETED
     end
 end
 reaper.atexit(Exit)
