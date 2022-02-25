@@ -154,6 +154,24 @@ local function Exclude_Pattern(chunk)
     return chunk
 end
 
+local function Get_folder(tr)
+    if reaper.GetMediaTrackInfo_Value(tr, "I_FOLDERDEPTH") <= 0 then
+        return
+    end
+    local depth, children = 0, {}
+    local folderID = reaper.GetMediaTrackInfo_Value(tr, "IP_TRACKNUMBER") - 1
+    for i = folderID + 1, reaper.CountTracks(0) - 1 do
+        local child = reaper.GetTrack(0, i)
+        local currDepth = reaper.GetMediaTrackInfo_Value(child, "I_FOLDERDEPTH")
+        children[#children + 1] = child
+        depth = depth + currDepth
+        if depth <= -1 then
+           break
+        end
+    end
+    return children
+end
+
 local function Get_Item_Chunk(item)
     if not item then return end
     local _, chunk = reaper.GetItemStateChunk(item, "", false)
@@ -161,7 +179,7 @@ local function Get_Item_Chunk(item)
 end
 
 local function Get_Track_Items(track, job)
-    if reaper.GetMediaTrackInfo_Value(track, "I_FOLDERDEPTH") == 1 and not job then
+    if reaper.GetMediaTrackInfo_Value(track, "I_FOLDERDEPTH") == 1 then
         return
     end
     local items_chunk = {}
@@ -255,6 +273,18 @@ function SaveCurrentState(track, tbl)
     local chunk_tbl = reaper.ValidatePtr(track, "MediaTrack*") and Get_Track_Items(track) or Get_Env_Chunk(track)
     tbl.info[tbl.idx] = chunk_tbl
     return chunk_tbl
+end
+
+-- CREATE VERSIONS FROM FOLDER (DO FOR ALL CHILDS)
+function Create_folder(track)
+    if reaper.GetMediaTrackInfo_Value(track, "I_FOLDERDEPTH") ~= 1 then
+        return
+    end
+    local childs = Get_folder(track)
+    for i = 1, #childs do
+        CreateNew(childs[i], VT_TB[childs[i]]) -- CREATE VERSIONS ON CHILDS
+    end
+    --CreateNew(track, VT_TB[track]) -- CREATE FOLDER VERSION ()
 end
 
 function CreateNew(track, tbl)
