@@ -124,12 +124,12 @@ function Get_track_under_mouse(x, y)
     local track, env_info = reaper.GetTrackFromPoint(x, y)
 
     if track == reaper.GetMasterTrack( 0 ) and reaper.GetMasterTrackVisibility() == 0 then return end -- IGNORE DOCKED MASTER TRACK
-    if track and env_info == 0 then
+    if track and env_info == 0 and TBH[track].vis == true then
         return track, TBH[track].t, TBH[track].b, TBH[track].h
     elseif track and env_info == 1 then
         for i = 1, reaper.CountTrackEnvelopes(track) do
             local env = reaper.GetTrackEnvelope(track, i - 1)
-            if TBH[env].t <= cy and TBH[env].b >= cy then
+            if TBH[env].t <= cy and TBH[env].b >= cy and TBH[env].vis == true then
                 return env, TBH[env].t, TBH[env].b, TBH[env].h
             end
         end
@@ -349,7 +349,9 @@ local last_proj_change_count = reaper.GetProjectStateChangeCount(0)
 local function Auto_save()
     local proj_change_count = reaper.GetProjectStateChangeCount(0)
     if proj_change_count > last_proj_change_count then
-        local last_action = reaper.Undo_CanUndo2(0):lower()
+        local last_action = reaper.Undo_CanUndo2(0)
+        if last_action == nil then return end
+        last_action = last_action:lower()
         if Find_In_History(ignore_history, last_action) then return end
         if Find_In_History(accept_history, last_action) then
             local touched_track = MouseInfo().last_tr
@@ -422,7 +424,7 @@ end
 local function RunLoop()
     Create_VT_Element()
     Draw(VT_TB)
-    --Debug_table(TBH)
+    Debug_table(TBH)
     Auto_save()
     reaper.defer(RunLoop)
 end
