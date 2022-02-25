@@ -10,8 +10,8 @@
 
 --[[
  * Changelog:
- * v0.26 (2022-02-25)
-   + Prevent opening all versions on envelope track
+ * v0.27 (2022-02-25)
+   + Get tracks under mouse only if visible
 --]]
 
 local reaper = reaper
@@ -424,7 +424,7 @@ end
 local function RunLoop()
     Create_VT_Element()
     Draw(VT_TB)
-    Debug_table(TBH)
+    --Debug_table(TBH)
     Auto_save()
     reaper.defer(RunLoop)
 end
