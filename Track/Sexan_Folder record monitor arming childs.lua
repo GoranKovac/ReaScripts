@@ -1,4 +1,4 @@
----[[
+--[[
  * ReaScript Name: Folder record monitor arming childs
  * About: Record arming folder arms all child tracks
  * Author: SPK77, SeXan
