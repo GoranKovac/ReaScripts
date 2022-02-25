@@ -10,8 +10,8 @@
 
 --[[
  * Changelog:
- * v0.22 (2022-02-25)
-   + Prevent deleting original/main version
+ * v0.23 (2022-02-25)
+   + Added Auto-save feature (disabled ATM)
 --]]
 
 local reaper = reaper
@@ -356,6 +356,48 @@ function Delete(track, tbl)
     SwapVirtualTrack(track, tbl, tbl.idx)
 end
 
+local function Find_In_History(tbl, val)
+    if not tbl then return end
+    for i = 1, #tbl do
+        if val:find(tbl[i]) then
+            return true
+        end
+    end
+    return false
+end
+
+local ignore_history = {
+    "unselect all items",
+    "remove material behind selected items",
+    "change media item selection"
+}
+
+local accept_history = {
+    "item",
+    "recorded media",
+    "midi editor: insert notes",
+    "change source media",
+    "rename source media",
+    "take",
+    "pencil",
+    "adjust"
+}
+
+local last_proj_change_count = reaper.GetProjectStateChangeCount(0)
+
+local function Auto_save()
+    local proj_change_count = reaper.GetProjectStateChangeCount(0)
+    if proj_change_count > last_proj_change_count then
+        local last_action = reaper.Undo_CanUndo2(0):lower()
+        if Find_In_History(ignore_history, last_action) then return end
+        if Find_In_History(accept_history, last_action) then
+            local touched_track = MouseInfo().last_tr
+            SaveCurrentState(touched_track, VT_TB[touched_track])
+        end
+    end
+    last_proj_change_count = proj_change_count
+end
+
 local function Create_VT_Element()
     GetTracksXYH()
     ValidateRemovedTracks()
@@ -376,6 +418,7 @@ local function Main()
     xpcall( function()
         Create_VT_Element()
         Draw(VT_TB)
+        --Auto_save()
         reaper.defer(Main)
         end,
         crash
