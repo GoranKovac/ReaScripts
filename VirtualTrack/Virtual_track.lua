@@ -44,7 +44,7 @@ end
 function To_screen(x,y)
     local sx, sy = reaper.JS_Window_ClientToScreen( track_window, x, y )
     return sx, sy
-  end
+end
 
 function To_client(x,y)
     local cx, cy = reaper.JS_Window_ScreenToClient( track_window, x, y )
@@ -80,10 +80,6 @@ local crash = function(errObject)
        )
     end
     reaper.atexit(Exit)
- end
-
-function MSG(m)
-   reaper.ShowConsoleMsg(tostring(m) .. "\n")
 end
 
 local TBH
@@ -179,10 +175,10 @@ end
 function Has_GUID(tbl, val)
     if not tbl then return end
     for i = 1, #tbl do
-      local in_table = tbl[i].guid
-      if in_table == val then
-        return i
-      end
+        local in_table = tbl[i].guid
+        if in_table == val then
+            return i
+        end
     end
     return false
 end
@@ -190,7 +186,7 @@ end
 local function Exclude_Pattern(chunk)
     local patterns = {"SEL 0", "SEL 1"}
     for i = 1, #patterns do
-      chunk = string.gsub(chunk, patterns[i], "")
+        chunk = string.gsub(chunk, patterns[i], "")
     end
     return chunk
   end
@@ -203,7 +199,7 @@ end
 
 local function Get_Track_Items(track, job)
     if reaper.GetMediaTrackInfo_Value(track, "I_FOLDERDEPTH") == 1 and not job then
-      return
+        return
     end
     local items_chunk = {}
     local num_items = reaper.CountTrackMediaItems(track)
@@ -267,21 +263,21 @@ local function Create_item(tr, data)
     if not data or not reaper.ValidatePtr(tr, "MediaTrack*")  then return end
     local new_items = {}
     for i = 1, #data do
-      local chunk = data[i]
-      local empty_item = reaper.AddMediaItemToTrack(tr)
-      reaper.SetItemStateChunk(empty_item, chunk, false)
-      reaper.GetSetMediaItemInfo_String(empty_item, "GUID", reaper.genGuid(), true)
+        local chunk = data[i]
+        local empty_item = reaper.AddMediaItemToTrack(tr)
+        reaper.SetItemStateChunk(empty_item, chunk, false)
+        reaper.GetSetMediaItemInfo_String(empty_item, "GUID", reaper.genGuid(), true)
 
-      for j = 1, reaper.CountTakes(empty_item) do
-        local take_dst = reaper.GetMediaItemTake(empty_item, j-1)
-        reaper.GetSetMediaItemTakeInfo_String(take_dst, "GUID", reaper.genGuid(), true)
-      end
+        for j = 1, reaper.CountTakes(empty_item) do
+            local take_dst = reaper.GetMediaItemTake(empty_item, j-1)
+            reaper.GetSetMediaItemTakeInfo_String(take_dst, "GUID", reaper.genGuid(), true)
+        end
 
-      reaper.SetMediaItemInfo_Value(empty_item, "B_UISEL", 1)
-      reaper.Main_OnCommand(41613, 0)
-      reaper.SetMediaItemInfo_Value(empty_item, "B_UISEL", 0)
+        reaper.SetMediaItemInfo_Value(empty_item, "B_UISEL", 1)
+        reaper.Main_OnCommand(41613, 0)
+        reaper.SetMediaItemInfo_Value(empty_item, "B_UISEL", 0)
 
-      new_items[#new_items+1] = empty_item
+        new_items[#new_items+1] = empty_item
     end
     return new_items
 end

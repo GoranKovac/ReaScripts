@@ -97,3 +97,7 @@ function unpickle(s)
   end
   return tables[1]
 end
+
+function MSG(m)
+    reaper.ShowConsoleMsg(tostring(m) .. "\n")
+ end
