@@ -77,10 +77,10 @@ function Element:update_xywh()
     self:draw(1,1)
 end
 
-A_DRAWCOUNT = 0
+--A_DRAWCOUNT = 0
 function Element:draw(w,h)
     reaper.JS_Composite(track_window, 0, self.y, self.w, self.h, Get_BM_table()[self.guid], 0, 0, w, h, true)
-    A_DRAWCOUNT = A_DRAWCOUNT + 1
+    --A_DRAWCOUNT = A_DRAWCOUNT + 1
 end
 
 function Element:pointIN(sx, sy)
