@@ -12,24 +12,24 @@ local mouse
 local Element = {}
 
 local menu_options = {
-  [1] = { name="", fname="" },
-  [2] = { name="Create New Variant", fname="CreateNew" },
-  [3] = { name="Duplicate Variant", fname="Duplicate" },
-  [4] = { name="Delete Variant", fname="Delete" },
-  [5] = { name="Clear Variant", fname="Clear" },
-  [6] = { name="Show All Variants", fname="ShowAll" }
+    [1] = { name = "",                    fname = "" },
+    [2] = { name = "Create New Variant",  fname="CreateNew" },
+    [3] = { name = "Duplicate Variant",   fname="Duplicate" },
+    [4] = { name = "Delete Variant",      fname="Delete" },
+    [5] = { name = "Clear Variant",       fname="Clear" },
+    [6] = { name = "Show All Variants",   fname="ShowAll" }
 }
 
 function Get_class_tbl(tbl)
-  return Element
+    return Element
 end
 
 local function ConcatMenuNames()
-  local concat = ""
-  for i = 1, #menu_options do
-    concat = concat .. menu_options[i].name .. (i ~= #menu_options and "|" or "")
-  end
-  return concat
+    local concat = ""
+    for i = 1, #menu_options do
+        concat = concat .. menu_options[i].name .. (i ~= #menu_options and "|" or "")
+    end
+    return concat
 end
 
 function Show_menu(tbl)
@@ -78,10 +78,13 @@ function Element:update_xywh()
     self:draw(1,1)
 end
 
---A_DRAWCOUNT = 0
 function Element:draw(w,h)
-    reaper.JS_Composite(track_window, 0, self.y, self.w, self.h, self.bm, 0, 0, w, h, true)
-    --A_DRAWCOUNT = A_DRAWCOUNT + 1
+    if Get_TBH_TBL()[self.rprobj].vis then
+        reaper.JS_Composite(track_window, 0, self.y, self.w, self.h, self.bm, 0, 0, w, h, true)
+    else
+        -- UNLINK
+        reaper.JS_Composite_Unlink(track_window, self.bm, true)
+    end
 end
 
 function Element:pointIN(sx, sy)
@@ -114,6 +117,7 @@ function Element:mouseM_Down()
 end
 
 function Element:track()
+    if not Get_TBH_TBL()[self.rprobj].vis then return end
     if self:mouseClick() then
         Show_menu(self)
     end
@@ -126,6 +130,35 @@ end
 local function Update_BTNS(tbl, update)
     if not update then return end
     for _, track in pairs(tbl) do track:update_xywh() end
+end
+
+local prev_Arr_end_time, prev_proj_state, last_scroll, last_scroll_b, last_pr_t, last_pr_h
+local function Arrange_view_info()
+    local TBH = Get_TBH_TBL()
+    if not TBH then return end
+    local last_pr_tr = reaper.GetTrack(0, reaper.CountTracks(0) - 1)
+    local proj_state = reaper.GetProjectStateChangeCount(0) -- PROJECT STATE
+    local _, scroll, _, _, scroll_b = reaper.JS_Window_GetScrollInfo(track_window, "SB_VERT") -- GET VERTICAL SCROLL
+    local _, Arr_end_time = reaper.GetSet_ArrangeView2(0, false, 0, 0) -- GET ARRANGE VIEW
+    if prev_Arr_end_time ~= Arr_end_time then -- THIS ONE ALWAYS CHANGES WHEN ZOOMING IN OUT
+        prev_Arr_end_time = Arr_end_time
+        return true
+    elseif prev_proj_state ~= proj_state then
+        prev_proj_state = proj_state
+        return true
+    elseif last_scroll ~= scroll then
+        last_scroll = scroll
+        return true
+    elseif last_scroll_b ~= scroll_b then
+        last_scroll_b = scroll_b
+        return true
+    elseif last_pr_tr then -- LAST TRACK ALWAYS CHANGES HEIGHT WHEN OTHER TRACK RESIZE
+        if TBH[last_pr_tr].h ~= last_pr_h or TBH[last_pr_tr].t ~= last_pr_t then
+            last_pr_h = TBH[last_pr_tr].h
+            last_pr_t = TBH[last_pr_tr].t
+            return true
+        end
+    end
 end
 
 function Draw(tbl)

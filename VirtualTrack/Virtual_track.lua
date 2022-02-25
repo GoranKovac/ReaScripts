@@ -10,11 +10,10 @@
 
 --[[
  * Changelog:
- * v0.24 (2022-02-25)
-   + Added storing to track P_EXT by sockmonkey
-   + Revered LICE_BITMAPS to main table
-   + Commented out HAS_GUID function (not sure if needed)
-   + Added storing to P_EXT at exit 
+ * v0.25 (2022-02-25)
+   + Added envelope visibility check in TBH table
+   + Unlink BM of non visible tracks
+   + Do not allow clicking rectangles if its not drawing
 --]]
 
 local reaper = reaper
@@ -105,9 +104,14 @@ local function GetTracksXYH()
             local env_h = reaper.GetEnvelopeInfo_Value(env, "I_TCPH")
             local env_t = reaper.GetEnvelopeInfo_Value(env, "I_TCPY") + tr_t
             local env_b = env_t + env_h
-            TBH[env] = {t = env_t, b = env_b, h = env_h}
+            local env_vis = env_prop(env,"visible")
+            TBH[env] = {t = env_t, b = env_b, h = env_h, vis = env_vis}
         end
     end
+end
+
+function Get_TBH_TBL()
+    return TBH
 end
 
 function Get_tr_TBH(tr)
@@ -142,52 +146,13 @@ function ValidateRemovedTracks()
     end
 end
 
-local prev_Arr_end_time, prev_proj_state, last_scroll, last_scroll_b, last_pr_t, last_pr_h
-function Arrange_view_info()
-    if not TBH then return end
-    local last_pr_tr = reaper.GetTrack(0, reaper.CountTracks(0) - 1)
-    local proj_state = reaper.GetProjectStateChangeCount(0) -- PROJECT STATE
-    local _, scroll, _, _, scroll_b = reaper.JS_Window_GetScrollInfo(track_window, "SB_VERT") -- GET VERTICAL SCROLL
-    local _, Arr_end_time = reaper.GetSet_ArrangeView2(0, false, 0, 0) -- GET ARRANGE VIEW
-    if prev_Arr_end_time ~= Arr_end_time then -- THIS ONE ALWAYS CHANGES WHEN ZOOMING IN OUT
-        prev_Arr_end_time = Arr_end_time
-        return true
-    elseif prev_proj_state ~= proj_state then
-        prev_proj_state = proj_state
-        return true
-    elseif last_scroll ~= scroll then
-        last_scroll = scroll
-        return true
-    elseif last_scroll_b ~= scroll_b then
-        last_scroll_b = scroll_b
-        return true
-    elseif last_pr_tr then -- LAST TRACK ALWAYS CHANGES HEIGHT WHEN OTHER TRACK RESIZE
-        if TBH[last_pr_tr].h ~= last_pr_h or TBH[last_pr_tr].t ~= last_pr_t then
-            last_pr_h = TBH[last_pr_tr].h
-            last_pr_t = TBH[last_pr_tr].t
-            return true
-        end
-    end
-end
-
--- function Has_GUID(tbl, val)
---     if not tbl then return end
---     for i = 1, #tbl do
---         local in_table = tbl[i].rprobj
---         if in_table == val then
---             return i
---         end
---     end
---     return false
--- end
-
 local function Exclude_Pattern(chunk)
     local patterns = {"SEL 0", "SEL 1"}
     for i = 1, #patterns do
         chunk = string.gsub(chunk, patterns[i], "")
     end
     return chunk
-  end
+end
 
 local function Get_Item_Chunk(item)
     if not item then return end
@@ -210,7 +175,7 @@ local function Get_Track_Items(track, job)
     return items_chunk
 end
 
-local function env_prop(env,val)
+function env_prop(env,val)
     local br_env = reaper.BR_EnvAlloc(env, false)
     local active, visible, armed, inLane, laneHeight, defaultShape, minValue, maxValue, centerValue, type_, faderScaling = reaper.BR_EnvGetProperties(br_env, true, true, true, true, 0, 0, 0, 0, 0, 0, true)
     local properties = {["active"] = active,
@@ -248,15 +213,6 @@ function Make_Empty_Env(env)
     Set_Env_Chunk(env, chunk_template)
 end
 
-local function get_fipm_value(tr, num)
-    if not num then return end
-    local _, track_h = Get_tr_TBH(tr)
-    local offset = track_h <= 42 and 15 or 0
-    local bar_h_FIPM = ((19 - offset) / track_h)
-    local item_h_FIPM = (1 - (num - 1) * bar_h_FIPM) / num
-    return bar_h_FIPM, item_h_FIPM
-end
-
 local function Create_item(tr, data)
     if not data or not reaper.ValidatePtr(tr, "MediaTrack*")  then return end
     local new_items = {}
@@ -278,25 +234,6 @@ local function Create_item(tr, data)
         new_items[#new_items+1] = empty_item
     end
     return new_items
-end
-
-function ShowAll(track, tbl)
-    SaveCurrentState(track, tbl)
-    local val = reaper.GetMediaTrackInfo_Value(track, "B_FREEMODE") == 1 and 0 or 1
-    Clear(track)
-    if val == 1 then
-        local FIPM_bar, FIPM_item = get_fipm_value(track, #tbl.info)
-        for i = 1, #tbl.info do
-            local items = Create_item(track, tbl.info[i])
-            for j = 1, #items do
-                reaper.SetMediaItemInfo_Value(items[j], "F_FREEMODE_H", FIPM_item)
-                reaper.SetMediaItemInfo_Value(items[j], "F_FREEMODE_Y", ((i - 1) * (FIPM_item + FIPM_bar)))
-            end
-        end
-    else
-        Create_item(track, tbl.info[1])
-    end
-    reaper.SetMediaTrackInfo_Value(track, "B_FREEMODE", val)
 end
 
 function Set_Virtual_Track(track, tbl, idx)
@@ -349,6 +286,34 @@ function Delete(track, tbl)
     table.remove(tbl.info, tbl.idx)
     tbl.idx = tbl.idx <= #tbl.info and tbl.idx or #tbl.info
     SwapVirtualTrack(track, tbl, tbl.idx)
+end
+
+local function get_fipm_value(tr, num)
+    if not num then return end
+    local _, track_h = Get_tr_TBH(tr)
+    local offset = track_h <= 42 and 15 or 0
+    local bar_h_FIPM = ((19 - offset) / track_h)
+    local item_h_FIPM = (1 - (num - 1) * bar_h_FIPM) / num
+    return bar_h_FIPM, item_h_FIPM
+end
+
+function ShowAll(track, tbl)
+    SaveCurrentState(track, tbl)
+    local val = reaper.GetMediaTrackInfo_Value(track, "B_FREEMODE") == 1 and 0 or 1
+    Clear(track)
+    if val == 1 then
+        local FIPM_bar, FIPM_item = get_fipm_value(track, #tbl.info)
+        for i = 1, #tbl.info do
+            local items = Create_item(track, tbl.info[i])
+            for j = 1, #items do
+                reaper.SetMediaItemInfo_Value(items[j], "F_FREEMODE_H", FIPM_item)
+                reaper.SetMediaItemInfo_Value(items[j], "F_FREEMODE_Y", ((i - 1) * (FIPM_item + FIPM_bar)))
+            end
+        end
+    else
+        Create_item(track, tbl.info[1])
+    end
+    reaper.SetMediaTrackInfo_Value(track, "B_FREEMODE", val)
 end
 
 local function Find_In_History(tbl, val)
@@ -447,7 +412,7 @@ end
 local function RunLoop()
     Create_VT_Element()
     Draw(VT_TB)
-    --Auto_save()
+    Auto_save()
     reaper.defer(RunLoop)
 end
 
