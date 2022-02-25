@@ -82,7 +82,6 @@ function Element:draw(w,h)
     if Get_TBH_TBL()[self.rprobj].vis then
         reaper.JS_Composite(track_window, 0, self.y, self.w, self.h, self.bm, 0, 0, w, h, true)
     else
-        -- UNLINK
         reaper.JS_Composite_Unlink(track_window, self.bm, true)
     end
 end
@@ -95,23 +94,23 @@ end
 function Element:mouseIN()
     return mouse.l_down == false and self:pointIN(mouse.x, mouse.y)
 end
-------------------------
+
 function Element:mouseDown()
     return mouse.l_down and self:pointIN(mouse.ox, mouse.oy)
 end
---------
+
 function Element:mouseUp()
     return mouse.l_up --and self:pointIN(mouse.ox, mouse.oy)
 end
---------
+
 function Element:mouseClick()
     return mouse.l_click and self:pointIN(mouse.ox, mouse.oy)
 end
-------------------------
+
 function Element:mouseR_Down()
     return mouse.r_down and self:pointIN(mouse.ox, mouse.oy)
 end
---------
+
 function Element:mouseM_Down()
   --return m_state&64==64 and self:pointIN(mouse_ox, mouse_oy)
 end

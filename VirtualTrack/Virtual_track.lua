@@ -10,10 +10,8 @@
 
 --[[
  * Changelog:
- * v0.25 (2022-02-25)
-   + Added envelope visibility check in TBH table
-   + Unlink BM of non visible tracks
-   + Do not allow clicking rectangles if its not drawing
+ * v0.26 (2022-02-25)
+   + Prevent opening all versions on envelope track
 --]]
 
 local reaper = reaper
@@ -76,6 +74,7 @@ local crash = function(errObject)
                             "Reaper:       \t" .. reaper.GetAppVersion() .. "\n" .. "Platform:     \t" .. reaper.GetOS()
        )
     end
+    Exit()
     reaper.atexit(Exit)
 end
 
@@ -104,7 +103,7 @@ local function GetTracksXYH()
             local env_h = reaper.GetEnvelopeInfo_Value(env, "I_TCPH")
             local env_t = reaper.GetEnvelopeInfo_Value(env, "I_TCPY") + tr_t
             local env_b = env_t + env_h
-            local env_vis = env_prop(env,"visible")
+            local env_vis = Env_prop(env,"visible")
             TBH[env] = {t = env_t, b = env_b, h = env_h, vis = env_vis}
         end
     end
@@ -116,13 +115,14 @@ end
 
 function Get_tr_TBH(tr)
     if TBH[tr] then
-       return TBH[tr].t, TBH[tr].h, TBH[tr].b, TBH[tr].th
+       return TBH[tr].t, TBH[tr].h, TBH[tr].b
     end
 end
 
 function Get_track_under_mouse(x, y)
     local _, cy = To_client(x, y)
     local track, env_info = reaper.GetTrackFromPoint(x, y)
+
     if track == reaper.GetMasterTrack( 0 ) and reaper.GetMasterTrackVisibility() == 0 then return end -- IGNORE DOCKED MASTER TRACK
     if track and env_info == 0 then
         return track, TBH[track].t, TBH[track].b, TBH[track].h
@@ -175,7 +175,7 @@ local function Get_Track_Items(track, job)
     return items_chunk
 end
 
-function env_prop(env,val)
+function Env_prop(env,val)
     local br_env = reaper.BR_EnvAlloc(env, false)
     local active, visible, armed, inLane, laneHeight, defaultShape, minValue, maxValue, centerValue, type_, faderScaling = reaper.BR_EnvGetProperties(br_env, true, true, true, true, 0, 0, 0, 0, 0, 0, true)
     local properties = {["active"] = active,
@@ -207,7 +207,7 @@ end
 local match = string.match
 function Make_Empty_Env(env)
     local env_chunk = Get_Env_Chunk(env)
-    local env_center_val = env_prop(env, "centerValue")
+    local env_center_val = Env_prop(env, "centerValue")
     local env_name_from_chunk = match(env_chunk, "[^\r\n]+")
     local chunk_template = env_name_from_chunk .."\nACT 1 -1\nVIS 1 1 1\nLANEHEIGHT 0 0\nARM 1\nDEFSHAPE 0 -1 -1\nPT 0 " .. env_center_val .. " 0\n>"
     Set_Env_Chunk(env, chunk_template)
@@ -298,6 +298,7 @@ local function get_fipm_value(tr, num)
 end
 
 function ShowAll(track, tbl)
+    if not reaper.ValidatePtr(track, "MediaTrack*") then return end
     SaveCurrentState(track, tbl)
     local val = reaper.GetMediaTrackInfo_Value(track, "B_FREEMODE") == 1 and 0 or 1
     Clear(track)
@@ -409,9 +410,19 @@ local function Create_VT_Element()
     end
 end
 
+function Debug_table(tbl)
+    A_TBL = {}
+    local cnt = 1
+    for _, v in pairs(tbl) do
+        A_TBL[cnt] = v
+        cnt = cnt + 1
+    end
+end
+
 local function RunLoop()
     Create_VT_Element()
     Draw(VT_TB)
+    --Debug_table(TBH)
     Auto_save()
     reaper.defer(RunLoop)
 end
