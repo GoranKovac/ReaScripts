@@ -10,8 +10,8 @@
 
 --[[
  * Changelog:
- * v0.1 (2020-05-12)
-   + innitial release
+ * v0.2 (2022-02-25)
+   + added changes from sockmonkey
 --]]
 
 local reaper = reaper
@@ -229,18 +229,6 @@ local function env_prop(env,val)
     return properties[val]
 end
 
-function Delete(track)
-    if reaper.ValidatePtr(track, "MediaTrack*") then
-        local num_items = reaper.CountTrackMediaItems(track)
-        for i = num_items, 1, -1 do
-            local item = reaper.GetTrackMediaItem(track, i - 1)
-            reaper.DeleteTrackMediaItem(track, item)
-        end
-    else
-        Make_Empty_Env(track)
-    end
-end
-
 local function Get_Env_Chunk(env)
     local _, env_chunk = reaper.GetEnvelopeStateChunk(env, "")
     return env_chunk
@@ -292,34 +280,74 @@ local function Create_item(tr, data)
     return new_items
 end
 
-function ShowAll(tr, data)
-    local val = reaper.GetMediaTrackInfo_Value(tr, "B_FREEMODE") == 1 and 0 or 1
-    Delete(tr)
+function ShowAll(track, tbl)
+    SaveCurrentState(track, tbl)
+    local val = reaper.GetMediaTrackInfo_Value(track, "B_FREEMODE") == 1 and 0 or 1
+    Clear(track)
     if val == 1 then
-        local FIPM_bar, FIPM_item = get_fipm_value(tr, #data)
-        for i = 1, #data do
-            local items = Create_item(tr, data[i])
+        local FIPM_bar, FIPM_item = get_fipm_value(track, #tbl.info)
+        for i = 1, #tbl.info do
+            local items = Create_item(track, tbl.info[i])
             for j = 1, #items do
                 reaper.SetMediaItemInfo_Value(items[j], "F_FREEMODE_H", FIPM_item)
                 reaper.SetMediaItemInfo_Value(items[j], "F_FREEMODE_Y", ((i - 1) * (FIPM_item + FIPM_bar)))
             end
         end
     else
-        Create_item(tr, data[1])
+        Create_item(track, tbl.info[1])
     end
-    reaper.SetMediaTrackInfo_Value(tr, "B_FREEMODE", val)
+    reaper.SetMediaTrackInfo_Value(track, "B_FREEMODE", val)
 end
 
-function Set_Virtual_Track(tr, data)
-    Delete(tr)
-    Create_item(tr, data)
-    Set_Env_Chunk(tr, data)
+function Set_Virtual_Track(track, tbl, idx)
+    SaveCurrentState(track, tbl)
+    SwapVirtualTrack(track, tbl, idx)
 end
 
-function CreateNew(track,tbl)
+function SwapVirtualTrack(track, tbl, idx)
+    Clear(track)
+    if reaper.ValidatePtr(track, "MediaTrack*") then
+        Create_item(track, tbl.info[idx])
+    else
+        Set_Env_Chunk(track, tbl.info[idx])
+    end
+    tbl.idx = idx;
+end
+
+function SaveCurrentState(track, tbl)
     local chunk_tbl = reaper.ValidatePtr(track, "MediaTrack*") and Get_Track_Items(track) or Get_Env_Chunk(track)
-    tbl[#tbl+1] = chunk_tbl
-    Delete(track)
+    tbl.info[tbl.idx] = chunk_tbl
+    return chunk_tbl
+end
+
+function CreateNew(track, tbl)
+    Duplicate(track,tbl)
+    Clear(track)
+    tbl.info[tbl.idx] = reaper.ValidatePtr(track, "MediaTrack*") and Get_Track_Items(track) or Get_Env_Chunk(track) -- clear it out
+end
+
+function Duplicate(track, tbl)
+    local chunk_tbl = SaveCurrentState(track, tbl)
+    tbl.info[#tbl.info+1] = chunk_tbl
+    tbl.idx = #tbl.info;
+end
+
+function Clear(track)
+    if reaper.ValidatePtr(track, "MediaTrack*") then
+        local num_items = reaper.CountTrackMediaItems(track)
+        for i = num_items, 1, -1 do
+            local item = reaper.GetTrackMediaItem(track, i - 1)
+            reaper.DeleteTrackMediaItem(track, item)
+        end
+    else
+        Make_Empty_Env(track)
+    end
+end
+
+function Delete(track, tbl)
+    table.remove(tbl.info, tbl.idx)
+    tbl.idx = tbl.idx <= #tbl.info and tbl.idx or #tbl.info
+    SwapVirtualTrack(track, tbl, tbl.idx)
 end
 
 local function Create_VT_Element()

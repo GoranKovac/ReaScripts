@@ -1,7 +1,7 @@
 --[[
    * Author: SeXan
    * Licence: GPL v3
-   * Version: 0.01
+   * Version: 0.02
 	 * NoIndex: true
 --]]
 local reaper = reaper
@@ -12,15 +12,24 @@ local mouse
 local Element = {}
 
 local menu_options = {
-  [1] = "",
-  [2] = "CreateNew",
-  [3] = "Duplicate",
-  [4] = "Delete",
-  [5] = "ShowAll"
+  [1] = { name="", fname="" },
+  [2] = { name="Create New Variant", fname="CreateNew" },
+  [3] = { name="Duplicate Variant", fname="Duplicate" },
+  [4] = { name="Delete Variant", fname="Delete" },
+  [5] = { name="Clear Variant", fname="Clear" },
+  [6] = { name="Show All Variants", fname="ShowAll" }
 }
 
 function Get_class_tbl(tbl)
   return Element
+end
+
+local function ConcatMenuNames()
+  local concat = ""
+  for i = 1, #menu_options do
+    concat = concat .. menu_options[i].name .. (i ~= #menu_options and "|" or "")
+  end
+  return concat
 end
 
 function Show_menu(tbl)
@@ -31,19 +40,19 @@ function Show_menu(tbl)
 
   local versions = {}
   for i = 1, #tbl.info do
-    versions[#versions+1] = i
+    versions[#versions+1] = i == tbl.idx and "!" .. i or i
   end
 
-  menu_options[1] = ">Virtual TR|" .. table.concat(versions, "|") .."|<|"
+  menu_options[1].name = ">Virtual TR|" .. table.concat(versions, "|") .."|<|"
 
-  local m_num = gfx.showmenu(table.concat(menu_options, "|"))
+  local m_num = gfx.showmenu(ConcatMenuNames())
 
   if m_num > #tbl.info then
     m_num = (m_num - #tbl.info) + 1
-    _G[menu_options[m_num]](mouse.otr, tbl.info)
+    _G[menu_options[m_num].fname](mouse.otr, tbl)
   else
     if m_num ~= 0 then
-      Set_Virtual_Track(mouse.otr, tbl.info[m_num])
+      Set_Virtual_Track(mouse.otr, tbl, m_num)
     end
   end
   gfx.quit()
@@ -58,6 +67,7 @@ function Element:new(x, y, w, h, guid, info)
   elm.guid, elm.bm = guid, reaper.JS_LICE_CreateBitmap(true, elm.w, elm.h)
   reaper.JS_LICE_Clear(elm.bm, 0x66002244)
   elm.info  = info
+  elm.idx = 1;
   setmetatable(elm, self)
   self.__index = self
   return elm
