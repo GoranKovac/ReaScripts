@@ -350,6 +350,7 @@ function Clear(track)
 end
 
 function Delete(track, tbl)
+    if tbl.idx == 1 then return end -- PREVENT DELETING ORIGINAL VERSION
     table.remove(tbl.info, tbl.idx)
     tbl.idx = tbl.idx <= #tbl.info and tbl.idx or #tbl.info
     SwapVirtualTrack(track, tbl, tbl.idx)
