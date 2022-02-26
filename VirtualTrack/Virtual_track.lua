@@ -10,9 +10,8 @@
 
 --[[
  * Changelog:
- * v0.28 (2022-02-26)
-   + Show current active version in menu
-   + Cleanup
+ * v0.29 (2022-02-26)
+   + Removed Auto-save and Folder code
 --]]
 
 local reaper = reaper
@@ -115,24 +114,6 @@ local function Exclude_Pattern(chunk)
         chunk = string.gsub(chunk, patterns[i], "")
     end
     return chunk
-end
--- ADDED -- 
-local function Get_folder(track)
-    if reaper.GetMediaTrackInfo_Value(track, "I_FOLDERDEPTH") <= 0 then
-        return
-    end
-    local depth, children = 0, {}
-    local folderID = reaper.GetMediaTrackInfo_Value(track, "IP_TRACKNUMBER") - 1
-    for i = folderID + 1, reaper.CountTracks(0) - 1 do
-        local child = reaper.GetTrack(0, i)
-        local currDepth = reaper.GetMediaTrackInfo_Value(child, "I_FOLDERDEPTH")
-        children[#children + 1] = child
-        depth = depth + currDepth
-        if depth <= -1 then
-           break
-        end
-    end
-    return children
 end
 
 local function Get_Item_Chunk(item)
@@ -271,18 +252,6 @@ function SwapVirtualTrack(track, tbl, idx)
     tbl.idx = idx;
 end
 
--- ADDED -- PORTED FROM ORIGINAL SCRIPT NEEDS ADJUSTING
-function Create_folder(track, tbl)
-    if reaper.GetMediaTrackInfo_Value(track, "I_FOLDERDEPTH") ~= 1 then
-        return
-    end
-    local childs = Get_folder(track)
-    for i = 1, #childs do
-        CreateNew(childs[i], VT_TB[childs[i]]) -- CREATE VERSIONS ON CHILDS
-    end
-    CreateNew(track, tbl) -- CREATE FOLDER VERSION ()
-end
-
 function CreateNew(track, tbl)
     Duplicate(track,tbl)
     Clear(track)
@@ -343,49 +312,6 @@ function ShowAll(track, tbl)
     reaper.SetMediaTrackInfo_Value(track, "B_FREEMODE", val)
 end
 
-local function Find_In_History(tbl, val)
-    if not tbl then return end
-    for i = 1, #tbl do
-        if val:find(tbl[i]) then
-            return true
-        end
-    end
-    return false
-end
-
-local ignore_history = {
-    "unselect all items",
-    "remove material behind selected items",
-    "change media item selection"
-}
-
-local accept_history = {
-    "item",
-    "recorded media",
-    "midi editor: insert notes",
-    "change source media",
-    "rename source media",
-    "take",
-    "pencil",
-    "adjust"
-}
-
-local last_proj_change_count = reaper.GetProjectStateChangeCount(0)
-local function Auto_save()
-    local proj_change_count = reaper.GetProjectStateChangeCount(0)
-    if proj_change_count > last_proj_change_count then
-        local last_action = reaper.Undo_CanUndo2(0)
-        if last_action == nil then return end
-        last_action = last_action:lower()
-        if Find_In_History(ignore_history, last_action) then return end
-        if Find_In_History(accept_history, last_action) then
-            local touched_track = MouseInfo().last_tr
-            SaveCurrentState(touched_track, VT_TB[touched_track])
-        end
-    end
-    last_proj_change_count = proj_change_count
-end
-
 local function Store_To_PEXT(el)
     local storedTable = {}
     storedTable.info = el.info;
@@ -429,20 +355,9 @@ local function Create_VT_Element()
     end
 end
 
-function Debug_table(tbl)
-    A_TBL = {}
-    local cnt = 1
-    for _, v in pairs(tbl) do
-        A_TBL[cnt] = v
-        cnt = cnt + 1
-    end
-end
-
 local function RunLoop()
     Create_VT_Element()
     Draw(VT_TB)
-    Debug_table(VT_TB)
-    Auto_save()
     reaper.defer(RunLoop)
 end
 
