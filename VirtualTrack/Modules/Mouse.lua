@@ -111,6 +111,16 @@ function OnMouseHold(lmb_down, rmb_down)
 	end
 end
 
+function To_screen(x,y)
+    local sx, sy = reaper.JS_Window_ClientToScreen( track_window, x, y )
+    return sx, sy
+end
+
+function To_client(x,y)
+    local cx, cy = reaper.JS_Window_ScreenToClient( track_window, x, y )
+    return cx, cy
+end
+
 function X_to_pos(x)
 	local zoom_lvl = reaper.GetHZoomLevel() -- HORIZONTAL ZOOM LEVEL
 	local Arr_start_time = reaper.GetSet_ArrangeView2(0, false, 0, 0) -- GET ARRANGE VIEW
@@ -121,6 +131,24 @@ function X_to_pos(x)
 	local p = (cx / zoom_lvl) + Arr_start_time
 	p = reaper.GetToggleCommandState(1157) == 1 and reaper.SnapToGrid(0, p) or p
 	return p
+end
+
+function Get_track_under_mouse(x, y)
+	local TBH = Get_TBH_Info()
+    local _, cy = To_client(x, y)
+    local track, env_info = reaper.GetTrackFromPoint(x, y)
+
+    if track == reaper.GetMasterTrack( 0 ) and reaper.GetMasterTrackVisibility() == 0 then return end -- IGNORE DOCKED MASTER TRACK
+    if track and env_info == 0 and TBH[track].vis == true then
+        return track, TBH[track].t, TBH[track].b, TBH[track].h
+    elseif track and env_info == 1 then
+        for i = 1, reaper.CountTrackEnvelopes(track) do
+            local env = reaper.GetTrackEnvelope(track, i - 1)
+            if TBH[env].t <= cy and TBH[env].b >= cy and TBH[env].vis == true then
+                return env, TBH[env].t, TBH[env].b, TBH[env].h
+            end
+        end
+    end
 end
 
 function MouseInfo(x,y,p)

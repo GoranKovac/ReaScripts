@@ -10,8 +10,9 @@
 
 --[[
  * Changelog:
- * v0.27 (2022-02-25)
-   + Get tracks under mouse only if visible
+ * v0.28 (2022-02-26)
+   + Show current active version in menu
+   + Cleanup
 --]]
 
 local reaper = reaper
@@ -32,19 +33,7 @@ require("Modules/Class")
 require("Modules/Mouse")
 require("Modules/Utils")
 
-local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
-local track_window = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8) -- GET TRACK VIEW
 local VT_TB = {}
-
-function To_screen(x,y)
-    local sx, sy = reaper.JS_Window_ClientToScreen( track_window, x, y )
-    return sx, sy
-end
-
-function To_client(x,y)
-    local cx, cy = reaper.JS_Window_ScreenToClient( track_window, x, y )
-    return cx, cy
-end
 
 local crash = function(errObject)
     local byLine = "([^\r\n]*)\r?\n?"
@@ -85,19 +74,13 @@ local function GetTracksXYH()
         return
     end
     TBH = {}
-    local visible_index = 0
     for i = 1, reaper.CountTracks(0) do
         local tr = reaper.GetTrack(0, i - 1)
         local tr_vis = reaper.IsTrackVisible(tr, false)
         local tr_h = reaper.GetMediaTrackInfo_Value(tr, "I_TCPH")
         local tr_t = reaper.GetMediaTrackInfo_Value(tr, "I_TCPY")
         local tr_b = tr_t + tr_h
-
-        visible_index = tr_vis and visible_index + 1 or visible_index
-        local ID = tr_vis and visible_index or nil
-
-        TBH[tr] = {t = tr_t, b = tr_b, h = tr_h, vis = tr_vis, vis_ID = ID}
-
+        TBH[tr] = {t = tr_t, b = tr_b, h = tr_h, vis = tr_vis}
         for j = 1, reaper.CountTrackEnvelopes(tr) do
             local env = reaper.GetTrackEnvelope(tr, j - 1)
             local env_h = reaper.GetEnvelopeInfo_Value(env, "I_TCPH")
@@ -109,30 +92,10 @@ local function GetTracksXYH()
     end
 end
 
-function Get_TBH_TBL()
-    return TBH
-end
-
-function Get_tr_TBH(tr)
+function Get_TBH_Info(tr)
+    if not tr then return TBH end
     if TBH[tr] then
        return TBH[tr].t, TBH[tr].h, TBH[tr].b
-    end
-end
-
-function Get_track_under_mouse(x, y)
-    local _, cy = To_client(x, y)
-    local track, env_info = reaper.GetTrackFromPoint(x, y)
-
-    if track == reaper.GetMasterTrack( 0 ) and reaper.GetMasterTrackVisibility() == 0 then return end -- IGNORE DOCKED MASTER TRACK
-    if track and env_info == 0 and TBH[track].vis == true then
-        return track, TBH[track].t, TBH[track].b, TBH[track].h
-    elseif track and env_info == 1 then
-        for i = 1, reaper.CountTrackEnvelopes(track) do
-            local env = reaper.GetTrackEnvelope(track, i - 1)
-            if TBH[env].t <= cy and TBH[env].b >= cy and TBH[env].vis == true then
-                return env, TBH[env].t, TBH[env].b, TBH[env].h
-            end
-        end
     end
 end
 
@@ -239,12 +202,10 @@ local function Create_item(tr, data)
         local empty_item = reaper.AddMediaItemToTrack(tr)
         reaper.SetItemStateChunk(empty_item, chunk, false)
         reaper.GetSetMediaItemInfo_String(empty_item, "GUID", reaper.genGuid(), true)
-
         for j = 1, reaper.CountTakes(empty_item) do
             local take_dst = reaper.GetMediaItemTake(empty_item, j-1)
             reaper.GetSetMediaItemTakeInfo_String(take_dst, "GUID", reaper.genGuid(), true)
         end
-
         reaper.SetMediaItemInfo_Value(empty_item, "B_UISEL", 1)
         reaper.Main_OnCommand(41613, 0)
         reaper.SetMediaItemInfo_Value(empty_item, "B_UISEL", 0)
@@ -259,6 +220,12 @@ function Set_Virtual_Track(track, tbl, idx)
     SwapVirtualTrack(track, tbl, idx)
 end
 
+function SaveCurrentState(track, tbl)
+    local chunk_tbl = reaper.ValidatePtr(track, "MediaTrack*") and Get_Track_Items(track) or Get_Env_Chunk(track)
+    tbl.info[tbl.idx] = chunk_tbl
+    return chunk_tbl
+end
+
 function SwapVirtualTrack(track, tbl, idx)
     Clear(track)
     if reaper.ValidatePtr(track, "MediaTrack*") then
@@ -269,14 +236,7 @@ function SwapVirtualTrack(track, tbl, idx)
     tbl.idx = idx;
 end
 
-function SaveCurrentState(track, tbl)
-    local chunk_tbl = reaper.ValidatePtr(track, "MediaTrack*") and Get_Track_Items(track) or Get_Env_Chunk(track)
-    tbl.info[tbl.idx] = chunk_tbl
-    return chunk_tbl
-end
-
--- CREATE VERSIONS FROM FOLDER (DO FOR ALL CHILDS)
-function Create_folder(track)
+function Create_folder(track, tbl)
     if reaper.GetMediaTrackInfo_Value(track, "I_FOLDERDEPTH") ~= 1 then
         return
     end
@@ -284,7 +244,7 @@ function Create_folder(track)
     for i = 1, #childs do
         CreateNew(childs[i], VT_TB[childs[i]]) -- CREATE VERSIONS ON CHILDS
     end
-    --CreateNew(track, VT_TB[track]) -- CREATE FOLDER VERSION ()
+    CreateNew(track, tbl) -- CREATE FOLDER VERSION ()
 end
 
 function CreateNew(track, tbl)
@@ -320,7 +280,7 @@ end
 
 local function get_fipm_value(tr, num)
     if not num then return end
-    local _, track_h = Get_tr_TBH(tr)
+    local _, track_h = Get_TBH_Info(tr)
     local offset = track_h <= 42 and 15 or 0
     local bar_h_FIPM = ((19 - offset) / track_h)
     local item_h_FIPM = (1 - (num - 1) * bar_h_FIPM) / num
@@ -375,7 +335,6 @@ local accept_history = {
 }
 
 local last_proj_change_count = reaper.GetProjectStateChangeCount(0)
-
 local function Auto_save()
     local proj_change_count = reaper.GetProjectStateChangeCount(0)
     if proj_change_count > last_proj_change_count then
@@ -419,14 +378,6 @@ local function Restore_From_PEXT(el)
     end
 end
 
-function Serialize(track, el)
-    Store_To_PEXT(el)
-end
-
-function Deserialize(track, el)
-    Restore_From_PEXT(el)
-end
-
 local function Create_VT_Element()
     GetTracksXYH()
     ValidateRemovedTracks()
@@ -434,7 +385,7 @@ local function Create_VT_Element()
     for k, _ in pairs(TBH) do
         if not VT_TB[k] then
             local Element = Get_class_tbl()
-            local y = Get_tr_TBH(k)
+            local y = Get_TBH_Info(k)
             local tr_data = reaper.ValidatePtr(k, "MediaTrack*") and Get_Track_Items(k) or Get_Env_Chunk(k)
             VT_TB[k] = Element:new(0, y, 20, 20, k, {tr_data})
             Restore_From_PEXT(VT_TB[k])
@@ -454,7 +405,7 @@ end
 local function RunLoop()
     Create_VT_Element()
     Draw(VT_TB)
-    --Debug_table(TBH)
+    Debug_table(VT_TB)
     Auto_save()
     reaper.defer(RunLoop)
 end
