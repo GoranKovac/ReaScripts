@@ -116,7 +116,7 @@ local function Exclude_Pattern(chunk)
     end
     return chunk
 end
-
+-- ADDED -- 
 local function Get_folder(track)
     if reaper.GetMediaTrackInfo_Value(track, "I_FOLDERDEPTH") <= 0 then
         return
@@ -195,6 +195,40 @@ function Make_Empty_Env(env)
     Set_Env_Chunk(env, empty_chunk_template)
 end
 
+-- ADDED -- 
+local function Remove_Track_FX(track)
+    for i = 1, reaper.TrackFX_GetCount(track) do
+        reaper.TrackFX_Delete(track, i - 1)
+    end
+end
+
+-- ADDED -- PORTED FROM ORIGINAL SCRIPT NEEDS ADJUSTING
+local function Get_FX_Chunk(track)
+    local _, track_chunk = reaper.GetTrackStateChunk(track, "", false)
+    if not track_chunk:find("<FXCHAIN") then
+        return
+    end -- DO NOT ALLOW CREATING FIRST EMPTY FX
+    local fx_start = track_chunk:find("<FXCHAIN")
+    local fx_end = track_chunk:find("<ITEM")
+    if not fx_end then
+        fx_end = -6
+    else
+        fx_end = fx_end - 4
+    end
+    local fx_chunk = track_chunk:sub(fx_start + 9, fx_end)
+    return fx_chunk, track_chunk
+end
+
+-- ADDED -- PORTED FROM ORIGINAL SCRIPT NEEDS ADJUSTING
+local function Set_FX_Chunk(track, tbl)
+    local chunk = tbl.fx[num].chunk
+    local fx_chunk, track_chunk = Get_FX_Chunk(tbl.guid)
+    local fx_chunk = literalize(fx_chunk)
+    local track_chunk = string.gsub(track_chunk, fx_chunk, chunk)
+    reaper.SetTrackStateChunk(track, track_chunk, false)
+    tbl.fx.fx_num = num
+end
+
 local function Create_item(tr, data)
     if not data or not reaper.ValidatePtr(tr, "MediaTrack*")  then return end
     local new_items = {}
@@ -237,6 +271,7 @@ function SwapVirtualTrack(track, tbl, idx)
     tbl.idx = idx;
 end
 
+-- ADDED -- PORTED FROM ORIGINAL SCRIPT NEEDS ADJUSTING
 function Create_folder(track, tbl)
     if reaper.GetMediaTrackInfo_Value(track, "I_FOLDERDEPTH") ~= 1 then
         return
