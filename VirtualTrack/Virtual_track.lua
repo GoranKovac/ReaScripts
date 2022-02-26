@@ -159,18 +159,19 @@ end
 function Env_prop(env,val)
     local br_env = reaper.BR_EnvAlloc(env, false)
     local active, visible, armed, inLane, laneHeight, defaultShape, minValue, maxValue, centerValue, type_, faderScaling = reaper.BR_EnvGetProperties(br_env, true, true, true, true, 0, 0, 0, 0, 0, 0, true)
-    local properties = {["active"] = active,
-                        ["visible"] = visible,
-                        ["armed"] = armed,
-                        ["inLane"] = inLane,
-                        ["defaultShape"] =defaultShape,
-                        ["laneHeight"] = laneHeight,
-                        ["minValue"] = minValue,
-                        ["maxValue"] = maxValue,
-                        ["centerValue"] = centerValue,
-                        ["type"] = type_,
-                        ["faderScaling"] = faderScaling
-                        }
+    local properties = {
+        ["active"] = active,
+        ["visible"] = visible,
+        ["armed"] = armed,
+        ["inLane"] = inLane,
+        ["defaultShape"] = defaultShape,
+        ["laneHeight"] = laneHeight,
+        ["minValue"] = minValue,
+        ["maxValue"] = maxValue,
+        ["centerValue"] = centerValue,
+        ["type"] = type_,
+        ["faderScaling"] = faderScaling
+    }
     reaper.BR_EnvFree( env, true )
     return properties[val]
 end
@@ -190,8 +191,8 @@ function Make_Empty_Env(env)
     local env_chunk = Get_Env_Chunk(env)
     local env_center_val = Env_prop(env, "centerValue")
     local env_name_from_chunk = match(env_chunk, "[^\r\n]+")
-    local chunk_template = env_name_from_chunk .."\nACT 1 -1\nVIS 1 1 1\nLANEHEIGHT 0 0\nARM 1\nDEFSHAPE 0 -1 -1\nPT 0 " .. env_center_val .. " 0\n>"
-    Set_Env_Chunk(env, chunk_template)
+    local empty_chunk_template = env_name_from_chunk .."\nACT 1 -1\nVIS 1 1 1\nLANEHEIGHT 0 0\nARM 1\nDEFSHAPE 0 -1 -1\nPT 0 " .. env_center_val .. " 0\n>"
+    Set_Env_Chunk(env, empty_chunk_template)
 end
 
 local function Create_item(tr, data)
