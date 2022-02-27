@@ -4,13 +4,13 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.38
+ * Version: 0.39
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.38 (2022-02-27)
+ * v0.39 (2022-02-27)
    + Move Button to TCP
 --]]
 
