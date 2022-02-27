@@ -4,7 +4,7 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.35
+ * Version: 0.36
  * Provides: Modules/*.lua
 --]]
 
