@@ -7,7 +7,8 @@
 local reaper = reaper
 local gfx = gfx
 local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
-local track_window = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8) -- GET TRACK VIEW
+-- local track_window = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8) -- GET TRACK VIEW
+local track_window = reaper.JS_Window_FindEx( main_wnd, main_wnd, "REAPERTCPDisplay", "" )
 local BUTTON_UPDATE
 local mouse
 local Element = {}
@@ -91,12 +92,14 @@ end
 
 function Element:update_xywh()
     self.y = Get_TBH_Info(self.rprobj)
+    local retval, left, top, right, bottom = reaper.JS_Window_GetClientRect( track_window )
+    self.x = (right - left) - 10 - self.w
     self:draw(1,1)
 end
 
 function Element:draw(w,h)
     if Get_TBH_Info()[self.rprobj].vis then
-        reaper.JS_Composite(track_window, 0, self.y, self.w, self.h, self.bm, 0, 0, w, h, true)
+        reaper.JS_Composite(track_window, self.x, self.y, self.w, self.h, self.bm, 0, 0, w, h, true)
     else
         reaper.JS_Composite_Unlink(track_window, self.bm, true)
     end

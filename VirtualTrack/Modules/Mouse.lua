@@ -6,7 +6,8 @@
 --]]
 local reaper = reaper
 local main_wnd        = reaper.GetMainHwnd()                            -- GET MAIN WINDOW
-local track_window = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8) -- GET TRACK VIEW
+--local track_window = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8) -- GET TRACK VIEW
+local track_window = reaper.JS_Window_FindEx( main_wnd, main_wnd, "REAPERTCPDisplay", "" )
 
 local mouse = {
 	LB    = 1,
