@@ -283,7 +283,6 @@ local function StoreLaneData(track, tbl)
 end
 
 function ShowAll(track, tbl)
-    -- if not reaper.ValidatePtr(track, "MediaTrack*") then return end
     local fimp = reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE")
     local toggle = fimp == 2 and 0 or 2
     if fimp == 0 then
