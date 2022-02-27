@@ -30,7 +30,12 @@ end
 local function ConcatMenuNames(track)
     local concat = ""
     local options = reaper.ValidatePtr(track, "MediaTrack*") and #menu_options or #menu_options-1
-    local fimp = reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") == 2 and "!" or ""
+    local fimp = ""
+    if reaper.ValidatePtr(mouse.otr, "MediaTrack*") then
+        if reaper.GetMediaTrackInfo_Value(mouse.otr, "I_FREEMODE") == 2 then
+            fimp = "!"
+        end
+    end
     for i = 1, options do
         concat = concat .. (i ~= 7 and menu_options[i].name or fimp .. menu_options[i].name) .. (i ~= options and "|" or "")
     end
