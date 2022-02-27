@@ -253,22 +253,32 @@ function Rename(track, tbl)
     tbl.info[tbl.idx].name = name
 end
 
+local function get_fipm_value(tr, num)
+    local _, track_h = Get_TBH_Info(tr)
+    local bar_h_FIPM = (19 / track_h)
+    local item_h_FIPM = (1 - (num - 1) * bar_h_FIPM) / num
+    return item_h_FIPM
+end
+
 function ShowAll(track, tbl)
     if not reaper.ValidatePtr(track, "MediaTrack*") then return end
     local val = reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") == 2 and 0 or 2
     if val == 0 then SaveCurrentState(track, tbl) end -- SAVE CURRENT STATE ONLY IF FIPM IS OFF
     Clear(track)
     if val == 2 then
+        local FIPM_item = get_fipm_value(track, #tbl.info)
         for i = 1, #tbl.info do
             local items = Create_item(track, tbl.info[i])
             for j = 1, #items do
-                -- ADD ITEMS TO LANES
+                reaper.SetMediaItemInfo_Value(items[j], "F_FREEMODE_H", FIPM_item)
+                reaper.SetMediaItemInfo_Value(items[j], "F_FREEMODE_Y", ((i - 1) * (FIPM_item)))
             end
         end
-    else
-        Create_item(track, tbl.info[1])
+    elseif val == 0 then
+        Create_item(track, tbl.info[tbl.idx])
     end
-    reaper.SetMediaTrackInfo_Value(track, "B_FREEMODE", val)
+    reaper.SetMediaTrackInfo_Value(track, "I_FREEMODE", val)
+    reaper.UpdateTimeline()
 end
 
 local function Store_To_PEXT(el)
