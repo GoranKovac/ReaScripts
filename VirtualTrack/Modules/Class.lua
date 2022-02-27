@@ -47,7 +47,7 @@ function Show_menu(tbl)
     menu_options[1].name = ">Virtual TR - " .. tbl.idx .. "|" .. table.concat(versions, "|") .."|<|"
 
     local m_num = gfx.showmenu(ConcatMenuNames())
-    AAA = tbl
+
     if m_num > #tbl.info then
         m_num = (m_num - #tbl.info) + 1
         _G[menu_options[m_num].fname](mouse.otr, tbl)
