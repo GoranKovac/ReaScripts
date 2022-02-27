@@ -18,8 +18,8 @@ local menu_options = {
     [3] = { name = "Duplicate Variant",     fname = "Duplicate" },
     [4] = { name = "Delete Variant",        fname = "Delete" },
     [5] = { name = "Clear Variant",         fname = "Clear" },
-    [6] = { name = "Show All Variants",     fname = "ShowAll" },
-    [7] = { name = "Rename Variants",       fname = "Rename" }
+    [6] = { name = "Rename Variants",       fname = "Rename" },
+    [7] = { name = "Show All Variants",     fname = "ShowAll" }
 }
 
 function Get_class_tbl(tbl)

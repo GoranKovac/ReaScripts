@@ -83,7 +83,8 @@ local function GetTracksXYH()
             local env_h = reaper.GetEnvelopeInfo_Value(env, "I_TCPH")
             local env_t = reaper.GetEnvelopeInfo_Value(env, "I_TCPY") + tr_t
             local env_b = env_t + env_h
-            local env_vis = Env_prop(env,"visible")
+            local env_vis = Get_Env_Chunk(env)[1]:find("VIS 1") and true or false
+            --local env_vis = Env_prop(env,"visible") <-- leakd memory
             TBH[env] = {t = env_t, b = env_b, h = env_h, vis = env_vis}
         end
     end
@@ -136,7 +137,7 @@ function Env_prop(env,val)
     local br_env = reaper.BR_EnvAlloc(env, false)
     local active, visible, armed, inLane, laneHeight, defaultShape, minValue, maxValue, centerValue, type_, faderScaling = reaper.BR_EnvGetProperties(br_env, true, true, true, true, 0, 0, 0, 0, 0, 0, true)
     local properties = {
-        ["active"] = active, 
+        ["active"] = active,
         ["visible"] = visible,
         ["armed"] = armed,
         ["inLane"] = inLane,
@@ -152,7 +153,7 @@ function Env_prop(env,val)
     return properties[val]
 end
 
-local function Get_Env_Chunk(env)
+function Get_Env_Chunk(env)
     local _, env_chunk = reaper.GetEnvelopeStateChunk(env, "")
     return {env_chunk}
 end
@@ -169,7 +170,6 @@ function Make_Empty_Env(env)
     local env_name_from_chunk = match(env_chunk, "[^\r\n]+")
     local empty_chunk_template = env_name_from_chunk .."\nACT 1 -1\nVIS 1 1 1\nLANEHEIGHT 0 0\nARM 1\nDEFSHAPE 0 -1 -1\n" .. env_fader_scaling .. "PT 0 " .. env_center_val .. " 0\n>"
     Set_Env_Chunk(env, {empty_chunk_template})
-
 end
 
 local function Create_item(tr, data)
@@ -189,6 +189,10 @@ local function Create_item(tr, data)
         new_items[#new_items+1] = empty_item
     end
     return new_items
+end
+
+local function GetChunkTableForObject(track)
+    return reaper.ValidatePtr(track, "MediaTrack*") and Get_Track_Items(track) or Get_Env_Chunk(track)
 end
 
 local function SaveCurrentState(track, tbl)
@@ -225,7 +229,7 @@ end
 function Duplicate(track, tbl)
     SaveCurrentState(track, tbl)
     local name = tbl.info[tbl.idx].name
-    tbl.info[#tbl.info+1] = reaper.ValidatePtr(track, "MediaTrack*") and Get_Track_Items(track) or Get_Env_Chunk(track)
+    tbl.info[#tbl.info+1] = GetChunkTableForObject(track)
     tbl.idx = #tbl.info
     tbl.info[#tbl.info].name = "Duplicate - " .. name
 end
@@ -263,32 +267,31 @@ local function Get_Item_FIMP_H(tr, num)
     return bar_h_FIPM, item_h_FIPM
 end
 
-function GetItemLane(item, n_lanes) -- 0 based, better performance (if gonna loop this)
-    local lane_space = 1/n_lanes
-    local y = reaper.GetMediaItemInfo_Value(item, 'F_FREEMODE_Y')
-    local item_lane = y/lane_space
+-- function GetItemLane(item, n_lanes) -- 0 based, better performance (if gonna loop this)
+--     local lane_space = 1/n_lanes
+--     local y = reaper.GetMediaItemInfo_Value(item, 'F_FREEMODE_Y')
+--     local item_lane = y/lane_space
 
-    return math.floor(item_lane+0.5)
-end
+--     return math.floor(item_lane+0.5)
+-- end
 
-local function StoreLaneData(track, tbl)
-    local num_items = reaper.CountTrackMediaItems(track)
-    for j = 1, #tbl.info do
-        local lane_chunk = {}
-        for i = 1, num_items do
-            local item = reaper.GetTrackMediaItem(track, i-1)
-            if GetItemLane(item, #tbl.info) == j then
-                MSG(GetItemLane(item, #tbl.info))
-                local item_chunk = Get_Item_Chunk(item)
-                item_chunk = Exclude_Pattern(item_chunk)
-                lane_chunk[#lane_chunk + 1] = item_chunk
-            end
-        end
-        local name = tbl.info[j].name
-        tbl.info[j] = lane_chunk
-        tbl.info[j].name = name
-    end
-end
+-- local function StoreLaneData(track, tbl)
+--     local num_items = reaper.CountTrackMediaItems(track)
+--     for j = 1, #tbl.info do
+--         local lane_chunk = {}
+--         for i = 1, num_items do
+--             local item = reaper.GetTrackMediaItem(track, i-1)
+--             if GetItemLane(item, #tbl.info) == j then
+--                 local item_chunk = Get_Item_Chunk(item)
+--                 item_chunk = Exclude_Pattern(item_chunk)
+--                 lane_chunk[#lane_chunk + 1] = item_chunk
+--             end
+--         end
+--         local name = tbl.info[j].name
+--         tbl.info[j] = lane_chunk
+--         tbl.info[j].name = name
+--     end
+-- end
 
 function ShowAll(track, tbl)
     if not reaper.ValidatePtr(track, "MediaTrack*") then return end
@@ -297,7 +300,7 @@ function ShowAll(track, tbl)
     if fimp == 0 then
         SaveCurrentState(track, tbl)
     elseif fimp == 2 then
-        StoreLaneData(track, tbl)
+        -- StoreLaneData(track, tbl)
     end
     Clear(track)
     if toggle == 2 then
@@ -314,7 +317,6 @@ function ShowAll(track, tbl)
     end
     reaper.SetMediaTrackInfo_Value(track, "I_FREEMODE", toggle)
     reaper.UpdateTimeline()
-    reaper.UpdateArrange()
 end
 
 local function Store_To_PEXT(el)
@@ -352,7 +354,7 @@ local function Create_VT_Element()
     for track in pairs(TBH) do
         if not VT_TB[track] then
             local Element = Get_class_tbl()
-            local tr_data = reaper.ValidatePtr(track, "MediaTrack*") and Get_Track_Items(track) or Get_Env_Chunk(track)
+            local tr_data = GetChunkTableForObject(track)
             tr_data.name = "MAIN"
             VT_TB[track] = Element:new(0, 0, 20, 20, track, {tr_data})
             Restore_From_PEXT(VT_TB[track])
