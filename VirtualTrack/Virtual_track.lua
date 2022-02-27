@@ -10,9 +10,8 @@
 
 --[[
  * Changelog:
- * v0.33 (2022-02-27)
-   + Show-all versions updated to fixed lanes
-   + Added saving function when in show all mode
+ * v0.34 (2022-02-27)
+   + Don't show ALL VERSIONS menu when opening on Envelope track
 --]]
 
 local reaper = reaper
@@ -85,7 +84,6 @@ local function GetTracksXYH()
             local env_t = reaper.GetEnvelopeInfo_Value(env, "I_TCPY") + tr_t
             local env_b = env_t + env_h
             local env_vis = Get_Env_Chunk(env)[1]:find("VIS 1") and true or false
-            --local env_vis = Env_prop(env,"visible") <-- leakd memory
             TBH[env] = {t = env_t, b = env_b, h = env_h, vis = env_vis}
         end
     end
@@ -285,7 +283,7 @@ local function StoreLaneData(track, tbl)
 end
 
 function ShowAll(track, tbl)
-    if not reaper.ValidatePtr(track, "MediaTrack*") then return end
+    -- if not reaper.ValidatePtr(track, "MediaTrack*") then return end
     local fimp = reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE")
     local toggle = fimp == 2 and 0 or 2
     if fimp == 0 then
