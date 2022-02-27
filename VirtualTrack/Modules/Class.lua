@@ -41,9 +41,16 @@ function Show_menu(tbl)
     gfx.x = gfx.mouse_x
     gfx.y = gfx.mouse_y
 
+    local gray_out = ""
+    if reaper.ValidatePtr(mouse.otr, "MediaTrack*") then
+        if reaper.GetMediaTrackInfo_Value(mouse.otr, "I_FREEMODE") == 2 then
+            gray_out = "#"
+        end
+    end
+
     local versions = {}
     for i = 1, #tbl.info do
-        versions[#versions+1] = i == tbl.idx and "!" .. i .. " - ".. tbl.info[i].name or i .. " - " .. tbl.info[i].name
+        versions[#versions+1] = i == tbl.idx and gray_out .. "!" .. i .. " - ".. tbl.info[i].name or gray_out .. i .. " - " .. tbl.info[i].name
     end
 
     menu_options[1].name = ">" .. math.floor(tbl.idx) .. " Virtual TR : " .. tbl.info[tbl.idx].name .. "|" .. table.concat(versions, "|") .."|<|"

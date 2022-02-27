@@ -4,14 +4,14 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.1
+ * Version: 0.35
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.34 (2022-02-27)
-   + Don't show ALL VERSIONS menu when opening on Envelope track
+ * v0.36 (2022-02-27)
+   + Grey out version selection when in Show-All mode
 --]]
 
 local reaper = reaper
@@ -300,6 +300,7 @@ function ShowAll(track, tbl)
             end
         end
     elseif toggle == 0 then
+
         Create_item(track, tbl.info[tbl.idx])
     end
     reaper.SetMediaTrackInfo_Value(track, "I_FREEMODE", toggle)
