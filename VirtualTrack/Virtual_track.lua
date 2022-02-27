@@ -253,7 +253,7 @@ function Delete(track, tbl)
 end
 
 function Rename(track, tbl)
-    local retval, name = reaper.GetUserInputs("Name Version ", 1, "Version Name :", "")
+    local retval, name = reaper.GetUserInputs("Name Version ", 1, "Version Name :", tbl.info[tbl.idx].name)
     if not retval then return end
     tbl.info[tbl.idx].name = name
 end
