@@ -327,17 +327,9 @@ local function Create_VT_Element()
     end
 end
 
-function Debug_TBL(t)
-    AAA = {}
-    for _, value in pairs(t) do
-        AAA[#AAA+1] = value    
-    end
-end
-
 local function RunLoop()
     Create_VT_Element()
     Draw(VT_TB)
-    Debug_TBL(VT_TB)
     reaper.defer(RunLoop)
 end
 
