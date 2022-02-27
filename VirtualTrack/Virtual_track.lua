@@ -153,19 +153,16 @@ function Env_prop(env,val)
 end
 
 local function Get_Env_Chunk(env)
-    -- if not reaper.ValidatePtr(env, "TrackEnvelope*") then return end
     local _, env_chunk = reaper.GetEnvelopeStateChunk(env, "")
     return env_chunk
 end
 
 local function Set_Env_Chunk(env, data)
-    -- if not reaper.ValidatePtr(env, "TrackEnvelope*") then return end
-    reaper.SetEnvelopeStateChunk( env, data, false)
+    reaper.SetEnvelopeStateChunk(env, data, false)
 end
 
 local match = string.match
 function Make_Empty_Env(env)
-    -- if not reaper.ValidatePtr(env, "TrackEnvelope*") then return end
     local env_chunk = Get_Env_Chunk(env)
     local env_center_val = Env_prop(env, "centerValue")
     local env_name_from_chunk = match(env_chunk, "[^\r\n]+")
