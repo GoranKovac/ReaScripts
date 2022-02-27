@@ -10,8 +10,8 @@
 
 --[[
  * Changelog:
- * v0.3 (2022-02-26)
-   + Small envelope refactor (insert into table) to make naming work
+ * v0.31 (2022-02-26)
+   + Initial fixed lane update
 --]]
 
 local reaper = reaper
