@@ -4,15 +4,14 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.37
+ * Version: 0.38
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.37 (2022-02-27)
-   + Hide gfx windows when menu opens (thx amagalma)
-   + Add checbok if Show All is enabled
+ * v0.38 (2022-02-27)
+   + Move Button to TCP
 --]]
 
 local reaper = reaper
