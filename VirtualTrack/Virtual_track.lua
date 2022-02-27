@@ -4,14 +4,15 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.36
+ * Version: 0.37
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.36 (2022-02-27)
-   + Grey out version selection when in Show-All mode
+ * v0.37 (2022-02-27)
+   + Hide gfx windows when menu opens (thx amagalma)
+   + Add checbok if Show All is enabled
 --]]
 
 local reaper = reaper
