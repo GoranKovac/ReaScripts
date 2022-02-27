@@ -10,8 +10,8 @@
 
 --[[
  * Changelog:
- * v0.3 (2022-02-26)
-   + Small envelope refactor (insert into table) to make naming work
+ * v0.32 (2022-02-26)
+   + Fixed envelope empty chunk template to include faderscaling mode
 --]]
 
 local reaper = reaper
@@ -165,8 +165,9 @@ local match = string.match
 function Make_Empty_Env(env)
     local env_chunk = Get_Env_Chunk(env)[1]
     local env_center_val = Env_prop(env, "centerValue")
+    local env_fader_scaling = Env_prop(env,"faderScaling") == true and "VOLTYPE 1\n" or ""
     local env_name_from_chunk = match(env_chunk, "[^\r\n]+")
-    local empty_chunk_template = env_name_from_chunk .."\nACT 1 -1\nVIS 1 1 1\nLANEHEIGHT 0 0\nARM 1\nDEFSHAPE 0 -1 -1\nPT 0 " .. env_center_val .. " 0\n>"
+    local empty_chunk_template = env_name_from_chunk .."\nACT 1 -1\nVIS 1 1 1\nLANEHEIGHT 0 0\nARM 1\nDEFSHAPE 0 -1 -1\n" .. env_fader_scaling .. "PT 0 " .. env_center_val .. " 0\n>"
     Set_Env_Chunk(env, {empty_chunk_template})
 
 end
@@ -254,22 +255,66 @@ function Rename(track, tbl)
     tbl.info[tbl.idx].name = name
 end
 
+local function Get_Item_FIMP_H(tr, num)
+    local _, track_h = Get_TBH_Info(tr)
+    local offset = track_h <= 42 and 15 or 0
+    local bar_h_FIPM = ((19 - offset) / track_h)
+    local item_h_FIPM = (1 - (num - 1) * bar_h_FIPM) / num
+    return bar_h_FIPM, item_h_FIPM
+end
+
+function GetItemLane(item, n_lanes) -- 0 based, better performance (if gonna loop this)
+    local lane_space = 1/n_lanes
+    local y = reaper.GetMediaItemInfo_Value(item, 'F_FREEMODE_Y')
+    local item_lane = y/lane_space
+
+    return math.floor(item_lane+0.5)
+end
+
+local function StoreLaneData(track, tbl)
+    local num_items = reaper.CountTrackMediaItems(track)
+    for j = 1, #tbl.info do
+        local lane_chunk = {}
+        for i = 1, num_items do
+            local item = reaper.GetTrackMediaItem(track, i-1)
+            if GetItemLane(item, #tbl.info) == j then
+                MSG(GetItemLane(item, #tbl.info))
+                local item_chunk = Get_Item_Chunk(item)
+                item_chunk = Exclude_Pattern(item_chunk)
+                lane_chunk[#lane_chunk + 1] = item_chunk
+            end
+        end
+        local name = tbl.info[j].name
+        tbl.info[j] = lane_chunk
+        tbl.info[j].name = name
+    end
+end
+
 function ShowAll(track, tbl)
     if not reaper.ValidatePtr(track, "MediaTrack*") then return end
-    local val = reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") == 2 and 0 or 2
-    if val == 0 then SaveCurrentState(track, tbl) end -- SAVE CURRENT STATE ONLY IF FIPM IS OFF
+    local fimp = reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE")
+    local toggle = fimp == 2 and 0 or 2
+    if fimp == 0 then
+        SaveCurrentState(track, tbl)
+    elseif fimp == 2 then
+        StoreLaneData(track, tbl)
+    end
     Clear(track)
-    if val == 2 then
+    if toggle == 2 then
+        local FIPM_bar, FIPM_item_H = Get_Item_FIMP_H(track, #tbl.info)
         for i = 1, #tbl.info do
             local items = Create_item(track, tbl.info[i])
             for j = 1, #items do
-                -- ADD ITEMS TO LANES
+                reaper.SetMediaItemInfo_Value(items[j], "F_FREEMODE_H", FIPM_item_H)
+                reaper.SetMediaItemInfo_Value(items[j], "F_FREEMODE_Y", ((i - 1) * (FIPM_item_H + FIPM_bar)))
             end
         end
-    else
-        Create_item(track, tbl.info[1])
+    elseif toggle == 0 then
+        Create_item(track, tbl.info[tbl.idx])
     end
-    reaper.SetMediaTrackInfo_Value(track, "B_FREEMODE", val)
+    reaper.SetMediaTrackInfo_Value(track, "I_FREEMODE", toggle)
+    reaper.UpdateTimeline()
+    reaper.UpdateArrange()
 end
 
 local function Store_To_PEXT(el)
