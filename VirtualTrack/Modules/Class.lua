@@ -26,9 +26,10 @@ function Get_class_tbl(tbl)
     return Element
 end
 
-local function ConcatMenuNames()
+local function ConcatMenuNames(track)
     local concat = ""
-    for i = 1, #menu_options do
+    local options = reaper.ValidatePtr(track, "MediaTrack*") and #menu_options or #menu_options-1
+    for i = 1, options do
         concat = concat .. menu_options[i].name .. (i ~= #menu_options and "|" or "")
     end
     return concat
@@ -47,7 +48,7 @@ function Show_menu(tbl)
 
     menu_options[1].name = ">" .. math.floor(tbl.idx) .. " Virtual TR : " .. tbl.info[tbl.idx].name .. "|" .. table.concat(versions, "|") .."|<|"
 
-    local m_num = gfx.showmenu(ConcatMenuNames())
+    local m_num = gfx.showmenu(ConcatMenuNames(mouse.otr))
 
     if m_num > #tbl.info then
         m_num = (m_num - #tbl.info) + 1
