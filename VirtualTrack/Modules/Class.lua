@@ -18,7 +18,8 @@ local menu_options = {
     [3] = { name = "Duplicate Variant",   fname = "Duplicate" },
     [4] = { name = "Delete Variant",      fname = "Delete" },
     [5] = { name = "Clear Variant",       fname = "Clear" },
-    [6] = { name = "Show All Variants",   fname = "ShowAll" }
+    [6] = { name = "Show All Variants",   fname = "ShowAll" },
+    [7] = { name = "Rename Variants",   fname = "Rename" }
 }
 
 function Get_class_tbl(tbl)
@@ -41,10 +42,10 @@ function Show_menu(tbl)
 
     local versions = {}
     for i = 1, #tbl.info do
-        versions[#versions+1] = i == tbl.idx and "!" .. i or i
+        versions[#versions+1] = i == tbl.idx and "!" .. tbl.info[i].name or tbl.info[i].name
     end
 
-    menu_options[1].name = ">Virtual TR - " .. tbl.idx .. "|" .. table.concat(versions, "|") .."|<|"
+    menu_options[1].name = ">Virtual TR - " .. tbl.info[tbl.idx].name .. "|" .. table.concat(versions, "|") .."|<|"
 
     local m_num = gfx.showmenu(ConcatMenuNames())
 

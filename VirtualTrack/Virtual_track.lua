@@ -10,8 +10,10 @@
 
 --[[
  * Changelog:
- * v0.29 (2022-02-26)
-   + more cleanuo
+ * v0.3 (2022-02-26)
+   + Added Automatic naming
+   + Adder Renaming
+   + Fixed CreateNew,Duplicate and SaveCurrentState (were performing shallow copy)
 --]]
 
 local reaper = reaper
@@ -216,8 +218,10 @@ local function Create_item(tr, data)
 end
 
 local function SaveCurrentState(track, tbl)
+    local name = tbl.info[tbl.idx].name
     local chunk_tbl = reaper.ValidatePtr(track, "MediaTrack*") and Get_Track_Items(track) or Get_Env_Chunk(track)
     tbl.info[tbl.idx] = chunk_tbl
+    tbl.info[tbl.idx].name = name
     return chunk_tbl
 end
 
@@ -237,14 +241,19 @@ function SwapVirtualTrack(track, tbl, idx)
 end
 
 function CreateNew(track, tbl)
-    Duplicate(track,tbl)
+    SaveCurrentState(track, tbl)
     Clear(track)
+    tbl.info[#tbl.info+1] = {}
+    tbl.idx = #tbl.info
+    tbl.info[#tbl.info].name = "Version - " .. #tbl.info
 end
 
 function Duplicate(track, tbl)
-    local chunk_tbl = SaveCurrentState(track, tbl)
-    tbl.info[#tbl.info+1] = chunk_tbl
-    tbl.idx = #tbl.info;
+    SaveCurrentState(track, tbl)
+    local name = tbl.info[tbl.idx].name
+    tbl.info[#tbl.info+1] = reaper.ValidatePtr(track, "MediaTrack*") and Get_Track_Items(track) or Get_Env_Chunk(track)
+    tbl.idx = #tbl.info
+    tbl.info[#tbl.info].name = "Duplicate - " .. name
 end
 
 function Clear(track)
@@ -264,6 +273,12 @@ function Delete(track, tbl)
     table.remove(tbl.info, tbl.idx)
     tbl.idx = tbl.idx <= #tbl.info and tbl.idx or #tbl.info
     SwapVirtualTrack(track, tbl, tbl.idx)
+end
+
+function Rename(track, tbl)
+    local retval, name = reaper.GetUserInputs("Name Version ", 1, "Version Name :", "")
+    if not retval then return end
+    tbl.info[tbl.idx].name = name
 end
 
 local function get_fipm_value(tr, num)
@@ -331,15 +346,24 @@ local function Create_VT_Element()
         if not VT_TB[track] then
             local Element = Get_class_tbl()
             local tr_data = reaper.ValidatePtr(track, "MediaTrack*") and Get_Track_Items(track) or Get_Env_Chunk(track)
+            tr_data.name = "MAIN"
             VT_TB[track] = Element:new(0, 0, 20, 20, track, {tr_data})
             Restore_From_PEXT(VT_TB[track])
         end
     end
 end
 
+function Debug_TBL(t)
+    AAA = {}
+    for _, value in pairs(t) do
+        AAA[#AAA+1] = value    
+    end
+end
+
 local function RunLoop()
     Create_VT_Element()
     Draw(VT_TB)
+    Debug_TBL(VT_TB)
     reaper.defer(RunLoop)
 end
 
