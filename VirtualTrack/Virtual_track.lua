@@ -172,32 +172,6 @@ function Make_Empty_Env(env)
     Set_Env_Chunk(env, empty_chunk_template)
 end
 
-local function Remove_Track_FX(track)
-    for i = 1, reaper.TrackFX_GetCount(track) do
-        reaper.TrackFX_Delete(track, i - 1)
-    end
-end
-
-local function Get_FX_Chunk(track)
-    local _, track_chunk = reaper.GetTrackStateChunk(track, "", false)
-    if not track_chunk:find("<FXCHAIN") then
-        return
-    end -- DO NOT ALLOW CREATING FIRST EMPTY FX
-    local fx_start = track_chunk:find("<FXCHAIN") + 9
-    local fx_end = track_chunk:find("<ITEM") and track_chunk:find("<ITEM") - 4 or -6
-    local fx_chunk = track_chunk:sub(fx_start, fx_end)
-    return fx_chunk, track_chunk
-end
-
-local function Set_FX_Chunk(track, tbl)
-    local chunk = tbl.fx[num].chunk
-    local fx_chunk, track_chunk = Get_FX_Chunk(track)
-    local fx_chunk = literalize(fx_chunk)
-    local track_chunk = string.gsub(track_chunk, fx_chunk, chunk)
-    reaper.SetTrackStateChunk(track, track_chunk, false)
-    tbl.fx.fx_num = idx
-end
-
 local function Create_item(tr, data)
     local new_items = {}
     for i = 1, #data do
