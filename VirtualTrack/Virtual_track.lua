@@ -11,9 +11,7 @@
 --[[
  * Changelog:
  * v0.3 (2022-02-26)
-   + Added Automatic naming
-   + Adder Renaming
-   + Fixed CreateNew,Duplicate and SaveCurrentState (were performing shallow copy)
+   + Small envelope refactor (insert into table) to make naming work
 --]]
 
 local reaper = reaper
@@ -156,20 +154,20 @@ end
 
 local function Get_Env_Chunk(env)
     local _, env_chunk = reaper.GetEnvelopeStateChunk(env, "")
-    return env_chunk
+    return {env_chunk}
 end
 
 local function Set_Env_Chunk(env, data)
-    reaper.SetEnvelopeStateChunk(env, data, false)
+    reaper.SetEnvelopeStateChunk(env, data[1], false)
 end
 
 local match = string.match
 function Make_Empty_Env(env)
-    local env_chunk = Get_Env_Chunk(env)
+    local env_chunk = Get_Env_Chunk(env)[1]
     local env_center_val = Env_prop(env, "centerValue")
     local env_name_from_chunk = match(env_chunk, "[^\r\n]+")
     local empty_chunk_template = env_name_from_chunk .."\nACT 1 -1\nVIS 1 1 1\nLANEHEIGHT 0 0\nARM 1\nDEFSHAPE 0 -1 -1\nPT 0 " .. env_center_val .. " 0\n>"
-    Set_Env_Chunk(env, empty_chunk_template)
+    Set_Env_Chunk(env, {empty_chunk_template})
 end
 
 local function Create_item(tr, data)
