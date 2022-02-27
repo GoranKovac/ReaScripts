@@ -168,6 +168,7 @@ function Make_Empty_Env(env)
     local env_name_from_chunk = match(env_chunk, "[^\r\n]+")
     local empty_chunk_template = env_name_from_chunk .."\nACT 1 -1\nVIS 1 1 1\nLANEHEIGHT 0 0\nARM 1\nDEFSHAPE 0 -1 -1\nPT 0 " .. env_center_val .. " 0\n>"
     Set_Env_Chunk(env, {empty_chunk_template})
+
 end
 
 local function Create_item(tr, data)
@@ -324,17 +325,9 @@ local function Create_VT_Element()
     end
 end
 
-function Debug_TBL(t)
-    AAA = {}
-    for _, value in pairs(t) do
-        AAA[#AAA+1] = value
-    end
-end
-
 local function RunLoop()
     Create_VT_Element()
     Draw(VT_TB)
-    Debug_TBL(VT_TB)
     reaper.defer(RunLoop)
 end
 
