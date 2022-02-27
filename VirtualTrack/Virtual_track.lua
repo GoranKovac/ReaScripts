@@ -11,7 +11,7 @@
 --[[
  * Changelog:
  * v0.29 (2022-02-26)
-   + Removed Auto-save and Folder code
+   + more cleanuo
 --]]
 
 local reaper = reaper
@@ -31,8 +31,6 @@ end
 require("Modules/Class")
 require("Modules/Mouse")
 require("Modules/Utils")
-
-local VT_TB = {}
 
 local crash = function(errObject)
     local byLine = "([^\r\n]*)\r?\n?"
@@ -62,10 +60,10 @@ local crash = function(errObject)
                             "Reaper:       \t" .. reaper.GetAppVersion() .. "\n" .. "Platform:     \t" .. reaper.GetOS()
        )
     end
-    Exit()
     reaper.atexit(Exit)
 end
 
+local VT_TB = {}
 local TBH
 local function GetTracksXYH()
     if reaper.CountTracks(0) == 0 then
@@ -98,7 +96,7 @@ function Get_TBH_Info(tr)
     end
 end
 
-function ValidateRemovedTracks()
+local function ValidateRemovedTracks()
     if next(VT_TB) == nil then return end
     for k, v in pairs(VT_TB) do
         if not TBH[k] then
@@ -108,8 +106,8 @@ function ValidateRemovedTracks()
     end
 end
 
+local patterns = {"SEL 0", "SEL 1"}
 local function Exclude_Pattern(chunk)
-    local patterns = {"SEL 0", "SEL 1"}
     for i = 1, #patterns do
         chunk = string.gsub(chunk, patterns[i], "")
     end
@@ -123,9 +121,6 @@ local function Get_Item_Chunk(item)
 end
 
 local function Get_Track_Items(track, job)
-    if reaper.GetMediaTrackInfo_Value(track, "I_FOLDERDEPTH") == 1 then
-        return
-    end
     local items_chunk = {}
     local num_items = reaper.CountTrackMediaItems(track)
     for i = 1, num_items, 1 do
@@ -163,8 +158,7 @@ local function Get_Env_Chunk(env)
 end
 
 local function Set_Env_Chunk(env, data)
-    if not reaper.ValidatePtr(env, "TrackEnvelope*") then return end
-    reaper.SetEnvelopeStateChunk( env, data, false)
+    reaper.SetEnvelopeStateChunk(env, data, false)
 end
 
 local match = string.match
@@ -176,42 +170,33 @@ function Make_Empty_Env(env)
     Set_Env_Chunk(env, empty_chunk_template)
 end
 
--- ADDED -- 
 local function Remove_Track_FX(track)
     for i = 1, reaper.TrackFX_GetCount(track) do
         reaper.TrackFX_Delete(track, i - 1)
     end
 end
 
--- ADDED -- PORTED FROM ORIGINAL SCRIPT NEEDS ADJUSTING
 local function Get_FX_Chunk(track)
     local _, track_chunk = reaper.GetTrackStateChunk(track, "", false)
     if not track_chunk:find("<FXCHAIN") then
         return
     end -- DO NOT ALLOW CREATING FIRST EMPTY FX
-    local fx_start = track_chunk:find("<FXCHAIN")
-    local fx_end = track_chunk:find("<ITEM")
-    if not fx_end then
-        fx_end = -6
-    else
-        fx_end = fx_end - 4
-    end
-    local fx_chunk = track_chunk:sub(fx_start + 9, fx_end)
+    local fx_start = track_chunk:find("<FXCHAIN") + 9
+    local fx_end = track_chunk:find("<ITEM") and track_chunk:find("<ITEM") - 4 or -6
+    local fx_chunk = track_chunk:sub(fx_start, fx_end)
     return fx_chunk, track_chunk
 end
 
--- ADDED -- PORTED FROM ORIGINAL SCRIPT NEEDS ADJUSTING
 local function Set_FX_Chunk(track, tbl)
     local chunk = tbl.fx[num].chunk
-    local fx_chunk, track_chunk = Get_FX_Chunk(tbl.guid)
+    local fx_chunk, track_chunk = Get_FX_Chunk(track)
     local fx_chunk = literalize(fx_chunk)
     local track_chunk = string.gsub(track_chunk, fx_chunk, chunk)
     reaper.SetTrackStateChunk(track, track_chunk, false)
-    tbl.fx.fx_num = num
+    tbl.fx.fx_num = idx
 end
 
 local function Create_item(tr, data)
-    if not data or not reaper.ValidatePtr(tr, "MediaTrack*")  then return end
     local new_items = {}
     for i = 1, #data do
         local chunk = data[i]
@@ -225,21 +210,20 @@ local function Create_item(tr, data)
         reaper.SetMediaItemInfo_Value(empty_item, "B_UISEL", 1)
         reaper.Main_OnCommand(41613, 0)
         reaper.SetMediaItemInfo_Value(empty_item, "B_UISEL", 0)
-
         new_items[#new_items+1] = empty_item
     end
     return new_items
 end
 
-function Set_Virtual_Track(track, tbl, idx)
-    SaveCurrentState(track, tbl)
-    SwapVirtualTrack(track, tbl, idx)
-end
-
-function SaveCurrentState(track, tbl)
+local function SaveCurrentState(track, tbl)
     local chunk_tbl = reaper.ValidatePtr(track, "MediaTrack*") and Get_Track_Items(track) or Get_Env_Chunk(track)
     tbl.info[tbl.idx] = chunk_tbl
     return chunk_tbl
+end
+
+function Set_Virtual_Track(track, tbl, idx)
+    SaveCurrentState(track, tbl)
+    SwapVirtualTrack(track, tbl, idx)
 end
 
 function SwapVirtualTrack(track, tbl, idx)
@@ -255,7 +239,6 @@ end
 function CreateNew(track, tbl)
     Duplicate(track,tbl)
     Clear(track)
-    tbl.info[tbl.idx] = reaper.ValidatePtr(track, "MediaTrack*") and Get_Track_Items(track) or Get_Env_Chunk(track) -- clear it out
 end
 
 function Duplicate(track, tbl)
@@ -277,7 +260,7 @@ function Clear(track)
 end
 
 function Delete(track, tbl)
-    if tbl.idx == 1 then return end -- PREVENT DELETING ORIGINAL VERSION
+    if tbl.idx == 1 then return end
     table.remove(tbl.info, tbl.idx)
     tbl.idx = tbl.idx <= #tbl.info and tbl.idx or #tbl.info
     SwapVirtualTrack(track, tbl, tbl.idx)
@@ -320,7 +303,7 @@ local function Store_To_PEXT(el)
     if reaper.ValidatePtr(el.rprobj, "MediaTrack*") then
         reaper.GetSetMediaTrackInfo_String(el.rprobj, "P_EXT:VirtualTrack", serialized, true)
     else
-        local rv, stored = reaper.GetSetEnvelopeInfo_String(el.rprobj, "P_EXT:VirtualTrack", serialized, true)
+        reaper.GetSetEnvelopeInfo_String(el.rprobj, "P_EXT:VirtualTrack", serialized, true)
     end
 end
 
@@ -344,13 +327,12 @@ local function Create_VT_Element()
     GetTracksXYH()
     ValidateRemovedTracks()
     if reaper.CountTracks(0) == 0 then return end
-    for k, _ in pairs(TBH) do
-        if not VT_TB[k] then
+    for track in pairs(TBH) do
+        if not VT_TB[track] then
             local Element = Get_class_tbl()
-            local y = Get_TBH_Info(k)
-            local tr_data = reaper.ValidatePtr(k, "MediaTrack*") and Get_Track_Items(k) or Get_Env_Chunk(k)
-            VT_TB[k] = Element:new(0, y, 20, 20, k, {tr_data})
-            Restore_From_PEXT(VT_TB[k])
+            local tr_data = reaper.ValidatePtr(track, "MediaTrack*") and Get_Track_Items(track) or Get_Env_Chunk(track)
+            VT_TB[track] = Element:new(0, 0, 20, 20, track, {tr_data})
+            Restore_From_PEXT(VT_TB[track])
         end
     end
 end
@@ -365,10 +347,10 @@ local function Main()
     xpcall(RunLoop, crash)
 end
 
-function Exit() -- DESTROY ALL BITMAPS ON REAPER EXIT
+function Exit()
     for k, v in pairs(VT_TB) do
-        Store_To_PEXT(VT_TB[k]) -- STORE TO P_EXT AT EXIT
-        reaper.JS_LICE_DestroyBitmap(v.bm) -- DESTROY BITMAPS FROM AS THAT WILL BE DELETED
+        Store_To_PEXT(VT_TB[k])
+        reaper.JS_LICE_DestroyBitmap(v.bm)
     end
 end
 reaper.atexit(Exit)

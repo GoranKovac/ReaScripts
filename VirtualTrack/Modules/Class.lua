@@ -47,7 +47,7 @@ function Show_menu(tbl)
     menu_options[1].name = ">Virtual TR - " .. tbl.idx .. "|" .. table.concat(versions, "|") .."|<|"
 
     local m_num = gfx.showmenu(ConcatMenuNames())
-
+    AAA = tbl
     if m_num > #tbl.info then
         m_num = (m_num - #tbl.info) + 1
         _G[menu_options[m_num].fname](mouse.otr, tbl)
@@ -67,7 +67,7 @@ function Element:new(x, y, w, h, rprobj, info)
     elm.x, elm.y, elm.w, elm.h = x, y, w, h
     elm.rprobj, elm.bm = rprobj, reaper.JS_LICE_CreateBitmap(true, elm.w, elm.h)
     reaper.JS_LICE_Clear(elm.bm, 0x66002244)
-    elm.info  = info
+    elm.info = info
     elm.idx = 1;
     setmetatable(elm, self)
     self.__index = self
@@ -118,6 +118,7 @@ end
 
 function Element:track()
     if not Get_TBH_Info()[self.rprobj].vis then return end
+    if Window_in_front() then return end
     if self:mouseClick() then
         Show_menu(self)
     end

@@ -188,6 +188,10 @@ function MouseInfo(x,y,p)
 	return mouse
 end
 
+function Window_in_front()
+	if reaper.JS_Window_FromPoint(mouse.x, mouse.y) ~= track_window then return true end
+end
+
 local prevTime = 0 -- or script start time
 function Pass_thru()
    if mouse.l_down then
