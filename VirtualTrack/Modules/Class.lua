@@ -1,7 +1,7 @@
 --[[
    * Author: SeXan
    * Licence: GPL v3
-   * Version: 0.02
+   * Version: 0.03
 	 * NoIndex: true
 --]]
 local reaper = reaper
@@ -29,15 +29,21 @@ end
 local function ConcatMenuNames(track)
     local concat = ""
     local options = reaper.ValidatePtr(track, "MediaTrack*") and #menu_options or #menu_options-1
+    local fimp = reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") == 2 and "!" or ""
     for i = 1, options do
-        concat = concat .. menu_options[i].name .. (i ~= #menu_options and "|" or "")
+        concat = concat .. (i ~= 7 and menu_options[i].name or fimp .. menu_options[i].name) .. (i ~= options and "|" or "")
     end
     return concat
 end
 
 function Show_menu(tbl)
     reaper.PreventUIRefresh(1)
-    gfx.init("", -100, -100)
+    local title = "supper_awesome_mega_menu"
+    gfx.init( title, 0, 0, 0, 0, 0 )
+    local hwnd = reaper.JS_Window_Find( title, true )
+    if hwnd then
+        reaper.JS_Window_Show( hwnd, "HIDE" )
+    end
     gfx.x = gfx.mouse_x
     gfx.y = gfx.mouse_y
 

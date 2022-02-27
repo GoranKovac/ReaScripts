@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="b11a27ea6c4533e13a93fc6ccda7e4a39d99b6e9" name="Sexan_Scripts">
+<index version="1" commit="5581293cb1f57dd69aad9b9ed2aef1432dcdcd6f" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -703,7 +703,7 @@
     </reapack>
     <reapack name="Sexan_Folder record monitor arming childs.lua" type="script" desc="Folder record monitor arming childs">
       <metadata>
-        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 \fmodern Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
 \widowctrl\hyphauto
 
@@ -733,6 +733,33 @@
       <version name="1.03" author="SeXan" time="2018-02-27T14:40:19Z">
         <changelog><![CDATA[+ Fixed for 64 group remove]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/c6910bc30cb0bbca6014ea8fd22fe2694eed0560/Track/Sexan_Remove%20selected%20VCA%20master%20and%20its%20slaves%20with%20all%20flags.lua</source>
+      </version>
+    </reapack>
+  </category>
+  <category name="VirtualTrack">
+    <reapack name="Virtual_track.lua" type="script" desc="Virtual Tracks">
+      <version name="0.1" author="Sexan" time="2022-02-24T09:02:10Z">
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/d599f9a837323bb277f4dff4ca8c2405326d89c6/VirtualTrack/Virtual_track.lua</source>
+        <source file="Modules/Class.lua">https://github.com/GoranKovac/ReaScripts/raw/d599f9a837323bb277f4dff4ca8c2405326d89c6/VirtualTrack/Modules/Class.lua</source>
+        <source file="Modules/Mouse.lua">https://github.com/GoranKovac/ReaScripts/raw/d599f9a837323bb277f4dff4ca8c2405326d89c6/VirtualTrack/Modules/Mouse.lua</source>
+      </version>
+      <version name="0.35" author="Sexan" time="2022-02-27T16:00:31Z">
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/023e6ff4e8eac6916267c0cc21ac75a06ed8e972/VirtualTrack/Virtual_track.lua</source>
+        <source file="Modules/Class.lua">https://github.com/GoranKovac/ReaScripts/raw/023e6ff4e8eac6916267c0cc21ac75a06ed8e972/VirtualTrack/Modules/Class.lua</source>
+        <source file="Modules/Mouse.lua">https://github.com/GoranKovac/ReaScripts/raw/023e6ff4e8eac6916267c0cc21ac75a06ed8e972/VirtualTrack/Modules/Mouse.lua</source>
+        <source file="Modules/Utils.lua">https://github.com/GoranKovac/ReaScripts/raw/023e6ff4e8eac6916267c0cc21ac75a06ed8e972/VirtualTrack/Modules/Utils.lua</source>
+      </version>
+      <version name="0.36" author="Sexan" time="2022-02-27T18:27:49Z">
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/52f1430606ceb098f0f1c7cd4430e185b47914c2/VirtualTrack/Virtual_track.lua</source>
+        <source file="Modules/Class.lua">https://github.com/GoranKovac/ReaScripts/raw/52f1430606ceb098f0f1c7cd4430e185b47914c2/VirtualTrack/Modules/Class.lua</source>
+        <source file="Modules/Mouse.lua">https://github.com/GoranKovac/ReaScripts/raw/52f1430606ceb098f0f1c7cd4430e185b47914c2/VirtualTrack/Modules/Mouse.lua</source>
+        <source file="Modules/Utils.lua">https://github.com/GoranKovac/ReaScripts/raw/52f1430606ceb098f0f1c7cd4430e185b47914c2/VirtualTrack/Modules/Utils.lua</source>
+      </version>
+      <version name="0.37" author="Sexan" time="2022-02-27T21:10:25Z">
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/5581293cb1f57dd69aad9b9ed2aef1432dcdcd6f/VirtualTrack/Virtual_track.lua</source>
+        <source file="Modules/Class.lua">https://github.com/GoranKovac/ReaScripts/raw/5581293cb1f57dd69aad9b9ed2aef1432dcdcd6f/VirtualTrack/Modules/Class.lua</source>
+        <source file="Modules/Mouse.lua">https://github.com/GoranKovac/ReaScripts/raw/5581293cb1f57dd69aad9b9ed2aef1432dcdcd6f/VirtualTrack/Modules/Mouse.lua</source>
+        <source file="Modules/Utils.lua">https://github.com/GoranKovac/ReaScripts/raw/5581293cb1f57dd69aad9b9ed2aef1432dcdcd6f/VirtualTrack/Modules/Utils.lua</source>
       </version>
     </reapack>
   </category>
