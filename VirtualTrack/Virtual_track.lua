@@ -253,7 +253,7 @@ function Delete(track, tbl)
 end
 
 function Rename(track, tbl)
-    local retval, name = reaper.GetUserInputs("Name Version ", 1, "Version Name :", "")
+    local retval, name = reaper.GetUserInputs("Name Version ", 1, "Version Name :", tbl.info[tbl.idx].name)
     if not retval then return end
     tbl.info[tbl.idx].name = name
 end
@@ -283,7 +283,6 @@ local function StoreLaneData(track, tbl)
 end
 
 function ShowAll(track, tbl)
-    -- if not reaper.ValidatePtr(track, "MediaTrack*") then return end
     local fimp = reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE")
     local toggle = fimp == 2 and 0 or 2
     if fimp == 0 then
