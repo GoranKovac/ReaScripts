@@ -57,3 +57,11 @@ function literalize(str)
         end
     )
 end
+
+function split_by_line(str)
+    local t = {}
+    for line in string.gmatch(str, "[^\r\n]+") do
+        t[#t + 1] = line
+    end
+    return t
+  end
