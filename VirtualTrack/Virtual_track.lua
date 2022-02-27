@@ -136,7 +136,7 @@ function Env_prop(env,val)
     local br_env = reaper.BR_EnvAlloc(env, false)
     local active, visible, armed, inLane, laneHeight, defaultShape, minValue, maxValue, centerValue, type_, faderScaling = reaper.BR_EnvGetProperties(br_env, true, true, true, true, 0, 0, 0, 0, 0, 0, true)
     local properties = {
-        ["active"] = active,
+        ["active"] = active, 
         ["visible"] = visible,
         ["armed"] = armed,
         ["inLane"] = inLane,
@@ -253,27 +253,16 @@ function Rename(track, tbl)
     tbl.info[tbl.idx].name = name
 end
 
-local function get_fipm_value(tr, num)
-    if not num then return end
-    local _, track_h = Get_TBH_Info(tr)
-    local offset = track_h <= 42 and 15 or 0
-    local bar_h_FIPM = ((19 - offset) / track_h)
-    local item_h_FIPM = (1 - (num - 1) * bar_h_FIPM) / num
-    return bar_h_FIPM, item_h_FIPM
-end
-
 function ShowAll(track, tbl)
     if not reaper.ValidatePtr(track, "MediaTrack*") then return end
-    SaveCurrentState(track, tbl)
-    local val = reaper.GetMediaTrackInfo_Value(track, "B_FREEMODE") == 1 and 0 or 1
+    local val = reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") == 2 and 0 or 2
+    if val == 0 then SaveCurrentState(track, tbl) end -- SAVE CURRENT STATE ONLY IF FIPM IS OFF
     Clear(track)
-    if val == 1 then
-        local FIPM_bar, FIPM_item = get_fipm_value(track, #tbl.info)
+    if val == 2 then
         for i = 1, #tbl.info do
             local items = Create_item(track, tbl.info[i])
             for j = 1, #items do
-                reaper.SetMediaItemInfo_Value(items[j], "F_FREEMODE_H", FIPM_item)
-                reaper.SetMediaItemInfo_Value(items[j], "F_FREEMODE_Y", ((i - 1) * (FIPM_item + FIPM_bar)))
+                -- ADD ITEMS TO LANES
             end
         end
     else
