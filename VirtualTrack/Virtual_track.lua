@@ -4,14 +4,15 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.39
+ * Version: 0.4
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.39 (2022-02-27)
+ * v0.4 (2022-02-28)
    + Move Button to TCP
+   + Added master track versions
 --]]
 
 local reaper = reaper
@@ -71,20 +72,22 @@ local function GetTracksXYH()
         return
     end
     TBH = {}
-    for i = 1, reaper.CountTracks(0) do
-        local tr = reaper.GetTrack(0, i - 1)
-        local tr_vis = reaper.IsTrackVisible(tr, false)
+    for i = 0, reaper.CountTracks(0) do
+        local tr = i > 0 and reaper.GetTrack(0, i - 1) or reaper.GetMasterTrack(0)
+        local retval, tr_name = reaper.GetTrackName( tr )
+        local tr_vis = i > 0 and reaper.IsTrackVisible(tr, false) or (reaper.GetMasterTrackVisibility()&1 == 1 and true or false )
         local tr_h = reaper.GetMediaTrackInfo_Value(tr, "I_TCPH")
         local tr_t = reaper.GetMediaTrackInfo_Value(tr, "I_TCPY")
         local tr_b = tr_t + tr_h
-        TBH[tr] = {t = tr_t, b = tr_b, h = tr_h, vis = tr_vis}
+        TBH[tr] = {t = tr_t, b = tr_b, h = tr_h, vis = tr_vis, name = tr_name}
         for j = 1, reaper.CountTrackEnvelopes(tr) do
             local env = reaper.GetTrackEnvelope(tr, j - 1)
+            local retval, env_name = reaper.GetEnvelopeName( env )
             local env_h = reaper.GetEnvelopeInfo_Value(env, "I_TCPH")
             local env_t = reaper.GetEnvelopeInfo_Value(env, "I_TCPY") + tr_t
             local env_b = env_t + env_h
             local env_vis = Get_Env_Chunk(env)[1]:find("VIS 1") and true or false
-            TBH[env] = {t = env_t, b = env_b, h = env_h, vis = env_vis}
+            TBH[env] = {t = env_t, b = env_b, h = env_h, vis = env_vis, name = env_name}
         end
     end
 end
@@ -191,12 +194,17 @@ local function Create_item(tr, data)
 end
 
 local function GetChunkTableForObject(track)
-    return reaper.ValidatePtr(track, "MediaTrack*") and Get_Track_Items(track) or Get_Env_Chunk(track)
+    if TBH[track].name == "MASTER" then
+        local tempo_track =  reaper.GetTrackEnvelopeByName( track, "Tempo map" )
+        return Get_Env_Chunk(tempo_track)
+    else
+        return reaper.ValidatePtr(track, "MediaTrack*") and Get_Track_Items(track) or Get_Env_Chunk(track)
+    end
 end
 
 local function SaveCurrentState(track, tbl)
     local name = tbl.info[tbl.idx].name
-    local chunk_tbl = reaper.ValidatePtr(track, "MediaTrack*") and Get_Track_Items(track) or Get_Env_Chunk(track)
+    local chunk_tbl = GetChunkTableForObject(track)
     tbl.info[tbl.idx] = chunk_tbl
     tbl.info[tbl.idx].name = name
     return chunk_tbl
@@ -300,7 +308,6 @@ function ShowAll(track, tbl)
             end
         end
     elseif toggle == 0 then
-
         Create_item(track, tbl.info[tbl.idx])
     end
     reaper.SetMediaTrackInfo_Value(track, "I_FREEMODE", toggle)
@@ -344,15 +351,23 @@ local function Create_VT_Element()
             local Element = Get_class_tbl()
             local tr_data = GetChunkTableForObject(track)
             tr_data.name = "MAIN"
-            VT_TB[track] = Element:new(0, 0, 20, 20, track, {tr_data})
+            VT_TB[track] = Element:new(0, 0, 17, 16, track, {tr_data})
             Restore_From_PEXT(VT_TB[track])
         end
+    end
+end
+
+local function Debug_TBL(t)
+    AAA = {}
+    for key, value in pairs(t) do
+        AAA[#AAA+1] = value
     end
 end
 
 local function RunLoop()
     Create_VT_Element()
     Draw(VT_TB)
+    Debug_TBL(VT_TB)
     reaper.defer(RunLoop)
 end
 

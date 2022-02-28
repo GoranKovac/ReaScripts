@@ -87,7 +87,7 @@ function Element:new(x, y, w, h, rprobj, info)
     local elm = {}
     elm.x, elm.y, elm.w, elm.h = x, y, w, h
     elm.rprobj, elm.bm = rprobj, reaper.JS_LICE_CreateBitmap(true, elm.w, elm.h)
-    reaper.JS_LICE_Clear(elm.bm, 0x66002244)
+    reaper.JS_LICE_Clear(elm.bm, 0x66008844)
     elm.info = info
     elm.idx = 1;
     setmetatable(elm, self)
@@ -98,7 +98,7 @@ end
 function Element:update_xywh()
     self.y = Get_TBH_Info(self.rprobj)
     local retval, left, top, right, bottom = reaper.JS_Window_GetClientRect( track_window )
-    self.x = (right - left) - 10 - self.w
+    self.x = (right - left) - 14 - self.w
     self:draw(1,1)
 end
 

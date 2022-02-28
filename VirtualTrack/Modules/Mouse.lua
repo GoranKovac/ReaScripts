@@ -139,7 +139,6 @@ function Get_track_under_mouse(x, y)
     local _, cy = To_client(x, y)
     local track, env_info = reaper.GetTrackFromPoint(x, y)
 
-    if track == reaper.GetMasterTrack( 0 ) and reaper.GetMasterTrackVisibility() == 0 then return end -- IGNORE DOCKED MASTER TRACK
     if track and env_info == 0 and TBH[track].vis == true then
         return track, TBH[track].t, TBH[track].b, TBH[track].h
     elseif track and env_info == 1 then
