@@ -1,17 +1,26 @@
 --[[
    * Author: SeXan
    * Licence: GPL v3
-   * Version: 0.04
+   * Version: 0.05
 	 * NoIndex: true
 --]]
 local reaper = reaper
 local gfx = gfx
 local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
--- local track_window = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8) -- GET TRACK VIEW
 local track_window = reaper.JS_Window_FindEx( main_wnd, main_wnd, "REAPERTCPDisplay", "" )
 local BUTTON_UPDATE
 local mouse
 local Element = {}
+
+local theme = reaper.GetLastColorThemeFile()
+local offset_x, offset_y, color = 0,0,0
+if theme:find("Default_6.0.ReaperTheme") then
+    offset_x, offset_y = 56, 0
+    color = 0x00008844
+elseif theme:find("Default_5.0.ReaperTheme") then
+    offset_x = 32
+    color = 0x66008844
+end
 
 local menu_options = {
     [1] = { name = "",                      fname = "" },
@@ -98,8 +107,8 @@ end
 function Element:new(x, y, w, h, rprobj, info)
     local elm = {}
     elm.x, elm.y, elm.w, elm.h = x, y, w, h
-    elm.rprobj, elm.bm = rprobj, reaper.JS_LICE_CreateBitmap(true, elm.w, elm.h)    
-    reaper.JS_LICE_Clear(elm.bm, 0x66008844)
+    elm.rprobj, elm.bm = rprobj, reaper.JS_LICE_CreateBitmap(true, elm.w, elm.h)
+    reaper.JS_LICE_Clear(elm.bm, color)
     elm.info = info
     elm.idx = 1;
     setmetatable(elm, self)
@@ -110,7 +119,7 @@ end
 function Element:update_xywh()
     self.y = Get_TBH_Info(self.rprobj)
     local retval, left, top, right, bottom = reaper.JS_Window_GetClientRect( track_window )
-    self.x = (right - left) - 14 - self.w
+    self.x = (right - left) - offset_x - self.w
     self:draw(1,1)
 end
 

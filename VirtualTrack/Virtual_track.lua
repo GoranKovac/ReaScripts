@@ -14,6 +14,7 @@
    + Move Button to TCP
    + Added master track versions
    + Tempo map chunk template
+   + Added Support for default themes
 --]]
 
 local reaper = reaper
