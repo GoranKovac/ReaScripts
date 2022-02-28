@@ -194,11 +194,10 @@ local function Create_item(tr, data)
 end
 
 local function GetChunkTableForObject(track)
-    if TBH[track].name == "MASTER" then
-        local tempo_track =  reaper.GetTrackEnvelopeByName( track, "Tempo map" )
-        return Get_Env_Chunk(tempo_track)
-    else
-        return reaper.ValidatePtr(track, "MediaTrack*") and Get_Track_Items(track) or Get_Env_Chunk(track)
+    if reaper.ValidatePtr(track, "MediaTrack*") then
+        return Get_Track_Items(track)
+    elseif reaper.ValidatePtr(track, "TrackEnvelope*") then
+        return Get_Env_Chunk(track)
     end
 end
 
@@ -219,7 +218,7 @@ function SwapVirtualTrack(track, tbl, idx)
     Clear(track)
     if reaper.ValidatePtr(track, "MediaTrack*") then
         Create_item(track, tbl.info[idx])
-    else
+    elseif reaper.ValidatePtr(track, "TrackEnvelope*") then
         Set_Env_Chunk(track, tbl.info[idx])
     end
     tbl.idx = idx;
@@ -248,7 +247,7 @@ function Clear(track)
             local item = reaper.GetTrackMediaItem(track, i - 1)
             reaper.DeleteTrackMediaItem(track, item)
         end
-    else
+    elseif reaper.ValidatePtr(track, "TrackEnvelope*") then
         Make_Empty_Env(track)
     end
 end
@@ -321,7 +320,7 @@ local function Store_To_PEXT(el)
     local serialized = tableToString(storedTable)
     if reaper.ValidatePtr(el.rprobj, "MediaTrack*") then
         reaper.GetSetMediaTrackInfo_String(el.rprobj, "P_EXT:VirtualTrack", serialized, true)
-    else
+    elseif reaper.ValidatePtr(el.rprobj, "TrackEnvelope*") then
         reaper.GetSetEnvelopeInfo_String(el.rprobj, "P_EXT:VirtualTrack", serialized, true)
     end
 end
@@ -330,7 +329,7 @@ local function Restore_From_PEXT(el)
     local rv, stored
     if reaper.ValidatePtr(el.rprobj, "MediaTrack*") then
         rv, stored = reaper.GetSetMediaTrackInfo_String(el.rprobj, "P_EXT:VirtualTrack", "", false)
-    else
+    elseif reaper.ValidatePtr(el.rprobj, "TrackEnvelope*") then
         rv, stored = reaper.GetSetEnvelopeInfo_String(el.rprobj, "P_EXT:VirtualTrack", "", false)
     end
     if rv == true and stored ~= nil then

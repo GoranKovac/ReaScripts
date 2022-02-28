@@ -86,7 +86,7 @@ end
 function Element:new(x, y, w, h, rprobj, info)
     local elm = {}
     elm.x, elm.y, elm.w, elm.h = x, y, w, h
-    elm.rprobj, elm.bm = rprobj, reaper.JS_LICE_CreateBitmap(true, elm.w, elm.h)
+    elm.rprobj, elm.bm = rprobj, reaper.JS_LICE_CreateBitmap(true, elm.w, elm.h)    
     reaper.JS_LICE_Clear(elm.bm, 0x66008844)
     elm.info = info
     elm.idx = 1;
