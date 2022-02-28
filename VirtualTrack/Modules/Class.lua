@@ -1,16 +1,26 @@
 --[[
    * Author: SeXan
    * Licence: GPL v3
-   * Version: 0.04
+   * Version: 0.05
 	 * NoIndex: true
 --]]
 local reaper = reaper
 local gfx = gfx
 local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
-local track_window = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8) -- GET TRACK VIEW
+local track_window = reaper.JS_Window_FindEx( main_wnd, main_wnd, "REAPERTCPDisplay", "" )
 local BUTTON_UPDATE
 local mouse
 local Element = {}
+
+local theme = reaper.GetLastColorThemeFile()
+local offset_x, offset_y, color = 0,0,0
+if theme:find("Default_6.0.ReaperTheme") then
+    offset_x, offset_y = 56, 0
+    color = 0x00008844
+elseif theme:find("Default_5.0.ReaperTheme") then
+    offset_x = 32
+    color = 0x66008844
+end
 
 local menu_options = {
     [1] = { name = "",                      fname = "" },
@@ -41,6 +51,14 @@ local function ConcatMenuNames(track)
     return concat
 end
 
+local function Update_tempo_map()
+    if reaper.CountTempoTimeSigMarkers(0) then
+        local retval, timepos, measurepos, beatpos, bpm, timesig_num, timesig_denom, lineartempo = reaper.GetTempoTimeSigMarker(0, 0)
+        reaper.SetTempoTimeSigMarker(0, 0, timepos, measurepos, beatpos, bpm, timesig_num, timesig_denom, lineartempo)
+    end
+    reaper.UpdateTimeline()
+end
+
 function Show_menu(tbl)
     reaper.PreventUIRefresh(1)
     local title = "supper_awesome_mega_menu"
@@ -52,9 +70,12 @@ function Show_menu(tbl)
     gfx.x = gfx.mouse_x
     gfx.y = gfx.mouse_y
 
+    local update_tempo = tbl.rprobj == reaper.GetMasterTrack(0) and true or false
+    tbl = tbl.rprobj == reaper.GetMasterTrack(0) and Get_VT_TB()[reaper.GetTrackEnvelopeByName( tbl.rprobj, "Tempo map" )] or tbl
+
     local gray_out = ""
-    if reaper.ValidatePtr(mouse.otr, "MediaTrack*") then
-        if reaper.GetMediaTrackInfo_Value(mouse.otr, "I_FREEMODE") == 2 then
+    if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
+        if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 2 then
             gray_out = "#"
         end
     end
@@ -66,19 +87,20 @@ function Show_menu(tbl)
 
     menu_options[1].name = ">" .. math.floor(tbl.idx) .. " Virtual TR : " .. tbl.info[tbl.idx].name .. "|" .. table.concat(versions, "|") .."|<|"
 
-    local m_num = gfx.showmenu(ConcatMenuNames(mouse.otr))
+    local m_num = gfx.showmenu(ConcatMenuNames(tbl.rprobj))
 
     if m_num > #tbl.info then
         m_num = (m_num - #tbl.info) + 1
-        _G[menu_options[m_num].fname](mouse.otr, tbl)
+        _G[menu_options[m_num].fname](tbl.rprobj, tbl)
     else
         if m_num ~= 0 then
-            Set_Virtual_Track(mouse.otr, tbl, m_num)
+            Set_Virtual_Track(tbl.rprobj, tbl, m_num)
         end
     end
     gfx.quit()
 
     reaper.PreventUIRefresh(-1)
+    if update_tempo then Update_tempo_map() end
     reaper.UpdateArrange()
 end
 
@@ -86,7 +108,7 @@ function Element:new(x, y, w, h, rprobj, info)
     local elm = {}
     elm.x, elm.y, elm.w, elm.h = x, y, w, h
     elm.rprobj, elm.bm = rprobj, reaper.JS_LICE_CreateBitmap(true, elm.w, elm.h)
-    reaper.JS_LICE_Clear(elm.bm, 0x66002244)
+    reaper.JS_LICE_Clear(elm.bm, color)
     elm.info = info
     elm.idx = 1;
     setmetatable(elm, self)
@@ -96,12 +118,14 @@ end
 
 function Element:update_xywh()
     self.y = Get_TBH_Info(self.rprobj)
+    local retval, left, top, right, bottom = reaper.JS_Window_GetClientRect( track_window )
+    self.x = (right - left) - offset_x - self.w
     self:draw(1,1)
 end
 
 function Element:draw(w,h)
     if Get_TBH_Info()[self.rprobj].vis then
-        reaper.JS_Composite(track_window, 0, self.y, self.w, self.h, self.bm, 0, 0, w, h, true)
+        reaper.JS_Composite(track_window, self.x, self.y, self.w, self.h, self.bm, 0, 0, w, h, true)
     else
         reaper.JS_Composite_Unlink(track_window, self.bm, true)
     end

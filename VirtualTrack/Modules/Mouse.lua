@@ -1,12 +1,13 @@
 --[[
    * Author: SeXan
    * Licence: GPL v3
-   * Version: 0.05
+   * Version: 0.06
 	 * NoIndex: true
 --]]
 local reaper = reaper
 local main_wnd        = reaper.GetMainHwnd()                            -- GET MAIN WINDOW
-local track_window = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8) -- GET TRACK VIEW
+--local track_window = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8) -- GET TRACK VIEW
+local track_window = reaper.JS_Window_FindEx( main_wnd, main_wnd, "REAPERTCPDisplay", "" )
 
 local mouse = {
 	LB    = 1,
@@ -138,7 +139,6 @@ function Get_track_under_mouse(x, y)
     local _, cy = To_client(x, y)
     local track, env_info = reaper.GetTrackFromPoint(x, y)
 
-    if track == reaper.GetMasterTrack( 0 ) and reaper.GetMasterTrackVisibility() == 0 then return end -- IGNORE DOCKED MASTER TRACK
     if track and env_info == 0 and TBH[track].vis == true then
         return track, TBH[track].t, TBH[track].b, TBH[track].h
     elseif track and env_info == 1 then
