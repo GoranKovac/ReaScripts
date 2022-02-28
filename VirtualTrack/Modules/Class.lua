@@ -42,6 +42,14 @@ local function ConcatMenuNames(track)
     return concat
 end
 
+local function Update_tempo_map()
+    if reaper.CountTempoTimeSigMarkers(0) then
+        local retval, timepos, measurepos, beatpos, bpm, timesig_num, timesig_denom, lineartempo = reaper.GetTempoTimeSigMarker(0, 0)
+        reaper.SetTempoTimeSigMarker(0, 0, timepos, measurepos, beatpos, bpm, timesig_num, timesig_denom, lineartempo)
+    end
+    reaper.UpdateTimeline()
+end
+
 function Show_menu(tbl)
     reaper.PreventUIRefresh(1)
     local title = "supper_awesome_mega_menu"
@@ -53,6 +61,7 @@ function Show_menu(tbl)
     gfx.x = gfx.mouse_x
     gfx.y = gfx.mouse_y
 
+    local update_tempo = tbl.rprobj == reaper.GetMasterTrack(0) and true or false
     tbl = tbl.rprobj == reaper.GetMasterTrack(0) and Get_VT_TB()[reaper.GetTrackEnvelopeByName( tbl.rprobj, "Tempo map" )] or tbl
 
     local gray_out = ""
@@ -82,6 +91,7 @@ function Show_menu(tbl)
     gfx.quit()
 
     reaper.PreventUIRefresh(-1)
+    if update_tempo then Update_tempo_map() end
     reaper.UpdateArrange()
 end
 
