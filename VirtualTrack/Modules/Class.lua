@@ -53,6 +53,8 @@ function Show_menu(tbl)
     gfx.x = gfx.mouse_x
     gfx.y = gfx.mouse_y
 
+    tbl = tbl.rprobj == reaper.GetMasterTrack(0) and Get_VT_TB()[reaper.GetTrackEnvelopeByName( tbl.rprobj, "Tempo map" )] or tbl
+
     local gray_out = ""
     if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
         if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 2 then

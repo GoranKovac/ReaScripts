@@ -99,6 +99,10 @@ function Get_TBH_Info(tr)
     end
 end
 
+function Get_VT_TB()
+    return VT_TB
+end
+
 local function ValidateRemovedTracks()
     if next(VT_TB) == nil then return end
     for k, v in pairs(VT_TB) do
