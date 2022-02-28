@@ -54,8 +54,8 @@ function Show_menu(tbl)
     gfx.y = gfx.mouse_y
 
     local gray_out = ""
-    if reaper.ValidatePtr(mouse.otr, "MediaTrack*") then
-        if reaper.GetMediaTrackInfo_Value(mouse.otr, "I_FREEMODE") == 2 then
+    if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
+        if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 2 then
             gray_out = "#"
         end
     end
@@ -67,14 +67,14 @@ function Show_menu(tbl)
 
     menu_options[1].name = ">" .. math.floor(tbl.idx) .. " Virtual TR : " .. tbl.info[tbl.idx].name .. "|" .. table.concat(versions, "|") .."|<|"
 
-    local m_num = gfx.showmenu(ConcatMenuNames(mouse.otr))
+    local m_num = gfx.showmenu(ConcatMenuNames(tbl.rprobj))
 
     if m_num > #tbl.info then
         m_num = (m_num - #tbl.info) + 1
-        _G[menu_options[m_num].fname](mouse.otr, tbl)
+        _G[menu_options[m_num].fname](tbl.rprobj, tbl)
     else
         if m_num ~= 0 then
-            Set_Virtual_Track(mouse.otr, tbl, m_num)
+            Set_Virtual_Track(tbl.rprobj, tbl, m_num)
         end
     end
     gfx.quit()
