@@ -4,14 +4,14 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.43
+ * Version: 0.44
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.43 (2022-02-28)
-   + fix custom themes
+ * v0.44 (2022-02-28)
+   + First fix for Tempo track always visible
 --]]
 
 local reaper = reaper
@@ -86,6 +86,13 @@ local function GetTracksXYH()
             local env_t = reaper.GetEnvelopeInfo_Value(env, "I_TCPY") + tr_t
             local env_b = env_t + env_h
             local env_vis = Get_Env_Chunk(env)[1]:find("VIS 1") and true or false
+            if i == 0 then
+                if env_name == "Tempo map" then
+                    if tr_vis == false then
+                        env_vis = tr_vis
+                    end
+                end
+            end
             TBH[env] = {t = env_t, b = env_b, h = env_h, vis = env_vis, name = env_name}
         end
     end
@@ -372,7 +379,7 @@ end
 local function RunLoop()
     Create_VT_Element()
     Draw(VT_TB)
-    Debug_TBL(VT_TB)
+    Debug_TBL(TBH)
     reaper.defer(RunLoop)
 end
 
