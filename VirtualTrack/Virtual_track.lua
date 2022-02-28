@@ -4,17 +4,14 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.42
+ * Version: 0.43
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.42 (2022-02-28)
-   + Move Button to TCP
-   + Added master track versions
-   + Tempo map chunk template
-   + Added Support for default themes
+ * v0.43 (2022-02-28)
+   + fix custom themes
 --]]
 
 local reaper = reaper

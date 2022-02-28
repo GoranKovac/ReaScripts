@@ -13,7 +13,8 @@ local mouse
 local Element = {}
 
 local theme = reaper.GetLastColorThemeFile()
-local offset_x, offset_y, color = 0,0,0
+
+local offset_x, offset_y, color = 0,0,0x66008844
 if theme:find("Default_6.0.ReaperTheme") then
     offset_x, offset_y = 56, 0
     color = 0x00008844
