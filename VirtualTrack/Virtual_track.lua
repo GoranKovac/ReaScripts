@@ -4,15 +4,16 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.4
+ * Version: 0.41
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.4 (2022-02-28)
+ * v0.41 (2022-02-28)
    + Move Button to TCP
    + Added master track versions
+   + Tempo map chunk template
 --]]
 
 local reaper = reaper
