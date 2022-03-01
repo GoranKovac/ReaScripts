@@ -4,14 +4,16 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.45
+ * Version: 0.46
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.45 (2022-03-01)
-   + Revert to br_envalloc for monitoring visibility of envelopes (my bad for memory leak)
+ * v0.46 (2022-03-01)
+   + Added new and efficient way to check track visibility (reaper bug is resolved with it)
+   + Added few optimizations
+   + Added proper check if window is in front of reaper (fixes clicking thru windows)
 --]]
 
 local reaper = reaper
@@ -85,8 +87,8 @@ local function GetTracksXYH()
             local env_h = reaper.GetEnvelopeInfo_Value(env, "I_TCPH")
             local env_t = reaper.GetEnvelopeInfo_Value(env, "I_TCPY") + tr_t
             local env_b = env_t + env_h
-            local env_vis = Env_prop(env,"visible")
-            if env_name == "Tempo map" and env_h == 0 then env_vis = false end -- WORKAROUND REAPER BUG ALWAYS REPORTING TEMPO MAP AS VISIBLE UNTIL TOGGLE
+            local env_vis = reaper.GetEnvelopeInfo_Value(env, "I_TCPH_USED") ~= 0 and true or false
+            if env_name == "Tempo map" then if tr_vis == false then env_vis = false end end -- HIDE TEMPO MAP IF MASTER IS HIDDEN
             TBH[env] = {t = env_t, b = env_b, h = env_h, vis = env_vis, name = env_name}
         end
     end
@@ -155,7 +157,7 @@ function Env_prop(env,val)
         ["type"] = type_,
         ["faderScaling"] = faderScaling
     }
-    reaper.BR_EnvFree( br_env, false )
+    reaper.BR_EnvFree(br_env, false)
     return properties[val]
 end
 
@@ -234,7 +236,7 @@ end
 function CreateNew(track, tbl)
     SaveCurrentState(track, tbl)
     Clear(track)
-    tbl.info[#tbl.info+1] = {}
+    tbl.info[#tbl.info + 1] = {}
     tbl.idx = #tbl.info
     tbl.info[#tbl.info].name = "Version - " .. #tbl.info
 end
@@ -242,7 +244,7 @@ end
 function Duplicate(track, tbl)
     SaveCurrentState(track, tbl)
     local name = tbl.info[tbl.idx].name
-    tbl.info[#tbl.info+1] = GetChunkTableForObject(track)
+    tbl.info[#tbl.info + 1] = GetChunkTableForObject(track)
     tbl.idx = #tbl.info
     tbl.info[#tbl.info].name = "Duplicate - " .. name
 end
@@ -364,17 +366,16 @@ local function Create_VT_Element()
 end
 
 local function Debug_TBL(t)
-    if not t then return end
-    AAA = {}
+    AAA= {}
     for key, value in pairs(t) do
         AAA[#AAA+1] = value
-    end
+    end    
 end
 
 local function RunLoop()
     Create_VT_Element()
     Draw(VT_TB)
-    Debug_TBL(TBH)
+    --Debug_TBL(TBH)
     reaper.defer(RunLoop)
 end
 

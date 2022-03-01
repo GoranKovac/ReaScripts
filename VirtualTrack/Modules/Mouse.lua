@@ -1,7 +1,7 @@
 --[[
    * Author: SeXan
    * Licence: GPL v3
-   * Version: 0.06
+   * Version: 0.07
 	 * NoIndex: true
 --]]
 local reaper = reaper
@@ -189,7 +189,8 @@ function MouseInfo(x,y,p)
 end
 
 function Window_in_front()
-	if reaper.JS_Window_FromPoint(mouse.x, mouse.y) ~= track_window then return true end
+	local wnd_parent = reaper.JS_Window_GetParent( reaper.JS_Window_FromPoint(mouse.x, mouse.y) )
+	if wnd_parent ~= main_wnd then return true end
 end
 
 local prevTime = 0 -- or script start time
