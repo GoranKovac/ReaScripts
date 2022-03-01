@@ -1,20 +1,17 @@
---[[
- @ ReaScript Name: Virtual Tracks
- @ Author: Sexan
- @ Licence: GPL v3
- @ REAPER: 6.0
- @ Extensions: None
- @ Version: 0.47
- @ Provides: Modules/*.lua
---]]
 
---[[
- @ Changelog:
- @ v0.47 (2022-03-01)
-   + Added new and efficient way to check track visibility (reaper bug is resolved with it)
-   + Added few optimizations
-   + Added proper check if window is in front of reaper (fixes clicking thru windows)
---]]
+-- @ ReaScript Name: Virtual Tracks
+-- @ Author: Sexan
+-- @ Licence: GPL v3
+-- @ REAPER: 6.0
+-- @ Extensions: None
+-- @ Version: 0.48
+-- @ Provides: Modules/*.lua
+-- @ changelog:
+-- @ v0.48 (2022-03-01)
+--  + Added new and efficient way to check track visibility (reaper bug is resolved with it)
+--  + Added few optimizations
+--  + Added proper check if window is in front of reaper (fixes clicking thru windows)
+
 
 local reaper = reaper
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
