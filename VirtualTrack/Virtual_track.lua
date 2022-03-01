@@ -1,11 +1,10 @@
 
--- @ReaScript Name: Virtual Tracks
--- @Author: Sexan
--- @Licence: GPL v3
--- @REAPER: 6.0
--- @Extensions: None
--- @Version: 0.48
--- @Provides: Modules/*.lua
+-- @reaScript Name: Virtual Tracks
+-- @author: Sexan
+-- @licence: GPL v3
+-- @extensions: None
+-- @version: 0.48
+-- @provides: Modules/*.lua
 -- @changelog:
 --  + v0.48 (2022-03-01)
 --  + Added new and efficient way to check track visibility (reaper bug is resolved with it)
