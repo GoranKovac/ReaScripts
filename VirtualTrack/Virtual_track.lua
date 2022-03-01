@@ -4,14 +4,14 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.49
+ * Version: 0.50
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.49 (2022-03-01)
-    + fixed crash when hovering over mixer master track
+ * v0.50 (2022-03-01)
+   + fixed crash when hovering over mixer master track
 --]]
 
 local reaper = reaper
@@ -363,17 +363,9 @@ local function Create_VT_Element()
     end
 end
 
-local function Debug_TBL(t)
-    AAA= {}
-    for key, value in pairs(t) do
-        AAA[#AAA+1] = value
-    end    
-end
-
 local function RunLoop()
     Create_VT_Element()
     Draw(VT_TB)
-    --Debug_TBL(TBH)
     reaper.defer(RunLoop)
 end
 
