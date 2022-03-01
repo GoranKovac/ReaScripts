@@ -86,13 +86,7 @@ local function GetTracksXYH()
             local env_t = reaper.GetEnvelopeInfo_Value(env, "I_TCPY") + tr_t
             local env_b = env_t + env_h
             local env_vis = Env_prop(env,"visible")
-            if i == 0 then
-                if env_name == "Tempo map" then
-                    if tr_vis == false then
-                        env_vis = tr_vis
-                    end
-                end
-            end
+            if env_name == "Tempo map" and env_h == 0 then env_vis = false end -- WORKAROUND REAPER BUG ALWAYS REPORTING TEMPO MAP AS VISIBLE UNTIL TOGGLE
             TBH[env] = {t = env_t, b = env_b, h = env_h, vis = env_vis, name = env_name}
         end
     end
@@ -370,6 +364,7 @@ local function Create_VT_Element()
 end
 
 local function Debug_TBL(t)
+    if not t then return end
     AAA = {}
     for key, value in pairs(t) do
         AAA[#AAA+1] = value
