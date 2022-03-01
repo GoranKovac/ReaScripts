@@ -163,13 +163,13 @@ end
 
 function Element:track()
     if not Get_TBH_Info()[self.rprobj].vis then return end
-    if Window_in_front() then return end
     if self:mouseClick() then
         Show_menu(self)
     end
 end
 
 local function Track(tbl)
+    if Window_in_front() then return end
     for _, track in pairs(tbl) do track:track() end
 end
 
