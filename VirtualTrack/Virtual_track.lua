@@ -4,14 +4,14 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.44
+ * Version: 0.45
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.44 (2022-02-28)
-   + First fix for Tempo track always visible
+ * v0.45 (2022-03-01)
+   + Revert to br_envalloc for monitoring visibility of envelopes (my bad for memory leak)
 --]]
 
 local reaper = reaper
@@ -85,7 +85,7 @@ local function GetTracksXYH()
             local env_h = reaper.GetEnvelopeInfo_Value(env, "I_TCPH")
             local env_t = reaper.GetEnvelopeInfo_Value(env, "I_TCPY") + tr_t
             local env_b = env_t + env_h
-            local env_vis = Get_Env_Chunk(env)[1]:find("VIS 1") and true or false
+            local env_vis = Env_prop(env,"visible")
             if i == 0 then
                 if env_name == "Tempo map" then
                     if tr_vis == false then
@@ -147,7 +147,7 @@ end
 
 function Env_prop(env,val)
     local br_env = reaper.BR_EnvAlloc(env, false)
-    local active, visible, armed, inLane, laneHeight, defaultShape, minValue, maxValue, centerValue, type_, faderScaling = reaper.BR_EnvGetProperties(br_env, true, true, true, true, 0, 0, 0, 0, 0, 0, true)
+    local active, visible, armed, inLane, laneHeight, defaultShape, minValue, maxValue, centerValue, type_, faderScaling = reaper.BR_EnvGetProperties(br_env)
     local properties = {
         ["active"] = active,
         ["visible"] = visible,
@@ -161,7 +161,7 @@ function Env_prop(env,val)
         ["type"] = type_,
         ["faderScaling"] = faderScaling
     }
-    reaper.BR_EnvFree( env, true )
+    reaper.BR_EnvFree( br_env, false )
     return properties[val]
 end
 
