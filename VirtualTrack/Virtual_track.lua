@@ -4,16 +4,14 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.48
+ * Version: 0.49
  * Provides: Modules/*.lua
 --]]
 
 --[[
  * Changelog:
- * v0.48 (2022-03-01)
-   + Added new and efficient way to check track visibility (reaper bug is resolved with it)
-   + Added few optimizations
-   + Added proper check if window is in front of reaper (fixes clicking thru windows)
+ * v0.49 (2022-03-01)
+    + fixed crash when hovering over mixer master track
 --]]
 
 local reaper = reaper
