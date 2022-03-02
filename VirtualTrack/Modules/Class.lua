@@ -7,19 +7,12 @@
 local reaper = reaper
 local gfx = gfx
 local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
-local track_window = reaper.JS_Window_FindEx( main_wnd, main_wnd, "REAPERTCPDisplay", "" )
+--local track_view_wnd = reaper.JS_Window_FindEx( main_wnd, main_wnd, "REAPERTCPDisplay", "" )
+local track_view_wnd = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8)
+
 local BUTTON_UPDATE
 local mouse
 local Element = {}
-
-local theme = reaper.GetLastColorThemeFile()
-
-local offset_x, offset_y = 0,0
-if theme:find("Default_6.0.ReaperTheme") then
-    offset_x, offset_y = 56, 0
-elseif theme:find("Default_5.0.ReaperTheme") then
-    offset_x = 32
-end
 
 local menu_options = {
     [1] = { name = "",                      fname = "" },
@@ -96,8 +89,8 @@ function Show_menu(tbl)
             Set_Virtual_Track(tbl.rprobj, tbl, m_num)
         end
     end
-    gfx.quit()
 
+    gfx.quit()
     reaper.PreventUIRefresh(-1)
     if update_tempo then Update_tempo_map() end
     reaper.UpdateArrange()
@@ -107,6 +100,9 @@ function Element:new(rprobj, info)
     local elm = {}
     elm.rprobj, elm.bm = rprobj, reaper.JS_LICE_LoadPNG( image_path )
     elm.x, elm.y, elm.w, elm.h = 0, 0, reaper.JS_LICE_GetWidth(elm.bm), reaper.JS_LICE_GetHeight(elm.bm)
+    elm.font_bm =  reaper.JS_LICE_CreateBitmap(true, elm.w, elm.h)
+    elm.font = reaper.JS_LICE_CreateFont()
+    reaper.JS_LICE_SetFontColor( elm.font, 0xFFFFFFFF )
     elm.info = info
     elm.idx = 1;
     setmetatable(elm, self)
@@ -115,21 +111,21 @@ function Element:new(rprobj, info)
 end
 
 function Element:update_xywh()
-    self.y = Get_TBH_Info(self.rprobj)
-    local retval, left, top, right, bottom = reaper.JS_Window_GetClientRect( track_window )
-    self.x = (right - left) - offset_x - self.w
+    local y, h = Get_TBH_Info(self.rprobj)
+    self.y = math.floor(y + h/4)
     self:draw()
 end
 
 function Element:draw()
     if Get_TBH_Info()[self.rprobj].vis then
-        --reaper.JS_LICE_DrawText( self.bm, LICEFont, text, textLen, x1, y1, x2, y2 )
-        reaper.JS_Composite(track_window, self.x, self.y, self.w, self.h, self.bm, 0, 0, self.w, self.h, true)
+        reaper.JS_LICE_Clear(self.font_bm, 0x00000000)
+        reaper.JS_LICE_Blit(self.font_bm, 0, 0, self.bm, 0, 0, self.w, self.h, 1, "ADD") -- copy
+        reaper.JS_LICE_DrawText(self.font_bm, self.font, math.floor(self.idx), 2, self.w/4 + 2, 1, 80, 80)
+        reaper.JS_Composite(track_view_wnd, self.x, self.y, self.w, self.h, self.font_bm, 0, 0, self.w, self.h, true)
     else
-        reaper.JS_Composite_Unlink(track_window, self.bm, true)
+        reaper.JS_Composite_Unlink(track_view_wnd, self.bm, true)
     end
 end
-
 function Element:pointIN(sx, sy)
     local x, y = To_client(sx, sy)
     return x >= self.x and x <= self.x + self.w and y >= self.y and y <= self.y + self.h
@@ -182,7 +178,7 @@ local function Arrange_view_info()
     if not TBH then return end
     local last_pr_tr = reaper.GetTrack(0, reaper.CountTracks(0) - 1)
     local proj_state = reaper.GetProjectStateChangeCount(0) -- PROJECT STATE
-    local _, scroll, _, _, scroll_b = reaper.JS_Window_GetScrollInfo(track_window, "SB_VERT") -- GET VERTICAL SCROLL
+    local _, scroll, _, _, scroll_b = reaper.JS_Window_GetScrollInfo(track_view_wnd, "SB_VERT") -- GET VERTICAL SCROLL
     local _, Arr_end_time = reaper.GetSet_ArrangeView2(0, false, 0, 0) -- GET ARRANGE VIEW
     if prev_Arr_end_time ~= Arr_end_time then -- THIS ONE ALWAYS CHANGES WHEN ZOOMING IN OUT
         prev_Arr_end_time = Arr_end_time

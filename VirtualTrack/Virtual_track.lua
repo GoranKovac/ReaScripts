@@ -1,17 +1,20 @@
 -- @description Name Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 0.57
--- @changelog
---   + fixed crash on custom themes
 -- @provides
 --   {Images,Modules}/*
+-- @version 0.58
+-- @changelog
+--   + Added new icon
+--   + Show active version in icon
+--   + Thank you sockmonkey
+
 
 local reaper = reaper
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 
 local script_folder = debug.getinfo(1).source:match("@?(.*[\\|/])")
-image_path = script_folder .. "Images\\VT_ICON.png"
+image_path = script_folder .. "Images\\VT_icon_empty.png"
 
 if not reaper.APIExists("JS_ReaScriptAPI_Version") then
   reaper.MB( "JS_ReaScriptAPI is required for this script", "Please download it from ReaPack", 0 )
@@ -210,7 +213,7 @@ local function SaveCurrentState(track, tbl)
     local chunk_tbl = GetChunkTableForObject(track)
     tbl.info[tbl.idx] = chunk_tbl
     tbl.info[tbl.idx].name = name
-    return chunk_tbl
+    Store_To_PEXT(tbl)
 end
 
 function Set_Virtual_Track(track, tbl, idx)
@@ -219,6 +222,8 @@ function Set_Virtual_Track(track, tbl, idx)
 end
 
 function SwapVirtualTrack(track, tbl, idx)
+   -- local undo_name = Create_undo_name("SwapVirtualTrack", track, idx)
+   -- reaper.Undo_BeginBlock()
     Clear(track)
     if reaper.ValidatePtr(track, "MediaTrack*") then
         Create_item(track, tbl.info[idx])
@@ -226,6 +231,7 @@ function SwapVirtualTrack(track, tbl, idx)
         Set_Env_Chunk(track, tbl.info[idx])
     end
     tbl.idx = idx;
+  --  reaper.Undo_EndBlock(undo_name, -1)
 end
 
 function CreateNew(track, tbl)
@@ -291,6 +297,7 @@ local function StoreLaneData(track, tbl)
         tbl.info[j] = lane_chunk
         tbl.info[j].name = name
     end
+    Store_To_PEXT(tbl)
 end
 
 function ShowAll(track, tbl)
@@ -317,7 +324,7 @@ function ShowAll(track, tbl)
     reaper.UpdateTimeline()
 end
 
-local function Store_To_PEXT(el)
+function Store_To_PEXT(el)
     local storedTable = {}
     storedTable.info = el.info;
     storedTable.idx = math.floor(el.idx)
@@ -329,7 +336,7 @@ local function Store_To_PEXT(el)
     end
 end
 
-local function Restore_From_PEXT(el)
+function Restore_From_PEXT(el)
     local rv, stored
     if reaper.ValidatePtr(el.rprobj, "MediaTrack*") then
         rv, stored = reaper.GetSetMediaTrackInfo_String(el.rprobj, "P_EXT:VirtualTrack", "", false)
@@ -345,7 +352,36 @@ local function Restore_From_PEXT(el)
     end
 end
 
+local function Update_VT_P_EXT(track_str)
+    for track in pairs(VT_TB) do
+        if tostring(track) == track_str then
+            Restore_From_PEXT(VT_TB[track])
+        end
+    end
+end
+
+function Create_undo_name(func, track, idx)
+    local undo_name = "VT:" .. math.floor(idx) .. "|".. "TRACK:" .. tostring(track) .. "|" .. "ACTION:" .. func
+    return undo_name
+end
+
+local last_proj_change_count = reaper.GetProjectStateChangeCount(0)
+local function CheckUndo()
+    local proj_change_count = reaper.GetProjectStateChangeCount(0)
+    if proj_change_count > last_proj_change_count then
+        local last_action = reaper.Undo_CanRedo2(0)
+        if not last_action then return end
+        if not last_action:find("VT:") then return end
+
+        local idx, track_str, action = last_action:match("VT:(.+)|TRACK:(.+)|ACTION:(.+)")
+
+        Update_VT_P_EXT(track_str)
+        last_proj_change_count = proj_change_count
+    end
+end
+
 local function Create_VT_Element()
+    --CheckUndo()
     GetTracksXYH()
     ValidateRemovedTracks()
     if reaper.CountTracks(0) == 0 then return end
@@ -374,6 +410,7 @@ function Exit()
     for k, v in pairs(VT_TB) do
         Store_To_PEXT(VT_TB[k])
         reaper.JS_LICE_DestroyBitmap(v.bm)
+        reaper.JS_LICE_DestroyBitmap(v.font_bm)
     end
 end
 reaper.atexit(Exit)
