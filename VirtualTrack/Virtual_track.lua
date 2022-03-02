@@ -1,9 +1,9 @@
--- @description Name Virtual Tracks
+-- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
 -- @provides
 --   {Images,Modules}/*
--- @version 0.58
+-- @version 0.59
 -- @changelog
 --   + Added new icon
 --   + Show active version in icon
