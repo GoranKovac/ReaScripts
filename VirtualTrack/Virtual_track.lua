@@ -4,10 +4,9 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.52
- * Changelog:
-   + fixed crash when hovering over mixer master track
-   + Added button icon instead of rendering color rectangle
+ * Version: 0.53
+ * Changelog: + fixed crash when hovering over mixer master track
+              + Added button icon instead of rendering color rectangle
  * Provides: Modules/*.lua
 --]]
 
