@@ -123,6 +123,7 @@ end
 
 function Element:draw()
     if Get_TBH_Info()[self.rprobj].vis then
+        --reaper.JS_LICE_DrawText( self.bm, LICEFont, text, textLen, x1, y1, x2, y2 )
         reaper.JS_Composite(track_window, self.x, self.y, self.w, self.h, self.bm, 0, 0, self.w, self.h, true)
     else
         reaper.JS_Composite_Unlink(track_window, self.bm, true)
