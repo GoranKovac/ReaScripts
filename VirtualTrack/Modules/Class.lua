@@ -14,7 +14,7 @@ local Element = {}
 
 local theme = reaper.GetLastColorThemeFile()
 
-local offset_x, offset_y
+local offset_x, offset_y = 0,0
 if theme:find("Default_6.0.ReaperTheme") then
     offset_x, offset_y = 56, 0
 elseif theme:find("Default_5.0.ReaperTheme") then

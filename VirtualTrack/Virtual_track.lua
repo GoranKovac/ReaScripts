@@ -1,10 +1,9 @@
 -- @description Name Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 0.55
+-- @version 0.57
 -- @changelog
---   + fixed crash when hovering over mixer master track
---   + Added button icon instead of rendering color rectangle
+--   + fixed crash on custom themes
 -- @provides
 --   {Images,Modules}/*
 
