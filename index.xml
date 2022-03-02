@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="585b4ebfd50901efd56a63df22abdd23cc64155e" name="Sexan_Scripts">
+<index version="1" commit="b3636dab4a029e291fb6fb489b823f0b37113416" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -737,7 +737,7 @@
     </reapack>
   </category>
   <category name="VirtualTrack">
-    <reapack name="Virtual_track.lua" type="script" desc="Virtual Tracks">
+    <reapack name="Virtual_track.lua" type="script" desc="Name Virtual Tracks">
       <version name="0.1" author="Sexan" time="2022-02-24T09:02:10Z">
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/d599f9a837323bb277f4dff4ca8c2405326d89c6/VirtualTrack/Virtual_track.lua</source>
         <source file="Modules/Class.lua">https://github.com/GoranKovac/ReaScripts/raw/d599f9a837323bb277f4dff4ca8c2405326d89c6/VirtualTrack/Modules/Class.lua</source>
@@ -864,6 +864,15 @@
         <source file="Modules/Class.lua">https://github.com/GoranKovac/ReaScripts/raw/585b4ebfd50901efd56a63df22abdd23cc64155e/VirtualTrack/Modules/Class.lua</source>
         <source file="Modules/Mouse.lua">https://github.com/GoranKovac/ReaScripts/raw/585b4ebfd50901efd56a63df22abdd23cc64155e/VirtualTrack/Modules/Mouse.lua</source>
         <source file="Modules/Utils.lua">https://github.com/GoranKovac/ReaScripts/raw/585b4ebfd50901efd56a63df22abdd23cc64155e/VirtualTrack/Modules/Utils.lua</source>
+      </version>
+      <version name="0.55" author="Sexan" time="2022-03-02T08:03:34Z">
+        <changelog><![CDATA[+ fixed crash when hovering over mixer master track
++ Added button icon instead of rendering color rectangle]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/b3636dab4a029e291fb6fb489b823f0b37113416/VirtualTrack/Virtual_track.lua</source>
+        <source file="Images/VT_ICON.png">https://github.com/GoranKovac/ReaScripts/raw/b3636dab4a029e291fb6fb489b823f0b37113416/VirtualTrack/Images/VT_ICON.png</source>
+        <source file="Modules/Class.lua">https://github.com/GoranKovac/ReaScripts/raw/b3636dab4a029e291fb6fb489b823f0b37113416/VirtualTrack/Modules/Class.lua</source>
+        <source file="Modules/Mouse.lua">https://github.com/GoranKovac/ReaScripts/raw/b3636dab4a029e291fb6fb489b823f0b37113416/VirtualTrack/Modules/Mouse.lua</source>
+        <source file="Modules/Utils.lua">https://github.com/GoranKovac/ReaScripts/raw/b3636dab4a029e291fb6fb489b823f0b37113416/VirtualTrack/Modules/Utils.lua</source>
       </version>
     </reapack>
   </category>
