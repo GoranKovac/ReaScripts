@@ -14,13 +14,11 @@ local Element = {}
 
 local theme = reaper.GetLastColorThemeFile()
 
-local offset_x, offset_y, color = 0,0,0x66008844
+local offset_x, offset_y
 if theme:find("Default_6.0.ReaperTheme") then
     offset_x, offset_y = 56, 0
-    color = 0x00008844
 elseif theme:find("Default_5.0.ReaperTheme") then
     offset_x = 32
-    color = 0x66008844
 end
 
 local menu_options = {
@@ -105,11 +103,10 @@ function Show_menu(tbl)
     reaper.UpdateArrange()
 end
 
-function Element:new(x, y, w, h, rprobj, info)
+function Element:new(rprobj, info)
     local elm = {}
-    elm.x, elm.y, elm.w, elm.h = x, y, w, h
-    elm.rprobj, elm.bm = rprobj, reaper.JS_LICE_CreateBitmap(true, elm.w, elm.h)
-    reaper.JS_LICE_Clear(elm.bm, color)
+    elm.rprobj, elm.bm = rprobj, reaper.JS_LICE_LoadPNG( image_path )
+    elm.x, elm.y, elm.w, elm.h = 0, 0, reaper.JS_LICE_GetWidth(elm.bm), reaper.JS_LICE_GetHeight(elm.bm)
     elm.info = info
     elm.idx = 1;
     setmetatable(elm, self)
@@ -121,12 +118,12 @@ function Element:update_xywh()
     self.y = Get_TBH_Info(self.rprobj)
     local retval, left, top, right, bottom = reaper.JS_Window_GetClientRect( track_window )
     self.x = (right - left) - offset_x - self.w
-    self:draw(1,1)
+    self:draw()
 end
 
-function Element:draw(w,h)
+function Element:draw()
     if Get_TBH_Info()[self.rprobj].vis then
-        reaper.JS_Composite(track_window, self.x, self.y, self.w, self.h, self.bm, 0, 0, w, h, true)
+        reaper.JS_Composite(track_window, self.x, self.y, self.w, self.h, self.bm, 0, 0, self.w, self.h, true)
     else
         reaper.JS_Composite_Unlink(track_window, self.bm, true)
     end

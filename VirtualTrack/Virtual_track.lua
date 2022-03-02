@@ -4,18 +4,17 @@
  * Licence: GPL v3
  * REAPER: 6.0
  * Extensions: None
- * Version: 0.50
+ * Version: 0.51
+ * Changelog: + fixed crash when hovering over mixer master track
+   + Added button icon instead of rendering color rectangle
  * Provides: Modules/*.lua
---]]
-
---[[
- * Changelog:
- * v0.50 (2022-03-01)
-   + fixed crash when hovering over mixer master track
 --]]
 
 local reaper = reaper
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
+
+local script_folder = debug.getinfo(1).source:match("@?(.*[\\|/])")
+image_path = script_folder .. "Modules\\VT_ICON.png"
 
 if not reaper.APIExists("JS_ReaScriptAPI_Version") then
   reaper.MB( "JS_ReaScriptAPI is required for this script", "Please download it from ReaPack", 0 )
@@ -206,6 +205,7 @@ local function GetChunkTableForObject(track)
     elseif reaper.ValidatePtr(track, "TrackEnvelope*") then
         return Get_Env_Chunk(track)
     end
+    return nil
 end
 
 local function SaveCurrentState(track, tbl)
@@ -357,7 +357,7 @@ local function Create_VT_Element()
             local Element = Get_class_tbl()
             local tr_data = GetChunkTableForObject(track)
             tr_data.name = "MAIN"
-            VT_TB[track] = Element:new(0, 0, 17, 16, track, {tr_data})
+            VT_TB[track] = Element:new(track, {tr_data})
             Restore_From_PEXT(VT_TB[track])
         end
     end
