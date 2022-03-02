@@ -1,21 +1,18 @@
---[[
- * ReaScript Name: Virtual Tracks
- * Author: Sexan
- * Licence: GPL v3
- * REAPER: 6.0
- * Extensions: None
- * Version: 0.54
- * Changelog:
-      + fixed crash when hovering over mixer master track
-      + Added button icon instead of rendering color rectangle
- * Provides: Modules/*.lua
---]]
+-- @description Name Virtual Tracks
+-- @author Sexan
+-- @license GPL v3
+-- @version 0.55
+-- @changelog
+--   + fixed crash when hovering over mixer master track
+--   + Added button icon instead of rendering color rectangle
+-- @provides
+--   {Images,Modules}/*
 
 local reaper = reaper
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 
 local script_folder = debug.getinfo(1).source:match("@?(.*[\\|/])")
-image_path = script_folder .. "Modules\\VT_ICON.png"
+image_path = script_folder .. "Images\\VT_ICON.png"
 
 if not reaper.APIExists("JS_ReaScriptAPI_Version") then
   reaper.MB( "JS_ReaScriptAPI is required for this script", "Please download it from ReaPack", 0 )
