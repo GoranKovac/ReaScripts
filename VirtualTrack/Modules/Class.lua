@@ -218,6 +218,5 @@ function Draw(tbl)
     local is_view_changed = Arrange_view_info()
     BUTTON_UPDATE = is_view_changed and true
     Update_BTNS(tbl, BUTTON_UPDATE)
-    --MSG(tostring(BUTTON_UPDATE))
     BUTTON_UPDATE = false
 end

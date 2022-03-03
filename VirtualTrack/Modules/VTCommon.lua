@@ -17,23 +17,23 @@ local crash = function(errObject)
     local trace = debug.traceback()
     local stack = {}
     for line in string.gmatch(trace, byLine) do
-       local str = string.match(line, trimPath) or line
-       stack[#stack + 1] = str
+        local str = string.match(line, trimPath) or line
+        stack[#stack + 1] = str
     end
     local name = ({reaper.get_action_context()})[2]:match("([^/\\_]+)$")
     local ret =
-       reaper.ShowMessageBox(
-       name .. " has crashed!\n\n" .. "Would you like to have a crash report printed " .. "to the Reaper console?",
-       "Oops",
-       4
+        reaper.ShowMessageBox(
+        name .. " has crashed!\n\n" .. "Would you like to have a crash report printed " .. "to the Reaper console?",
+        "Oops",
+        4
     )
     if ret == 6 then
-       reaper.ShowConsoleMsg(
-          "Error: " .. err .. "\n\n" ..
-          "Stack traceback:\n\t" .. table.concat(stack, "\n\t", 2) .. "\n\n" ..
-          "Reaper:       \t" .. reaper.GetAppVersion() .. "\n" ..
-          "Platform:     \t" .. reaper.GetOS()
-       )
+        reaper.ShowConsoleMsg(
+            "Error: " .. err .. "\n\n" ..
+            "Stack traceback:\n\t" .. table.concat(stack, "\n\t", 2) .. "\n\n" ..
+            "Reaper:       \t" .. reaper.GetAppVersion() .. "\n" ..
+            "Platform:     \t" .. reaper.GetOS()
+        )
     end
 end
 
@@ -110,14 +110,6 @@ local function Restore_From_PEXT(el)
     end
 end
 
-local function Update_VT_FROM_P_EXT(guid)
-    for track in pairs(VT_TB) do
-        if tostring(track) == track_str then
-            Restore_From_PEXT(VT_TB[track])
-        end
-    end
-end
-
 function Create_undo_name(func, track, idx)
     return "VT:" .. math.floor(idx) .. "|".. "TRACK:" .. tostring(track) .. "|" .. "ACTION:" .. func
 end
@@ -132,7 +124,7 @@ local function CheckUndo_Defered()
 
         local idx, track_str, action = last_action:match("VT:(.+)|TRACK:(.+)|ACTION:(.+)")
 
-        Update_VT_FROM_P_EXT(track_str)
+        -- Update_VT_FROM_P_EXT(track_str)
         last_proj_change_count = proj_change_count
     end
 end

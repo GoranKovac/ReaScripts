@@ -16,14 +16,14 @@ local script_folder = debug.getinfo(1).source:match("@?(.*[\\|/])")
 image_path = script_folder .. "Images/VT_icon_empty.png"
 
 if not reaper.APIExists("JS_ReaScriptAPI_Version") then
-  reaper.MB( "JS_ReaScriptAPI is required for this script", "Please download it from ReaPack", 0 )
-  return reaper.defer(function() end)
- else
-   local version = reaper.JS_ReaScriptAPI_Version()
-   if version < 1.002 then
-     reaper.MB( "Your JS_ReaScriptAPI version is " .. version .. "\nPlease update to latest version.", "Older version is installed", 0 )
-     return reaper.defer(function() end)
-   end
+    reaper.MB( "JS_ReaScriptAPI is required for this script", "Please download it from ReaPack", 0 )
+    return reaper.defer(function() end)
+else
+    local version = reaper.JS_ReaScriptAPI_Version()
+    if version < 1.002 then
+        reaper.MB( "Your JS_ReaScriptAPI version is " .. version .. "\nPlease update to latest version.", "Older version is installed", 0 )
+        return reaper.defer(function() end)
+    end
 end
 
 local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
@@ -47,9 +47,9 @@ end
 function Exit()
     StoreInProject()
     for _, v in pairs(Get_VT_TB()) do
-      reaper.JS_LICE_DestroyBitmap(v.bm)
-      reaper.JS_LICE_DestroyBitmap(v.font_bm)
-      reaper.JS_LICE_DestroyFont(v.font)
+        reaper.JS_LICE_DestroyBitmap(v.bm)
+        reaper.JS_LICE_DestroyBitmap(v.font_bm)
+        reaper.JS_LICE_DestroyFont(v.font)
   end
 end
 
