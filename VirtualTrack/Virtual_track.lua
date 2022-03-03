@@ -45,7 +45,7 @@ function Exit()
     StoreInProject()
     for _, v in pairs(Get_VT_TB()) do
         v:cleanup()
-  end
+    end
 end
 
 reaper.atexit(Exit)

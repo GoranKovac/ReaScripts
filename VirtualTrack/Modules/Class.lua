@@ -105,12 +105,12 @@ function Element:new(rprobj, info, direct)
     reaper.JS_LICE_SetFontColor(elm.font, 0xFFFFFFFF)
     reaper.JS_LICE_Clear(self.font_bm, 0x00000000)
     elm.info = info
-    elm.idx = 1;
+    elm.idx = 1
+    setmetatable(elm, self)
+    self.__index = self
     if direct == 1 then -- unused
         self:cleanup()
     end
-    setmetatable(elm, self)
-    self.__index = self
     return elm
 end
 
