@@ -86,8 +86,8 @@ function Show_menu(tbl)
             Set_Virtual_Track(tbl.rprobj, tbl, m_num)
         end
     end
-    UPDATE_TEXT = true
-    reaper.JS_LICE_Clear(tbl.font_bm, 0x00000000)
+    UPDATE_DRAW = true
+    tbl:draw_text()
     gfx.quit()
 
     reaper.PreventUIRefresh(-1)
@@ -129,11 +129,14 @@ function Element:update_xywh()
     self:draw()
 end
 
+function Element:draw_text()
+    reaper.JS_LICE_Clear(self.font_bm, 0x00000000)
+    reaper.JS_LICE_Blit(self.font_bm, 0, 0, self.bm, 0, 0, self.w, self.h, 1, "ADD")
+    reaper.JS_LICE_DrawText(self.font_bm, self.font, math.floor(self.idx), 2, self.w/4 + 2, 1, 80, 80)
+end
+
 function Element:draw()
     if Get_TBH_Info()[self.rprobj].vis then
-        reaper.JS_LICE_Clear(self.font_bm, 0x00000000)
-        reaper.JS_LICE_Blit(self.font_bm, 0, 0, self.bm, 0, 0, self.w, self.h, 1, "ADD")
-        reaper.JS_LICE_DrawText(self.font_bm, self.font, math.floor(self.idx), 2, self.w/4 + 2, 1, 80, 80)
         reaper.JS_Composite(track_window, self.x, self.y, self.w, self.h, self.font_bm, 0, 0, self.w, self.h, true)
     else
         reaper.JS_Composite_Unlink(track_window, self.font_bm, true)
@@ -183,7 +186,10 @@ end
 
 local function Update_BTNS(tbl, update)
     if not update then return end
-    for _, track in pairs(tbl) do track:update_xywh() end
+    for _, track in pairs(tbl) do
+        if FIRST_START then track:draw_text() end
+        track:update_xywh()
+    end
 end
 
 local prev_Arr_end_time, prev_proj_state, last_scroll, last_scroll_b, last_pr_t, last_pr_h
@@ -215,13 +221,15 @@ local function Arrange_view_info()
     end
 end
 
+FIRST_START = true
 function Draw(tbl)
     mouse = MouseInfo()
     mouse.tr, mouse.r_t, mouse.r_b = Get_track_under_mouse(mouse.x, mouse.y)
     Track(tbl)
-    local reaper_arrange_updated = Arrange_view_info() or UPDATE_TEXT
+    local reaper_arrange_updated = Arrange_view_info() or UPDATE_DRAW
     BUTTON_UPDATE = reaper_arrange_updated and true
     Update_BTNS(tbl, BUTTON_UPDATE)
     BUTTON_UPDATE = false
-    UPDATE_TEXT = false
+    UPDATE_DRAW = false
+    FIRST_START = nil
 end
