@@ -26,9 +26,6 @@ else
     end
 end
 
-local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
-local track_window = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8)
-
 require("Modules/VTCommon")
 require("Modules/Class")
 require("Modules/Mouse")
