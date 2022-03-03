@@ -299,7 +299,7 @@ function Rename(track, tbl)
     tbl.info[tbl.idx].name = name
 end
 
-function mute_view_test(track)
+function Mute_view_test(track)
     reaper.PreventUIRefresh(1)
     for i = 1, reaper.CountTrackMediaItems(track) do
         local item = reaper.GetTrackMediaItem(track, i - 1)

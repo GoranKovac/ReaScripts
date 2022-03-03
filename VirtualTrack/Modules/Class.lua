@@ -191,7 +191,7 @@ end
 
 function Element:track()
     if not Get_TBH_Info()[self.rprobj].vis then return end
-    --if self:LanemouseClick() then mute_view_test(self.rprobj)end
+    --if self:LanemouseClick() then Mute_view_test(self.rprobj)end
     if self:mouseClick() then
         Show_menu(self)
     end
