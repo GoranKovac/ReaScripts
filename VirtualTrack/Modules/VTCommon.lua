@@ -159,6 +159,7 @@ local function ValidateRemovedTracks()
     for k, v in pairs(VT_TB) do
         if not TBH[k] then
             reaper.JS_LICE_DestroyBitmap(v.bm)
+            reaper.JS_LICE_DestroyBitmap(v.font_bm)
             VT_TB[k] = nil
         end
     end
