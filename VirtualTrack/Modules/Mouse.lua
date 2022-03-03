@@ -36,7 +36,6 @@ local mouse = {
 	last_tr = nil,
 	last_r_t = nil,
 	last_r_b = nil,
-	last_lane = nil,
 
 	dx = 0,
 	dy = 0,
@@ -48,6 +47,7 @@ local mouse = {
 	otr = nil,
 	ort = 0,
 	orb = 0,
+	olane = nil,
 
 	tr = nil,
 	x = 0,
@@ -83,6 +83,7 @@ function OnMouseDown(lmb_down, rmb_down)
 
 	mouse.ox, mouse.oy = mouse.x, mouse.y -- mouse click coordinates
 	mouse.ort, mouse.orb, mouse.otr = mouse.r_t, mouse.r_b, mouse.tr
+	mouse.olane = mouse.lane
 	mouse.op = mouse.p
 	mouse.cap_count = 0       -- reset mouse capture count
 end
@@ -155,13 +156,16 @@ function Get_track_under_mouse(x, y)
     end
 end
 
+local lane_offset = 14 -- schwa decided this number by carefully inspecting pixels in paint.net
 function Get_lane_from_mouse_coordinates()
 	if mouse.tr == nil then return end
 	local _, cy = To_client(0, mouse.y)
 	local t, h, b = Get_TBH_Info(mouse.tr)
+	local VT_TB = Get_VT_TB()
 	if cy > t and cy < b then
-		local VT_TB = Get_VT_TB()
-		local lane = math.floor(((cy - t) / h) * #VT_TB[mouse.tr].info) + 1
+		local lane = math.floor(((cy - t) / (h - lane_offset)) * #VT_TB[mouse.tr].info) + 1
+		lane = lane <= #VT_TB[mouse.tr].info and lane or #VT_TB[mouse.tr].info
+		-- disable when track_h is less than 90px
 		return lane
 	end
 end

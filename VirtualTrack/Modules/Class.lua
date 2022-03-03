@@ -144,37 +144,54 @@ function Element:draw()
     end
 end
 
-function Element:pointIN(sx, sy)
+function Element:ButtonIn(sx, sy)
     local x, y = To_client(sx, sy)
     return x >= self.x and x <= self.x + self.w and y >= self.y and y <= self.y + self.h
 end
 
+function Element:LaneButtonIn(sx, sy)
+    if not mouse.lane then return end
+    local x, y = To_client(sx, sy)
+    local t, h = Get_TBH_Info(self.rprobj)
+    local lane_button_w, lane_button_h = 28, 13
+    local lane_button_t = (h - 14) / #self.info
+    local lane_box_h = lane_button_t * (mouse.lane-1)
+    if x > 0 and x <= lane_button_w and y >= t + lane_box_h and y <= t + lane_box_h + lane_button_h then
+        return mouse.olane
+    end
+end
+
 function Element:mouseIN()
-    return mouse.l_down == false and self:pointIN(mouse.x, mouse.y)
+    return mouse.l_down == false and self:ButtonIn(mouse.x, mouse.y)
 end
 
 function Element:mouseDown()
-    return mouse.l_down and self:pointIN(mouse.ox, mouse.oy)
+    return mouse.l_down and self:ButtonIn(mouse.ox, mouse.oy)
 end
 
 function Element:mouseUp()
-    return mouse.l_up --and self:pointIN(mouse.ox, mouse.oy)
+    return mouse.l_up --and self:ButtonIn(mouse.ox, mouse.oy)
 end
 
 function Element:mouseClick()
-    return mouse.l_click and self:pointIN(mouse.ox, mouse.oy)
+    return mouse.l_click and self:ButtonIn(mouse.ox, mouse.oy)
+end
+
+function Element:LanemouseClick()
+    return mouse.l_click and self:LaneButtonIn(mouse.ox, mouse.oy)
 end
 
 function Element:mouseR_Down()
-    return mouse.r_down and self:pointIN(mouse.ox, mouse.oy)
+    return mouse.r_down and self:ButtonIn(mouse.ox, mouse.oy)
 end
 
 function Element:mouseM_Down()
-  --return m_state&64==64 and self:pointIN(mouse_ox, mouse_oy)
+  --return m_state&64==64 and self:ButtonIn(mouse_ox, mouse_oy)
 end
 
 function Element:track()
     if not Get_TBH_Info()[self.rprobj].vis then return end
+    --if self:LanemouseClick() then MSG("LANE BUTTON " .. self:LanemouseClick() .. " CLICKED")end
     if self:mouseClick() then
         Show_menu(self)
     end
