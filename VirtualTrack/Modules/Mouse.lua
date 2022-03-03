@@ -20,7 +20,7 @@ local mouse = {
 	Ctrl_Alt = function() return reaper.JS_Mouse_GetState(95) &20 == 20 end,
 	Ctrl_Shift_Alt = function() return reaper.JS_Mouse_GetState(95) &28 == 28 end,
 	cap = function (mask)
-			if mask == nil then 
+			if mask == nil then
 				return reaper.JS_Mouse_GetState(95) end
 			return reaper.JS_Mouse_GetState(95)&mask == mask
 			end,

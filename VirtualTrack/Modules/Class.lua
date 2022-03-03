@@ -7,9 +7,7 @@
 local reaper = reaper
 local gfx = gfx
 local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
---local track_view_wnd = reaper.JS_Window_FindEx( main_wnd, main_wnd, "REAPERTCPDisplay", "" )
-local track_view_wnd = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8)
-
+local track_window = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8)
 local BUTTON_UPDATE
 local mouse
 local Element = {}
@@ -32,8 +30,8 @@ local function ConcatMenuNames(track)
     local concat = ""
     local options = reaper.ValidatePtr(track, "MediaTrack*") and #menu_options or #menu_options-1
     local fimp = ""
-    if reaper.ValidatePtr(mouse.otr, "MediaTrack*") then
-        if reaper.GetMediaTrackInfo_Value(mouse.otr, "I_FREEMODE") == 2 then
+    if reaper.ValidatePtr(track, "MediaTrack*") then
+        if reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") == 2 then
             fimp = "!"
         end
     end
@@ -81,19 +79,25 @@ function Show_menu(tbl)
 
     local m_num = gfx.showmenu(ConcatMenuNames(tbl.rprobj))
 
+    local undo_name
+    if m_num ~= 0 then reaper.Undo_BeginBlock() end
+
     if m_num > #tbl.info then
         m_num = (m_num - #tbl.info) + 1
-        _G[menu_options[m_num].fname](tbl.rprobj, tbl)
+        _G[menu_options[m_num].fname](tbl.rprobj, tbl, tbl.idx)
+        undo_name = Create_undo_name(menu_options[m_num].fname, tbl.rprobj, m_num)
     else
         if m_num ~= 0 then
             Set_Virtual_Track(tbl.rprobj, tbl, m_num)
+            undo_name = Create_undo_name("Set_Virtual_Track", tbl.rprobj, m_num)
         end
     end
-
     gfx.quit()
+
     reaper.PreventUIRefresh(-1)
     if update_tempo then Update_tempo_map() end
     reaper.UpdateArrange()
+    if m_num ~= 0 then reaper.Undo_EndBlock(undo_name, 4) end
 end
 
 function Element:new(rprobj, info)
@@ -121,11 +125,12 @@ function Element:draw()
         reaper.JS_LICE_Clear(self.font_bm, 0x00000000)
         reaper.JS_LICE_Blit(self.font_bm, 0, 0, self.bm, 0, 0, self.w, self.h, 1, "ADD") -- copy
         reaper.JS_LICE_DrawText(self.font_bm, self.font, math.floor(self.idx), 2, self.w/4 + 2, 1, 80, 80)
-        reaper.JS_Composite(track_view_wnd, self.x, self.y, self.w, self.h, self.font_bm, 0, 0, self.w, self.h, true)
+        reaper.JS_Composite(track_window, self.x, self.y, self.w, self.h, self.font_bm, 0, 0, self.w, self.h, true)
     else
-        reaper.JS_Composite_Unlink(track_view_wnd, self.bm, true)
+        reaper.JS_Composite_Unlink(track_window, self.bm, true)
     end
 end
+
 function Element:pointIN(sx, sy)
     local x, y = To_client(sx, sy)
     return x >= self.x and x <= self.x + self.w and y >= self.y and y <= self.y + self.h
@@ -178,7 +183,7 @@ local function Arrange_view_info()
     if not TBH then return end
     local last_pr_tr = reaper.GetTrack(0, reaper.CountTracks(0) - 1)
     local proj_state = reaper.GetProjectStateChangeCount(0) -- PROJECT STATE
-    local _, scroll, _, _, scroll_b = reaper.JS_Window_GetScrollInfo(track_view_wnd, "SB_VERT") -- GET VERTICAL SCROLL
+    local _, scroll, _, _, scroll_b = reaper.JS_Window_GetScrollInfo(track_window, "SB_VERT") -- GET VERTICAL SCROLL
     local _, Arr_end_time = reaper.GetSet_ArrangeView2(0, false, 0, 0) -- GET ARRANGE VIEW
     if prev_Arr_end_time ~= Arr_end_time then -- THIS ONE ALWAYS CHANGES WHEN ZOOMING IN OUT
         prev_Arr_end_time = Arr_end_time
