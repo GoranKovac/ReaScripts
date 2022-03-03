@@ -178,7 +178,7 @@ function Element:mouseClick()
 end
 
 function Element:LanemouseClick()
-    return mouse.l_click and self:LaneButtonIn(mouse.ox, mouse.oy)
+    return mouse.l_dclick and self:LaneButtonIn(mouse.ox, mouse.oy)
 end
 
 function Element:mouseR_Down()
@@ -191,7 +191,7 @@ end
 
 function Element:track()
     if not Get_TBH_Info()[self.rprobj].vis then return end
-    --if self:LanemouseClick() then MSG("LANE BUTTON " .. self:LanemouseClick() .. " CLICKED")end
+    --if self:LanemouseClick() then mute_view_test(self.rprobj)end
     if self:mouseClick() then
         Show_menu(self)
     end

@@ -114,21 +114,6 @@ function Create_undo_name(func, track, idx)
     return "VT:" .. math.floor(idx) .. "|".. "TRACK:" .. tostring(track) .. "|" .. "ACTION:" .. func
 end
 
-local last_proj_change_count = reaper.GetProjectStateChangeCount(0)
-local function CheckUndo_Defered()
-    local proj_change_count = reaper.GetProjectStateChangeCount(0)
-    if proj_change_count > last_proj_change_count then
-        local last_action = reaper.Undo_CanRedo2(0)
-        if not last_action then return end
-        if not last_action:find("VT:") then return end
-
-        local idx, track_str, action = last_action:match("VT:(.+)|TRACK:(.+)|ACTION:(.+)")
-
-        -- Update_VT_FROM_P_EXT(track_str)
-        last_proj_change_count = proj_change_count
-    end
-end
-
 function Get_TBH_Info(tr)
     if not tr then return TBH end
     if TBH[tr] then
@@ -314,6 +299,19 @@ function Rename(track, tbl)
     tbl.info[tbl.idx].name = name
 end
 
+function mute_view_test(track)
+    reaper.PreventUIRefresh(1)
+    for i = 1, reaper.CountTrackMediaItems(track) do
+        local item = reaper.GetTrackMediaItem(track, i - 1)
+        if reaper.IsMediaItemSelected( item ) then
+            reaper.SetMediaItemInfo_Value(item, "B_MUTE", 0)
+        else
+            reaper.SetMediaItemInfo_Value(item, "B_MUTE", 1)
+        end
+    end
+    reaper.PreventUIRefresh(-1)
+end
+
 local function GetItemLane(item, lanes)
     local y = reaper.GetMediaItemInfo_Value(item, 'F_FREEMODE_Y')
     local idx = math.floor(y * lanes) + 1
@@ -380,7 +378,6 @@ function Create_VT_Element()
     ValidateRemovedTracks()
     if reaper.CountTracks(0) == 0 then return end
     CreateVTElements(0)
-    --CheckUndo_Defered()
 end
 
 function SetupSingleElement(rprobj)
@@ -398,7 +395,6 @@ function SetupSingleElement(rprobj)
     end
     if #TBH then
         CreateVTElements(1)
-        --Make_Internal_Undo()
         return 1
     end
     return 0
