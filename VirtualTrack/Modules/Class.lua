@@ -1,7 +1,7 @@
 --[[
    * Author: SeXan
    * Licence: GPL v3
-   * Version: 0.06
+   * Version: 0.07
 	 * NoIndex: true
 --]]
 local reaper = reaper
