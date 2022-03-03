@@ -79,8 +79,6 @@ function Show_menu(tbl)
 
     local m_num = gfx.showmenu(ConcatMenuNames(tbl.rprobj))
 
-    local undo_name
-
     if m_num > #tbl.info then
         m_num = (m_num - #tbl.info) + 1
         _G[menu_options[m_num].fname](tbl.rprobj, tbl, tbl.idx)
