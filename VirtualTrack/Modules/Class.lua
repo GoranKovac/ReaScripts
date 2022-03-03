@@ -132,7 +132,7 @@ end
 function Element:draw_text()
     reaper.JS_LICE_Clear(self.font_bm, 0x00000000)
     reaper.JS_LICE_Blit(self.font_bm, 0, 0, self.bm, 0, 0, self.w, self.h, 1, "ADD")
-    reaper.JS_LICE_DrawText(self.font_bm, self.font, math.floor(self.idx), 2, self.w/4 + 2, 1, 80, 80)
+    reaper.JS_LICE_DrawText(self.font_bm, self.font, math.floor(self.idx) .."/".. #self.info, 3, 0, 1, 80, 80)
 end
 
 function Element:draw()
