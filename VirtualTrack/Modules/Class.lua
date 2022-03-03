@@ -80,16 +80,13 @@ function Show_menu(tbl)
     local m_num = gfx.showmenu(ConcatMenuNames(tbl.rprobj))
 
     local undo_name
-    if m_num ~= 0 then reaper.Undo_BeginBlock() end
 
     if m_num > #tbl.info then
         m_num = (m_num - #tbl.info) + 1
         _G[menu_options[m_num].fname](tbl.rprobj, tbl, tbl.idx)
-        undo_name = Create_undo_name(menu_options[m_num].fname, tbl.rprobj, m_num)
     else
         if m_num ~= 0 then
             Set_Virtual_Track(tbl.rprobj, tbl, m_num)
-            undo_name = Create_undo_name("Set_Virtual_Track", tbl.rprobj, m_num)
         end
     end
     gfx.quit()
@@ -97,7 +94,6 @@ function Show_menu(tbl)
     reaper.PreventUIRefresh(-1)
     if update_tempo then Update_tempo_map() end
     reaper.UpdateArrange()
-    if m_num ~= 0 then reaper.Undo_EndBlock(undo_name, 4) end
 end
 
 function Element:new(rprobj, info)
