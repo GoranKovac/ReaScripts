@@ -87,6 +87,7 @@ function Show_menu(tbl)
             Set_Virtual_Track(tbl.rprobj, tbl, m_num)
         end
     end
+    reaper.JS_LICE_Clear(tbl.font_bm, 0x00000000)
     gfx.quit()
 
     reaper.PreventUIRefresh(-1)
@@ -101,6 +102,7 @@ function Element:new(rprobj, info)
     elm.font_bm =  reaper.JS_LICE_CreateBitmap(true, elm.w, elm.h)
     elm.font = reaper.JS_LICE_CreateFont()
     reaper.JS_LICE_SetFontColor( elm.font, 0xFFFFFFFF )
+    reaper.JS_LICE_Clear(self.font_bm, 0x00000000)
     elm.info = info
     elm.idx = 1;
     setmetatable(elm, self)
@@ -121,7 +123,7 @@ function Element:draw()
         reaper.JS_LICE_DrawText(self.font_bm, self.font, math.floor(self.idx), 2, self.w/4 + 2, 1, 80, 80)
         reaper.JS_Composite(track_window, self.x, self.y, self.w, self.h, self.font_bm, 0, 0, self.w, self.h, true)
     else
-        reaper.JS_Composite_Unlink(track_window, self.bm, true)
+        reaper.JS_Composite_Unlink(track_window, self.font_bm, true)
     end
 end
 
