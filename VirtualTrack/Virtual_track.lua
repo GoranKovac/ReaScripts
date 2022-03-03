@@ -44,9 +44,7 @@ end
 function Exit()
     StoreInProject()
     for _, v in pairs(Get_VT_TB()) do
-        reaper.JS_LICE_DestroyBitmap(v.bm)
-        reaper.JS_LICE_DestroyBitmap(v.font_bm)
-        reaper.JS_LICE_DestroyFont(v.font)
+        v:cleanup()
   end
 end
 

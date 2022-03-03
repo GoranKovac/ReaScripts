@@ -27,9 +27,8 @@ function Get_class_tbl(tbl)
 end
 
 local function ConcatMenuNames(track)
-    local concat = ""
+    local concat, fimp = "", ""
     local options = reaper.ValidatePtr(track, "MediaTrack*") and #menu_options or #menu_options-1
-    local fimp = ""
     if reaper.ValidatePtr(track, "MediaTrack*") then
         if reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") == 2 then
             fimp = "!"
@@ -87,6 +86,7 @@ function Show_menu(tbl)
             Set_Virtual_Track(tbl.rprobj, tbl, m_num)
         end
     end
+    UPDATE_TEXT = true
     reaper.JS_LICE_Clear(tbl.font_bm, 0x00000000)
     gfx.quit()
 
@@ -100,23 +100,27 @@ function Element:new(rprobj, info, direct)
     elm.rprobj = rprobj
     elm.bm = reaper.JS_LICE_LoadPNG(image_path)
     elm.x, elm.y, elm.w, elm.h = 0, 0, reaper.JS_LICE_GetWidth(elm.bm), reaper.JS_LICE_GetHeight(elm.bm)
-    elm.font_bm =  reaper.JS_LICE_CreateBitmap(true, elm.w, elm.h)
+    elm.font_bm = reaper.JS_LICE_CreateBitmap(true, elm.w, elm.h)
     elm.font = reaper.JS_LICE_CreateFont()
     reaper.JS_LICE_SetFontColor(elm.font, 0xFFFFFFFF)
     reaper.JS_LICE_Clear(self.font_bm, 0x00000000)
     elm.info = info
     elm.idx = 1;
     if direct == 1 then -- unused
-        reaper.JS_LICE_DestroyBitmap(elm.bm)
-        elm.bm = nil
-        reaper.JS_LICE_DestroyBitmap(elm.font_bm)
-        elm.font_bm = nil
-        reaper.JS_LICE_DestroyFont(elm.font)
-        elm.font = nil
+        self:cleanup()
     end
     setmetatable(elm, self)
     self.__index = self
     return elm
+end
+
+function Element:cleanup()
+    if self.bm then reaper.JS_LICE_DestroyBitmap(self.bm) end
+    self.bm = nil
+    if self.font_bm then reaper.JS_LICE_DestroyBitmap(self.font_bm) end
+    self.font_bm = nil
+    if self.font then reaper.JS_LICE_DestroyFont(self.font) end
+    self.font = nil
 end
 
 function Element:update_xywh()
@@ -128,7 +132,7 @@ end
 function Element:draw()
     if Get_TBH_Info()[self.rprobj].vis then
         reaper.JS_LICE_Clear(self.font_bm, 0x00000000)
-        reaper.JS_LICE_Blit(self.font_bm, 0, 0, self.bm, 0, 0, self.w, self.h, 1, "ADD") -- copy
+        reaper.JS_LICE_Blit(self.font_bm, 0, 0, self.bm, 0, 0, self.w, self.h, 1, "ADD")
         reaper.JS_LICE_DrawText(self.font_bm, self.font, math.floor(self.idx), 2, self.w/4 + 2, 1, 80, 80)
         reaper.JS_Composite(track_window, self.x, self.y, self.w, self.h, self.font_bm, 0, 0, self.w, self.h, true)
     else
@@ -215,8 +219,9 @@ function Draw(tbl)
     mouse = MouseInfo()
     mouse.tr, mouse.r_t, mouse.r_b = Get_track_under_mouse(mouse.x, mouse.y)
     Track(tbl)
-    local is_view_changed = Arrange_view_info()
-    BUTTON_UPDATE = is_view_changed and true
+    local reaper_arrange_updated = Arrange_view_info() or UPDATE_TEXT
+    BUTTON_UPDATE = reaper_arrange_updated and true
     Update_BTNS(tbl, BUTTON_UPDATE)
     BUTTON_UPDATE = false
+    UPDATE_TEXT = false
 end
