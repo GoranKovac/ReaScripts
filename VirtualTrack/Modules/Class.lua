@@ -89,6 +89,7 @@ function Show_menu(tbl)
             Set_Virtual_Track(tbl.rprobj, tbl, m_num)
         end
     end
+    UPDATE_BUTTON = true
     reaper.JS_LICE_Clear(tbl.font_bm, 0x00000000)
     gfx.quit()
     reaper.PreventUIRefresh(-1)
@@ -205,8 +206,9 @@ function Draw(tbl)
     mouse = MouseInfo()
     mouse.tr, mouse.r_t, mouse.r_b = Get_track_under_mouse(mouse.x, mouse.y)
     Track(tbl)
-    local is_view_changed = Arrange_view_info()
+    local is_view_changed = Arrange_view_info() or UPDATE_BUTTON
     BUTTON_UPDATE = is_view_changed and true
     Update_BTNS(tbl, BUTTON_UPDATE)
     BUTTON_UPDATE = false
+    UPDATE_BUTTON = false
 end

@@ -3,9 +3,9 @@
 -- @license GPL v3
 -- @provides
 --   {Images,Modules}/*
--- @version 0.61
+-- @version 0.62
 -- @changelog
---   + clear bitmap when switchin versions
+--   + add update update flag when button is clicked 
 
 
 local reaper = reaper
