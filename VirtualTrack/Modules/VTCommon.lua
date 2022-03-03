@@ -76,6 +76,48 @@ function GetTracksXYH()
     end
 end
 
+local function Store_To_PEXT(el)
+    local storedTable = {}
+    storedTable.info = el.info;
+    storedTable.idx = math.floor(el.idx)
+    local serialized = tableToString(storedTable)
+    if reaper.ValidatePtr(el.rprobj, "MediaTrack*") then
+        reaper.GetSetMediaTrackInfo_String(el.rprobj, "P_EXT:VirtualTrack", serialized, true)
+    elseif reaper.ValidatePtr(el.rprobj, "TrackEnvelope*") then
+        reaper.GetSetEnvelopeInfo_String(el.rprobj, "P_EXT:VirtualTrack", serialized, true)
+    end
+end
+
+function StoreInProject()
+    for _, v in pairs(VT_TB) do
+        Store_To_PEXT(v)
+    end
+end
+
+local function Restore_From_PEXT(el)
+    local rv, stored
+    if reaper.ValidatePtr(el.rprobj, "MediaTrack*") then
+        rv, stored = reaper.GetSetMediaTrackInfo_String(el.rprobj, "P_EXT:VirtualTrack", "", false)
+    elseif reaper.ValidatePtr(el.rprobj, "TrackEnvelope*") then
+        rv, stored = reaper.GetSetEnvelopeInfo_String(el.rprobj, "P_EXT:VirtualTrack", "", false)
+    end
+    if rv == true and stored ~= nil then
+        local storedTable = stringToTable(stored)
+        if storedTable ~= nil then
+            el.info = storedTable.info
+            el.idx = storedTable.idx
+        end
+    end
+end
+
+local function Update_VT_FROM_P_EXT(track_str)
+    for track in pairs(VT_TB) do
+        if tostring(track) == track_str then
+            Restore_From_PEXT(VT_TB[track])
+        end
+    end
+end
+
 function Create_undo_name(func, track, idx)
     local track_id =  reaper.GetMediaTrackInfo_Value( track, "IP_TRACKNUMBER" )
     local undo_name = "VT:" .. math.floor(idx) .. "|".. "TRACK:" .. math.floor(track_id) .. "|" .. "ACTION:" .. func
@@ -83,23 +125,16 @@ function Create_undo_name(func, track, idx)
 end
 
 local last_proj_change_count = reaper.GetProjectStateChangeCount(0)
-local function Make_Internal_Undo()
+local function CheckUndo_Defered()
     local proj_change_count = reaper.GetProjectStateChangeCount(0)
     if proj_change_count > last_proj_change_count then
-        local last_action = reaper.Undo_CanUndo2(0)
+        local last_action = reaper.Undo_CanRedo2(0)
         if not last_action then return end
         if not last_action:find("VT:") then return end
-        local nums = {}
-        for num in string.gmatch(last_action, "%d+") do
-            nums[#nums + 1] = num
-        end
-        local idx = math.floor(nums[1])
-        local track =  reaper.GetTrack( 0, nums[2]-1)
-        local fname = string.match(last_action,"ACTION:(.*)")
 
-        --_G[fname](track, VT_TB[track], idx)
+        local idx, track_str, action = last_action:match("VT:(.+)|TRACK:(.+)|ACTION:(.+)")
 
-        --MSG(idx)
+        Update_VT_FROM_P_EXT(track_str)
         last_proj_change_count = proj_change_count
     end
 end
@@ -208,9 +243,9 @@ local function Create_item(tr, data)
             local take_dst = reaper.GetMediaItemTake(empty_item, j-1)
             reaper.GetSetMediaItemTakeInfo_String(take_dst, "GUID", reaper.genGuid(), true)
         end
-        -- reaper.SetMediaItemInfo_Value(empty_item, "B_UISEL", 1)
-        -- reaper.Main_OnCommand(41613, 0)
-        -- reaper.SetMediaItemInfo_Value(empty_item, "B_UISEL", 0)
+        reaper.SetMediaItemInfo_Value(empty_item, "B_UISEL", 1)
+        reaper.Main_OnCommand(41613, 0) -- need to clear midi pooling
+        reaper.SetMediaItemInfo_Value(empty_item, "B_UISEL", 0)
         new_items[#new_items+1] = empty_item
     end
     return new_items
@@ -230,7 +265,7 @@ local function SaveCurrentState(track, tbl)
     local chunk_tbl = GetChunkTableForObject(track)
     tbl.info[tbl.idx] = chunk_tbl
     tbl.info[tbl.idx].name = name
-    return chunk_tbl
+    Store_To_PEXT(tbl)
 end
 
 function Set_Virtual_Track(track, tbl, idx)
@@ -311,6 +346,7 @@ local function StoreLaneData(track, tbl)
         tbl.info[j] = lane_chunk
         tbl.info[j].name = name
     end
+    Store_To_PEXT(tbl)
 end
 
 function ShowAll(track, tbl)
@@ -337,40 +373,6 @@ function ShowAll(track, tbl)
     reaper.UpdateTimeline()
 end
 
-local function Store_To_PEXT(el)
-    local storedTable = {}
-    storedTable.info = el.info;
-    storedTable.idx = math.floor(el.idx)
-    local serialized = tableToString(storedTable)
-    if reaper.ValidatePtr(el.rprobj, "MediaTrack*") then
-        reaper.GetSetMediaTrackInfo_String(el.rprobj, "P_EXT:VirtualTrack", serialized, true)
-    elseif reaper.ValidatePtr(el.rprobj, "TrackEnvelope*") then
-        reaper.GetSetEnvelopeInfo_String(el.rprobj, "P_EXT:VirtualTrack", serialized, true)
-    end
-end
-
-function StoreInProject()
-    for _, v in pairs(VT_TB) do
-        Store_To_PEXT(v)
-    end
-end
-
-local function Restore_From_PEXT(el)
-    local rv, stored
-    if reaper.ValidatePtr(el.rprobj, "MediaTrack*") then
-        rv, stored = reaper.GetSetMediaTrackInfo_String(el.rprobj, "P_EXT:VirtualTrack", "", false)
-    elseif reaper.ValidatePtr(el.rprobj, "TrackEnvelope*") then
-        rv, stored = reaper.GetSetEnvelopeInfo_String(el.rprobj, "P_EXT:VirtualTrack", "", false)
-    end
-    if rv == true and stored ~= nil then
-        local storedTable = stringToTable(stored)
-        if storedTable ~= nil then
-            el.info = storedTable.info
-            el.idx = storedTable.idx
-        end
-    end
-end
-
 local function CreateSingleVTElement()
     for track in pairs(TBH) do
         if not VT_TB[track] then
@@ -388,7 +390,7 @@ function Create_VT_Element()
     ValidateRemovedTracks()
     if reaper.CountTracks(0) == 0 then return end
     CreateSingleVTElement()
-    Make_Internal_Undo()
+    CheckUndo_Defered()
 end
 
 function SetupSingleElement(rprobj)
@@ -406,7 +408,7 @@ function SetupSingleElement(rprobj)
     end
     if #TBH then
         CreateSingleVTElement()
-        Make_Internal_Undo()
+        --Make_Internal_Undo()
         return 1
     end
     return 0
