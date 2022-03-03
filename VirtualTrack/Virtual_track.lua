@@ -3,18 +3,16 @@
 -- @license GPL v3
 -- @provides
 --   {Images,Modules}/*
--- @version 0.59
+-- @version 0.60
 -- @changelog
---   + Added new icon
---   + Show active version in icon
---   + Thank you sockmonkey
+--   + fixed image path to work crossplatform
 
 
 local reaper = reaper
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 
 local script_folder = debug.getinfo(1).source:match("@?(.*[\\|/])")
-image_path = script_folder .. "Images\\VT_icon_empty.png"
+image_path = script_folder .. "Images/VT_icon_empty.png"
 
 if not reaper.APIExists("JS_ReaScriptAPI_Version") then
   reaper.MB( "JS_ReaScriptAPI is required for this script", "Please download it from ReaPack", 0 )
