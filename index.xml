@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="754969a857fe2f22ff4220ecf10bd7d9fdf9b214" name="Sexan_Scripts">
+<index version="1" commit="1d120887a022b901cdd2540146935f58bdad34ea" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -917,6 +917,14 @@
         <source file="Modules/Class.lua">https://github.com/GoranKovac/ReaScripts/raw/754969a857fe2f22ff4220ecf10bd7d9fdf9b214/VirtualTrack/Modules/Class.lua</source>
         <source file="Modules/Mouse.lua">https://github.com/GoranKovac/ReaScripts/raw/754969a857fe2f22ff4220ecf10bd7d9fdf9b214/VirtualTrack/Modules/Mouse.lua</source>
         <source file="Modules/Utils.lua">https://github.com/GoranKovac/ReaScripts/raw/754969a857fe2f22ff4220ecf10bd7d9fdf9b214/VirtualTrack/Modules/Utils.lua</source>
+      </version>
+      <version name="0.62" author="Sexan" time="2022-03-03T20:01:17Z">
+        <changelog><![CDATA[+ add update update flag when button is clicked ]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/1d120887a022b901cdd2540146935f58bdad34ea/VirtualTrack/Virtual_track.lua</source>
+        <source file="Images/VT_icon_empty.png">https://github.com/GoranKovac/ReaScripts/raw/1d120887a022b901cdd2540146935f58bdad34ea/VirtualTrack/Images/VT_icon_empty.png</source>
+        <source file="Modules/Class.lua">https://github.com/GoranKovac/ReaScripts/raw/1d120887a022b901cdd2540146935f58bdad34ea/VirtualTrack/Modules/Class.lua</source>
+        <source file="Modules/Mouse.lua">https://github.com/GoranKovac/ReaScripts/raw/1d120887a022b901cdd2540146935f58bdad34ea/VirtualTrack/Modules/Mouse.lua</source>
+        <source file="Modules/Utils.lua">https://github.com/GoranKovac/ReaScripts/raw/1d120887a022b901cdd2540146935f58bdad34ea/VirtualTrack/Modules/Utils.lua</source>
       </version>
     </reapack>
   </category>
