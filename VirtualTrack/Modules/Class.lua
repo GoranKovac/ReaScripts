@@ -168,7 +168,7 @@ local function Track(tbl)
 end
 
 local function Update_BTNS(tbl, update)
-    --if not update then return end
+    if not update then return end
     for _, track in pairs(tbl) do track:update_xywh() end
 end
 
