@@ -110,7 +110,7 @@ local function Restore_From_PEXT(el)
     end
 end
 
-local function Update_VT_FROM_P_EXT(track_str)
+local function Update_VT_FROM_P_EXT(guid)
     for track in pairs(VT_TB) do
         if tostring(track) == track_str then
             Restore_From_PEXT(VT_TB[track])
@@ -119,9 +119,7 @@ local function Update_VT_FROM_P_EXT(track_str)
 end
 
 function Create_undo_name(func, track, idx)
-    local track_id =  reaper.GetMediaTrackInfo_Value( track, "IP_TRACKNUMBER" )
-    local undo_name = "VT:" .. math.floor(idx) .. "|".. "TRACK:" .. math.floor(track_id) .. "|" .. "ACTION:" .. func
-    return undo_name
+    return "VT:" .. math.floor(idx) .. "|".. "TRACK:" .. tostring(track) .. "|" .. "ACTION:" .. func
 end
 
 local last_proj_change_count = reaper.GetProjectStateChangeCount(0)
@@ -160,6 +158,7 @@ local function ValidateRemovedTracks()
         if not TBH[k] then
             reaper.JS_LICE_DestroyBitmap(v.bm)
             reaper.JS_LICE_DestroyBitmap(v.font_bm)
+            reaper.JS_LICE_DestroyFont(v.font)
             VT_TB[k] = nil
         end
     end
@@ -374,13 +373,13 @@ function ShowAll(track, tbl)
     reaper.UpdateTimeline()
 end
 
-local function CreateSingleVTElement()
+local function CreateVTElements(direct)
     for track in pairs(TBH) do
         if not VT_TB[track] then
             local Element = Get_class_tbl()
             local tr_data = GetChunkTableForObject(track)
             tr_data.name = "MAIN"
-            VT_TB[track] = Element:new(track, {tr_data})
+            VT_TB[track] = Element:new(track, {tr_data}, direct)
             Restore_From_PEXT(VT_TB[track])
         end
     end
@@ -390,8 +389,8 @@ function Create_VT_Element()
     GetTracksXYH()
     ValidateRemovedTracks()
     if reaper.CountTracks(0) == 0 then return end
-    CreateSingleVTElement()
-    CheckUndo_Defered()
+    CreateVTElements(0)
+    --CheckUndo_Defered()
 end
 
 function SetupSingleElement(rprobj)
@@ -408,7 +407,7 @@ function SetupSingleElement(rprobj)
         end
     end
     if #TBH then
-        CreateSingleVTElement()
+        CreateVTElements(1)
         --Make_Internal_Undo()
         return 1
     end

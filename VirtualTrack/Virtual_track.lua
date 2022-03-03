@@ -13,7 +13,7 @@ local reaper = reaper
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 
 local script_folder = debug.getinfo(1).source:match("@?(.*[\\|/])")
-image_path = script_folder .. "Images\\VT_icon_empty.png"
+image_path = script_folder .. "Images/VT_icon_empty.png"
 
 if not reaper.APIExists("JS_ReaScriptAPI_Version") then
   reaper.MB( "JS_ReaScriptAPI is required for this script", "Please download it from ReaPack", 0 )
@@ -46,12 +46,11 @@ end
 
 function Exit()
     StoreInProject()
-    reaper.JS_Composite_Unlink(track_window) -- REMOVE ALL BITMAPS
-    -- local VT_TB = Get_VT_TB()
-    -- for _, v in pairs(VT_TB) do
-    --     reaper.JS_LICE_DestroyBitmap(v.bm)
-    --     reaper.JS_LICE_DestroyBitmap(v.font_bm)
-    -- end
+    for _, v in pairs(Get_VT_TB()) do
+      reaper.JS_LICE_DestroyBitmap(v.bm)
+      reaper.JS_LICE_DestroyBitmap(v.font_bm)
+      reaper.JS_LICE_DestroyFont(v.font)
+  end
 end
 
 reaper.atexit(Exit)

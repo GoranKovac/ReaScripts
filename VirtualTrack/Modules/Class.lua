@@ -95,15 +95,25 @@ function Show_menu(tbl)
     reaper.UpdateArrange()
 end
 
-function Element:new(rprobj, info)
+function Element:new(rprobj, info, direct)
     local elm = {}
-    elm.rprobj, elm.bm = rprobj, reaper.JS_LICE_LoadPNG( image_path )
+    elm.rprobj = rprobj
+    elm.bm = reaper.JS_LICE_LoadPNG(image_path)
     elm.x, elm.y, elm.w, elm.h = 0, 0, reaper.JS_LICE_GetWidth(elm.bm), reaper.JS_LICE_GetHeight(elm.bm)
     elm.font_bm =  reaper.JS_LICE_CreateBitmap(true, elm.w, elm.h)
     elm.font = reaper.JS_LICE_CreateFont()
-    reaper.JS_LICE_SetFontColor( elm.font, 0xFFFFFFFF )
+    reaper.JS_LICE_SetFontColor(elm.font, 0xFFFFFFFF)
+    reaper.JS_LICE_Clear(self.font_bm, 0x00000000)
     elm.info = info
     elm.idx = 1;
+    if direct == 1 then -- unused
+        reaper.JS_LICE_DestroyBitmap(elm.bm)
+        elm.bm = nil
+        reaper.JS_LICE_DestroyBitmap(elm.font_bm)
+        elm.font_bm = nil
+        reaper.JS_LICE_DestroyFont(elm.font)
+        elm.font = nil
+    end
     setmetatable(elm, self)
     self.__index = self
     return elm
