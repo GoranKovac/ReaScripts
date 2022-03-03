@@ -87,7 +87,7 @@ function Show_menu(tbl)
         end
     end
     UPDATE_DRAW = true
-    tbl:draw_text()
+    reaper.JS_LICE_Clear(tbl.font_bm, 0x00000000)
     gfx.quit()
 
     reaper.PreventUIRefresh(-1)
@@ -137,6 +137,7 @@ end
 
 function Element:draw()
     if Get_TBH_Info()[self.rprobj].vis then
+        self:draw_text()
         reaper.JS_Composite(track_window, self.x, self.y, self.w, self.h, self.font_bm, 0, 0, self.w, self.h, true)
     else
         reaper.JS_Composite_Unlink(track_window, self.font_bm, true)
@@ -186,10 +187,7 @@ end
 
 local function Update_BTNS(tbl, update)
     if not update then return end
-    for _, track in pairs(tbl) do
-        if FIRST_START then track:draw_text() end
-        track:update_xywh()
-    end
+    for _, track in pairs(tbl) do track:update_xywh() end
 end
 
 local prev_Arr_end_time, prev_proj_state, last_scroll, last_scroll_b, last_pr_t, last_pr_h
@@ -221,7 +219,6 @@ local function Arrange_view_info()
     end
 end
 
-FIRST_START = true
 function Draw(tbl)
     mouse = MouseInfo()
     mouse.tr, mouse.r_t, mouse.r_b = Get_track_under_mouse(mouse.x, mouse.y)
@@ -231,5 +228,4 @@ function Draw(tbl)
     Update_BTNS(tbl, BUTTON_UPDATE)
     BUTTON_UPDATE = false
     UPDATE_DRAW = false
-    FIRST_START = nil
 end

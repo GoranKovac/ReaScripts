@@ -36,6 +36,7 @@ local mouse = {
 	last_tr = nil,
 	last_r_t = nil,
 	last_r_b = nil,
+	last_lane = nil,
 
 	dx = 0,
 	dy = 0,
@@ -54,6 +55,7 @@ local mouse = {
 	p = 0,
 	r_t = 0,
 	r_b = 0,
+	lane = nil,
 
 	detail = false,
 
@@ -153,17 +155,23 @@ function Get_track_under_mouse(x, y)
     end
 end
 
+function Get_lane_from_mouse_coordinates()
+	if mouse.tr == nil then return end
+	local _, cy = To_client(0, mouse.y)
+	local t, h, b = Get_TBH_Info(mouse.tr)
+	if cy > t and cy < b then
+		local VT_TB = Get_VT_TB()
+		local lane = math.floor(((cy - t) / h) * #VT_TB[mouse.tr].info) + 1
+		return lane
+	end
+end
+
 function MouseInfo(x,y,p)
 	mouse.x, mouse.y = reaper.GetMousePosition()
 	mouse.p = X_to_pos(mouse.x)
+	mouse.lane = Get_lane_from_mouse_coordinates()
 	if mouse.tr then mouse.last_tr = mouse.tr end
 
-	local m_cx, m_cy = reaper.JS_Window_ScreenToClient( track_window, mouse.x, mouse.y )
-
-	--ARRANGE = ((mouse.l_down) and (mouse.ox >= sx and Check_val_for_os(mouse.oy, sy)) and mouse.otr) and true or false
-	--ARRANGE = ((mouse.l_down) and mouse.otr) and true or false--((mouse.l_down) and (m_cx >= 0 and m_cy >= 0) and mouse.otr) and true or false
-	--ARRANGE = ((mouse.l_down) and (mouse.ox >= sx and mouse.oy >= sy) and mouse.otr) and true or false 		------ FOR OSX OY NEEDS TO BE LESS THAN SCREEN Y (mouse.oy <= sy) ----------------------------------
-	--mouse.DRAW_AREA = mouse.Ctrl_Shift() or mouse.Ctrl_Shift_Alt()  and true or false
 	mouse.l_click   = false
 	mouse.r_click   = false
 	mouse.l_dclick  = false
