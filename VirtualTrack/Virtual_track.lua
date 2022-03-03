@@ -3,9 +3,9 @@
 -- @license GPL v3
 -- @provides
 --   {Images,Modules}/*
--- @version 0.60
+-- @version 0.61
 -- @changelog
---   + fixed image path to work crossplatform
+--   + clear bitmap when switchin versions
 
 
 local reaper = reaper

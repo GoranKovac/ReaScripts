@@ -89,7 +89,7 @@ function Show_menu(tbl)
             Set_Virtual_Track(tbl.rprobj, tbl, m_num)
         end
     end
-
+    reaper.JS_LICE_Clear(tbl.font_bm, 0x00000000)
     gfx.quit()
     reaper.PreventUIRefresh(-1)
     if update_tempo then Update_tempo_map() end
@@ -100,7 +100,7 @@ function Element:new(rprobj, info)
     local elm = {}
     elm.rprobj, elm.bm = rprobj, reaper.JS_LICE_LoadPNG( image_path )
     elm.x, elm.y, elm.w, elm.h = 0, 0, reaper.JS_LICE_GetWidth(elm.bm), reaper.JS_LICE_GetHeight(elm.bm)
-    elm.font_bm =  reaper.JS_LICE_CreateBitmap(true, elm.w, elm.h)
+    elm.font_bm = reaper.JS_LICE_CreateBitmap(true, elm.w, elm.h)
     elm.font = reaper.JS_LICE_CreateFont()
     reaper.JS_LICE_SetFontColor( elm.font, 0xFFFFFFFF )
     elm.info = info
