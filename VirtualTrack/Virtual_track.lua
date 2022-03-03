@@ -26,6 +26,9 @@ if not reaper.APIExists("JS_ReaScriptAPI_Version") then
    end
 end
 
+local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
+local track_window = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8)
+
 require("Modules/VTCommon")
 require("Modules/Class")
 require("Modules/Mouse")
@@ -43,11 +46,12 @@ end
 
 function Exit()
     StoreInProject()
-    local VT_TB = Get_VT_TB()
-    for _, v in pairs(VT_TB) do
-        reaper.JS_LICE_DestroyBitmap(v.bm)
-        reaper.JS_LICE_DestroyBitmap(v.font_bm)
-    end
+    reaper.JS_Composite_Unlink(track_window) -- REMOVE ALL BITMAPS
+    -- local VT_TB = Get_VT_TB()
+    -- for _, v in pairs(VT_TB) do
+    --     reaper.JS_LICE_DestroyBitmap(v.bm)
+    --     reaper.JS_LICE_DestroyBitmap(v.font_bm)
+    -- end
 end
 
 reaper.atexit(Exit)

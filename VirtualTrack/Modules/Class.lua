@@ -102,7 +102,6 @@ function Element:new(rprobj, info)
     elm.font_bm =  reaper.JS_LICE_CreateBitmap(true, elm.w, elm.h)
     elm.font = reaper.JS_LICE_CreateFont()
     reaper.JS_LICE_SetFontColor( elm.font, 0xFFFFFFFF )
-    reaper.JS_LICE_Clear(self.font_bm, 0x00000000)
     elm.info = info
     elm.idx = 1;
     setmetatable(elm, self)
@@ -169,7 +168,7 @@ local function Track(tbl)
 end
 
 local function Update_BTNS(tbl, update)
-    if not update then return end
+    --if not update then return end
     for _, track in pairs(tbl) do track:update_xywh() end
 end
 
