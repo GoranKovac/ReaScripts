@@ -41,7 +41,7 @@ function GetCrash()
     return crash
 end
 
-function GetSingleTrackEnvelopeXYH(table, env, tr_t, tr_vis)
+function GetSingleTrackEnvelopeXYH(env, tr_t, tr_vis)
     local _, env_name = reaper.GetEnvelopeName(env)
     local env_h = reaper.GetEnvelopeInfo_Value(env, "I_TCPH")
     local env_t = reaper.GetEnvelopeInfo_Value(env, "I_TCPY") + tr_t
@@ -51,7 +51,7 @@ function GetSingleTrackEnvelopeXYH(table, env, tr_t, tr_vis)
     TBH[env] = {t = env_t, b = env_b, h = env_h, vis = env_vis, name = env_name}
 end
 
-function GetSingleTrackXYH(table, tr, ismaster)
+function GetSingleTrackXYH(tr, ismaster)
     local _, tr_name = reaper.GetTrackName(tr)
     local tr_vis = not ismaster and reaper.IsTrackVisible(tr, false) or (reaper.GetMasterTrackVisibility()&1 == 1 and true or false )
     local tr_h = reaper.GetMediaTrackInfo_Value(tr, "I_TCPH")
@@ -60,7 +60,7 @@ function GetSingleTrackXYH(table, tr, ismaster)
     TBH[tr] = {t = tr_t, b = tr_b, h = tr_h, vis = tr_vis, name = tr_name}
     for j = 1, reaper.CountTrackEnvelopes(tr) do
         local env = reaper.GetTrackEnvelope(tr, j - 1)
-        GetSingleTrackEnvelopeXYH(XYH, env, tr_t, tr_vis)
+        GetSingleTrackEnvelopeXYH(env, tr_t, tr_vis)
     end
 end
 
@@ -72,7 +72,7 @@ function GetTracksXYH()
     TBH = {}
     for i = 0, reaper.CountTracks(0) do
         local tr = i ~= 0 and reaper.GetTrack(0, i - 1) or reaper.GetMasterTrack(0)
-        GetSingleTrackXYH(TBH, tr, i == 0)
+        GetSingleTrackXYH(tr, i == 0)
     end
 end
 
@@ -383,14 +383,14 @@ end
 function SetupSingleElement(rprobj)
     TBH = {}
     if reaper.ValidatePtr(rprobj, "MediaTrack*") then
-        GetSingleTrackXYH(TBH, rprobj)
+        GetSingleTrackXYH(rprobj)
     elseif reaper.ValidatePtr(rprobj, "TrackEnvelope*") then
         local tr = reaper.GetEnvelopeInfo_Value(rprobj, "P_TRACK")
         if tr then
             local ismaster = tr == reaper.GetMasterTrack()
             local tr_vis = not ismaster and reaper.IsTrackVisible(tr, false) or (reaper.GetMasterTrackVisibility()&1 == 1 and true or false )
             local tr_t = reaper.GetMediaTrackInfo_Value(tr, "I_TCPY")
-            GetSingleTrackEnvelopeXYH(TBH, rprobj, tr_t, tr_vis)
+            GetSingleTrackEnvelopeXYH(rprobj, tr_t, tr_vis)
         end
     end
     if #TBH then

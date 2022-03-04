@@ -156,9 +156,7 @@ function Element:LaneButtonIn(sx, sy)
     local lane_button_w, lane_button_h = 28, 13
     local lane_button_t = (h - 14) / #self.info
     local lane_box_h = lane_button_t * (mouse.lane-1)
-    if x > 0 and x <= lane_button_w and y >= t + lane_box_h and y <= t + lane_box_h + lane_button_h then
-        return mouse.olane
-    end
+    return x > 0 and x <= lane_button_w and y >= t + lane_box_h and y <= t + lane_box_h + lane_button_h
 end
 
 function Element:mouseIN()
@@ -192,9 +190,7 @@ end
 function Element:track()
     if not Get_TBH_Info()[self.rprobj].vis then return end
     --if self:LanemouseClick() then Mute_view_test(self.rprobj)end
-    if self:mouseClick() then
-        Show_menu(self)
-    end
+    if self:mouseClick() then Show_menu(self) end
 end
 
 local function Track(tbl)
