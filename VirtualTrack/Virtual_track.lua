@@ -18,9 +18,6 @@
 local reaper = reaper
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 
--- local script_folder = debug.getinfo(1).source:match("@?(.*[\\|/])")
--- image_path = script_folder .. "Images/VT_icon_empty.png"
-
 require("Modules/VTCommon")
 require("Modules/Class")
 require("Modules/Mouse")
