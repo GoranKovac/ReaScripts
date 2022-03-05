@@ -6,6 +6,12 @@
 --]]
 local reaper = reaper
 local gfx = gfx
+
+local script_folder = debug.getinfo(1).source:match("@?(.*[\\|/])")
+local image_path = script_folder:gsub("\\Modules", "") .. "Images/VT_icon_empty.png"
+
+reaper.ShowConsoleMsg( image_path )
+
 local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
 local track_window = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8)
 local BUTTON_UPDATE
@@ -46,12 +52,6 @@ local function Update_tempo_map()
         reaper.SetTempoTimeSigMarker(0, 0, timepos, measurepos, beatpos, bpm, timesig_num, timesig_denom, lineartempo)
     end
     reaper.UpdateTimeline()
-end
-
-local function Set_Info_table(tbl)
-    local version_to_move = table.remove(tbl.info, math.floor(tbl.idx))
-    table.insert(tbl.info, 1, version_to_move)
-    tbl.idx = 1
 end
 
 function Show_menu(tbl)
