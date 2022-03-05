@@ -80,7 +80,7 @@ function Show_menu(tbl)
         versions[#versions+1] = i == tbl.idx and gray_out .. "!" .. i .. " - ".. tbl.info[i].name or gray_out .. i .. " - " .. tbl.info[i].name
     end
 
-    menu_options[1].name = ">" .. math.floor(tbl.idx) .. " Virtual TR : " .. tbl.info[tbl.idx].name .. "|" .. table.concat(versions, "|") .."|<|"
+    menu_options[1].name = ">" .. "MAIN Virtual TR : " .. tbl.info[tbl.idx].name .. "|" .. table.concat(versions, "|") .."|<|"
 
     local m_num = gfx.showmenu(ConcatMenuNames(tbl.rprobj))
 
