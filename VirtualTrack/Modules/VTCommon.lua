@@ -6,7 +6,6 @@
 --]]
 
 local reaper = reaper
-
 local VT_TB = {}
 local TBH
 
@@ -50,9 +49,7 @@ local crash = function(errObject)
     end
 end
 
-function GetCrash()
-    return crash
-end
+function GetCrash() return crash end
 
 function GetSingleTrackEnvelopeXYH(env, tr_t, tr_vis)
     local _, env_name = reaper.GetEnvelopeName(env)
@@ -124,13 +121,9 @@ function Get_TBH_Info(tr)
     end
 end
 
-function Get_VT_TB()
-    return VT_TB
-end
+function Get_VT_TB() return VT_TB end
 
-function Get_TBH()
-    return TBH
-end
+function Get_TBH() return TBH end
 
 local function ValidateRemovedTracks()
     if next(VT_TB) == nil then return end
@@ -250,9 +243,7 @@ function UpdateInternalState(tbl)
     return false
 end
 
-function StoreStateToDocument(tbl)
-    Store_To_PEXT(tbl)
-end
+function StoreStateToDocument(tbl) Store_To_PEXT(tbl) end
 
 local function SaveCurrentState(track, tbl)
     if UpdateInternalState(tbl) == true then return Store_To_PEXT(tbl) end
@@ -321,23 +312,24 @@ function Rename(track, tbl)
     tbl.info[tbl.idx].name = name
 end
 
-function Mute_view_test(track)
+local function GetItemLane(item, lanes)
+    local y = reaper.GetMediaItemInfo_Value(item, 'F_FREEMODE_Y')
+    local idx = round(y * lanes) + 1
+    return idx
+end
+
+function Mute_view_test(tbl, num)
+    local order_index = num == 1 and tbl.idx or (num == tbl.idx and 1 or num) -- NEED TO SWAP ACTIVE LANE WITH FIRST LANE SINCE ACTIVE VERSION IS ON TOP
     reaper.PreventUIRefresh(1)
-    for i = 1, reaper.CountTrackMediaItems(track) do
-        local item = reaper.GetTrackMediaItem(track, i - 1)
-        if reaper.IsMediaItemSelected( item ) then
+    for i = 1, reaper.CountTrackMediaItems(tbl.rprobj) do
+        local item = reaper.GetTrackMediaItem(tbl.rprobj, i - 1)
+        if GetItemLane(item, #tbl.info) == order_index then
             reaper.SetMediaItemInfo_Value(item, "B_MUTE", 0)
         else
             reaper.SetMediaItemInfo_Value(item, "B_MUTE", 1)
         end
     end
     reaper.PreventUIRefresh(-1)
-end
-
-local function GetItemLane(item, lanes)
-    local y = reaper.GetMediaItemInfo_Value(item, 'F_FREEMODE_Y')
-    local idx = round(y * lanes) + 1
-    return idx
 end
 
 local function StoreLaneData(track, tbl)
@@ -389,6 +381,7 @@ function Copy_lane_area(tbl)
         local item =  reaper.GetSelectedMediaItem(0, i-1)
         reaper.SetMediaItemInfo_Value(item, "F_FREEMODE_Y", 0)
         reaper.SetMediaItemInfo_Value(item, "F_FREEMODE_H", 1/#tbl.info)
+        reaper.SetMediaItemInfo_Value(item, "B_MUTE", 1)
     end
     reaper.Main_OnCommand(40930, 0)
     for i = reaper.CountSelectedMediaItems(0), 1, -1 do -- DO IN REVERSE TO AVOID CRASHES ON ITERATING MULTIPLE ITEMS
@@ -400,16 +393,20 @@ function Copy_lane_area(tbl)
     reaper.UpdateArrange()
 end
 
-function Comp_PT_Style(tbl)
-    Copy_lane_area(tbl)
+local function Unmute_All_track_items(track)
+    reaper.PreventUIRefresh(1)
+    for i = 1, reaper.CountTrackMediaItems(track) do -- DO IN REVERSE TO AVOID CRASHES ON ITERATING MULTIPLE ITEMS
+        local item = reaper.GetMediaItem(0, i-1)
+        reaper.SetMediaItemInfo_Value(item, "B_MUTE", 0)
+    end
+    reaper.PreventUIRefresh(-1)
 end
 
 function ShowAll(track, tbl)
     local fimp = reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE")
     local toggle = fimp == 2 and 0 or 2
-    if fimp == 0 then
-        --SaveCurrentState(track, tbl)
-    elseif fimp == 2 then
+    if fimp == 2 then
+        Unmute_All_track_items(track) -- UNMUTE ALL ITEMS FROM MUTE_VIEW FUNCTION BEFORE STORING
         StoreLaneData(track, tbl)
     end
     Clear(track)
@@ -422,6 +419,7 @@ function ShowAll(track, tbl)
                 reaper.SetMediaItemInfo_Value(items[j], "F_FREEMODE_Y", ((i - 1) / #tbl.info))
             end
         end
+        Mute_view_test(tbl, tbl.idx)
     elseif toggle == 0 then
         Create_item(track, tbl.info[tbl.idx])
     end
