@@ -371,7 +371,9 @@ function Copy_lane_area(tbl)
     local area_start = area_info[1]
     reaper.Main_OnCommand(40060, 0) -- COPY AREA
     local current_edit_cursor_pos = reaper.GetCursorPosition()
-    local current_razor_toggle_state =  reaper.GetToggleCommandState(42398)
+    local current_razor_toggle_state =  reaper.GetToggleCommandState(42421)
+    if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN OFF ALWAYS TRIM BEHIND RAZORS (if enabled)
+    reaper.ShowConsoleMsg(current_razor_toggle_state)
     reaper.SetEditCurPos(area_start, false, false)
     reaper.Main_OnCommand(42398, 0) -- PASTE AREA
     reaper.CF_SetClipboard("") -- CLEAR BUFFER
@@ -381,13 +383,12 @@ function Copy_lane_area(tbl)
         reaper.SetMediaItemInfo_Value(item, "F_FREEMODE_Y", 0)
         reaper.SetMediaItemInfo_Value(item, "F_FREEMODE_H", 1/#tbl.info)
     end
-    if current_razor_toggle_state then reaper.Main_OnCommand(42398, 0) end -- TURN OFF ALWAYS TRIM BEHIND RAZORS (if enabled)
     reaper.Main_OnCommand(40930, 0)
     for i = reaper.CountSelectedMediaItems(0), 1, -1 do -- DO IN REVERSE TO AVOID CRASHES ON ITERATING MULTIPLE ITEMS
         local item = reaper.GetSelectedMediaItem(0, i-1)
         reaper.SetMediaItemSelected(item, false)
     end
-    if current_razor_toggle_state then reaper.Main_OnCommand(42398, 0) end -- TURN ON ALWAYS TRIM BEHIND RAZORS (if enabled)
+    if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN ON ALWAYS TRIM BEHIND RAZORS (if enabled)
     reaper.PreventUIRefresh(-1)
     reaper.UpdateArrange()
 end
