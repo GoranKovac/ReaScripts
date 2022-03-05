@@ -260,13 +260,11 @@ local function SaveCurrentState(track, tbl)
 end
 
 function StoreInProject()
-    -- reaper.Undo_BeginBlock2(0)
     local rv = true
     for k, v in pairs(VT_TB) do
         rv = (SaveCurrentState(k, v) and rv == true) and true or false
     end
     if rv == true then reaper.MarkProjectDirty(0) end -- at least mark the project dirty, even if we don't offer undo here
-    -- reaper.Undo_EndBlock2(0, "VT: Store State In Project", -1) -- make this undoable?
 end
 
 function Set_Virtual_Track(track, tbl, idx)
@@ -285,7 +283,6 @@ function SwapVirtualTrack(track, tbl, idx)
 end
 
 function CreateNew(track, tbl)
-    SaveCurrentState(track, tbl)
     Clear(track)
     tbl.info[#tbl.info + 1] = {}
     tbl.idx = #tbl.info
@@ -293,7 +290,6 @@ function CreateNew(track, tbl)
 end
 
 function Duplicate(track, tbl)
-    SaveCurrentState(track, tbl)
     local name = tbl.info[tbl.idx].name
     tbl.info[#tbl.info + 1] = GetChunkTableForObject(track)
     tbl.idx = #tbl.info
@@ -361,7 +357,6 @@ local function StoreLaneData(track, tbl)
         tbl.info[j] = lane_chunk
         tbl.info[j].name = name
     end
-    Store_To_PEXT(tbl)
 end
 
 local function Get_Razor_Data(track)
@@ -434,32 +429,6 @@ function ShowAll(track, tbl)
     reaper.UpdateTimeline()
 end
 
-local projectStateChangeCount = reaper.GetProjectStateChangeCount(0)
-
-function UpdateChangeCount()
-    local changeCount = projectStateChangeCount
-    projectStateChangeCount = reaper.GetProjectStateChangeCount(0)
-    -- MSG("" .. changeCount .. " -> " .. projectStateChangeCount)
-end
-
-function CheckUndoState()
-    local changeCount = reaper.GetProjectStateChangeCount()
-    if changeCount ~= projectStateChangeCount then
-        projectStateChangeCount = changeCount
-        local success = false
-        local last_action = reaper.Undo_CanRedo2(0)
-        if last_action and last_action:find("VT: ") then success = true end
-        if not success then last_action = reaper.Undo_CanUndo2(0) end
-        for k, v in pairs(VT_TB) do
-            local oldidx = v.idx
-            Restore_From_PEXT(v)
-            if oldidx ~= v.idx then
-                v:update_xywh() -- update buttons
-            end
-        end
-    end
-end
-
 local function CreateVTElements(direct)
     for track in pairs(TBH) do
         if not VT_TB[track] then
@@ -490,10 +459,10 @@ function Get_On_Demand_DATA()
             rprobj = takeenv and nil or rprobj
         end
         if rprobj then
-          if SetupSingleElement(rprobj) and #Get_VT_TB() then
-            local _, v = next(Get_VT_TB())
-            return v
-          end
+            if SetupSingleElement(rprobj) and #Get_VT_TB() then
+                local _, v = next(Get_VT_TB())
+                return v
+            end
         end
     end
 end
@@ -516,4 +485,30 @@ function SetupSingleElement(rprobj)
         return 1
     end
     return 0
+end
+
+local projectStateChangeCount = reaper.GetProjectStateChangeCount(0)
+
+function UpdateChangeCount()
+    local changeCount = projectStateChangeCount
+    projectStateChangeCount = reaper.GetProjectStateChangeCount(0)
+    -- MSG("" .. changeCount .. " -> " .. projectStateChangeCount)
+end
+
+function CheckUndoState()
+    local changeCount = reaper.GetProjectStateChangeCount()
+    if changeCount ~= projectStateChangeCount then
+        projectStateChangeCount = changeCount
+        local success = false
+        local last_action = reaper.Undo_CanRedo2(0)
+        if last_action and last_action:find("VT: ") then success = true end
+        if not success then last_action = reaper.Undo_CanUndo2(0) end
+        for k, v in pairs(VT_TB) do
+            local oldidx = v.idx
+            Restore_From_PEXT(v)
+            if oldidx ~= v.idx then
+                v:update_xywh() -- update buttons
+            end
+        end
+    end
 end
