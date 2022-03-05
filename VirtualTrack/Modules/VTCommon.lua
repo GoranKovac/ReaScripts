@@ -235,7 +235,7 @@ local function GetChunkTableForObject(track)
     elseif reaper.ValidatePtr(track, "TrackEnvelope*") then
         return Get_Env_Chunk(track)
     end
-    return nil;
+    return nil
 end
 
 local function SaveCurrentStateNoStore(track, tbl)
