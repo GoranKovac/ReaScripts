@@ -1,14 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 0.70
+-- @version 0.71
 -- @changelog
---   + Dual script refactor (sockmonkey)
---   + Added on demand script on shortcut (non-defered) (sockmonkey)
---   + Added undo (sockmonkey)
---   + Added Comping mode in ShowAll mode (lane mode)
---   + Added "Mute View" for previewing versions in LaneMode
---   + Added shortcut scripts for changing versions up and down and promoting to main in lane mode
+--   + fixed crash when deleting tracks
 -- @provides
 --   {Images,Modules}/*
 --   [main] Virtual_track_Direct.lua
