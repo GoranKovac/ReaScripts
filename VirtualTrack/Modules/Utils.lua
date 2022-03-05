@@ -5,6 +5,9 @@
 	 * NoIndex: true
 --]]
 
+function round(num)
+    return math.floor(num + 0.5)
+end
 function tableToString(table)
     return serializeTable(table)
 end

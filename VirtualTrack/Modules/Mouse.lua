@@ -20,7 +20,7 @@ local mouse = {
 	Ctrl_Alt = function() return reaper.JS_Mouse_GetState(95) &20 == 20 end,
 	Ctrl_Shift_Alt = function() return reaper.JS_Mouse_GetState(95) &28 == 28 end,
 	cap = function (mask)
-			if mask == nil then 
+			if mask == nil then
 				return reaper.JS_Mouse_GetState(95) end
 			return reaper.JS_Mouse_GetState(95)&mask == mask
 			end,
@@ -47,6 +47,7 @@ local mouse = {
 	otr = nil,
 	ort = 0,
 	orb = 0,
+	olane = nil,
 
 	tr = nil,
 	x = 0,
@@ -54,6 +55,7 @@ local mouse = {
 	p = 0,
 	r_t = 0,
 	r_b = 0,
+	lane = nil,
 
 	detail = false,
 
@@ -81,6 +83,7 @@ function OnMouseDown(lmb_down, rmb_down)
 
 	mouse.ox, mouse.oy = mouse.x, mouse.y -- mouse click coordinates
 	mouse.ort, mouse.orb, mouse.otr = mouse.r_t, mouse.r_b, mouse.tr
+	mouse.olane = mouse.lane
 	mouse.op = mouse.p
 	mouse.cap_count = 0       -- reset mouse capture count
 end
@@ -153,17 +156,26 @@ function Get_track_under_mouse(x, y)
     end
 end
 
+local lane_offset = 14 -- schwa decided this number by carefully inspecting pixels in paint.net
+function Get_lane_from_mouse_coordinates()
+	if mouse.tr == nil then return end
+	local _, cy = To_client(0, mouse.y)
+	local t, h, b = Get_TBH_Info(mouse.tr)
+	local VT_TB = Get_VT_TB()
+	if cy > t and cy < b then
+		local lane = math.floor(((cy - t) / (h - lane_offset)) * #VT_TB[mouse.tr].info) + 1
+		lane = lane <= #VT_TB[mouse.tr].info and lane or #VT_TB[mouse.tr].info
+		-- disable when track_h is less than 90px
+		return lane
+	end
+end
+
 function MouseInfo(x,y,p)
 	mouse.x, mouse.y = reaper.GetMousePosition()
 	mouse.p = X_to_pos(mouse.x)
+	mouse.lane = Get_lane_from_mouse_coordinates()
 	if mouse.tr then mouse.last_tr = mouse.tr end
 
-	local m_cx, m_cy = reaper.JS_Window_ScreenToClient( track_window, mouse.x, mouse.y )
-
-	--ARRANGE = ((mouse.l_down) and (mouse.ox >= sx and Check_val_for_os(mouse.oy, sy)) and mouse.otr) and true or false
-	--ARRANGE = ((mouse.l_down) and mouse.otr) and true or false--((mouse.l_down) and (m_cx >= 0 and m_cy >= 0) and mouse.otr) and true or false
-	--ARRANGE = ((mouse.l_down) and (mouse.ox >= sx and mouse.oy >= sy) and mouse.otr) and true or false 		------ FOR OSX OY NEEDS TO BE LESS THAN SCREEN Y (mouse.oy <= sy) ----------------------------------
-	--mouse.DRAW_AREA = mouse.Ctrl_Shift() or mouse.Ctrl_Shift_Alt()  and true or false
 	mouse.l_click   = false
 	mouse.r_click   = false
 	mouse.l_dclick  = false
@@ -184,7 +196,7 @@ function MouseInfo(x,y,p)
 			OnMouseHold(LB_DOWN,RB_DOWN)
 		end
 	elseif not LB_DOWN and mouse.last_RMB_state or not RB_DOWN and mouse.last_LMB_state then
-		OnMouseUp(LB_DOWN, RB_DOWN)
+		OnMouseUp()
 	end
 
 	return mouse
