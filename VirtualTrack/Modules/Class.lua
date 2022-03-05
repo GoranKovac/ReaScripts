@@ -10,8 +10,6 @@ local gfx = gfx
 local script_folder = debug.getinfo(1).source:match("@?(.*[\\|/])")
 local image_path = script_folder:gsub("\\Modules", "") .. "Images/VT_icon_empty.png"
 
-reaper.ShowConsoleMsg( image_path )
-
 local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
 local track_window = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8)
 local BUTTON_UPDATE
