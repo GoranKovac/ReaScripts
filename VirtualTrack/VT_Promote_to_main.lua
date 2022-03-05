@@ -14,6 +14,8 @@ require("Modules/Class")
 require("Modules/Mouse")
 require("Modules/Utils")
 
+Check_Requirements()
+
 local function Main()
     local tbl = Get_On_Demand_DATA()
     if not tbl then return end
