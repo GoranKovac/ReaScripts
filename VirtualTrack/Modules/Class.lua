@@ -253,7 +253,6 @@ end
 
 function Draw(tbl)
     mouse = MouseInfo()
-    mouse.tr, mouse.r_t, mouse.r_b = Get_track_under_mouse(mouse.x, mouse.y)
     Track(tbl)
     local reaper_arrange_updated = Arrange_view_info() or UPDATE_DRAW
     BUTTON_UPDATE = reaper_arrange_updated and true

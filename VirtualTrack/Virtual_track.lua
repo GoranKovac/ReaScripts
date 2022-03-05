@@ -1,15 +1,16 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 0.71
+-- @version 0.72
 -- @changelog
---   + fixed crash when deleting tracks
+--   + Added shortcut to activate lane under mouse
 -- @provides
 --   {Images,Modules}/*
 --   [main] Virtual_track_Direct.lua
 --   [main] VT_Promote_to_main.lua
 --   [main] VT_Switch_DOWN.lua
 --   [main] VT_Switch_UP.lua
+--   [main] VT_Activate_lane_under_mouse.lua
 
 local reaper = reaper
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE

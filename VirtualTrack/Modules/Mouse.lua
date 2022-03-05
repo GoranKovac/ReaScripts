@@ -173,7 +173,8 @@ end
 function MouseInfo(x,y,p)
 	mouse.x, mouse.y = reaper.GetMousePosition()
 	mouse.p = X_to_pos(mouse.x)
-	--mouse.lane = Get_lane_from_mouse_coordinates()
+	mouse.tr, mouse.r_t, mouse.r_b = Get_track_under_mouse(mouse.x, mouse.y)
+	mouse.lane = Get_lane_from_mouse_coordinates()
 	if mouse.tr then mouse.last_tr = mouse.tr end
 
 	mouse.l_click   = false

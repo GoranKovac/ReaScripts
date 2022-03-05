@@ -1,7 +1,7 @@
 --[[
    * Author: SeXan
    * Licence: GPL v3
-   * Version: 0.01
+   * Version: 0.02
 	 * NoIndex: true
 --]]
 
@@ -10,12 +10,16 @@ local VT_TB = {}
 local TBH
 
 function Check_Requirements()
+    -- if tonumber(reaper.GetAppVersion()) < 6.50 then
+    --     reaper.MB( "Reaper version is bellow required, Please download latest prerelease from www.landoleet.org", 0 )
+    --     return reaper.defer(function() end)
+    -- end
     if not reaper.APIExists("JS_ReaScriptAPI_Version") then
         reaper.MB( "JS_ReaScriptAPI is required for this script", "Please download it from ReaPack", 0 )
         return reaper.defer(function() end)
     else
         local version = reaper.JS_ReaScriptAPI_Version()
-        if version < 1.002 then
+        if version < 1.3 then
             reaper.MB( "Your JS_ReaScriptAPI version is " .. version .. "\nPlease update to latest version.", "Older version is installed", 0 )
             return reaper.defer(function() end)
         end
@@ -319,11 +323,11 @@ function GetItemLane(item, lanes)
 end
 
 function Mute_view_test(tbl, num)
-    local order_index = num == 1 and tbl.idx or (num == tbl.idx and 1 or num) -- NEED TO SWAP ACTIVE LANE WITH FIRST LANE SINCE ACTIVE VERSION IS ON TOP
+    --local order_index = num == 1 and tbl.idx or (num == tbl.idx and 1 or num) -- NEED TO SWAP ACTIVE LANE WITH FIRST LANE SINCE ACTIVE VERSION IS ON TOP
     reaper.PreventUIRefresh(1)
     for i = 1, reaper.CountTrackMediaItems(tbl.rprobj) do
         local item = reaper.GetTrackMediaItem(tbl.rprobj, i - 1)
-        if GetItemLane(item, #tbl.info) == order_index then
+        if GetItemLane(item, #tbl.info) == num then
             reaper.SetMediaItemInfo_Value(item, "B_MUTE", 0)
         else
             reaper.SetMediaItemInfo_Value(item, "B_MUTE", 1)
