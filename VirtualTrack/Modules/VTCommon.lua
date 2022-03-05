@@ -340,8 +340,8 @@ function Mute_view_test(track)
 end
 
 local function GetItemLane(item, lanes)
-    local y = reaper.GetMediaItemInfo_Value(item, 'F_FREEMODE_Y') --/ reaper.GetMediaItemInfo_Value(item, 'F_FREEMODE_H'))
-    local idx = math.floor(y * lanes) + 1
+    local y = reaper.GetMediaItemInfo_Value(item, 'F_FREEMODE_Y')
+    local idx = round(y * lanes) + 1
     return idx
 end
 
@@ -351,7 +351,7 @@ local function StoreLaneData(track, tbl)
         local order_index = j == 1 and tbl.idx or (j == tbl.idx and 1 or j) -- REVERT TO ORIGINAL TABLE ORDER SINCE WE SET SELECTED VERSION TO TOP LANE
         local lane_chunk = {}
         for i = 1, num_items do
-            local item = reaper.GetTrackMediaItem(track, i-1)
+            local item = reaper.GetTrackMediaItem(track, i-1)           
             if GetItemLane(item, #tbl.info) == order_index then
                 local item_chunk = Get_Item_Chunk(item)
                 item_chunk = Exclude_Pattern(item_chunk)
