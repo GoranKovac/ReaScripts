@@ -1,7 +1,7 @@
 -- @description Name Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 0.70
+-- @version 0.71
 -- @changelog
 --   + Dual script refactor (sockmonkey)
 --   + Added on demand script on shortcut (non-defered) (sockmonkey)
