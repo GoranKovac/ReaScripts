@@ -19,7 +19,7 @@ Check_Requirements()
 local function Main()
     local tbl = Get_On_Demand_DATA()
     if not tbl then return end
-    Comp_PT_Style(tbl)
+    Copy_lane_area(tbl)
 end
 
 xpcall(Main, GetCrash())
