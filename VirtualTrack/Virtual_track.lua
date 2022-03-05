@@ -1,7 +1,7 @@
--- @description Name Virtual Tracks
+-- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 0.71
+-- @version 0.70
 -- @changelog
 --   + Dual script refactor (sockmonkey)
 --   + Added on demand script on shortcut (non-defered) (sockmonkey)
@@ -12,7 +12,7 @@
 -- @provides
 --   {Images,Modules}/*
 --   [main] Virtual_track_Direct.lua
---   [main] VT_Promote_to_MAIN.lua
+--   [main] VT_Promote_to_main.lua
 --   [main] VT_Switch_DOWN.lua
 --   [main] VT_Switch_UP.lua
 
