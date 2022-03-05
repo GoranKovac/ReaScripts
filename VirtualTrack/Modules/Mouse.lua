@@ -1,7 +1,7 @@
 --[[
    * Author: SeXan
    * Licence: GPL v3
-   * Version: 0.07
+   * Version: 0.08
 	 * NoIndex: true
 --]]
 local reaper = reaper
@@ -173,7 +173,7 @@ end
 function MouseInfo(x,y,p)
 	mouse.x, mouse.y = reaper.GetMousePosition()
 	mouse.p = X_to_pos(mouse.x)
-	mouse.lane = Get_lane_from_mouse_coordinates()
+	--mouse.lane = Get_lane_from_mouse_coordinates()
 	if mouse.tr then mouse.last_tr = mouse.tr end
 
 	mouse.l_click   = false
