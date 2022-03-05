@@ -312,7 +312,7 @@ function Rename(track, tbl)
     tbl.info[tbl.idx].name = name
 end
 
-local function GetItemLane(item, lanes)
+function GetItemLane(item, lanes)
     local y = reaper.GetMediaItemInfo_Value(item, 'F_FREEMODE_Y')
     local idx = round(y * lanes) + 1
     return idx
@@ -400,6 +400,18 @@ local function Unmute_All_track_items(track)
         reaper.SetMediaItemInfo_Value(item, "B_MUTE", 0)
     end
     reaper.PreventUIRefresh(-1)
+end
+
+function Unmuted_lane(tbl)
+    for i = 1, reaper.CountTrackMediaItems(tbl.rprobj) do
+        local item = reaper.GetTrackMediaItem(tbl.rprobj, i - 1)
+        if  reaper.GetMediaItemInfo_Value(item, "B_MUTE") == 0 then
+            local unmuted_lane = GetItemLane(item, #tbl.info)
+            -- IN LANE MODE WE ALWAYS MOVE ACTIVE VERSION TO FIRST LANE SO WE NEED TO INVERT THOSE VERSIONS TO SEE CORRECTLY SELECTED IN MENU
+            local order_index = unmuted_lane == 1 and tbl.idx or (unmuted_lane == tbl.idx and 1 or unmuted_lane)
+            return order_index
+        end
+    end
 end
 
 function ShowAll(track, tbl)

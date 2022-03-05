@@ -67,18 +67,17 @@ function Show_menu(tbl)
     local update_tempo = tbl.rprobj == reaper.GetMasterTrack(0) and true or false
     tbl = tbl.rprobj == reaper.GetMasterTrack(0) and Get_VT_TB()[reaper.GetTrackEnvelopeByName( tbl.rprobj, "Tempo map" )] or tbl
 
-    --local gray_out = ""
     local lane_mode
     if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
         if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 2 then
-           -- gray_out = "#"
             lane_mode = true
         end
     end
 
+    local version_id = lane_mode and Unmuted_lane(tbl) or tbl.idx
     local versions = {}
     for i = 1, #tbl.info do
-        versions[#versions+1] = i == tbl.idx and "!" .. i .. " - ".. tbl.info[i].name or i .. " - " .. tbl.info[i].name
+        versions[#versions+1] = i == version_id and "!" .. i .. " - ".. tbl.info[i].name or i .. " - " .. tbl.info[i].name
     end
 
     menu_options[1].name = ">" .. "MAIN Virtual TR : " .. tbl.info[tbl.idx].name .. "|" .. table.concat(versions, "|") .."|<|"
@@ -99,7 +98,7 @@ function Show_menu(tbl)
                 Set_Virtual_Track(tbl.rprobj, tbl, m_num)
                 StoreStateToDocument(tbl)
             else
-                Mute_view_test(tbl, m_num)
+                Mute_view_test(tbl, m_num) -- MUTE VIEW IS ONLY FOR PREVIEWING VERSIONS WE DO NOT SAVE ANYTHING HERE (STORE IS HAPPENING WHEN WE TOGGLE SHOW ALL VARIANTS OPTION)
             end
             reaper.Undo_EndBlock2(0, "VT: Recall Version " .. tbl.info[m_num].name, -1)
         end
