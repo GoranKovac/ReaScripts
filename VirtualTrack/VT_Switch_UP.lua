@@ -15,8 +15,8 @@ if not reaper.APIExists("JS_ReaScriptAPI_Version") then
 else
     local version = reaper.JS_ReaScriptAPI_Version()
     if version < 1.002 then
-        reaper.MB( "Your JS_ReaScriptAPI version is " .. version .. "\nPlease update to latest version.", "Older version is installed", 0 )
-        return reaper.defer(function() end)
+		reaper.MB( "Your JS_ReaScriptAPI version is " .. version .. "\nPlease update to latest version.", "Older version is installed", 0 )
+		return reaper.defer(function() end)
     end
 end
 
@@ -26,10 +26,16 @@ require("Modules/Mouse")
 require("Modules/Utils")
 
 local function Main()
-    local tbl = Get_On_Demand_DATA()
-    if not tbl then return end
-    Show_menu(tbl)
+	local tbl = Get_On_Demand_DATA()
+	if not tbl then return end
+	local num = tbl.idx + 1
+	if num > #tbl.info then return end
+	reaper.PreventUIRefresh(1)
+	reaper.Undo_BeginBlock2(0)
+	Set_Virtual_Track(tbl.rprobj, tbl, num)
+	reaper.Undo_EndBlock2(0, "VT: Recall Version " .. tbl.info[num].name, -1)
+	reaper.MarkProjectDirty(0)
+	reaper.PreventUIRefresh(-1)
 end
 
-reaper.atexit(StoreInProject)
 xpcall(Main, GetCrash())

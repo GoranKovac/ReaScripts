@@ -28,8 +28,14 @@ require("Modules/Utils")
 local function Main()
     local tbl = Get_On_Demand_DATA()
     if not tbl then return end
-    Show_menu(tbl)
+    local num = tbl.idx - 1
+    if num == 0 then return end
+    reaper.PreventUIRefresh(1)
+    reaper.Undo_BeginBlock2(0)
+    Set_Virtual_Track(tbl.rprobj, tbl, num)
+    reaper.Undo_EndBlock2(0, "VT: Recall Version " .. tbl.info[num].name, -1)
+    reaper.MarkProjectDirty(0)
+    reaper.PreventUIRefresh(-1)
 end
 
-reaper.atexit(StoreInProject)
 xpcall(Main, GetCrash())

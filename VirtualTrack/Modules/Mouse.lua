@@ -196,7 +196,7 @@ function MouseInfo(x,y,p)
 			OnMouseHold(LB_DOWN,RB_DOWN)
 		end
 	elseif not LB_DOWN and mouse.last_RMB_state or not RB_DOWN and mouse.last_LMB_state then
-		OnMouseUp(LB_DOWN, RB_DOWN)
+		OnMouseUp()
 	end
 
 	return mouse

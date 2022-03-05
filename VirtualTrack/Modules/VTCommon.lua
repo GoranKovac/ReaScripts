@@ -88,12 +88,6 @@ local function Store_To_PEXT(el)
     end
 end
 
-function StoreInProject()
-    for _, v in pairs(VT_TB) do
-        Store_To_PEXT(v)
-    end
-end
-
 local function Restore_From_PEXT(el)
     local rv, stored
     if reaper.ValidatePtr(el.rprobj, "MediaTrack*") then
@@ -235,16 +229,36 @@ local function GetChunkTableForObject(track)
     return nil;
 end
 
-local function SaveCurrentState(track, tbl)
+local function SaveCurrentStateNoStore(track, tbl)
     local name = tbl.info[tbl.idx].name
     local chunk_tbl = GetChunkTableForObject(track)
-    tbl.info[tbl.idx] = chunk_tbl
-    tbl.info[tbl.idx].name = name
-    Store_To_PEXT(tbl)
+    if chunk_tbl then
+        tbl.info[tbl.idx] = chunk_tbl
+        tbl.info[tbl.idx].name = name
+        return true
+    end
+    return false
+end
+
+local function SaveCurrentState(track, tbl)
+    if SaveCurrentStateNoStore(track, tbl) == true then return Store_To_PEXT(tbl) end
+    return false
+end
+
+function StoreInProject()
+    -- reaper.Undo_BeginBlock2(0)
+    local rv = true
+    for k, v in pairs(VT_TB) do
+        rv = (SaveCurrentState(k, v) and rv == true) and true or false
+    end
+    if rv == true then reaper.MarkProjectDirty(0) end -- at least mark the project dirty, even if we don't offer undo here
+    -- reaper.Undo_EndBlock2(0, "VT: Store State In Project", -1) -- make this undoable?
 end
 
 function Set_Virtual_Track(track, tbl, idx)
-    SaveCurrentState(track, tbl)
+    SaveCurrentStateNoStore(track, tbl) -- check rv?
+    tbl.idx = idx
+    Store_To_PEXT(tbl)
     SwapVirtualTrack(track, tbl, idx)
 end
 
@@ -313,7 +327,7 @@ function Mute_view_test(track)
 end
 
 local function GetItemLane(item, lanes)
-    local y = reaper.GetMediaItemInfo_Value(item, 'F_FREEMODE_Y')
+    local y = reaper.GetMediaItemInfo_Value(item, 'F_FREEMODE_Y') --/ reaper.GetMediaItemInfo_Value(item, 'F_FREEMODE_H'))
     local idx = math.floor(y * lanes) + 1
     return idx
 end
@@ -321,10 +335,11 @@ end
 local function StoreLaneData(track, tbl)
     local num_items = reaper.CountTrackMediaItems(track)
     for j = 1, #tbl.info do
+        local order_index = j == 1 and tbl.idx or (j == tbl.idx and 1 or j) -- REVERT TO ORIGINAL TABLE ORDER SINCE WE SET SELECTED VERSION TO TOP LANE
         local lane_chunk = {}
         for i = 1, num_items do
             local item = reaper.GetTrackMediaItem(track, i-1)
-            if GetItemLane(item, #tbl.info) == j then
+            if GetItemLane(item, #tbl.info) == order_index then
                 local item_chunk = Get_Item_Chunk(item)
                 item_chunk = Exclude_Pattern(item_chunk)
                 lane_chunk[#lane_chunk + 1] = item_chunk
@@ -335,6 +350,47 @@ local function StoreLaneData(track, tbl)
         tbl.info[j].name = name
     end
     Store_To_PEXT(tbl)
+end
+
+local function Get_Razor_Data(track)
+    if not reaper.ValidatePtr(track, "MediaTrack*") then return end
+    local ret, area = reaper.GetSetMediaTrackInfo_String(track, 'P_RAZOREDITS_EXT', '', false)
+    if area == "" then return nil end
+    local area_info = {}
+    for i in string.gmatch(area, "%S+") do
+        table.insert(area_info, tonumber(i))
+    end
+    return area_info
+end
+
+function Copy_lane_area(tbl)
+    if not reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then return end -- PREVENT DOING THIS ON ENVELOPES
+    local area_info = Get_Razor_Data(tbl.rprobj)
+    if not area_info then return end
+    reaper.PreventUIRefresh(1)
+    local area_start = area_info[1]
+    reaper.Main_OnCommand(40060, 0) -- COPY AREA
+    local current_edit_cursor_pos = reaper.GetCursorPosition()
+    reaper.SetEditCurPos(area_start, false, false)
+    reaper.Main_OnCommand(42398, 0) -- PASTE AREA
+    reaper.CF_SetClipboard("") -- CLEAR BUFFER
+    reaper.SetEditCurPos(current_edit_cursor_pos, false, false)
+    for i = 1, reaper.CountSelectedMediaItems(0) do -- DO IN REVERSE TO AVOID CRASHES ON ITERATING MULTIPLE ITEMS
+        local item =  reaper.GetSelectedMediaItem(0, i-1)
+        reaper.SetMediaItemInfo_Value(item, "F_FREEMODE_Y", 0)
+        reaper.SetMediaItemInfo_Value(item, "F_FREEMODE_H", 1/#tbl.info)
+    end
+    reaper.Main_OnCommand(40930, 0)
+    for i = reaper.CountSelectedMediaItems(0), 1, -1 do -- DO IN REVERSE TO AVOID CRASHES ON ITERATING MULTIPLE ITEMS
+        local item = reaper.GetSelectedMediaItem(0, i-1)
+        reaper.SetMediaItemSelected(item, false)
+    end
+    reaper.PreventUIRefresh(-1)
+    reaper.UpdateArrange()
+end
+
+function Comp_PT_Style(tbl)
+    Copy_lane_area(tbl)
 end
 
 function ShowAll(track, tbl)
@@ -348,7 +404,8 @@ function ShowAll(track, tbl)
     Clear(track)
     if toggle == 2 then
         for i = 1, #tbl.info do
-            local items = Create_item(track, tbl.info[i])
+            local order_index = i == 1 and tbl.idx or (i == tbl.idx and 1 or i) -- SET CURRENT SELECTED VERSION TO FIRST LANE (MAKE IT LIKE PT WHERE SELECTED VERSION IS IN TOP LANE)
+            local items = Create_item(track, tbl.info[order_index])
             for j = 1, #items do
                 reaper.SetMediaItemInfo_Value(items[j], "F_FREEMODE_H", 1 / #tbl.info)
                 reaper.SetMediaItemInfo_Value(items[j], "F_FREEMODE_Y", ((i - 1) / #tbl.info))
@@ -361,12 +418,37 @@ function ShowAll(track, tbl)
     reaper.UpdateTimeline()
 end
 
+local projectStateChangeCount = reaper.GetProjectStateChangeCount(0)
+function UpdateChangeCount()
+    projectStateChangeCount = reaper.GetProjectStateChangeCount(0)
+end
+
+function CheckUndoState()
+    local changeCount = reaper.GetProjectStateChangeCount()
+    if changeCount ~= projectStateChangeCount then
+        projectStateChangeCount = changeCount
+        local success = false
+        local last_action = reaper.Undo_CanRedo2(0)
+        if last_action and last_action:find("VT: ") then success = true end
+        if not success then last_action = reaper.Undo_CanUndo2(0) end
+        if last_action and last_action:find("VT: ") then success = true end
+        if not success then return end
+        for k, v in pairs(VT_TB) do
+            local oldidx = v.idx
+            Restore_From_PEXT(v)
+            if oldidx ~= v.idx then
+                v:update_xywh() -- update buttons
+            end
+        end
+    end
+end
+
 local function CreateVTElements(direct)
     for track in pairs(TBH) do
         if not VT_TB[track] then
             local Element = Get_class_tbl()
             local tr_data = GetChunkTableForObject(track)
-            tr_data.name = "MAIN"
+            tr_data.name = "Version - 1"
             VT_TB[track] = Element:new(track, {tr_data}, direct)
             Restore_From_PEXT(VT_TB[track])
         end
@@ -378,6 +460,25 @@ function Create_VT_Element()
     ValidateRemovedTracks()
     if reaper.CountTracks(0) == 0 then return end
     CreateVTElements(0)
+end
+
+function Get_On_Demand_DATA()
+    local window, segment, details = reaper.BR_GetMouseCursorContext()
+    if window == "tcp" or window == "arrange" then
+        local rprobj, takeenv = nil, nil
+        if segment == "track" then
+            rprobj = reaper.BR_GetMouseCursorContext_Track();
+        elseif segment == "envelope" then
+            rprobj, takeenv = reaper.BR_GetMouseCursorContext_Envelope()
+            rprobj = takeenv and nil or rprobj
+        end
+        if rprobj then
+          if SetupSingleElement(rprobj) and #Get_VT_TB() then
+            local _, v = next(Get_VT_TB())
+            return v
+          end
+        end
+    end
 end
 
 function SetupSingleElement(rprobj)

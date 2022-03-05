@@ -33,6 +33,7 @@ require("Modules/Utils")
 
 local function RunLoop()
     Create_VT_Element()
+    CheckUndoState()
     Draw(Get_VT_TB())
     reaper.defer(RunLoop)
 end

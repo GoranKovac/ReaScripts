@@ -28,8 +28,7 @@ require("Modules/Utils")
 local function Main()
     local tbl = Get_On_Demand_DATA()
     if not tbl then return end
-    Show_menu(tbl)
+    Comp_PT_Style(tbl)
 end
 
-reaper.atexit(StoreInProject)
 xpcall(Main, GetCrash())

@@ -48,6 +48,12 @@ local function Update_tempo_map()
     reaper.UpdateTimeline()
 end
 
+local function Set_Info_table(tbl)
+    local version_to_move = table.remove(tbl.info, math.floor(tbl.idx))
+    table.insert(tbl.info, 1, version_to_move)
+    tbl.idx = 1
+end
+
 function Show_menu(tbl)
     reaper.PreventUIRefresh(1)
     local title = "supper_awesome_mega_menu"
@@ -80,10 +86,17 @@ function Show_menu(tbl)
 
     if m_num > #tbl.info then
         m_num = (m_num - #tbl.info) + 1
+        -- for the moment, all of these functions can change the state
+        reaper.Undo_BeginBlock2(0)
         _G[menu_options[m_num].fname](tbl.rprobj, tbl, tbl.idx)
+        reaper.Undo_EndBlock2(0, "VT: " .. menu_options[m_num].name, -1)
+        reaper.MarkProjectDirty(0)
     else
         if m_num ~= 0 then
+            reaper.Undo_BeginBlock2(0)
             Set_Virtual_Track(tbl.rprobj, tbl, m_num)
+            reaper.Undo_EndBlock2(0, "VT: Recall Version " .. tbl.info[m_num].name, -1)
+            reaper.MarkProjectDirty(0)
         end
     end
     UPDATE_DRAW = true
@@ -93,6 +106,7 @@ function Show_menu(tbl)
     reaper.PreventUIRefresh(-1)
     if update_tempo then Update_tempo_map() end
     reaper.UpdateArrange()
+    UpdateChangeCount()
 end
 
 function Element:new(rprobj, info, direct)
@@ -190,6 +204,7 @@ end
 function Element:track()
     if not Get_TBH_Info()[self.rprobj].vis then return end
     --if self:LanemouseClick() then Mute_view_test(self.rprobj)end
+    --if self:LanemouseClick() then PT_COMP_TEST()end
     if self:mouseClick() then Show_menu(self) end
 end
 

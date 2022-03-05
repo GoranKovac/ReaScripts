@@ -4,7 +4,6 @@
    * Version: 0.01
 	 * NoIndex: true
 --]]
-
 function tableToString(table)
     return serializeTable(table)
 end
