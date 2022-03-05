@@ -117,10 +117,6 @@ local function Restore_From_PEXT(el)
     end
 end
 
-function Create_undo_name(func, track, idx)
-    return "VT:" .. math.floor(idx) .. "|".. "TRACK:" .. tostring(track) .. "|" .. "ACTION:" .. func
-end
-
 function Get_TBH_Info(tr)
     if not tr then return TBH end
     if TBH[tr] then
