@@ -138,7 +138,7 @@ end
 
 function Element:update_xywh()
     local y, h = Get_TBH_Info(self.rprobj)
-    self.y = math.floor(y + h/4)
+    self.y = math.floor(y + h/4) + 15
     self:draw()
 end
 
