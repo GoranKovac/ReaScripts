@@ -1,7 +1,7 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 0.72
+-- @version 0.73
 -- @changelog
 --   + Small fix of sorting LaneMode and Showing active in MENU
 -- @provides
