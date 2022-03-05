@@ -3,7 +3,7 @@
 -- @license GPL v3
 -- @version 0.72
 -- @changelog
---   + Added shortcut to activate lane under mouse
+--   + Small fix of sorting LaneMode and Showing active in MENU
 -- @provides
 --   {Images,Modules}/*
 --   [main] Virtual_track_Direct.lua

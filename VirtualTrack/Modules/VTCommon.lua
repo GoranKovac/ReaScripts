@@ -322,12 +322,13 @@ function GetItemLane(item, lanes)
     return idx
 end
 
-function Mute_view_test(tbl, num)
-    --local order_index = num == 1 and tbl.idx or (num == tbl.idx and 1 or num) -- NEED TO SWAP ACTIVE LANE WITH FIRST LANE SINCE ACTIVE VERSION IS ON TOP
+function Mute_view_test(tbl, num, sort)
+    local order_index = num == 1 and tbl.idx or (num == tbl.idx and 1 or num) -- NEED TO SWAP ACTIVE LANE WITH FIRST LANE SINCE ACTIVE VERSION IS ON TOP
+    order_index = sort and order_index or num
     reaper.PreventUIRefresh(1)
     for i = 1, reaper.CountTrackMediaItems(tbl.rprobj) do
         local item = reaper.GetTrackMediaItem(tbl.rprobj, i - 1)
-        if GetItemLane(item, #tbl.info) == num then
+        if GetItemLane(item, #tbl.info) == order_index then
             reaper.SetMediaItemInfo_Value(item, "B_MUTE", 0)
         else
             reaper.SetMediaItemInfo_Value(item, "B_MUTE", 1)
@@ -435,7 +436,7 @@ function ShowAll(track, tbl)
                 reaper.SetMediaItemInfo_Value(items[j], "F_FREEMODE_Y", ((i - 1) / #tbl.info))
             end
         end
-        Mute_view_test(tbl, tbl.idx)
+        Mute_view_test(tbl, tbl.idx, true)
     elseif toggle == 0 then
         Create_item(track, tbl.info[tbl.idx])
     end
