@@ -24,8 +24,8 @@ local function Main()
 	reaper.PreventUIRefresh(1)
 	reaper.Undo_BeginBlock2(0)
 	Set_Virtual_Track(tbl.rprobj, tbl, num)
+	StoreStateToDocument(tbl)
 	reaper.Undo_EndBlock2(0, "VT: Recall Version " .. tbl.info[num].name, -1)
-	reaper.MarkProjectDirty(0)
 	reaper.PreventUIRefresh(-1)
 end
 

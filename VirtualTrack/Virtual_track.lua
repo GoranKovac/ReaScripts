@@ -37,7 +37,7 @@ local function Main()
 end
 
 function Exit()
-    StoreInProject()
+    --StoreInProject()
     for _, v in pairs(Get_VT_TB()) do
         v:cleanup()
     end

@@ -190,6 +190,7 @@ end
 
 function Get_Env_Chunk(env)
     local _, env_chunk = reaper.GetEnvelopeStateChunk(env, "")
+    env_chunk = env_chunk:gsub("<BIN VirtualTrack.->", "") -- remove our P_EXT from this chunk!
     return {env_chunk}
 end
 
@@ -238,9 +239,9 @@ local function GetChunkTableForObject(track)
     return nil
 end
 
-local function SaveCurrentStateNoStore(track, tbl)
+function UpdateInternalState(tbl)
     local name = tbl.info[tbl.idx].name
-    local chunk_tbl = GetChunkTableForObject(track)
+    local chunk_tbl = GetChunkTableForObject(tbl.rprobj)
     if chunk_tbl then
         tbl.info[tbl.idx] = chunk_tbl
         tbl.info[tbl.idx].name = name
@@ -249,8 +250,12 @@ local function SaveCurrentStateNoStore(track, tbl)
     return false
 end
 
+function StoreStateToDocument(tbl)
+    Store_To_PEXT(tbl)
+end
+
 local function SaveCurrentState(track, tbl)
-    if SaveCurrentStateNoStore(track, tbl) == true then return Store_To_PEXT(tbl) end
+    if UpdateInternalState(tbl) == true then return Store_To_PEXT(tbl) end
     return false
 end
 
@@ -265,9 +270,7 @@ function StoreInProject()
 end
 
 function Set_Virtual_Track(track, tbl, idx)
-    SaveCurrentStateNoStore(track, tbl) -- check rv?
     tbl.idx = idx
-    Store_To_PEXT(tbl)
     SwapVirtualTrack(track, tbl, idx)
 end
 
@@ -347,7 +350,7 @@ local function StoreLaneData(track, tbl)
         local order_index = j == 1 and tbl.idx or (j == tbl.idx and 1 or j) -- REVERT TO ORIGINAL TABLE ORDER SINCE WE SET SELECTED VERSION TO TOP LANE
         local lane_chunk = {}
         for i = 1, num_items do
-            local item = reaper.GetTrackMediaItem(track, i-1)           
+            local item = reaper.GetTrackMediaItem(track, i-1)
             if GetItemLane(item, #tbl.info) == order_index then
                 local item_chunk = Get_Item_Chunk(item)
                 item_chunk = Exclude_Pattern(item_chunk)
@@ -410,7 +413,7 @@ function ShowAll(track, tbl)
     local fimp = reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE")
     local toggle = fimp == 2 and 0 or 2
     if fimp == 0 then
-        SaveCurrentState(track, tbl)
+        --SaveCurrentState(track, tbl)
     elseif fimp == 2 then
         StoreLaneData(track, tbl)
     end
@@ -432,8 +435,11 @@ function ShowAll(track, tbl)
 end
 
 local projectStateChangeCount = reaper.GetProjectStateChangeCount(0)
+
 function UpdateChangeCount()
+    local changeCount = projectStateChangeCount
     projectStateChangeCount = reaper.GetProjectStateChangeCount(0)
+    -- MSG("" .. changeCount .. " -> " .. projectStateChangeCount)
 end
 
 function CheckUndoState()
@@ -444,8 +450,6 @@ function CheckUndoState()
         local last_action = reaper.Undo_CanRedo2(0)
         if last_action and last_action:find("VT: ") then success = true end
         if not success then last_action = reaper.Undo_CanUndo2(0) end
-        if last_action and last_action:find("VT: ") then success = true end
-        if not success then return end
         for k, v in pairs(VT_TB) do
             local oldidx = v.idx
             Restore_From_PEXT(v)

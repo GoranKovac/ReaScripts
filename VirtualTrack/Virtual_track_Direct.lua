@@ -22,5 +22,5 @@ local function Main()
     Show_menu(tbl)
 end
 
-reaper.atexit(StoreInProject)
+--reaper.atexit(StoreInProject)
 xpcall(Main, GetCrash())

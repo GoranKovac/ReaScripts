@@ -53,6 +53,7 @@ local function Update_tempo_map()
 end
 
 function Show_menu(tbl)
+    UpdateInternalState(tbl)
     reaper.PreventUIRefresh(1)
     local title = "supper_awesome_mega_menu"
     gfx.init( title, 0, 0, 0, 0, 0 )
@@ -87,14 +88,14 @@ function Show_menu(tbl)
         -- for the moment, all of these functions can change the state
         reaper.Undo_BeginBlock2(0)
         _G[menu_options[m_num].fname](tbl.rprobj, tbl, tbl.idx)
+        StoreStateToDocument(tbl)
         reaper.Undo_EndBlock2(0, "VT: " .. menu_options[m_num].name, -1)
-        reaper.MarkProjectDirty(0)
     else
         if m_num ~= 0 then
             reaper.Undo_BeginBlock2(0)
             Set_Virtual_Track(tbl.rprobj, tbl, m_num)
+            StoreStateToDocument(tbl)
             reaper.Undo_EndBlock2(0, "VT: Recall Version " .. tbl.info[m_num].name, -1)
-            reaper.MarkProjectDirty(0)
         end
     end
     UPDATE_DRAW = true
