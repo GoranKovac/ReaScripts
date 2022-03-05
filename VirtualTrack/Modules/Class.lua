@@ -188,7 +188,7 @@ function Element:mouseClick()
     return mouse.l_click and self:ButtonIn(mouse.ox, mouse.oy)
 end
 
-function Element:LanemouseClick()
+function Element:LanemouseDClick()
     return mouse.l_dclick and self:LaneButtonIn(mouse.ox, mouse.oy)
 end
 
@@ -202,7 +202,7 @@ end
 
 function Element:track()
     if not Get_TBH_Info()[self.rprobj].vis then return end
-    --if self:LanemouseClick() then Mute_view_test(self.rprobj)end
+    --if self:LanemouseDClick() then Mute_view_test(self.rprobj)end
     --if self:LanemouseClick() then PT_COMP_TEST()end
     if self:mouseClick() then Show_menu(self) end
 end
