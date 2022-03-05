@@ -6,10 +6,12 @@
 --]]
 local reaper = reaper
 local gfx = gfx
-local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
---local track_view_wnd = reaper.JS_Window_FindEx( main_wnd, main_wnd, "REAPERTCPDisplay", "" )
-local track_view_wnd = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8)
 
+local script_folder = debug.getinfo(1).source:match("@?(.*[\\|/])")
+local image_path = script_folder:gsub("\\Modules", "") .. "Images/VT_icon_empty.png"
+
+local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
+local track_window = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8)
 local BUTTON_UPDATE
 local mouse
 local Element = {}
@@ -29,11 +31,10 @@ function Get_class_tbl(tbl)
 end
 
 local function ConcatMenuNames(track)
-    local concat = ""
+    local concat, fimp = "", ""
     local options = reaper.ValidatePtr(track, "MediaTrack*") and #menu_options or #menu_options-1
-    local fimp = ""
-    if reaper.ValidatePtr(mouse.otr, "MediaTrack*") then
-        if reaper.GetMediaTrackInfo_Value(mouse.otr, "I_FREEMODE") == 2 then
+    if reaper.ValidatePtr(track, "MediaTrack*") then
+        if reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") == 2 then
             fimp = "!"
         end
     end
@@ -52,6 +53,7 @@ local function Update_tempo_map()
 end
 
 function Show_menu(tbl)
+    UpdateInternalState(tbl)
     reaper.PreventUIRefresh(1)
     local title = "supper_awesome_mega_menu"
     gfx.init( title, 0, 0, 0, 0, 0 )
@@ -77,90 +79,132 @@ function Show_menu(tbl)
         versions[#versions+1] = i == tbl.idx and gray_out .. "!" .. i .. " - ".. tbl.info[i].name or gray_out .. i .. " - " .. tbl.info[i].name
     end
 
-    menu_options[1].name = ">" .. math.floor(tbl.idx) .. " Virtual TR : " .. tbl.info[tbl.idx].name .. "|" .. table.concat(versions, "|") .."|<|"
+    menu_options[1].name = ">" .. "MAIN Virtual TR : " .. tbl.info[tbl.idx].name .. "|" .. table.concat(versions, "|") .."|<|"
 
     local m_num = gfx.showmenu(ConcatMenuNames(tbl.rprobj))
 
     if m_num > #tbl.info then
         m_num = (m_num - #tbl.info) + 1
-        _G[menu_options[m_num].fname](tbl.rprobj, tbl)
+        -- for the moment, all of these functions can change the state
+        reaper.Undo_BeginBlock2(0)
+        _G[menu_options[m_num].fname](tbl.rprobj, tbl, tbl.idx)
+        StoreStateToDocument(tbl)
+        reaper.Undo_EndBlock2(0, "VT: " .. menu_options[m_num].name, -1)
     else
         if m_num ~= 0 then
+            reaper.Undo_BeginBlock2(0)
             Set_Virtual_Track(tbl.rprobj, tbl, m_num)
+            StoreStateToDocument(tbl)
+            reaper.Undo_EndBlock2(0, "VT: Recall Version " .. tbl.info[m_num].name, -1)
         end
     end
-    UPDATE_BUTTON = true
+    UPDATE_DRAW = true
     reaper.JS_LICE_Clear(tbl.font_bm, 0x00000000)
     gfx.quit()
+
     reaper.PreventUIRefresh(-1)
     if update_tempo then Update_tempo_map() end
     reaper.UpdateArrange()
+    UpdateChangeCount()
 end
 
-function Element:new(rprobj, info)
+function Element:new(rprobj, info, direct)
     local elm = {}
-    elm.rprobj, elm.bm = rprobj, reaper.JS_LICE_LoadPNG( image_path )
+    elm.rprobj = rprobj
+    elm.bm = reaper.JS_LICE_LoadPNG(image_path)
     elm.x, elm.y, elm.w, elm.h = 0, 0, reaper.JS_LICE_GetWidth(elm.bm), reaper.JS_LICE_GetHeight(elm.bm)
     elm.font_bm = reaper.JS_LICE_CreateBitmap(true, elm.w, elm.h)
     elm.font = reaper.JS_LICE_CreateFont()
-    reaper.JS_LICE_SetFontColor( elm.font, 0xFFFFFFFF )
+    reaper.JS_LICE_SetFontColor(elm.font, 0xFFFFFFFF)
+    reaper.JS_LICE_Clear(self.font_bm, 0x00000000)
     elm.info = info
-    elm.idx = 1;
+    elm.idx = 1
     setmetatable(elm, self)
     self.__index = self
+    if direct == 1 then -- unused
+        self:cleanup()
+    end
     return elm
+end
+
+function Element:cleanup()
+    if self.bm then reaper.JS_LICE_DestroyBitmap(self.bm) end
+    self.bm = nil
+    if self.font_bm then reaper.JS_LICE_DestroyBitmap(self.font_bm) end
+    self.font_bm = nil
+    if self.font then reaper.JS_LICE_DestroyFont(self.font) end
+    self.font = nil
 end
 
 function Element:update_xywh()
     local y, h = Get_TBH_Info(self.rprobj)
-    self.y = math.floor(y + h/4)
+    self.y = math.floor(y + h/4) + 15
     self:draw()
+end
+
+function Element:draw_text()
+    reaper.JS_LICE_Clear(self.font_bm, 0x00000000)
+    reaper.JS_LICE_Blit(self.font_bm, 0, 0, self.bm, 0, 0, self.w, self.h, 1, "ADD")
+    reaper.JS_LICE_DrawText(self.font_bm, self.font, math.floor(self.idx) .."/".. #self.info, 3, 0, 1, 80, 80)
 end
 
 function Element:draw()
     if Get_TBH_Info()[self.rprobj].vis then
-        reaper.JS_LICE_Clear(self.font_bm, 0x00000000)
-        reaper.JS_LICE_Blit(self.font_bm, 0, 0, self.bm, 0, 0, self.w, self.h, 1, "ADD") -- copy
-        reaper.JS_LICE_DrawText(self.font_bm, self.font, math.floor(self.idx), 2, self.w/4 + 2, 1, 80, 80)
-        reaper.JS_Composite(track_view_wnd, self.x, self.y, self.w, self.h, self.font_bm, 0, 0, self.w, self.h, true)
+        self:draw_text()
+        reaper.JS_Composite(track_window, self.x, self.y, self.w, self.h, self.font_bm, 0, 0, self.w, self.h, true)
     else
-        reaper.JS_Composite_Unlink(track_view_wnd, self.bm, true)
+        reaper.JS_Composite_Unlink(track_window, self.font_bm, true)
     end
 end
-function Element:pointIN(sx, sy)
+
+function Element:ButtonIn(sx, sy)
     local x, y = To_client(sx, sy)
     return x >= self.x and x <= self.x + self.w and y >= self.y and y <= self.y + self.h
 end
 
+function Element:LaneButtonIn(sx, sy)
+    if not mouse.lane then return end
+    local x, y = To_client(sx, sy)
+    local t, h = Get_TBH_Info(self.rprobj)
+    local lane_button_w, lane_button_h = 28, 13
+    local lane_button_t = (h - 14) / #self.info
+    local lane_box_h = lane_button_t * (mouse.lane-1)
+    return x > 0 and x <= lane_button_w and y >= t + lane_box_h and y <= t + lane_box_h + lane_button_h
+end
+
 function Element:mouseIN()
-    return mouse.l_down == false and self:pointIN(mouse.x, mouse.y)
+    return mouse.l_down == false and self:ButtonIn(mouse.x, mouse.y)
 end
 
 function Element:mouseDown()
-    return mouse.l_down and self:pointIN(mouse.ox, mouse.oy)
+    return mouse.l_down and self:ButtonIn(mouse.ox, mouse.oy)
 end
 
 function Element:mouseUp()
-    return mouse.l_up --and self:pointIN(mouse.ox, mouse.oy)
+    return mouse.l_up --and self:ButtonIn(mouse.ox, mouse.oy)
 end
 
 function Element:mouseClick()
-    return mouse.l_click and self:pointIN(mouse.ox, mouse.oy)
+    return mouse.l_click and self:ButtonIn(mouse.ox, mouse.oy)
+end
+
+function Element:LanemouseDClick()
+    return mouse.l_dclick and self:LaneButtonIn(mouse.ox, mouse.oy)
 end
 
 function Element:mouseR_Down()
-    return mouse.r_down and self:pointIN(mouse.ox, mouse.oy)
+    return mouse.r_down and self:ButtonIn(mouse.ox, mouse.oy)
 end
 
 function Element:mouseM_Down()
-  --return m_state&64==64 and self:pointIN(mouse_ox, mouse_oy)
+  --return m_state&64==64 and self:ButtonIn(mouse_ox, mouse_oy)
 end
 
 function Element:track()
     if not Get_TBH_Info()[self.rprobj].vis then return end
-    if self:mouseClick() then
-        Show_menu(self)
-    end
+    --if self:LanemouseDClick() then Mute_view_test(self.rprobj)end
+    --if self:LanemouseClick() then PT_COMP_TEST()end
+    if self:mouseClick() then Show_menu(self) end
 end
 
 local function Track(tbl)
@@ -179,7 +223,7 @@ local function Arrange_view_info()
     if not TBH then return end
     local last_pr_tr = reaper.GetTrack(0, reaper.CountTracks(0) - 1)
     local proj_state = reaper.GetProjectStateChangeCount(0) -- PROJECT STATE
-    local _, scroll, _, _, scroll_b = reaper.JS_Window_GetScrollInfo(track_view_wnd, "SB_VERT") -- GET VERTICAL SCROLL
+    local _, scroll, _, _, scroll_b = reaper.JS_Window_GetScrollInfo(track_window, "SB_VERT") -- GET VERTICAL SCROLL
     local _, Arr_end_time = reaper.GetSet_ArrangeView2(0, false, 0, 0) -- GET ARRANGE VIEW
     if prev_Arr_end_time ~= Arr_end_time then -- THIS ONE ALWAYS CHANGES WHEN ZOOMING IN OUT
         prev_Arr_end_time = Arr_end_time
@@ -206,9 +250,9 @@ function Draw(tbl)
     mouse = MouseInfo()
     mouse.tr, mouse.r_t, mouse.r_b = Get_track_under_mouse(mouse.x, mouse.y)
     Track(tbl)
-    local is_view_changed = Arrange_view_info() or UPDATE_BUTTON
-    BUTTON_UPDATE = is_view_changed and true
+    local reaper_arrange_updated = Arrange_view_info() or UPDATE_DRAW
+    BUTTON_UPDATE = reaper_arrange_updated and true
     Update_BTNS(tbl, BUTTON_UPDATE)
     BUTTON_UPDATE = false
-    UPDATE_BUTTON = false
+    UPDATE_DRAW = false
 end
