@@ -5,9 +5,7 @@
 	 * NoIndex: true
 --]]
 
-local reaper = reaper
-
-package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
+package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]]:gsub("\\Shortcuts", "") .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 
 require("Modules/VTCommon")
 require("Modules/Class")
@@ -23,7 +21,7 @@ local function Main()
 	if num > #tbl.info then return end
 	reaper.PreventUIRefresh(1)
 	reaper.Undo_BeginBlock2(0)
-	Set_Virtual_Track(tbl.rprobj, tbl, num)
+	SwapVirtualTrack(tbl.rprobj, tbl, num)
 	StoreStateToDocument(tbl)
 	reaper.Undo_EndBlock2(0, "VT: Recall Version " .. tbl.info[num].name, -1)
 	reaper.PreventUIRefresh(-1)

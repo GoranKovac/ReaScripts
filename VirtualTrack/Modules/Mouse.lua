@@ -138,7 +138,7 @@ function X_to_pos(x)
 end
 
 function Get_track_under_mouse(x, y)
-	local TBH = Get_TBH_Info()
+	local TBH = Get_TBH()
     local _, cy = To_client(x, y)
     local track, env_info = reaper.GetTrackFromPoint(x, y)
 

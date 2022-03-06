@@ -1,18 +1,16 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 0.73
+-- @version 0.74
 -- @changelog
---   + Small fix of sorting LaneMode and Showing active in MENU
+--   + Spring Cleaning
+--   + Moved shortcuts to its own folder
+--   + Added Reaper version check and redirects to url if missing
 -- @provides
 --   {Images,Modules}/*
+--   [main] Shortcuts/*.lua
 --   [main] Virtual_track_Direct.lua
---   [main] VT_Promote_to_main.lua
---   [main] VT_Switch_DOWN.lua
---   [main] VT_Switch_UP.lua
---   [main] VT_Activate_lane_under_mouse.lua
 
-local reaper = reaper
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 
 require("Modules/VTCommon")
@@ -22,15 +20,11 @@ require("Modules/Utils")
 
 Check_Requirements()
 
-local function RunLoop()
+local function Main()
     Create_VT_Element()
     CheckUndoState()
     Draw(Get_VT_TB())
-    reaper.defer(RunLoop)
-end
-
-local function Main()
-    xpcall(RunLoop, GetCrash())
+    reaper.defer(Main)
 end
 
 function Exit()
@@ -40,4 +34,4 @@ function Exit()
 end
 
 reaper.atexit(Exit)
-Main()
+xpcall(Main, GetCrash())

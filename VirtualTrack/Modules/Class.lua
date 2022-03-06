@@ -95,10 +95,10 @@ function Show_menu(tbl)
         if m_num ~= 0 then
             reaper.Undo_BeginBlock2(0)
             if not lane_mode then
-                Set_Virtual_Track(tbl.rprobj, tbl, m_num)
+                SwapVirtualTrack(tbl.rprobj, tbl, m_num)
                 StoreStateToDocument(tbl)
             else
-                Mute_view_test(tbl, m_num) -- MUTE VIEW IS ONLY FOR PREVIEWING VERSIONS WE DO NOT SAVE ANYTHING HERE (STORE IS HAPPENING WHEN WE TOGGLE SHOW ALL VARIANTS OPTION)
+                Mute_view(tbl, m_num) -- MUTE VIEW IS ONLY FOR PREVIEWING VERSIONS WE DO NOT SAVE ANYTHING HERE (STORE IS HAPPENING WHEN WE TOGGLE SHOW ALL VARIANTS OPTION)
             end
             reaper.Undo_EndBlock2(0, "VT: Recall Version " .. tbl.info[m_num].name, -1)
         end
@@ -154,7 +154,7 @@ function Element:draw_text()
 end
 
 function Element:draw()
-    if Get_TBH_Info()[self.rprobj].vis then
+    if Get_TBH()[self.rprobj].vis then
         self:draw_text()
         reaper.JS_Composite(track_window, self.x, self.y, self.w, self.h, self.font_bm, 0, 0, self.w, self.h, true)
     else
@@ -206,8 +206,8 @@ function Element:mouseM_Down()
 end
 
 function Element:track()
-    if not Get_TBH_Info()[self.rprobj].vis then return end
-    --if self:LanemouseDClick() then Mute_view_test(self, self.idx)end
+    if not Get_TBH()[self.rprobj].vis then return end
+    --if self:LanemouseDClick() then Mute_view(self, self.idx)end
     --if self:LanemouseClick() then PT_COMP_TEST()end
     if self:mouseClick() then Show_menu(self) end
 end
@@ -224,7 +224,7 @@ end
 
 local prev_Arr_end_time, prev_proj_state, last_scroll, last_scroll_b, last_pr_t, last_pr_h
 local function Arrange_view_info()
-    local TBH = Get_TBH_Info()
+    local TBH = Get_TBH()
     if not TBH then return end
     local last_pr_tr = reaper.GetTrack(0, reaper.CountTracks(0) - 1)
     local proj_state = reaper.GetProjectStateChangeCount(0) -- PROJECT STATE

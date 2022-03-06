@@ -5,8 +5,6 @@
 	 * NoIndex: true
 --]]
 
-local reaper = reaper
-
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 
 require("Modules/VTCommon")
@@ -22,5 +20,4 @@ local function Main()
     Show_menu(tbl)
 end
 
---reaper.atexit(StoreInProject)
 xpcall(Main, GetCrash())

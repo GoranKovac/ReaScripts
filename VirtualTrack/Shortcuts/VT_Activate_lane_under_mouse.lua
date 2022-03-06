@@ -5,9 +5,7 @@
 	 * NoIndex: true
 --]]
 
-local reaper = reaper
-
-package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
+package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]]:gsub("\\Shortcuts", "") .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 
 require("Modules/VTCommon")
 require("Modules/Class")
@@ -23,7 +21,7 @@ local function Main()
     if not mouse.lane then return end
     if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
         if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 2 then
-            Mute_view_test(tbl, mouse.lane)
+            Mute_view(tbl, mouse.lane)
             reaper.UpdateArrange()
         end
     end

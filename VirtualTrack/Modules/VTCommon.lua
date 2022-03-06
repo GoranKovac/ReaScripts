@@ -9,13 +9,31 @@ local reaper = reaper
 local VT_TB = {}
 local TBH
 
+local function open_url(url)
+    local OS = reaper.GetOS()
+    if (OS == "OSX32" or OS == "OSX64") or OS == 'macOS-arm64' then
+        os.execute('open "" "' .. url .. '"')
+    else
+        os.execute('start "" "' .. url .. '"')
+    end
+end
+
 function Check_Requirements()
-    -- if tonumber(reaper.GetAppVersion()) < 6.50 then
-    --     reaper.MB( "Reaper version is bellow required, Please download latest prerelease from www.landoleet.org", 0 )
-    --     return reaper.defer(function() end)
-    -- end
+    local reaper_version = reaper.GetAppVersion()
+    local big, small = reaper_version:match("(6).(%d%d)")
+    if not reaper_version:match("+dev") then
+        reaper.MB( "Reaper DEV Prerelease version v6.50+dev is required for this script. Please download latest DEV prerelease from www.landoleet.org", "SCRIPT REQUIREMENTS", 0 )
+        open_url("www.landoleet.org")
+        return reaper.defer(function() end)
+    else
+        if tonumber(small) < 50 then
+            reaper.MB( "Reaper DEV Prerelease version v6.50+dev is required for this script. Please download latest DEV prerelease from www.landoleet.org", "SCRIPT REQUIREMENTS", 0 )
+            open_url("www.landoleet.org")
+            return reaper.defer(function() end)
+        end
+    end
     if not reaper.APIExists("JS_ReaScriptAPI_Version") then
-        reaper.MB( "JS_ReaScriptAPI is required for this script", "Please download it from ReaPack", 0 )
+        reaper.MB( "JS_ReaScriptAPI is required for this script", "Please download it from ReaPack", "SCRIPT REQUIREMENTS", 0 )
         return reaper.defer(function() end)
     else
         local version = reaper.JS_ReaScriptAPI_Version()
@@ -119,10 +137,7 @@ local function Restore_From_PEXT(el)
 end
 
 function Get_TBH_Info(tr)
-    if not tr then return TBH end
-    if TBH[tr] then
-       return TBH[tr].t, TBH[tr].h, TBH[tr].b
-    end
+    if TBH[tr] then return TBH[tr].t, TBH[tr].h, TBH[tr].b end
 end
 
 function Get_VT_TB() return VT_TB end
@@ -262,11 +277,6 @@ function StoreInProject()
     if rv == true then reaper.MarkProjectDirty(0) end -- at least mark the project dirty, even if we don't offer undo here
 end
 
-function Set_Virtual_Track(track, tbl, idx)
-    tbl.idx = idx
-    SwapVirtualTrack(track, tbl, idx)
-end
-
 function SwapVirtualTrack(track, tbl, idx)
     Clear(track)
     if reaper.ValidatePtr(track, "MediaTrack*") then
@@ -318,11 +328,10 @@ end
 
 function GetItemLane(item, lanes)
     local y = reaper.GetMediaItemInfo_Value(item, 'F_FREEMODE_Y')
-    local idx = round(y * lanes) + 1
-    return idx
+    return round(y * lanes) + 1
 end
 
-function Mute_view_test(tbl, num, sort)
+function Mute_view(tbl, num, sort)
     local order_index = num == 1 and tbl.idx or (num == tbl.idx and 1 or num) -- NEED TO SWAP ACTIVE LANE WITH FIRST LANE SINCE ACTIVE VERSION IS ON TOP
     order_index = sort and order_index or num
     reaper.PreventUIRefresh(1)
@@ -436,7 +445,7 @@ function ShowAll(track, tbl)
                 reaper.SetMediaItemInfo_Value(items[j], "F_FREEMODE_Y", ((i - 1) / #tbl.info))
             end
         end
-        Mute_view_test(tbl, tbl.idx, true)
+        Mute_view(tbl, tbl.idx, true)
     elseif toggle == 0 then
         Create_item(track, tbl.info[tbl.idx])
     end
@@ -495,19 +504,14 @@ function SetupSingleElement(rprobj)
             GetSingleTrackEnvelopeXYH(rprobj, tr_t, tr_vis)
         end
     end
-    if #TBH then
-        CreateVTElements(1)
-        return 1
-    end
+    if #TBH then CreateVTElements(1) return 1 end
     return 0
 end
 
 local projectStateChangeCount = reaper.GetProjectStateChangeCount(0)
 
 function UpdateChangeCount()
-    local changeCount = projectStateChangeCount
     projectStateChangeCount = reaper.GetProjectStateChangeCount(0)
-    -- MSG("" .. changeCount .. " -> " .. projectStateChangeCount)
 end
 
 function CheckUndoState()
@@ -518,7 +522,7 @@ function CheckUndoState()
         local last_action = reaper.Undo_CanRedo2(0)
         if last_action and last_action:find("VT: ") then success = true end
         if not success then last_action = reaper.Undo_CanUndo2(0) end
-        for k, v in pairs(VT_TB) do
+        for _, v in pairs(VT_TB) do
             local oldidx = v.idx
             Restore_From_PEXT(v)
             if oldidx ~= v.idx then
