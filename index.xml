@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="0eafdc22966d426f6107ef6a7d0ea69942710ceb" name="Sexan_Scripts">
+<index version="1" commit="f11543049f4d58ccb4435bcb791f0c76d0c13f47" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -1025,6 +1025,21 @@
         <source main="main" file="Shortcuts/VT_Switch_DOWN.lua">https://github.com/GoranKovac/ReaScripts/raw/33242a163a937f89c717ab8b895ce9bbf6715e56/VirtualTrack/Shortcuts/VT_Switch_DOWN.lua</source>
         <source main="main" file="Shortcuts/VT_Switch_UP.lua">https://github.com/GoranKovac/ReaScripts/raw/33242a163a937f89c717ab8b895ce9bbf6715e56/VirtualTrack/Shortcuts/VT_Switch_UP.lua</source>
         <source main="main" file="Virtual_track_Direct.lua">https://github.com/GoranKovac/ReaScripts/raw/33242a163a937f89c717ab8b895ce9bbf6715e56/VirtualTrack/Virtual_track_Direct.lua</source>
+      </version>
+      <version name="0.76" author="Sexan" time="2022-03-06T12:59:01Z">
+        <changelog><![CDATA[+ Menu Refactor (for easier future improvements)
++ Disabled other menus in LaneMode for now]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/f11543049f4d58ccb4435bcb791f0c76d0c13f47/VirtualTrack/Virtual_track.lua</source>
+        <source file="Images/VT_icon_empty.png">https://github.com/GoranKovac/ReaScripts/raw/f11543049f4d58ccb4435bcb791f0c76d0c13f47/VirtualTrack/Images/VT_icon_empty.png</source>
+        <source file="Modules/Class.lua">https://github.com/GoranKovac/ReaScripts/raw/f11543049f4d58ccb4435bcb791f0c76d0c13f47/VirtualTrack/Modules/Class.lua</source>
+        <source file="Modules/Mouse.lua">https://github.com/GoranKovac/ReaScripts/raw/f11543049f4d58ccb4435bcb791f0c76d0c13f47/VirtualTrack/Modules/Mouse.lua</source>
+        <source file="Modules/Utils.lua">https://github.com/GoranKovac/ReaScripts/raw/f11543049f4d58ccb4435bcb791f0c76d0c13f47/VirtualTrack/Modules/Utils.lua</source>
+        <source file="Modules/VTCommon.lua">https://github.com/GoranKovac/ReaScripts/raw/f11543049f4d58ccb4435bcb791f0c76d0c13f47/VirtualTrack/Modules/VTCommon.lua</source>
+        <source main="main" file="Shortcuts/VT_Activate_lane_under_mouse.lua">https://github.com/GoranKovac/ReaScripts/raw/f11543049f4d58ccb4435bcb791f0c76d0c13f47/VirtualTrack/Shortcuts/VT_Activate_lane_under_mouse.lua</source>
+        <source main="main" file="Shortcuts/VT_Promote_to_main.lua">https://github.com/GoranKovac/ReaScripts/raw/f11543049f4d58ccb4435bcb791f0c76d0c13f47/VirtualTrack/Shortcuts/VT_Promote_to_main.lua</source>
+        <source main="main" file="Shortcuts/VT_Switch_DOWN.lua">https://github.com/GoranKovac/ReaScripts/raw/f11543049f4d58ccb4435bcb791f0c76d0c13f47/VirtualTrack/Shortcuts/VT_Switch_DOWN.lua</source>
+        <source main="main" file="Shortcuts/VT_Switch_UP.lua">https://github.com/GoranKovac/ReaScripts/raw/f11543049f4d58ccb4435bcb791f0c76d0c13f47/VirtualTrack/Shortcuts/VT_Switch_UP.lua</source>
+        <source main="main" file="Virtual_track_Direct.lua">https://github.com/GoranKovac/ReaScripts/raw/f11543049f4d58ccb4435bcb791f0c76d0c13f47/VirtualTrack/Virtual_track_Direct.lua</source>
       </version>
     </reapack>
   </category>
