@@ -1,7 +1,7 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 0.75
+-- @version 0.76
 -- @changelog
 --   + Menu Refactor (for easier future improvements)
 --   + Disabled other menus in LaneMode for now
