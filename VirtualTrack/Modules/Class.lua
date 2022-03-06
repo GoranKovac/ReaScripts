@@ -12,8 +12,7 @@ local image_path = script_folder:gsub("\\Modules", "") .. "Images/VT_icon_empty.
 
 local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
 local track_window = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8)
-local BUTTON_UPDATE
-local mouse
+local BUTTON_UPDATE, mouse
 local Element = {}
 
 local function GetMenuTBL()
@@ -29,9 +28,7 @@ local function GetMenuTBL()
     return menu
 end
 
-function Get_class_tbl(tbl)
-    return Element
-end
+function Get_class_tbl(tbl) return Element end
 
 local function MakeMenu(tbl)
     local menu_options = GetMenuTBL()
