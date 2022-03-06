@@ -161,7 +161,6 @@ local function Exclude_Pattern(chunk)
 end
 
 local function Get_Item_Chunk(item)
-    if not item then return end
     local _, chunk = reaper.GetItemStateChunk(item, "", false)
     return chunk
 end
@@ -328,7 +327,9 @@ end
 
 function GetItemLane(item, lanes)
     local y = reaper.GetMediaItemInfo_Value(item, 'F_FREEMODE_Y')
-    return round(y * lanes) + 1
+    local h = reaper.GetMediaItemInfo_Value(item, 'F_FREEMODE_H')
+    return round(y / h) + 1
+    --return round(y * lanes) + 1
 end
 
 function Mute_view(tbl, num, sort)
@@ -441,8 +442,8 @@ function ShowAll(track, tbl)
             local order_index = i == 1 and tbl.idx or (i == tbl.idx and 1 or i) -- SET CURRENT SELECTED VERSION TO FIRST LANE (MAKE IT LIKE PT WHERE SELECTED VERSION IS IN TOP LANE)
             local items = Create_item(track, tbl.info[order_index])
             for j = 1, #items do
-                reaper.SetMediaItemInfo_Value(items[j], "F_FREEMODE_H", 1 / #tbl.info)
                 reaper.SetMediaItemInfo_Value(items[j], "F_FREEMODE_Y", ((i - 1) / #tbl.info))
+                reaper.SetMediaItemInfo_Value(items[j], "F_FREEMODE_H", 1 / #tbl.info)
             end
         end
         Mute_view(tbl, tbl.idx, true)
