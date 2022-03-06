@@ -205,6 +205,8 @@ function Get_Env_Chunk(env)
 end
 
 local function Set_Env_Chunk(env, data)
+    local env_lane_height = Env_prop(env, "laneHeight")
+    data[1] = data[1]:gsub("LANEHEIGHT 0 0", "LANEHEIGHT " .. env_lane_height .. " 0") -- remove our P_EXT from this chunk!
     reaper.SetEnvelopeStateChunk(env, data[1], false)
 end
 

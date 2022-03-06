@@ -1,10 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 0.76
+-- @version 0.77
 -- @changelog
---   + Menu Refactor (for easier future improvements)
---   + Disabled other menus in LaneMode for now
+--   + Keep current envelope lane height when setting different chunk
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
