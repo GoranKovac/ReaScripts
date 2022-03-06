@@ -3,7 +3,8 @@
 -- @license GPL v3
 -- @version 0.75
 -- @changelog
---   + Spring Cleaning
+--   + Menu Refactor (for easier future improvements)
+--   + Disabled other menus in LaneMode for now
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
