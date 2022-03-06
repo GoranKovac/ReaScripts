@@ -40,7 +40,7 @@ local function MakeMenu(tbl)
             menu_options[7].name = "!" .. menu_options[7].name
             -- PREVENT OTHER ACTIONS IN LANE MODE ATM
             for i = #menu_options, 1, -1 do
-                if i ~= 7 and i ~= 1 then
+                if menu_options[i].fname ~= "ShowAll" and i ~= 1 then
                     table.remove(menu_options,i)
                 end
             end
