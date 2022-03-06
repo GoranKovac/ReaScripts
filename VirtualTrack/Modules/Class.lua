@@ -16,32 +16,48 @@ local BUTTON_UPDATE
 local mouse
 local Element = {}
 
-local menu_options = {
-    [1] = { name = "",                      fname = "" },
-    [2] = { name = "Create New Variant",    fname = "CreateNew" },
-    [3] = { name = "Duplicate Variant",     fname = "Duplicate" },
-    [4] = { name = "Delete Variant",        fname = "Delete" },
-    [5] = { name = "Clear Variant",         fname = "Clear" },
-    [6] = { name = "Rename Variants",       fname = "Rename" },
-    [7] = { name = "Show All Variants",     fname = "ShowAll" }
-}
+local function GetMenuTBL()
+    local menu = {
+        [1] = { name = "",                      fname = "" },
+        [2] = { name = "Create New Variant",    fname = "CreateNew" },
+        [3] = { name = "Duplicate Variant",     fname = "Duplicate" },
+        [4] = { name = "Delete Variant",        fname = "Delete" },
+        [5] = { name = "Clear Variant",         fname = "Clear" },
+        [6] = { name = "Rename Variants",       fname = "Rename" },
+        [7] = { name = "Show All Variants",     fname = "ShowAll" }
+    }
+    return menu
+end
 
 function Get_class_tbl(tbl)
     return Element
 end
 
-local function ConcatMenuNames(track)
-    local concat, fimp = "", ""
-    local options = reaper.ValidatePtr(track, "MediaTrack*") and #menu_options or #menu_options-1
-    if reaper.ValidatePtr(track, "MediaTrack*") then
-        if reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") == 2 then
-            fimp = "!"
+local function MakeMenu(tbl)
+    local menu_options = GetMenuTBL()
+    local concat, main_name, lane_mode = "", "", nil
+    if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
+        main_name = "MAIN Virtual TR : "
+        if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 2 then
+            lane_mode = true
+            menu_options[7].name = "!" .. menu_options[7].name
         end
+    elseif reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then
+        main_name = "MAIN Virtual ENV : "
+        table.remove(menu_options, 7) -- REMOVE "ShowAll" KEY IF ENVELOPE
     end
-    for i = 1, options do
-        concat = concat .. (i ~= 7 and menu_options[i].name or fimp .. menu_options[i].name) .. (i ~= options and "|" or "")
+    local version_id = lane_mode and Unmuted_lane(tbl) or tbl.idx
+    local versions = {}
+    for i = 1, #tbl.info do
+        versions[#versions+1] = i == version_id and "!" .. i .. " - ".. tbl.info[i].name or i .. " - " .. tbl.info[i].name
     end
-    return concat
+
+    menu_options[1].name = ">" .. main_name .. tbl.info[tbl.idx].name .. "|" .. table.concat(versions, "|") .."|<|"
+
+    for i = 1, #menu_options do
+        concat = concat .. menu_options[i].name .. (i ~= #menu_options and "|" or "")
+    end
+    return concat, menu_options, lane_mode
 end
 
 local function Update_tempo_map()
@@ -52,9 +68,7 @@ local function Update_tempo_map()
     reaper.UpdateTimeline()
 end
 
-function Show_menu(tbl)
-    UpdateInternalState(tbl)
-    reaper.PreventUIRefresh(1)
+local function CreateGFXWindow()
     local title = "supper_awesome_mega_menu"
     gfx.init( title, 0, 0, 0, 0, 0 )
     local hwnd = reaper.JS_Window_Find( title, true )
@@ -63,26 +77,18 @@ function Show_menu(tbl)
     end
     gfx.x = gfx.mouse_x
     gfx.y = gfx.mouse_y
+end
+
+function Show_menu(tbl)
+    UpdateInternalState(tbl)
+    reaper.PreventUIRefresh(1)
+    CreateGFXWindow()
 
     local update_tempo = tbl.rprobj == reaper.GetMasterTrack(0) and true or false
     tbl = tbl.rprobj == reaper.GetMasterTrack(0) and Get_VT_TB()[reaper.GetTrackEnvelopeByName( tbl.rprobj, "Tempo map" )] or tbl
 
-    local lane_mode
-    if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
-        if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 2 then
-            lane_mode = true
-        end
-    end
-
-    local version_id = lane_mode and Unmuted_lane(tbl) or tbl.idx
-    local versions = {}
-    for i = 1, #tbl.info do
-        versions[#versions+1] = i == version_id and "!" .. i .. " - ".. tbl.info[i].name or i .. " - " .. tbl.info[i].name
-    end
-
-    menu_options[1].name = ">" .. "MAIN Virtual TR : " .. tbl.info[tbl.idx].name .. "|" .. table.concat(versions, "|") .."|<|"
-
-    local m_num = gfx.showmenu(ConcatMenuNames(tbl.rprobj))
+    local concat_menu, menu_options, lane_mode = MakeMenu(tbl)
+    local m_num = gfx.showmenu(concat_menu)
 
     if m_num > #tbl.info then
         m_num = (m_num - #tbl.info) + 1
@@ -103,6 +109,7 @@ function Show_menu(tbl)
             reaper.Undo_EndBlock2(0, "VT: Recall Version " .. tbl.info[m_num].name, -1)
         end
     end
+
     UPDATE_DRAW = true
     reaper.JS_LICE_Clear(tbl.font_bm, 0x00000000)
     gfx.quit()

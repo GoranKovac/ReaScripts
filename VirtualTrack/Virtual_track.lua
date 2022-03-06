@@ -1,11 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 0.74
+-- @version 0.75
 -- @changelog
 --   + Spring Cleaning
---   + Moved shortcuts to its own folder
---   + Added Reaper version check and redirects to url if missing
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua

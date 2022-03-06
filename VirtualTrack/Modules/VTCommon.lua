@@ -156,9 +156,7 @@ end
 
 local patterns = {"SEL 0", "SEL 1"}
 local function Exclude_Pattern(chunk)
-    for i = 1, #patterns do
-        chunk = string.gsub(chunk, patterns[i], "")
-    end
+    for i = 1, #patterns do chunk = string.gsub(chunk, patterns[i], "") end
     return chunk
 end
 
@@ -367,7 +365,7 @@ end
 
 local function Get_Razor_Data(track)
     if not reaper.ValidatePtr(track, "MediaTrack*") then return end
-    local ret, area = reaper.GetSetMediaTrackInfo_String(track, 'P_RAZOREDITS_EXT', '', false)
+    local _, area = reaper.GetSetMediaTrackInfo_String(track, 'P_RAZOREDITS_EXT', '', false)
     if area == "" then return nil end
     local area_info = {}
     for i in string.gmatch(area, "%S+") do
