@@ -38,6 +38,12 @@ local function MakeMenu(tbl)
         if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 2 then
             lane_mode = true
             menu_options[7].name = "!" .. menu_options[7].name
+            -- PREVENT OTHER ACTIONS IN LANE MODE ATM
+            for i = #menu_options, 1, -1 do
+                if i ~= 7 and i ~= 1 then
+                    table.remove(menu_options,i)
+                end
+            end
         end
     elseif reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then
         main_name = "MAIN Virtual ENV : "
