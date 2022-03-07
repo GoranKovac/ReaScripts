@@ -21,7 +21,7 @@ local function Main()
     if num == 0 then return end
     reaper.PreventUIRefresh(1)
     reaper.Undo_BeginBlock2(0)
-    SwapVirtualTrack(tbl.rprobj, tbl, num)
+    SwapVirtualTrack(tbl, num)
     StoreStateToDocument(tbl)
     reaper.Undo_EndBlock2(0, "VT: Recall Version " .. tbl.info[num].name, -1)
     reaper.PreventUIRefresh(-1)

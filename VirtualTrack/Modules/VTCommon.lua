@@ -276,69 +276,68 @@ function StoreInProject()
     if rv == true then reaper.MarkProjectDirty(0) end -- at least mark the project dirty, even if we don't offer undo here
 end
 
-function SwapVirtualTrack(track, tbl, idx)
-    Clear(track)
-    if reaper.ValidatePtr(track, "MediaTrack*") then
-        Create_item(track, tbl.info[idx])
-    elseif reaper.ValidatePtr(track, "TrackEnvelope*") then
-        Set_Env_Chunk(track, tbl.info[idx])
+function SwapVirtualTrack(tbl, idx)
+    Clear(tbl)
+    if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
+        Create_item(tbl.rprobj, tbl.info[idx])
+    elseif reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then
+        Set_Env_Chunk(tbl.rprobj, tbl.info[idx])
     end
     tbl.idx = idx;
 end
 
-function CreateNew(track, tbl)
-    Clear(track)
+function CreateNew(tbl)
+    Clear(tbl)
     tbl.info[#tbl.info + 1] = {}
     tbl.idx = #tbl.info
     tbl.info[#tbl.info].name = "Version - " .. #tbl.info
 end
 
-function Duplicate(track, tbl)
+function Duplicate(tbl)
     local name = tbl.info[tbl.idx].name
-    tbl.info[#tbl.info + 1] = GetChunkTableForObject(track)
+    tbl.info[#tbl.info + 1] = GetChunkTableForObject(tbl.rprobj)
     tbl.idx = #tbl.info
     tbl.info[#tbl.info].name = "Duplicate - " .. name
 end
 
-function Clear(track)
-    if reaper.ValidatePtr(track, "MediaTrack*") then
-        local num_items = reaper.CountTrackMediaItems(track)
-        for i = num_items, 1, -1 do
-            local item = reaper.GetTrackMediaItem(track, i - 1)
-            reaper.DeleteTrackMediaItem(track, item)
-        end
-    elseif reaper.ValidatePtr(track, "TrackEnvelope*") then
-        Make_Empty_Env(track)
-    end
-end
-
-function Delete(track, tbl)
+function Delete(tbl)
     if tbl.idx == 1 then return end
     table.remove(tbl.info, tbl.idx)
     tbl.idx = tbl.idx <= #tbl.info and tbl.idx or #tbl.info
-    SwapVirtualTrack(track, tbl, tbl.idx)
+    SwapVirtualTrack(tbl, tbl.idx)
 end
 
-function Rename(track, tbl)
+function Clear(tbl)
+    if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
+        local num_items = reaper.CountTrackMediaItems(tbl.rprobj)
+        for i = num_items, 1, -1 do
+            local item = reaper.GetTrackMediaItem(tbl.rprobj, i - 1)
+            reaper.DeleteTrackMediaItem(tbl.rprobj, item)
+        end
+    elseif reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then
+        Make_Empty_Env(tbl.rprobj)
+    end
+end
+
+function Rename(tbl)
     local retval, name = reaper.GetUserInputs("Name Version ", 1, "Version Name :", tbl.info[tbl.idx].name)
     if not retval then return end
     tbl.info[tbl.idx].name = name
 end
 
-function GetItemLane(item, lanes)
+function GetItemLane(item)
     local y = reaper.GetMediaItemInfo_Value(item, 'F_FREEMODE_Y')
     local h = reaper.GetMediaItemInfo_Value(item, 'F_FREEMODE_H')
     return round(y / h) + 1
-    --return round(y * lanes) + 1
 end
 
 function Mute_view(tbl, num, sort)
     local order_index = num == 1 and tbl.idx or (num == tbl.idx and 1 or num) -- NEED TO SWAP ACTIVE LANE WITH FIRST LANE SINCE ACTIVE VERSION IS ON TOP
-    order_index = sort and order_index or num
+    order_index = sort and order_index or num  -- ONLY SORT FIRST TIME WHEN WE ACTIVATE SHOW ALL MODE
     reaper.PreventUIRefresh(1)
     for i = 1, reaper.CountTrackMediaItems(tbl.rprobj) do
         local item = reaper.GetTrackMediaItem(tbl.rprobj, i - 1)
-        if GetItemLane(item, #tbl.info) == order_index then
+        if GetItemLane(item) == order_index then
             reaper.SetMediaItemInfo_Value(item, "B_MUTE", 0)
         else
             reaper.SetMediaItemInfo_Value(item, "B_MUTE", 1)
@@ -347,14 +346,14 @@ function Mute_view(tbl, num, sort)
     reaper.PreventUIRefresh(-1)
 end
 
-local function StoreLaneData(track, tbl)
-    local num_items = reaper.CountTrackMediaItems(track)
+local function StoreLaneData(tbl)
+    local num_items = reaper.CountTrackMediaItems(tbl.rprobj)
     for j = 1, #tbl.info do
         local order_index = j == 1 and tbl.idx or (j == tbl.idx and 1 or j) -- REVERT TO ORIGINAL TABLE ORDER SINCE WE SET SELECTED VERSION TO TOP LANE
         local lane_chunk = {}
         for i = 1, num_items do
-            local item = reaper.GetTrackMediaItem(track, i-1)
-            if GetItemLane(item, #tbl.info) == order_index then
+            local item = reaper.GetTrackMediaItem(tbl.rprobj, i-1)
+            if GetItemLane(item) == order_index then
                 local item_chunk = Get_Item_Chunk(item)
                 item_chunk = Exclude_Pattern(item_chunk)
                 lane_chunk[#lane_chunk + 1] = item_chunk
@@ -421,7 +420,7 @@ function Unmuted_lane(tbl)
     for i = 1, reaper.CountTrackMediaItems(tbl.rprobj) do
         local item = reaper.GetTrackMediaItem(tbl.rprobj, i - 1)
         if  reaper.GetMediaItemInfo_Value(item, "B_MUTE") == 0 then
-            local unmuted_lane = GetItemLane(item, #tbl.info)
+            local unmuted_lane = GetItemLane(item)
             -- IN LANE MODE WE ALWAYS MOVE ACTIVE VERSION TO FIRST LANE SO WE NEED TO INVERT THOSE VERSIONS TO SEE CORRECTLY SELECTED IN MENU
             local order_index = unmuted_lane == 1 and tbl.idx or (unmuted_lane == tbl.idx and 1 or unmuted_lane)
             return order_index
@@ -429,18 +428,18 @@ function Unmuted_lane(tbl)
     end
 end
 
-function ShowAll(track, tbl)
-    local fimp = reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE")
+function ShowAll(tbl)
+    local fimp = reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE")
     local toggle = fimp == 2 and 0 or 2
     if fimp == 2 then
-        Unmute_All_track_items(track) -- UNMUTE ALL ITEMS FROM MUTE_VIEW FUNCTION BEFORE STORING
-        StoreLaneData(track, tbl)
+        Unmute_All_track_items(tbl.rprobj) -- UNMUTE ALL ITEMS FROM MUTE_VIEW FUNCTION BEFORE STORING
+        StoreLaneData(tbl)
     end
-    Clear(track)
+    Clear(tbl)
     if toggle == 2 then
         for i = 1, #tbl.info do
             local order_index = i == 1 and tbl.idx or (i == tbl.idx and 1 or i) -- SET CURRENT SELECTED VERSION TO FIRST LANE (MAKE IT LIKE PT WHERE SELECTED VERSION IS IN TOP LANE)
-            local items = Create_item(track, tbl.info[order_index])
+            local items = Create_item(tbl.rprobj, tbl.info[order_index])
             for j = 1, #items do
                 reaper.SetMediaItemInfo_Value(items[j], "F_FREEMODE_Y", ((i - 1) / #tbl.info))
                 reaper.SetMediaItemInfo_Value(items[j], "F_FREEMODE_H", 1 / #tbl.info)
@@ -448,9 +447,9 @@ function ShowAll(track, tbl)
         end
         Mute_view(tbl, tbl.idx, true)
     elseif toggle == 0 then
-        Create_item(track, tbl.info[tbl.idx])
+        Create_item(tbl.rprobj, tbl.info[tbl.idx])
     end
-    reaper.SetMediaTrackInfo_Value(track, "I_FREEMODE", toggle)
+    reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", toggle)
     reaper.UpdateTimeline()
 end
 
@@ -485,8 +484,7 @@ function Get_On_Demand_DATA()
         end
         if rprobj then
             if SetupSingleElement(rprobj) and #Get_VT_TB() then
-                local _, v = next(Get_VT_TB())
-                return v
+                return Get_VT_TB()[rprobj]
             end
         end
     end
@@ -531,4 +529,53 @@ function CheckUndoState()
             end
         end
     end
+end
+
+function GetLinkVal()
+    local retval, link = reaper.GetProjExtState(0, "VirtualTrack", "LINK" )
+    if retval ~= 0 then
+        return link == "true" and true or false
+    end
+    return false
+end
+
+function SetLinkVal()
+    local cur_value = GetLinkVal() == true and "false" or "true"
+    reaper.SetProjExtState( 0, "VirtualTrack", "LINK", cur_value )
+end
+
+function GetLinkedTracksVT_INFO(tbl, on_demand) -- WE SEND ON DEMAND FROM DIRECT SCRIPT
+    if not GetLinkVal() then return {tbl} end -- IF LINK IS OFF RETURN ORIGINAL TBL
+    local all_linked_tracks = {}
+    if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
+        all_linked_tracks[#all_linked_tracks+1] = tbl.rprobj
+        for i = 1, reaper.CountTrackEnvelopes(tbl.rprobj) do
+            local env = reaper.GetTrackEnvelope(tbl.rprobj, i - 1)
+            all_linked_tracks[#all_linked_tracks+1] = env
+        end
+    elseif reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then
+        local parent_tr = reaper.GetEnvelopeInfo_Value(tbl.rprobj, "P_TRACK")
+        all_linked_tracks[#all_linked_tracks+1] = parent_tr
+        for i = 1, reaper.CountTrackEnvelopes(parent_tr) do
+            local env = reaper.GetTrackEnvelope(parent_tr, i - 1)
+                all_linked_tracks[#all_linked_tracks+1] = env
+        end
+    end
+    local LINKED_VT = {}
+    -- HERE WE ONLY ADD IF THEY ALREADY EXIST IN VT_TB
+    for i = #all_linked_tracks, 1, -1 do
+        if not on_demand then -- DEFER SCRIPT
+            if VT_TB[all_linked_tracks[i]] then -- ONLY ADD TRACKS IF THEY ARE IN VT_TB (HAVE VERSIONS)
+                LINKED_VT[#LINKED_VT+1] = VT_TB[all_linked_tracks[i]]
+            end
+        else
+            if not VT_TB[all_linked_tracks[i]] then -- IF TRACK DOES NOT EXIST IN VT_TBL
+                SetupSingleElement(all_linked_tracks[i]) -- CREATE NEW ELEMENT
+                LINKED_VT[#LINKED_VT+1] = VT_TB[all_linked_tracks[i]]
+            else
+                LINKED_VT[#LINKED_VT+1] = VT_TB[all_linked_tracks[i]]
+            end
+        end
+    end
+    return LINKED_VT
 end

@@ -23,7 +23,8 @@ local function GetMenuTBL()
         [4] = { name = "Delete Variant",        fname = "Delete" },
         [5] = { name = "Clear Variant",         fname = "Clear" },
         [6] = { name = "Rename Variants",       fname = "Rename" },
-        [7] = { name = "Show All Variants",     fname = "ShowAll" }
+        [7] = { name = "Link TracK&Envelope",   fname = "SetLinkVal" },
+        [8] = { name = "Show All Variants",     fname = "ShowAll" },
     }
     return menu
 end
@@ -37,17 +38,20 @@ local function MakeMenu(tbl)
         main_name = "MAIN Virtual TR : "
         if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 2 then
             lane_mode = true
-            menu_options[7].name = "!" .. menu_options[7].name
+            menu_options[8].name = "!" .. menu_options[8].name
             -- PREVENT OTHER ACTIONS IN LANE MODE ATM
             for i = #menu_options, 1, -1 do
                 if menu_options[i].fname ~= "ShowAll" and i ~= 1 then
                     table.remove(menu_options,i)
                 end
             end
+        else
+            menu_options[7].name = GetLinkVal() == true and "!" .. menu_options[7].name or menu_options[7].name
         end
     elseif reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then
         main_name = "MAIN Virtual ENV : "
-        table.remove(menu_options, 7) -- REMOVE "ShowAll" KEY IF ENVELOPE
+        menu_options[7].name = GetLinkVal() == true and "!" .. menu_options[7].name or menu_options[7].name
+        table.remove(menu_options, 8) -- REMOVE "ShowAll" KEY IF ENVELOPE
     end
     local version_id = lane_mode and Unmuted_lane(tbl) or tbl.idx
     local versions = {}
@@ -75,14 +79,12 @@ local function CreateGFXWindow()
     local title = "supper_awesome_mega_menu"
     gfx.init( title, 0, 0, 0, 0, 0 )
     local hwnd = reaper.JS_Window_Find( title, true )
-    if hwnd then
-        reaper.JS_Window_Show( hwnd, "HIDE" )
-    end
+    if hwnd then reaper.JS_Window_Show( hwnd, "HIDE" ) end
     gfx.x = gfx.mouse_x
     gfx.y = gfx.mouse_y
 end
 
-function Show_menu(tbl)
+function Show_menu(tbl, on_demand)
     UpdateInternalState(tbl)
     reaper.PreventUIRefresh(1)
     CreateGFXWindow()
@@ -97,14 +99,14 @@ function Show_menu(tbl)
         m_num = (m_num - #tbl.info) + 1
         -- for the moment, all of these functions can change the state
         reaper.Undo_BeginBlock2(0)
-        _G[menu_options[m_num].fname](tbl.rprobj, tbl, tbl.idx)
+        _G[menu_options[m_num].fname](tbl, tbl.idx)
         StoreStateToDocument(tbl)
         reaper.Undo_EndBlock2(0, "VT: " .. menu_options[m_num].name, -1)
     else
         if m_num ~= 0 then
             reaper.Undo_BeginBlock2(0)
             if not lane_mode then
-                SwapVirtualTrack(tbl.rprobj, tbl, m_num)
+                SwapVirtualTrack(tbl, m_num)
                 StoreStateToDocument(tbl)
             else
                 Mute_view(tbl, m_num) -- MUTE VIEW IS ONLY FOR PREVIEWING VERSIONS WE DO NOT SAVE ANYTHING HERE (STORE IS HAPPENING WHEN WE TOGGLE SHOW ALL VARIANTS OPTION)
