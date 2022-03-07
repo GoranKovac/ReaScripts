@@ -277,8 +277,8 @@ function StoreInProject()
 end
 
 function SwapVirtualTrack(tbl, idx)
-    Clear(tbl)
     if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
+        Clear(tbl) -- ONLY MEDIA TRACKS NEED TO BE CLEARD SINCE WE ARE INSERTING ITEMS INTO IT, ENVELOPES JUST SWAP CHUNKS
         Create_item(tbl.rprobj, tbl.info[idx])
     elseif reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then
         Set_Env_Chunk(tbl.rprobj, tbl.info[idx])
@@ -331,13 +331,16 @@ function GetItemLane(item)
     return round(y / h) + 1
 end
 
-function Mute_view(tbl, num, sort)
-    local order_index = num == 1 and tbl.idx or (num == tbl.idx and 1 or num) -- NEED TO SWAP ACTIVE LANE WITH FIRST LANE SINCE ACTIVE VERSION IS ON TOP
-    order_index = sort and order_index or num  -- ONLY SORT FIRST TIME WHEN WE ACTIVATE SHOW ALL MODE
+function Mute_view(tbl, num)
+     if GetLinkVal() and reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then
+        MSG("JJJJJJJ")
+        SwapVirtualTrack(tbl, num)
+        return
+    end
     reaper.PreventUIRefresh(1)
     for i = 1, reaper.CountTrackMediaItems(tbl.rprobj) do
         local item = reaper.GetTrackMediaItem(tbl.rprobj, i - 1)
-        if GetItemLane(item) == order_index then
+        if GetItemLane(item) == num then
             reaper.SetMediaItemInfo_Value(item, "B_MUTE", 0)
         else
             reaper.SetMediaItemInfo_Value(item, "B_MUTE", 1)
@@ -349,11 +352,10 @@ end
 local function StoreLaneData(tbl)
     local num_items = reaper.CountTrackMediaItems(tbl.rprobj)
     for j = 1, #tbl.info do
-        local order_index = j == 1 and tbl.idx or (j == tbl.idx and 1 or j) -- REVERT TO ORIGINAL TABLE ORDER SINCE WE SET SELECTED VERSION TO TOP LANE
         local lane_chunk = {}
         for i = 1, num_items do
             local item = reaper.GetTrackMediaItem(tbl.rprobj, i-1)
-            if GetItemLane(item) == order_index then
+            if GetItemLane(item) == j then
                 local item_chunk = Get_Item_Chunk(item)
                 item_chunk = Exclude_Pattern(item_chunk)
                 lane_chunk[#lane_chunk + 1] = item_chunk
@@ -420,15 +422,13 @@ function Unmuted_lane(tbl)
     for i = 1, reaper.CountTrackMediaItems(tbl.rprobj) do
         local item = reaper.GetTrackMediaItem(tbl.rprobj, i - 1)
         if  reaper.GetMediaItemInfo_Value(item, "B_MUTE") == 0 then
-            local unmuted_lane = GetItemLane(item)
-            -- IN LANE MODE WE ALWAYS MOVE ACTIVE VERSION TO FIRST LANE SO WE NEED TO INVERT THOSE VERSIONS TO SEE CORRECTLY SELECTED IN MENU
-            local order_index = unmuted_lane == 1 and tbl.idx or (unmuted_lane == tbl.idx and 1 or unmuted_lane)
-            return order_index
+            return GetItemLane(item)
         end
     end
 end
 
 function ShowAll(tbl)
+    if not reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then return end
     local fimp = reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE")
     local toggle = fimp == 2 and 0 or 2
     if fimp == 2 then
@@ -438,14 +438,13 @@ function ShowAll(tbl)
     Clear(tbl)
     if toggle == 2 then
         for i = 1, #tbl.info do
-            local order_index = i == 1 and tbl.idx or (i == tbl.idx and 1 or i) -- SET CURRENT SELECTED VERSION TO FIRST LANE (MAKE IT LIKE PT WHERE SELECTED VERSION IS IN TOP LANE)
-            local items = Create_item(tbl.rprobj, tbl.info[order_index])
+            local items = Create_item(tbl.rprobj, tbl.info[i])
             for j = 1, #items do
                 reaper.SetMediaItemInfo_Value(items[j], "F_FREEMODE_Y", ((i - 1) / #tbl.info))
                 reaper.SetMediaItemInfo_Value(items[j], "F_FREEMODE_H", 1 / #tbl.info)
             end
         end
-        Mute_view(tbl, tbl.idx, true)
+        Mute_view(tbl, tbl.idx)
     elseif toggle == 0 then
         Create_item(tbl.rprobj, tbl.info[tbl.idx])
     end
