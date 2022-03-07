@@ -1,11 +1,11 @@
 --[[
    * Author: SeXan
    * Licence: GPL v3
-   * Version: 0.07
+   * Version: 0.08
 	 * NoIndex: true
 --]]
 local reaper = reaper
-local main_wnd        = reaper.GetMainHwnd()                            -- GET MAIN WINDOW
+local main_wnd = reaper.GetMainHwnd()                            -- GET MAIN WINDOW
 local track_window = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8) -- GET TRACK VIEW
 --local track_window = reaper.JS_Window_FindEx( main_wnd, main_wnd, "REAPERTCPDisplay", "" )
 
@@ -138,7 +138,7 @@ function X_to_pos(x)
 end
 
 function Get_track_under_mouse(x, y)
-	local TBH = Get_TBH_Info()
+	local TBH = Get_TBH()
     local _, cy = To_client(x, y)
     local track, env_info = reaper.GetTrackFromPoint(x, y)
 
@@ -173,6 +173,7 @@ end
 function MouseInfo(x,y,p)
 	mouse.x, mouse.y = reaper.GetMousePosition()
 	mouse.p = X_to_pos(mouse.x)
+	mouse.tr, mouse.r_t, mouse.r_b = Get_track_under_mouse(mouse.x, mouse.y)
 	mouse.lane = Get_lane_from_mouse_coordinates()
 	if mouse.tr then mouse.last_tr = mouse.tr end
 
