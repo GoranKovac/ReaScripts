@@ -79,7 +79,9 @@ local function CreateGFXWindow()
     local title = "supper_awesome_mega_menu"
     gfx.init( title, 0, 0, 0, 0, 0 )
     local hwnd = reaper.JS_Window_Find( title, true )
-    if hwnd then reaper.JS_Window_Show( hwnd, "HIDE" ) end
+    if hwnd then
+        reaper.JS_Window_Show( hwnd, "HIDE" )
+    end
     gfx.x = gfx.mouse_x
     gfx.y = gfx.mouse_y
 end
@@ -95,19 +97,26 @@ function Show_menu(tbl, on_demand)
     local concat_menu, menu_options, lane_mode = MakeMenu(tbl)
     local m_num = gfx.showmenu(concat_menu)
 
+    local linked_VT = GetLinkedTracksVT_INFO(tbl, on_demand)
+
     if m_num > #tbl.info then
         m_num = (m_num - #tbl.info) + 1
         -- for the moment, all of these functions can change the state
         reaper.Undo_BeginBlock2(0)
-        _G[menu_options[m_num].fname](tbl, tbl.idx)
-        StoreStateToDocument(tbl)
+        for i = 1, #linked_VT do
+            _G[menu_options[m_num].fname](linked_VT[i], linked_VT[i].idx)
+            if menu_options[m_num].fname == "SetLinkVal" then break end
+            StoreStateToDocument(linked_VT[i])
+        end
         reaper.Undo_EndBlock2(0, "VT: " .. menu_options[m_num].name, -1)
     else
         if m_num ~= 0 then
             reaper.Undo_BeginBlock2(0)
             if not lane_mode then
-                SwapVirtualTrack(tbl, m_num)
-                StoreStateToDocument(tbl)
+                for i = 1, #linked_VT do
+                    SwapVirtualTrack(linked_VT[i], m_num)
+                    StoreStateToDocument(linked_VT[i])
+                end
             else
                 Mute_view(tbl, m_num) -- MUTE VIEW IS ONLY FOR PREVIEWING VERSIONS WE DO NOT SAVE ANYTHING HERE (STORE IS HAPPENING WHEN WE TOGGLE SHOW ALL VARIANTS OPTION)
             end
