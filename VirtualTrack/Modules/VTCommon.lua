@@ -332,12 +332,11 @@ function GetItemLane(item)
 end
 
 function Mute_view(tbl, num)
+    reaper.PreventUIRefresh(1)
      if GetLinkVal() and reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then
-        MSG("JJJJJJJ")
         SwapVirtualTrack(tbl, num)
         return
     end
-    reaper.PreventUIRefresh(1)
     for i = 1, reaper.CountTrackMediaItems(tbl.rprobj) do
         local item = reaper.GetTrackMediaItem(tbl.rprobj, i - 1)
         if GetItemLane(item) == num then
@@ -346,6 +345,7 @@ function Mute_view(tbl, num)
             reaper.SetMediaItemInfo_Value(item, "B_MUTE", 1)
         end
     end
+    tbl.idx = num
     reaper.PreventUIRefresh(-1)
 end
 

@@ -97,16 +97,14 @@ function Show_menu(tbl, on_demand)
     local m_num = gfx.showmenu(concat_menu)
 
     local linked_VT = GetLinkedTracksVT_INFO(tbl, on_demand)
-    for i = 1, #linked_VT do
-        UpdateInternalState(linked_VT[i])
-    end
+
+    for i = 1, #linked_VT do UpdateInternalState(linked_VT[i]) end
 
     if m_num > #tbl.info then
         m_num = (m_num - #tbl.info) + 1
         -- for the moment, all of these functions can change the state
         reaper.Undo_BeginBlock2(0)
         for i = 1, #linked_VT do
-            --UpdateInternalState(linked_VT[i])
             _G[menu_options[m_num].fname](linked_VT[i], linked_VT[i].idx)
             if menu_options[m_num].fname == "SetLinkVal" then break end
             StoreStateToDocument(linked_VT[i])
@@ -118,12 +116,10 @@ function Show_menu(tbl, on_demand)
             for i = 1, #linked_VT do
                 if not lane_mode then
                     SwapVirtualTrack(linked_VT[i], m_num)
-                    StoreStateToDocument(linked_VT[i])
                 else
-                    -- THIS NEEDS FIXING OR LINKED FEATURE
                     Mute_view(linked_VT[i], m_num) -- MUTE VIEW IS ONLY FOR PREVIEWING VERSIONS WE DO NOT SAVE ANYTHING HERE (STORE IS HAPPENING WHEN WE TOGGLE SHOW ALL VARIANTS OPTION)
                 end
-                --StoreStateToDocument(linked_VT[i])
+                StoreStateToDocument(linked_VT[i])
             end
             reaper.Undo_EndBlock2(0, "VT: Recall Version " .. m_num, -1)
         end
