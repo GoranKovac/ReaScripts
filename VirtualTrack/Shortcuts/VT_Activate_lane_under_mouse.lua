@@ -17,7 +17,7 @@ Check_Requirements()
 local function Main()
     local tbl = Get_On_Demand_DATA()
     if not tbl then return end
-    local mouse = MouseInfo()
+    local mouse = MouseInfo(Get_VT_TB())
     if not mouse.lane then return end
     if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
         if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 2 then

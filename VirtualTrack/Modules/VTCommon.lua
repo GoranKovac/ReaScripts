@@ -112,6 +112,7 @@ local function Store_To_PEXT(el)
     local storedTable = {}
     storedTable.info = el.info;
     storedTable.idx = math.floor(el.idx)
+    storedTable.comp_idx = math.floor(el.comp_idx)
     local serialized = tableToString(storedTable)
     if reaper.ValidatePtr(el.rprobj, "MediaTrack*") then
         reaper.GetSetMediaTrackInfo_String(el.rprobj, "P_EXT:VirtualTrack", serialized, true)
@@ -132,6 +133,7 @@ local function Restore_From_PEXT(el)
         if storedTable ~= nil then
             el.info = storedTable.info
             el.idx = storedTable.idx
+            el.comp_idx = storedTable.comp_idx
         end
     end
 end
@@ -346,6 +348,7 @@ function Mute_view(tbl, num)
         end
     end
     tbl.idx = num
+    StoreStateToDocument(tbl)
     reaper.PreventUIRefresh(-1)
 end
 
@@ -381,8 +384,10 @@ end
 function Copy_lane_area(tbl)
     if not reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then return end -- PREVENT DOING THIS ON ENVELOPES
     if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 0 then return end -- PREVENT DOING THIS ON ENVELOPES
+    if tbl.comp_idx == 0 or tbl.comp_idx == tbl.idx then return end -- PREVENT COPY ON ITSELF    
     local area_info = Get_Razor_Data(tbl.rprobj)
     if not area_info then return end
+    reaper.Undo_BeginBlock2(0)
     reaper.PreventUIRefresh(1)
     local area_start = area_info[1]
     reaper.Main_OnCommand(40060, 0) -- COPY AREA
@@ -390,12 +395,17 @@ function Copy_lane_area(tbl)
     local current_razor_toggle_state =  reaper.GetToggleCommandState(42421)
     if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN OFF ALWAYS TRIM BEHIND RAZORS (if enabled in project)
     reaper.SetEditCurPos(area_start, false, false)
+    ------------------------ HACK FOR COPY PASTE REMOVING EMPTY LANE
+    local empty_item = reaper.AddMediaItemToTrack(tbl.rprobj)
+    reaper.SetMediaItemInfo_Value(empty_item, "F_FREEMODE_Y", (tbl.comp_idx - 1) / #tbl.info)
+    reaper.SetMediaItemInfo_Value(empty_item, "F_FREEMODE_H", 1/#tbl.info)
+    -----------------------------------------------------------------------
     reaper.Main_OnCommand(42398, 0) -- PASTE AREA
     reaper.CF_SetClipboard("") -- CLEAR BUFFER
     reaper.SetEditCurPos(current_edit_cursor_pos, false, false)
     for i = 1, reaper.CountSelectedMediaItems(0) do -- DO IN REVERSE TO AVOID CRASHES ON ITERATING MULTIPLE ITEMS
         local item =  reaper.GetSelectedMediaItem(0, i-1)
-        reaper.SetMediaItemInfo_Value(item, "F_FREEMODE_Y", 0)
+        reaper.SetMediaItemInfo_Value(item, "F_FREEMODE_Y", (tbl.comp_idx - 1) / #tbl.info)
         reaper.SetMediaItemInfo_Value(item, "F_FREEMODE_H", 1/#tbl.info)
         reaper.SetMediaItemInfo_Value(item, "B_MUTE", 1)
     end
@@ -405,7 +415,9 @@ function Copy_lane_area(tbl)
         reaper.SetMediaItemSelected(item, false)
     end
     if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN ON ALWAYS TRIM BEHIND RAZORS (if enabled in project)
+    reaper.DeleteTrackMediaItem(tbl.rprobj, empty_item) -- REMOVE EMPTY ITEM CREATED TO HACK AROUND COPY PASTE DELETING EMPTY LANE
     reaper.PreventUIRefresh(-1)
+    reaper.Undo_EndBlock2(0, "VT: " .. "COPY AREA TO COMP", -1)
     reaper.UpdateArrange()
 end
 
@@ -446,6 +458,7 @@ function ShowAll(tbl)
         end
         Mute_view(tbl, tbl.idx)
     elseif toggle == 0 then
+        tbl.comp_idx = 0 -- DISABLE COMPING
         Create_item(tbl.rprobj, tbl.info[tbl.idx])
     end
     reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", toggle)
@@ -577,4 +590,14 @@ function GetLinkedTracksVT_INFO(tbl, on_demand) -- WE SEND ON DEMAND FROM DIRECT
         end
     end
     return LINKED_VT
+end
+
+function SetCompLane(tbl, mouse_lane)
+    --local mouse_lane = MouseInfo().la
+    if tbl.comp_idx == 0 then
+        tbl.comp_idx = mouse_lane
+    else
+        tbl.comp_idx = 0
+    end
+    StoreStateToDocument(tbl)
 end
