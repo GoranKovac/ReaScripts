@@ -370,22 +370,32 @@ local function StoreLaneData(tbl)
     end
 end
 
-local function Get_Razor_Data(track)
+function Get_Razor_Data(track)
     if not reaper.ValidatePtr(track, "MediaTrack*") then return end
     local _, area = reaper.GetSetMediaTrackInfo_String(track, 'P_RAZOREDITS_EXT', '', false)
     if area == "" then return nil end
     local area_info = {}
-    for i in string.gmatch(area, "%S+") do
-        table.insert(area_info, tonumber(i))
-    end
-    return area_info
+    for i in string.gmatch(area, "%S+") do table.insert(area_info, tonumber(i)) end
+    local razor_t, razor_b = area_info[3], area_info[4]
+    local razor_h = razor_b - razor_t
+    local razor_lane = round(razor_b / razor_h)
+    return area_info, razor_lane
+end
+
+function Set_Razor_Data(tbl, razor_data, mouse_lane)
+    if not mouse_lane or not razor_data then return end
+    local razor_h = razor_data[4] - razor_data[3]
+    local razor_lane = round(razor_data[4] / razor_h)
+    local lane_delta = ((mouse_lane - razor_lane - 1) * razor_h)
+    local razor_string = razor_data[1] .. " ".. razor_data[2] .. " " .. razor_data[3] + lane_delta .. " " .. razor_data[4] + lane_delta .. ' ""'
+    reaper.GetSetMediaTrackInfo_String(tbl.rprobj, 'P_RAZOREDITS_EXT', razor_string, true)
 end
 
 function Copy_lane_area(tbl)
     if not reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then return end -- PREVENT DOING THIS ON ENVELOPES
     if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 0 then return end -- PREVENT DOING THIS ON ENVELOPES
-    if tbl.comp_idx == 0 or tbl.comp_idx == tbl.idx then return end -- PREVENT COPY ON ITSELF    
-    local area_info = Get_Razor_Data(tbl.rprobj)
+    local area_info, razor_lane = Get_Razor_Data(tbl.rprobj)
+    if tbl.comp_idx == 0 or tbl.comp_idx == razor_lane then return end -- PREVENT COPY ONTO ITSELF
     if not area_info then return end
     reaper.Undo_BeginBlock2(0)
     reaper.PreventUIRefresh(1)
@@ -520,10 +530,7 @@ function SetupSingleElement(rprobj)
 end
 
 local projectStateChangeCount = reaper.GetProjectStateChangeCount(0)
-
-function UpdateChangeCount()
-    projectStateChangeCount = reaper.GetProjectStateChangeCount(0)
-end
+function UpdateChangeCount() projectStateChangeCount = reaper.GetProjectStateChangeCount(0) end
 
 function CheckUndoState()
     local changeCount = reaper.GetProjectStateChangeCount()
@@ -593,11 +600,6 @@ function GetLinkedTracksVT_INFO(tbl, on_demand) -- WE SEND ON DEMAND FROM DIRECT
 end
 
 function SetCompLane(tbl, mouse_lane)
-    --local mouse_lane = MouseInfo().la
-    if tbl.comp_idx == 0 then
-        tbl.comp_idx = mouse_lane
-    else
-        tbl.comp_idx = 0
-    end
+    tbl.comp_idx = tbl.comp_idx == 0 and mouse_lane or 0
     StoreStateToDocument(tbl)
 end

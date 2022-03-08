@@ -22,6 +22,7 @@ local function Main()
     if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
         if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 2 then
             Mute_view(tbl, mouse.lane)
+           -- Set_Razor_Data(tbl, Get_Razor_Data(tbl.rprobj), mouse.lane)
             reaper.UpdateArrange()
         end
     end
