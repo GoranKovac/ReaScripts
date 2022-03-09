@@ -28,7 +28,7 @@ local function GetMenuTBL()
     }
     local lane_menu = {
         [1] = { name = "",                      fname = "" },
-        [2] = { name = "Set as Comp : ",       fname = "SetCompLane" },
+        [2] = { name = "Set as Comp : ",        fname = "SetCompLane" },
         [3] = { name = "Link Track/Envelope",   fname = "SetLinkVal" },
         [4] = { name = "Show All Variants",     fname = "ShowAll" },
     }
@@ -111,8 +111,8 @@ function Show_menu(tbl, on_demand)
         -- for the moment, all of these functions can change the state
         reaper.Undo_BeginBlock2(0)
         for i = 1, #linked_VT do
-            _G[menu_options[m_num].fname](linked_VT[i])
-            if menu_options[m_num].fname == "SetLinkVal" or menu_options[m_num].fname == "SetCompLane" then break end -- DO ONLY ONCE DO NOT ITERATE FOR X TIMES
+            local activated = i > 1 and nil or tbl -- ONLY FOR TOGGLE FUNCTIONS (LINK TRACK/ENVELOPE AND SET COMP)
+            _G[menu_options[m_num].fname](linked_VT[i], activated)
             StoreStateToDocument(linked_VT[i])
         end
         reaper.Undo_EndBlock2(0, "VT: " .. menu_options[m_num].name, -1)

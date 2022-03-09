@@ -335,7 +335,7 @@ end
 
 function Mute_view(tbl, num)
     reaper.PreventUIRefresh(1)
-     if GetLinkVal() and reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then
+    if GetLinkVal() and reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then
         SwapVirtualTrack(tbl, num)
         return
     end
@@ -558,7 +558,8 @@ function GetLinkVal()
     return false
 end
 
-function SetLinkVal()
+function SetLinkVal(_, main_tbl)
+    if not main_tbl then return end
     local cur_value = GetLinkVal() == true and "false" or "true"
     reaper.SetProjExtState( 0, "VirtualTrack", "LINK", cur_value )
 end
@@ -601,9 +602,10 @@ function GetLinkedTracksVT_INFO(tbl, on_demand) -- WE SEND ON DEMAND FROM DIRECT
     return LINKED_VT
 end
 
-function SetCompLane(tbl)
+function SetCompLane(tbl, main_tbl)
+    if not main_tbl then return end
     local mouse_lane = MouseInfo(Get_VT_TB()).lane
-    tbl.comp_idx = tbl.comp_idx == 0 and mouse_lane or 0
+    main_tbl.comp_idx = main_tbl.comp_idx == 0 and mouse_lane or 0
     StoreStateToDocument(tbl)
 end
 
@@ -614,6 +616,6 @@ function CheckIfTableIDX_Exists(parent_tbl, child_tbl)
                 CreateNew(child_tbl)
             end
         end
-        StoreStateToDocument(child_tbl)
+       StoreStateToDocument(child_tbl)
     end
 end
