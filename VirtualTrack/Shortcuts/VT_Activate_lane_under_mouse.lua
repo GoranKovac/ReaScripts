@@ -19,13 +19,16 @@ local function Main()
     if not tbl then return end
     local mouse = MouseInfo(Get_VT_TB())
     if not mouse.lane then return end
+    local linked_VT = GetLinkedTracksVT_INFO(tbl, true)
     if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
         if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 2 then
-            Mute_view(tbl, mouse.lane)
-           -- Set_Razor_Data(tbl, Get_Razor_Data(tbl.rprobj), mouse.lane)
-            reaper.UpdateArrange()
+            for i = 1, #linked_VT do
+                Mute_view(linked_VT[i], mouse.lane)
+                StoreStateToDocument(linked_VT[i])
+            end
         end
     end
+    reaper.UpdateArrange()
 end
 
 xpcall(Main, GetCrash())

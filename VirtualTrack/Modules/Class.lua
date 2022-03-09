@@ -23,13 +23,13 @@ local function GetMenuTBL()
         [4] = { name = "Delete Variant",        fname = "Delete" },
         [5] = { name = "Clear Variant",         fname = "Clear" },
         [6] = { name = "Rename Variants",       fname = "Rename" },
-        [7] = { name = "Link TracK&Envelope",   fname = "SetLinkVal" },
+        [7] = { name = "Link Track/Envelope",   fname = "SetLinkVal" },
         [8] = { name = "Show All Variants",     fname = "ShowAll" },
     }
     local lane_menu = {
         [1] = { name = "",                      fname = "" },
         [2] = { name = "Set as Comp : ",       fname = "SetCompLane" },
-        [3] = { name = "Link TracK&Envelope",   fname = "SetLinkVal" },
+        [3] = { name = "Link Track/Envelope",   fname = "SetLinkVal" },
         [4] = { name = "Show All Variants",     fname = "ShowAll" },
     }
     return main_menu, lane_menu
