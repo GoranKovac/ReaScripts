@@ -603,3 +603,16 @@ function SetCompLane(tbl, mouse_lane)
     tbl.comp_idx = tbl.comp_idx == 0 and mouse_lane or 0
     StoreStateToDocument(tbl)
 end
+
+function CheckIfTableIDX_Exists(parent_tbl, child_tbl)
+    if #parent_tbl.info ~= #child_tbl.info then
+        MSG("DIFFERENT \n" )
+        for i = 1, #parent_tbl.info do
+            if not child_tbl.info[i] then
+                CreateNew(child_tbl)
+                MSG("CREATED :" .. i)
+                StoreStateToDocument(child_tbl)
+            end
+        end
+    end
+end
