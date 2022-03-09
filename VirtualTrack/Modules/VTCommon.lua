@@ -608,14 +608,11 @@ end
 
 function CheckIfTableIDX_Exists(parent_tbl, child_tbl)
     if #parent_tbl.info ~= #child_tbl.info then
-        MSG("DIFFERENT \n" )
         for i = 1, #parent_tbl.info do
             if not child_tbl.info[i] then
                 CreateNew(child_tbl)
-                MSG("CREATED :" .. i)
             end
         end
         StoreStateToDocument(child_tbl)
-        AAA= child_tbl
     end
 end
