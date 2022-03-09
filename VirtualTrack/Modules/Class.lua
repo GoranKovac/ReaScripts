@@ -93,7 +93,6 @@ local function CreateGFXWindow()
 end
 
 function Show_menu(tbl, on_demand)
-   -- local mouse = MouseInfo(Get_VT_TB())
     reaper.PreventUIRefresh(1)
     CreateGFXWindow()
 
