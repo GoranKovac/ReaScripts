@@ -601,7 +601,8 @@ function GetLinkedTracksVT_INFO(tbl, on_demand) -- WE SEND ON DEMAND FROM DIRECT
     return LINKED_VT
 end
 
-function SetCompLane(tbl, mouse_lane)
+function SetCompLane(tbl)
+    local mouse_lane = MouseInfo(Get_VT_TB()).lane
     tbl.comp_idx = tbl.comp_idx == 0 and mouse_lane or 0
     StoreStateToDocument(tbl)
 end

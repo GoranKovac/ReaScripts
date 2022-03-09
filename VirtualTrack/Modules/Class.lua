@@ -93,7 +93,7 @@ local function CreateGFXWindow()
 end
 
 function Show_menu(tbl, on_demand)
-    local mouse = MouseInfo(Get_VT_TB())
+   -- local mouse = MouseInfo(Get_VT_TB())
     reaper.PreventUIRefresh(1)
     CreateGFXWindow()
 
@@ -112,8 +112,8 @@ function Show_menu(tbl, on_demand)
         -- for the moment, all of these functions can change the state
         reaper.Undo_BeginBlock2(0)
         for i = 1, #linked_VT do
-            _G[menu_options[m_num].fname](linked_VT[i], mouse.lane) -- WE ARE NOT USING IDX ON ANY FUNCTION EXCEPT SetCompLane
-            if menu_options[m_num].fname == "SetLinkVal" or menu_options[m_num].fname == "SetCompLane" then break end
+            _G[menu_options[m_num].fname](linked_VT[i])
+            if menu_options[m_num].fname == "SetLinkVal" or menu_options[m_num].fname == "SetCompLane" then break end -- DO ONLY ONCE DO NOT ITERATE FOR X TIMES
             StoreStateToDocument(linked_VT[i])
         end
         reaper.Undo_EndBlock2(0, "VT: " .. menu_options[m_num].name, -1)
