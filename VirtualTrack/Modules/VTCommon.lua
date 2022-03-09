@@ -290,7 +290,7 @@ end
 
 function CreateNew(tbl)
     Clear(tbl)
-    tbl.info[#tbl.info + 1] = {}
+    tbl.info[#tbl.info + 1] = GetChunkTableForObject(tbl.rprobj)
     tbl.idx = #tbl.info
     tbl.info[#tbl.info].name = "Version - " .. #tbl.info
 end
@@ -596,6 +596,8 @@ function GetLinkedTracksVT_INFO(tbl, on_demand) -- WE SEND ON DEMAND FROM DIRECT
             end
         end
     end
+    -- IF NUMBER OF VERSIONS ARE MISSMATCHED BETWEEN PARENT AND CHILD TABLES CREATE EMPTYS FOR MISSINGS ONES
+    for i = 1, #LINKED_VT do CheckIfTableIDX_Exists(tbl, LINKED_VT[i]) end
     return LINKED_VT
 end
 
@@ -611,8 +613,9 @@ function CheckIfTableIDX_Exists(parent_tbl, child_tbl)
             if not child_tbl.info[i] then
                 CreateNew(child_tbl)
                 MSG("CREATED :" .. i)
-                StoreStateToDocument(child_tbl)
             end
         end
+        StoreStateToDocument(child_tbl)
+        AAA= child_tbl
     end
 end

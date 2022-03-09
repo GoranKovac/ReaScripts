@@ -105,10 +105,7 @@ function Show_menu(tbl, on_demand)
     if m_num == 0 then return end
 
     local linked_VT = GetLinkedTracksVT_INFO(tbl, on_demand)
-    for i = 1, #linked_VT do
-        if GetLinkVal() then CheckIfTableIDX_Exists(tbl, linked_VT[i]) end
-        UpdateInternalState(linked_VT[i]) 
-    end
+    for i = 1, #linked_VT do UpdateInternalState(linked_VT[i]) end
 
     if m_num > #tbl.info then
         m_num = (m_num - #tbl.info) + 1
