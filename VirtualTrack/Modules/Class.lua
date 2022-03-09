@@ -122,7 +122,7 @@ function Show_menu(tbl, on_demand)
             if not lane_mode then
                 SwapVirtualTrack(linked_VT[i], m_num)
             else
-                Mute_view(linked_VT[i], m_num) -- MUTE VIEW IS ONLY FOR PREVIEWING VERSIONS WE DO NOT SAVE ANYTHING HERE (STORE IS HAPPENING WHEN WE TOGGLE SHOW ALL VARIANTS OPTION)
+                Mute_view(linked_VT[i], m_num)
             end
             StoreStateToDocument(linked_VT[i])
         end
