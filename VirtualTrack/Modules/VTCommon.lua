@@ -217,18 +217,20 @@ function SwapVirtualTrack(tbl, idx)
     tbl.idx = idx;
 end
 
-function CreateNew(tbl)
-    Clear(tbl)
+local function SaveCurrentTrackState(tbl, name)
     tbl.info[#tbl.info + 1] = GetChunkTableForObject(tbl.rprobj)
     tbl.idx = #tbl.info
-    tbl.info[#tbl.info].name = "Version - " .. #tbl.info
+    tbl.info[#tbl.info].name = name == "Version - " and name .. #tbl.info or name
+end
+
+function CreateNew(tbl)
+    Clear(tbl)
+    SaveCurrentTrackState(tbl, "Version - ")
 end
 
 function Duplicate(tbl)
-    local name = tbl.info[tbl.idx].name
-    tbl.info[#tbl.info + 1] = GetChunkTableForObject(tbl.rprobj)
-    tbl.idx = #tbl.info
-    tbl.info[#tbl.info].name = "Duplicate - " .. name
+    local name = "Duplicate - " .. tbl.info[tbl.idx].name
+    SaveCurrentTrackState(tbl, name)
 end
 
 function Delete(tbl)
@@ -468,7 +470,7 @@ function GetLinkVal()
 end
 
 function SetLinkVal(_, main_tbl)
-    if not main_tbl then return end
+    if not main_tbl then return end -- SKIP ACTIVATING MULTIPLE TIMES SINCE THIS IS TOGGLE
     local cur_value = GetLinkVal() == true and "false" or "true"
     reaper.SetProjExtState( 0, "VirtualTrack", "LINK", cur_value )
 end
@@ -512,7 +514,7 @@ function GetLinkedTracksVT_INFO(tbl, on_demand) -- WE SEND ON DEMAND FROM DIRECT
 end
 
 function SetCompLane(tbl, main_tbl, mouse_lane)
-    if not main_tbl then return end
+    if not main_tbl then return end -- SKIP ACTIVATING MULTIPLE TIMES SINCE THIS IS TOGGLE
     main_tbl.comp_idx = main_tbl.comp_idx == 0 and mouse_lane or 0
     StoreStateToDocument(main_tbl)
     MSG("CALLED")
