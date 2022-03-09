@@ -205,6 +205,22 @@ function Get_lane_from_mouse_coordinates(my, VT_TB)
 	end
 end
 
+function GetMouseTrack_BR()
+    local window, segment, details = reaper.BR_GetMouseCursorContext()
+    if window == "tcp" or window == "arrange" then
+        local rprobj, takeenv = nil, nil
+        if segment == "track" then
+            rprobj = reaper.BR_GetMouseCursorContext_Track();
+        elseif segment == "envelope" then
+            rprobj, takeenv = reaper.BR_GetMouseCursorContext_Envelope()
+            rprobj = takeenv and nil or rprobj
+        end
+        if rprobj then
+            return rprobj
+        end
+    end
+end
+
 function MouseInfo(VT_TB)
 	mouse.x, mouse.y = reaper.GetMousePosition()
 	mouse.p = X_to_pos(mouse.x)

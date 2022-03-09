@@ -55,7 +55,6 @@ local function MakeMenu(tbl)
     end
 
     local version_id = lane_mode and Unmuted_lane(tbl) or tbl.idx
-
     local versions= {}
     for i = 1, #tbl.info do
         versions[#versions+1] = i == version_id and "!" .. i .. " - ".. tbl.info[i].name or i .. " - " .. tbl.info[i].name
@@ -66,7 +65,6 @@ local function MakeMenu(tbl)
     lane_options[2].name = tbl.comp_idx ~= 0 and "!" .. "Unset as Comp : " .. tbl.info[tbl.comp_idx].name or lane_options[2].name
 
     local final_menu = lane_mode == true and lane_options or menu_options
-
     for i = 1, #final_menu do
         concat = concat .. final_menu[i].name .. (i ~= #final_menu and "|" or "")
     end
@@ -93,8 +91,7 @@ local function CreateGFXWindow()
 end
 
 function Show_menu(tbl, on_demand)
-    local mouse = MouseInfo(Get_VT_TB())
-    local mouse_lane = mouse.lane
+    local mouse_lane = MouseInfo(Get_VT_TB()).lane
     reaper.PreventUIRefresh(1)
     CreateGFXWindow()
 
@@ -113,7 +110,7 @@ function Show_menu(tbl, on_demand)
         -- for the moment, all of these functions can change the state
         reaper.Undo_BeginBlock2(0)
         for i = 1, #linked_VT do
-            local activated = i > 1 and nil or tbl -- ONLY FOR TOGGLE FUNCTIONS (LINK TRACK/ENVELOPE AND SET COMP)
+            local activated = i == 1 and tbl or nil -- ONLY FOR TOGGLE FUNCTIONS (LINK TRACK/ENVELOPE AND SET COMP)
             _G[menu_options[m_num].fname](linked_VT[i], activated, mouse_lane)
             StoreStateToDocument(linked_VT[i])
         end
@@ -155,9 +152,7 @@ function Element:new(rprobj, info, direct)
     elm.comp_idx = 0
     setmetatable(elm, self)
     self.__index = self
-    if direct == 1 then -- unused
-        self:cleanup()
-    end
+    if direct == 1 then self:cleanup() end
     return elm
 end
 

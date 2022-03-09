@@ -5,9 +5,74 @@
 	 * NoIndex: true
 --]]
 
+local function open_url(url)
+    local OS = reaper.GetOS()
+    if (OS == "OSX32" or OS == "OSX64") or OS == 'macOS-arm64' then
+        os.execute('open "" "' .. url .. '"')
+    else
+        os.execute('start "" "' .. url .. '"')
+    end
+end
+
+function Check_Requirements()
+    local reaper_version = reaper.GetAppVersion()
+    local big, small = reaper_version:match("(6).(%d%d)")
+    if not reaper_version:match("+dev") then
+        reaper.MB( "Reaper DEV Prerelease version v6.50+dev is required for this script. Please download latest DEV prerelease from www.landoleet.org", "SCRIPT REQUIREMENTS", 0 )
+        open_url("www.landoleet.org")
+        return reaper.defer(function() end)
+    else
+        if tonumber(small) < 50 then
+            reaper.MB( "Reaper DEV Prerelease version v6.50+dev is required for this script. Please download latest DEV prerelease from www.landoleet.org", "SCRIPT REQUIREMENTS", 0 )
+            open_url("www.landoleet.org")
+            return reaper.defer(function() end)
+        end
+    end
+    if not reaper.APIExists("JS_ReaScriptAPI_Version") then
+        reaper.MB( "JS_ReaScriptAPI is required for this script", "Please download it from ReaPack", "SCRIPT REQUIREMENTS", 0 )
+        return reaper.defer(function() end)
+    else
+        local version = reaper.JS_ReaScriptAPI_Version()
+        if version < 1.3 then
+            reaper.MB( "Your JS_ReaScriptAPI version is " .. version .. "\nPlease update to latest version.", "Older version is installed", 0 )
+            return reaper.defer(function() end)
+        end
+    end
+end
+
+local crash = function(errObject)
+    local byLine = "([^\r\n]*)\r?\n?"
+    local trimPath = "[\\/]([^\\/]-:%d+:.+)$"
+    local err = errObject and string.match(errObject, trimPath) or "Couldn't get error message."
+    local trace = debug.traceback()
+    local stack = {}
+    for line in string.gmatch(trace, byLine) do
+        local str = string.match(line, trimPath) or line
+        stack[#stack + 1] = str
+    end
+    local name = ({reaper.get_action_context()})[2]:match("([^/\\_]+)$")
+    local ret =
+        reaper.ShowMessageBox(
+        name .. " has crashed!\n\n" .. "Would you like to have a crash report printed " .. "to the Reaper console?",
+        "Oops",
+        4
+    )
+    if ret == 6 then
+        reaper.ShowConsoleMsg(
+            "Error: " .. err .. "\n\n" ..
+            "Stack traceback:\n\t" .. table.concat(stack, "\n\t", 2) .. "\n\n" ..
+            "Reaper:       \t" .. reaper.GetAppVersion() .. "\n" ..
+            "Platform:     \t" .. reaper.GetOS()
+        )
+    end
+end
+
+function GetCrash() return crash end
+
 function round(num)
     return math.floor(num + 0.5)
 end
+
 function tableToString(table)
     return serializeTable(table)
 end
@@ -67,4 +132,4 @@ function split_by_line(str)
         t[#t + 1] = line
     end
     return t
-  end
+end

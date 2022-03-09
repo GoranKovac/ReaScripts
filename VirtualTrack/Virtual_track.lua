@@ -1,9 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 0.80
+-- @version 0.81
 -- @changelog
---   + fix reapack
+--   + Multitrack Selection
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua

@@ -4,74 +4,8 @@
    * Version: 0.02
 	 * NoIndex: true
 --]]
-
 local reaper = reaper
-local VT_TB = {}
-local TBH
-
-local function open_url(url)
-    local OS = reaper.GetOS()
-    if (OS == "OSX32" or OS == "OSX64") or OS == 'macOS-arm64' then
-        os.execute('open "" "' .. url .. '"')
-    else
-        os.execute('start "" "' .. url .. '"')
-    end
-end
-
-function Check_Requirements()
-    local reaper_version = reaper.GetAppVersion()
-    local big, small = reaper_version:match("(6).(%d%d)")
-    if not reaper_version:match("+dev") then
-        reaper.MB( "Reaper DEV Prerelease version v6.50+dev is required for this script. Please download latest DEV prerelease from www.landoleet.org", "SCRIPT REQUIREMENTS", 0 )
-        open_url("www.landoleet.org")
-        return reaper.defer(function() end)
-    else
-        if tonumber(small) < 50 then
-            reaper.MB( "Reaper DEV Prerelease version v6.50+dev is required for this script. Please download latest DEV prerelease from www.landoleet.org", "SCRIPT REQUIREMENTS", 0 )
-            open_url("www.landoleet.org")
-            return reaper.defer(function() end)
-        end
-    end
-    if not reaper.APIExists("JS_ReaScriptAPI_Version") then
-        reaper.MB( "JS_ReaScriptAPI is required for this script", "Please download it from ReaPack", "SCRIPT REQUIREMENTS", 0 )
-        return reaper.defer(function() end)
-    else
-        local version = reaper.JS_ReaScriptAPI_Version()
-        if version < 1.3 then
-            reaper.MB( "Your JS_ReaScriptAPI version is " .. version .. "\nPlease update to latest version.", "Older version is installed", 0 )
-            return reaper.defer(function() end)
-        end
-    end
-end
-
-local crash = function(errObject)
-    local byLine = "([^\r\n]*)\r?\n?"
-    local trimPath = "[\\/]([^\\/]-:%d+:.+)$"
-    local err = errObject and string.match(errObject, trimPath) or "Couldn't get error message."
-    local trace = debug.traceback()
-    local stack = {}
-    for line in string.gmatch(trace, byLine) do
-        local str = string.match(line, trimPath) or line
-        stack[#stack + 1] = str
-    end
-    local name = ({reaper.get_action_context()})[2]:match("([^/\\_]+)$")
-    local ret =
-        reaper.ShowMessageBox(
-        name .. " has crashed!\n\n" .. "Would you like to have a crash report printed " .. "to the Reaper console?",
-        "Oops",
-        4
-    )
-    if ret == 6 then
-        reaper.ShowConsoleMsg(
-            "Error: " .. err .. "\n\n" ..
-            "Stack traceback:\n\t" .. table.concat(stack, "\n\t", 2) .. "\n\n" ..
-            "Reaper:       \t" .. reaper.GetAppVersion() .. "\n" ..
-            "Platform:     \t" .. reaper.GetOS()
-        )
-    end
-end
-
-function GetCrash() return crash end
+local VT_TB, TBH = {}, nil
 
 function GetSingleTrackEnvelopeXYH(env, tr_t, tr_vis)
     local _, env_name = reaper.GetEnvelopeName(env)
@@ -97,11 +31,8 @@ function GetSingleTrackXYH(tr, ismaster)
 end
 
 function GetTracksXYH()
-    if reaper.CountTracks(0) == 0 then
-        if TBH and next(TBH) ~= nil then TBH = {} end
-        return
-    end
     TBH = {}
+    if reaper.CountTracks(0) == 0 then return end
     for i = 0, reaper.CountTracks(0) do
         local tr = i ~= 0 and reaper.GetTrack(0, i - 1) or reaper.GetMasterTrack(0)
         GetSingleTrackXYH(tr, i == 0)
@@ -138,9 +69,7 @@ local function Restore_From_PEXT(el)
     end
 end
 
-function Get_TBH_Info(tr)
-    if TBH[tr] then return TBH[tr].t, TBH[tr].h, TBH[tr].b end
-end
+function Get_TBH_Info(tr) return TBH[tr] and TBH[tr].t, TBH[tr].h, TBH[tr].b end
 
 function Get_VT_TB() return VT_TB end
 
@@ -382,15 +311,6 @@ function Get_Razor_Data(track)
     return area_info, razor_lane
 end
 
-function Set_Razor_Data(tbl, razor_data, mouse_lane)
-    if not mouse_lane or not razor_data then return end
-    local razor_h = razor_data[4] - razor_data[3]
-    local razor_lane = round(razor_data[4] / razor_h)
-    local lane_delta = ((mouse_lane - razor_lane - 1) * razor_h)
-    local razor_string = razor_data[1] .. " ".. razor_data[2] .. " " .. razor_data[3] + lane_delta .. " " .. razor_data[4] + lane_delta .. ' ""'
-    reaper.GetSetMediaTrackInfo_String(tbl.rprobj, 'P_RAZOREDITS_EXT', razor_string, true)
-end
-
 function Copy_lane_area(tbl)
     if not reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then return end -- PREVENT DOING THIS ON ENVELOPES
     if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 0 then return end -- PREVENT DOING THIS ON ENVELOPES
@@ -495,19 +415,10 @@ function Create_VT_Element()
 end
 
 function Get_On_Demand_DATA()
-    local window, segment, details = reaper.BR_GetMouseCursorContext()
-    if window == "tcp" or window == "arrange" then
-        local rprobj, takeenv = nil, nil
-        if segment == "track" then
-            rprobj = reaper.BR_GetMouseCursorContext_Track();
-        elseif segment == "envelope" then
-            rprobj, takeenv = reaper.BR_GetMouseCursorContext_Envelope()
-            rprobj = takeenv and nil or rprobj
-        end
-        if rprobj then
-            if SetupSingleElement(rprobj) and #Get_VT_TB() then
-                return Get_VT_TB()[rprobj]
-            end
+    local rprobj = GetMouseTrack_BR()
+    if rprobj then
+        if SetupSingleElement(rprobj) and #Get_VT_TB() then
+            return Get_VT_TB()[rprobj]
         end
     end
 end
@@ -552,9 +463,7 @@ end
 
 function GetLinkVal()
     local retval, link = reaper.GetProjExtState(0, "VirtualTrack", "LINK" )
-    if retval ~= 0 then
-        return link == "true" and true or false
-    end
+    if retval ~= 0 then return link == "true" and true or false end
     return false
 end
 
@@ -581,8 +490,8 @@ function GetLinkedTracksVT_INFO(tbl, on_demand) -- WE SEND ON DEMAND FROM DIRECT
                 all_linked_tracks[#all_linked_tracks+1] = env
         end
     end
+
     local LINKED_VT = {}
-    -- HERE WE ONLY ADD IF THEY ALREADY EXIST IN VT_TB
     for i = #all_linked_tracks, 1, -1 do
         if not on_demand then -- DEFER SCRIPT
             if VT_TB[all_linked_tracks[i]] then -- ONLY ADD TRACKS IF THEY ARE IN VT_TB (HAVE VERSIONS)
@@ -605,16 +514,48 @@ end
 function SetCompLane(tbl, main_tbl, mouse_lane)
     if not main_tbl then return end
     main_tbl.comp_idx = main_tbl.comp_idx == 0 and mouse_lane or 0
-    StoreStateToDocument(tbl)
+    StoreStateToDocument(main_tbl)
+    MSG("CALLED")
 end
 
 function CheckIfTableIDX_Exists(parent_tbl, child_tbl)
     if #parent_tbl.info ~= #child_tbl.info then
         for i = 1, #parent_tbl.info do
-            if not child_tbl.info[i] then
-                CreateNew(child_tbl)
-            end
+            if not child_tbl.info[i] then CreateNew(child_tbl) end
         end
-       StoreStateToDocument(child_tbl)
+        StoreStateToDocument(child_tbl)
+    end
+end
+
+function GetFolderChilds(track)
+    if not reaper.ValidatePtr(track, "MediaTrack*") then return end
+    if reaper.GetMediaTrackInfo_Value(track, "I_FOLDERDEPTH") <= 0 then return end -- ignore tracks and last folder child
+    local depth, children = 0, {}
+    local folderID = reaper.GetMediaTrackInfo_Value(track, "IP_TRACKNUMBER") - 1
+    for i = folderID + 1, reaper.CountTracks(0) - 1 do -- start from first track after folder
+        local child = reaper.GetTrack(0, i)
+        local currDepth = reaper.GetMediaTrackInfo_Value(child, "I_FOLDERDEPTH")
+        children[#children + 1] = reaper.GetTrackGUID(child)
+        depth = depth + currDepth
+        if depth <= -1 then break end --until we are out of folder
+    end
+    return children
+end
+
+local function GetSelectedTracks()
+    if reaper.CountSelectedTracks(0) < 2 then return end
+    local selected_tracks = {}
+    for i = 1, reaper.CountSelectedTracks(0) do
+        table.insert(selected_tracks, reaper.GetSelectedTrack(0, i-1))
+    end
+    return selected_tracks
+end
+
+function GetTracksData(on_demand)
+    local tracks = GetSelectedTracks() and GetSelectedTracks() or (GetMouseTrack() and {GetMouseTrack()} or nil)
+    if tracks then
+        for i = 1, #tracks do
+            -- FIXME: CREATE TBH AND VT_TB
+        end
     end
 end
