@@ -1,9 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 0.77
+-- @version 0.79
 -- @changelog
---   + Keep current envelope lane height when setting different chunk
+--   + Fix marking lane under mouse to activate on menu open
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua

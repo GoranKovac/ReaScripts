@@ -19,10 +19,13 @@ local function Main()
 	if not tbl then return end
 	local num = tbl.idx + 1
 	if num > #tbl.info then return end
+	local linked_VT = GetLinkedTracksVT_INFO(tbl, true)
 	reaper.PreventUIRefresh(1)
 	reaper.Undo_BeginBlock2(0)
-	SwapVirtualTrack(tbl, num)
-	StoreStateToDocument(tbl)
+	for i = 1, #linked_VT do
+        SwapVirtualTrack(linked_VT[i], num)
+        StoreStateToDocument(linked_VT[i])
+    end
 	reaper.Undo_EndBlock2(0, "VT: Recall Version " .. tbl.info[num].name, -1)
 	reaper.PreventUIRefresh(-1)
 end

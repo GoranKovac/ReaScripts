@@ -137,31 +137,66 @@ function X_to_pos(x)
 	return p
 end
 
+-- function Get_track_under_mouse(x, y)
+-- 	local TBH = Get_TBH()
+--     local _, cy = To_client(x, y)
+--     local track, env_info = reaper.GetTrackFromPoint(x, y)
+
+-- 	if  reaper.CountTracks(0) == 0 then return end
+
+--     if track and env_info == 0 and TBH[track].vis == true then
+--         return track, TBH[track].t, TBH[track].b, TBH[track].h
+--     elseif track and env_info == 1 then
+--         for i = 1, reaper.CountTrackEnvelopes(track) do
+--             local env = reaper.GetTrackEnvelope(track, i - 1)
+--             if TBH[env].t <= cy and TBH[env].b >= cy and TBH[env].vis == true then
+--                 return env, TBH[env].t, TBH[env].b, TBH[env].h
+--             end
+--         end
+--     end
+-- end
+
 function Get_track_under_mouse(x, y)
-	local TBH = Get_TBH()
     local _, cy = To_client(x, y)
     local track, env_info = reaper.GetTrackFromPoint(x, y)
+	--if reaper.CountTracks(0) == 0 then return end
 
-	if  reaper.CountTracks(0) == 0 then return end
-
-    if track and env_info == 0 and TBH[track].vis == true then
-        return track, TBH[track].t, TBH[track].b, TBH[track].h
+    if track and env_info == 0 then
+        return track
     elseif track and env_info == 1 then
         for i = 1, reaper.CountTrackEnvelopes(track) do
             local env = reaper.GetTrackEnvelope(track, i - 1)
-            if TBH[env].t <= cy and TBH[env].b >= cy and TBH[env].vis == true then
-                return env, TBH[env].t, TBH[env].b, TBH[env].h
-            end
+			local p_tr = reaper.GetEnvelopeInfo_Value(env, "P_TRACK")
+			local p_tr_t = reaper.GetMediaTrackInfo_Value(p_tr, "I_TCPY")
+			local env_h = reaper.GetEnvelopeInfo_Value(env, "I_TCPH")
+			local env_t = reaper.GetEnvelopeInfo_Value(env, "I_TCPY") + p_tr_t
+			local env_b = env_t + env_h
+            if env_t <= cy and env_b >= cy then return env end
         end
     end
 end
 
+local function GetMouseTrackXYH(track)
+	if reaper.ValidatePtr(track, "MediaTrack*") then
+        local tr_t = reaper.GetMediaTrackInfo_Value(track, "I_TCPY")
+		local tr_h = reaper.GetMediaTrackInfo_Value(track, "I_TCPH")
+		return tr_t, tr_h, tr_t + tr_h
+    elseif reaper.ValidatePtr(track, "TrackEnvelope*") then
+		local p_tr = reaper.GetEnvelopeInfo_Value(track, "P_TRACK")
+		local p_tr_t = reaper.GetMediaTrackInfo_Value(p_tr, "I_TCPY")
+		local env_t = reaper.GetEnvelopeInfo_Value(track, "I_TCPY") + p_tr_t
+		local env_h = reaper.GetEnvelopeInfo_Value(track, "I_TCPH")
+		return env_t, env_h, env_t + env_h
+	end
+end
+
+
 local lane_offset = 14 -- schwa decided this number by carefully inspecting pixels in paint.net
-function Get_lane_from_mouse_coordinates()
+function Get_lane_from_mouse_coordinates(my, VT_TB)
+	if not VT_TB then return end
 	if mouse.tr == nil then return end
-	local _, cy = To_client(0, mouse.y)
-	local t, h, b = Get_TBH_Info(mouse.tr)
-	local VT_TB = Get_VT_TB()
+	local _, cy = To_client(0, my)
+	local t, h, b = GetMouseTrackXYH(mouse.tr)
 	if cy > t and cy < b then
 		local lane = math.floor(((cy - t) / (h - lane_offset)) * #VT_TB[mouse.tr].info) + 1
 		lane = lane <= #VT_TB[mouse.tr].info and lane or #VT_TB[mouse.tr].info
@@ -170,11 +205,11 @@ function Get_lane_from_mouse_coordinates()
 	end
 end
 
-function MouseInfo(x,y,p)
+function MouseInfo(VT_TB)
 	mouse.x, mouse.y = reaper.GetMousePosition()
 	mouse.p = X_to_pos(mouse.x)
 	mouse.tr, mouse.r_t, mouse.r_b = Get_track_under_mouse(mouse.x, mouse.y)
-	mouse.lane = Get_lane_from_mouse_coordinates()
+	mouse.lane = Get_lane_from_mouse_coordinates(mouse.y, VT_TB)
 	if mouse.tr then mouse.last_tr = mouse.tr end
 
 	mouse.l_click   = false

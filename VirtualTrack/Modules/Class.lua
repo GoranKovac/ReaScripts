@@ -16,55 +16,61 @@ local BUTTON_UPDATE, mouse
 local Element = {}
 
 local function GetMenuTBL()
-    local menu = {
+    local main_menu = {
         [1] = { name = "",                      fname = "" },
         [2] = { name = "Create New Variant",    fname = "CreateNew" },
         [3] = { name = "Duplicate Variant",     fname = "Duplicate" },
         [4] = { name = "Delete Variant",        fname = "Delete" },
         [5] = { name = "Clear Variant",         fname = "Clear" },
         [6] = { name = "Rename Variants",       fname = "Rename" },
-        [7] = { name = "Link TracK&Envelope",   fname = "SetLinkVal" },
+        [7] = { name = "Link Track/Envelope",   fname = "SetLinkVal" },
         [8] = { name = "Show All Variants",     fname = "ShowAll" },
     }
-    return menu
+    local lane_menu = {
+        [1] = { name = "",                      fname = "" },
+        [2] = { name = "Set as Comp : ",        fname = "SetCompLane" },
+        [3] = { name = "Link Track/Envelope",   fname = "SetLinkVal" },
+        [4] = { name = "Show All Variants",     fname = "ShowAll" },
+    }
+    return main_menu, lane_menu
 end
 
 function Get_class_tbl(tbl) return Element end
 
 local function MakeMenu(tbl)
-    local menu_options = GetMenuTBL()
+    local menu_options, lane_options = GetMenuTBL()
     local concat, main_name, lane_mode = "", "", nil
     if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
         main_name = "MAIN Virtual TR : "
+        menu_options[7].name = GetLinkVal() == true and "!" .. menu_options[7].name or menu_options[7].name
+        lane_options[3] = menu_options[7]
         if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 2 then
             lane_mode = true
             menu_options[8].name = "!" .. menu_options[8].name
-            -- PREVENT OTHER ACTIONS IN LANE MODE ATM
-            for i = #menu_options, 1, -1 do
-                if menu_options[i].fname ~= "ShowAll" and i ~= 1 then
-                    table.remove(menu_options,i)
-                end
-            end
-        else
-            menu_options[7].name = GetLinkVal() == true and "!" .. menu_options[7].name or menu_options[7].name
         end
     elseif reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then
         main_name = "MAIN Virtual ENV : "
         menu_options[7].name = GetLinkVal() == true and "!" .. menu_options[7].name or menu_options[7].name
         table.remove(menu_options, 8) -- REMOVE "ShowAll" KEY IF ENVELOPE
     end
+
     local version_id = lane_mode and Unmuted_lane(tbl) or tbl.idx
-    local versions = {}
+
+    local versions= {}
     for i = 1, #tbl.info do
         versions[#versions+1] = i == version_id and "!" .. i .. " - ".. tbl.info[i].name or i .. " - " .. tbl.info[i].name
     end
 
     menu_options[1].name = ">" .. main_name .. tbl.info[tbl.idx].name .. "|" .. table.concat(versions, "|") .."|<|"
+    lane_options[1] = menu_options[1]
+    lane_options[2].name = tbl.comp_idx ~= 0 and "!" .. "Unset as Comp : " .. tbl.info[tbl.comp_idx].name or lane_options[2].name
 
-    for i = 1, #menu_options do
-        concat = concat .. menu_options[i].name .. (i ~= #menu_options and "|" or "")
+    local final_menu = lane_mode == true and lane_options or menu_options
+
+    for i = 1, #final_menu do
+        concat = concat .. final_menu[i].name .. (i ~= #final_menu and "|" or "")
     end
-    return concat, menu_options, lane_mode
+    return concat, final_menu, lane_mode
 end
 
 local function Update_tempo_map()
@@ -79,13 +85,16 @@ local function CreateGFXWindow()
     local title = "supper_awesome_mega_menu"
     gfx.init( title, 0, 0, 0, 0, 0 )
     local hwnd = reaper.JS_Window_Find( title, true )
-    if hwnd then reaper.JS_Window_Show( hwnd, "HIDE" ) end
+    if hwnd then
+        reaper.JS_Window_Show( hwnd, "HIDE" )
+    end
     gfx.x = gfx.mouse_x
     gfx.y = gfx.mouse_y
 end
 
 function Show_menu(tbl, on_demand)
-    UpdateInternalState(tbl)
+    local mouse = MouseInfo(Get_VT_TB())
+    local mouse_lane = mouse.lane
     reaper.PreventUIRefresh(1)
     CreateGFXWindow()
 
@@ -94,25 +103,32 @@ function Show_menu(tbl, on_demand)
 
     local concat_menu, menu_options, lane_mode = MakeMenu(tbl)
     local m_num = gfx.showmenu(concat_menu)
+    if m_num == 0 then return end
+
+    local linked_VT = GetLinkedTracksVT_INFO(tbl, on_demand)
+    for i = 1, #linked_VT do UpdateInternalState(linked_VT[i]) end
 
     if m_num > #tbl.info then
         m_num = (m_num - #tbl.info) + 1
         -- for the moment, all of these functions can change the state
         reaper.Undo_BeginBlock2(0)
-        _G[menu_options[m_num].fname](tbl, tbl.idx)
-        StoreStateToDocument(tbl)
+        for i = 1, #linked_VT do
+            local activated = i > 1 and nil or tbl -- ONLY FOR TOGGLE FUNCTIONS (LINK TRACK/ENVELOPE AND SET COMP)
+            _G[menu_options[m_num].fname](linked_VT[i], activated, mouse_lane)
+            StoreStateToDocument(linked_VT[i])
+        end
         reaper.Undo_EndBlock2(0, "VT: " .. menu_options[m_num].name, -1)
     else
-        if m_num ~= 0 then
-            reaper.Undo_BeginBlock2(0)
+        reaper.Undo_BeginBlock2(0)
+        for i = 1, #linked_VT do
             if not lane_mode then
-                SwapVirtualTrack(tbl, m_num)
-                StoreStateToDocument(tbl)
+                SwapVirtualTrack(linked_VT[i], m_num)
             else
-                Mute_view(tbl, m_num) -- MUTE VIEW IS ONLY FOR PREVIEWING VERSIONS WE DO NOT SAVE ANYTHING HERE (STORE IS HAPPENING WHEN WE TOGGLE SHOW ALL VARIANTS OPTION)
+                Mute_view(linked_VT[i], m_num)
             end
-            reaper.Undo_EndBlock2(0, "VT: Recall Version " .. tbl.info[m_num].name, -1)
+            StoreStateToDocument(linked_VT[i])
         end
+        reaper.Undo_EndBlock2(0, "VT: Recall Version " .. m_num, -1)
     end
 
     UPDATE_DRAW = true
@@ -136,6 +152,7 @@ function Element:new(rprobj, info, direct)
     reaper.JS_LICE_Clear(self.font_bm, 0x00000000)
     elm.info = info
     elm.idx = 1
+    elm.comp_idx = 0
     setmetatable(elm, self)
     self.__index = self
     if direct == 1 then -- unused

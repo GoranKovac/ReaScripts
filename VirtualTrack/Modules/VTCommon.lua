@@ -112,6 +112,7 @@ local function Store_To_PEXT(el)
     local storedTable = {}
     storedTable.info = el.info;
     storedTable.idx = math.floor(el.idx)
+    storedTable.comp_idx = math.floor(el.comp_idx)
     local serialized = tableToString(storedTable)
     if reaper.ValidatePtr(el.rprobj, "MediaTrack*") then
         reaper.GetSetMediaTrackInfo_String(el.rprobj, "P_EXT:VirtualTrack", serialized, true)
@@ -132,6 +133,7 @@ local function Restore_From_PEXT(el)
         if storedTable ~= nil then
             el.info = storedTable.info
             el.idx = storedTable.idx
+            el.comp_idx = storedTable.comp_idx
         end
     end
 end
@@ -277,8 +279,8 @@ function StoreInProject()
 end
 
 function SwapVirtualTrack(tbl, idx)
-    Clear(tbl)
     if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
+        Clear(tbl) -- ONLY MEDIA TRACKS NEED TO BE CLEARD SINCE WE ARE INSERTING ITEMS INTO IT, ENVELOPES JUST SWAP CHUNKS
         Create_item(tbl.rprobj, tbl.info[idx])
     elseif reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then
         Set_Env_Chunk(tbl.rprobj, tbl.info[idx])
@@ -288,7 +290,7 @@ end
 
 function CreateNew(tbl)
     Clear(tbl)
-    tbl.info[#tbl.info + 1] = {}
+    tbl.info[#tbl.info + 1] = GetChunkTableForObject(tbl.rprobj)
     tbl.idx = #tbl.info
     tbl.info[#tbl.info].name = "Version - " .. #tbl.info
 end
@@ -331,29 +333,32 @@ function GetItemLane(item)
     return round(y / h) + 1
 end
 
-function Mute_view(tbl, num, sort)
-    local order_index = num == 1 and tbl.idx or (num == tbl.idx and 1 or num) -- NEED TO SWAP ACTIVE LANE WITH FIRST LANE SINCE ACTIVE VERSION IS ON TOP
-    order_index = sort and order_index or num  -- ONLY SORT FIRST TIME WHEN WE ACTIVATE SHOW ALL MODE
+function Mute_view(tbl, num)
     reaper.PreventUIRefresh(1)
+    if GetLinkVal() and reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then
+        SwapVirtualTrack(tbl, num)
+        return
+    end
     for i = 1, reaper.CountTrackMediaItems(tbl.rprobj) do
         local item = reaper.GetTrackMediaItem(tbl.rprobj, i - 1)
-        if GetItemLane(item) == order_index then
+        if GetItemLane(item) == num then
             reaper.SetMediaItemInfo_Value(item, "B_MUTE", 0)
         else
             reaper.SetMediaItemInfo_Value(item, "B_MUTE", 1)
         end
     end
+    tbl.idx = num
+    StoreStateToDocument(tbl)
     reaper.PreventUIRefresh(-1)
 end
 
 local function StoreLaneData(tbl)
     local num_items = reaper.CountTrackMediaItems(tbl.rprobj)
     for j = 1, #tbl.info do
-        local order_index = j == 1 and tbl.idx or (j == tbl.idx and 1 or j) -- REVERT TO ORIGINAL TABLE ORDER SINCE WE SET SELECTED VERSION TO TOP LANE
         local lane_chunk = {}
         for i = 1, num_items do
             local item = reaper.GetTrackMediaItem(tbl.rprobj, i-1)
-            if GetItemLane(item) == order_index then
+            if GetItemLane(item) == j then
                 local item_chunk = Get_Item_Chunk(item)
                 item_chunk = Exclude_Pattern(item_chunk)
                 lane_chunk[#lane_chunk + 1] = item_chunk
@@ -365,22 +370,34 @@ local function StoreLaneData(tbl)
     end
 end
 
-local function Get_Razor_Data(track)
+function Get_Razor_Data(track)
     if not reaper.ValidatePtr(track, "MediaTrack*") then return end
     local _, area = reaper.GetSetMediaTrackInfo_String(track, 'P_RAZOREDITS_EXT', '', false)
     if area == "" then return nil end
     local area_info = {}
-    for i in string.gmatch(area, "%S+") do
-        table.insert(area_info, tonumber(i))
-    end
-    return area_info
+    for i in string.gmatch(area, "%S+") do table.insert(area_info, tonumber(i)) end
+    local razor_t, razor_b = area_info[3], area_info[4]
+    local razor_h = razor_b - razor_t
+    local razor_lane = round(razor_b / razor_h)
+    return area_info, razor_lane
+end
+
+function Set_Razor_Data(tbl, razor_data, mouse_lane)
+    if not mouse_lane or not razor_data then return end
+    local razor_h = razor_data[4] - razor_data[3]
+    local razor_lane = round(razor_data[4] / razor_h)
+    local lane_delta = ((mouse_lane - razor_lane - 1) * razor_h)
+    local razor_string = razor_data[1] .. " ".. razor_data[2] .. " " .. razor_data[3] + lane_delta .. " " .. razor_data[4] + lane_delta .. ' ""'
+    reaper.GetSetMediaTrackInfo_String(tbl.rprobj, 'P_RAZOREDITS_EXT', razor_string, true)
 end
 
 function Copy_lane_area(tbl)
     if not reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then return end -- PREVENT DOING THIS ON ENVELOPES
     if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 0 then return end -- PREVENT DOING THIS ON ENVELOPES
-    local area_info = Get_Razor_Data(tbl.rprobj)
+    local area_info, razor_lane = Get_Razor_Data(tbl.rprobj)
+    if tbl.comp_idx == 0 or tbl.comp_idx == razor_lane then return end -- PREVENT COPY ONTO ITSELF
     if not area_info then return end
+    reaper.Undo_BeginBlock2(0)
     reaper.PreventUIRefresh(1)
     local area_start = area_info[1]
     reaper.Main_OnCommand(40060, 0) -- COPY AREA
@@ -388,12 +405,17 @@ function Copy_lane_area(tbl)
     local current_razor_toggle_state =  reaper.GetToggleCommandState(42421)
     if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN OFF ALWAYS TRIM BEHIND RAZORS (if enabled in project)
     reaper.SetEditCurPos(area_start, false, false)
+    ------------------------ HACK FOR COPY PASTE REMOVING EMPTY LANE
+    local empty_item = reaper.AddMediaItemToTrack(tbl.rprobj)
+    reaper.SetMediaItemInfo_Value(empty_item, "F_FREEMODE_Y", (tbl.comp_idx - 1) / #tbl.info)
+    reaper.SetMediaItemInfo_Value(empty_item, "F_FREEMODE_H", 1/#tbl.info)
+    -----------------------------------------------------------------------
     reaper.Main_OnCommand(42398, 0) -- PASTE AREA
     reaper.CF_SetClipboard("") -- CLEAR BUFFER
     reaper.SetEditCurPos(current_edit_cursor_pos, false, false)
     for i = 1, reaper.CountSelectedMediaItems(0) do -- DO IN REVERSE TO AVOID CRASHES ON ITERATING MULTIPLE ITEMS
         local item =  reaper.GetSelectedMediaItem(0, i-1)
-        reaper.SetMediaItemInfo_Value(item, "F_FREEMODE_Y", 0)
+        reaper.SetMediaItemInfo_Value(item, "F_FREEMODE_Y", (tbl.comp_idx - 1) / #tbl.info)
         reaper.SetMediaItemInfo_Value(item, "F_FREEMODE_H", 1/#tbl.info)
         reaper.SetMediaItemInfo_Value(item, "B_MUTE", 1)
     end
@@ -403,7 +425,9 @@ function Copy_lane_area(tbl)
         reaper.SetMediaItemSelected(item, false)
     end
     if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN ON ALWAYS TRIM BEHIND RAZORS (if enabled in project)
+    reaper.DeleteTrackMediaItem(tbl.rprobj, empty_item) -- REMOVE EMPTY ITEM CREATED TO HACK AROUND COPY PASTE DELETING EMPTY LANE
     reaper.PreventUIRefresh(-1)
+    reaper.Undo_EndBlock2(0, "VT: " .. "COPY AREA TO COMP", -1)
     reaper.UpdateArrange()
 end
 
@@ -420,15 +444,13 @@ function Unmuted_lane(tbl)
     for i = 1, reaper.CountTrackMediaItems(tbl.rprobj) do
         local item = reaper.GetTrackMediaItem(tbl.rprobj, i - 1)
         if  reaper.GetMediaItemInfo_Value(item, "B_MUTE") == 0 then
-            local unmuted_lane = GetItemLane(item)
-            -- IN LANE MODE WE ALWAYS MOVE ACTIVE VERSION TO FIRST LANE SO WE NEED TO INVERT THOSE VERSIONS TO SEE CORRECTLY SELECTED IN MENU
-            local order_index = unmuted_lane == 1 and tbl.idx or (unmuted_lane == tbl.idx and 1 or unmuted_lane)
-            return order_index
+            return GetItemLane(item)
         end
     end
 end
 
 function ShowAll(tbl)
+    if not reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then return end
     local fimp = reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE")
     local toggle = fimp == 2 and 0 or 2
     if fimp == 2 then
@@ -438,15 +460,15 @@ function ShowAll(tbl)
     Clear(tbl)
     if toggle == 2 then
         for i = 1, #tbl.info do
-            local order_index = i == 1 and tbl.idx or (i == tbl.idx and 1 or i) -- SET CURRENT SELECTED VERSION TO FIRST LANE (MAKE IT LIKE PT WHERE SELECTED VERSION IS IN TOP LANE)
-            local items = Create_item(tbl.rprobj, tbl.info[order_index])
+            local items = Create_item(tbl.rprobj, tbl.info[i])
             for j = 1, #items do
                 reaper.SetMediaItemInfo_Value(items[j], "F_FREEMODE_Y", ((i - 1) / #tbl.info))
                 reaper.SetMediaItemInfo_Value(items[j], "F_FREEMODE_H", 1 / #tbl.info)
             end
         end
-        Mute_view(tbl, tbl.idx, true)
+        Mute_view(tbl, tbl.idx)
     elseif toggle == 0 then
+        tbl.comp_idx = 0 -- DISABLE COMPING
         Create_item(tbl.rprobj, tbl.info[tbl.idx])
     end
     reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", toggle)
@@ -508,10 +530,7 @@ function SetupSingleElement(rprobj)
 end
 
 local projectStateChangeCount = reaper.GetProjectStateChangeCount(0)
-
-function UpdateChangeCount()
-    projectStateChangeCount = reaper.GetProjectStateChangeCount(0)
-end
+function UpdateChangeCount() projectStateChangeCount = reaper.GetProjectStateChangeCount(0) end
 
 function CheckUndoState()
     local changeCount = reaper.GetProjectStateChangeCount()
@@ -539,7 +558,8 @@ function GetLinkVal()
     return false
 end
 
-function SetLinkVal()
+function SetLinkVal(_, main_tbl)
+    if not main_tbl then return end
     local cur_value = GetLinkVal() == true and "false" or "true"
     reaper.SetProjExtState( 0, "VirtualTrack", "LINK", cur_value )
 end
@@ -577,5 +597,24 @@ function GetLinkedTracksVT_INFO(tbl, on_demand) -- WE SEND ON DEMAND FROM DIRECT
             end
         end
     end
+    -- IF NUMBER OF VERSIONS ARE MISSMATCHED BETWEEN PARENT AND CHILD TABLES CREATE EMPTYS FOR MISSINGS ONES
+    for i = 1, #LINKED_VT do CheckIfTableIDX_Exists(tbl, LINKED_VT[i]) end
     return LINKED_VT
+end
+
+function SetCompLane(tbl, main_tbl, mouse_lane)
+    if not main_tbl then return end
+    main_tbl.comp_idx = main_tbl.comp_idx == 0 and mouse_lane or 0
+    StoreStateToDocument(tbl)
+end
+
+function CheckIfTableIDX_Exists(parent_tbl, child_tbl)
+    if #parent_tbl.info ~= #child_tbl.info then
+        for i = 1, #parent_tbl.info do
+            if not child_tbl.info[i] then
+                CreateNew(child_tbl)
+            end
+        end
+       StoreStateToDocument(child_tbl)
+    end
 end
