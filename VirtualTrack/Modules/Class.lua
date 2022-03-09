@@ -93,6 +93,8 @@ local function CreateGFXWindow()
 end
 
 function Show_menu(tbl, on_demand)
+    local mouse = MouseInfo(Get_VT_TB())
+    local mouse_lane = mouse.lane
     reaper.PreventUIRefresh(1)
     CreateGFXWindow()
 
@@ -112,7 +114,7 @@ function Show_menu(tbl, on_demand)
         reaper.Undo_BeginBlock2(0)
         for i = 1, #linked_VT do
             local activated = i > 1 and nil or tbl -- ONLY FOR TOGGLE FUNCTIONS (LINK TRACK/ENVELOPE AND SET COMP)
-            _G[menu_options[m_num].fname](linked_VT[i], activated)
+            _G[menu_options[m_num].fname](linked_VT[i], activated, mouse_lane)
             StoreStateToDocument(linked_VT[i])
         end
         reaper.Undo_EndBlock2(0, "VT: " .. menu_options[m_num].name, -1)

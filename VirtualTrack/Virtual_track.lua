@@ -1,11 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 0.78
+-- @version 0.79
 -- @changelog
---   + Revamped COMPING System in ShowAll (Fixed Lane Mode)
---   + Added Link Track/Envelope to follow changes of versions
---   + Updated Shortcuts to work with Link Track/Envelope
+--   + Fix marking lane under mouse to activate on menu open
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
