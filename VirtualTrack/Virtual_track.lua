@@ -1,9 +1,11 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 0.77
+-- @version 0.78
 -- @changelog
---   + Keep current envelope lane height when setting different chunk
+--   + Revamped COMPING System in ShowAll (Fixed Lane Mode)
+--   + Added Link Track/Envelope to follow changes of versions
+--   + Updated Shortcuts to work with Link Track/Envelope
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
