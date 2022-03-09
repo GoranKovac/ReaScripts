@@ -1,9 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 0.79
+-- @version 0.8
 -- @changelog
---   + Fix marking lane under mouse to activate on menu open
+--   + fix reapack
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
