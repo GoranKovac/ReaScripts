@@ -1,7 +1,7 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 0.8
+-- @version 0.80
 -- @changelog
 --   + fix reapack
 -- @provides
