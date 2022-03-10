@@ -15,16 +15,19 @@ require("Modules/Utils")
 Check_Requirements()
 
 local function Main()
-    local tbl = Get_On_Demand_DATA()
-    if not tbl then return end
+    local track = OnDemand()
+    if not track then return end
     local mouse = MouseInfo(Get_VT_TB())
     if not mouse.lane then return end
-    local linked_VT = GetLinkedTracksVT_INFO(tbl, true)
-    if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
-        if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 2 then
-            for i = 1, #linked_VT do
-                Mute_view(linked_VT[i], mouse.lane)
-                StoreStateToDocument(linked_VT[i])
+    local VT_TB = Get_VT_TB()
+    local focused_tracks = GetSelectedTracksData(track, true) -- THIS ADDS NEW TRACKS TO VT_TB FOR ON DEMAND SCRIPT AND RETURNS TRACK SELECTION
+    local linked_VT = GetLinkedTracksVT_INFO(focused_tracks, true)
+    if reaper.ValidatePtr(track, "MediaTrack*") then
+        if reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") == 2 then
+            for linked_track in pairs(linked_VT) do
+            --for i = 1, #linked_VT do
+                Mute_view(VT_TB[linked_track], mouse.lane)
+                StoreStateToDocument(VT_TB[linked_track])
             end
         end
     end

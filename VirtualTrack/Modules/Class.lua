@@ -15,8 +15,8 @@ local track_window = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8)
 local BUTTON_UPDATE, mouse
 local Element = {}
 
-local function GetMenuTBL()
-    local main_menu = {
+local function GetMenuTBL(rprobj)
+    local track_menu = {
         [1] = { name = "",                      fname = "" },
         [2] = { name = "Create New Variant",    fname = "CreateNew" },
         [3] = { name = "Duplicate Variant",     fname = "Duplicate" },
@@ -32,21 +32,52 @@ local function GetMenuTBL()
         [3] = { name = "Link Track/Envelope",   fname = "SetLinkVal" },
         [4] = { name = "Show All Variants",     fname = "ShowAll" },
     }
-    return main_menu, lane_menu
+
+    local folder_menu = {
+        [1] = { name = "",                      fname = "" }, -- NORMAL TRACK VERSIONS FOR FOLDER
+        [2] = { name = "",                      fname = "" }, -- FOLDER VERSIONS FOR CHILDS
+        [3] = { name = "Create New Variant",    fname = "CreateNewFolder" },
+        [4] = { name = "Duplicate Variant",     fname = "DuplicateFolder" },
+        [5] = { name = "Delete Variant",        fname = "DeleteFolder" },
+        [6] = { name = "Clear Variant",         fname = "ClearFolder" },
+        [7] = { name = "Rename Variants",       fname = "RenameFolder" },
+        [8] = { name = "Link Track/Envelope",   fname = "SetLinkValFolder" },
+    }
+    -- if reaper.ValidatePtr(rprobj, "MediaTrack*") then
+    --     if reaper.GetMediaTrackInfo_Value(rprobj, "I_FREEMODE") == 2 then
+    --         --lane_mode = true
+    --         track_menu[8].name = "!" .. track_menu[8].name
+    --     end
+    --     if reaper.GetMediaTrackInfo_Value(rprobj, "I_FOLDERDEPTH") ~= 1 then
+    --         return track_menu
+    --     elseif reaper.GetMediaTrackInfo_Value(rprobj, "I_FOLDERDEPTH") == 1 then
+    --         return folder_menu
+    --     end
+    -- elseif reaper.ValidatePtr(rprobj, "TrackEnvelope*") then
+    --     track_menu[7].name = GetLinkVal() == true and "!" .. track_menu[7].name or track_menu[7].name
+    --     table.remove(track_menu, 8) -- REMOVE "ShowAll" KEY IF ENVELOPE
+    --     return track_menu
+    -- end
+    return track_menu, lane_menu
 end
 
 function Get_class_tbl(tbl) return Element end
 
 local function MakeMenu(tbl)
-    local menu_options, lane_options = GetMenuTBL()
+    local menu_options, lane_options = GetMenuTBL(tbl.rprobj)
     local concat, main_name, lane_mode = "", "", nil
     if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
-        main_name = "MAIN Virtual TR : "
-        menu_options[7].name = GetLinkVal() == true and "!" .. menu_options[7].name or menu_options[7].name
-        lane_options[3] = menu_options[7]
-        if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 2 then
-            lane_mode = true
-            menu_options[8].name = "!" .. menu_options[8].name
+        if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FOLDERDEPTH") ~= 1 then
+            main_name = "MAIN Virtual TR : "
+            menu_options[7].name = GetLinkVal() == true and "!" .. menu_options[7].name or menu_options[7].name
+            lane_options[3] = menu_options[7]
+            if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 2 then
+                lane_mode = true
+                menu_options[8].name = "!" .. menu_options[8].name
+            end
+        -- elseif reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FOLDERDEPTH") == 1 then
+        --     table.remove(menu_options, 8) -- REMOVE "ShowAll"
+        --     main_name = "FOLDER Virtual TR : "
         end
     elseif reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then
         main_name = "MAIN Virtual ENV : "
@@ -94,8 +125,7 @@ end
 function Show_menu(rprobj, on_demand)
     local focused_tracks = GetSelectedTracksData(rprobj, on_demand) -- THIS ADDS NEW TRACKS TO VT_TB FOR ON DEMAND SCRIPT AND RETURNS TRACK SELECTION
     local VT_TB = Get_VT_TB()
-
-    local mouse_lane = MouseInfo(Get_VT_TB()).lane
+    local mouse_lane = MouseInfo(VT_TB).lane
     CreateGFXWindow()
     reaper.PreventUIRefresh(1)
 
@@ -111,7 +141,6 @@ function Show_menu(rprobj, on_demand)
 
     if m_num > #tbl.info then
         m_num = (m_num - #tbl.info) + 1
-        -- for the moment, all of these functions can change the state
         reaper.Undo_BeginBlock2(0)
         for track in pairs(linked_VT) do
             _G[menu_options[m_num].fname](VT_TB[track], track == rprobj, mouse_lane)

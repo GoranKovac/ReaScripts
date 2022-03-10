@@ -15,8 +15,7 @@ require("Modules/Utils")
 Check_Requirements()
 
 local function Main()
-    local track = Get_On_Demand_DATA()
-    --GetTracksData()
+    local track = OnDemand()
     if not track then return end
     Show_menu(track, true)
 end

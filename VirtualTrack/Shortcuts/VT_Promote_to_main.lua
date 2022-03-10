@@ -15,9 +15,9 @@ require("Modules/Utils")
 Check_Requirements()
 
 local function Main()
-    local tbl = Get_On_Demand_DATA()
-    if not tbl then return end
-    Copy_lane_area(tbl)
+    local track = OnDemand()
+    if not track then return end
+    Copy_area(Get_VT_TB()[track])
 end
 
 xpcall(Main, GetCrash())

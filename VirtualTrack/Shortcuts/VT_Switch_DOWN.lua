@@ -15,7 +15,7 @@ require("Modules/Utils")
 Check_Requirements()
 
 local function Main()
-    local tbl = Get_On_Demand_DATA()
+    local tbl = OnDemand()
     if not tbl then return end
     local num = tbl.idx - 1
     if num == 0 then return end
