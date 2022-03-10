@@ -107,7 +107,7 @@ function Show_menu(rprobj, on_demand)
     if m_num == 0 then return end
 
     local linked_VT = GetLinkedTracksVT_INFO(focused_tracks, on_demand)
-    for k in pairs(linked_VT) do UpdateInternalState(VT_TB[k]) end
+    for track in pairs(linked_VT) do UpdateInternalState(VT_TB[track]) end
 
     if m_num > #tbl.info then
         m_num = (m_num - #tbl.info) + 1
