@@ -15,9 +15,10 @@ require("Modules/Utils")
 Check_Requirements()
 
 local function Main()
-    local tbl = Get_On_Demand_DATA()
-    if not tbl then return end
-    Show_menu(tbl, true)
+    local track = Get_On_Demand_DATA()
+    GetTracksData()
+    if not track then return end
+    Show_menu(track, true)
 end
 
 xpcall(Main, GetCrash())

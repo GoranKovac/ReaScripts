@@ -90,40 +90,42 @@ local function CreateGFXWindow()
     gfx.y = gfx.mouse_y
 end
 
-function Show_menu(tbl, on_demand)
+-- IF CALLED FROM ON DEMAND THEN ALL TRACKS ARE VT_TB
+function Show_menu(rprobj, on_demand)
+    local VT_TB = Get_VT_TB()
     local mouse_lane = MouseInfo(Get_VT_TB()).lane
-    reaper.PreventUIRefresh(1)
     CreateGFXWindow()
+    reaper.PreventUIRefresh(1)
 
-    local update_tempo = tbl.rprobj == reaper.GetMasterTrack(0) and true or false
-    tbl = tbl.rprobj == reaper.GetMasterTrack(0) and Get_VT_TB()[reaper.GetTrackEnvelopeByName( tbl.rprobj, "Tempo map" )] or tbl
+    local update_tempo = rprobj == reaper.GetMasterTrack(0) and true or false
+    local tbl = rprobj == reaper.GetMasterTrack(0) and VT_TB[reaper.GetTrackEnvelopeByName( rprobj, "Tempo map" )] or VT_TB[rprobj]
 
     local concat_menu, menu_options, lane_mode = MakeMenu(tbl)
     local m_num = gfx.showmenu(concat_menu)
     if m_num == 0 then return end
 
-    local linked_VT = GetLinkedTracksVT_INFO(tbl, on_demand)
-    for i = 1, #linked_VT do UpdateInternalState(linked_VT[i]) end
+    local linked_VT = GetLinkedTracksVT_INFO(rprobj, on_demand)
+    for i = 1, #linked_VT do UpdateInternalState(VT_TB[linked_VT[i]]) end
 
     if m_num > #tbl.info then
         m_num = (m_num - #tbl.info) + 1
         -- for the moment, all of these functions can change the state
         reaper.Undo_BeginBlock2(0)
         for i = 1, #linked_VT do
-            local activated = i == 1 and tbl or nil -- ONLY FOR TOGGLE FUNCTIONS (LINK TRACK/ENVELOPE AND SET COMP)
-            _G[menu_options[m_num].fname](linked_VT[i], activated, mouse_lane)
-            StoreStateToDocument(linked_VT[i])
+            --local activated = i == 1 and tbl or nil -- ONLY FOR TOGGLE FUNCTIONS (LINK TRACK/ENVELOPE AND SET COMP)
+            _G[menu_options[m_num].fname](VT_TB[linked_VT[i]], linked_VT[i] == rprobj, mouse_lane)
+            StoreStateToDocument(VT_TB[linked_VT[i]])
         end
         reaper.Undo_EndBlock2(0, "VT: " .. menu_options[m_num].name, -1)
     else
         reaper.Undo_BeginBlock2(0)
         for i = 1, #linked_VT do
             if not lane_mode then
-                SwapVirtualTrack(linked_VT[i], m_num)
+                SwapVirtualTrack(VT_TB[linked_VT[i]], m_num)
             else
-                Mute_view(linked_VT[i], m_num)
+                Mute_view(VT_TB[linked_VT[i]], m_num)
             end
-            StoreStateToDocument(linked_VT[i])
+            StoreStateToDocument(VT_TB[linked_VT[i]])
         end
         reaper.Undo_EndBlock2(0, "VT: Recall Version " .. m_num, -1)
     end
@@ -233,7 +235,7 @@ function Element:track()
     if not Get_TBH()[self.rprobj].vis then return end
     --if self:LanemouseDClick() then Mute_view(self, self.idx)end
     --if self:LanemouseClick() then PT_COMP_TEST()end
-    if self:mouseClick() then Show_menu(self) end
+    if self:mouseClick() then Show_menu(self.rprobj) end
 end
 
 local function Track(tbl)

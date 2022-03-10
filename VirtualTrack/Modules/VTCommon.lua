@@ -420,7 +420,7 @@ function Get_On_Demand_DATA()
     local rprobj = GetMouseTrack_BR()
     if rprobj then
         if SetupSingleElement(rprobj) and #Get_VT_TB() then
-            return Get_VT_TB()[rprobj]
+            return rprobj
         end
     end
 end
@@ -469,64 +469,54 @@ function GetLinkVal()
     return false
 end
 
-function SetLinkVal(_, main_tbl)
-    if not main_tbl then return end -- SKIP ACTIVATING MULTIPLE TIMES SINCE THIS IS TOGGLE
+function SetLinkVal(_, is_main)
+    if not is_main then return end -- SKIP ACTIVATING MULTIPLE TIMES SINCE THIS IS TOGGLE
     local cur_value = GetLinkVal() == true and "false" or "true"
     reaper.SetProjExtState( 0, "VirtualTrack", "LINK", cur_value )
 end
 
-function GetLinkedTracksVT_INFO(tbl, on_demand) -- WE SEND ON DEMAND FROM DIRECT SCRIPT
-    if not GetLinkVal() then return {tbl} end -- IF LINK IS OFF RETURN ORIGINAL TBL
+local function CheckIfTableIDX_Exists(parent_tr, child_tr)
+    if #VT_TB[parent_tr].info ~= #VT_TB[child_tr].info then
+        for i = 1, #VT_TB[parent_tr].info do
+            if not VT_TB[child_tr].info[i] then CreateNew(VT_TB[child_tr]) end
+        end
+        StoreStateToDocument(VT_TB[child_tr])
+    end
+end
+
+function GetLinkedTracksVT_INFO(rprobj, on_demand) -- WE SEND ON DEMAND FROM DIRECT SCRIPT
+    if not GetLinkVal() then return {rprobj} end -- IF LINK IS OFF RETURN ORIGINAL TBL
     local all_linked_tracks = {}
-    if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
-        all_linked_tracks[#all_linked_tracks+1] = tbl.rprobj
-        for i = 1, reaper.CountTrackEnvelopes(tbl.rprobj) do
-            local env = reaper.GetTrackEnvelope(tbl.rprobj, i - 1)
+    if reaper.ValidatePtr(rprobj, "MediaTrack*") then
+        all_linked_tracks[#all_linked_tracks+1] = rprobj
+        for i = 1, reaper.CountTrackEnvelopes(rprobj) do
+            local env = reaper.GetTrackEnvelope(rprobj, i - 1)
             all_linked_tracks[#all_linked_tracks+1] = env
         end
-    elseif reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then
-        local parent_tr = reaper.GetEnvelopeInfo_Value(tbl.rprobj, "P_TRACK")
+    elseif reaper.ValidatePtr(rprobj, "TrackEnvelope*") then
+        local parent_tr = reaper.GetEnvelopeInfo_Value(rprobj, "P_TRACK")
         all_linked_tracks[#all_linked_tracks+1] = parent_tr
         for i = 1, reaper.CountTrackEnvelopes(parent_tr) do
             local env = reaper.GetTrackEnvelope(parent_tr, i - 1)
-                all_linked_tracks[#all_linked_tracks+1] = env
+            all_linked_tracks[#all_linked_tracks+1] = env
         end
     end
-
-    local LINKED_VT = {}
     for i = #all_linked_tracks, 1, -1 do
         if not on_demand then -- DEFER SCRIPT
-            if VT_TB[all_linked_tracks[i]] then -- ONLY ADD TRACKS IF THEY ARE IN VT_TB (HAVE VERSIONS)
-                LINKED_VT[#LINKED_VT+1] = VT_TB[all_linked_tracks[i]]
-            end
+            if not VT_TB[all_linked_tracks[i]] then table.remove(all_linked_tracks, i) end
         else
-            if not VT_TB[all_linked_tracks[i]] then -- IF TRACK DOES NOT EXIST IN VT_TBL
-                SetupSingleElement(all_linked_tracks[i]) -- CREATE NEW ELEMENT
-                LINKED_VT[#LINKED_VT+1] = VT_TB[all_linked_tracks[i]]
-            else
-                LINKED_VT[#LINKED_VT+1] = VT_TB[all_linked_tracks[i]]
-            end
+            if not VT_TB[all_linked_tracks[i]] then SetupSingleElement(all_linked_tracks[i]) end
         end
     end
-    -- IF NUMBER OF VERSIONS ARE MISSMATCHED BETWEEN PARENT AND CHILD TABLES CREATE EMPTYS FOR MISSINGS ONES
-    for i = 1, #LINKED_VT do CheckIfTableIDX_Exists(tbl, LINKED_VT[i]) end
-    return LINKED_VT
+    for i = 1, #all_linked_tracks do CheckIfTableIDX_Exists(rprobj, all_linked_tracks[i]) end
+    return all_linked_tracks
 end
 
-function SetCompLane(tbl, main_tbl, mouse_lane)
-    if not main_tbl then return end -- SKIP ACTIVATING MULTIPLE TIMES SINCE THIS IS TOGGLE
-    main_tbl.comp_idx = main_tbl.comp_idx == 0 and mouse_lane or 0
-    StoreStateToDocument(main_tbl)
+function SetCompLane(tbl, is_main, mouse_lane)
+    if not is_main then return end -- SKIP ACTIVATING MULTIPLE TIMES SINCE THIS IS TOGGLE
+    tbl.comp_idx = tbl.comp_idx == 0 and mouse_lane or 0
+    StoreStateToDocument(tbl)
     MSG("CALLED")
-end
-
-function CheckIfTableIDX_Exists(parent_tbl, child_tbl)
-    if #parent_tbl.info ~= #child_tbl.info then
-        for i = 1, #parent_tbl.info do
-            if not child_tbl.info[i] then CreateNew(child_tbl) end
-        end
-        StoreStateToDocument(child_tbl)
-    end
 end
 
 function GetFolderChilds(track)
@@ -554,10 +544,10 @@ local function GetSelectedTracks()
 end
 
 function GetTracksData(on_demand)
-    local tracks = GetSelectedTracks() and GetSelectedTracks() or (GetMouseTrack() and {GetMouseTrack()} or nil)
+    local tracks = GetSelectedTracks() and GetSelectedTracks() or (GetMouseTrack_BR() and {GetMouseTrack_BR()} or nil)
     if tracks then
-        for i = 1, #tracks do
-            -- FIXME: CREATE TBH AND VT_TB
-        end
+        if #tracks == 1 and tracks[1] == GetMouseTrack_BR() then SetupSingleElement(tracks[1]) return end -- no selected tracks just mouse
+        for i = 1, #tracks do GetSingleTrackXYH(tracks[i], 0) end
+        CreateVTElements(1)
     end
 end
