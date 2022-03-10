@@ -92,7 +92,9 @@ end
 
 -- IF CALLED FROM ON DEMAND THEN ALL TRACKS ARE VT_TB
 function Show_menu(rprobj, on_demand)
+    local focused_tracks = GetSelectedTracksData(rprobj, on_demand) -- THIS ADDS NEW TRACKS TO VT_TB FOR ON DEMAND SCRIPT AND RETURNS TRACK SELECTION
     local VT_TB = Get_VT_TB()
+
     local mouse_lane = MouseInfo(Get_VT_TB()).lane
     CreateGFXWindow()
     reaper.PreventUIRefresh(1)
@@ -104,28 +106,27 @@ function Show_menu(rprobj, on_demand)
     local m_num = gfx.showmenu(concat_menu)
     if m_num == 0 then return end
 
-    local linked_VT = GetLinkedTracksVT_INFO(rprobj, on_demand)
-    for i = 1, #linked_VT do UpdateInternalState(VT_TB[linked_VT[i]]) end
+    local linked_VT = GetLinkedTracksVT_INFO(focused_tracks, on_demand)
+    for k in pairs(linked_VT) do UpdateInternalState(VT_TB[k]) end
 
     if m_num > #tbl.info then
         m_num = (m_num - #tbl.info) + 1
         -- for the moment, all of these functions can change the state
         reaper.Undo_BeginBlock2(0)
-        for i = 1, #linked_VT do
-            --local activated = i == 1 and tbl or nil -- ONLY FOR TOGGLE FUNCTIONS (LINK TRACK/ENVELOPE AND SET COMP)
-            _G[menu_options[m_num].fname](VT_TB[linked_VT[i]], linked_VT[i] == rprobj, mouse_lane)
-            StoreStateToDocument(VT_TB[linked_VT[i]])
+        for track in pairs(linked_VT) do
+            _G[menu_options[m_num].fname](VT_TB[track], track == rprobj, mouse_lane)
+            StoreStateToDocument(VT_TB[track])
         end
         reaper.Undo_EndBlock2(0, "VT: " .. menu_options[m_num].name, -1)
     else
         reaper.Undo_BeginBlock2(0)
-        for i = 1, #linked_VT do
+        for track in pairs(linked_VT) do
             if not lane_mode then
-                SwapVirtualTrack(VT_TB[linked_VT[i]], m_num)
+                SwapVirtualTrack(VT_TB[track], m_num)
             else
-                Mute_view(VT_TB[linked_VT[i]], m_num)
+                Mute_view(VT_TB[track], m_num)
             end
-            StoreStateToDocument(VT_TB[linked_VT[i]])
+            StoreStateToDocument(VT_TB[track])
         end
         reaper.Undo_EndBlock2(0, "VT: Recall Version " .. m_num, -1)
     end

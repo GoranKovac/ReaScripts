@@ -425,8 +425,7 @@ function Get_On_Demand_DATA()
     end
 end
 
-function SetupSingleElement(rprobj)
-    TBH = {}
+local function GetTrackXYH(rprobj)
     if reaper.ValidatePtr(rprobj, "MediaTrack*") then
         GetSingleTrackXYH(rprobj)
     elseif reaper.ValidatePtr(rprobj, "TrackEnvelope*") then
@@ -438,6 +437,11 @@ function SetupSingleElement(rprobj)
             GetSingleTrackEnvelopeXYH(rprobj, tr_t, tr_vis)
         end
     end
+end
+
+function SetupSingleElement(rprobj)
+    TBH = {}
+    GetTrackXYH(rprobj)
     if #TBH then CreateVTElements(1) return 1 end
     return 0
 end
@@ -485,38 +489,43 @@ local function CheckIfTableIDX_Exists(parent_tr, child_tr)
 end
 
 function GetLinkedTracksVT_INFO(rprobj, on_demand) -- WE SEND ON DEMAND FROM DIRECT SCRIPT
-    if not GetLinkVal() then return {rprobj} end -- IF LINK IS OFF RETURN ORIGINAL TBL
+    if not GetLinkVal() then return rprobj end -- IF LINK IS OFF RETURN ORIGINAL TBL
     local all_linked_tracks = {}
-    if reaper.ValidatePtr(rprobj, "MediaTrack*") then
-        all_linked_tracks[#all_linked_tracks+1] = rprobj
-        for i = 1, reaper.CountTrackEnvelopes(rprobj) do
-            local env = reaper.GetTrackEnvelope(rprobj, i - 1)
-            all_linked_tracks[#all_linked_tracks+1] = env
-        end
-    elseif reaper.ValidatePtr(rprobj, "TrackEnvelope*") then
-        local parent_tr = reaper.GetEnvelopeInfo_Value(rprobj, "P_TRACK")
-        all_linked_tracks[#all_linked_tracks+1] = parent_tr
-        for i = 1, reaper.CountTrackEnvelopes(parent_tr) do
-            local env = reaper.GetTrackEnvelope(parent_tr, i - 1)
-            all_linked_tracks[#all_linked_tracks+1] = env
+    for track in pairs(rprobj) do
+        if reaper.ValidatePtr(track, "MediaTrack*") then
+            all_linked_tracks[track] = track
+            for i = 1, reaper.CountTrackEnvelopes(track) do
+                local env = reaper.GetTrackEnvelope(track, i - 1)
+                all_linked_tracks[env] = env
+            end
+        elseif reaper.ValidatePtr(track, "TrackEnvelope*") then
+            local parent_tr = reaper.GetEnvelopeInfo_Value(track, "P_TRACK")
+            all_linked_tracks[parent_tr] = parent_tr
+            for i = 1, reaper.CountTrackEnvelopes(parent_tr) do
+                local env = reaper.GetTrackEnvelope(parent_tr, i - 1)
+                all_linked_tracks[env] = env
+            end
         end
     end
-    for i = #all_linked_tracks, 1, -1 do
+    for track in pairs(all_linked_tracks) do
         if not on_demand then -- DEFER SCRIPT
-            if not VT_TB[all_linked_tracks[i]] then table.remove(all_linked_tracks, i) end
+            if not VT_TB[track] then table.remove(all_linked_tracks, track) end
         else
-            if not VT_TB[all_linked_tracks[i]] then SetupSingleElement(all_linked_tracks[i]) end
+            if not VT_TB[track] then SetupSingleElement(track) end
         end
     end
-    for i = 1, #all_linked_tracks do CheckIfTableIDX_Exists(rprobj, all_linked_tracks[i]) end
+    for linked_track in pairs(all_linked_tracks) do
+        for track in pairs(rprobj) do
+            CheckIfTableIDX_Exists(track, linked_track)
+        end
+    end
     return all_linked_tracks
 end
 
-function SetCompLane(tbl, is_main, mouse_lane)
+function SetCompLane(tbl, is_main, comp_lane)
     if not is_main then return end -- SKIP ACTIVATING MULTIPLE TIMES SINCE THIS IS TOGGLE
-    tbl.comp_idx = tbl.comp_idx == 0 and mouse_lane or 0
+    tbl.comp_idx = tbl.comp_idx == 0 and comp_lane or 0
     StoreStateToDocument(tbl)
-    MSG("CALLED")
 end
 
 function GetFolderChilds(track)
@@ -535,19 +544,23 @@ function GetFolderChilds(track)
 end
 
 local function GetSelectedTracks()
-    if reaper.CountSelectedTracks(0) < 2 then return end
+    if reaper.CountSelectedTracks(0) < 2 then return end -- MULTISELECTION START ONLY IF 2 OR MORE TRACKS ARE SELECTED
     local selected_tracks = {}
     for i = 1, reaper.CountSelectedTracks(0) do
-        table.insert(selected_tracks, reaper.GetSelectedTrack(0, i-1))
+        selected_tracks[reaper.GetSelectedTrack(0, i-1)] = reaper.GetSelectedTrack(0, i-1)
     end
     return selected_tracks
 end
 
-function GetTracksData(on_demand)
-    local tracks = GetSelectedTracks() and GetSelectedTracks() or (GetMouseTrack_BR() and {GetMouseTrack_BR()} or nil)
+function GetSelectedTracksData(rprobj, on_demand)
+    local tracks = GetSelectedTracks()
+    if not tracks then tracks = {[rprobj] = rprobj} return tracks end
     if tracks then
-        if #tracks == 1 and tracks[1] == GetMouseTrack_BR() then SetupSingleElement(tracks[1]) return end -- no selected tracks just mouse
-        for i = 1, #tracks do GetSingleTrackXYH(tracks[i], 0) end
-        CreateVTElements(1)
+        if not tracks[rprobj] then tracks[rprobj] = rprobj end -- insert current track into selection also
+        if on_demand then
+            for track in pairs(tracks) do GetTrackXYH(track) end
+            CreateVTElements(1)
+        end
+        return tracks
     end
 end
