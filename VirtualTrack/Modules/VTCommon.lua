@@ -560,6 +560,7 @@ function GetLinkVal()
 end
 
 function SetLinkVal(tbl)
+    --MSG("Callesd")
     if tbl.rprobj ~= MouseInfo(VT_TB).last_menu_tr then return end
     local cur_value = GetLinkVal() == true and "false" or "true"
     reaper.SetProjExtState(0, "VirtualTrack", "LINK", cur_value)
@@ -630,11 +631,13 @@ local function GetFolderChilds(track)
     return children
 end
 
+
 local function GetSelectedTracks()
     if reaper.CountSelectedTracks(0) < 2 then return end -- MULTISELECTION START ONLY IF 2 OR MORE TRACKS ARE SELECTED
     local selected_tracks = {}
     for i = 1, reaper.CountSelectedTracks(0) do
-        selected_tracks[reaper.GetSelectedTrack(0, i - 1)] = reaper.GetSelectedTrack(0, i - 1)
+        local track = reaper.GetSelectedTrack(0, i - 1)
+        selected_tracks[track] = track
     end
     return selected_tracks
 end

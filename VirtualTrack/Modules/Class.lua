@@ -8,7 +8,7 @@ local reaper = reaper
 local gfx = gfx
 
 local script_folder = debug.getinfo(1).source:match("@?(.*[\\|/])")
-local image_path = script_folder:gsub("\\Modules", "") .. "Images/VT_icon_empty.png"
+local image_path = script_folder:gsub("[\\|/]Modules", "") .. "Images/VT_icon_empty.png"
 
 local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
 local track_window = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8)
@@ -124,7 +124,7 @@ end
 function Show_menu(rprobj, on_demand)
     local focused_tracks = GetSelectedTracksData(rprobj, on_demand) -- THIS ADDS NEW TRACKS TO VT_TB FOR ON DEMAND SCRIPT AND RETURNS TRACK SELECTION
     local VT_TB = Get_VT_TB()
-    MouseInfo(VT_TB).last_menu_lane = MouseInfo(VT_TB).lane -- SET LAST LANE BEFORE MENU OPENED
+    MouseInfo(VT_TB).last_menu_lane = MouseInfo(VT_TB).lane-- SET LAST LANE BEFORE MENU OPENED
     MouseInfo(VT_TB).last_menu_tr = MouseInfo(VT_TB).tr -- SET LAST TRACK BEFORE MENU OPENED
     CheckTrackLaneModeState(VT_TB[rprobj])
     CreateGFXWindow()

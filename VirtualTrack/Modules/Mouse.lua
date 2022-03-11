@@ -197,6 +197,7 @@ local lane_offset = 14 -- schwa decided this number by carefully inspecting pixe
 function Get_lane_from_mouse_coordinates(my, VT_TB)
 	if not VT_TB then return end
 	if mouse.tr == nil then return end
+	if not VT_TB[mouse.tr] or not VT_TB[mouse.tr].info then return end
 	local _, cy = To_client(0, my)
 	local t, h, b = GetMouseTrackXYH(mouse.tr)
 	if cy > t and cy < b then
