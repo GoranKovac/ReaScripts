@@ -145,8 +145,8 @@ function Show_menu(rprobj, on_demand)
         if menu_options[m_num].fname == "SetLinkVal" or menu_options[m_num].fname == "SetCompLane" then
             _G[menu_options[m_num].fname](VT_TB[rprobj])
         end
-        for track in pairs(linked_VT) do
-            if menu_options[m_num].fname ~= "SetLinkVal" and menu_options[m_num].fname ~= "SetCompLane" then
+        if menu_options[m_num].fname ~= "SetLinkVal" and menu_options[m_num].fname ~= "SetCompLane" then
+            for track in pairs(linked_VT) do
                 _G[menu_options[m_num].fname](VT_TB[track])
                 StoreStateToDocument(VT_TB[track])
             end
