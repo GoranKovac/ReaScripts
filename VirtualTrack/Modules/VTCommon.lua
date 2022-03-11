@@ -609,6 +609,7 @@ function GetLinkedTracksVT_INFO(tracl_tbl, on_demand) -- WE SEND ON DEMAND FROM 
 end
 
 function SetCompLane(tbl)
+    if not MouseInfo(VT_TB).last_tr or not MouseInfo(VT_TB).last_lane then return end
     if MouseInfo(VT_TB).last_tr ~= tbl.rprobj then return end -- ACTIVATE ONLY ONCE (WE ARE ITERATING THRU SELECTED TRACKS MOUSE INCLUDING, SINGE THIS IS TOGGLE WE MUST NOT ACTIVATE IT ON EVERY ITERATION)
     tbl.comp_idx = tbl.comp_idx == 0 and MouseInfo(VT_TB).last_lane or 0
     StoreStateToDocument(tbl)
