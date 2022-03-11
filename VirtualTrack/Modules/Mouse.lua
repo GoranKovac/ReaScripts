@@ -36,6 +36,7 @@ local mouse = {
 	last_tr = nil,
 	last_r_t = nil,
 	last_r_b = nil,
+	last_lane = nil,
 
 	dx = 0,
 	dy = 0,

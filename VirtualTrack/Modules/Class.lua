@@ -124,8 +124,9 @@ end
 function Show_menu(rprobj, on_demand)
     local focused_tracks = GetSelectedTracksData(rprobj, on_demand) -- THIS ADDS NEW TRACKS TO VT_TB FOR ON DEMAND SCRIPT AND RETURNS TRACK SELECTION
     local VT_TB = Get_VT_TB()
+    MouseInfo(VT_TB).last_lane = MouseInfo(VT_TB).lane -- SET LAST LANE BEFORE MENU OPENED
+    MouseInfo(VT_TB).last_tr = MouseInfo(VT_TB).tr -- SET LAST TRACK BEFORE MENU OPENED
     CheckTrackLaneModeState(VT_TB[rprobj])
-    local mouse_lane = MouseInfo(VT_TB).lane
     CreateGFXWindow()
     reaper.PreventUIRefresh(1)
 
@@ -143,7 +144,7 @@ function Show_menu(rprobj, on_demand)
         m_num = (m_num - #tbl.info) + 1
         reaper.Undo_BeginBlock2(0)
         for track in pairs(linked_VT) do
-            _G[menu_options[m_num].fname](VT_TB[track], track == rprobj, mouse_lane)
+            _G[menu_options[m_num].fname](VT_TB[track])
             StoreStateToDocument(VT_TB[track])
         end
         reaper.Undo_EndBlock2(0, "VT: " .. menu_options[m_num].name, -1)

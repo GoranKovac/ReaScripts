@@ -608,9 +608,9 @@ function GetLinkedTracksVT_INFO(tracl_tbl, on_demand) -- WE SEND ON DEMAND FROM 
     return all_linked_tracks
 end
 
-function SetCompLane(tbl, is_main, comp_lane)
-    if not is_main then return end -- SKIP ACTIVATING MULTIPLE TIMES SINCE THIS IS TOGGLE
-    tbl.comp_idx = tbl.comp_idx == 0 and comp_lane or 0
+function SetCompLane(tbl)
+    if MouseInfo(VT_TB).last_tr ~= tbl.rprobj then return end -- ACTIVATE ONLY ONCE (WE ARE ITERATING THRU SELECTED TRACKS MOUSE INCLUDING, SINGE THIS IS TOGGLE WE MUST NOT ACTIVATE IT ON EVERY ITERATION)
+    tbl.comp_idx = tbl.comp_idx == 0 and MouseInfo(VT_TB).last_lane or 0
     StoreStateToDocument(tbl)
 end
 
