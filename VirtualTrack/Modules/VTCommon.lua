@@ -560,7 +560,6 @@ function GetLinkVal()
 end
 
 function SetLinkVal(tbl)
-    --MSG("Callesd")
     if tbl.rprobj ~= MouseInfo(VT_TB).last_menu_tr then return end
     local cur_value = GetLinkVal() == true and "false" or "true"
     reaper.SetProjExtState(0, "VirtualTrack", "LINK", cur_value)
