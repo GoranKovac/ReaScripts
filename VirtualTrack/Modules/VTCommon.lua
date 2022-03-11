@@ -44,6 +44,7 @@ local function Store_To_PEXT(el)
     storedTable.info = el.info;
     storedTable.idx = math.floor(el.idx)
     storedTable.comp_idx = math.floor(el.comp_idx)
+    storedTable.lane_mode = math.floor(el.lane_mode)
     local serialized = tableToString(storedTable)
     if reaper.ValidatePtr(el.rprobj, "MediaTrack*") then
         reaper.GetSetMediaTrackInfo_String(el.rprobj, "P_EXT:VirtualTrack", serialized, true)
@@ -65,6 +66,7 @@ local function Restore_From_PEXT(el)
             el.info = storedTable.info
             el.idx = storedTable.idx
             el.comp_idx = storedTable.comp_idx
+            el.lane_mode = storedTable.lane_mode
         end
     end
 end
@@ -435,10 +437,30 @@ function Unmuted_lane(tbl)
     end
 end
 
+function CheckTrackLaneModeState(tbl)
+    if not reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then return end
+    local current_state = reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE")
+    if current_state == 2 and tbl.lane_mode ~= 2 then
+        reaper.PreventUIRefresh(1)
+        for i = 1, #tbl.info do
+            local items = Create_item(tbl.rprobj, tbl.info[i])
+            for j = 1, #items do
+                reaper.SetMediaItemInfo_Value(items[j], "F_FREEMODE_Y", ((i - 1) / #tbl.info))
+                reaper.SetMediaItemInfo_Value(items[j], "F_FREEMODE_H", 1 / #tbl.info)
+            end
+        end
+        Mute_view(tbl, tbl.idx)
+        reaper.PreventUIRefresh(-1)
+        tbl.lane_mode = 2
+        StoreStateToDocument(tbl)
+    end
+end
+
 function ShowAll(tbl)
     if not reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then return end
     local fimp = reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE")
     local toggle = fimp == 2 and 0 or 2
+    tbl.lane_mode = toggle
     if fimp == 2 then
         Unmute_All_track_items(tbl.rprobj) -- UNMUTE ALL ITEMS FROM MUTE_VIEW FUNCTION BEFORE STORING
         StoreLaneData(tbl)

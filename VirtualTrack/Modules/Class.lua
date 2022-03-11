@@ -121,10 +121,10 @@ local function CreateGFXWindow()
     gfx.y = gfx.mouse_y
 end
 
--- IF CALLED FROM ON DEMAND THEN ALL TRACKS ARE VT_TB
 function Show_menu(rprobj, on_demand)
     local focused_tracks = GetSelectedTracksData(rprobj, on_demand) -- THIS ADDS NEW TRACKS TO VT_TB FOR ON DEMAND SCRIPT AND RETURNS TRACK SELECTION
     local VT_TB = Get_VT_TB()
+    CheckTrackLaneModeState(VT_TB[rprobj])
     local mouse_lane = MouseInfo(VT_TB).lane
     CreateGFXWindow()
     reaper.PreventUIRefresh(1)
@@ -182,6 +182,7 @@ function Element:new(rprobj, info, direct)
     elm.info = info
     elm.idx = 1
     elm.comp_idx = 0
+    elm.lane_mode = 0
     setmetatable(elm, self)
     self.__index = self
     if direct == 1 then self:cleanup() end
