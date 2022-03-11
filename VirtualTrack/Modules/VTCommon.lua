@@ -442,6 +442,7 @@ function CheckTrackLaneModeState(tbl)
     local current_state = reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE")
     if current_state == 2 and tbl.lane_mode ~= 2 then
         reaper.PreventUIRefresh(1)
+        Clear(tbl)
         for i = 1, #tbl.info do
             local items = Create_item(tbl.rprobj, tbl.info[i])
             for j = 1, #items do
