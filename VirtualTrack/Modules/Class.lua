@@ -142,9 +142,14 @@ function Show_menu(rprobj, on_demand)
     if m_num > #tbl.info then
         m_num = (m_num - #tbl.info) + 1
         reaper.Undo_BeginBlock2(0)
+        if menu_options[m_num].fname == "SetLinkVal" or menu_options[m_num].fname == "SetCompLane" then
+            _G[menu_options[m_num].fname](VT_TB[rprobj])
+        end
         for track in pairs(linked_VT) do
-            _G[menu_options[m_num].fname](VT_TB[track])
-            StoreStateToDocument(VT_TB[track])
+            if menu_options[m_num].fname ~= "SetLinkVal" and menu_options[m_num].fname ~= "SetCompLane" then
+                _G[menu_options[m_num].fname](VT_TB[track])
+                StoreStateToDocument(VT_TB[track])
+            end
         end
         reaper.Undo_EndBlock2(0, "VT: " .. menu_options[m_num].name, -1)
     else

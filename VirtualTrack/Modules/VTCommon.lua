@@ -132,7 +132,7 @@ end
 
 function Get_Env_Chunk(env)
     local _, env_chunk = reaper.GetEnvelopeStateChunk(env, "")
-    env_chunk = env_chunk:gsub("(PT [%d%.]+ [%d%.]+ [%d%.]+ [%d%.]+) [%d%.]+", "%1 0")
+    env_chunk = env_chunk:gsub("(PT [%d%.]+ [%d%.]+ [%d%.]+ [%d%.]+) [%d%.]+", "%1 0") -- MAKE ALL POINTS UNSELECTED (5th digit is SEL 0 or 1)
     env_chunk = env_chunk:gsub("<BIN VirtualTrack.->", "") -- remove our P_EXT from this chunk!
     return { env_chunk }
 end
@@ -561,7 +561,6 @@ function GetLinkVal()
 end
 
 function SetLinkVal(tbl)
-    if tbl.rprobj ~= MouseInfo(VT_TB).last_menu_tr then return end
     local cur_value = GetLinkVal() == true and "false" or "true"
     reaper.SetProjExtState(0, "VirtualTrack", "LINK", cur_value)
     StoreStateToDocument(tbl)
@@ -617,8 +616,6 @@ function GetLinkedTracksVT_INFO(tracl_tbl, on_demand) -- WE SEND ON DEMAND FROM 
 end
 
 function SetCompLane(tbl)
-    if tbl.rprobj ~= MouseInfo(VT_TB).last_menu_tr then return end
-    -- ACTIVATE ONLY FOR TRACK UNDER MOUSE CURSOR (DISSALOW THIS ON MULTI TRACK SELECTION)
     tbl.comp_idx = tbl.comp_idx == 0 and MouseInfo(VT_TB).last_menu_lane or 0
     StoreStateToDocument(tbl)
 end
