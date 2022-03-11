@@ -600,23 +600,11 @@ function GetLinkedTracksVT_INFO(tracl_tbl, on_demand) -- WE SEND ON DEMAND FROM 
             end
         end
     end
-    for track in pairs(all_linked_tracks) do
-        if not on_demand then
-            if not VT_TB[track] then table.remove(all_linked_tracks, track) end
-        else
-            if not VT_TB[track] then SetupSingleElement(track) end
-        end
-    end
-    for linked_track in pairs(all_linked_tracks) do
-        for track in pairs(tracl_tbl) do
-            CheckIfTableIDX_Exists(track, linked_track)
-        end
-    end
     local same_envelopes = {}
     if reaper.ValidatePtr(MouseInfo(VT_TB).last_menu_tr, "TrackEnvelope*") then
         local m_retval, m_name = reaper.GetEnvelopeName(MouseInfo(VT_TB).last_menu_tr)
         for track in pairs(all_linked_tracks) do
-            if reaper.ValidatePtr(track, "TrackEnvelope*") then
+            if reaper.ValidatePtr(track, "TrackEnvelope*") and VT_TB[track]then
                 local env_retval, env_name = reaper.GetEnvelopeName(track)
                 if m_name == env_name then
                     same_envelopes[track] = env_name
@@ -631,6 +619,18 @@ function GetLinkedTracksVT_INFO(tracl_tbl, on_demand) -- WE SEND ON DEMAND FROM 
             return tracl_tbl
         end
     end -- IF LINK IS OFF RETURN ORIGINAL TBL
+    for track in pairs(all_linked_tracks) do
+        if not on_demand then
+            if not VT_TB[track] then table.remove(all_linked_tracks, track) end
+        else
+            if not VT_TB[track] then SetupSingleElement(track) end
+        end
+    end
+    for linked_track in pairs(all_linked_tracks) do
+        for track in pairs(tracl_tbl) do
+            CheckIfTableIDX_Exists(track, linked_track)
+        end
+    end
     return all_linked_tracks
 end
 
