@@ -368,8 +368,7 @@ local function Make_item_from_razor(tbl, item)
     local createdTake = reaper.AddTakeToMediaItem(createdItem)
     if media_type:find("MIDI") then
         local _, midi_chunk = reaper.GetItemStateChunk(item, "")
-        local POOLEDEVTS = literalize(string.match(midi_chunk, "POOLEDEVTS (%S+)"))
-        midi_chunk = string.gsub(midi_chunk, POOLEDEVTS, reaper.genGuid)
+        midi_chunk = midi_chunk:gsub("{.-}", "") -- Reaper auto-generates all GUIDs
         reaper.SetItemStateChunk(createdItem, midi_chunk, false)
     else
         filename = reaper.GetMediaSourceFileName(source, "")
