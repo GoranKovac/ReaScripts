@@ -456,7 +456,7 @@ function CheckTrackLaneModeState(tbl)
         StoreStateToDocument(tbl)
     end
 end
-
+--! need to fix multitrack saving muted itemssssSSSSSsss
 function ShowAll(tbl)
     if not reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then return end
     local fimp = reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE")
@@ -612,7 +612,7 @@ function GetLinkedTracksVT_INFO(tracl_tbl, on_demand) -- WE SEND ON DEMAND FROM 
         end
     end
     if not GetLinkVal() then
-        if reaper.ValidatePtr(MouseInfo(VT_TB).last_menu_tr, "TrackEnvelope*") then -- IF MOUSE TRACK IS UNDER ENVELPE GET ALL SAME ENVELOPES HERE            
+        if reaper.ValidatePtr(MouseInfo(VT_TB).last_menu_tr, "TrackEnvelope*") then -- IF MOUSE TRACK IS UNDER ENVELPE GET ALL SAME ENVELOPES HERE
             return same_envelopes
         else
             return tracl_tbl
