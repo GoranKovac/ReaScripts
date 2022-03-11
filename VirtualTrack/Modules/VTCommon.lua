@@ -132,7 +132,7 @@ end
 
 function Get_Env_Chunk(env)
     local _, env_chunk = reaper.GetEnvelopeStateChunk(env, "")
-    env_chunk = env_chunk:gsub("(PT [%d%.]+ [%d%.]+ [%d%.]+ [%d%.]+) [%d%.]+", "%1 0") -- MAKE ALL POINTS UNSELECTED (5th digit is SEL 0 or 1)
+    --env_chunk = env_chunk:gsub("(PT [%d%.]+ [%d%.]+ [%d%.]+ [%d%.]+) [%d%.]+", "%1 0") -- MAKE ALL POINTS UNSELECTED (5th digit is SEL 0 or 1)
     env_chunk = env_chunk:gsub("<BIN VirtualTrack.->", "") -- remove our P_EXT from this chunk!
     return { env_chunk }
 end
