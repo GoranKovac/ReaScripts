@@ -421,7 +421,7 @@ end
 
 local function Unmute_All_track_items(track)
     reaper.PreventUIRefresh(1)
-    for i = 1, reaper.CountTrackMediaItems(track) do -- DO IN REVERSE TO AVOID CRASHES ON ITERATING MULTIPLE ITEMS
+    for i = 1, reaper.CountTrackMediaItems(track) do
         local item = reaper.GetMediaItem(0, i - 1)
         reaper.SetMediaItemInfo_Value(item, "B_MUTE", 0)
     end
@@ -582,7 +582,6 @@ local function CheckIfTableIDX_Exists(parent_tr, child_tr)
 end
 
 function GetLinkedTracksVT_INFO(tracl_tbl, on_demand) -- WE SEND ON DEMAND FROM DIRECT SCRIPT
-    --if not GetLinkVal() then return tracl_tbl end -- IF LINK IS OFF RETURN ORIGINAL TBL
     local all_linked_tracks = {}
     for track in pairs(tracl_tbl) do
         if reaper.ValidatePtr(track, "MediaTrack*") then
@@ -604,7 +603,7 @@ function GetLinkedTracksVT_INFO(tracl_tbl, on_demand) -- WE SEND ON DEMAND FROM 
     if reaper.ValidatePtr(MouseInfo(VT_TB).last_menu_tr, "TrackEnvelope*") then
         local m_retval, m_name = reaper.GetEnvelopeName(MouseInfo(VT_TB).last_menu_tr)
         for track in pairs(all_linked_tracks) do
-            if reaper.ValidatePtr(track, "TrackEnvelope*") and VT_TB[track]then
+            if reaper.ValidatePtr(track, "TrackEnvelope*") and VT_TB[track] then
                 local env_retval, env_name = reaper.GetEnvelopeName(track)
                 if m_name == env_name then
                     same_envelopes[track] = env_name
@@ -613,12 +612,12 @@ function GetLinkedTracksVT_INFO(tracl_tbl, on_demand) -- WE SEND ON DEMAND FROM 
         end
     end
     if not GetLinkVal() then
-        if reaper.ValidatePtr(MouseInfo(VT_TB).last_menu_tr, "TrackEnvelope*") then
+        if reaper.ValidatePtr(MouseInfo(VT_TB).last_menu_tr, "TrackEnvelope*") then -- IF MOUSE TRACK IS UNDER ENVELPE GET ALL SAME ENVELOPES HERE            
             return same_envelopes
         else
             return tracl_tbl
         end
-    end -- IF LINK IS OFF RETURN ORIGINAL TBL
+    end
     for track in pairs(all_linked_tracks) do
         if not on_demand then
             if not VT_TB[track] then table.remove(all_linked_tracks, track) end

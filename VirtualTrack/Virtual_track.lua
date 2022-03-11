@@ -1,10 +1,11 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 0.82
+-- @version 0.83
 -- @changelog
 --   + Multitrack Selection
---   + Custom CopyPaste function (native copy paste action triggers on selected track which is not what we want)
+--   + Multitrack Envelope actions
+--   + Custom CopyPaste function
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
