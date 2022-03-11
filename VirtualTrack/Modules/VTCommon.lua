@@ -563,6 +563,7 @@ function SetLinkVal(tbl)
     if tbl.rprobj ~= MouseInfo(VT_TB).last_menu_tr then return end
     local cur_value = GetLinkVal() == true and "false" or "true"
     reaper.SetProjExtState(0, "VirtualTrack", "LINK", cur_value)
+    StoreStateToDocument(tbl)
 end
 
 local function CheckIfTableIDX_Exists(parent_tr, child_tr)
@@ -571,6 +572,12 @@ local function CheckIfTableIDX_Exists(parent_tr, child_tr)
             if not VT_TB[child_tr].info[i] then CreateNew(VT_TB[child_tr]) end
         end
         StoreStateToDocument(VT_TB[child_tr])
+    end
+    if #VT_TB[child_tr].info ~= #VT_TB[parent_tr].info then
+        for i = 1, #VT_TB[child_tr].info do
+            if not VT_TB[parent_tr].info[i] then CreateNew(VT_TB[parent_tr]) end
+        end
+        StoreStateToDocument(VT_TB[parent_tr])
     end
 end
 
