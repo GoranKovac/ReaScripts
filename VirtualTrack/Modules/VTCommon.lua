@@ -635,20 +635,6 @@ local function GetFolderChilds(track)
     return children
 end
 
-function Is_Type_of_Mouse(tr_tbl)
-    if not MouseInfo(VT_TB).last_menu_tr then return end
-    local mouse_tr = MouseInfo(VT_TB).last_menu_tr
-    if reaper.ValidatePtr(mouse_tr, "MediaTrack*") then return end
-    local m_retval, m_name = reaper.GetEnvelopeName( mouse_tr )
-
-
-    local e_retval, e_name = reaper.GetEnvelopeName( env )
-
-    if m_name == e_name then
-        
-    end
-end
-
 local function GetSelectedTracks()
     if reaper.CountSelectedTracks(0) < 2 then return end -- MULTISELECTION START ONLY IF 2 OR MORE TRACKS ARE SELECTED
     local selected_tracks = {}
