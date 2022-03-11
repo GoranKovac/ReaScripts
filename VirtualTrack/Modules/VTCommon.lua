@@ -581,8 +581,12 @@ local function CheckIfTableIDX_Exists(parent_tr, child_tr)
     end
 end
 
+local function MouseTrackType(tracl_tbl)
+    
+end
+
 function GetLinkedTracksVT_INFO(tracl_tbl, on_demand) -- WE SEND ON DEMAND FROM DIRECT SCRIPT
-    if not GetLinkVal() then return tracl_tbl end -- IF LINK IS OFF RETURN ORIGINAL TBL
+    --if not GetLinkVal() then return tracl_tbl end -- IF LINK IS OFF RETURN ORIGINAL TBL
     local all_linked_tracks = {}
     for track in pairs(tracl_tbl) do
         if reaper.ValidatePtr(track, "MediaTrack*") then
@@ -612,6 +616,25 @@ function GetLinkedTracksVT_INFO(tracl_tbl, on_demand) -- WE SEND ON DEMAND FROM 
             CheckIfTableIDX_Exists(track, linked_track)
         end
     end
+    local same_envelopes = {}
+    if reaper.ValidatePtr(MouseInfo(VT_TB).last_menu_tr, "TrackEnvelope*") then
+        local m_retval, m_name = reaper.GetEnvelopeName(MouseInfo(VT_TB).last_menu_tr)
+        for track in pairs(all_linked_tracks) do
+            if reaper.ValidatePtr(track, "TrackEnvelope*") then
+                local env_retval, env_name = reaper.GetEnvelopeName(track)
+                if m_name == env_name then
+                    same_envelopes[track] = env_name
+                end
+            end
+        end
+    end
+    if not GetLinkVal() then
+        if reaper.ValidatePtr(MouseInfo(VT_TB).last_menu_tr, "TrackEnvelope*") then
+            return same_envelopes
+        else
+            return tracl_tbl
+        end
+    end -- IF LINK IS OFF RETURN ORIGINAL TBL
     return all_linked_tracks
 end
 
