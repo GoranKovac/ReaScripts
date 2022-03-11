@@ -581,10 +581,6 @@ local function CheckIfTableIDX_Exists(parent_tr, child_tr)
     end
 end
 
-local function MouseTrackType(tracl_tbl)
-    
-end
-
 function GetLinkedTracksVT_INFO(tracl_tbl, on_demand) -- WE SEND ON DEMAND FROM DIRECT SCRIPT
     --if not GetLinkVal() then return tracl_tbl end -- IF LINK IS OFF RETURN ORIGINAL TBL
     local all_linked_tracks = {}
