@@ -1,11 +1,11 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 0.81
+-- @version 0.84
 -- @changelog
 --   + Multitrack Selection
 --   + Multitrack Envelope actions
---   + Custom CopyPaste function
+--   + New shortcut script for VirtualTrack on Selected tracks
 --   + Many Fixes
 -- @provides
 --   {Images,Modules}/*
