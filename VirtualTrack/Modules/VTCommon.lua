@@ -4,6 +4,8 @@
    * Version: 0.02
 	 * NoIndex: true
 --]]
+
+local script_folder = debug.getinfo(1).source:match("@?(.*[\\|/])"):gsub("[\\|/]Modules", "")
 local reaper, gfx = reaper, gfx
 local VT_TB, TBH = {}, nil
 
@@ -540,6 +542,7 @@ local function Make_item_from_razor(tbl, item)
     local source = reaper.GetMediaItemTake_Source(take)
     local media_type = reaper.GetMediaSourceType(source, "")
     local item_volume = reaper.GetMediaItemInfo_Value(item, "D_VOL")
+    local item_playrate = reaper.GetMediaItemInfo_Value(item, "D_PLAYRATE")
     local createdItem = reaper.AddMediaItemToTrack(tbl.rprobj)
     local createdTake = reaper.AddTakeToMediaItem(createdItem)
     if media_type:find("MIDI") then
@@ -556,6 +559,7 @@ local function Make_item_from_razor(tbl, item)
     reaper.SetMediaItemTakeInfo_Value(createdTake, "D_STARTOFFS", TakeOffset + offset)
     if media_type:find("MIDI") == nil then reaper.SetMediaItemTake_Source(createdTake, clonedsource) end
     reaper.SetMediaItemInfo_Value(createdItem, "D_VOL", item_volume)
+    reaper.SetMediaItemInfo_Value(createdItem, "D_PLAYRATE", item_playrate)
     reaper.SetMediaItemInfo_Value(createdItem, "F_FREEMODE_Y", (tbl.comp_idx - 1) / #tbl.info)
     reaper.SetMediaItemInfo_Value(createdItem, "F_FREEMODE_H", 1 / #tbl.info)
     reaper.SetMediaItemInfo_Value(createdItem, "B_MUTE", 1)
@@ -802,9 +806,20 @@ function GetLinkedTracksVT_INFO(tracl_tbl, on_demand) -- WE SEND ON DEMAND FROM 
     return all_linked_tracks
 end
 
+reaper.gmem_attach('Virtual_Tracks')
+local swipe_script = reaper.NamedCommandLookup("_RS76dfdad86d5ecdb185d72bf80aa7992eaf230369")
+SWIPE = true
 function SetCompLane(tbl)
     tbl.comp_idx = tbl.comp_idx == 0 and MouseInfo(VT_TB).last_menu_lane or 0
     StoreStateToDocument(tbl)
+    if SWIPE then
+        if tbl.comp_idx ~= 0 then
+            reaper.gmem_write(1,0)
+            reaper.Main_OnCommand(swipe_script,0)
+        else
+            reaper.gmem_write(1,1)
+        end
+    end
 end
 
 local function GetFolderChilds(track)
@@ -843,4 +858,8 @@ function GetSelectedTracksData(rprobj, on_demand)
         end
         return tracks
     end
+end
+
+function clear_area_sel()
+	reaper.Main_OnCommand(42406, 0) -- Razor edit: Clear all areas
 end
