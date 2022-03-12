@@ -525,7 +525,14 @@ local function SetupSingleElement(rprobj)
 end
 
 function OnDemand()
-    local rprobj = GetMouseTrack_BR()
+    local rprobj
+    local _, demand_mode = reaper.GetProjExtState(0, "VirtualTrack", "ONDEMAND_MODE")
+    if demand_mode == "mouse" then
+        rprobj = GetMouseTrack_BR()
+    elseif demand_mode == "track" then
+        local sel_env = reaper.GetSelectedEnvelope( 0 )
+        rprobj = sel_env and sel_env or reaper.GetSelectedTrack(0,0)
+    end
     if rprobj then
         if SetupSingleElement(rprobj) and #Get_VT_TB() then
             return rprobj
@@ -674,4 +681,10 @@ function GetSelectedTracksData(rprobj, on_demand)
         end
         return tracks
     end
+end
+
+function GetOnDemandMode()
+    local retval, demand_mode = reaper.GetProjExtState(0, "VirtualTrack", "DEMAND_MODE")
+    if retval ~= 0 then return demand_mode == "mous" and true or false end
+    return false
 end

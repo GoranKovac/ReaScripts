@@ -13,7 +13,7 @@ require("Modules/Mouse")
 require("Modules/Utils")
 
 Check_Requirements()
-reaper.SetProjExtState(0, "VirtualTrack", "ONDEMAND_MODE", "mouse")
+reaper.SetProjExtState(0, "VirtualTrack", "ONDEMAND_MODE", "track")
 local function Main()
     local track = OnDemand()
     if not track then return end
