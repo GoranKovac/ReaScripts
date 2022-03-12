@@ -88,7 +88,7 @@ local function ValidateRemovedTracks()
 end
 
 local function Remove_SEL_FromChunk(chunk)
-    return chunk:gsub("SEL(.-\n)", "")
+    return chunk:gsub("SEL.-\n", "")
 end
 
 local function Get_Item_Chunk(item)
@@ -96,7 +96,7 @@ local function Get_Item_Chunk(item)
     return chunk
 end
 
-local function Get_Track_Items(track, job)
+local function Get_Track_Items(track)
     local items_chunk = {}
     local num_items = reaper.CountTrackMediaItems(track)
     for i = 1, num_items, 1 do
