@@ -340,15 +340,12 @@ local function Razor_item_position(rprobj, item)
 
     local new_start, new_item_lenght, offset
     if tsStart < item_start and tsEnd > item_start and tsEnd < item_dur then
-        ----- IF TS START IS IN ITEM BUT TS END IS OUTSIDE THEN COPY ONLY PART FROM TS START TO ITEM END
         new_start, new_item_lenght, offset = item_start, tsEnd - item_start, 0
         return new_start, new_item_lenght, offset, item
     elseif tsStart < item_dur and tsStart > item_start and tsEnd > item_dur then
-        ------ IF BOTH TS START AND TS END ARE IN ITEM COPY PART FROM TS START TO TS END
         new_start, new_item_lenght, offset = tsStart, item_dur - tsStart, (tsStart - item_start)
         return new_start, new_item_lenght, offset, item
     elseif tsStart >= item_start and tsEnd <= item_dur then
-        ------ IF BOTH TS START AND TS END ARE OUT OF ITEM BUT ITEM IS IN TS COPY ITEM START END
         new_start, new_item_lenght, offset = tsStart, tsEnd - tsStart, (tsStart - item_start)
         return new_start, new_item_lenght, offset, item
     elseif tsStart <= item_start and tsEnd > item_dur then
