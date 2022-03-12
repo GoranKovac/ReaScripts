@@ -671,9 +671,3 @@ function GetSelectedTracksData(rprobj, on_demand)
         return tracks
     end
 end
-
-function GetOnDemandMode()
-    local retval, demand_mode = reaper.GetProjExtState(0, "VirtualTrack", "DEMAND_MODE")
-    if retval ~= 0 then return demand_mode == "mous" and true or false end
-    return false
-end
