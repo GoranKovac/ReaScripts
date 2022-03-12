@@ -113,7 +113,6 @@ end
 
 function Show_menu(rprobj, on_demand)
     local focused_tracks = GetSelectedTracksData(rprobj, on_demand) -- THIS ADDS NEW TRACKS TO VT_TB FOR ON DEMAND SCRIPT AND RETURNS TRACK SELECTION
-    --local VT_TB = Get_VT_TB()
     MouseInfo(VT_TB).last_menu_lane = MouseInfo(VT_TB).lane-- SET LAST LANE BEFORE MENU OPENED
     MouseInfo(VT_TB).last_menu_tr = MouseInfo(VT_TB).tr -- SET LAST TRACK BEFORE MENU OPENED
     CheckTrackLaneModeState(VT_TB[rprobj])
@@ -168,8 +167,6 @@ end
 
 local prev_Arr_end_time, prev_proj_state, last_scroll, last_scroll_b, last_pr_t, last_pr_h
 function Arrange_view_info()
-    --local TBH = Get_TBH()
-    --if not TBH then return end
     local last_pr_tr = reaper.GetTrack(0, reaper.CountTracks(0) - 1)
     local proj_state = reaper.GetProjectStateChangeCount(0) -- PROJECT STATE
     local _, scroll, _, _, scroll_b = reaper.JS_Window_GetScrollInfo(track_window, "SB_VERT") -- GET VERTICAL SCROLL
@@ -187,7 +184,7 @@ function Arrange_view_info()
         last_scroll_b = scroll_b
         return true
     elseif last_pr_tr then -- LAST TRACK ALWAYS CHANGES HEIGHT WHEN OTHER TRACK RESIZE
-        if TBH[last_pr_tr].h ~= last_pr_h or TBH[last_pr_tr].t ~= last_pr_t then
+        if TBH[last_pr_tr] and TBH[last_pr_tr].h ~= last_pr_h or TBH[last_pr_tr].t ~= last_pr_t then
             last_pr_h = TBH[last_pr_tr].h
             last_pr_t = TBH[last_pr_tr].t
             return true
@@ -228,11 +225,12 @@ local function GetTracksXYH()
 end
 
 local function Store_To_PEXT(el)
-    local storedTable = {}
-    storedTable.info = el.info;
-    storedTable.idx = math.floor(el.idx)
-    storedTable.comp_idx = math.floor(el.comp_idx)
-    storedTable.lane_mode = math.floor(el.lane_mode)
+    local storedTable = {
+        info =  el.info,
+        idx = math.floor(el.idx),
+        comp_idx = math.floor(el.comp_idx),
+        lane_mode = math.floor(el.lane_mode)
+    }
     local serialized = tableToString(storedTable)
     if reaper.ValidatePtr(el.rprobj, "MediaTrack*") then
         reaper.GetSetMediaTrackInfo_String(el.rprobj, "P_EXT:VirtualTrack", serialized, true)
@@ -565,11 +563,6 @@ local function Make_item_from_razor(tbl, item)
     reaper.Main_OnCommand(40930, 0) -- TRIM BEHIND ONLY WORKS ON SELECTED ITEMS
     reaper.SetMediaItemSelected(createdItem, false)
     local created_chunk = Get_Item_Chunk(createdItem)
-    -- if tbl.lane_mode == 2 then
-    --     return createdItem
-    -- else
-    --     return created_chunk
-    -- end
     return createdItem, created_chunk
 end
 
@@ -740,7 +733,6 @@ end
 function SetLinkVal(tbl)
     local cur_value = GetLinkVal() == true and "false" or "true"
     reaper.SetProjExtState(0, "VirtualTrack", "LINK", cur_value)
-    --StoreStateToDocument(tbl)
 end
 
 local function CheckIfTableIDX_Exists(parent_tr, child_tr)
