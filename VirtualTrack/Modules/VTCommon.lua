@@ -159,17 +159,9 @@ end
 local function Create_item(tr, data)
     local new_items = {}
     for i = 1, #data do
-        local chunk = data[i]
+        local chunk = data[i]:gsub("{.-}", "") -- reaper auto generate missing guids
         local empty_item = reaper.AddMediaItemToTrack(tr)
         reaper.SetItemStateChunk(empty_item, chunk, false)
-        reaper.GetSetMediaItemInfo_String(empty_item, "GUID", reaper.genGuid(), true)
-        for j = 1, reaper.CountTakes(empty_item) do
-            local take_dst = reaper.GetMediaItemTake(empty_item, j - 1)
-            reaper.GetSetMediaItemTakeInfo_String(take_dst, "GUID", reaper.genGuid(), true)
-        end
-        reaper.SetMediaItemInfo_Value(empty_item, "B_UISEL", 1)
-        reaper.Main_OnCommand(41613, 0) -- need to clear midi pooling
-        reaper.SetMediaItemInfo_Value(empty_item, "B_UISEL", 0)
         new_items[#new_items + 1] = empty_item
     end
     return new_items
