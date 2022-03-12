@@ -87,7 +87,7 @@ local function ValidateRemovedTracks()
     end
 end
 
-local patterns = { "SEL 0", "SEL 1" }
+local patterns = {"SEL 0", "SEL 1"}
 local function Exclude_Pattern(chunk)
     for i = 1, #patterns do chunk = string.gsub(chunk, patterns[i], "") end
     return chunk
@@ -184,13 +184,44 @@ local function GetChunkTableForObject(track)
     return nil
 end
 
+local function GetItemLane(item)
+    local y = reaper.GetMediaItemInfo_Value(item, 'F_FREEMODE_Y')
+    local h = reaper.GetMediaItemInfo_Value(item, 'F_FREEMODE_H')
+    return round(y / h) + 1
+end
+
+local function StoreLaneData(tbl)
+    local num_items = reaper.CountTrackMediaItems(tbl.rprobj)
+    for j = 1, #tbl.info do
+        local lane_chunk = {}
+        for i = 1, num_items do
+            local item = reaper.GetTrackMediaItem(tbl.rprobj, i - 1)
+            if GetItemLane(item) == j then
+                local item_chunk = Get_Item_Chunk(item)
+                item_chunk = item_chunk:gsub("(MUTE %d+ %d+)", "MUTE 0 0") --! SET CHUNK UNMUTED, THIS SHOULD BE ALL REMOVED WHEN LANE API_LANE
+                item_chunk = Exclude_Pattern(item_chunk)
+                lane_chunk[#lane_chunk + 1] = item_chunk
+            end
+        end
+        local name = tbl.info[j].name
+        tbl.info[j] = lane_chunk
+        tbl.info[j].name = name
+    end
+    StoreStateToDocument(tbl)
+end
+
 function UpdateInternalState(tbl)
-    local name = tbl.info[tbl.idx].name
-    local chunk_tbl = GetChunkTableForObject(tbl.rprobj)
-    if chunk_tbl then
-        tbl.info[tbl.idx] = chunk_tbl
-        tbl.info[tbl.idx].name = name
+    if tbl.lane_mode == 2 then
+        StoreLaneData(tbl)
         return true
+    else
+        local name = tbl.info[tbl.idx].name
+        local chunk_tbl = GetChunkTableForObject(tbl.rprobj)
+        if chunk_tbl then
+            tbl.info[tbl.idx] = chunk_tbl
+            tbl.info[tbl.idx].name = name
+            return true
+        end
     end
     return false
 end
@@ -261,47 +292,23 @@ function Rename(tbl)
     tbl.info[tbl.idx].name = name
 end
 
-local function GetItemLane(item)
-    local y = reaper.GetMediaItemInfo_Value(item, 'F_FREEMODE_Y')
-    local h = reaper.GetMediaItemInfo_Value(item, 'F_FREEMODE_H')
-    return round(y / h) + 1
-end
-
 function Mute_view(tbl, num)
     reaper.PreventUIRefresh(1)
     if GetLinkVal() and reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then
         SwapVirtualTrack(tbl, num)
-        return
-    end
-    for i = 1, reaper.CountTrackMediaItems(tbl.rprobj) do
-        local item = reaper.GetTrackMediaItem(tbl.rprobj, i - 1)
-        if GetItemLane(item) == num then
-            reaper.SetMediaItemInfo_Value(item, "B_MUTE", 0)
-        else
-            reaper.SetMediaItemInfo_Value(item, "B_MUTE", 1)
-        end
-    end
-    tbl.idx = num
-    StoreStateToDocument(tbl)
-    reaper.PreventUIRefresh(-1)
-end
-
-local function StoreLaneData(tbl)
-    local num_items = reaper.CountTrackMediaItems(tbl.rprobj)
-    for j = 1, #tbl.info do
-        local lane_chunk = {}
-        for i = 1, num_items do
+        tbl.idx = num
+    elseif reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then --! THIS SHOULD BE ALL REMOVED WHEN LANE API_LANE
+        for i = 1, reaper.CountTrackMediaItems(tbl.rprobj) do
             local item = reaper.GetTrackMediaItem(tbl.rprobj, i - 1)
-            if GetItemLane(item) == j then
-                local item_chunk = Get_Item_Chunk(item)
-                item_chunk = Exclude_Pattern(item_chunk)
-                lane_chunk[#lane_chunk + 1] = item_chunk
+            if GetItemLane(item) == num then
+                reaper.SetMediaItemInfo_Value(item, "B_MUTE", 0)
+            else
+                reaper.SetMediaItemInfo_Value(item, "B_MUTE", 1)
             end
         end
-        local name = tbl.info[j].name
-        tbl.info[j] = lane_chunk
-        tbl.info[j].name = name
+        tbl.idx = num
     end
+    reaper.PreventUIRefresh(-1)
 end
 
 local function Get_Razor_Data(track)
@@ -397,8 +404,8 @@ function Copy_area(tbl, lane_mode)
     if not reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then return end -- PREVENT DOING THIS ON ENVELOPES
     if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 0 then return end -- PREVENT DOING THIS ON ENVELOPES
     local area_info, razor_lane = Get_Razor_Data(tbl.rprobj)
-    if tbl.comp_idx == 0 or tbl.comp_idx == razor_lane then return end -- PREVENT COPY ONTO ITSELF
     if not area_info then return end
+    if tbl.comp_idx == 0 or tbl.comp_idx == razor_lane then return end -- PREVENT COPY ONTO ITSELF
     reaper.Undo_BeginBlock2(0)
     reaper.PreventUIRefresh(1)
     local current_razor_toggle_state = reaper.GetToggleCommandState(42421)
@@ -417,15 +424,6 @@ function Copy_area(tbl, lane_mode)
     reaper.PreventUIRefresh(-1)
     reaper.Undo_EndBlock2(0, "VT: " .. "COPY AREA TO COMP", -1)
     reaper.UpdateArrange()
-end
-
-local function Unmute_All_track_items(track)
-    reaper.PreventUIRefresh(1)
-    for i = 1, reaper.CountTrackMediaItems(track) do
-        local item = reaper.GetMediaItem(0, i - 1)
-        reaper.SetMediaItemInfo_Value(item, "B_MUTE", 0)
-    end
-    reaper.PreventUIRefresh(-1)
 end
 
 function Unmuted_lane(tbl)
@@ -450,20 +448,19 @@ function CheckTrackLaneModeState(tbl)
                 reaper.SetMediaItemInfo_Value(items[j], "F_FREEMODE_H", 1 / #tbl.info)
             end
         end
-        Mute_view(tbl, tbl.idx)
+        Mute_view(tbl, tbl.idx) --! THIS SHOULD BE ALL REMOVED WHEN LANE API_LANE
         reaper.PreventUIRefresh(-1)
         tbl.lane_mode = 2
         StoreStateToDocument(tbl)
     end
 end
---! need to fix multitrack saving muted itemssssSSSSSsss
+
 function ShowAll(tbl)
     if not reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then return end
     local fimp = reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE")
     local toggle = fimp == 2 and 0 or 2
     tbl.lane_mode = toggle
     if fimp == 2 then
-        Unmute_All_track_items(tbl.rprobj) -- UNMUTE ALL ITEMS FROM MUTE_VIEW FUNCTION BEFORE STORING
         StoreLaneData(tbl)
     end
     Clear(tbl)
@@ -475,7 +472,7 @@ function ShowAll(tbl)
                 reaper.SetMediaItemInfo_Value(items[j], "F_FREEMODE_H", 1 / #tbl.info)
             end
         end
-        Mute_view(tbl, tbl.idx)
+        Mute_view(tbl, tbl.idx) --! THIS SHOULD BE ALL REMOVED WHEN LANE API_LANE
     elseif toggle == 0 then
         tbl.comp_idx = 0 -- DISABLE COMPING
         Create_item(tbl.rprobj, tbl.info[tbl.idx])
@@ -570,7 +567,7 @@ end
 function SetLinkVal(tbl)
     local cur_value = GetLinkVal() == true and "false" or "true"
     reaper.SetProjExtState(0, "VirtualTrack", "LINK", cur_value)
-    StoreStateToDocument(tbl)
+    --StoreStateToDocument(tbl)
 end
 
 local function CheckIfTableIDX_Exists(parent_tr, child_tr)

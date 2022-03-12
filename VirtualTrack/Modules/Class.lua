@@ -139,6 +139,7 @@ function Show_menu(rprobj, on_demand)
 
     local linked_VT = GetLinkedTracksVT_INFO(focused_tracks, on_demand)
     for track in pairs(linked_VT) do UpdateInternalState(VT_TB[track]) end
+
     if m_num > #tbl.info then
         m_num = (m_num - #tbl.info) + 1
         reaper.Undo_BeginBlock2(0)
