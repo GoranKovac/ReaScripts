@@ -87,10 +87,8 @@ local function ValidateRemovedTracks()
     end
 end
 
-local patterns = {"SEL 0", "SEL 1"}
-local function Exclude_Pattern(chunk)
-    for i = 1, #patterns do chunk = string.gsub(chunk, patterns[i], "") end
-    return chunk
+local function Remove_SEL_FromChunk(chunk)
+    return chunk:gsub("SEL(.-\n)", "")
 end
 
 local function Get_Item_Chunk(item)
@@ -104,7 +102,7 @@ local function Get_Track_Items(track, job)
     for i = 1, num_items, 1 do
         local item = reaper.GetTrackMediaItem(track, i - 1)
         local item_chunk = Get_Item_Chunk(item)
-        item_chunk = Exclude_Pattern(item_chunk)
+        item_chunk = Remove_SEL_FromChunk(item_chunk)
         items_chunk[#items_chunk + 1] = item_chunk
     end
     return items_chunk
@@ -191,7 +189,7 @@ local function StoreLaneData(tbl)
             if GetItemLane(item) == j then
                 local item_chunk = Get_Item_Chunk(item)
                 item_chunk = item_chunk:gsub("(MUTE %d+ %d+)", "MUTE 0 0") --! SET CHUNK UNMUTED, THIS SHOULD BE ALL REMOVED WHEN LANE API_LANE
-                item_chunk = Exclude_Pattern(item_chunk)
+                item_chunk = Remove_SEL_FromChunk(item_chunk)
                 lane_chunk[#lane_chunk + 1] = item_chunk
             end
         end
@@ -385,7 +383,7 @@ local function Make_item_from_razor(tbl, item)
     reaper.Main_OnCommand(40930, 0) -- TRIM BEHIND ONLY WORKS ON SELECTED ITEMS
     reaper.SetMediaItemSelected(createdItem, false)
     local _, created_chunk = reaper.GetItemStateChunk(createdItem, "")
-    created_chunk = Exclude_Pattern(created_chunk)
+    created_chunk = Remove_SEL_FromChunk(created_chunk)
     return createdItem, created_chunk
 end
 
