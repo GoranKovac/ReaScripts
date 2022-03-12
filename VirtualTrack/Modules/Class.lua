@@ -5,141 +5,16 @@
 	 * NoIndex: true
 --]]
 local reaper = reaper
-local gfx = gfx
 
 local script_folder = debug.getinfo(1).source:match("@?(.*[\\|/])")
-local image_path = script_folder:gsub("\\Modules", "") .. "Images/VT_icon_empty.png"
+local image_path = script_folder:gsub("[\\|/]Modules", "") .. "Images/VT_icon_empty.png"
 
 local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
 local track_window = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8)
 local BUTTON_UPDATE, mouse
 local Element = {}
 
-local function GetMenuTBL()
-    local main_menu = {
-        [1] = { name = "",                      fname = "" },
-        [2] = { name = "Create New Variant",    fname = "CreateNew" },
-        [3] = { name = "Duplicate Variant",     fname = "Duplicate" },
-        [4] = { name = "Delete Variant",        fname = "Delete" },
-        [5] = { name = "Clear Variant",         fname = "Clear" },
-        [6] = { name = "Rename Variants",       fname = "Rename" },
-        [7] = { name = "Link Track/Envelope",   fname = "SetLinkVal" },
-        [8] = { name = "Show All Variants",     fname = "ShowAll" },
-    }
-    local lane_menu = {
-        [1] = { name = "",                      fname = "" },
-        [2] = { name = "Set as Comp : ",        fname = "SetCompLane" },
-        [3] = { name = "Link Track/Envelope",   fname = "SetLinkVal" },
-        [4] = { name = "Show All Variants",     fname = "ShowAll" },
-    }
-    return main_menu, lane_menu
-end
-
 function Get_class_tbl(tbl) return Element end
-
-local function MakeMenu(tbl)
-    local menu_options, lane_options = GetMenuTBL()
-    local concat, main_name, lane_mode = "", "", nil
-    if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
-        main_name = "MAIN Virtual TR : "
-        menu_options[7].name = GetLinkVal() == true and "!" .. menu_options[7].name or menu_options[7].name
-        lane_options[3] = menu_options[7]
-        if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 2 then
-            lane_mode = true
-            menu_options[8].name = "!" .. menu_options[8].name
-        end
-    elseif reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then
-        main_name = "MAIN Virtual ENV : "
-        menu_options[7].name = GetLinkVal() == true and "!" .. menu_options[7].name or menu_options[7].name
-        table.remove(menu_options, 8) -- REMOVE "ShowAll" KEY IF ENVELOPE
-    end
-
-    local version_id = lane_mode and Unmuted_lane(tbl) or tbl.idx
-
-    local versions= {}
-    for i = 1, #tbl.info do
-        versions[#versions+1] = i == version_id and "!" .. i .. " - ".. tbl.info[i].name or i .. " - " .. tbl.info[i].name
-    end
-
-    menu_options[1].name = ">" .. main_name .. tbl.info[tbl.idx].name .. "|" .. table.concat(versions, "|") .."|<|"
-    lane_options[1] = menu_options[1]
-    lane_options[2].name = tbl.comp_idx ~= 0 and "!" .. "Unset as Comp : " .. tbl.info[tbl.comp_idx].name or lane_options[2].name
-
-    local final_menu = lane_mode == true and lane_options or menu_options
-
-    for i = 1, #final_menu do
-        concat = concat .. final_menu[i].name .. (i ~= #final_menu and "|" or "")
-    end
-    return concat, final_menu, lane_mode
-end
-
-local function Update_tempo_map()
-    if reaper.CountTempoTimeSigMarkers(0) then
-        local retval, timepos, measurepos, beatpos, bpm, timesig_num, timesig_denom, lineartempo = reaper.GetTempoTimeSigMarker(0, 0)
-        reaper.SetTempoTimeSigMarker(0, 0, timepos, measurepos, beatpos, bpm, timesig_num, timesig_denom, lineartempo)
-    end
-    reaper.UpdateTimeline()
-end
-
-local function CreateGFXWindow()
-    local title = "supper_awesome_mega_menu"
-    gfx.init( title, 0, 0, 0, 0, 0 )
-    local hwnd = reaper.JS_Window_Find( title, true )
-    if hwnd then
-        reaper.JS_Window_Show( hwnd, "HIDE" )
-    end
-    gfx.x = gfx.mouse_x
-    gfx.y = gfx.mouse_y
-end
-
-function Show_menu(tbl, on_demand)
-    local mouse = MouseInfo(Get_VT_TB())
-    local mouse_lane = mouse.lane
-    reaper.PreventUIRefresh(1)
-    CreateGFXWindow()
-
-    local update_tempo = tbl.rprobj == reaper.GetMasterTrack(0) and true or false
-    tbl = tbl.rprobj == reaper.GetMasterTrack(0) and Get_VT_TB()[reaper.GetTrackEnvelopeByName( tbl.rprobj, "Tempo map" )] or tbl
-
-    local concat_menu, menu_options, lane_mode = MakeMenu(tbl)
-    local m_num = gfx.showmenu(concat_menu)
-    if m_num == 0 then return end
-
-    local linked_VT = GetLinkedTracksVT_INFO(tbl, on_demand)
-    for i = 1, #linked_VT do UpdateInternalState(linked_VT[i]) end
-
-    if m_num > #tbl.info then
-        m_num = (m_num - #tbl.info) + 1
-        -- for the moment, all of these functions can change the state
-        reaper.Undo_BeginBlock2(0)
-        for i = 1, #linked_VT do
-            local activated = i > 1 and nil or tbl -- ONLY FOR TOGGLE FUNCTIONS (LINK TRACK/ENVELOPE AND SET COMP)
-            _G[menu_options[m_num].fname](linked_VT[i], activated, mouse_lane)
-            StoreStateToDocument(linked_VT[i])
-        end
-        reaper.Undo_EndBlock2(0, "VT: " .. menu_options[m_num].name, -1)
-    else
-        reaper.Undo_BeginBlock2(0)
-        for i = 1, #linked_VT do
-            if not lane_mode then
-                SwapVirtualTrack(linked_VT[i], m_num)
-            else
-                Mute_view(linked_VT[i], m_num)
-            end
-            StoreStateToDocument(linked_VT[i])
-        end
-        reaper.Undo_EndBlock2(0, "VT: Recall Version " .. m_num, -1)
-    end
-
-    UPDATE_DRAW = true
-    reaper.JS_LICE_Clear(tbl.font_bm, 0x00000000)
-    gfx.quit()
-
-    reaper.PreventUIRefresh(-1)
-    if update_tempo then Update_tempo_map() end
-    reaper.UpdateArrange()
-    UpdateChangeCount()
-end
 
 function Element:new(rprobj, info, direct)
     local elm = {}
@@ -153,11 +28,10 @@ function Element:new(rprobj, info, direct)
     elm.info = info
     elm.idx = 1
     elm.comp_idx = 0
+    elm.lane_mode = 0
     setmetatable(elm, self)
     self.__index = self
-    if direct == 1 then -- unused
-        self:cleanup()
-    end
+    if direct == 1 then self:cleanup() end
     return elm
 end
 
@@ -238,7 +112,7 @@ function Element:track()
     if not Get_TBH()[self.rprobj].vis then return end
     --if self:LanemouseDClick() then Mute_view(self, self.idx)end
     --if self:LanemouseClick() then PT_COMP_TEST()end
-    if self:mouseClick() then Show_menu(self) end
+    if self:mouseClick() then Show_menu(self.rprobj) end
 end
 
 local function Track(tbl)
@@ -251,35 +125,6 @@ local function Update_BTNS(tbl, update)
     for _, track in pairs(tbl) do track:update_xywh() end
 end
 
-local prev_Arr_end_time, prev_proj_state, last_scroll, last_scroll_b, last_pr_t, last_pr_h
-local function Arrange_view_info()
-    local TBH = Get_TBH()
-    if not TBH then return end
-    local last_pr_tr = reaper.GetTrack(0, reaper.CountTracks(0) - 1)
-    local proj_state = reaper.GetProjectStateChangeCount(0) -- PROJECT STATE
-    local _, scroll, _, _, scroll_b = reaper.JS_Window_GetScrollInfo(track_window, "SB_VERT") -- GET VERTICAL SCROLL
-    local _, Arr_end_time = reaper.GetSet_ArrangeView2(0, false, 0, 0) -- GET ARRANGE VIEW
-    if prev_Arr_end_time ~= Arr_end_time then -- THIS ONE ALWAYS CHANGES WHEN ZOOMING IN OUT
-        prev_Arr_end_time = Arr_end_time
-        return true
-    elseif prev_proj_state ~= proj_state then
-        prev_proj_state = proj_state
-        return true
-    elseif last_scroll ~= scroll then
-        last_scroll = scroll
-        return true
-    elseif last_scroll_b ~= scroll_b then
-        last_scroll_b = scroll_b
-        return true
-    elseif last_pr_tr then -- LAST TRACK ALWAYS CHANGES HEIGHT WHEN OTHER TRACK RESIZE
-        if TBH[last_pr_tr].h ~= last_pr_h or TBH[last_pr_tr].t ~= last_pr_t then
-            last_pr_h = TBH[last_pr_tr].h
-            last_pr_t = TBH[last_pr_tr].t
-            return true
-        end
-    end
-end
-
 function Draw(tbl)
     mouse = MouseInfo()
     Track(tbl)
@@ -288,4 +133,8 @@ function Draw(tbl)
     Update_BTNS(tbl, BUTTON_UPDATE)
     BUTTON_UPDATE = false
     UPDATE_DRAW = false
+end
+
+function SetUpdateDraw()
+    UPDATE_DRAW = true
 end

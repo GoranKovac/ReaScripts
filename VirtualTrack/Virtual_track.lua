@@ -1,13 +1,17 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 0.80
+-- @version 0.81
 -- @changelog
---   + fix reapack
+--   + Multitrack Selection
+--   + Multitrack Envelope actions
+--   + Custom CopyPaste function
+--   + Many Fixes
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
---   [main] Virtual_track_Direct.lua
+--   [main] Virtual_track_Mouse.lua
+--   [main] Virtual_track_SelTrack.lua
 
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 

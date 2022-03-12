@@ -34,8 +34,10 @@ local mouse = {
 	last_p = -1,
 
 	last_tr = nil,
+	last_menu_tr = nil,
 	last_r_t = nil,
 	last_r_b = nil,
+	last_menu_lane = nil,
 
 	dx = 0,
 	dy = 0,
@@ -195,6 +197,7 @@ local lane_offset = 14 -- schwa decided this number by carefully inspecting pixe
 function Get_lane_from_mouse_coordinates(my, VT_TB)
 	if not VT_TB then return end
 	if mouse.tr == nil then return end
+	if not VT_TB[mouse.tr] or not VT_TB[mouse.tr].info then return end
 	local _, cy = To_client(0, my)
 	local t, h, b = GetMouseTrackXYH(mouse.tr)
 	if cy > t and cy < b then
@@ -203,6 +206,22 @@ function Get_lane_from_mouse_coordinates(my, VT_TB)
 		-- disable when track_h is less than 90px
 		return lane
 	end
+end
+
+function GetMouseTrack_BR()
+    local window, segment, details = reaper.BR_GetMouseCursorContext()
+    if window == "tcp" or window == "arrange" then
+        local rprobj, takeenv = nil, nil
+        if segment == "track" then
+            rprobj = reaper.BR_GetMouseCursorContext_Track();
+        elseif segment == "envelope" then
+            rprobj, takeenv = reaper.BR_GetMouseCursorContext_Envelope()
+            rprobj = takeenv and nil or rprobj
+        end
+        if rprobj then
+            return rprobj
+        end
+    end
 end
 
 function MouseInfo(VT_TB)

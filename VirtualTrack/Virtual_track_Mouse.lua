@@ -13,11 +13,11 @@ require("Modules/Mouse")
 require("Modules/Utils")
 
 Check_Requirements()
-
+reaper.SetProjExtState(0, "VirtualTrack", "ONDEMAND_MODE", "mouse")
 local function Main()
-    local tbl = Get_On_Demand_DATA()
-    if not tbl then return end
-    Show_menu(tbl, true)
+    local track = OnDemand()
+    if not track then return end
+    Show_menu(track, true)
 end
 
 xpcall(Main, GetCrash())
