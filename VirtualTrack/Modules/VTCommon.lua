@@ -87,12 +87,10 @@ local function ValidateRemovedTracks()
     end
 end
 
-local function Remove_SEL_FromChunk(chunk)
-    return chunk:gsub("SEL.-\n", "")
-end
-
 local function Get_Item_Chunk(item)
     local _, chunk = reaper.GetItemStateChunk(item, "", false)
+    chunk = chunk:gsub("{.-}", "")
+    chunk = chunk:gsub("SEL.-\n", "")
     return chunk
 end
 
@@ -102,7 +100,6 @@ local function Get_Track_Items(track)
     for i = 1, num_items, 1 do
         local item = reaper.GetTrackMediaItem(track, i - 1)
         local item_chunk = Get_Item_Chunk(item)
-        item_chunk = Remove_SEL_FromChunk(item_chunk)
         items_chunk[#items_chunk + 1] = item_chunk
     end
     return items_chunk
@@ -130,7 +127,7 @@ end
 
 function Get_Env_Chunk(env)
     local _, env_chunk = reaper.GetEnvelopeStateChunk(env, "")
-    --env_chunk = env_chunk:gsub("(PT [%d%.]+ [%d%.]+ [%d%.]+ [%d%.]+) [%d%.]+", "%1 0") -- MAKE ALL POINTS UNSELECTED (5th digit is SEL 0 or 1)
+    env_chunk = env_chunk:gsub("(PT %S+ %S+ %S+ %S+) %S+", "%1 0")
     env_chunk = env_chunk:gsub("<BIN VirtualTrack.->", "") -- remove our P_EXT from this chunk!
     return { env_chunk }
 end
@@ -157,9 +154,8 @@ end
 local function Create_item(tr, data)
     local new_items = {}
     for i = 1, #data do
-        local chunk = data[i]:gsub("{.-}", "") -- reaper auto generate missing guids
         local empty_item = reaper.AddMediaItemToTrack(tr)
-        reaper.SetItemStateChunk(empty_item, chunk, false)
+        reaper.SetItemStateChunk(empty_item, data[i], false)
         new_items[#new_items + 1] = empty_item
     end
     return new_items
@@ -189,7 +185,6 @@ local function StoreLaneData(tbl)
             if GetItemLane(item) == j then
                 local item_chunk = Get_Item_Chunk(item)
                 item_chunk = item_chunk:gsub("(MUTE %d+ %d+)", "MUTE 0 0") --! SET CHUNK UNMUTED, THIS SHOULD BE ALL REMOVED WHEN LANE API_LANE
-                item_chunk = Remove_SEL_FromChunk(item_chunk)
                 lane_chunk[#lane_chunk + 1] = item_chunk
             end
         end
@@ -362,8 +357,7 @@ local function Make_item_from_razor(tbl, item)
     local createdItem = reaper.AddMediaItemToTrack(tbl.rprobj)
     local createdTake = reaper.AddTakeToMediaItem(createdItem)
     if media_type:find("MIDI") then
-        local _, midi_chunk = reaper.GetItemStateChunk(item, "")
-        midi_chunk = midi_chunk:gsub("{.-}", "") -- Reaper auto-generates all GUIDs
+        local midi_chunk = Get_Item_Chunk(item)
         reaper.SetItemStateChunk(createdItem, midi_chunk, false)
     else
         filename = reaper.GetMediaSourceFileName(source, "")
@@ -382,8 +376,12 @@ local function Make_item_from_razor(tbl, item)
     reaper.SetMediaItemSelected(createdItem, true)
     reaper.Main_OnCommand(40930, 0) -- TRIM BEHIND ONLY WORKS ON SELECTED ITEMS
     reaper.SetMediaItemSelected(createdItem, false)
-    local _, created_chunk = reaper.GetItemStateChunk(createdItem, "")
-    created_chunk = Remove_SEL_FromChunk(created_chunk)
+    local created_chunk = Get_Item_Chunk(createdItem)
+    -- if tbl.lane_mode == 2 then
+    --     return createdItem
+    -- else
+    --     return created_chunk
+    -- end
     return createdItem, created_chunk
 end
 
