@@ -486,25 +486,25 @@ end
 
 local function Get_Razor_Data(track)
     if not reaper.ValidatePtr(track, "MediaTrack*") then return end
-    local _, area = reaper.GetSetMediaTrackInfo_String(track, 'P_RAZOREDITS_EXT', '', false)
-    if area == "" then return nil end
-    local area_info = {}
-    for i in string.gmatch(area, "%S+") do table.insert(area_info, tonumber(i)) end
-    local razor_t, razor_b = area_info[3], area_info[4]
+    local _, razor_area = reaper.GetSetMediaTrackInfo_String(track, 'P_RAZOREDITS_EXT', '', false)
+    if razor_area == "" then return nil end
+    local razor_info = {}
+    for i in string.gmatch(razor_area, "%S+") do table.insert(razor_info, tonumber(i)) end
+    local razor_t, razor_b = razor_info[3], razor_info[4]
     local razor_h = razor_b - razor_t
-    local razor_lane = round(razor_b / razor_h)
-    return area_info, razor_lane
+    razor_info.razor_lane = round(razor_b / razor_h)
+    return razor_info
 end
 
-local function Get_items_in_razor(item, tsStart, tsEnd, razor_lane)
+local function Get_items_in_razor(item, time_Start, time_End, razor_lane)
     if not item then return end
     local item_start = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
     local item_len = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
     local item_dur = item_start + item_len
     if GetItemLane(item) == razor_lane then
-        if (tsStart >= item_start and tsStart <= item_dur) or
-            (tsEnd >= item_start and tsEnd <= item_dur) or
-            (tsStart <= item_start and tsEnd >= item_dur) then
+        if (time_Start >= item_start and time_Start <= item_dur) or
+            (time_End >= item_start and time_End <= item_dur) or
+            (time_Start <= item_start and time_End >= item_dur) then
             return item
         end
     end
@@ -514,7 +514,6 @@ local function Razor_item_position(item, time_Start, time_End)
     local item_lenght = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
     local item_start = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
     local item_end = item_lenght + item_start
-
     local new_start = time_Start <= item_start and item_start or time_Start
     local new_lenght = time_End >= item_end and item_end - new_start or time_End - new_start
     local new_offset = time_Start <= item_start and 0 or (time_Start - item_start)
@@ -542,9 +541,9 @@ end
 function Copy_area(tbl, lane_mode)
     if not reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then return end -- PREVENT DOING THIS ON ENVELOPES
     if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 0 then return end -- PREVENT DOING THIS ON ENVELOPES
-    local area_info, razor_lane = Get_Razor_Data(tbl.rprobj)
-    if not area_info then return end
-    if tbl.comp_idx == 0 or tbl.comp_idx == razor_lane then return end -- PREVENT COPY ONTO ITSELF
+    local razor_info = Get_Razor_Data(tbl.rprobj)
+    if not razor_info then return end
+    if tbl.comp_idx == 0 or tbl.comp_idx == razor_info.razor_lane then return end -- PREVENT COPY ONTO ITSELF
     reaper.Undo_BeginBlock2(0)
     reaper.PreventUIRefresh(1)
     local current_razor_toggle_state = reaper.GetToggleCommandState(42421)
@@ -555,14 +554,15 @@ function Copy_area(tbl, lane_mode)
     reaper.SetMediaItemInfo_Value(hack_item, "F_FREEMODE_H", 1 / #tbl.info)
     -----------------------------------------------------------------------
     for i = 1, reaper.CountTrackMediaItems(tbl.rprobj) do
-        local razor_item = Get_items_in_razor(reaper.GetTrackMediaItem(tbl.rprobj, i - 1),area_info[1], area_info[2], razor_lane)
-        Make_item_from_razor(tbl, razor_item, area_info[1], area_info[2])
+        local razor_item = Get_items_in_razor(reaper.GetTrackMediaItem(tbl.rprobj, i - 1),razor_info[1], razor_info[2], razor_info.razor_lane)
+        Make_item_from_razor(tbl, razor_item, razor_info[1], razor_info[2])
     end
     if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN ON ALWAYS TRIM BEHIND RAZORS (if enabled in project)
     reaper.DeleteTrackMediaItem(tbl.rprobj, hack_item) -- REMOVE EMPTY ITEM CREATED TO HACK AROUND COPY PASTE DELETING EMPTY LANE
     reaper.PreventUIRefresh(-1)
     reaper.Undo_EndBlock2(0, "VT: " .. "COPY AREA TO COMP", -1)
     reaper.UpdateArrange()
+    return razor_info
 end
 
 function Unmuted_lane(tbl)
