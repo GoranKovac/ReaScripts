@@ -482,10 +482,6 @@ function Lane_view(tbl, num)
     reaper.PreventUIRefresh(-1)
 end
 
-function string.insert(str1, str2, pos)
-    return str1:sub(1,str1:find("\n"))..str2..str1:sub(pos+1)
-end
-
 local function Get_Razor_Data(track)
     if not reaper.ValidatePtr(track, "MediaTrack*") then return end
     local _, razor_area = reaper.GetSetMediaTrackInfo_String(track, 'P_RAZOREDITS_EXT', '', false)
@@ -504,9 +500,7 @@ local function Get_items_in_razor(item, time_Start, time_End, razor_lane)
     local item_len = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
     local item_end = item_start + item_len
     if GetItemLane(item) == razor_lane then
-        --MSG(tostring(item))
         if (time_Start < item_end and time_End > item_start) then
-            MSG(tostring(item))
             return item
         end
     end
