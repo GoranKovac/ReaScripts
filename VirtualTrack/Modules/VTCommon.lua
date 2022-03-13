@@ -117,7 +117,7 @@ function Show_menu(rprobj, on_demand)
     local focused_tracks = GetSelectedTracksData(rprobj, on_demand) -- THIS ADDS NEW TRACKS TO VT_TB FOR ON DEMAND SCRIPT AND RETURNS TRACK SELECTION
     MouseInfo(VT_TB).last_menu_lane = MouseInfo(VT_TB).lane-- SET LAST LANE BEFORE MENU OPENED
     MouseInfo(VT_TB).last_menu_tr = MouseInfo(VT_TB).tr -- SET LAST TRACK BEFORE MENU OPENED
-    CheckTrackLaneModeState(VT_TB[rprobj])
+    --CheckTrackLaneModeState(VT_TB[rprobj])
     CreateGFXWindow()
     reaper.PreventUIRefresh(1)
 
@@ -274,6 +274,11 @@ local function ValidateRemovedTracks()
         end
     end
 end
+local function GetItemLane(item)
+    local y = reaper.GetMediaItemInfo_Value(item, 'F_FREEMODE_Y')
+    local h = reaper.GetMediaItemInfo_Value(item, 'F_FREEMODE_H')
+    return round(y / h) + 1
+end
 
 local function Get_Item_Chunk(item)
     local _, chunk = reaper.GetItemStateChunk(item, "", false)
@@ -291,6 +296,22 @@ local function Get_Track_Items(track)
         items_chunk[#items_chunk + 1] = item_chunk
     end
     return items_chunk
+end
+
+local function Get_Track_Lane_Items(track)
+    local lane_items_chunk = {}
+    local num_items = reaper.CountTrackMediaItems(track)
+    local total_lanes = round(1 / reaper.GetMediaItemInfo_Value(reaper.GetTrackMediaItem(track, 0), 'F_FREEMODE_H'))
+    for i = 1, total_lanes do
+        lane_items_chunk[i] = {}
+        for j = 1, num_items do
+            local item = reaper.GetTrackMediaItem(track, j - 1)
+            if GetItemLane(item) == i then
+                lane_items_chunk[i][#lane_items_chunk[i] + 1] = Get_Item_Chunk(item)
+            end
+        end
+    end
+    return lane_items_chunk
 end
 
 local function Env_prop(env, val)
@@ -351,17 +372,15 @@ end
 
 local function GetChunkTableForObject(track)
     if reaper.ValidatePtr(track, "MediaTrack*") then
-        return Get_Track_Items(track)
+        if reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") == 2 then
+            return Get_Track_Lane_Items(track), true
+        elseif reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") == 0 then
+            return Get_Track_Items(track), false
+        end
     elseif reaper.ValidatePtr(track, "TrackEnvelope*") then
-        return Get_Env_Chunk(track)
+        return Get_Env_Chunk(track), false
     end
     return nil
-end
-
-local function GetItemLane(item)
-    local y = reaper.GetMediaItemInfo_Value(item, 'F_FREEMODE_Y')
-    local h = reaper.GetMediaItemInfo_Value(item, 'F_FREEMODE_H')
-    return round(y / h) + 1
 end
 
 local function StoreLaneData(tbl)
@@ -382,23 +401,18 @@ local function StoreLaneData(tbl)
     --StoreStateToDocument(tbl)
 end
 
-local function StoreTrackData(tbl)
-    local name = tbl.info[tbl.idx].name
-    local chunk_tbl = GetChunkTableForObject(tbl.rprobj)
-    if chunk_tbl then
-        tbl.info[tbl.idx] = chunk_tbl
-        tbl.info[tbl.idx].name = name
-        return true
-    end
-    return false
-end
-
 function UpdateInternalState(tbl)
     if tbl.lane_mode == 2 then
         StoreLaneData(tbl)
         return true
     else
-        if StoreTrackData(tbl) then return true end
+        local name = tbl.info[tbl.idx].name
+        local chunk_tbl = GetChunkTableForObject(tbl.rprobj)
+        if chunk_tbl then
+            tbl.info[tbl.idx] = chunk_tbl
+            tbl.info[tbl.idx].name = name
+            return true
+        end
     end
     return false
 end
@@ -625,9 +639,12 @@ local function CreateVTElements(direct)
     for track in pairs(TBH) do
         if not VT_TB[track] then
             local Element = Get_class_tbl()
-            local tr_data = GetChunkTableForObject(track)
-            tr_data.name = "Version - 1"
-            VT_TB[track] = Element:new(track, { tr_data }, direct)
+            local tr_data, lane = GetChunkTableForObject(track)
+            tr_data = lane and tr_data or {tr_data}
+            for i = 1, #tr_data do
+                tr_data[i].name = "Version - " ..i
+            end
+            VT_TB[track] = Element:new(track, tr_data, direct)
             Restore_From_PEXT(VT_TB[track])
         end
     end
