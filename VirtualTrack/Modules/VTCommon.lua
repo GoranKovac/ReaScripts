@@ -592,9 +592,7 @@ function ShowAll(tbl)
     local fimp = reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE")
     local toggle = fimp == 2 and 0 or 2
     tbl.lane_mode = toggle
-    if fimp == 2 then
-        StoreLaneData(tbl)
-    end
+    if fimp == 2 then StoreLaneData(tbl) end
     Clear(tbl)
     if toggle == 2 then
         for i = 1, #tbl.info do
@@ -771,7 +769,8 @@ function GetLinkedTracksVT_INFO(tracl_tbl, on_demand) -- WE SEND ON DEMAND FROM 
 end
 
 reaper.gmem_attach('Virtual_Tracks')
-local swipe_script = reaper.NamedCommandLookup("_RS76dfdad86d5ecdb185d72bf80aa7992eaf230369")
+local swipe_script_id = reaper.AddRemoveReaScript(true, 0, script_folder .. "Virtual_track_Swipe.lua", true)
+local swipe_script = reaper.NamedCommandLookup(swipe_script_id)
 SWIPE = true
 function SetCompLane(tbl)
     tbl.comp_idx = tbl.comp_idx == 0 and MouseInfo(VT_TB).last_menu_lane or 0
@@ -779,6 +778,7 @@ function SetCompLane(tbl)
     if SWIPE then
         if tbl.comp_idx ~= 0 then
             reaper.gmem_write(1,0)
+            MSG(swipe_script_id)
             reaper.Main_OnCommand(swipe_script,0)
         else
             reaper.gmem_write(1,1)
