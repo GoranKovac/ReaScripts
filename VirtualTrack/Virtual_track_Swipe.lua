@@ -16,6 +16,7 @@ Check_Requirements()
 reaper.gmem_attach('Virtual_Tracks')
 
 function do_swipe()
+    
     local track = OnDemand()
     if not track then return end
     Copy_area(Get_VT_TB()[track])

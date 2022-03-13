@@ -27,7 +27,7 @@ local function Main()
         if reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") == 2 then
             for linked_track in pairs(linked_VT) do
                 CheckTrackLaneModeState(VT_TB[linked_track])
-                Mute_view(VT_TB[linked_track], mouse.lane)
+                Lane_view(VT_TB[linked_track], mouse.lane)
                 StoreStateToDocument(VT_TB[linked_track])
             end
         end
