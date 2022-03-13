@@ -277,6 +277,7 @@ end
 
 local function Get_Item_Chunk(item)
     local _, chunk = reaper.GetItemStateChunk(item, "", false)
+    MSG(chunk)
     chunk = chunk:gsub("{.-}", "")
     chunk = chunk:gsub("SEL.-\n", "")
     return chunk
@@ -514,59 +515,32 @@ end
 
 local function Razor_item_position(rprobj, item)
     local area_info = Get_Razor_Data(rprobj)
-    local tsStart, tsEnd = area_info[1], area_info[2]
+    local time_Start, time_End = area_info[1], area_info[2]
     local item_lenght = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
     local item_start = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
-    local item_dur = item_lenght + item_start
+    local item_end = item_lenght + item_start
 
-    local new_start, new_item_lenght, offset
-    if tsStart < item_start and tsEnd > item_start and tsEnd < item_dur then
-        new_start, new_item_lenght, offset = item_start, tsEnd - item_start, 0
-        return new_start, new_item_lenght, offset, item
-    elseif tsStart < item_dur and tsStart > item_start and tsEnd > item_dur then
-        new_start, new_item_lenght, offset = tsStart, item_dur - tsStart, (tsStart - item_start)
-        return new_start, new_item_lenght, offset, item
-    elseif tsStart >= item_start and tsEnd <= item_dur then
-        new_start, new_item_lenght, offset = tsStart, tsEnd - tsStart, (tsStart - item_start)
-        return new_start, new_item_lenght, offset, item
-    elseif tsStart <= item_start and tsEnd > item_dur then
-        new_start, new_item_lenght, offset = item_start, item_lenght, 0
-        return new_start, new_item_lenght, offset, item
-    end
+    local new_start = time_Start <= item_start and item_start or time_Start
+    local new_lenght = time_End >= item_end and item_end - new_start or time_End - new_start
+    local new_offset = time_Start <= item_start and 0 or (time_Start - item_start)
+    return new_start, new_lenght, new_offset
 end
 
 local function Make_item_from_razor(tbl, item)
     if not item then return end
-    local filename, clonedsource
-    local take = reaper.GetMediaItemTake(item, 0)
-    local source = reaper.GetMediaItemTake_Source(take)
-    local media_type = reaper.GetMediaSourceType(source, "")
-    local item_volume = reaper.GetMediaItemInfo_Value(item, "D_VOL")
-    local item_playrate = reaper.GetMediaItemInfo_Value(item, "D_PLAYRATE")
+    local item_chunk = Get_Item_Chunk(item)
+    local new_item_start, new_item_lenght, new_item_offset = Razor_item_position(tbl.rprobj, item)
+    local item_start_offset = tonumber(item_chunk:match("SOFFS (%S+)"))
+    local item_play_rate = tonumber(item_chunk:match("PLAYRATE (%S+)"))
+    local created_chunk = item_chunk:gsub("(POSITION) %S+", "%1 " .. new_item_start):gsub("(LENGTH) %S+", "%1 " .. new_item_lenght):gsub("(SOFFS) %S+", "%1 " .. item_start_offset + (new_item_offset * item_play_rate))
+
     local createdItem = reaper.AddMediaItemToTrack(tbl.rprobj)
-    local createdTake = reaper.AddTakeToMediaItem(createdItem)
-    if media_type:find("MIDI") then
-        local midi_chunk = Get_Item_Chunk(item)
-        reaper.SetItemStateChunk(createdItem, midi_chunk, false)
-    else
-        filename = reaper.GetMediaSourceFileName(source, "")
-        clonedsource = reaper.PCM_Source_CreateFromFile(filename)
-    end
-    local new_item_start, new_item_lenght, offset = Razor_item_position(tbl.rprobj, item)
-    reaper.SetMediaItemInfo_Value(createdItem, "D_POSITION", new_item_start)
-    reaper.SetMediaItemInfo_Value(createdItem, "D_LENGTH", new_item_lenght)
-    local TakeOffset = reaper.GetMediaItemTakeInfo_Value(take, "D_STARTOFFS")
-    reaper.SetMediaItemTakeInfo_Value(createdTake, "D_STARTOFFS", TakeOffset + offset)
-    if media_type:find("MIDI") == nil then reaper.SetMediaItemTake_Source(createdTake, clonedsource) end
-    reaper.SetMediaItemInfo_Value(createdItem, "D_VOL", item_volume)
-    reaper.SetMediaItemInfo_Value(createdItem, "D_PLAYRATE", item_playrate)
+    reaper.SetItemStateChunk(createdItem, created_chunk, false)
     reaper.SetMediaItemInfo_Value(createdItem, "F_FREEMODE_Y", (tbl.comp_idx - 1) / #tbl.info)
     reaper.SetMediaItemInfo_Value(createdItem, "F_FREEMODE_H", 1 / #tbl.info)
-    reaper.SetMediaItemInfo_Value(createdItem, "B_MUTE", 1)
     reaper.SetMediaItemSelected(createdItem, true)
     reaper.Main_OnCommand(40930, 0) -- TRIM BEHIND ONLY WORKS ON SELECTED ITEMS
     reaper.SetMediaItemSelected(createdItem, false)
-    local created_chunk = Get_Item_Chunk(createdItem)
     return createdItem, created_chunk
 end
 
