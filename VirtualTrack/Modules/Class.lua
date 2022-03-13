@@ -21,17 +21,17 @@ function Element:new(rprobj, info, direct)
     elm.rprobj = rprobj
     elm.bm = reaper.JS_LICE_LoadPNG(image_path)
     elm.x, elm.y, elm.w, elm.h = 0, 0, reaper.JS_LICE_GetWidth(elm.bm), reaper.JS_LICE_GetHeight(elm.bm)
-    elm.font_bm = reaper.JS_LICE_CreateBitmap(true, elm.w, elm.h)
-    elm.font = reaper.JS_LICE_CreateFont()
-    reaper.JS_LICE_SetFontColor(elm.font, 0xFFFFFFFF)
-    reaper.JS_LICE_Clear(self.font_bm, 0x00000000)
+    elm.font_bm = direct == 0 and reaper.JS_LICE_CreateBitmap(true, elm.w, elm.h) or nil-- CREATE ONLY WHEN NECESSARY
+    elm.font = direct == 0 and reaper.JS_LICE_CreateFont() or nil-- CREATE ONLY WHEN NECESSARY
+    if elm.font then reaper.JS_LICE_SetFontColor(elm.font, 0xFFFFFFFF) end -- CREATE ONLY WHEN NECESSARY
+    if elm.font_bm then reaper.JS_LICE_Clear(self.font_bm, 0x00000000) end -- CREATE ONLY WHEN NECESSARY
     elm.info = info
     elm.idx = 1
     elm.comp_idx = 0
     elm.lane_mode = 0
     setmetatable(elm, self)
     self.__index = self
-    if direct == 1 then self:cleanup() end
+    --if direct == 1 then self:cleanup() end
     return elm
 end
 
