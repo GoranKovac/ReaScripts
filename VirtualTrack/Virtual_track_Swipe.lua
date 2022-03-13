@@ -13,14 +13,12 @@ require("Modules/Mouse")
 require("Modules/Utils")
 
 Check_Requirements()
---reaper.SetProjExtState(0, "VirtualTrack", "ONDEMAND_MODE", "mouse")
 reaper.gmem_attach('Virtual_Tracks')
 
 function do_swipe()
     local track = OnDemand()
     if not track then return end
     Copy_area(Get_VT_TB()[track])
-    clear_area_sel()
 end
 
 local function Main()

@@ -538,31 +538,34 @@ local function Make_item_from_razor(tbl, item, time_Start, time_End)
     return createdItem, created_chunk
 end
 
-function Copy_area(tbl, lane_mode)
+local OLD_RAZOR_INFO
+function Copy_area(tbl)
     if not reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then return end -- PREVENT DOING THIS ON ENVELOPES
     if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 0 then return end -- PREVENT DOING THIS ON ENVELOPES
     local razor_info = Get_Razor_Data(tbl.rprobj)
     if not razor_info then return end
     if tbl.comp_idx == 0 or tbl.comp_idx == razor_info.razor_lane then return end -- PREVENT COPY ONTO ITSELF
-    reaper.Undo_BeginBlock2(0)
-    reaper.PreventUIRefresh(1)
-    local current_razor_toggle_state = reaper.GetToggleCommandState(42421)
-    if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN OFF ALWAYS TRIM BEHIND RAZORS (if enabled in project)
-    ------------------------ HACK FOR COPY PASTE REMOVING EMPTY LANE
-    local hack_item = reaper.AddMediaItemToTrack(tbl.rprobj)
-    reaper.SetMediaItemInfo_Value(hack_item, "F_FREEMODE_Y", (tbl.comp_idx - 1) / #tbl.info)
-    reaper.SetMediaItemInfo_Value(hack_item, "F_FREEMODE_H", 1 / #tbl.info)
-    -----------------------------------------------------------------------
-    for i = 1, reaper.CountTrackMediaItems(tbl.rprobj) do
-        local razor_item = Get_items_in_razor(reaper.GetTrackMediaItem(tbl.rprobj, i - 1),razor_info[1], razor_info[2], razor_info.razor_lane)
-        Make_item_from_razor(tbl, razor_item, razor_info[1], razor_info[2])
+    if table.concat(razor_info) ~= OLD_RAZOR_INFO then
+        reaper.Undo_BeginBlock2(0)
+        reaper.PreventUIRefresh(1)
+        local current_razor_toggle_state = reaper.GetToggleCommandState(42421)
+        if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN OFF ALWAYS TRIM BEHIND RAZORS (if enabled in project)
+        ------------------------ HACK FOR COPY PASTE REMOVING EMPTY LANE
+        local hack_item = reaper.AddMediaItemToTrack(tbl.rprobj)
+        reaper.SetMediaItemInfo_Value(hack_item, "F_FREEMODE_Y", (tbl.comp_idx - 1) / #tbl.info)
+        reaper.SetMediaItemInfo_Value(hack_item, "F_FREEMODE_H", 1 / #tbl.info)
+        -----------------------------------------------------------------------
+        for i = 1, reaper.CountTrackMediaItems(tbl.rprobj) do
+            local razor_item = Get_items_in_razor(reaper.GetTrackMediaItem(tbl.rprobj, i - 1),razor_info[1], razor_info[2], razor_info.razor_lane)
+            Make_item_from_razor(tbl, razor_item, razor_info[1], razor_info[2])
+        end
+        if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN ON ALWAYS TRIM BEHIND RAZORS (if enabled in project)
+        reaper.DeleteTrackMediaItem(tbl.rprobj, hack_item) -- REMOVE EMPTY ITEM CREATED TO HACK AROUND COPY PASTE DELETING EMPTY LANE
+        reaper.PreventUIRefresh(-1)
+        reaper.Undo_EndBlock2(0, "VT: " .. "COPY AREA TO COMP", -1)
+        reaper.UpdateArrange()
+        OLD_RAZOR_INFO = table.concat(razor_info)
     end
-    if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN ON ALWAYS TRIM BEHIND RAZORS (if enabled in project)
-    reaper.DeleteTrackMediaItem(tbl.rprobj, hack_item) -- REMOVE EMPTY ITEM CREATED TO HACK AROUND COPY PASTE DELETING EMPTY LANE
-    reaper.PreventUIRefresh(-1)
-    reaper.Undo_EndBlock2(0, "VT: " .. "COPY AREA TO COMP", -1)
-    reaper.UpdateArrange()
-    return razor_info
 end
 
 function Unmuted_lane(tbl)
