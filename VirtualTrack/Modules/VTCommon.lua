@@ -277,7 +277,6 @@ end
 
 local function Get_Item_Chunk(item)
     local _, chunk = reaper.GetItemStateChunk(item, "", false)
-    MSG(chunk)
     chunk = chunk:gsub("{.-}", "")
     chunk = chunk:gsub("SEL.-\n", "")
     return chunk
@@ -497,10 +496,8 @@ local function Get_Razor_Data(track)
     return area_info, razor_lane
 end
 
-local function Get_items_in_razor(rprobj, item)
+local function Get_items_in_razor(item, tsStart, tsEnd, razor_lane)
     if not item then return end
-    local area_info, razor_lane = Get_Razor_Data(rprobj)
-    local tsStart, tsEnd = area_info[1], area_info[2]
     local item_start = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
     local item_len = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
     local item_dur = item_start + item_len
@@ -513,9 +510,7 @@ local function Get_items_in_razor(rprobj, item)
     end
 end
 
-local function Razor_item_position(rprobj, item)
-    local area_info = Get_Razor_Data(rprobj)
-    local time_Start, time_End = area_info[1], area_info[2]
+local function Razor_item_position(item, time_Start, time_End)
     local item_lenght = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
     local item_start = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
     local item_end = item_lenght + item_start
@@ -526,10 +521,10 @@ local function Razor_item_position(rprobj, item)
     return new_start, new_lenght, new_offset
 end
 
-local function Make_item_from_razor(tbl, item)
+local function Make_item_from_razor(tbl, item, time_Start, time_End)
     if not item then return end
     local item_chunk = Get_Item_Chunk(item)
-    local new_item_start, new_item_lenght, new_item_offset = Razor_item_position(tbl.rprobj, item)
+    local new_item_start, new_item_lenght, new_item_offset = Razor_item_position(item, time_Start, time_End)
     local item_start_offset = tonumber(item_chunk:match("SOFFS (%S+)"))
     local item_play_rate = tonumber(item_chunk:match("PLAYRATE (%S+)"))
     local created_chunk = item_chunk:gsub("(POSITION) %S+", "%1 " .. new_item_start):gsub("(LENGTH) %S+", "%1 " .. new_item_lenght):gsub("(SOFFS) %S+", "%1 " .. item_start_offset + (new_item_offset * item_play_rate))
@@ -560,8 +555,8 @@ function Copy_area(tbl, lane_mode)
     reaper.SetMediaItemInfo_Value(hack_item, "F_FREEMODE_H", 1 / #tbl.info)
     -----------------------------------------------------------------------
     for i = 1, reaper.CountTrackMediaItems(tbl.rprobj) do
-        local razor_item = Get_items_in_razor(tbl.rprobj, reaper.GetTrackMediaItem(tbl.rprobj, i - 1))
-        Make_item_from_razor(tbl, razor_item)
+        local razor_item = Get_items_in_razor(reaper.GetTrackMediaItem(tbl.rprobj, i - 1),area_info[1], area_info[2], razor_lane)
+        Make_item_from_razor(tbl, razor_item, area_info[1], area_info[2])
     end
     if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN ON ALWAYS TRIM BEHIND RAZORS (if enabled in project)
     reaper.DeleteTrackMediaItem(tbl.rprobj, hack_item) -- REMOVE EMPTY ITEM CREATED TO HACK AROUND COPY PASTE DELETING EMPTY LANE
