@@ -1,12 +1,12 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 0.84
+-- @version 0.85
 -- @changelog
---   + Multitrack Selection
---   + Multitrack Envelope actions
---   + New shortcut script for VirtualTrack on Selected tracks
---   + Many Fixes
+--   + Native LaneMode Exclusive solo (removed mute system)
+--   + Fixed bug when not storing envelope data in lane mode
+--   + when triggered from shortcut scripts
+--   + Renamed Promote_to_main to Copy_to_COMP shortcut script
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua

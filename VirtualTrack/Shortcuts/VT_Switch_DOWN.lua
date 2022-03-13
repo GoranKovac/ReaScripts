@@ -25,6 +25,7 @@ local function Main()
     reaper.PreventUIRefresh(1)
     reaper.Undo_BeginBlock2(0)
     for linked_track in pairs(linked_VT) do
+        UpdateInternalState(VT_TB[linked_track])
         SwapVirtualTrack(VT_TB[linked_track], num)
         StoreStateToDocument(VT_TB[linked_track])
     end
