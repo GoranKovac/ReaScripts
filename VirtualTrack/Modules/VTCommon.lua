@@ -470,9 +470,9 @@ function Lane_view(tbl, num)
     elseif reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
         local retval, track_chunk = reaper.GetTrackStateChunk( tbl.rprobj, "", false )
         local lane_mask = 2^(num-1)
-        if not track_chunk:find("LANESOLO") then
+        if not track_chunk:find("LANESOLO") then -- IF ANY LANE IS NOT SOLOED LANESOLO PART DOES NOT EXIST YET AND WE NEED TO INJECT IT
             local insert_pos = string.find(track_chunk, "\n") -- insert after first new line <TRACK in this case
-            track_chunk = track_chunk:sub(1,insert_pos).. string.format("LANESOLO %i 0", lane_mask .. "\n") ..track_chunk:sub(insert_pos+1)
+            track_chunk = track_chunk:sub(1, insert_pos) .. string.format("LANESOLO %i 0", lane_mask .. "\n") ..track_chunk:sub(insert_pos + 1)
         else
             track_chunk = track_chunk:gsub("(LANESOLO )%d+", "%1" ..lane_mask)
         end
@@ -778,7 +778,6 @@ function SetCompLane(tbl)
     if SWIPE then
         if tbl.comp_idx ~= 0 then
             reaper.gmem_write(1,0)
-            MSG(swipe_script_id)
             reaper.Main_OnCommand(swipe_script,0)
         else
             reaper.gmem_write(1,1)
