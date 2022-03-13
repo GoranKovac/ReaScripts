@@ -22,9 +22,11 @@ local function Main()
 	if num > #VT_TB[track].info then return end
 	local focused_tracks = GetSelectedTracksData(track, true) -- THIS ADDS NEW TRACKS TO VT_TB FOR ON DEMAND SCRIPT AND RETURNS TRACK SELECTION
 	local linked_VT = GetLinkedTracksVT_INFO(focused_tracks, true)
+	for ltrack in pairs(linked_VT) do UpdateInternalState(VT_TB[ltrack]) end
 	reaper.PreventUIRefresh(1)
 	reaper.Undo_BeginBlock2(0)
 	for linked_track in pairs(linked_VT) do
+		UpdateInternalState(VT_TB[linked_track])
 		SwapVirtualTrack(VT_TB[linked_track], num)
 		StoreStateToDocument(VT_TB[linked_track])
 	end
