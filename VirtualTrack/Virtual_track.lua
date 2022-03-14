@@ -1,11 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 0.87
+-- @version 0.88
 -- @changelog
---   + Menu code refactor
---   + Store lanes as versions if they are created by user (not by script) on startup
---   + Fixed bug with LINKED mode not working properly with envelopes
+--   + Do not track mouse while reaper is not in front
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
