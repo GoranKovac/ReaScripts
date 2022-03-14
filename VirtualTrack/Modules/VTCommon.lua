@@ -552,7 +552,6 @@ function Copy_area(tbl)
     if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 0 then return end -- PREVENT DOING THIS ON ENVELOPES
     local razor_info = Get_Razor_Data(tbl.rprobj)
     if not razor_info then return end
-    MSG(tbl.comp_idx)
     if tbl.comp_idx == 0 or tbl.comp_idx == razor_info.razor_lane then return end -- PREVENT COPY ONTO ITSELF
     if table.concat(razor_info) ~= OLD_RAZOR_INFO then -- PREVENT DOING COPY IF RAZOR DATA HAS NOT CHANGED
         reaper.Undo_BeginBlock2(0)
@@ -847,5 +846,6 @@ function SetSwipe()
         end
     else
         reaper.gmem_write(1,1) -- send to defer script to close
+        reaper.SetProjExtState(0, "VirtualTrack", "SWIPE", "false")
     end
 end

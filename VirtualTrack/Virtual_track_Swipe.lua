@@ -18,8 +18,12 @@ reaper.gmem_attach('Virtual_Tracks')
 function do_swipe()
     local track = OnDemand()
     if not track then return end
-    Copy_area(Get_VT_TB()[track])
-    MSG(#Get_VT_TB()[track].info)
+    local VT_TB = Get_VT_TB()
+
+    if VT_TB[track] then
+        MSG("TABLE COMP_IDX VALUE :" .. VT_TB[track].comp_idx)
+    end
+    Copy_area(VT_TB[track])
 end
 
 local function Main()
