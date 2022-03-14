@@ -1,12 +1,10 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 0.85
+-- @version 0.86
 -- @changelog
---   + Native LaneMode Exclusive solo (removed mute system)
---   + Fixed bug when not storing envelope data in lane mode
---   + when triggered from shortcut scripts
---   + Renamed Promote_to_main to Copy_to_COMP shortcut script
+--   + Menu code refactor
+--   + Fixed bug with LINKED mode not working properly with envelopes
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
