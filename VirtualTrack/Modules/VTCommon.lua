@@ -9,7 +9,7 @@ local script_folder = debug.getinfo(1).source:match("@?(.*[\\|/])"):gsub("[\\|/]
 local reaper, gfx = reaper, gfx
 local VT_TB, TBH = {}, nil
 
-local function GetMenuTBL(rprobj)
+local function GetAndSetMenuByTrack(rprobj)
     local track_menu = {
         [1] = { name = "",                      fname = "" },
         [2] = { name = "Create New Variant",    fname = "CreateNew" },
@@ -37,61 +37,45 @@ local function GetMenuTBL(rprobj)
         [7] = { name = "Rename Variants",       fname = "RenameFolder" },
         [8] = { name = "Link Track/Envelope",   fname = "SetLinkValFolder" },
     }
-    -- if reaper.ValidatePtr(rprobj, "MediaTrack*") then
-    --     if reaper.GetMediaTrackInfo_Value(rprobj, "I_FREEMODE") == 2 then
-    --         --lane_mode = true
-    --         track_menu[8].name = "!" .. track_menu[8].name
-    --     end
-    --     if reaper.GetMediaTrackInfo_Value(rprobj, "I_FOLDERDEPTH") ~= 1 then
-    --         return track_menu
-    --     elseif reaper.GetMediaTrackInfo_Value(rprobj, "I_FOLDERDEPTH") == 1 then
-    --         return folder_menu
-    --     end
-    -- elseif reaper.ValidatePtr(rprobj, "TrackEnvelope*") then
-    --     track_menu[7].name = GetLinkVal() == true and "!" .. track_menu[7].name or track_menu[7].name
-    --     table.remove(track_menu, 8) -- REMOVE "ShowAll" KEY IF ENVELOPE
-    --     return track_menu
-    -- end
-    return track_menu, lane_menu
+
+    if reaper.ValidatePtr(rprobj, "MediaTrack*") then
+        -- if reaper.GetMediaTrackInfo_Value(rprobj, "I_FOLDERDEPTH") ~= 1 then
+            local main_name = "MAIN Virtual TRACK : "
+            track_menu[7].name = GetLinkVal() == true and "!" .. track_menu[7].name or track_menu[7].name
+            lane_menu[3] = track_menu[7]
+            if reaper.GetMediaTrackInfo_Value(rprobj, "I_FREEMODE") == 2 then
+                local lane_mode = true
+                track_menu[8].name = "!" .. track_menu[8].name
+                lane_menu[4] = track_menu[8]
+                return lane_menu, main_name, lane_mode
+            end
+            return track_menu, main_name
+        -- elseif reaper.GetMediaTrackInfo_Value(rprobj, "I_FOLDERDEPTH") == 1 then
+        --     local main_name = "MAIN Virtual FOLDER : "
+        --     return folder_menu, main_name
+        -- end
+    elseif reaper.ValidatePtr(rprobj, "TrackEnvelope*") then
+        local main_name = "MAIN Virtual ENV : "
+        local parent_tr = reaper.GetEnvelopeInfo_Value(rprobj, "P_TRACK")
+        track_menu[7].name = GetLinkVal() == true and "!" .. track_menu[7].name or track_menu[7].name
+        table.remove(track_menu, 8) -- REMOVE "ShowAll" KEY IF ENVELOPE
+        if reaper.GetMediaTrackInfo_Value(parent_tr, "I_FREEMODE") == 2 then -- IF PARENT TRACK IS IN LANE MODE
+            local lane_mode = true
+            return track_menu, main_name, lane_mode
+        end
+        return track_menu, main_name
+    end
 end
 
 local function MakeMenu(tbl)
-    local menu_options, lane_options = GetMenuTBL(tbl.rprobj)
-    local concat, main_name, lane_mode = "", "", nil
-    if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
-        if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FOLDERDEPTH") ~= 1 then
-            main_name = "MAIN Virtual TR : "
-            menu_options[7].name = GetLinkVal() == true and "!" .. menu_options[7].name or menu_options[7].name
-            lane_options[3] = menu_options[7]
-            if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 2 then
-                lane_mode = true
-                menu_options[8].name = "!" .. menu_options[8].name
-            end
-        -- elseif reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FOLDERDEPTH") == 1 then
-        --     table.remove(menu_options, 8) -- REMOVE "ShowAll"
-        --     main_name = "FOLDER Virtual TR : "
-        end
-    elseif reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then
-        main_name = "MAIN Virtual ENV : "
-        menu_options[7].name = GetLinkVal() == true and "!" .. menu_options[7].name or menu_options[7].name
-        lane_mode = GetLinkVal() and true
-        table.remove(menu_options, 8) -- REMOVE "ShowAll" KEY IF ENVELOPE
-    end
-
+    local concat = ""
+    local menu, main_name, lane_mode = GetAndSetMenuByTrack(tbl.rprobj)
     local versions= {}
-    for i = 1, #tbl.info do
-        versions[#versions+1] = i == tbl.idx  and "!" .. i .. " - ".. tbl.info[i].name or i .. " - " .. tbl.info[i].name
-    end
-
-    menu_options[1].name = ">" .. main_name .. tbl.info[tbl.idx].name .. "|" .. table.concat(versions, "|") .."|<|"
-    lane_options[1] = menu_options[1]
-    lane_options[2].name = tbl.comp_idx ~= 0 and "!" .. "Unset as Comp : " .. tbl.info[tbl.comp_idx].name or lane_options[2].name
-
-    local final_menu = lane_mode == true and lane_options or menu_options
-    for i = 1, #final_menu do
-        concat = concat .. final_menu[i].name .. (i ~= #final_menu and "|" or "")
-    end
-    return concat, final_menu, lane_mode
+    for i = 1, #tbl.info do versions[#versions+1] = i == tbl.idx  and "!" .. i .. " - ".. tbl.info[i].name or i .. " - " .. tbl.info[i].name end
+    menu[1].name = ">" .. main_name .. tbl.info[tbl.idx].name .. "|" .. table.concat(versions, "|") .."|<|"
+    menu[2].name = lane_mode and tbl.comp_idx ~= 0 and "!" .. "Unset as Comp : " .. tbl.info[tbl.comp_idx].name or menu[2].name
+    for i = 1, #menu do concat = concat .. menu[i].name .. (i ~= #menu and "|" or "") end
+    return concat, menu, lane_mode
 end
 
 local function CreateGFXWindow()
@@ -498,7 +482,7 @@ end
 
 function Lane_view(tbl, lane)
     reaper.PreventUIRefresh(1)
-    if GetLinkVal() and reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then
+    if reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then
         SwapVirtualTrack(tbl, lane)
     elseif reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
         SetInsertLaneChunk(tbl, lane)
