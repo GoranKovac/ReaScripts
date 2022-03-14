@@ -24,7 +24,8 @@ local function GetAndSetMenuByTrack(rprobj)
         [1] = { name = "",                      fname = "" },
         [2] = { name = "Set as Comp : ",        fname = "SetCompLane" },
         [3] = { name = "Link Track/Envelope",   fname = "SetLinkVal" },
-        [4] = { name = "Show All Variants",     fname = "ShowAll" },
+        [4] = { name = "SWIPE COMPING",         fname = "SetSwipe" },
+        [5] = { name = "Show All Variants",     fname = "ShowAll" },
     }
 
     local folder_menu = {
@@ -45,8 +46,9 @@ local function GetAndSetMenuByTrack(rprobj)
             lane_menu[3] = track_menu[7]
             if reaper.GetMediaTrackInfo_Value(rprobj, "I_FREEMODE") == 2 then
                 local lane_mode = true
+                lane_menu[4].name = GetSwipe() == true and "!" .. lane_menu[4].name or lane_menu[4].name
                 track_menu[8].name = "!" .. track_menu[8].name
-                lane_menu[4] = track_menu[8]
+                lane_menu[5] = track_menu[8]
                 return lane_menu, main_name, lane_mode
             end
             return track_menu, main_name
@@ -118,10 +120,10 @@ function Show_menu(rprobj, on_demand)
     if m_num > #tbl.info then
         m_num = (m_num - #tbl.info) + 1
         reaper.Undo_BeginBlock2(0)
-        if menu_options[m_num].fname == "SetLinkVal" or menu_options[m_num].fname == "SetCompLane" then
+        if menu_options[m_num].fname == "SetLinkVal" or menu_options[m_num].fname == "SetCompLane" or menu_options[m_num].fname == "SetSwipe" then
             _G[menu_options[m_num].fname](VT_TB[rprobj])
         end
-        if menu_options[m_num].fname ~= "SetLinkVal" and menu_options[m_num].fname ~= "SetCompLane" then
+        if menu_options[m_num].fname ~= "SetLinkVal" and menu_options[m_num].fname ~= "SetCompLane" and menu_options[m_num].fname ~= "SetSwipe" then
             for track in pairs(linked_VT) do
                 _G[menu_options[m_num].fname](VT_TB[track])
                 StoreStateToDocument(VT_TB[track])
@@ -782,21 +784,9 @@ function GetLinkedTracksVT_INFO(tracl_tbl, on_demand) -- WE SEND ON DEMAND FROM 
     return all_linked_tracks
 end
 
-reaper.gmem_attach('Virtual_Tracks')
-local swipe_script_id = reaper.AddRemoveReaScript(true, 0, script_folder .. "Virtual_track_Swipe.lua", true)
-local swipe_script = reaper.NamedCommandLookup(swipe_script_id)
---SWIPE = true
 function SetCompLane(tbl)
     tbl.comp_idx = tbl.comp_idx == 0 and MouseInfo(VT_TB).last_menu_lane or 0
     StoreStateToDocument(tbl)
-    -- if SWIPE then
-    --     if tbl.comp_idx ~= 0 then
-    --         reaper.gmem_write(1,0)
-    --         reaper.Main_OnCommand(swipe_script,0)
-    --     else
-    --         reaper.gmem_write(1,1)
-    --     end
-    -- end
 end
 
 local function GetFolderChilds(track)
@@ -834,5 +824,28 @@ function GetSelectedTracksData(rprobj, on_demand)
             CreateVTElements(1)
         end
         return tracks
+    end
+end
+
+function GetSwipe()
+    local retval, link = reaper.GetProjExtState(0, "VirtualTrack", "SWIPE")
+    if retval ~= 0 then return link == "true" and true or false end
+    return false
+end
+
+reaper.gmem_attach('Virtual_Tracks')
+local swipe_script_id = reaper.AddRemoveReaScript(true, 0, script_folder .. "Virtual_track_Swipe.lua", true)
+local swipe_script = reaper.NamedCommandLookup(swipe_script_id)
+function SetSwipe()
+    local cur_value = GetSwipe() == true and "false" or "true"
+    reaper.SetProjExtState(0, "VirtualTrack", "SWIPE", cur_value)
+    if GetSwipe() then
+        if reaper.gmem_read(2) ~= 1 then -- do not start script if its already started (other script is sending that its already opened in this mem field)
+            reaper.gmem_write(1,0)
+            reaper.Main_OnCommand(swipe_script,0)
+        end
+    else
+        reaper.gmem_write(1,1) -- send to defer script to close
+        reaper.SetProjExtState(0, "VirtualTrack", "SWIPE", "false")
     end
 end
