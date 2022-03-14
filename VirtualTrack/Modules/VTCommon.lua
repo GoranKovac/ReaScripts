@@ -117,7 +117,7 @@ function Show_menu(rprobj, on_demand)
     local focused_tracks = GetSelectedTracksData(rprobj, on_demand) -- THIS ADDS NEW TRACKS TO VT_TB FOR ON DEMAND SCRIPT AND RETURNS TRACK SELECTION
     MouseInfo(VT_TB).last_menu_lane = MouseInfo(VT_TB).lane-- SET LAST LANE BEFORE MENU OPENED
     MouseInfo(VT_TB).last_menu_tr = MouseInfo(VT_TB).tr -- SET LAST TRACK BEFORE MENU OPENED
-    --CheckTrackLaneModeState(VT_TB[rprobj])
+    CheckTrackLaneModeState(VT_TB[rprobj])
     CreateGFXWindow()
     reaper.PreventUIRefresh(1)
 
@@ -228,7 +228,7 @@ end
 
 local function Store_To_PEXT(el)
     local storedTable = {
-        info =  el.info,
+        info = el.info,
         idx = math.floor(el.idx),
         comp_idx = math.floor(el.comp_idx),
         lane_mode = math.floor(el.lane_mode)
@@ -274,6 +274,7 @@ local function ValidateRemovedTracks()
         end
     end
 end
+
 local function GetItemLane(item)
     local y = reaper.GetMediaItemInfo_Value(item, 'F_FREEMODE_Y')
     local h = reaper.GetMediaItemInfo_Value(item, 'F_FREEMODE_H')
@@ -402,7 +403,7 @@ local function StoreLaneData(tbl)
 end
 
 function UpdateInternalState(tbl)
-    if tbl.lane_mode == 2 then
+    if tbl.lane_mode == 2 then -- ONLY HAPPENS ON MEDIA TRACKS
         StoreLaneData(tbl)
         return true
     else
@@ -483,20 +484,24 @@ function Rename(tbl)
     tbl.info[tbl.idx].name = name
 end
 
+local function SetInsertLaneChunk(tbl, lane)
+    local retval, track_chunk = reaper.GetTrackStateChunk(tbl.rprobj, "", false)
+    local lane_mask = 2^(lane-1)
+    if not track_chunk:find("LANESOLO") then -- IF ANY LANE IS NOT SOLOED LANESOLO PART DOES NOT EXIST YET AND WE NEED TO INJECT IT
+        local insert_pos = string.find(track_chunk, "\n") -- insert after first new line <TRACK in this case
+        track_chunk = track_chunk:sub(1, insert_pos) .. string.format("LANESOLO %i 0", lane_mask .. "\n") ..track_chunk:sub(insert_pos + 1)
+    else
+        track_chunk = track_chunk:gsub("(LANESOLO )%d+", "%1" ..lane_mask)
+    end
+    reaper.SetTrackStateChunk(tbl.rprobj, track_chunk, false)
+end
+
 function Lane_view(tbl, lane)
     reaper.PreventUIRefresh(1)
     if GetLinkVal() and reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then
         SwapVirtualTrack(tbl, lane)
     elseif reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
-        local retval, track_chunk = reaper.GetTrackStateChunk( tbl.rprobj, "", false )
-        local lane_mask = 2^(lane-1)
-        if not track_chunk:find("LANESOLO") then -- IF ANY LANE IS NOT SOLOED LANESOLO PART DOES NOT EXIST YET AND WE NEED TO INJECT IT
-            local insert_pos = string.find(track_chunk, "\n") -- insert after first new line <TRACK in this case
-            track_chunk = track_chunk:sub(1, insert_pos) .. string.format("LANESOLO %i 0", lane_mask .. "\n") ..track_chunk:sub(insert_pos + 1)
-        else
-            track_chunk = track_chunk:gsub("(LANESOLO )%d+", "%1" ..lane_mask)
-        end
-        reaper.SetTrackStateChunk(tbl.rprobj, track_chunk, false)
+        SetInsertLaneChunk(tbl, lane)
     end
     tbl.idx = lane
     reaper.PreventUIRefresh(-1)
@@ -536,7 +541,7 @@ local function Razor_item_position(item, time_Start, time_End)
     return new_start, new_lenght, new_offset
 end
 
-local function Make_item_from_razor(tbl, item, time_Start, time_End, lane_mode)
+local function Make_item_from_razor(tbl, item, time_Start, time_End)
     if not item then return end
     local item_chunk = Get_Item_Chunk(item)
     local new_item_start, new_item_lenght, new_item_offset = Razor_item_position(item, time_Start, time_End)
@@ -544,7 +549,7 @@ local function Make_item_from_razor(tbl, item, time_Start, time_End, lane_mode)
     local item_play_rate = tonumber(item_chunk:match("PLAYRATE (%S+)"))
     local created_chunk = item_chunk:gsub("(POSITION) %S+", "%1 " .. new_item_start):gsub("(LENGTH) %S+", "%1 " .. new_item_lenght):gsub("(SOFFS) %S+", "%1 " .. item_start_offset + (new_item_offset * item_play_rate))
     --! IF NOT LANE MODE THEN RETURN CHUNK END
-    --if not lane_mode then return created_chunk end
+    --if tbl.lane_mode == 0 then return created_chunk end -- RETURN ONLY CHUNK IF WE ARE IN THE LANE MODE (ADD TO COMP CHUNK)
     local createdItem = reaper.AddMediaItemToTrack(tbl.rprobj)
     reaper.SetItemStateChunk(createdItem, created_chunk, false)
     reaper.SetMediaItemInfo_Value(createdItem, "F_FREEMODE_Y", (tbl.comp_idx - 1) / #tbl.info)
@@ -552,7 +557,6 @@ local function Make_item_from_razor(tbl, item, time_Start, time_End, lane_mode)
     reaper.SetMediaItemSelected(createdItem, true)
     reaper.Main_OnCommand(40930, 0) -- TRIM BEHIND ONLY WORKS ON SELECTED ITEMS
     reaper.SetMediaItemSelected(createdItem, false)
-    --! IF LANE MODE RETURN ITEM
     return createdItem
 end
 
@@ -563,7 +567,7 @@ function Copy_area(tbl)
     local razor_info = Get_Razor_Data(tbl.rprobj)
     if not razor_info then return end
     if tbl.comp_idx == 0 or tbl.comp_idx == razor_info.razor_lane then return end -- PREVENT COPY ONTO ITSELF
-    if table.concat(razor_info) ~= OLD_RAZOR_INFO then
+    if table.concat(razor_info) ~= OLD_RAZOR_INFO then -- PREVENT DOING COPY IF RAZOR DATA HAS NOT CHANGED
         reaper.Undo_BeginBlock2(0)
         reaper.PreventUIRefresh(1)
         local current_razor_toggle_state = reaper.GetToggleCommandState(42421)
@@ -600,17 +604,19 @@ local function SetItemsInLanes(tbl)
     end
 end
 
-function CheckTrackLaneModeState(tbl)
+function CheckTrackLaneModeState(tbl, script_first_start)
     if not reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then return end
     local current_state = reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE")
     if current_state == 2 and tbl.lane_mode ~= 2 then
         reaper.PreventUIRefresh(1)
-        Clear(tbl)
-        SetItemsInLanes(tbl)
+        if not script_first_start then
+            Clear(tbl)
+            SetItemsInLanes(tbl)
+        end
         Lane_view(tbl, tbl.idx)
-        reaper.PreventUIRefresh(-1)
         tbl.lane_mode = 2
         StoreStateToDocument(tbl)
+        reaper.PreventUIRefresh(-1)
     end
 end
 
@@ -641,11 +647,10 @@ local function CreateVTElements(direct)
             local Element = Get_class_tbl()
             local tr_data, lane = GetChunkTableForObject(track)
             tr_data = lane and tr_data or {tr_data}
-            for i = 1, #tr_data do
-                tr_data[i].name = "Version - " ..i
-            end
+            for i = 1, #tr_data do tr_data[i].name = "Version - " .. i end
             VT_TB[track] = Element:new(track, tr_data, direct)
             Restore_From_PEXT(VT_TB[track])
+            if lane then CheckTrackLaneModeState(VT_TB[track], true) end
         end
     end
 end
