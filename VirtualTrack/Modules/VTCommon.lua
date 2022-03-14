@@ -78,11 +78,10 @@ local function MakeMenu(tbl)
 
     if lane_mode then
         if GetCompTrack() then
-            menu[2].name = reaper.BR_GetMediaTrackByGUID( 0, GetCompTrack() ) == tbl.rprobj and "!" .. "Unset as Comp : " .. tbl.info[tbl.comp_idx].name or "#" .. menu[2].name
+            menu[2].name = GetCompTrack() == tbl.rprobj and "!" .. "Unset as Comp : " .. tbl.info[tbl.comp_idx].name or "#" .. menu[2].name
         end
     end
 
-    --menu[2].name = lane_mode and ( (tbl.comp_idx ~= 0 )and "!" .. "Unset as Comp : " .. tbl.info[tbl.comp_idx].name) or menu[2].name
     for i = 1, #menu do concat = concat .. menu[i].name .. (i ~= #menu and "|" or "") end
     return concat, menu, lane_mode
 end
@@ -720,11 +719,12 @@ function SetCompLane(tbl)
     local comp_track = tbl.comp_idx ~= 0 and reaper.GetTrackGUID( tbl.rprobj ) or ""
     reaper.SetProjExtState(0, "VirtualTrack", "COMP_TRACK", comp_track)
     StoreStateToDocument(tbl)
+    CallSwipeScript()
 end
 
 function GetCompTrack()
     local retval, comp_track = reaper.GetProjExtState(0, "VirtualTrack", "COMP_TRACK")
-    if retval ~= 0 then return comp_track end
+    if retval ~= 0 then return reaper.BR_GetMediaTrackByGUID( 0, comp_track ) end
     return nil
 end
 
@@ -735,8 +735,8 @@ function GetLinkVal()
 end
 
 function SetLinkVal(tbl)
-    local cur_value = GetLinkVal() == true and false or true
-    reaper.SetProjExtState(0, "VirtualTrack", "LINK", tostring(cur_value))
+    local cur_value = GetLinkVal() == true and "false" or "true"
+    reaper.SetProjExtState(0, "VirtualTrack", "LINK", cur_value)
 end
 
 local function CheckIfTableIDX_Exists(parent_tr, child_tr)
@@ -850,12 +850,19 @@ function GetSwipe()
     return false
 end
 
-reaper.gmem_attach('Virtual_Tracks')
-local swipe_script_id = reaper.AddRemoveReaScript(true, 0, script_folder .. "Virtual_track_Swipe.lua", true)
-local swipe_script = reaper.NamedCommandLookup(swipe_script_id)
 function SetSwipe()
     local cur_value = GetSwipe() == true and "false" or "true"
     reaper.SetProjExtState(0, "VirtualTrack", "SWIPE", cur_value)
+    CallSwipeScript()
+end
+
+reaper.gmem_attach('Virtual_Tracks')
+local swipe_script_id = reaper.AddRemoveReaScript(true, 0, script_folder .. "Virtual_track_Swipe.lua", true)
+local swipe_script = reaper.NamedCommandLookup(swipe_script_id)
+function CallSwipeScript()
+    if not GetCompTrack() then reaper.gmem_write(1,1) return end
+    if VT_TB[GetCompTrack()].comp_idx == 0 then reaper.gmem_write(1,1) return end
+
     if GetSwipe() then
         if reaper.gmem_read(2) ~= 1 then -- do not start script if its already started (other script is sending that its already opened in this mem field)
             reaper.gmem_write(1,0)
@@ -869,8 +876,7 @@ end
 
 function ValidateProjectEXTSTATE()
     if not GetCompTrack() then return end
-    local track =  reaper.BR_GetMediaTrackByGUID( 0, GetCompTrack() )
-    if not reaper.ValidatePtr(track, "MediaTrack*") then
+    if not reaper.ValidatePtr(GetCompTrack(), "MediaTrack*") then
         reaper.SetProjExtState(0, "VirtualTrack", "COMP_TRACK", "")
     end
 end

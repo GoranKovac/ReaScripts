@@ -19,7 +19,6 @@ function do_swipe()
     local track = OnDemand()
     if not track then return end
     Copy_area(Get_VT_TB()[track])
-    MSG(#Get_VT_TB()[track].info)
 end
 
 local function Main()
