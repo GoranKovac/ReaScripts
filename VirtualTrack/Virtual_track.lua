@@ -4,6 +4,7 @@
 -- @version 0.86
 -- @changelog
 --   + Menu code refactor
+--   + Store lanes as versions if they are created by user (not by script) on startup
 --   + Fixed bug with LINKED mode not working properly with envelopes
 -- @provides
 --   {Images,Modules}/*
