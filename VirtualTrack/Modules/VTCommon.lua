@@ -78,15 +78,8 @@ local function MakeMenu(tbl)
 
     if lane_mode then
         if GetCompTrack() then
-            MSG(GetCompTrack())
-            if reaper.BR_GetMediaTrackByGUID( 0, GetCompTrack() ) == tbl.rprobj then
-                menu[2].name = "!" .. "Unset as Comp : " .. tbl.info[tbl.comp_idx].name
-            else
-                menu[2].name = "#" .. menu[2].name
-            end
+            menu[2].name = reaper.BR_GetMediaTrackByGUID( 0, GetCompTrack() ) == tbl.rprobj and "!" .. "Unset as Comp : " .. tbl.info[tbl.comp_idx].name or "#" .. menu[2].name
         end
-    else
-        menu[2].name = menu[2].name
     end
 
     --menu[2].name = lane_mode and ( (tbl.comp_idx ~= 0 )and "!" .. "Unset as Comp : " .. tbl.info[tbl.comp_idx].name) or menu[2].name
