@@ -261,7 +261,6 @@ local function ValidateRemovedTracks()
     if next(VT_TB) == nil then return end
     for k, v in pairs(VT_TB) do
         if not TBH[k] then
-            MSG("VALIDATING")
             v:cleanup()
             VT_TB[k] = nil
         end
@@ -534,6 +533,7 @@ local function Razor_item_position(item, time_Start, time_End)
     return new_start, new_lenght, new_offset
 end
 
+--! FIXME: "COMPING" TRACK VIEW (NOT LANE VIEW)
 local function Make_item_from_razor(tbl, item, time_Start, time_End)
     if not item then return end
     local item_chunk = Get_Item_Chunk(item)
@@ -541,7 +541,7 @@ local function Make_item_from_razor(tbl, item, time_Start, time_End)
     local item_start_offset = tonumber(item_chunk:match("SOFFS (%S+)"))
     local item_play_rate = tonumber(item_chunk:match("PLAYRATE (%S+)"))
     local created_chunk = item_chunk:gsub("(POSITION) %S+", "%1 " .. new_item_start):gsub("(LENGTH) %S+", "%1 " .. new_item_lenght):gsub("(SOFFS) %S+", "%1 " .. item_start_offset + (new_item_offset * item_play_rate))
-    --! IF NOT LANE MODE THEN RETURN CHUNK END
+    --! FIXME: IF NOT LANE MODE THEN RETURN CHUNK END
     --if tbl.lane_mode == 0 then return created_chunk end -- RETURN ONLY CHUNK IF WE ARE IN THE LANE MODE (ADD TO COMP CHUNK)
     local createdItem = reaper.AddMediaItemToTrack(tbl.rprobj)
     reaper.SetItemStateChunk(createdItem, created_chunk, false)
@@ -550,6 +550,8 @@ local function Make_item_from_razor(tbl, item, time_Start, time_End)
     reaper.SetMediaItemSelected(createdItem, true)
     reaper.Main_OnCommand(40930, 0) -- TRIM BEHIND ONLY WORKS ON SELECTED ITEMS
     reaper.SetMediaItemSelected(createdItem, false)
+    --! FIXME: IF LANE MODE THEN RETURN NEW ITEM
+    -- else return createdItem
     return createdItem
 end
 
@@ -602,7 +604,10 @@ function CheckTrackLaneModeState(tbl, script_first_start)
     local current_state = reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE")
     if current_state == 2 and tbl.lane_mode ~= 2 then
         reaper.PreventUIRefresh(1)
+        --! FIXME: manually toggling lane modes on TCP
+        --! FIXME: user created lanes store as versions on startup
         if not script_first_start then
+            MSG("FIX LANE")
             Clear(tbl)
             SetItemsInLanes(tbl)
         end
@@ -613,7 +618,7 @@ function CheckTrackLaneModeState(tbl, script_first_start)
     end
 end
 
---! add hack to prevent empty lanes from removing
+--! FIXME: hack to prevent empty lanes from removing
 function ShowAll(tbl)
     if not reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then return end
     local fimp = reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE")
@@ -870,7 +875,7 @@ function CallSwipeScript()
         end
     else
         reaper.gmem_write(1,1) -- send to defer script to close
-        reaper.SetProjExtState(0, "VirtualTrack", "SWIPE", "false")
+        --reaper.SetProjExtState(0, "VirtualTrack", "SWIPE", "false")
     end
 end
 
