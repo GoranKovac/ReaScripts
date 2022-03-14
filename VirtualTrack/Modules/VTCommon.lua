@@ -742,8 +742,8 @@ function GetLinkVal()
 end
 
 function SetLinkVal(tbl)
-    local cur_value = GetLinkVal() == true and "false" or "true"
-    reaper.SetProjExtState(0, "VirtualTrack", "LINK", cur_value)
+    local cur_value = GetLinkVal() == true and false or true
+    reaper.SetProjExtState(0, "VirtualTrack", "LINK", tostring(cur_value))
 end
 
 local function CheckIfTableIDX_Exists(parent_tr, child_tr)
@@ -871,5 +871,13 @@ function SetSwipe()
     else
         reaper.gmem_write(1,1) -- send to defer script to close
         reaper.SetProjExtState(0, "VirtualTrack", "SWIPE", "false")
+    end
+end
+
+function ValidateProjectEXTSTATE()
+    if not GetCompTrack() then return end
+    local track =  reaper.BR_GetMediaTrackByGUID( 0, GetCompTrack() )
+    if not reaper.ValidatePtr(track, "MediaTrack*") then
+        reaper.SetProjExtState(0, "VirtualTrack", "COMP_TRACK", "")
     end
 end
