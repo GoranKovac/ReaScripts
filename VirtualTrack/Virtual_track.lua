@@ -1,9 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 0.88
+-- @version 0.89
 -- @changelog
---   + Do not track mouse while reaper is not in front
+--   + Revert mouse "fix"
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
