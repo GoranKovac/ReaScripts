@@ -85,6 +85,8 @@ local function MakeMenu(tbl)
                 menu[2].name = "#" .. menu[2].name
             end
         end
+    else
+        menu[2].name = menu[2].name
     end
 
     --menu[2].name = lane_mode and ( (tbl.comp_idx ~= 0 )and "!" .. "Unset as Comp : " .. tbl.info[tbl.comp_idx].name) or menu[2].name
