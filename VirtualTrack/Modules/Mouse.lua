@@ -226,7 +226,6 @@ end
 
 function MouseInfo(VT_TB)
 	mouse.x, mouse.y = reaper.GetMousePosition()
-	if Window_in_front() then return end
 	mouse.p = X_to_pos(mouse.x)
 	mouse.tr, mouse.r_t, mouse.r_b = Get_track_under_mouse(mouse.x, mouse.y)
 	mouse.lane = Get_lane_from_mouse_coordinates(mouse.y, VT_TB)
