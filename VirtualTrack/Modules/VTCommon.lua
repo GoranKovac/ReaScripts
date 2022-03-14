@@ -24,7 +24,8 @@ local function GetAndSetMenuByTrack(rprobj)
         [1] = { name = "",                      fname = "" },
         [2] = { name = "Set as Comp : ",        fname = "SetCompLane" },
         [3] = { name = "Link Track/Envelope",   fname = "SetLinkVal" },
-        [4] = { name = "Show All Variants",     fname = "ShowAll" },
+        [4] = { name = "SWIPE COMPING",         fname = "SetSwipe" },
+        [5] = { name = "Show All Variants",     fname = "ShowAll" },
     }
 
     local folder_menu = {
@@ -45,8 +46,9 @@ local function GetAndSetMenuByTrack(rprobj)
             lane_menu[3] = track_menu[7]
             if reaper.GetMediaTrackInfo_Value(rprobj, "I_FREEMODE") == 2 then
                 local lane_mode = true
+                lane_menu[4].name = GetSwipe() == true and "!" .. lane_menu[4].name or lane_menu[4].name
                 track_menu[8].name = "!" .. track_menu[8].name
-                lane_menu[4] = track_menu[8]
+                lane_menu[5] = track_menu[8]
                 return lane_menu, main_name, lane_mode
             end
             return track_menu, main_name
@@ -73,7 +75,19 @@ local function MakeMenu(tbl)
     local versions= {}
     for i = 1, #tbl.info do versions[#versions+1] = i == tbl.idx  and "!" .. i .. " - ".. tbl.info[i].name or i .. " - " .. tbl.info[i].name end
     menu[1].name = ">" .. main_name .. tbl.info[tbl.idx].name .. "|" .. table.concat(versions, "|") .."|<|"
-    menu[2].name = lane_mode and tbl.comp_idx ~= 0 and "!" .. "Unset as Comp : " .. tbl.info[tbl.comp_idx].name or menu[2].name
+
+    if lane_mode then
+        if GetCompTrack() then
+            MSG(GetCompTrack())
+            if reaper.BR_GetMediaTrackByGUID( 0, GetCompTrack() ) == tbl.rprobj then
+                menu[2].name = "!" .. "Unset as Comp : " .. tbl.info[tbl.comp_idx].name
+            else
+                menu[2].name = "#" .. menu[2].name
+            end
+        end
+    end
+
+    --menu[2].name = lane_mode and ( (tbl.comp_idx ~= 0 )and "!" .. "Unset as Comp : " .. tbl.info[tbl.comp_idx].name) or menu[2].name
     for i = 1, #menu do concat = concat .. menu[i].name .. (i ~= #menu and "|" or "") end
     return concat, menu, lane_mode
 end
@@ -118,10 +132,10 @@ function Show_menu(rprobj, on_demand)
     if m_num > #tbl.info then
         m_num = (m_num - #tbl.info) + 1
         reaper.Undo_BeginBlock2(0)
-        if menu_options[m_num].fname == "SetLinkVal" or menu_options[m_num].fname == "SetCompLane" then
+        if menu_options[m_num].fname == "SetLinkVal" or menu_options[m_num].fname == "SetCompLane" or menu_options[m_num].fname == "SetSwipe" then
             _G[menu_options[m_num].fname](VT_TB[rprobj])
         end
-        if menu_options[m_num].fname ~= "SetLinkVal" and menu_options[m_num].fname ~= "SetCompLane" then
+        if menu_options[m_num].fname ~= "SetLinkVal" and menu_options[m_num].fname ~= "SetCompLane" and menu_options[m_num].fname ~= "SetSwipe" then
             for track in pairs(linked_VT) do
                 _G[menu_options[m_num].fname](VT_TB[track])
                 StoreStateToDocument(VT_TB[track])
@@ -253,6 +267,7 @@ local function ValidateRemovedTracks()
     if next(VT_TB) == nil then return end
     for k, v in pairs(VT_TB) do
         if not TBH[k] then
+            MSG("VALIDATING")
             v:cleanup()
             VT_TB[k] = nil
         end
@@ -619,6 +634,8 @@ function ShowAll(tbl)
     elseif toggle == 0 then
         reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", toggle)
         tbl.comp_idx = 0 -- DISABLE COMPING
+        reaper.SetProjExtState(0, "VirtualTrack", "COMP_TRACK", "") -- remove comp track
+        reaper.gmem_write(1,1) -- DISABLE SWIPE DEFER
         Create_item(tbl.rprobj, tbl.info[tbl.idx])
     end
     reaper.UpdateTimeline()
@@ -703,6 +720,19 @@ function CheckUndoState()
     end
 end
 
+function SetCompLane(tbl)
+    tbl.comp_idx = tbl.comp_idx == 0 and MouseInfo(VT_TB).last_menu_lane or 0
+    local comp_track = tbl.comp_idx ~= 0 and reaper.GetTrackGUID( tbl.rprobj ) or ""
+    reaper.SetProjExtState(0, "VirtualTrack", "COMP_TRACK", comp_track)
+    StoreStateToDocument(tbl)
+end
+
+function GetCompTrack()
+    local retval, comp_track = reaper.GetProjExtState(0, "VirtualTrack", "COMP_TRACK")
+    if retval ~= 0 then return comp_track end
+    return nil
+end
+
 function GetLinkVal()
     local retval, link = reaper.GetProjExtState(0, "VirtualTrack", "LINK")
     if retval ~= 0 then return link == "true" and true or false end
@@ -781,11 +811,6 @@ function GetLinkedTracksVT_INFO(tracl_tbl, on_demand) -- WE SEND ON DEMAND FROM 
     return all_linked_tracks
 end
 
-function SetCompLane(tbl)
-    tbl.comp_idx = tbl.comp_idx == 0 and MouseInfo(VT_TB).last_menu_lane or 0
-    StoreStateToDocument(tbl)
-end
-
 local function GetFolderChilds(track)
     if not reaper.ValidatePtr(track, "MediaTrack*") then return end
     if reaper.GetMediaTrackInfo_Value(track, "I_FOLDERDEPTH") <= 0 then return end -- ignore tracks and last folder child
@@ -821,5 +846,28 @@ function GetSelectedTracksData(rprobj, on_demand)
             CreateVTElements(1)
         end
         return tracks
+    end
+end
+
+function GetSwipe()
+    local retval, link = reaper.GetProjExtState(0, "VirtualTrack", "SWIPE")
+    if retval ~= 0 then return link == "true" and true or false end
+    return false
+end
+
+reaper.gmem_attach('Virtual_Tracks')
+local swipe_script_id = reaper.AddRemoveReaScript(true, 0, script_folder .. "Virtual_track_Swipe.lua", true)
+local swipe_script = reaper.NamedCommandLookup(swipe_script_id)
+function SetSwipe()
+    local cur_value = GetSwipe() == true and "false" or "true"
+    reaper.SetProjExtState(0, "VirtualTrack", "SWIPE", cur_value)
+    if GetSwipe() then
+        if reaper.gmem_read(2) ~= 1 then -- do not start script if its already started (other script is sending that its already opened in this mem field)
+            reaper.gmem_write(1,0)
+            reaper.Main_OnCommand(swipe_script,0)
+        end
+    else
+        reaper.gmem_write(1,1) -- send to defer script to close
+        reaper.SetProjExtState(0, "VirtualTrack", "SWIPE", "false")
     end
 end
