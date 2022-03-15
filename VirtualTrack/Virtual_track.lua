@@ -1,12 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 0.90
+-- @version 0.911
 -- @changelog
---   + Comping V3
---   + Comp lane is created as first lane
---   + SWIPE COMPING Mode
-
+--   + Fix crash when comp track gets stuck in projext state
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua

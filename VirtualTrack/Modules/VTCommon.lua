@@ -79,6 +79,7 @@ local function MakeMenu(tbl)
 
     if lane_mode then
         if GetCompTrack() then
+            if tbl.comp_idx == 0 then reaper.SetProjExtState(0, "VirtualTrack", "COMP_TRACK", "") return end-- remove comp trackend
             menu[3].name = GetCompTrack() == tbl.rprobj and "!" .. "DISABLE Comping : " .. tbl.comp_idx .. " - ".. tbl.info[tbl.comp_idx].name or "#" .. menu[3].name
         end
     else
