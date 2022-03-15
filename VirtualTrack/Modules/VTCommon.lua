@@ -390,7 +390,10 @@ local function StoreLaneData(tbl)
         for i = 1, num_items do
             local item = reaper.GetTrackMediaItem(tbl.rprobj, i - 1)
             if GetItemLane(item) == j then
-                local item_chunk = Get_Item_Chunk(item)
+                ----------------------------------------------------------
+                local old_color = tbl.info[i][1]:match("COLOR (%S+)") -- old lane color
+                local item_chunk = Get_Item_Chunk(item):gsub("(COLOR )%S+", "%1" .. old_color) -- replace current chunk color with old color
+                ----------------------------------------------------------
                 lane_chunk[#lane_chunk + 1] = item_chunk
             end
         end
@@ -635,6 +638,7 @@ function ShowAll(tbl)
         SetItemsInLanes(tbl)
         reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", toggle)
         Lane_view(tbl, tbl.idx)
+        SetLaneColors(tbl)
     elseif toggle == 0 then
         reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", toggle)
         tbl.comp_idx = 0 -- DISABLE COMPING
@@ -897,7 +901,6 @@ function NewComp(tbl)
     Lane_view(tbl, tbl.idx)
     local comp_cnt = 1
     for i = 1, #tbl.info do
-
         if tbl.info[i].name and tbl.info[i].name:find("COMP") then comp_cnt = comp_cnt + 1 end
     end
     tbl.info[1].name = "COMP - " .. comp_cnt
@@ -905,43 +908,14 @@ function NewComp(tbl)
     reaper.PreventUIRefresh(-1)
 end
 
---GET ITEM COLORS
-function GetItemColors(tbl)
+function SetLaneColors(tbl)
     local num_items = reaper.CountTrackMediaItems(tbl.rprobj)
-    local item_colors = {}
     for i = 1, #tbl.info do
         for j = 1, num_items do
             local item = reaper.GetTrackMediaItem(tbl.rprobj, j - 1)
-            local retval, item_guid = reaper.GetSetMediaItemInfo_String( item, "GUID", "", false )
             if GetItemLane(item) == i then
-                local color_to_save = reaper.GetMediaItemInfo_Value( item, "I_CUSTOMCOLOR" )
-                item_colors[item_guid] = color_to_save
+                reaper.SetMediaItemInfo_Value( item, "I_CUSTOMCOLOR",reaper.ColorToNative(math.random(0,255),math.random(0,255),math.random(0,255))|0x1000000 )
             end
         end
     end
-    return item_colors
-end
-
--- GET CURRENT ITEM COLORS AND STORE THEM IN PEXT_STATE
-function StoreItemColors(tbl)
-    local current_items = GetItemColors(tbl)
-    local stored_colors = Restore_EXT_STATE_Colors() -- READ AND DESERIALIZE FROM PROJECT P_EXT_STATE
-
-    for item, color in pairs(current_items) do
-        if not stored_colors[item] then
-            stored_colors[item] = color
-        end
-    end
-    Store_EXT_STATE_Colors(stored_colors) -- SERIALIZE AND STORE TO PROJECT P_EXT_STATE
-end
-
--- RESTORE COLORS AND STORE TABLE INTO PEXT_STATE
-function RestoreItemColors()
-    local stored_colors = Restore_EXT_STATE_Colors()
-    for item_guid, color in pairs(stored_colors) do
-        local item =  reaper.BR_GetMediaItemByGUID( 0, item_guid )
-        reaper.SetMediaItemInfo_Value( item, "I_CUSTOMCOLOR", color)
-        table.remove(stored_colors, item_guid)
-    end
-    Store_EXT_STATE_Colors(stored_colors) -- SERIALIZE AND STORE TO PROJECT P_EXT_STATE 
 end
