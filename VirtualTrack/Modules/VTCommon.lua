@@ -296,19 +296,19 @@ local function Get_Track_Items(track)
 end
 
 local function Get_Track_Lane_Items(track)
-    local lane_items_chunk = {}
+    local tr_data = {}
     local num_items, item_for_height = reaper.CountTrackMediaItems(track), reaper.GetTrackMediaItem(track, 0)
     local total_lanes = round(1 / reaper.GetMediaItemInfo_Value(item_for_height, 'F_FREEMODE_H')) -- WE CHECK LANE HEIGHT WITH ANY ITEM ON TRACK
     for i = 1, total_lanes do
-        lane_items_chunk[i] = {}
+        tr_data[i] = {}
         for j = 1, num_items do
             local item = reaper.GetTrackMediaItem(track, j - 1)
             if GetItemLane(item) == i then
-                lane_items_chunk[i][#lane_items_chunk[i] + 1] = Get_Item_Chunk(item)
+                tr_data[i][#tr_data[i] + 1] = Get_Item_Chunk(item)
             end
         end
     end
-    return lane_items_chunk
+    return tr_data
 end
 
 local function Env_prop(env, val)
@@ -367,10 +367,10 @@ local function Create_item(tr, data)
     return new_items
 end
 
-local function GetChunkTableForObject(track)
+local function GetChunkTableForObject(track, get_from_lanes)
     if reaper.ValidatePtr(track, "MediaTrack*") then
         --! FIXME: HANDLE FIMP ?
-        if reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") == 2 then
+        if reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") == 2 and get_from_lanes then -- WE ONLY DO THIS ON SCRIPT STARTUP IF TRACK IS IN LANE MODE TO STORE LANES AS VERSIONS
             return Get_Track_Lane_Items(track), true
         elseif reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") == 0 then
             return Get_Track_Items(track), false
@@ -405,7 +405,7 @@ function UpdateInternalState(tbl)
         return true
     else
         local name = tbl.info[tbl.idx].name
-        local chunk_tbl = GetChunkTableForObject(tbl.rprobj)
+        local chunk_tbl = GetChunkTableForObject(tbl.rprobj, false)
         if chunk_tbl then
             tbl.info[tbl.idx] = chunk_tbl
             tbl.info[tbl.idx].name = name
@@ -568,9 +568,9 @@ function Copy_area(tbl)
         local current_razor_toggle_state = reaper.GetToggleCommandState(42421)
         if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN OFF ALWAYS TRIM BEHIND RAZORS (if enabled in project)
         ------------------------ HACK FOR COPY PASTE REMOVING EMPTY LANE
-       -- local hack_item = reaper.AddMediaItemToTrack(tbl.rprobj)
-       -- reaper.SetMediaItemInfo_Value(hack_item, "F_FREEMODE_Y", (tbl.comp_idx - 1) / #tbl.info)
-      --  reaper.SetMediaItemInfo_Value(hack_item, "F_FREEMODE_H", 1 / #tbl.info)
+        local hack_item = reaper.AddMediaItemToTrack(tbl.rprobj)
+        reaper.SetMediaItemInfo_Value(hack_item, "F_FREEMODE_Y", (tbl.comp_idx - 1) / #tbl.info)
+        reaper.SetMediaItemInfo_Value(hack_item, "F_FREEMODE_H", 1 / #tbl.info)
         -----------------------------------------------------------------------
         local new_items = {}
         for i = 1, reaper.CountTrackMediaItems(tbl.rprobj) do
@@ -581,7 +581,7 @@ function Copy_area(tbl)
             Make_item_from_razor(tbl, new_items[i], razor_info[1], razor_info[2])
         end
         if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN ON ALWAYS TRIM BEHIND RAZORS (if enabled in project)
-     --   reaper.DeleteTrackMediaItem(tbl.rprobj, hack_item) -- REMOVE EMPTY ITEM CREATED TO HACK AROUND COPY PASTE DELETING EMPTY LANE
+        reaper.DeleteTrackMediaItem(tbl.rprobj, hack_item) -- REMOVE EMPTY ITEM CREATED TO HACK AROUND COPY PASTE DELETING EMPTY LANE
         reaper.PreventUIRefresh(-1)
         reaper.Undo_EndBlock2(0, "VT: " .. "COPY AREA TO COMP", -1)
         reaper.UpdateArrange()
@@ -604,6 +604,7 @@ function CheckTrackLaneModeState(tbl)
     if not reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then return end
     local current_track_mode = math.floor(reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE"))
     if current_track_mode ~= tbl.lane_mode then
+        UpdateInternalState(tbl)
         current_track_mode = current_track_mode ~= 1 and current_track_mode or 2
         reaper.PreventUIRefresh(1)
         Clear(tbl)
@@ -647,7 +648,7 @@ local function CreateVTElements(direct)
     for track in pairs(TBH) do
         if not VT_TB[track] then
             local Element = Get_class_tbl()
-            local tr_data, lane = GetChunkTableForObject(track)
+            local tr_data, lane = GetChunkTableForObject(track, true)
             tr_data = lane and tr_data or {tr_data}
             for i = 1, #tr_data do tr_data[i].name = "Version - " .. i end
             VT_TB[track] = Element:new(track, tr_data, direct)
