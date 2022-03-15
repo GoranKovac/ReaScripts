@@ -141,3 +141,9 @@ function split_by_line(str)
     end
     return t
 end
+
+function DBG_TBL(A)
+    for index, value in pairs(A) do
+        reaper.ShowConsoleMsg("K: "..tostring(index).." - V: "..tostring(type(value) == "table" and #value or value).."\n")
+    end
+end
