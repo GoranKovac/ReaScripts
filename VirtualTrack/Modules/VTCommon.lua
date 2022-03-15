@@ -22,8 +22,8 @@ local function GetAndSetMenuByTrack(rprobj)
     }
     local lane_menu = {
         [1] = { name = "",                      fname = "" },
-        [2] = { name = "NEW Comp",              fname = "NewComp" },
-        [3] = { name = "Set as Comp : ",        fname = "SetCompLane" },
+        [2] = { name = "New Emtpy Comp",        fname = "NewComp" },
+        [3] = { name = "ENABLE Comping : ",     fname = "SetCompLane" },
         [4] = { name = "Link Track/Envelope",   fname = "SetLinkVal" },
         [5] = { name = "SWIPE MODE",            fname = "SetSwipe" },
         [6] = { name = "Show All Variants",     fname = "ShowAll" },
@@ -79,8 +79,10 @@ local function MakeMenu(tbl)
 
     if lane_mode then
         if GetCompTrack() then
-            menu[3].name = GetCompTrack() == tbl.rprobj and "!" .. "COMPING LANE : " .. tbl.comp_idx .. " - ".. tbl.info[tbl.comp_idx].name or "#" .. menu[3].name
+            menu[3].name = GetCompTrack() == tbl.rprobj and "!" .. "DISABLE Comping : " .. tbl.comp_idx .. " - ".. tbl.info[tbl.comp_idx].name or "#" .. menu[3].name
         end
+    else
+        menu[4].name = tbl.idx == 1 and "#" .. menu[4].name or menu[4].name
     end
 
     for i = 1, #menu do concat = concat .. menu[i].name .. (i ~= #menu and "|" or "") end
@@ -893,7 +895,53 @@ function NewComp(tbl)
     -- refresh lane mode
     tbl.idx = tbl.idx + 1 -- increment selected lane in menu since its pushed down
     Lane_view(tbl, tbl.idx)
-    tbl.info[1].name = "COMP"
+    local comp_cnt = 1
+    for i = 1, #tbl.info do
+
+        if tbl.info[i].name and tbl.info[i].name:find("COMP") then comp_cnt = comp_cnt + 1 end
+    end
+    tbl.info[1].name = "COMP - " .. comp_cnt
     SetCompLane(tbl, 1)
     reaper.PreventUIRefresh(-1)
+end
+
+--GET ITEM COLORS
+function GetItemColors(tbl)
+    local num_items = reaper.CountTrackMediaItems(tbl.rprobj)
+    local item_colors = {}
+    for i = 1, #tbl.info do
+        for j = 1, num_items do
+            local item = reaper.GetTrackMediaItem(tbl.rprobj, j - 1)
+            local retval, item_guid = reaper.GetSetMediaItemInfo_String( item, "GUID", "", false )
+            if GetItemLane(item) == i then
+                local color_to_save = reaper.GetMediaItemInfo_Value( item, "I_CUSTOMCOLOR" )
+                item_colors[item_guid] = color_to_save
+            end
+        end
+    end
+    return item_colors
+end
+
+-- GET CURRENT ITEM COLORS AND STORE THEM IN PEXT_STATE
+function StoreItemColors(tbl)
+    local current_items = GetItemColors(tbl)
+    local stored_colors = Restore_EXT_STATE_Colors() -- READ AND DESERIALIZE FROM PROJECT P_EXT_STATE
+
+    for item, color in pairs(current_items) do
+        if not stored_colors[item] then
+            stored_colors[item] = color
+        end
+    end
+    Store_EXT_STATE_Colors(stored_colors) -- SERIALIZE AND STORE TO PROJECT P_EXT_STATE
+end
+
+-- RESTORE COLORS AND STORE TABLE INTO PEXT_STATE
+function RestoreItemColors()
+    local stored_colors = Restore_EXT_STATE_Colors()
+    for item_guid, color in pairs(stored_colors) do
+        local item =  reaper.BR_GetMediaItemByGUID( 0, item_guid )
+        reaper.SetMediaItemInfo_Value( item, "I_CUSTOMCOLOR", color)
+        table.remove(stored_colors, item_guid)
+    end
+    Store_EXT_STATE_Colors(stored_colors) -- SERIALIZE AND STORE TO PROJECT P_EXT_STATE 
 end
