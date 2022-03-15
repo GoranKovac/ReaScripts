@@ -6,6 +6,7 @@
 --   + Comping V3
 --   + Comp lane is created as first lane
 --   + SWIPE COMPING Mode
+
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
