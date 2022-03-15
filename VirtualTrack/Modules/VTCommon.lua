@@ -911,10 +911,11 @@ end
 function SetLaneColors(tbl)
     local num_items = reaper.CountTrackMediaItems(tbl.rprobj)
     for i = 1, #tbl.info do
+        local r,g,b = math.random(0,255),math.random(0,255),math.random(0,255)
         for j = 1, num_items do
             local item = reaper.GetTrackMediaItem(tbl.rprobj, j - 1)
             if GetItemLane(item) == i then
-                reaper.SetMediaItemInfo_Value( item, "I_CUSTOMCOLOR",reaper.ColorToNative(math.random(0,255),math.random(0,255),math.random(0,255))|0x1000000 )
+                reaper.SetMediaItemInfo_Value( item, "I_CUSTOMCOLOR",reaper.ColorToNative(r,g,b)|0x1000000 )
             end
         end
     end
