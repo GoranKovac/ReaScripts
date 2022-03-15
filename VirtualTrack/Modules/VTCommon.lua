@@ -22,10 +22,11 @@ local function GetAndSetMenuByTrack(rprobj)
     }
     local lane_menu = {
         [1] = { name = "",                      fname = "" },
-        [2] = { name = "Set as Comp : ",        fname = "SetCompLane" },
-        [3] = { name = "Link Track/Envelope",   fname = "SetLinkVal" },
-        [4] = { name = "SWIPE MODE",            fname = "SetSwipe" },
-        [5] = { name = "Show All Variants",     fname = "ShowAll" },
+        [2] = { name = "NEW Comp",              fname = "NewComp" },
+        [3] = { name = "Set as Comp : ",        fname = "SetCompLane" },
+        [4] = { name = "Link Track/Envelope",   fname = "SetLinkVal" },
+        [5] = { name = "SWIPE MODE",            fname = "SetSwipe" },
+        [6] = { name = "Show All Variants",     fname = "ShowAll" },
     }
 
     local folder_menu = {
@@ -43,12 +44,12 @@ local function GetAndSetMenuByTrack(rprobj)
         -- if reaper.GetMediaTrackInfo_Value(rprobj, "I_FOLDERDEPTH") ~= 1 then
             local main_name = "MAIN Virtual TRACK : "
             track_menu[7].name = GetLinkVal() == true and "!" .. track_menu[7].name or track_menu[7].name
-            lane_menu[3] = track_menu[7]
+            lane_menu[4] = track_menu[7]
             if reaper.GetMediaTrackInfo_Value(rprobj, "I_FREEMODE") == 2 then
                 local lane_mode = true
-                lane_menu[4].name = GetSwipe() == true and "!" .. lane_menu[4].name or lane_menu[4].name
+                lane_menu[5].name = GetSwipe() == true and "!" .. lane_menu[5].name or lane_menu[5].name
                 track_menu[8].name = "!" .. track_menu[8].name
-                lane_menu[5] = track_menu[8]
+                lane_menu[6] = track_menu[8]
                 return lane_menu, main_name, lane_mode
             end
             return track_menu, main_name
@@ -78,7 +79,7 @@ local function MakeMenu(tbl)
 
     if lane_mode then
         if GetCompTrack() then
-            menu[2].name = GetCompTrack() == tbl.rprobj and "!" .. "Unset as Comp : " .. tbl.info[tbl.comp_idx].name or "#" .. menu[2].name
+            menu[3].name = GetCompTrack() == tbl.rprobj and "!" .. "COMPING LANE : " .. tbl.comp_idx .. " - ".. tbl.info[tbl.comp_idx].name or "#" .. menu[3].name
         end
     end
 
@@ -126,10 +127,10 @@ function Show_menu(rprobj, on_demand)
     if m_num > #tbl.info then
         m_num = (m_num - #tbl.info) + 1
         reaper.Undo_BeginBlock2(0)
-        if menu_options[m_num].fname == "SetLinkVal" or menu_options[m_num].fname == "SetCompLane" or menu_options[m_num].fname == "SetSwipe" then
+        if menu_options[m_num].fname == "SetLinkVal" or menu_options[m_num].fname == "SetCompLane" or menu_options[m_num].fname == "SetSwipe" or menu_options[m_num].fname == "NewComp" then
             _G[menu_options[m_num].fname](VT_TB[rprobj])
         end
-        if menu_options[m_num].fname ~= "SetLinkVal" and menu_options[m_num].fname ~= "SetCompLane" and menu_options[m_num].fname ~= "SetSwipe" then
+        if menu_options[m_num].fname ~= "SetLinkVal" and menu_options[m_num].fname ~= "SetCompLane" and menu_options[m_num].fname ~= "SetSwipe" and menu_options[m_num].fname ~= "NewComp" then
             for track in pairs(linked_VT) do
                 _G[menu_options[m_num].fname](VT_TB[track])
                 StoreStateToDocument(VT_TB[track])
@@ -567,9 +568,9 @@ function Copy_area(tbl)
         local current_razor_toggle_state = reaper.GetToggleCommandState(42421)
         if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN OFF ALWAYS TRIM BEHIND RAZORS (if enabled in project)
         ------------------------ HACK FOR COPY PASTE REMOVING EMPTY LANE
-        local hack_item = reaper.AddMediaItemToTrack(tbl.rprobj)
-        reaper.SetMediaItemInfo_Value(hack_item, "F_FREEMODE_Y", (tbl.comp_idx - 1) / #tbl.info)
-        reaper.SetMediaItemInfo_Value(hack_item, "F_FREEMODE_H", 1 / #tbl.info)
+       -- local hack_item = reaper.AddMediaItemToTrack(tbl.rprobj)
+       -- reaper.SetMediaItemInfo_Value(hack_item, "F_FREEMODE_Y", (tbl.comp_idx - 1) / #tbl.info)
+      --  reaper.SetMediaItemInfo_Value(hack_item, "F_FREEMODE_H", 1 / #tbl.info)
         -----------------------------------------------------------------------
         local new_items = {}
         for i = 1, reaper.CountTrackMediaItems(tbl.rprobj) do
@@ -580,7 +581,7 @@ function Copy_area(tbl)
             Make_item_from_razor(tbl, new_items[i], razor_info[1], razor_info[2])
         end
         if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN ON ALWAYS TRIM BEHIND RAZORS (if enabled in project)
-        reaper.DeleteTrackMediaItem(tbl.rprobj, hack_item) -- REMOVE EMPTY ITEM CREATED TO HACK AROUND COPY PASTE DELETING EMPTY LANE
+     --   reaper.DeleteTrackMediaItem(tbl.rprobj, hack_item) -- REMOVE EMPTY ITEM CREATED TO HACK AROUND COPY PASTE DELETING EMPTY LANE
         reaper.PreventUIRefresh(-1)
         reaper.Undo_EndBlock2(0, "VT: " .. "COPY AREA TO COMP", -1)
         reaper.UpdateArrange()
@@ -720,8 +721,9 @@ function CheckUndoState()
     end
 end
 
-function SetCompLane(tbl)
-    tbl.comp_idx = tbl.comp_idx == 0 and MouseInfo(VT_TB).last_menu_lane or 0
+function SetCompLane(tbl, lane)
+    local new_lane = lane and lane or MouseInfo(VT_TB).last_menu_lane
+    tbl.comp_idx = tbl.comp_idx == 0 and new_lane or 0
     local comp_track = tbl.comp_idx ~= 0 and reaper.GetTrackGUID( tbl.rprobj ) or ""
     reaper.SetProjExtState(0, "VirtualTrack", "COMP_TRACK", comp_track)
     StoreStateToDocument(tbl)
@@ -878,4 +880,22 @@ function CallSwipeScript()
         reaper.gmem_write(1,1) -- send to defer script to close
         reaper.SetProjExtState(0, "VirtualTrack", "SWIPE", "false")
     end
+end
+
+function NewComp(tbl)
+    MSG("CALLED")
+    reaper.PreventUIRefresh(1)
+    table.insert(tbl.info, 1, {})
+    Clear(tbl)
+    -- refresh lane mode
+    reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", 0) -- need to reset (lanes must be set before entering fixed lanes mode)
+    SetItemsInLanes(tbl)
+    reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", 2)
+    -- refresh lane mode
+    tbl.idx = tbl.idx + 1 -- increment selected lane in menu since its pushed down
+    Lane_view(tbl, tbl.idx)
+    tbl.info[1].name = "COMP"
+    SetCompLane(tbl, 1)
+    reaper.PreventUIRefresh(-1)
+    CallSwipeScript()
 end
