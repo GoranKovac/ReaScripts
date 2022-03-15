@@ -385,22 +385,21 @@ end
 
 local function StoreLaneData(tbl)
     local num_items = reaper.CountTrackMediaItems(tbl.rprobj)
-    for j = 1, #tbl.info do
+    for i = 1, #tbl.info do
         local lane_chunk = {}
-        for i = 1, num_items do
-            local item = reaper.GetTrackMediaItem(tbl.rprobj, i - 1)
-            if GetItemLane(item) == j then
+        for j = 1, num_items do
+            local item = reaper.GetTrackMediaItem(tbl.rprobj, j - 1)
+            if GetItemLane(item) == i then
                 ----------------------------------------------------------
-                AAA = tbl.info
-                local old_color = tbl.info[j][1]:match("COLOR (%S+)") -- old lane color
+                local old_color = tbl.info[i][1]:match("COLOR (%S+)") -- old lane color
                 local item_chunk = Get_Item_Chunk(item):gsub("(COLOR )%S+", "%1" .. old_color) -- replace current chunk color with old color
                 ----------------------------------------------------------
                 lane_chunk[#lane_chunk + 1] = item_chunk
             end
         end
-        local name = tbl.info[j].name
-        tbl.info[j] = lane_chunk
-        tbl.info[j].name = name
+        local name = tbl.info[i].name
+        tbl.info[i] = lane_chunk
+        tbl.info[i].name = name
     end
 end
 
