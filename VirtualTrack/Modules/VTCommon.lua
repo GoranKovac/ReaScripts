@@ -24,7 +24,7 @@ local function GetAndSetMenuByTrack(rprobj)
         [1] = { name = "",                      fname = "" },
         [2] = { name = "Set as Comp : ",        fname = "SetCompLane" },
         [3] = { name = "Link Track/Envelope",   fname = "SetLinkVal" },
-        [4] = { name = "SWIPE COMPING",         fname = "SetSwipe" },
+        [4] = { name = "SWIPE MODE",            fname = "SetSwipe" },
         [5] = { name = "Show All Variants",     fname = "ShowAll" },
     }
 
@@ -257,7 +257,10 @@ function Get_VT_TB() return VT_TB end
 
 function Get_TBH() return TBH end
 
-local function ValidateRemovedTracks()
+function ValidateRemovedTracks()
+    if not reaper.ValidatePtr(GetCompTrack(), "MediaTrack*") then
+        reaper.SetProjExtState(0, "VirtualTrack", "COMP_TRACK", "")
+    end
     if next(VT_TB) == nil then return end
     for k, v in pairs(VT_TB) do
         if not TBH[k] then
@@ -601,21 +604,35 @@ end
 
 function CheckTrackLaneModeState(tbl, script_first_start)
     if not reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then return end
-    local current_state = reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE")
-    if current_state == 2 and tbl.lane_mode ~= 2 then
+    local current_track_mode = reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE")
+    if current_track_mode ~= tbl.lane_mode then
         reaper.PreventUIRefresh(1)
-        --! FIXME: manually toggling lane modes on TCP
-        --! FIXME: user created lanes store as versions on startup
-        if not script_first_start then
-            MSG("FIX LANE")
-            Clear(tbl)
+        Clear(tbl)
+        if current_track_mode == 2 or current_track_mode == 1 then -- handle both fixed lanes and FIPM
             SetItemsInLanes(tbl)
+            Lane_view(tbl, tbl.idx)
+            reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", 2) -- always set to fixed lane mode
+        elseif current_track_mode == 0 then
+            SwapVirtualTrack(tbl, tbl.idx)
         end
-        Lane_view(tbl, tbl.idx)
-        tbl.lane_mode = 2
+        tbl.lane_mode = current_track_mode ~= 1 and current_track_mode or 2
         StoreStateToDocument(tbl)
         reaper.PreventUIRefresh(-1)
     end
+    -- if current_track_mode == 2 and tbl.lane_mode ~= 2 then
+    --     reaper.PreventUIRefresh(1)
+    --     --! FIXME: manually toggling lane modes on TCP
+    --     --! FIXME: user created lanes store as versions on startup
+    --     if not script_first_start then
+    --         MSG("FIX LANE")
+    --         Clear(tbl)
+    --         SetItemsInLanes(tbl)
+    --     end
+    --     Lane_view(tbl, tbl.idx)
+    --     tbl.lane_mode = 2
+    --     StoreStateToDocument(tbl)
+    --     reaper.PreventUIRefresh(-1)
+    -- end
 end
 
 --! FIXME: hack to prevent empty lanes from removing
@@ -876,12 +893,5 @@ function CallSwipeScript()
     else
         reaper.gmem_write(1,1) -- send to defer script to close
         --reaper.SetProjExtState(0, "VirtualTrack", "SWIPE", "false")
-    end
-end
-
-function ValidateProjectEXTSTATE()
-    if not GetCompTrack() then return end
-    if not reaper.ValidatePtr(GetCompTrack(), "MediaTrack*") then
-        reaper.SetProjExtState(0, "VirtualTrack", "COMP_TRACK", "")
     end
 end
