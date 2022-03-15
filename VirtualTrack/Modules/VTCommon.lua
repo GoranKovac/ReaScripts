@@ -367,10 +367,10 @@ local function Create_item(tr, data)
     return new_items
 end
 
-local function GetChunkTableForObject(track, get_from_lanes)
+local function GetChunkTableForObject(track, check_lane_mode_on_startup)
     if reaper.ValidatePtr(track, "MediaTrack*") then
         --! FIXME: HANDLE FIMP ?
-        if reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") == 2 and get_from_lanes then -- WE ONLY DO THIS ON SCRIPT STARTUP IF TRACK IS IN LANE MODE TO STORE LANES AS VERSIONS
+        if reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") == 2 and check_lane_mode_on_startup then -- WE ONLY DO THIS ON SCRIPT STARTUP IF TRACK IS IN LANE MODE TO STORE LANES AS VERSIONS
             return Get_Track_Lane_Items(track), true
         elseif reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") == 0 then
             return Get_Track_Items(track), false
