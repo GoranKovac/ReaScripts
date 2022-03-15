@@ -76,9 +76,9 @@ local function MakeMenu(tbl)
     local versions= {}
     for i = 1, #tbl.info do versions[#versions+1] = i == tbl.idx  and "!" .. i .. " - ".. tbl.info[i].name or i .. " - " .. tbl.info[i].name end
     menu[1].name = ">" .. main_name .. tbl.info[tbl.idx].name .. "|" .. table.concat(versions, "|") .."|<|"
-
     if lane_mode then
         if GetCompTrack() then
+            if tbl.comp_idx == 0 then reaper.SetProjExtState(0, "VirtualTrack", "COMP_TRACK", "") return end-- remove comp trackend
             menu[3].name = GetCompTrack() == tbl.rprobj and "!" .. "DISABLE Comping : " .. tbl.comp_idx .. " - ".. tbl.info[tbl.comp_idx].name or "#" .. menu[3].name
         end
     else
