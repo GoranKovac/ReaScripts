@@ -279,6 +279,14 @@ local function GetItemLane(item)
     return round(y / h) + 1
 end
 
+-- local function CheckItemGuid(chunk)
+--     local item_guid = chunk:match("GUID (%S+)")
+--     if reaper.BR_GetMediaItemByGUID( 0, item_guid ) then
+--         MSG("ITEM EXISTS - " .. item_guid)
+--         --return chunk:gsub("{.-}", "")
+--     end
+-- end
+
 local function Get_Item_Chunk(item)
     local _, chunk = reaper.GetItemStateChunk(item, "", false)
     return chunk:gsub("SEL.-\n", "") -- REMOVE SELECTED FIELD IN CHUNK (WE DO NOT STORE SELECTED STATE)

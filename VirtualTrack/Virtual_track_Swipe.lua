@@ -29,7 +29,6 @@ local function Main()
         do_swipe()
     else
         --EXIT CODE
-        MSG("EXIT")
         local exit = reaper.gmem_write(1, 0)
         reaper.gmem_write(2, 0)
     end
