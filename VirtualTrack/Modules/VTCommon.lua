@@ -537,7 +537,6 @@ local function Razor_item_position(item, time_Start, time_End)
     return new_start, new_lenght, new_offset
 end
 
---! FIXME: "COMPING" TRACK VIEW (NOT LANE VIEW)
 local function Make_item_from_razor(tbl, item, time_Start, time_End)
     if not item then return end
     local item_chunk = Get_Item_Chunk(item)
@@ -545,8 +544,6 @@ local function Make_item_from_razor(tbl, item, time_Start, time_End)
     local item_start_offset = tonumber(item_chunk:match("SOFFS (%S+)"))
     local item_play_rate = tonumber(item_chunk:match("PLAYRATE (%S+)"))
     local created_chunk = item_chunk:gsub("(POSITION) %S+", "%1 " .. new_item_start):gsub("(LENGTH) %S+", "%1 " .. new_item_lenght):gsub("(SOFFS) %S+", "%1 " .. item_start_offset + (new_item_offset * item_play_rate))
-    --! FIXME: IF NOT LANE MODE THEN RETURN CHUNK END
-    --if tbl.lane_mode == 0 then return created_chunk end -- RETURN ONLY CHUNK IF WE ARE IN THE LANE MODE (ADD TO COMP CHUNK)
     local createdItem = reaper.AddMediaItemToTrack(tbl.rprobj)
     reaper.SetItemStateChunk(createdItem, created_chunk, false)
     reaper.SetMediaItemInfo_Value(createdItem, "F_FREEMODE_Y", (tbl.comp_idx - 1) / #tbl.info)
@@ -554,9 +551,7 @@ local function Make_item_from_razor(tbl, item, time_Start, time_End)
     reaper.SetMediaItemSelected(createdItem, true)
     reaper.Main_OnCommand(40930, 0) -- TRIM BEHIND ONLY WORKS ON SELECTED ITEMS
     reaper.SetMediaItemSelected(createdItem, false)
-    --! FIXME: IF LANE MODE THEN RETURN NEW ITEM
-    -- else return createdItem
-    return createdItem
+    return createdItem, created_chunk
 end
 
 local OLD_RAZOR_INFO
@@ -603,6 +598,7 @@ local function SetItemsInLanes(tbl)
     end
 end
 
+--! FIXME: IF NEW VERSION IS CREATED AND IMMEDIATLY OVERRIDE TCP LANE MODE, THAT VERSION IS NOT STORED... NOT SURE HOW TO FIX IT
 function CheckTrackLaneModeState(tbl)
     if not reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then return end
     local current_track_mode = math.floor(reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE"))
@@ -880,6 +876,6 @@ function CallSwipeScript()
         end
     else
         reaper.gmem_write(1,1) -- send to defer script to close
-        --reaper.SetProjExtState(0, "VirtualTrack", "SWIPE", "false")
+        reaper.SetProjExtState(0, "VirtualTrack", "SWIPE", "false")
     end
 end
