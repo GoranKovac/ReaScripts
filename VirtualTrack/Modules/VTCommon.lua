@@ -281,9 +281,7 @@ end
 
 local function Get_Item_Chunk(item)
     local _, chunk = reaper.GetItemStateChunk(item, "", false)
-    chunk = chunk:gsub("{.-}", "")
-    chunk = chunk:gsub("SEL.-\n", "")
-    return chunk
+    return chunk:gsub("SEL.-\n", "") -- REMOVE SELECTED FIELD IN CHUNK (WE DO NOT STORE SELECTED STATE)
 end
 
 local function Get_Track_Items(track)
@@ -391,8 +389,8 @@ local function StoreLaneData(tbl)
             local item = reaper.GetTrackMediaItem(tbl.rprobj, j - 1)
             if GetItemLane(item) == i then
                 ----------------------------------------------------------
-                local old_color = tbl.info[i][1]:match("COLOR (%S+)") -- old lane color
-                local item_chunk = Get_Item_Chunk(item):gsub("(COLOR )%S+", "%1" .. old_color) -- replace current chunk color with old color
+                --local old_color = tbl.info[i][1] and tbl.info[i][1]:match("COLOR (%S+)") or "" -- old lane color
+                local item_chunk = Get_Item_Chunk(item)--:gsub("(COLOR )%S+", "%1" .. old_color) -- replace current chunk color with old color
                 ----------------------------------------------------------
                 lane_chunk[#lane_chunk + 1] = item_chunk
             end
@@ -544,7 +542,7 @@ end
 
 local function Make_item_from_razor(tbl, item, time_Start, time_End)
     if not item then return end
-    local item_chunk = Get_Item_Chunk(item)
+    local item_chunk = Get_Item_Chunk(item):gsub("{.-}", "") -- GENERATE NEW GUIDS FOR NEW ITEM
     local new_item_start, new_item_lenght, new_item_offset = Razor_item_position(item, time_Start, time_End)
     local item_start_offset = tonumber(item_chunk:match("SOFFS (%S+)"))
     local item_play_rate = tonumber(item_chunk:match("PLAYRATE (%S+)"))
@@ -581,9 +579,7 @@ function Copy_area(tbl)
             local razor_item = Get_items_in_razor(reaper.GetTrackMediaItem(tbl.rprobj, i-1),razor_info[1], razor_info[2], razor_info.razor_lane)
             new_items[#new_items+1] = razor_item
         end
-        for i = 1, #new_items do
-            Make_item_from_razor(tbl, new_items[i], razor_info[1], razor_info[2])
-        end
+        for i = 1, #new_items do Make_item_from_razor(tbl, new_items[i], razor_info[1], razor_info[2]) end
         if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN ON ALWAYS TRIM BEHIND RAZORS (if enabled in project)
         reaper.DeleteTrackMediaItem(tbl.rprobj, hack_item) -- REMOVE EMPTY ITEM CREATED TO HACK AROUND COPY PASTE DELETING EMPTY LANE
         reaper.PreventUIRefresh(-1)
@@ -638,7 +634,6 @@ function ShowAll(tbl)
         SetItemsInLanes(tbl)
         reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", toggle)
         Lane_view(tbl, tbl.idx)
-        SetLaneColors(tbl)
     elseif toggle == 0 then
         reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", toggle)
         tbl.comp_idx = 0 -- DISABLE COMPING
@@ -899,6 +894,7 @@ function NewComp(tbl)
     -- refresh lane mode
     tbl.idx = tbl.idx + 1 -- increment selected lane in menu since its pushed down
     Lane_view(tbl, tbl.idx)
+    -- SetLaneColors(tbl)
     local comp_cnt = 1
     for i = 1, #tbl.info do
         if tbl.info[i].name and tbl.info[i].name:find("COMP") then comp_cnt = comp_cnt + 1 end
@@ -908,15 +904,13 @@ function NewComp(tbl)
     reaper.PreventUIRefresh(-1)
 end
 
-function SetLaneColors(tbl)
-    local num_items = reaper.CountTrackMediaItems(tbl.rprobj)
-    for i = 1, #tbl.info do
-        local r,g,b = math.random(0,255),math.random(0,255),math.random(0,255)
-        for j = 1, num_items do
-            local item = reaper.GetTrackMediaItem(tbl.rprobj, j - 1)
-            if GetItemLane(item) == i then
-                reaper.SetMediaItemInfo_Value( item, "I_CUSTOMCOLOR",reaper.ColorToNative(r,g,b)|0x1000000 )
-            end
-        end
-    end
-end
+-- function SetLaneColors(tbl)
+--     local num_items = reaper.CountTrackMediaItems(tbl.rprobj)
+--     for i = 1, #tbl.info do
+--         local r,g,b = math.random(0,255),math.random(0,255),math.random(0,255)
+--         for j = 1, num_items do
+--             local item = reaper.GetTrackMediaItem(tbl.rprobj, j - 1)
+--             if GetItemLane(item) == i then reaper.SetMediaItemInfo_Value(item, "I_CUSTOMCOLOR",reaper.ColorToNative(r,g,b)|0x1000000) end
+--         end
+--     end
+-- end
