@@ -405,7 +405,7 @@ function UpdateInternalState(tbl)
         return true
     else
         local name = tbl.info[tbl.idx].name
-        local chunk_tbl = GetChunkTableForObject(tbl.rprobj, false)
+        local chunk_tbl = GetChunkTableForObject(tbl.rprobj)
         if chunk_tbl then
             tbl.info[tbl.idx] = chunk_tbl
             tbl.info[tbl.idx].name = name
