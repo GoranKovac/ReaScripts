@@ -296,8 +296,8 @@ end
 
 local function Get_Track_Lane_Items(track)
     local lane_items_chunk = {}
-    local num_items = reaper.CountTrackMediaItems(track)
-    local total_lanes = round(1 / reaper.GetMediaItemInfo_Value(reaper.GetTrackMediaItem(track, 0), 'F_FREEMODE_H'))
+    local num_items, item_for_height = reaper.CountTrackMediaItems(track), reaper.GetTrackMediaItem(track, 0)
+    local total_lanes = round(1 / reaper.GetMediaItemInfo_Value(item_for_height, 'F_FREEMODE_H')) -- WE CHECK LANE HEIGHT WITH ANY ITEM ON TRACK
     for i = 1, total_lanes do
         lane_items_chunk[i] = {}
         for j = 1, num_items do
@@ -368,6 +368,7 @@ end
 
 local function GetChunkTableForObject(track)
     if reaper.ValidatePtr(track, "MediaTrack*") then
+        --! FIXME: HANDLE FIMP ?
         if reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") == 2 then
             return Get_Track_Lane_Items(track), true
         elseif reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") == 0 then
@@ -602,37 +603,25 @@ local function SetItemsInLanes(tbl)
     end
 end
 
-function CheckTrackLaneModeState(tbl, script_first_start)
+function CheckTrackLaneModeState(tbl)
     if not reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then return end
-    local current_track_mode = reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE")
+    local current_track_mode = math.floor(reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE"))
     if current_track_mode ~= tbl.lane_mode then
+        current_track_mode = current_track_mode ~= 1 and current_track_mode or 2
         reaper.PreventUIRefresh(1)
         Clear(tbl)
         if current_track_mode == 2 or current_track_mode == 1 then -- handle both fixed lanes and FIPM
+            reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", 0) -- need to reset (lanes must be set before entering fixed lanes mode)
             SetItemsInLanes(tbl)
+            reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", 2)
             Lane_view(tbl, tbl.idx)
-            reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", 2) -- always set to fixed lane mode
         elseif current_track_mode == 0 then
             SwapVirtualTrack(tbl, tbl.idx)
         end
-        tbl.lane_mode = current_track_mode ~= 1 and current_track_mode or 2
+        tbl.lane_mode = current_track_mode
         StoreStateToDocument(tbl)
         reaper.PreventUIRefresh(-1)
     end
-    -- if current_track_mode == 2 and tbl.lane_mode ~= 2 then
-    --     reaper.PreventUIRefresh(1)
-    --     --! FIXME: manually toggling lane modes on TCP
-    --     --! FIXME: user created lanes store as versions on startup
-    --     if not script_first_start then
-    --         MSG("FIX LANE")
-    --         Clear(tbl)
-    --         SetItemsInLanes(tbl)
-    --     end
-    --     Lane_view(tbl, tbl.idx)
-    --     tbl.lane_mode = 2
-    --     StoreStateToDocument(tbl)
-    --     reaper.PreventUIRefresh(-1)
-    -- end
 end
 
 --! FIXME: hack to prevent empty lanes from removing
@@ -666,7 +655,6 @@ local function CreateVTElements(direct)
             for i = 1, #tr_data do tr_data[i].name = "Version - " .. i end
             VT_TB[track] = Element:new(track, tr_data, direct)
             Restore_From_PEXT(VT_TB[track])
-            if lane then CheckTrackLaneModeState(VT_TB[track], true) end
         end
     end
 end
