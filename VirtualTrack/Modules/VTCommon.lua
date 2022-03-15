@@ -396,7 +396,6 @@ local function StoreLaneData(tbl)
         tbl.info[j] = lane_chunk
         tbl.info[j].name = name
     end
-    --StoreStateToDocument(tbl)
 end
 
 function UpdateInternalState(tbl)
@@ -884,7 +883,6 @@ function CallSwipeScript()
 end
 
 function NewComp(tbl)
-    MSG("CALLED")
     reaper.PreventUIRefresh(1)
     table.insert(tbl.info, 1, {})
     Clear(tbl)
@@ -898,5 +896,4 @@ function NewComp(tbl)
     tbl.info[1].name = "COMP"
     SetCompLane(tbl, 1)
     reaper.PreventUIRefresh(-1)
-    CallSwipeScript()
 end
