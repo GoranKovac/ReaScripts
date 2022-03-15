@@ -1,11 +1,12 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 0.89
+-- @version 0.90
 -- @changelog
 --   + Comping V3
 --   + Comp lane is created as first lane
 --   + SWIPE COMPING Mode
+
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
