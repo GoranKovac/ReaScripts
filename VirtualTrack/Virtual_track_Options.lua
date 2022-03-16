@@ -12,15 +12,14 @@ require("Modules/VTCommon")
 require("Modules/Class")
 require("Modules/Mouse")
 require("Modules/Utils")
-
-local options = {
+options = {
     ["SWIPE"] = false,
     ["LANE_COLORS"] = false,
     }
 
 if reaper.HasExtState( "Virtual Track", "options" ) then
-   local stored_table = reaper.GetExtState( "Virtual Track", "options" )
-   options = stringToTable(stored_table)
+    local stored_table = reaper.GetExtState( "Virtual Track", "options" )
+    options = stringToTable(stored_table)
 end
 
 local window_flags
@@ -36,7 +35,7 @@ end
 
 local function save()
     serialized = tableToString(options)
-    reaper.SetExtState( "Virtual track", "options", serialized, true )
+    reaper.SetExtState( "Virtual Track", "options", serialized, true )
 end
 
 function Main()

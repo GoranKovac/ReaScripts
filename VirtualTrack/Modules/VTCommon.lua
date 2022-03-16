@@ -882,7 +882,7 @@ function CallSwipeScript()
         end
     else
         reaper.gmem_write(1,1) -- send to defer script to close
-        reaper.SetProjExtState(0, "VirtualTrack", "SWIPE", "false")
+        --reaper.SetProjExtState(0, "VirtualTrack", "SWIPE", "false")
     end
 end
 

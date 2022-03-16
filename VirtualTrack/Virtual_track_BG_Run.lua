@@ -1,9 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 0.99
+-- @version 1.00
 -- @changelog
---   + Added Virtual_track_Options script for global settings
+--   + fixed exstate wrong key
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
