@@ -295,8 +295,9 @@ end
 --     end
 -- end
 
-local function Get_Item_Chunk(item)
+local function Get_Item_Chunk(item, keep_color)
     local _, chunk = reaper.GetItemStateChunk(item, "", false)
+    chunk = keep_color and chunk or chunk:gsub("RESOURCEFN.-\n",""):gsub("IMGRESOURCEFLAGS.-\n", "") -- EXCLUDE ITEM NOTE IMAGE BG WHEN GRABING CHUNK
     return chunk:gsub("SEL.-\n", "") -- REMOVE SELECTED FIELD IN CHUNK (WE DO NOT STORE SELECTED STATE)
 end
 
@@ -433,15 +434,15 @@ end
 
 function StoreStateToDocument(tbl) Store_To_PEXT(tbl) end
 
-local function SaveCurrentState(track, tbl)
+local function SaveCurrentState(tbl)
     if UpdateInternalState(tbl) == true then return Store_To_PEXT(tbl) end
     return false
 end
 
 function StoreInProject()
     local rv = true
-    for k, v in pairs(VT_TB) do
-        rv = (SaveCurrentState(k, v) and rv == true) and true or false
+    for _, v in pairs(VT_TB) do
+        rv = (SaveCurrentState(v) and rv == true) and true or false
     end
     if rv == true then reaper.MarkProjectDirty(0) end -- at least mark the project dirty, even if we don't offer undo here
 end
@@ -498,7 +499,7 @@ function Rename(tbl)
 end
 
 local function SetInsertLaneChunk(tbl, lane)
-    local rv, track_chunk = reaper.GetTrackStateChunk(tbl.rprobj, "", false)
+    local _, track_chunk = reaper.GetTrackStateChunk(tbl.rprobj, "", false)
     local lane_mask = 2^(lane-1)
     if not track_chunk:find("LANESOLO") then -- IF ANY LANE IS NOT SOLOED LANESOLO PART DOES NOT EXIST YET AND WE NEED TO INJECT IT
         local insert_pos = string.find(track_chunk, "\n") -- insert after first new line <TRACK in this case
@@ -538,9 +539,7 @@ local function Get_items_in_razor(item, time_Start, time_End, razor_lane)
     local item_len = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
     local item_end = item_start + item_len
     if GetItemLane(item) == razor_lane then
-        if (time_Start < item_end and time_End > item_start) then
-            return item
-        end
+        if (time_Start < item_end and time_End > item_start) then return item end
     end
 end
 
@@ -556,7 +555,7 @@ end
 
 local function Make_item_from_razor(tbl, item, time_Start, time_End)
     if not item then return end
-    local item_chunk = Get_Item_Chunk(item):gsub("{.-}", "") -- GENERATE NEW GUIDS FOR NEW ITEM
+    local item_chunk = Get_Item_Chunk(item, true):gsub("{.-}", "") -- GENERATE NEW GUIDS FOR NEW ITEM
     local new_item_start, new_item_lenght, new_item_offset = Razor_item_position(item, time_Start, time_End)
     local item_start_offset = tonumber(item_chunk:match("SOFFS (%S+)"))
     local item_play_rate = tonumber(item_chunk:match("PLAYRATE (%S+)"))
@@ -648,6 +647,7 @@ function ShowAll(tbl)
         SetItemsInLanes(tbl)
         reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", toggle)
         Lane_view(tbl, tbl.idx)
+        SetLaneImageColors(tbl)
     elseif toggle == 0 then
         reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", toggle)
         tbl.comp_idx = 0 -- DISABLE COMPING
@@ -899,7 +899,7 @@ function NewComp(tbl)
     -- refresh lane mode
     tbl.idx = tbl.idx + 1 -- increment selected lane in menu since its pushed down
     Lane_view(tbl, tbl.idx)
-    -- SetLaneColors(tbl)
+    SetLaneImageColors(tbl)
     local comp_cnt = 1
     for i = 1, #tbl.info do
         if tbl.info[i].name and tbl.info[i].name:find("COMP") then comp_cnt = comp_cnt + 1 end
@@ -909,13 +909,14 @@ function NewComp(tbl)
     reaper.PreventUIRefresh(-1)
 end
 
--- function SetLaneColors(tbl)
---     local num_items = reaper.CountTrackMediaItems(tbl.rprobj)
---     for i = 1, #tbl.info do
---         local r,g,b = math.random(0,255),math.random(0,255),math.random(0,255)
---         for j = 1, num_items do
---             local item = reaper.GetTrackMediaItem(tbl.rprobj, j - 1)
---             if GetItemLane(item) == i then reaper.SetMediaItemInfo_Value(item, "I_CUSTOMCOLOR",reaper.ColorToNative(r,g,b)|0x1000000) end
---         end
---     end
--- end
+function SetLaneImageColors(tbl)
+    local num_items = reaper.CountTrackMediaItems(tbl.rprobj)
+    local set = tbl.lane_mode == 2 and 3 or 0
+    for i = 1, #tbl.info do
+        local lane_image = set ~= 0 and script_folder .. "Images/Lane_colors/" .. i .. ".png" or ""
+        for j = 1, num_items do
+            local item = reaper.GetTrackMediaItem(tbl.rprobj, j - 1)
+            if GetItemLane(item) == i then reaper.BR_SetMediaItemImageResource(item, lane_image, set) end
+        end
+    end
+end
