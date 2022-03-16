@@ -1,11 +1,10 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 0.93
+-- @version 0.95
 -- @changelog
 --   + Check active comp state frm stored table
 --   + Do not allow creating new emtpy comp if already comping
-
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
