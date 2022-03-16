@@ -76,12 +76,11 @@ local function MakeMenu(tbl)
     local versions= {}
     for i = 1, #tbl.info do versions[#versions+1] = i == tbl.idx  and "!" .. i .. " - ".. tbl.info[i].name or i .. " - " .. tbl.info[i].name end
     menu[1].name = ">" .. main_name .. tbl.info[tbl.idx].name .. "|" .. table.concat(versions, "|") .."|<|"
-
     if lane_mode then
-        if GetCompTrack() then
-            if tbl.comp_idx == 0 then reaper.SetProjExtState(0, "VirtualTrack", "COMP_TRACK", "") return end-- remove comp trackend
-            menu[3].name = GetCompTrack() == tbl.rprobj and "!" .. "DISABLE Comping : " .. tbl.comp_idx .. " - ".. tbl.info[tbl.comp_idx].name or "#" .. menu[3].name
+        if On_Demand_STORED_PEXT_CHECK() then
+            menu[3].name = On_Demand_STORED_PEXT_CHECK() == tbl.rprobj and "!" .. "DISABLE Comping : " .. tbl.comp_idx .. " - ".. tbl.info[tbl.comp_idx].name or "#" .. menu[3].name
         end
+        menu[2].name = (tbl.info[tbl.comp_idx] and tbl.info[tbl.comp_idx].name:find("COMP")) and "#" .. menu[2].name or menu[2].name
     else
         menu[4].name = tbl.idx == 1 and "#" .. menu[4].name or menu[4].name
     end
@@ -255,6 +254,17 @@ local function Restore_From_PEXT(el)
     end
 end
 
+function On_Demand_STORED_PEXT_CHECK()
+    for i = 1, reaper.CountTracks(0) do
+        local temp_tbl = {}
+        temp_tbl.rprobj = reaper.GetTrack(0, i - 1)
+        Restore_From_PEXT(temp_tbl)
+        if temp_tbl.comp_idx ~= 0 then
+            return temp_tbl.rprobj
+        end
+    end
+end
+
 function Get_TBH_Info(tr) return TBH[tr] and TBH[tr].t, TBH[tr].h, TBH[tr].b end
 
 function Get_VT_TB() return VT_TB end
@@ -262,9 +272,6 @@ function Get_VT_TB() return VT_TB end
 function Get_TBH() return TBH end
 
 function ValidateRemovedTracks()
-    if not reaper.ValidatePtr(GetCompTrack(), "MediaTrack*") then
-        reaper.SetProjExtState(0, "VirtualTrack", "COMP_TRACK", "")
-    end
     if next(VT_TB) == nil then return end
     for k, v in pairs(VT_TB) do
         if not TBH[k] then
@@ -397,10 +404,8 @@ local function StoreLaneData(tbl)
         for j = 1, num_items do
             local item = reaper.GetTrackMediaItem(tbl.rprobj, j - 1)
             if GetItemLane(item) == i then
-                ----------------------------------------------------------
                 --local old_color = tbl.info[i][1] and tbl.info[i][1]:match("COLOR (%S+)") or "" -- old lane color
                 local item_chunk = Get_Item_Chunk(item)--:gsub("(COLOR )%S+", "%1" .. old_color) -- replace current chunk color with old color
-                ----------------------------------------------------------
                 lane_chunk[#lane_chunk + 1] = item_chunk
             end
         end
@@ -493,7 +498,7 @@ function Rename(tbl)
 end
 
 local function SetInsertLaneChunk(tbl, lane)
-    local retval, track_chunk = reaper.GetTrackStateChunk(tbl.rprobj, "", false)
+    local rv, track_chunk = reaper.GetTrackStateChunk(tbl.rprobj, "", false)
     local lane_mask = 2^(lane-1)
     if not track_chunk:find("LANESOLO") then -- IF ANY LANE IS NOT SOLOED LANESOLO PART DOES NOT EXIST YET AND WE NEED TO INJECT IT
         local insert_pos = string.find(track_chunk, "\n") -- insert after first new line <TRACK in this case
@@ -646,7 +651,6 @@ function ShowAll(tbl)
     elseif toggle == 0 then
         reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", toggle)
         tbl.comp_idx = 0 -- DISABLE COMPING
-        reaper.SetProjExtState(0, "VirtualTrack", "COMP_TRACK", "") -- remove comp track
         reaper.gmem_write(1,1) -- DISABLE SWIPE DEFER
         Create_item(tbl.rprobj, tbl.info[tbl.idx])
     end
@@ -734,17 +738,15 @@ end
 function SetCompLane(tbl, lane)
     local new_lane = lane and lane or MouseInfo(VT_TB).last_menu_lane
     tbl.comp_idx = tbl.comp_idx == 0 and new_lane or 0
-    local comp_track = tbl.comp_idx ~= 0 and reaper.GetTrackGUID( tbl.rprobj ) or ""
-    reaper.SetProjExtState(0, "VirtualTrack", "COMP_TRACK", comp_track)
     StoreStateToDocument(tbl)
     CallSwipeScript()
 end
 
-function GetCompTrack()
-    local retval, comp_track = reaper.GetProjExtState(0, "VirtualTrack", "COMP_TRACK")
-    if retval ~= 0 then return reaper.BR_GetMediaTrackByGUID( 0, comp_track ) end
-    return nil
-end
+-- function GetCompTrack()
+--     local retval, comp_track = reaper.GetProjExtState(0, "VirtualTrack", "COMP_TRACK")
+--     if retval ~= 0 then return reaper.BR_GetMediaTrackByGUID( 0, comp_track ) end
+--     return nil
+-- end
 
 function GetLinkVal()
     local retval, link = reaper.GetProjExtState(0, "VirtualTrack", "LINK")
@@ -878,8 +880,8 @@ reaper.gmem_attach('Virtual_Tracks')
 local swipe_script_id = reaper.AddRemoveReaScript(true, 0, script_folder .. "Virtual_track_Swipe.lua", true)
 local swipe_script = reaper.NamedCommandLookup(swipe_script_id)
 function CallSwipeScript()
-    if not GetCompTrack() then reaper.gmem_write(1,1) return end
-    if VT_TB[GetCompTrack()].comp_idx == 0 then reaper.gmem_write(1,1) return end
+    if not On_Demand_STORED_PEXT_CHECK() then reaper.gmem_write(1,1) return end
+    --if VT_TB[On_Demand_STORED_PEXT_CHECK()].comp_idx == 0 then reaper.gmem_write(1,1) return end
 
     if GetSwipe() then
         if reaper.gmem_read(2) ~= 1 then -- do not start script if its already started (other script is sending that its already opened in this mem field)
