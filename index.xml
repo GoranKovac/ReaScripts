@@ -1262,23 +1262,7 @@
 + Comp lane is created as first lane
 + SWIPE COMPING Mode]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/11ea53b3aaebc15176d070506aafe3dc00f8f9e7/VirtualTrack/Virtual_track.lua</source>
-      </version>
-      <version name="0.911" author="Sexan" time="2022-03-15T20:15:17Z">
-        <changelog><![CDATA[+ Fix crash when comp track gets stuck in projext state]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/aa10e74c3f4a15ced4ce51802aa41022037afc71/VirtualTrack/Virtual_track.lua</source>
-        <source file="Images/VT_icon_empty.png">https://github.com/GoranKovac/ReaScripts/raw/aa10e74c3f4a15ced4ce51802aa41022037afc71/VirtualTrack/Images/VT_icon_empty.png</source>
-        <source file="Modules/Class.lua">https://github.com/GoranKovac/ReaScripts/raw/aa10e74c3f4a15ced4ce51802aa41022037afc71/VirtualTrack/Modules/Class.lua</source>
-        <source file="Modules/Mouse.lua">https://github.com/GoranKovac/ReaScripts/raw/aa10e74c3f4a15ced4ce51802aa41022037afc71/VirtualTrack/Modules/Mouse.lua</source>
-        <source file="Modules/Utils.lua">https://github.com/GoranKovac/ReaScripts/raw/aa10e74c3f4a15ced4ce51802aa41022037afc71/VirtualTrack/Modules/Utils.lua</source>
-        <source file="Modules/VTCommon.lua">https://github.com/GoranKovac/ReaScripts/raw/aa10e74c3f4a15ced4ce51802aa41022037afc71/VirtualTrack/Modules/VTCommon.lua</source>
-        <source main="main" file="Shortcuts/VT_Activate_lane_under_mouse.lua">https://github.com/GoranKovac/ReaScripts/raw/aa10e74c3f4a15ced4ce51802aa41022037afc71/VirtualTrack/Shortcuts/VT_Activate_lane_under_mouse.lua</source>
-        <source main="main" file="Shortcuts/VT_Copy_to_Comp.lua">https://github.com/GoranKovac/ReaScripts/raw/aa10e74c3f4a15ced4ce51802aa41022037afc71/VirtualTrack/Shortcuts/VT_Copy_to_Comp.lua</source>
-        <source main="main" file="Shortcuts/VT_Switch_DOWN.lua">https://github.com/GoranKovac/ReaScripts/raw/aa10e74c3f4a15ced4ce51802aa41022037afc71/VirtualTrack/Shortcuts/VT_Switch_DOWN.lua</source>
-        <source main="main" file="Shortcuts/VT_Switch_UP.lua">https://github.com/GoranKovac/ReaScripts/raw/aa10e74c3f4a15ced4ce51802aa41022037afc71/VirtualTrack/Shortcuts/VT_Switch_UP.lua</source>
-        <source main="main" file="Virtual_track_Mouse.lua">https://github.com/GoranKovac/ReaScripts/raw/aa10e74c3f4a15ced4ce51802aa41022037afc71/VirtualTrack/Virtual_track_Mouse.lua</source>
-        <source main="main" file="Virtual_track_SelTrack.lua">https://github.com/GoranKovac/ReaScripts/raw/aa10e74c3f4a15ced4ce51802aa41022037afc71/VirtualTrack/Virtual_track_SelTrack.lua</source>
-        <source main="main" file="Virtual_track_Swipe.lua">https://github.com/GoranKovac/ReaScripts/raw/aa10e74c3f4a15ced4ce51802aa41022037afc71/VirtualTrack/Virtual_track_Swipe.lua</source>
-      </version>
+      </version>      
       <version name="0.92" author="Sexan" time="2022-03-16T07:51:16Z">
         <changelog><![CDATA[+ Check active comp state frm stored table
 + Do not allow creating new emtpy comp if already comping]]></changelog>
