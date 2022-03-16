@@ -1,7 +1,7 @@
 --[[
    * Author: SeXan
    * Licence: GPL v3
-   * Version: 0.02
+   * Version: 0.03
 	 * NoIndex: true
 --]]
 
@@ -741,12 +741,6 @@ function SetCompLane(tbl, lane)
     StoreStateToDocument(tbl)
     CallSwipeScript()
 end
-
--- function GetCompTrack()
---     local retval, comp_track = reaper.GetProjExtState(0, "VirtualTrack", "COMP_TRACK")
---     if retval ~= 0 then return reaper.BR_GetMediaTrackByGUID( 0, comp_track ) end
---     return nil
--- end
 
 function GetLinkVal()
     local retval, link = reaper.GetProjExtState(0, "VirtualTrack", "LINK")
