@@ -1,11 +1,10 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 0.90
+-- @version 0.92
 -- @changelog
---   + Comping V3
---   + Comp lane is created as first lane
---   + SWIPE COMPING Mode
+--   + Check active comp state frm stored table
+--   + Do not allow creating new emtpy comp if already comping
 
 -- @provides
 --   {Images,Modules}/*
