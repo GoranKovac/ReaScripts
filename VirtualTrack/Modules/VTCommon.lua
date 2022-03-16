@@ -433,15 +433,15 @@ end
 
 function StoreStateToDocument(tbl) Store_To_PEXT(tbl) end
 
-local function SaveCurrentState(track, tbl)
+local function SaveCurrentState(tbl)
     if UpdateInternalState(tbl) == true then return Store_To_PEXT(tbl) end
     return false
 end
 
 function StoreInProject()
     local rv = true
-    for k, v in pairs(VT_TB) do
-        rv = (SaveCurrentState(k, v) and rv == true) and true or false
+    for _, v in pairs(VT_TB) do
+        rv = (SaveCurrentState(v) and rv == true) and true or false
     end
     if rv == true then reaper.MarkProjectDirty(0) end -- at least mark the project dirty, even if we don't offer undo here
 end
@@ -498,7 +498,7 @@ function Rename(tbl)
 end
 
 local function SetInsertLaneChunk(tbl, lane)
-    local rv, track_chunk = reaper.GetTrackStateChunk(tbl.rprobj, "", false)
+    local _, track_chunk = reaper.GetTrackStateChunk(tbl.rprobj, "", false)
     local lane_mask = 2^(lane-1)
     if not track_chunk:find("LANESOLO") then -- IF ANY LANE IS NOT SOLOED LANESOLO PART DOES NOT EXIST YET AND WE NEED TO INJECT IT
         local insert_pos = string.find(track_chunk, "\n") -- insert after first new line <TRACK in this case
@@ -538,9 +538,7 @@ local function Get_items_in_razor(item, time_Start, time_End, razor_lane)
     local item_len = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
     local item_end = item_start + item_len
     if GetItemLane(item) == razor_lane then
-        if (time_Start < item_end and time_End > item_start) then
-            return item
-        end
+        if (time_Start < item_end and time_End > item_start) then return item end
     end
 end
 
