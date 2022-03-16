@@ -23,10 +23,9 @@ local function GetAndSetMenuByTrack(rprobj)
     local lane_menu = {
         [1] = { name = "",                      fname = "" },
         [2] = { name = "New Emtpy Comp",        fname = "NewComp" },
-        [3] = { name = "ENABLE Comping : ",     fname = "SetCompLane" },
+        [3] = { name = "ENABLE Comping on : ",  fname = "SetCompLane" },
         [4] = { name = "Link Track/Envelope",   fname = "SetLinkVal" },
-        [5] = { name = "SWIPE MODE",            fname = "SetSwipe" },
-        [6] = { name = "Show All Variants",     fname = "ShowAll" },
+        [5] = { name = "Show All Variants",     fname = "ShowAll" },
     }
 
     local folder_menu = {
@@ -42,23 +41,23 @@ local function GetAndSetMenuByTrack(rprobj)
 
     if reaper.ValidatePtr(rprobj, "MediaTrack*") then
         -- if reaper.GetMediaTrackInfo_Value(rprobj, "I_FOLDERDEPTH") ~= 1 then
-            local main_name = "MAIN Virtual TRACK : "
+            local main_name = "Virtual TRACK : "
             track_menu[7].name = GetLinkVal() == true and "!" .. track_menu[7].name or track_menu[7].name
             lane_menu[4] = track_menu[7]
             if reaper.GetMediaTrackInfo_Value(rprobj, "I_FREEMODE") == 2 then
                 local lane_mode = true
-                lane_menu[5].name = GetSwipe() == true and "!" .. lane_menu[5].name or lane_menu[5].name
+                --lane_menu[5].name = GetSwipe() == true and "!" .. lane_menu[5].name or lane_menu[5].name
                 track_menu[8].name = "!" .. track_menu[8].name
-                lane_menu[6] = track_menu[8]
+                lane_menu[5] = track_menu[8]
                 return lane_menu, main_name, lane_mode
             end
             return track_menu, main_name
         -- elseif reaper.GetMediaTrackInfo_Value(rprobj, "I_FOLDERDEPTH") == 1 then
-        --     local main_name = "MAIN Virtual FOLDER : "
+        --     local main_name = "Virtual FOLDER : "
         --     return folder_menu, main_name
         -- end
     elseif reaper.ValidatePtr(rprobj, "TrackEnvelope*") then
-        local main_name = "MAIN Virtual ENV : "
+        local main_name = "Virtual ENV : "
         local parent_tr = reaper.GetEnvelopeInfo_Value(rprobj, "P_TRACK")
         track_menu[7].name = GetLinkVal() == true and "!" .. track_menu[7].name or track_menu[7].name
         table.remove(track_menu, 8) -- REMOVE "ShowAll" KEY IF ENVELOPE
@@ -76,7 +75,9 @@ local function MakeMenu(tbl)
     local versions= {}
     for i = 1, #tbl.info do versions[#versions+1] = i == tbl.idx  and "!" .. i .. " - ".. tbl.info[i].name or i .. " - " .. tbl.info[i].name end
     menu[1].name = ">" .. main_name .. tbl.info[tbl.idx].name .. "|" .. table.concat(versions, "|") .."|<|"
+
     if lane_mode then
+        menu[3].name = menu[3].name .. MouseInfo(VT_TB).last_menu_lane .. " " .. tbl.info[MouseInfo(VT_TB).last_menu_lane].name
         if On_Demand_STORED_PEXT_CHECK() then
             menu[3].name = On_Demand_STORED_PEXT_CHECK() == tbl.rprobj and "!" .. "DISABLE Comping : " .. tbl.comp_idx .. " - ".. tbl.info[tbl.comp_idx].name or "#" .. menu[3].name
         end
@@ -129,10 +130,10 @@ function Show_menu(rprobj, on_demand)
     if m_num > #tbl.info then
         m_num = (m_num - #tbl.info) + 1
         reaper.Undo_BeginBlock2(0)
-        if menu_options[m_num].fname == "SetLinkVal" or menu_options[m_num].fname == "SetCompLane" or menu_options[m_num].fname == "SetSwipe" or menu_options[m_num].fname == "NewComp" then
+        if menu_options[m_num].fname == "SetLinkVal" or menu_options[m_num].fname == "SetCompLane" or menu_options[m_num].fname == "NewComp" then
             _G[menu_options[m_num].fname](VT_TB[rprobj])
         end
-        if menu_options[m_num].fname ~= "SetLinkVal" and menu_options[m_num].fname ~= "SetCompLane" and menu_options[m_num].fname ~= "SetSwipe" and menu_options[m_num].fname ~= "NewComp" then
+        if menu_options[m_num].fname ~= "SetLinkVal" and menu_options[m_num].fname ~= "SetCompLane" and menu_options[m_num].fname ~= "NewComp" then
             for track in pairs(linked_VT) do
                 _G[menu_options[m_num].fname](VT_TB[track])
                 StoreStateToDocument(VT_TB[track])
@@ -259,7 +260,7 @@ function On_Demand_STORED_PEXT_CHECK()
         local temp_tbl = {}
         temp_tbl.rprobj = reaper.GetTrack(0, i - 1)
         Restore_From_PEXT(temp_tbl)
-        if temp_tbl.comp_idx ~= 0 then
+        if temp_tbl.comp_idx ~= 0 and temp_tbl.comp_idx ~= nil then
             return temp_tbl.rprobj
         end
     end
@@ -859,15 +860,12 @@ function GetSelectedTracksData(rprobj, on_demand)
 end
 
 function GetSwipe()
-    local retval, link = reaper.GetProjExtState(0, "VirtualTrack", "SWIPE")
-    if retval ~= 0 then return link == "true" and true or false end
-    return false
-end
-
-function SetSwipe()
-    local cur_value = GetSwipe() == true and "false" or "true"
-    reaper.SetProjExtState(0, "VirtualTrack", "SWIPE", cur_value)
-    CallSwipeScript()
+    if reaper.HasExtState( "Virtual Track", "options" ) then
+        local stored_table = reaper.GetExtState( "Virtual Track", "options" )
+        local options = stringToTable(stored_table)
+        local colors_enable = options["SWIPE"]
+        return colors_enable
+    end
 end
 
 reaper.gmem_attach('Virtual_Tracks')
@@ -909,7 +907,17 @@ function NewComp(tbl)
     reaper.PreventUIRefresh(-1)
 end
 
+local function GetLaneColorOption()
+    if reaper.HasExtState( "Virtual Track", "options" ) then
+        local stored_table = reaper.GetExtState( "Virtual Track", "options" )
+        local options = stringToTable(stored_table)
+        local colors_enable = options["LANE_COLORS"]
+        return colors_enable
+    end
+end
+
 function SetLaneImageColors(tbl)
+    if not GetLaneColorOption() then return end
     local num_items = reaper.CountTrackMediaItems(tbl.rprobj)
     local set = tbl.lane_mode == 2 and 3 or 0
     for i = 1, #tbl.info do

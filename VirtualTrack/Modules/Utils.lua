@@ -4,6 +4,9 @@
    * Version: 0.03
 	 * NoIndex: true
 --]]
+
+local reaper = reaper
+local script_path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]]:gsub("[\\|/]Modules", "") -- GET DIRECTORY FOR REQUIRE
 function Break( msg )
     local line = "Breakpoint at line " .. debug.getinfo(2).currentline
     local ln = "\n" .. string.rep("=", #line) .. "\n"
@@ -22,6 +25,9 @@ local function open_url(url)
     end
 end
 
+local options_script_id = reaper.AddRemoveReaScript(true, 0, script_path .. "Virtual_track_Options.lua", true)
+local options_script = reaper.NamedCommandLookup(options_script_id)
+
 function Check_Requirements()
     local reaper_version = reaper.GetAppVersion()
     local big, small = reaper_version:match("(6).(%d%d)")
@@ -37,7 +43,7 @@ function Check_Requirements()
         end
     end
     if not reaper.APIExists("JS_ReaScriptAPI_Version") then
-        reaper.MB( "JS_ReaScriptAPI is required for this script", "Please download it from ReaPack", "SCRIPT REQUIREMENTS", 0 )
+        reaper.MB( "JS_ReaScriptAPI is required for this script. Please download it from ReaPack", "SCRIPT REQUIREMENTS", 0 )
         return reaper.defer(function() end)
     else
         local version = reaper.JS_ReaScriptAPI_Version()
@@ -45,6 +51,15 @@ function Check_Requirements()
             reaper.MB( "Your JS_ReaScriptAPI version is " .. version .. "\nPlease update to latest version.", "Older version is installed", 0 )
             return reaper.defer(function() end)
         end
+    end
+    if not reaper.ImGui_GetVersion then
+        reaper.MB( "ReaImGui is required for this script. Please download it from ReaPack", "SCRIPT REQUIREMENTS", 0 )
+        return reaper.defer(function() end)
+    end
+    if not reaper.HasExtState( "Virtual Track", "options" ) then
+        reaper.MB( "No global options stored please set them now. You can change settings later by opening Virual_track_Options script", "VIRTUAL TRACK OPTIONS", 0 )
+        reaper.Main_OnCommand(options_script,0)
+        return reaper.defer(function() end)
     end
 end
 
@@ -148,17 +163,40 @@ function DBG_TBL(A)
     end
 end
 
-function SaveFile(fn)
+function SaveFile(tbl, fn)
+    local config_path = fn .. "config.txt"
     local file
-    file = io.open(fn, "w")
-    file:write(fn)
+    file = io.open(config_path, "w")
+    for i = 1, #tbl do
+        file:write(tostring(tbl[i]) , "\n")
+    end
     file:close()
 end
 
 function ReadFile(fn)
-    local configEnv = {}
-    local file = io.open(fn, "t", configEnv)
-    if not file then return end
-    file()
-    file:close()
+    local file = fn .. "config.txt"
+    local f = io.open(script_path .. "config.txt", "r")
+    if not f then
+        return
+    else
+        f:close()
+    end
+    local options = {}
+    for line in io.lines(file) do
+        line = line:match("%S+ (%S+)") == "true" and true or false
+        table.insert(options, line)
+    end
+    return options
+end
+
+function GetSelItemChunk()
+    local retval, chunk = reaper.GetItemStateChunk( reaper.GetSelectedMediaItem( 0, 0 ), "", false )
+    reaper.ClearConsole()
+    reaper.ShowConsoleMsg(chunk)
+end
+
+function GetSelTrackChunk()
+    local retval, chunk = reaper.GetTrackStateChunk( reaper.GetSelectedTrack(0, 0), "", false )
+    reaper.ClearConsole()
+    reaper.ShowConsoleMsg(chunk)
 end
