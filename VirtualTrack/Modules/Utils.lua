@@ -1,7 +1,7 @@
 --[[
    * Author: SeXan
    * Licence: GPL v3
-   * Version: 0.01
+   * Version: 0.03
 	 * NoIndex: true
 --]]
 function Break( msg )
@@ -146,4 +146,19 @@ function DBG_TBL(A)
     for index, value in pairs(A) do
         reaper.ShowConsoleMsg("K: "..tostring(index).." - V: "..tostring(type(value) == "table" and #value or value).."\n")
     end
+end
+
+function SaveFile(fn)
+    local file
+    file = io.open(fn, "w")
+    file:write(fn)
+    file:close()
+end
+
+function ReadFile(fn)
+    local configEnv = {}
+    local file = io.open(fn, "t", configEnv)
+    if not file then return end
+    file()
+    file:close()
 end
