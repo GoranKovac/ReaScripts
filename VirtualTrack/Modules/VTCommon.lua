@@ -94,11 +94,8 @@ local function CreateGFXWindow()
     local title = "supper_awesome_mega_menu"
     gfx.init( title, 0, 0, 0, 0, 0 )
     local hwnd = reaper.JS_Window_Find( title, true )
-    if hwnd then
-        reaper.JS_Window_Show( hwnd, "HIDE" )
-    end
-    gfx.x = gfx.mouse_x
-    gfx.y = gfx.mouse_y
+    if hwnd then reaper.JS_Window_Show( hwnd, "HIDE" ) end
+    gfx.x, gfx.y = gfx.mouse_x, gfx.mouse_y
 end
 
 local function Update_tempo_map()
@@ -307,8 +304,7 @@ local function Get_Track_Items(track)
     local num_items = reaper.CountTrackMediaItems(track)
     for i = 1, num_items, 1 do
         local item = reaper.GetTrackMediaItem(track, i - 1)
-        local item_chunk = Get_Item_Chunk(item)
-        items_chunk[#items_chunk + 1] = item_chunk
+        items_chunk[#items_chunk + 1] = Get_Item_Chunk(item)
     end
     return items_chunk
 end
@@ -406,8 +402,7 @@ local function StoreLaneData(tbl)
         for j = 1, num_items do
             local item = reaper.GetTrackMediaItem(tbl.rprobj, j - 1)
             if GetItemLane(item) == i then
-                --local old_color = tbl.info[i][1] and tbl.info[i][1]:match("COLOR (%S+)") or "" -- old lane color
-                local item_chunk = Get_Item_Chunk(item)--:gsub("(COLOR )%S+", "%1" .. old_color) -- replace current chunk color with old color
+                local item_chunk = Get_Item_Chunk(item)
                 lane_chunk[#lane_chunk + 1] = item_chunk
             end
         end
@@ -574,7 +569,7 @@ end
 local OLD_RAZOR_INFO
 function Copy_area(tbl)
     if not reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then return end -- PREVENT DOING THIS ON ENVELOPES
-    if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 0 then return end -- PREVENT DOING THIS ON ENVELOPES
+    if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 0 then return end -- PREVENT DOING IN NON LANE MODE
     local razor_info = Get_Razor_Data(tbl.rprobj)
     if not razor_info then return end
     if tbl.comp_idx == 0 or tbl.comp_idx == razor_info.razor_lane then return end -- PREVENT COPY ONTO ITSELF
@@ -860,11 +855,10 @@ function GetSelectedTracksData(rprobj, on_demand)
 end
 
 function GetSwipe()
-    if reaper.HasExtState( "Virtual Track", "options" ) then
-        local stored_table = reaper.GetExtState( "Virtual Track", "options" )
-        local options = stringToTable(stored_table)
-        local colors_enable = options["SWIPE"]
-        return colors_enable
+    if reaper.HasExtState( "VirtualTrack", "options" ) then
+        local state = reaper.GetExtState( "VirtualTrack", "options" )
+        local SWIPE = state:match("SWIPE (%S+)") == "true" and true or false
+        return SWIPE
     end
 end
 
@@ -882,10 +876,10 @@ function CallSwipeScript()
         end
     else
         reaper.gmem_write(1,1) -- send to defer script to close
-        --reaper.SetProjExtState(0, "VirtualTrack", "SWIPE", "false")
     end
 end
 
+--! FIXME COMP TRACK OFFSETS ENVELOPES WHEN LINK IS ENABLED
 function NewComp(tbl)
     reaper.PreventUIRefresh(1)
     table.insert(tbl.info, 1, {})
@@ -908,11 +902,10 @@ function NewComp(tbl)
 end
 
 local function GetLaneColorOption()
-    if reaper.HasExtState( "Virtual Track", "options" ) then
-        local stored_table = reaper.GetExtState( "Virtual Track", "options" )
-        local options = stringToTable(stored_table)
-        local colors_enable = options["LANE_COLORS"]
-        return colors_enable
+    if reaper.HasExtState( "VirtualTrack", "options" ) then
+        local state = reaper.GetExtState( "VirtualTrack", "options" )
+        LANE_COLORS = state:match("LANE_COLORS (%S+)") == "true" and true or false
+        return LANE_COLORS
     end
 end
 

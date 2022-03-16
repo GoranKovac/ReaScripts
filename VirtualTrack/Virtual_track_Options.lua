@@ -12,14 +12,15 @@ require("Modules/VTCommon")
 require("Modules/Class")
 require("Modules/Mouse")
 require("Modules/Utils")
-options = {
-    ["SWIPE"] = false,
-    ["LANE_COLORS"] = false,
-    }
 
-if reaper.HasExtState( "Virtual Track", "options" ) then
-    local stored_table = reaper.GetExtState( "Virtual Track", "options" )
-    options = stringToTable(stored_table)
+SWIPE = false
+LANE_COLORS = false
+
+
+if reaper.HasExtState( "VirtualTrack", "options" ) then
+   local state = reaper.GetExtState( "VirtualTrack", "options" )
+   SWIPE = state:match("SWIPE (%S+)") == "true" and true or false
+   LANE_COLORS = state:match("LANE_COLORS (%S+)") == "true" and true or false
 end
 
 local window_flags
@@ -34,8 +35,8 @@ function GuiInit()
 end
 
 local function save()
-    serialized = tableToString(options)
-    reaper.SetExtState( "Virtual Track", "options", serialized, true )
+    local store_string = "SWIPE " .. tostring(SWIPE) .. " LANE_COLORS " .. tostring(LANE_COLORS)
+    reaper.SetExtState( "VirtualTrack", "options", store_string, true )
 end
 
 function Main()
@@ -44,8 +45,8 @@ function Main()
     reaper.ImGui_SetNextWindowSize(CTX, 250, 300, reaper.ImGui_Cond_Once())
 
     if visible then
-        _, options["SWIPE"] = reaper.ImGui_Checkbox(CTX, "SWIPE",  options["SWIPE"])
-        _, options["LANE_COLORS"] = reaper.ImGui_Checkbox(CTX, "LANE COLORS", options["LANE_COLORS"])
+        _, SWIPE = reaper.ImGui_Checkbox(CTX, "SWIPE",  SWIPE)
+        _, LANE_COLORS = reaper.ImGui_Checkbox(CTX, "LANE COLORS", LANE_COLORS)
         reaper.ImGui_Spacing( CTX ) ; reaper.ImGui_Spacing( CTX )
         if reaper.ImGui_Button(CTX, 'SAVE', 80) then save() end
         reaper.ImGui_End(CTX)

@@ -1,9 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.00
+-- @version 1.01
 -- @changelog
---   + fixed exstate wrong key
+--   + Removed table serialization for exstate storing options
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
