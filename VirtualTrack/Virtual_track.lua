@@ -1,7 +1,7 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 0.96
+-- @version 0.97
 -- @changelog
 --   + Per lane color when in lane mode (help visualize comping)
 -- @provides

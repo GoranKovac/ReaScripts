@@ -913,7 +913,7 @@ function SetLaneImageColors(tbl)
     local num_items = reaper.CountTrackMediaItems(tbl.rprobj)
     local set = tbl.lane_mode == 2 and 3 or 0
     for i = 1, #tbl.info do
-        local lane_image = set ~= 0 and script_folder .. "Images/Lane_colors/" .. i .. ".png" or ""
+        local lane_image = set ~= 0 and script_folder .. "Images/" .. i .. ".png" or ""
         for j = 1, num_items do
             local item = reaper.GetTrackMediaItem(tbl.rprobj, j - 1)
             if GetItemLane(item) == i then reaper.BR_SetMediaItemImageResource(item, lane_image, set) end
