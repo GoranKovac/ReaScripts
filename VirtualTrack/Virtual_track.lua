@@ -1,10 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 0.95
+-- @version 0.96
 -- @changelog
---   + Check active comp state frm stored table
---   + Do not allow creating new emtpy comp if already comping
+--   + Per lane color when in lane mode (help visualize comping)
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
