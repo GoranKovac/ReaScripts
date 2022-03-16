@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="98439f1ac76ce200400f3efd81cf19e1908b1a07" name="Sexan_Scripts">
+<index version="1" commit="08638621f70090028ddef494b53b458d33af1686" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -1262,11 +1262,16 @@
 + Comp lane is created as first lane
 + SWIPE COMPING Mode]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/11ea53b3aaebc15176d070506aafe3dc00f8f9e7/VirtualTrack/Virtual_track.lua</source>
-      </version>      
+      </version>
       <version name="0.92" author="Sexan" time="2022-03-16T07:51:16Z">
         <changelog><![CDATA[+ Check active comp state frm stored table
 + Do not allow creating new emtpy comp if already comping]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/da4c590f99d0873f1c230a979fd0ef174bc81f04/VirtualTrack/Virtual_track.lua</source>
+      </version>
+      <version name="0.93" author="Sexan" time="2022-03-16T10:58:40Z">
+        <changelog><![CDATA[+ Check active comp state frm stored table
++ Do not allow creating new emtpy comp if already comping]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/ccaa908705f81a6c433b476a5836a328b41b48f5/VirtualTrack/Virtual_track.lua</source>
       </version>
     </reapack>
   </category>
