@@ -297,6 +297,7 @@ end
 
 local function Get_Item_Chunk(item)
     local _, chunk = reaper.GetItemStateChunk(item, "", false)
+    chunk = chunk:gsub("RESOURCEFN.-\n",""):gsub("IMGRESOURCEFLAGS.-\n", "") -- EXCLUDE ITEM NOTE IMAGE
     return chunk:gsub("SEL.-\n", "") -- REMOVE SELECTED FIELD IN CHUNK (WE DO NOT STORE SELECTED STATE)
 end
 
@@ -646,6 +647,7 @@ function ShowAll(tbl)
         SetItemsInLanes(tbl)
         reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", toggle)
         Lane_view(tbl, tbl.idx)
+        SetLaneImageColors(tbl)
     elseif toggle == 0 then
         reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", toggle)
         tbl.comp_idx = 0 -- DISABLE COMPING
@@ -897,7 +899,6 @@ function NewComp(tbl)
     -- refresh lane mode
     tbl.idx = tbl.idx + 1 -- increment selected lane in menu since its pushed down
     Lane_view(tbl, tbl.idx)
-    -- SetLaneColors(tbl)
     local comp_cnt = 1
     for i = 1, #tbl.info do
         if tbl.info[i].name and tbl.info[i].name:find("COMP") then comp_cnt = comp_cnt + 1 end
@@ -907,13 +908,15 @@ function NewComp(tbl)
     reaper.PreventUIRefresh(-1)
 end
 
--- function SetLaneColors(tbl)
---     local num_items = reaper.CountTrackMediaItems(tbl.rprobj)
---     for i = 1, #tbl.info do
---         local r,g,b = math.random(0,255),math.random(0,255),math.random(0,255)
---         for j = 1, num_items do
---             local item = reaper.GetTrackMediaItem(tbl.rprobj, j - 1)
---             if GetItemLane(item) == i then reaper.SetMediaItemInfo_Value(item, "I_CUSTOMCOLOR",reaper.ColorToNative(r,g,b)|0x1000000) end
---         end
---     end
--- end
+function SetLaneImageColors(tbl)
+    local num_items = reaper.CountTrackMediaItems(tbl.rprobj)
+    local set = tbl.lane_mode == 2 and 3 or 0
+    for i = 1, #tbl.info do
+        local random = math.random(1,20)
+        local lane_image = set ~= 0 and script_folder .. "Images/" .. random .. ".png" or ""
+        for j = 1, num_items do
+            local item = reaper.GetTrackMediaItem(tbl.rprobj, j - 1)
+            if GetItemLane(item) == i then reaper.BR_SetMediaItemImageResource(item, lane_image, set) end
+        end
+    end
+end
