@@ -210,8 +210,8 @@ function GenPalette(val)
     local brightness = 0.0
 
     local col = {}
-    col.r = math.floor(math.min(a.r + brightness + math.cos((c.r*val + d.r)*6.28318)*b.r,1)*255 + 0.5)
-    col.g = math.floor(math.min(a.g + brightness + math.cos((c.g*val + d.g)*6.28318)*b.g,1)*255 + 0.5)
-    col.b = math.floor(math.min(a.b + brightness + math.cos((c.b*val + d.b)*6.28318)*b.b,1)*255 + 0.5)
+    col.r = math.floor(math.min(a.r + brightness + math.cos((c.r * val + d.r) * 6.28318) * b.r, 1) * 255 + 0.5)
+    col.g = math.floor(math.min(a.g + brightness + math.cos((c.g * val + d.g) * 6.28318) * b.g, 1) * 255 + 0.5)
+    col.b = math.floor(math.min(a.b + brightness + math.cos((c.b * val + d.b) * 6.28318) * b.b, 1) * 255 + 0.5)
     return col.r, col.g, col.b
 end
