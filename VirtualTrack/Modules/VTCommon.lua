@@ -295,7 +295,8 @@ end
 
 local function Get_Item_Chunk(item, keep_color)
     local _, chunk = reaper.GetItemStateChunk(item, "", false)
-    chunk = keep_color and chunk or chunk:gsub("RESOURCEFN.-\n",""):gsub("IMGRESOURCEFLAGS.-\n", "") -- EXCLUDE ITEM NOTE IMAGE BG WHEN GRABING CHUNK
+    --chunk = keep_color and chunk or chunk:gsub("RESOURCEFN.-\n",""):gsub("IMGRESOURCEFLAGS.-\n", "") -- EXCLUDE ITEM NOTE IMAGE BG WHEN GRABING CHUNK
+    chunk = keep_color and chunk or chunk:gsub("TAKECOLOR %S+ %S+", "")
     return chunk:gsub("SEL.-\n", "") -- REMOVE SELECTED FIELD IN CHUNK (WE DO NOT STORE SELECTED STATE)
 end
 
@@ -453,6 +454,23 @@ function SwapVirtualTrack(tbl, idx)
     tbl.idx = idx;
 end
 
+-- function CheckParentChildVersionGUid(tbl)
+--     local GUID = reaper.genGuid()
+--     if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
+--         for i = 1, reaper.CountTrackEnvelopes(tbl.rprobj) do
+--             local child_env = reaper.GetTrackEnvelope(tbl.rprobj, i - 1)
+--             if VT_TB[child_env] then
+--                 MSG("ENV child exits")
+--             end
+--         end
+--     elseif reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then
+--         local child_tr = reaper.GetEnvelopeInfo_Value(tbl.rprobj, "P_TRACK")
+--         if VT_TB[child_tr] then
+--             MSG("MEDIA TRACK child exits")
+--         end
+--     end
+-- end
+
 local function Get_Store_CurrentTrackState(tbl, name)
     tbl.info[#tbl.info + 1] = GetChunkTableForObject(tbl.rprobj)
     tbl.idx = #tbl.info
@@ -466,7 +484,6 @@ end
 
 function Duplicate(tbl)
     local name = tbl.info[tbl.idx].name:match("(%S+ %S+ %S+)") .. " DUP"
-    Get_Store_CurrentTrackState(tbl, name)
 end
 
 function Delete(tbl)
@@ -915,12 +932,18 @@ end
 function SetLaneImageColors(tbl)
     if not GetLaneColorOption() then return end
     local num_items = reaper.CountTrackMediaItems(tbl.rprobj)
-    local set = tbl.lane_mode == 2 and 3 or 0
+    --local set = tbl.lane_mode == 2 and 3 or 0
     for i = 1, #tbl.info do
-        local lane_image = set ~= 0 and script_folder .. "Images/" .. i .. ".png" or ""
+        local r,g,b = GenPalette((i / #tbl.info + 0.33) * 3)
+        local color_take = reaper.ColorToNative(r,g,b)
+        --local lane_image = set ~= 0 and script_folder .. "Images/" .. i .. ".png" or ""
         for j = 1, num_items do
             local item = reaper.GetTrackMediaItem(tbl.rprobj, j - 1)
-            if GetItemLane(item) == i then reaper.BR_SetMediaItemImageResource(item, lane_image, set) end
+            local take = reaper.GetActiveTake( item )
+            if GetItemLane(item) == i then
+                --reaper.BR_SetMediaItemImageResource(item, lane_image, set)
+                reaper.SetMediaItemTakeInfo_Value( take, "I_CUSTOMCOLOR", color_take|0x1000000 )
+            end
         end
     end
 end
