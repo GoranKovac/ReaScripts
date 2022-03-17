@@ -1,9 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.07
+-- @version 1.08
 -- @changelog
---   + Fix crash when opening lane mode without any item
+--   + Fix Duplicate menu field when over envelope track
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
