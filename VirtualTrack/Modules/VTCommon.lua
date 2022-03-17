@@ -83,7 +83,7 @@ local function MakeMenu(tbl)
         end
         menu[2].name = (tbl.info[tbl.comp_idx] and tbl.info[tbl.comp_idx].name:find("COMP")) and "#" .. menu[2].name or menu[2].name
     else
-        menu[4].name = tbl.idx == 1 and "#" .. menu[4].name or menu[4].name
+        menu[4].name = #tbl.info == 1 and "#" .. menu[4].name or menu[4].name
     end
 
     for i = 1, #menu do concat = concat .. menu[i].name .. (i ~= #menu and "|" or "") end
@@ -470,7 +470,7 @@ function Duplicate(tbl)
 end
 
 function Delete(tbl)
-    if tbl.idx == 1 then return end
+    if #tbl.info == 1 then return end
     table.remove(tbl.info, tbl.idx)
     tbl.idx = tbl.idx <= #tbl.info and tbl.idx or #tbl.info
     SwapVirtualTrack(tbl, tbl.idx)
