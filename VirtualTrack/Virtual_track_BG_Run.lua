@@ -1,9 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.04
+-- @version 1.05
 -- @changelog
---   + Improved Renaming and Duplicating naming
+--   + New item lane color
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
