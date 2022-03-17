@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="eecfe7fe648f994f077bbcbbec59459ce1afbed6" name="Sexan_Scripts">
+<index version="1" commit="e412a0a1bc209d8497fcc6ab0058651835bafa3a" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -950,6 +950,23 @@
         <source main="main" file="Virtual_track_SelTrack.lua">https://github.com/GoranKovac/ReaScripts/raw/eecfe7fe648f994f077bbcbbec59459ce1afbed6/VirtualTrack/Virtual_track_SelTrack.lua</source>
         <source main="main" file="Virtual_track_Swipe.lua">https://github.com/GoranKovac/ReaScripts/raw/eecfe7fe648f994f077bbcbbec59459ce1afbed6/VirtualTrack/Virtual_track_Swipe.lua</source>
         <source main="main" file="Virtual_track_Options.lua">https://github.com/GoranKovac/ReaScripts/raw/eecfe7fe648f994f077bbcbbec59459ce1afbed6/VirtualTrack/Virtual_track_Options.lua</source>
+      </version>
+      <version name="1.08" author="Sexan" time="2022-03-17T20:19:19Z">
+        <changelog><![CDATA[+ Fix Duplicate menu field when over envelope track]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/e412a0a1bc209d8497fcc6ab0058651835bafa3a/VirtualTrack/Virtual_track_BG_Run.lua</source>
+        <source file="Images/VT_icon_empty.png">https://github.com/GoranKovac/ReaScripts/raw/e412a0a1bc209d8497fcc6ab0058651835bafa3a/VirtualTrack/Images/VT_icon_empty.png</source>
+        <source file="Modules/Class.lua">https://github.com/GoranKovac/ReaScripts/raw/e412a0a1bc209d8497fcc6ab0058651835bafa3a/VirtualTrack/Modules/Class.lua</source>
+        <source file="Modules/Mouse.lua">https://github.com/GoranKovac/ReaScripts/raw/e412a0a1bc209d8497fcc6ab0058651835bafa3a/VirtualTrack/Modules/Mouse.lua</source>
+        <source file="Modules/Utils.lua">https://github.com/GoranKovac/ReaScripts/raw/e412a0a1bc209d8497fcc6ab0058651835bafa3a/VirtualTrack/Modules/Utils.lua</source>
+        <source file="Modules/VTCommon.lua">https://github.com/GoranKovac/ReaScripts/raw/e412a0a1bc209d8497fcc6ab0058651835bafa3a/VirtualTrack/Modules/VTCommon.lua</source>
+        <source main="main" file="Shortcuts/VT_Activate_lane_under_mouse.lua">https://github.com/GoranKovac/ReaScripts/raw/e412a0a1bc209d8497fcc6ab0058651835bafa3a/VirtualTrack/Shortcuts/VT_Activate_lane_under_mouse.lua</source>
+        <source main="main" file="Shortcuts/VT_Copy_to_Comp.lua">https://github.com/GoranKovac/ReaScripts/raw/e412a0a1bc209d8497fcc6ab0058651835bafa3a/VirtualTrack/Shortcuts/VT_Copy_to_Comp.lua</source>
+        <source main="main" file="Shortcuts/VT_Switch_DOWN.lua">https://github.com/GoranKovac/ReaScripts/raw/e412a0a1bc209d8497fcc6ab0058651835bafa3a/VirtualTrack/Shortcuts/VT_Switch_DOWN.lua</source>
+        <source main="main" file="Shortcuts/VT_Switch_UP.lua">https://github.com/GoranKovac/ReaScripts/raw/e412a0a1bc209d8497fcc6ab0058651835bafa3a/VirtualTrack/Shortcuts/VT_Switch_UP.lua</source>
+        <source main="main" file="Virtual_track_Mouse.lua">https://github.com/GoranKovac/ReaScripts/raw/e412a0a1bc209d8497fcc6ab0058651835bafa3a/VirtualTrack/Virtual_track_Mouse.lua</source>
+        <source main="main" file="Virtual_track_SelTrack.lua">https://github.com/GoranKovac/ReaScripts/raw/e412a0a1bc209d8497fcc6ab0058651835bafa3a/VirtualTrack/Virtual_track_SelTrack.lua</source>
+        <source main="main" file="Virtual_track_Swipe.lua">https://github.com/GoranKovac/ReaScripts/raw/e412a0a1bc209d8497fcc6ab0058651835bafa3a/VirtualTrack/Virtual_track_Swipe.lua</source>
+        <source main="main" file="Virtual_track_Options.lua">https://github.com/GoranKovac/ReaScripts/raw/e412a0a1bc209d8497fcc6ab0058651835bafa3a/VirtualTrack/Virtual_track_Options.lua</source>
       </version>
     </reapack>
   </category>
