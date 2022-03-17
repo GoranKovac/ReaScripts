@@ -484,6 +484,7 @@ end
 
 function Duplicate(tbl)
     local name = tbl.info[tbl.idx].name:match("(%S+ %S+ %S+)") .. " DUP"
+    Get_Store_CurrentTrackState(tbl, name)
 end
 
 function Delete(tbl)
@@ -874,13 +875,8 @@ function GetSelectedTracksData(rprobj, on_demand)
     end
 end
 
-function GetSwipe()
-    if reaper.HasExtState( "VirtualTrack", "options" ) then
-        local state = reaper.GetExtState( "VirtualTrack", "options" )
-        local SWIPE = state:match("SWIPE (%S+)") == "true" and true or false
-        return SWIPE
-    end
-end
+function GetSwipe() return GetEXTState_VAL("SWIPE") end
+local function GetLaneColorOption() return GetEXTState_VAL("LANE_COLORS") end
 
 reaper.gmem_attach('Virtual_Tracks')
 local swipe_script_id = reaper.AddRemoveReaScript(true, 0, script_folder .. "Virtual_track_Swipe.lua", true)
@@ -921,11 +917,10 @@ function NewComp(tbl)
     reaper.PreventUIRefresh(-1)
 end
 
-local function GetLaneColorOption()
+function GetEXTState_VAL(val)
     if reaper.HasExtState( "VirtualTrack", "options" ) then
         local state = reaper.GetExtState( "VirtualTrack", "options" )
-        LANE_COLORS = state:match("LANE_COLORS (%S+)") == "true" and true or false
-        return LANE_COLORS
+        return state:match(val .." (%S+)") == "true" and true or false
     end
 end
 
