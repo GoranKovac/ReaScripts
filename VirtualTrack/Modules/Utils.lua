@@ -56,7 +56,7 @@ function Check_Requirements()
         reaper.MB( "ReaImGui is required for this script. Please download it from ReaPack", "SCRIPT REQUIREMENTS", 0 )
         return reaper.defer(function() end)
     end
-    if not reaper.HasExtState( "Virtual Track", "options" ) then
+    if not reaper.HasExtState( "VirtualTrack", "options" ) then
         reaper.MB( "No global options stored please set them now. You can change settings later by opening Virual_track_Options script", "VIRTUAL TRACK OPTIONS", 0 )
         reaper.Main_OnCommand(options_script,0)
         return reaper.defer(function() end)
