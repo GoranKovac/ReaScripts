@@ -907,6 +907,7 @@ function NewComp(tbl)
     reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", 2)
     -- refresh lane mode
     tbl.idx = tbl.idx + 1 -- increment selected lane in menu since its pushed down
+    --! FIXME SET COMP AS ACTIVE ??
     Lane_view(tbl, tbl.idx)
     SetLaneImageColors(tbl)
     local comp_cnt = 1
