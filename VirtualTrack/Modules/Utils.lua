@@ -200,3 +200,18 @@ function GetSelTrackChunk()
     reaper.ClearConsole()
     reaper.ShowConsoleMsg(chunk)
 end
+
+function GenPalette(val)
+    local a = {r = 0.5, g = 0.5,  b = 0.5}
+    local b = {r = 0.5, g = 0.5,  b = 0.5}
+    local c = {r = 1,   g = 1,    b = 1}
+    local d = {r = 0,   g = 0.33, b = 0.67}
+
+    local brightness = 0.0
+
+    local col = {}
+    col.r = math.floor(math.min(a.r + brightness + math.cos((c.r*val + d.r)*6.28318)*b.r,1)*255 + 0.5)
+    col.g = math.floor(math.min(a.g + brightness + math.cos((c.g*val + d.g)*6.28318)*b.g,1)*255 + 0.5)
+    col.b = math.floor(math.min(a.b + brightness + math.cos((c.b*val + d.b)*6.28318)*b.b,1)*255 + 0.5)
+    return col.r, col.g, col.b
+end
