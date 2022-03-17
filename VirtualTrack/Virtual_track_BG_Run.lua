@@ -1,9 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.06
+-- @version 1.07
 -- @changelog
---   + The return of duplicate!
+--   + Fix crash when opening lane mode without any item
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
