@@ -1,9 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.03
+-- @version 1.04
 -- @changelog
---   + Fix delete - allow deleting if there are more thant 1 version on track
+--   + Improved Renaming and Duplicating naming
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua

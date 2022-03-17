@@ -465,7 +465,7 @@ function CreateNew(tbl)
 end
 
 function Duplicate(tbl)
-    local name = "Duplicate - " .. tbl.info[tbl.idx].name
+    local name = tbl.info[tbl.idx].name:match("(%S+ %S+ %S+)") .. " DUP"
     Get_Store_CurrentTrackState(tbl, name)
 end
 
@@ -489,9 +489,12 @@ function Clear(tbl)
 end
 
 function Rename(tbl)
-    local retval, name = reaper.GetUserInputs("Name Version ", 1, "Version Name :", tbl.info[tbl.idx].name)
+    local current_name = tbl.info[tbl.idx].name
+    local current_name_id = current_name:match("%S+ %S+ (%S+)")
+    local version_type = current_name:match("(%S+) %S+ %S+")
+    local retval, name = reaper.GetUserInputs("Name Version ", 1, version_type .." Name :", current_name_id)
     if not retval then return end
-    tbl.info[tbl.idx].name = name
+    tbl.info[tbl.idx].name = current_name:match("(%S+ %S+ )") .. name
 end
 
 local function SetInsertLaneChunk(tbl, lane)
