@@ -932,16 +932,14 @@ end
 function SetLaneImageColors(tbl)
     if not GetLaneColorOption() then return end
     local num_items = reaper.CountTrackMediaItems(tbl.rprobj)
-    --local set = tbl.lane_mode == 2 and 3 or 0
     for i = 1, #tbl.info do
-        local r,g,b = GenPalette((i / #tbl.info + 0.33) * 3)
+        local t = i/10
+        local r,g,b = GenPalette(t + 0.33)
         local color_take = reaper.ColorToNative(r,g,b)
-        --local lane_image = set ~= 0 and script_folder .. "Images/" .. i .. ".png" or ""
         for j = 1, num_items do
             local item = reaper.GetTrackMediaItem(tbl.rprobj, j - 1)
             local take = reaper.GetActiveTake( item )
             if GetItemLane(item) == i then
-                --reaper.BR_SetMediaItemImageResource(item, lane_image, set)
                 reaper.SetMediaItemTakeInfo_Value( take, "I_CUSTOMCOLOR", color_take|0x1000000 )
             end
         end
