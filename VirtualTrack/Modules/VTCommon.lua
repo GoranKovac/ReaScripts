@@ -311,6 +311,7 @@ local function Get_Track_Items(track)
 end
 
 local function Get_Track_Lane_Items(track)
+    if not reaper.GetTrackMediaItem(track, 0) then return end
     local tr_data = {}
     local num_items, item_for_height = reaper.CountTrackMediaItems(track), reaper.GetTrackMediaItem(track, 0)
     local total_lanes = round(1 / reaper.GetMediaItemInfo_Value(item_for_height, 'F_FREEMODE_H')) -- WE CHECK LANE HEIGHT WITH ANY ITEM ON TRACK
