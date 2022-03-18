@@ -1,9 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.08
+-- @version 1.09
 -- @changelog
---   + Fix Duplicate menu field when over envelope track
+--   + Added shortcuts for CreateNew,Delete,Clear,ShowAll,New empty Comp
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
