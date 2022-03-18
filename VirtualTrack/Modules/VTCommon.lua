@@ -616,10 +616,10 @@ function CheckTrackLaneModeState(tbl)
         current_track_mode = current_track_mode ~= 1 and current_track_mode or 2
         reaper.PreventUIRefresh(1)
         Clear(tbl)
-        if current_track_mode == 2 or current_track_mode == 1 then -- handle both fixed lanes and FIPM
-            reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", 0) -- need to reset (lanes must be set before entering fixed lanes mode)
+        if current_track_mode == 2 then
+            reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", 0) --! refresh
             SetItemsInLanes(tbl)
-            reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", 2)
+            reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", 2) --! refresh
             Lane_view(tbl, tbl.idx)
         elseif current_track_mode == 0 then
             SwapVirtualTrack(tbl, tbl.idx)
