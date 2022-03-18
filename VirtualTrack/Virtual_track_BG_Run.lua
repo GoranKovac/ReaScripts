@@ -1,9 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.12
+-- @version 1.13
 -- @changelog
---   + improved rename for multitracks
+--   + do not allow creating empty comps if some track is in comp mode
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
