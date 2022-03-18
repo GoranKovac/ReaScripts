@@ -1,9 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.09
+-- @version 1.10
 -- @changelog
---   + Added shortcuts for CreateNew,Delete,Clear,ShowAll,New empty Comp
+--   + small fix to NewComp Shortcut
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua

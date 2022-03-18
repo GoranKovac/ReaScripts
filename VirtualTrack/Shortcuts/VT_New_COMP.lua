@@ -18,6 +18,7 @@ local function Main()
     local track = OnDemand()
     if not track then return end
     local VT_TB = Get_VT_TB()
+    if reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") ~= 0 then return end
     if On_Demand_STORED_PEXT_CHECK() then
         if On_Demand_STORED_PEXT_CHECK() == track then return end
     end
