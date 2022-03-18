@@ -201,6 +201,12 @@ function GetSelTrackChunk()
     reaper.ShowConsoleMsg(chunk)
 end
 
+function GetSeltEnvelopeChunk()
+    local retval, chunk = reaper.GetEnvelopeStateChunk(reaper.GetSelectedEnvelope(0,0),"", false)
+    reaper.ClearConsole()
+    reaper.ShowConsoleMsg(chunk)
+end
+
 function GenPalette(val)
     local a = {r = 0.5, g = 0.5,  b = 0.5}
     local b = {r = 0.5, g = 0.5,  b = 0.5}
