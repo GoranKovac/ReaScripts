@@ -80,8 +80,9 @@ local function MakeMenu(tbl)
         menu[3].name = reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") and menu[3].name .. MouseInfo(VT_TB).last_menu_lane .. " " .. tbl.info[MouseInfo(VT_TB).last_menu_lane].name or menu[3].name
         if On_Demand_STORED_PEXT_CHECK() then
             menu[3].name = On_Demand_STORED_PEXT_CHECK() == tbl.rprobj and "!" .. "DISABLE Comping : " .. tbl.comp_idx .. " - ".. tbl.info[tbl.comp_idx].name or "#" .. menu[3].name
+            menu[2].name = On_Demand_STORED_PEXT_CHECK() and "#" .. menu[2].name or menu[2].name
         end
-        menu[2].name = (tbl.info[tbl.comp_idx] and tbl.info[tbl.comp_idx].name:find("COMP")) and "#" .. menu[2].name or menu[2].name
+        --menu[2].name = (tbl.info[tbl.comp_idx] and tbl.info[tbl.comp_idx].name:find("COMP")) and "#" .. menu[2].name or menu[2].name
     else
         menu[4].name = #tbl.info == 1 and "#" .. menu[4].name or menu[4].name
     end
