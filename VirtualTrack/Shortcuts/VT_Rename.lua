@@ -19,15 +19,16 @@ local function Main()
     if not track then return end
     local VT_TB = Get_VT_TB()
     if reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") ~= 0 then return end
-    if On_Demand_STORED_PEXT_CHECK() then
-        if On_Demand_STORED_PEXT_CHECK() == track then return end
-    end
+    local focused_tracks = GetSelectedTracksData(track, true) -- THIS ADDS NEW TRACKS TO VT_TB FOR ON DEMAND SCRIPT AND RETURNS TRACK SELECTION
+    local linked_VT = GetLinkedTracksVT_INFO(focused_tracks, true)
     reaper.PreventUIRefresh(1)
     reaper.Undo_BeginBlock2(0)
-    UpdateInternalState(VT_TB[track])
-    NewComp(VT_TB[track])
-    StoreStateToDocument(VT_TB[track])
-    reaper.Undo_EndBlock2(0, "VT: New Empty COMP ", -1)
+    for linked_track in pairs(linked_VT) do
+        UpdateInternalState(VT_TB[linked_track])
+        Rename(VT_TB[linked_track])
+        StoreStateToDocument(VT_TB[linked_track])
+    end
+    reaper.Undo_EndBlock2(0, "VT: Rename Version ", -1)
     reaper.PreventUIRefresh(-1)
     reaper.UpdateArrange()
 end
