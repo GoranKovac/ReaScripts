@@ -123,16 +123,22 @@ function Show_menu(rprobj, on_demand)
 
     local linked_VT = GetLinkedTracksVT_INFO(focused_tracks, on_demand)
     for track in pairs(linked_VT) do UpdateInternalState(VT_TB[track]) end
-
+    local new_name, rename_retval
     if m_num > #tbl.info then
         m_num = (m_num - #tbl.info) + 1
         reaper.Undo_BeginBlock2(0)
+        if menu_options[m_num].fname == "Rename" then
+            local current_name = tbl.info[tbl.idx].name
+            local current_name_id = current_name:match("%S+ %S+ (%S+)")
+            rename_retval, new_name = reaper.GetUserInputs(current_name, 1, " New Name :", current_name_id)
+            if not rename_retval then return end
+        end
         if menu_options[m_num].fname == "SetLinkVal" or menu_options[m_num].fname == "SetCompLane" or menu_options[m_num].fname == "NewComp" then
             _G[menu_options[m_num].fname](VT_TB[rprobj])
         end
         if menu_options[m_num].fname ~= "SetLinkVal" and menu_options[m_num].fname ~= "SetCompLane" and menu_options[m_num].fname ~= "NewComp" then
             for track in pairs(linked_VT) do
-                _G[menu_options[m_num].fname](VT_TB[track])
+                _G[menu_options[m_num].fname](VT_TB[track], new_name)
                 StoreStateToDocument(VT_TB[track])
             end
         end
@@ -480,12 +486,13 @@ function Clear(tbl)
     end
 end
 
-function Rename(tbl)
+function Rename(tbl, name)
+    if not name then return end
     local current_name = tbl.info[tbl.idx].name
-    local current_name_id = current_name:match("%S+ %S+ (%S+)")
-    local version_type = current_name:match("(%S+) %S+ %S+")
-    local retval, name = reaper.GetUserInputs("Name Version ", 1, version_type .." Name :", current_name_id)
-    if not retval then return end
+    --local current_name_id = current_name:match("%S+ %S+ (%S+)")
+    --local version_type = current_name:match("(%S+) %S+ %S+")
+    --local retval, name = reaper.GetUserInputs("Name Version ", 1, version_type .." Name :", current_name_id)
+    --if not retval then return end
     tbl.info[tbl.idx].name = current_name:match("(%S+ %S+ )") .. name
 end
 
