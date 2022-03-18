@@ -1,9 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.11
+-- @version 1.12
 -- @changelog
---   + Forgot Rename
+--   + improved rename for multitracks
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
