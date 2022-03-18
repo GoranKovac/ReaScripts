@@ -1,9 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.10
+-- @version 1.11
 -- @changelog
---   + small fix to NewComp Shortcut
+--   + Forgot Rename
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
