@@ -293,8 +293,9 @@ end
 
 local function Get_Item_Chunk(item, keep_color)
     local _, chunk = reaper.GetItemStateChunk(item, "", false)
-    chunk = keep_color and chunk or chunk:gsub("TAKECOLOR %S+ %S+", "")
-    return chunk:gsub("SEL.-\n", "") -- REMOVE SELECTED FIELD IN CHUNK (WE DO NOT STORE SELECTED STATE)
+    chunk = keep_color and chunk or chunk:gsub("TAKECOLOR %S+ %S+", "") -- KEEP COLOR TEMPORARY ONLY WHEN IN LANE MODE
+    chunk = chunk:gsub("SEL.-\n", "") -- REMOVE SELECTED FIELD IN CHUNK (WE DO NOT STORE SELECTED STATE)
+    return chunk
 end
 
 local function Get_Track_Items(track)
@@ -489,10 +490,6 @@ end
 function Rename(tbl, name)
     if not name then return end
     local current_name = tbl.info[tbl.idx].name
-    --local current_name_id = current_name:match("%S+ %S+ (%S+)")
-    --local version_type = current_name:match("(%S+) %S+ %S+")
-    --local retval, name = reaper.GetUserInputs("Name Version ", 1, version_type .." Name :", current_name_id)
-    --if not retval then return end
     tbl.info[tbl.idx].name = current_name:match("(%S+ %S+ )") .. name
 end
 
@@ -706,9 +703,7 @@ function OnDemand()
         rprobj = sel_env and sel_env or reaper.GetSelectedTrack(0,0)
     end
     if rprobj then
-        if SetupSingleElement(rprobj) and #Get_VT_TB() then
-            return rprobj
-        end
+        if SetupSingleElement(rprobj) and #Get_VT_TB() then return rprobj end
     end
 end
 
@@ -726,9 +721,7 @@ function CheckUndoState()
         for _, v in pairs(VT_TB) do
             local oldidx = v.idx
             Restore_From_PEXT(v)
-            if oldidx ~= v.idx then
-                v:update_xywh() -- update buttons
-            end
+            if oldidx ~= v.idx then v:update_xywh() end
         end
     end
 end
@@ -881,11 +874,11 @@ function NewComp(tbl)
     reaper.PreventUIRefresh(1)
     table.insert(tbl.info, 1, {})
     Clear(tbl)
-    -- refresh lane mode
+    --! refresh lane mode
     reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", 0) -- need to reset (lanes must be set before entering fixed lanes mode)
     SetItemsInLanes(tbl)
     reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", 2)
-    -- refresh lane mode
+    --! refresh lane mode
     tbl.idx = tbl.idx + 1 -- increment selected lane in menu since its pushed down
     --! FIXME SET COMP AS ACTIVE ??
     Lane_view(tbl, tbl.idx)
