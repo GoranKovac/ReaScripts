@@ -405,17 +405,11 @@ local function StoreLaneData(tbl)
                 lane_chunk[#lane_chunk + 1] = item_chunk
             end
         end
-<<<<<<< HEAD
         local name = tbl.info[i].name
         local o_idx = tbl.info[i].o_idx
         tbl.info[i] = lane_chunk
         tbl.info[i].name = name
         tbl.info[i].o_idx = o_idx
-=======
-        local name = tbl.lane[i].name
-        tbl.lane[i] = lane_chunk
-        tbl.lane[i].name = name
->>>>>>> 04bc50b765ba322f0b34bb2a4c2681483a8cc99c
     end
 end
 
@@ -424,7 +418,6 @@ function UpdateInternalState(tbl)
         StoreLaneData(tbl)
         return true
     else
-<<<<<<< HEAD
         local name = tbl.info[tbl.idx].name
         local o_idx = tbl.info[tbl.idx].o_idx
         local chunk_tbl = GetChunkTableForObject(tbl.rprobj)
@@ -432,13 +425,6 @@ function UpdateInternalState(tbl)
             tbl.info[tbl.idx] = chunk_tbl
             tbl.info[tbl.idx].name = name
             tbl.info[tbl.idx].o_idx = o_idx
-=======
-        local name = tbl.lane[tbl.idx].name
-        local chunk_tbl = GetChunkTableForObject(tbl.rprobj)
-        if chunk_tbl then
-            tbl.lane[tbl.idx] = chunk_tbl
-            tbl.lane[tbl.idx].name = name
->>>>>>> 04bc50b765ba322f0b34bb2a4c2681483a8cc99c
             return true
         end
     end
@@ -471,17 +457,10 @@ function SwapVirtualTrack(tbl, idx)
 end
 
 local function Get_Store_CurrentTrackState(tbl, name)
-<<<<<<< HEAD
     tbl.info[#tbl.info + 1] = GetChunkTableForObject(tbl.rprobj)
     tbl.idx = #tbl.info
     tbl.info[#tbl.info].o_idx = tbl.idx -- STORE ORIGINAL TABLE POSITION (WILL BE USED FOR LINKING)
     tbl.info[#tbl.info].name = name == "Version - " and name .. #tbl.info or name
-
-=======
-    tbl.lane[#tbl.lane + 1] = GetChunkTableForObject(tbl.rprobj)
-    tbl.idx = #tbl.lane
-    tbl.lane[#tbl.lane].name = name == "Version - " and name .. #tbl.lane or name
->>>>>>> 04bc50b765ba322f0b34bb2a4c2681483a8cc99c
 end
 
 function CreateNew(tbl)
@@ -683,16 +662,11 @@ local function CreateVTElements(direct)
         if not VT_TB[track] then
             local Element = Get_class_tbl()
             local tr_data, lane = GetChunkTableForObject(track, true)
-<<<<<<< HEAD
             tr_data = lane and tr_data or {tr_data}
             for i = 1, #tr_data do
                 tr_data[i].name = "Version - " .. i
                 tr_data[i].o_idx = i
             end
-=======
-            tr_data = lane and tr_data or { tr_data }
-            for i = 1, #tr_data do tr_data[i].name = "Version - " .. i end
->>>>>>> 04bc50b765ba322f0b34bb2a4c2681483a8cc99c
             VT_TB[track] = Element:new(track, tr_data, direct)
             Restore_From_PEXT(VT_TB[track])
         end
@@ -907,7 +881,6 @@ end
 --! FIXME COMP TRACK OFFSETS ENVELOPES WHEN LINK IS ENABLED
 function NewComp(tbl)
     reaper.PreventUIRefresh(1)
-<<<<<<< HEAD
     table.insert(tbl.info, {})
     local comp_cnt = 1
     for i = 1, #tbl.info do
@@ -917,9 +890,7 @@ function NewComp(tbl)
     tbl.info[#tbl.info].o_idx = #tbl.info
     local last_insert = table.remove(tbl.info)
     table.insert(tbl.info, 1, last_insert)
-=======
     table.insert(tbl.lane, 1, {})
->>>>>>> 04bc50b765ba322f0b34bb2a4c2681483a8cc99c
     Clear(tbl)
     --! refresh lane mode
     reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", 0) -- need to reset (lanes must be set before entering fixed lanes mode)
@@ -930,14 +901,11 @@ function NewComp(tbl)
     --! FIXME SET COMP AS ACTIVE ??
     Lane_view(tbl, tbl.idx)
     SetLaneImageColors(tbl)
-<<<<<<< HEAD
-=======
     local comp_cnt = 1
     for i = 1, #tbl.lane do
         if tbl.lane[i].name and tbl.lane[i].name:find("COMP") then comp_cnt = comp_cnt + 1 end
     end
     tbl.lane[1].name = "COMP - " .. comp_cnt
->>>>>>> 04bc50b765ba322f0b34bb2a4c2681483a8cc99c
     SetCompLane(tbl, 1)
     AAA = tbl
     reaper.PreventUIRefresh(-1)
