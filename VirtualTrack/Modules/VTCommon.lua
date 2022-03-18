@@ -406,8 +406,10 @@ local function StoreLaneData(tbl)
             end
         end
         local name = tbl.info[i].name
+        local o_idx = tbl.info[i].o_idx
         tbl.info[i] = lane_chunk
         tbl.info[i].name = name
+        tbl.info[i].o_idx = o_idx
     end
 end
 
@@ -417,10 +419,12 @@ function UpdateInternalState(tbl)
         return true
     else
         local name = tbl.info[tbl.idx].name
+        local o_idx = tbl.info[tbl.idx].o_idx
         local chunk_tbl = GetChunkTableForObject(tbl.rprobj)
         if chunk_tbl then
             tbl.info[tbl.idx] = chunk_tbl
             tbl.info[tbl.idx].name = name
+            tbl.info[tbl.idx].o_idx = o_idx
             return true
         end
     end
@@ -455,7 +459,9 @@ end
 local function Get_Store_CurrentTrackState(tbl, name)
     tbl.info[#tbl.info + 1] = GetChunkTableForObject(tbl.rprobj)
     tbl.idx = #tbl.info
+    tbl.info[#tbl.info].o_idx = tbl.idx -- STORE ORIGINAL TABLE POSITION (WILL BE USED FOR LINKING)
     tbl.info[#tbl.info].name = name == "Version - " and name .. #tbl.info or name
+
 end
 
 function CreateNew(tbl)
@@ -658,7 +664,10 @@ local function CreateVTElements(direct)
             local Element = Get_class_tbl()
             local tr_data, lane = GetChunkTableForObject(track, true)
             tr_data = lane and tr_data or {tr_data}
-            for i = 1, #tr_data do tr_data[i].name = "Version - " .. i end
+            for i = 1, #tr_data do
+                tr_data[i].name = "Version - " .. i
+                tr_data[i].o_idx = i
+            end
             VT_TB[track] = Element:new(track, tr_data, direct)
             Restore_From_PEXT(VT_TB[track])
         end
@@ -872,7 +881,15 @@ end
 --! FIXME COMP TRACK OFFSETS ENVELOPES WHEN LINK IS ENABLED
 function NewComp(tbl)
     reaper.PreventUIRefresh(1)
-    table.insert(tbl.info, 1, {})
+    table.insert(tbl.info, {})
+    local comp_cnt = 1
+    for i = 1, #tbl.info do
+        if tbl.info[i].name and tbl.info[i].name:find("COMP") then comp_cnt = comp_cnt + 1 end
+    end
+    tbl.info[#tbl.info].name = "COMP - " .. comp_cnt
+    tbl.info[#tbl.info].o_idx = #tbl.info
+    local last_insert = table.remove(tbl.info)
+    table.insert(tbl.info, 1, last_insert)
     Clear(tbl)
     --! refresh lane mode
     reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", 0) -- need to reset (lanes must be set before entering fixed lanes mode)
@@ -883,12 +900,8 @@ function NewComp(tbl)
     --! FIXME SET COMP AS ACTIVE ??
     Lane_view(tbl, tbl.idx)
     SetLaneImageColors(tbl)
-    local comp_cnt = 1
-    for i = 1, #tbl.info do
-        if tbl.info[i].name and tbl.info[i].name:find("COMP") then comp_cnt = comp_cnt + 1 end
-    end
-    tbl.info[1].name = "COMP - " .. comp_cnt
     SetCompLane(tbl, 1)
+    AAA = tbl
     reaper.PreventUIRefresh(-1)
 end
 
