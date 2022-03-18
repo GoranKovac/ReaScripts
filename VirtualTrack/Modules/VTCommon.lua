@@ -355,8 +355,7 @@ function Get_Env_Chunk(env)
 end
 
 local function Set_Env_Chunk(env, data)
-    local env_lane_height = Env_prop(env, "laneHeight")
-    data[1] = data[1]:gsub("LANEHEIGHT 0 0", "LANEHEIGHT " .. env_lane_height .. " 0")
+    data[1] = data[1]:gsub("LANEHEIGHT.-\n", "") -- DO NOT CHANGE LANE HEIGHT
     reaper.SetEnvelopeStateChunk(env, data[1], false)
 end
 
@@ -454,23 +453,6 @@ function SwapVirtualTrack(tbl, idx)
     end
     tbl.idx = idx;
 end
-
--- function CheckParentChildVersionGUid(tbl)
---     local GUID = reaper.genGuid()
---     if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
---         for i = 1, reaper.CountTrackEnvelopes(tbl.rprobj) do
---             local child_env = reaper.GetTrackEnvelope(tbl.rprobj, i - 1)
---             if VT_TB[child_env] then
---                 MSG("ENV child exits")
---             end
---         end
---     elseif reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then
---         local child_tr = reaper.GetEnvelopeInfo_Value(tbl.rprobj, "P_TRACK")
---         if VT_TB[child_tr] then
---             MSG("MEDIA TRACK child exits")
---         end
---     end
--- end
 
 local function Get_Store_CurrentTrackState(tbl, name)
     tbl.info[#tbl.info + 1] = GetChunkTableForObject(tbl.rprobj)
