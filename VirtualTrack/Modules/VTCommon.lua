@@ -100,7 +100,7 @@ end
 
 local function Update_tempo_map()
     if reaper.CountTempoTimeSigMarkers(0) then
-        local retval, timepos, measurepos, beatpos, bpm, timesig_num, timesig_denom, lineartempo = reaper.GetTempoTimeSigMarker(0, 0)
+        local _, timepos, measurepos, beatpos, bpm, timesig_num, timesig_denom, lineartempo = reaper.GetTempoTimeSigMarker(0, 0)
         reaper.SetTempoTimeSigMarker(0, 0, timepos, measurepos, beatpos, bpm, timesig_num, timesig_denom, lineartempo)
     end
     reaper.UpdateTimeline()
@@ -285,17 +285,8 @@ local function GetItemLane(item)
     return round(y / h) + 1
 end
 
--- local function CheckItemGuid(chunk)
---     local item_guid = chunk:match("GUID (%S+)")
---     if reaper.BR_GetMediaItemByGUID( 0, item_guid ) then
---         MSG("ITEM EXISTS - " .. item_guid)
---         --return chunk:gsub("{.-}", "")
---     end
--- end
-
 local function Get_Item_Chunk(item, keep_color)
     local _, chunk = reaper.GetItemStateChunk(item, "", false)
-    --chunk = keep_color and chunk or chunk:gsub("RESOURCEFN.-\n",""):gsub("IMGRESOURCEFLAGS.-\n", "") -- EXCLUDE ITEM NOTE IMAGE BG WHEN GRABING CHUNK
     chunk = keep_color and chunk or chunk:gsub("TAKECOLOR %S+ %S+", "")
     return chunk:gsub("SEL.-\n", "") -- REMOVE SELECTED FIELD IN CHUNK (WE DO NOT STORE SELECTED STATE)
 end
@@ -355,7 +346,7 @@ function Get_Env_Chunk(env)
 end
 
 local function Set_Env_Chunk(env, data)
-    data[1] = data[1]:gsub("LANEHEIGHT.-\n", "") -- DO NOT CHANGE LANE HEIGHT
+    data[1] = data[1]:gsub("LANEHEIGHT.-\n", "") -- MAKE LANE HEIGHT CURRENT HEIGHT (REAPER GENERATES CURRENT LANE HEIGHT IF ITS REMOVED)
     reaper.SetEnvelopeStateChunk(env, data[1], false)
 end
 
@@ -582,11 +573,11 @@ function Copy_area(tbl)
         reaper.PreventUIRefresh(1)
         local current_razor_toggle_state = reaper.GetToggleCommandState(42421)
         if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN OFF ALWAYS TRIM BEHIND RAZORS (if enabled in project)
-        ------------------------ HACK FOR COPY PASTE REMOVING EMPTY LANE
+        --! HACK FOR COPY PASTE REMOVING EMPTY LANE
         local hack_item = reaper.AddMediaItemToTrack(tbl.rprobj)
         reaper.SetMediaItemInfo_Value(hack_item, "F_FREEMODE_Y", (tbl.comp_idx - 1) / #tbl.info)
         reaper.SetMediaItemInfo_Value(hack_item, "F_FREEMODE_H", 1 / #tbl.info)
-        -----------------------------------------------------------------------
+        --! HACK FOR COPY PASTE REMOVING EMPTY LANE
         local new_items = {}
         for i = 1, reaper.CountTrackMediaItems(tbl.rprobj) do
             local razor_item = Get_items_in_razor(reaper.GetTrackMediaItem(tbl.rprobj, i-1),razor_info[1], razor_info[2], razor_info.razor_lane)
@@ -594,7 +585,7 @@ function Copy_area(tbl)
         end
         for i = 1, #new_items do Make_item_from_razor(tbl, new_items[i], razor_info[1], razor_info[2]) end
         if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN ON ALWAYS TRIM BEHIND RAZORS (if enabled in project)
-        reaper.DeleteTrackMediaItem(tbl.rprobj, hack_item) -- REMOVE EMPTY ITEM CREATED TO HACK AROUND COPY PASTE DELETING EMPTY LANE
+        reaper.DeleteTrackMediaItem(tbl.rprobj, hack_item) --! REMOVE EMPTY ITEM CREATED TO HACK AROUND COPY PASTE DELETING EMPTY LANE
         reaper.PreventUIRefresh(-1)
         reaper.Undo_EndBlock2(0, "VT: " .. "COPY AREA TO COMP", -1)
         reaper.UpdateArrange()
@@ -913,13 +904,13 @@ function SetLaneImageColors(tbl)
     local num_items = reaper.CountTrackMediaItems(tbl.rprobj)
     for i = 1, #tbl.info do
         local t = i/10
-        local r,g,b = GenPalette(t + 0.33)
-        local color_take = reaper.ColorToNative(r,g,b)
+        local r, g, b = GenPalette(t + 0.33)
+        local calculate_color = reaper.ColorToNative(r, g, b)
         for j = 1, num_items do
             local item = reaper.GetTrackMediaItem(tbl.rprobj, j - 1)
             local take = reaper.GetActiveTake( item )
             if GetItemLane(item) == i then
-                reaper.SetMediaItemTakeInfo_Value( take, "I_CUSTOMCOLOR", color_take|0x1000000 )
+                reaper.SetMediaItemTakeInfo_Value(take, "I_CUSTOMCOLOR", calculate_color|0x1000000)
             end
         end
     end
