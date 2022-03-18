@@ -140,7 +140,7 @@ function MSG(m)
     reaper.ShowConsoleMsg(tostring(m) .. "\n")
 end
 
-function literalize(str)
+function Literalize(str)
     return str:gsub(
         "[%(%)%.%%%+%-%*%?%[%]%^%$]",
         function(c)
@@ -149,7 +149,11 @@ function literalize(str)
     )
 end
 
-function split_by_line(str)
+function string.starts(String,Start)
+    return string.sub(String,1,string.len(Start))==Start
+end
+
+function Split_by_line(str)
     local t = {}
     for line in string.gmatch(str, "[^\r\n]+") do
         t[#t + 1] = line
@@ -157,36 +161,47 @@ function split_by_line(str)
     return t
 end
 
+function ChunkTableGetSection(chunk, key) -- Thanks BirdBird and daniellumertz! 🦜
+    local chunk_lines = Split_by_line(chunk)
+    --GET ITEM CHUNKS
+    local section_chunks = {}
+    local last_section_chunk = -1
+    local current_scope = 0
+    local i = 1
+    while i <= #chunk_lines do
+        local line = chunk_lines[i]
+
+        --MANAGE SCOPE
+        local scope_end = false
+        if line == '<'..key then
+            last_section_chunk = i
+            current_scope = current_scope + 1
+        elseif string.starts(line, '<') then
+            current_scope = current_scope + 1
+        elseif string.starts(line, '>') then
+            current_scope = current_scope - 1
+            scope_end = true
+        end
+
+        --GRAB ITEM CHUNKS
+        if current_scope == 1 and last_section_chunk ~= -1 and scope_end then
+            local s = ''
+            for j = last_section_chunk, i do
+                s = s .. chunk_lines[j] .. '\n'
+            end
+            last_section_chunk = -1
+            table.insert(section_chunks, s)
+        end
+        i = i + 1
+    end
+
+    return table.concat(section_chunks, "\n")
+end
+
 function DBG_TBL(A)
     for index, value in pairs(A) do
         reaper.ShowConsoleMsg("K: "..tostring(index).." - V: "..tostring(type(value) == "table" and #value or value).."\n")
     end
-end
-
-function SaveFile(tbl, fn)
-    local config_path = fn .. "config.txt"
-    local file
-    file = io.open(config_path, "w")
-    for i = 1, #tbl do
-        file:write(tostring(tbl[i]) , "\n")
-    end
-    file:close()
-end
-
-function ReadFile(fn)
-    local file = fn .. "config.txt"
-    local f = io.open(script_path .. "config.txt", "r")
-    if not f then
-        return
-    else
-        f:close()
-    end
-    local options = {}
-    for line in io.lines(file) do
-        line = line:match("%S+ (%S+)") == "true" and true or false
-        table.insert(options, line)
-    end
-    return options
 end
 
 function GetSelItemChunk()
@@ -197,6 +212,12 @@ end
 
 function GetSelTrackChunk()
     local retval, chunk = reaper.GetTrackStateChunk( reaper.GetSelectedTrack(0, 0), "", false )
+    reaper.ClearConsole()
+    reaper.ShowConsoleMsg(chunk)
+end
+
+function GetSeltEnvelopeChunk()
+    local retval, chunk = reaper.GetEnvelopeStateChunk(reaper.GetSelectedEnvelope(0,0),"", false)
     reaper.ClearConsole()
     reaper.ShowConsoleMsg(chunk)
 end
