@@ -73,17 +73,17 @@ local function MakeMenu(tbl)
     local concat = ""
     local menu, main_name, lane_mode = GetAndSetMenuByTrack(tbl.rprobj)
     local versions = {}
-    for i = 1, #tbl.lane do versions[#versions + 1] = i == tbl.idx and "!" .. i .. " - " .. tbl.lane[i].name or i .. " - " .. tbl.lane[i].name end
-    menu[1].name = ">" .. main_name .. tbl.lane[tbl.idx].name .. "|" .. table.concat(versions, "|") .. "|<|"
+    for i = 1, #tbl.info do versions[#versions + 1] = i == tbl.idx and "!" .. i .. " - " .. tbl.info[i].name or i .. " - " .. tbl.info[i].name end
+    menu[1].name = ">" .. main_name .. tbl.info[tbl.idx].name .. "|" .. table.concat(versions, "|") .. "|<|"
 
     if lane_mode then
-        menu[3].name = reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") and menu[3].name .. MouseInfo(VT_TB).last_menu_lane .. " " .. tbl.lane[MouseInfo(VT_TB).last_menu_lane].name or menu[3].name
+        menu[3].name = reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") and menu[3].name .. MouseInfo(VT_TB).last_menu_lane .. " " .. tbl.info[MouseInfo(VT_TB).last_menu_lane].name or menu[3].name
         if On_Demand_STORED_PEXT_CHECK() then
-            menu[3].name = On_Demand_STORED_PEXT_CHECK() == tbl.rprobj and "!" .. "DISABLE Comping : " .. tbl.comp_idx .. " - " .. tbl.lane[tbl.comp_idx].name or "#" .. menu[3].name
+            menu[3].name = On_Demand_STORED_PEXT_CHECK() == tbl.rprobj and "!" .. "DISABLE Comping : " .. tbl.comp_idx .. " - " .. tbl.info[tbl.comp_idx].name or "#" .. menu[3].name
             menu[2].name = On_Demand_STORED_PEXT_CHECK() and "#" .. menu[2].name or menu[2].name
         end
     else
-        menu[4].name = #tbl.lane == 1 and "#" .. menu[4].name or menu[4].name
+        menu[4].name = #tbl.info == 1 and "#" .. menu[4].name or menu[4].name
     end
 
     for i = 1, #menu do concat = concat .. menu[i].name .. (i ~= #menu and "|" or "") end
@@ -124,11 +124,11 @@ function Show_menu(rprobj, on_demand)
     local linked_VT = GetLinkedTracksVT_INFO(focused_tracks, on_demand)
     for track in pairs(linked_VT) do UpdateInternalState(VT_TB[track]) end
     local new_name, rename_retval
-    if m_num > #tbl.lane then
-        m_num = (m_num - #tbl.lane) + 1
+    if m_num > #tbl.info then
+        m_num = (m_num - #tbl.info) + 1
         reaper.Undo_BeginBlock2(0)
         if menu_options[m_num].fname == "Rename" then
-            local current_name = tbl.lane[tbl.idx].name
+            local current_name = tbl.info[tbl.idx].name
             local current_name_id = current_name:match("%S+ %S+ (%S+)")
             rename_retval, new_name = reaper.GetUserInputs(current_name, 1, " New Name :", current_name_id)
             if not rename_retval then return end
@@ -227,7 +227,7 @@ end
 
 local function Store_To_PEXT(el)
     local storedTable = {
-        lane = el.lane,
+        info = el.info,
         idx = math.floor(el.idx),
         comp_idx = math.floor(el.comp_idx),
         lane_mode = math.floor(el.lane_mode)
@@ -250,7 +250,7 @@ local function Restore_From_PEXT(el)
     if rv == true and stored ~= nil then
         local storedTable = stringToTable(stored)
         if storedTable ~= nil then
-            el.lane = storedTable.lane
+            el.info = storedTable.info
             el.idx = storedTable.idx
             el.comp_idx = storedTable.comp_idx
             el.lane_mode = storedTable.lane_mode
@@ -449,9 +449,9 @@ end
 function SwapVirtualTrack(tbl, idx)
     if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
         Clear(tbl) -- ONLY MEDIA TRACKS NEED TO BE CLEARD SINCE WE ARE INSERTING ITEMS INTO IT, ENVELOPES JUST SWAP CHUNKS
-        Create_item(tbl.rprobj, tbl.lane[idx])
+        Create_item(tbl.rprobj, tbl.info[idx])
     elseif reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then
-        Set_Env_Chunk(tbl.rprobj, tbl.lane[idx])
+        Set_Env_Chunk(tbl.rprobj, tbl.info[idx])
     end
     tbl.idx = idx;
 end
@@ -469,14 +469,14 @@ function CreateNew(tbl)
 end
 
 function Duplicate(tbl)
-    local name = tbl.lane[tbl.idx].name:match("(%S+ %S+ %S+)") .. " DUP"
+    local name = tbl.info[tbl.idx].name:match("(%S+ %S+ %S+)") .. " DUP"
     Get_Store_CurrentTrackState(tbl, name)
 end
 
 function Delete(tbl)
-    if #tbl.lane == 1 then return end
-    table.remove(tbl.lane, tbl.idx)
-    tbl.idx = tbl.idx <= #tbl.lane and tbl.idx or #tbl.lane
+    if #tbl.info == 1 then return end
+    table.remove(tbl.info, tbl.idx)
+    tbl.idx = tbl.idx <= #tbl.info and tbl.idx or #tbl.info
     SwapVirtualTrack(tbl, tbl.idx)
 end
 
@@ -494,8 +494,8 @@ end
 
 function Rename(tbl, name)
     if not name then return end
-    local current_name = tbl.lane[tbl.idx].name
-    tbl.lane[tbl.idx].name = current_name:match("(%S+ %S+ )") .. name
+    local current_name = tbl.info[tbl.idx].name
+    tbl.info[tbl.idx].name = current_name:match("(%S+ %S+ )") .. name
 end
 
 local function SetInsertLaneChunk(tbl, lane)
@@ -562,8 +562,8 @@ local function Make_item_from_razor(tbl, item, time_Start, time_End)
     local created_chunk = item_chunk:gsub("(POSITION) %S+", "%1 " .. new_item_start):gsub("(LENGTH) %S+", "%1 " .. new_item_lenght):gsub("(SOFFS) %S+", "%1 " .. item_start_offset + (new_item_offset * item_play_rate))
     local createdItem = reaper.AddMediaItemToTrack(tbl.rprobj)
     reaper.SetItemStateChunk(createdItem, created_chunk, false)
-    reaper.SetMediaItemInfo_Value(createdItem, "F_FREEMODE_Y", (tbl.comp_idx - 1) / #tbl.lane)
-    reaper.SetMediaItemInfo_Value(createdItem, "F_FREEMODE_H", 1 / #tbl.lane)
+    reaper.SetMediaItemInfo_Value(createdItem, "F_FREEMODE_Y", (tbl.comp_idx - 1) / #tbl.info)
+    reaper.SetMediaItemInfo_Value(createdItem, "F_FREEMODE_H", 1 / #tbl.info)
     reaper.SetMediaItemSelected(createdItem, true)
     reaper.Main_OnCommand(40930, 0) -- TRIM BEHIND ONLY WORKS ON SELECTED ITEMS
     reaper.SetMediaItemSelected(createdItem, false)
@@ -584,8 +584,8 @@ function Copy_area(tbl)
         if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN OFF ALWAYS TRIM BEHIND RAZORS (if enabled in project)
         --! HACK FOR COPY PASTE REMOVING EMPTY LANE
         local hack_item = reaper.AddMediaItemToTrack(tbl.rprobj)
-        reaper.SetMediaItemInfo_Value(hack_item, "F_FREEMODE_Y", (tbl.comp_idx - 1) / #tbl.lane)
-        reaper.SetMediaItemInfo_Value(hack_item, "F_FREEMODE_H", 1 / #tbl.lane)
+        reaper.SetMediaItemInfo_Value(hack_item, "F_FREEMODE_Y", (tbl.comp_idx - 1) / #tbl.info)
+        reaper.SetMediaItemInfo_Value(hack_item, "F_FREEMODE_H", 1 / #tbl.info)
         --! HACK FOR COPY PASTE REMOVING EMPTY LANE
         local new_items = {}
         for i = 1, reaper.CountTrackMediaItems(tbl.rprobj) do
@@ -603,11 +603,11 @@ function Copy_area(tbl)
 end
 
 local function SetItemsInLanes(tbl)
-    for i = 1, #tbl.lane do
-        local items = Create_item(tbl.rprobj, tbl.lane[i])
+    for i = 1, #tbl.info do
+        local items = Create_item(tbl.rprobj, tbl.info[i])
         for j = 1, #items do
-            reaper.SetMediaItemInfo_Value(items[j], "F_FREEMODE_Y", ((i - 1) / #tbl.lane))
-            reaper.SetMediaItemInfo_Value(items[j], "F_FREEMODE_H", 1 / #tbl.lane)
+            reaper.SetMediaItemInfo_Value(items[j], "F_FREEMODE_Y", ((i - 1) / #tbl.info))
+            reaper.SetMediaItemInfo_Value(items[j], "F_FREEMODE_H", 1 / #tbl.info)
         end
     end
 end
@@ -652,7 +652,7 @@ function ShowAll(tbl)
         reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", toggle)
         tbl.comp_idx = 0 -- DISABLE COMPING
         reaper.gmem_write(1, 1) -- DISABLE SWIPE DEFER
-        Create_item(tbl.rprobj, tbl.lane[tbl.idx])
+        Create_item(tbl.rprobj, tbl.info[tbl.idx])
     end
     reaper.UpdateTimeline()
 end
@@ -753,15 +753,15 @@ function SetLinkVal(tbl)
 end
 
 local function CheckIfTableIDX_Exists(parent_tr, child_tr)
-    if #VT_TB[parent_tr].lane ~= #VT_TB[child_tr].lane then
-        for i = 1, #VT_TB[parent_tr].lane do
-            if not VT_TB[child_tr].lane[i] then CreateNew(VT_TB[child_tr]) end
+    if #VT_TB[parent_tr].info ~= #VT_TB[child_tr].info then
+        for i = 1, #VT_TB[parent_tr].info do
+            if not VT_TB[child_tr].info[i] then CreateNew(VT_TB[child_tr]) end
         end
         StoreStateToDocument(VT_TB[child_tr])
     end
-    if #VT_TB[child_tr].lane ~= #VT_TB[parent_tr].lane then
-        for i = 1, #VT_TB[child_tr].lane do
-            if not VT_TB[parent_tr].lane[i] then CreateNew(VT_TB[parent_tr]) end
+    if #VT_TB[child_tr].info ~= #VT_TB[parent_tr].info then
+        for i = 1, #VT_TB[child_tr].info do
+            if not VT_TB[parent_tr].info[i] then CreateNew(VT_TB[parent_tr]) end
         end
         StoreStateToDocument(VT_TB[parent_tr])
     end

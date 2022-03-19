@@ -25,7 +25,7 @@ function Element:new(rprobj, info, direct)
     elm.font = direct == 0 and reaper.JS_LICE_CreateFont() or nil -- CREATE ONLY WHEN NECESSARY
     if elm.font then reaper.JS_LICE_SetFontColor(elm.font, 0xFFFFFFFF) end -- CREATE ONLY WHEN NECESSARY
     if elm.font_bm then reaper.JS_LICE_Clear(self.font_bm, 0x00000000) end -- CREATE ONLY WHEN NECESSARY
-    elm.lane = info
+    elm.info = info
     elm.idx = 1
     elm.comp_idx = 0
     elm.lane_mode = 0
@@ -53,7 +53,7 @@ end
 function Element:draw_text()
     reaper.JS_LICE_Clear(self.font_bm, 0x00000000)
     reaper.JS_LICE_Blit(self.font_bm, 0, 0, self.bm, 0, 0, self.w, self.h, 1, "ADD")
-    reaper.JS_LICE_DrawText(self.font_bm, self.font, math.floor(self.idx) .. "/" .. #self.lane, 3, 0, 1, 80, 80)
+    reaper.JS_LICE_DrawText(self.font_bm, self.font, math.floor(self.idx) .. "/" .. #self.info, 3, 0, 1, 80, 80)
 end
 
 function Element:draw()
@@ -75,7 +75,7 @@ function Element:LaneButtonIn(sx, sy)
     local x, y = To_client(sx, sy)
     local t, h = Get_TBH_Info(self.rprobj)
     local lane_button_w, lane_button_h = 28, 13
-    local lane_button_t = (h - 14) / #self.lane
+    local lane_button_t = (h - 14) / #self.info
     local lane_box_h = lane_button_t * (mouse.lane - 1)
     return x > 0 and x <= lane_button_w and y >= t + lane_box_h and y <= t + lane_box_h + lane_button_h
 end
