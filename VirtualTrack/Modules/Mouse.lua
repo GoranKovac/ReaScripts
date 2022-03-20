@@ -158,7 +158,8 @@ end
 --     end
 -- end
 
-function Get_track_under_mouse(x, y)
+function Get_track_under_mouse()
+	local x, y = reaper.GetMousePosition()
     local _, cy = To_client(x, y)
     local track, env_info = reaper.GetTrackFromPoint(x, y)
 	--if reaper.CountTracks(0) == 0 then return end
@@ -218,16 +219,14 @@ function GetMouseTrack_BR()
             rprobj, takeenv = reaper.BR_GetMouseCursorContext_Envelope()
             rprobj = takeenv and nil or rprobj
         end
-        if rprobj then
-            return rprobj
-        end
+        if rprobj then return rprobj end
     end
 end
 
 function MouseInfo(VT_TB)
 	mouse.x, mouse.y = reaper.GetMousePosition()
 	mouse.p = X_to_pos(mouse.x)
-	mouse.tr, mouse.r_t, mouse.r_b = Get_track_under_mouse(mouse.x, mouse.y)
+	mouse.tr, mouse.r_t, mouse.r_b = Get_track_under_mouse()
 	mouse.lane = Get_lane_from_mouse_coordinates(mouse.y, VT_TB)
 	if mouse.tr then mouse.last_tr = mouse.tr end
 

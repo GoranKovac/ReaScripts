@@ -76,7 +76,7 @@ local function MakeMenu(tbl)
     menu[1].name = ">" .. main_name .. (tbl.info[tbl.idx] and tbl.info[tbl.idx].name or "NO SELECTED VERSIONS") .. "|" .. table.concat(versions, "|") .."|<|"
 
     if lane_mode then
-        menu[3].name = reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") and menu[3].name .. MouseInfo(VT_TB).last_menu_lane .. " " .. tbl.info[MouseInfo(VT_TB).last_menu_lane].name or menu[3].name
+        --menu[3].name = reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") and menu[3].name .. MouseInfo(VT_TB).last_menu_lane .. " " .. tbl.info[MouseInfo(VT_TB).last_menu_lane].name or menu[3].name
         menu[3].name = tbl.comp_idx ~= 0 and "!" .. "DISABLE Comping : " .. tbl.comp_idx .. " - ".. tbl.info[tbl.comp_idx].name or menu[3].name
         menu[2].name = tbl.comp_idx ~= 0 and "#" .. menu[2].name or menu[2].name
     else
@@ -106,6 +106,7 @@ end
 function Show_menu(rprobj, on_demand)
     MouseInfo(VT_TB).last_menu_lane = MouseInfo(VT_TB).lane-- SET LAST LANE BEFORE MENU OPENED
     MouseInfo(VT_TB).last_menu_tr = MouseInfo(VT_TB).tr -- SET LAST TRACK BEFORE MENU OPENED
+    MSG(MouseInfo(VT_TB).last_menu_tr)
     local focused_tracks = GetSelectedTracksData(rprobj, on_demand) -- THIS ADDS NEW TRACKS TO VT_TB FOR ON DEMAND SCRIPT AND RETURNS TRACK SELECTION
     local all_childrens_and_parents = GetChild_ParentTrack_FromStored_PEXT(focused_tracks)
     CheckTrackLaneModeState(VT_TB[rprobj])
@@ -626,7 +627,7 @@ function CheckTrackLaneModeState(tbl)
         current_track_mode = current_track_mode ~= 1 and current_track_mode or 2
         reaper.PreventUIRefresh(1)
         Clear(tbl)
-        if current_track_mode == 2 or current_track_mode == 1 then -- handle both fixed lanes and FIPM
+        if current_track_mode == 2 then
             reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", 0) -- need to reset (lanes must be set before entering fixed lanes mode)
             SetItemsInLanes(tbl)
             reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", 2)
@@ -707,7 +708,7 @@ function OnDemand()
     local rprobj
     local _, demand_mode = reaper.GetProjExtState(0, "VirtualTrack", "ONDEMAND_MODE")
     if demand_mode == "mouse" then
-        rprobj = GetMouseTrack_BR()
+        rprobj = Get_track_under_mouse()
     elseif demand_mode == "track" then
         local sel_env = reaper.GetSelectedEnvelope( 0 )
         rprobj = sel_env and sel_env or reaper.GetSelectedTrack(0,0)
@@ -866,7 +867,7 @@ function NewComp(tbl)
     SetItemsInLanes(tbl)
     reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", 2)
     --! refresh lane mode
-    tbl.idx = tbl.idx + 1 -- increment selected lane in menu since its pushed down
+    tbl.idx = 1 --tbl.idx + 1 -- increment selected lane in menu since its pushed down
     --! FIXME SET COMP AS ACTIVE ??
     Lane_view(tbl, tbl.idx)
     SetLaneImageColors(tbl)
