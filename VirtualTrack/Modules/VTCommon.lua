@@ -132,10 +132,10 @@ function Show_menu(rprobj, on_demand)
             rename_retval, new_name = reaper.GetUserInputs(current_name, 1, " New Name :", current_name_id)
             if not rename_retval then return end
         end
-        if menu_options[m_num].fname == "SetLinkVal" or menu_options[m_num].fname == "SetCompLane" or menu_options[m_num].fname == "NewComp" then
+        if menu_options[m_num].fname == "SetLinkVal" then
             _G[menu_options[m_num].fname](VT_TB[rprobj])
         end
-        if menu_options[m_num].fname ~= "SetLinkVal" and menu_options[m_num].fname ~= "SetCompLane" and menu_options[m_num].fname ~= "NewComp" then
+        if menu_options[m_num].fname ~= "SetLinkVal" then
             for track in pairs(current_tracks) do
                 _G[menu_options[m_num].fname](VT_TB[track], new_name)
                 StoreStateToDocument(VT_TB[track])
