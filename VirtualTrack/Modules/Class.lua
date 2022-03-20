@@ -29,6 +29,7 @@ function Element:new(rprobj, info, direct)
     elm.idx = 1
     elm.comp_idx = 0
     elm.lane_mode = 0
+    elm.def_icon = nil
     setmetatable(elm, self)
     self.__index = self
     --if direct == 1 then self:cleanup() end

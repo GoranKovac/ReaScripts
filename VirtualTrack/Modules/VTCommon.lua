@@ -77,10 +77,8 @@ local function MakeMenu(tbl)
 
     if lane_mode then
         menu[3].name = reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") and menu[3].name .. MouseInfo(VT_TB).last_menu_lane .. " " .. tbl.info[MouseInfo(VT_TB).last_menu_lane].name or menu[3].name
-        if On_Demand_STORED_PEXT_CHECK("COMP", tbl.rprobj) then
-            menu[3].name = On_Demand_STORED_PEXT_CHECK("COMP", tbl.rprobj) == tbl.rprobj and "!" .. "DISABLE Comping : " .. tbl.comp_idx .. " - ".. tbl.info[tbl.comp_idx].name or "#" .. menu[3].name
-            menu[2].name = On_Demand_STORED_PEXT_CHECK("COMP", tbl.rprobj) and "#" .. menu[2].name or menu[2].name
-        end
+        menu[3].name = tbl.comp_idx ~= 0 and "!" .. "DISABLE Comping : " .. tbl.comp_idx .. " - ".. tbl.info[tbl.comp_idx].name or menu[3].name
+        menu[2].name = tbl.comp_idx ~= 0 and "#" .. menu[2].name or menu[2].name
     else
         menu[4].name = #tbl.info == 1 and "#" .. menu[4].name or menu[4].name
     end
@@ -231,7 +229,8 @@ local function Store_To_PEXT(el)
         info = el.info,
         idx = math.floor(el.idx),
         comp_idx = math.floor(el.comp_idx),
-        lane_mode = math.floor(el.lane_mode)
+        lane_mode = math.floor(el.lane_mode),
+        def_icon = el.def_icon,
     }
     local serialized = tableToString(storedTable)
     if reaper.ValidatePtr(el.rprobj, "MediaTrack*") then
@@ -255,11 +254,12 @@ local function Restore_From_PEXT(el)
             el.idx = storedTable.idx
             el.comp_idx = storedTable.comp_idx
             el.lane_mode = storedTable.lane_mode
+            el.def_icon = storedTable.def_icon
         end
     end
 end
 
-function On_Demand_STORED_PEXT_CHECK(job, rprobj)
+function CheckInStored_PEXT_STATE(rprobj)
     local stored_tbl = {}
     for i = 1, reaper.CountTracks(0) do
         local track = reaper.GetTrack(0, i - 1)
@@ -273,15 +273,7 @@ function On_Demand_STORED_PEXT_CHECK(job, rprobj)
             Restore_From_PEXT(stored_tbl[env])
         end
     end
-    if stored_tbl[rprobj].info then
-        if job == "COMP" then
-            if stored_tbl[rprobj].comp_idx ~= 0 and stored_tbl[rprobj].comp_idx ~= nil then
-                return stored_tbl[rprobj].rprobj
-            end
-        elseif job == "TRACK" then
-            return true
-        end
-    end
+    if stored_tbl[rprobj].info then return true end
 end
 
 function Get_TBH_Info(tr) return TBH[tr] and TBH[tr].t, TBH[tr].h, TBH[tr].b end
@@ -663,7 +655,7 @@ function ShowAll(tbl)
         SetLaneImageColors(tbl)
     elseif toggle == 0 then
         reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", toggle)
-        tbl.comp_idx = 0 -- DISABLE COMPING
+        SetCompLane(tbl,0)
         reaper.gmem_write(1,1) -- DISABLE SWIPE DEFER
         Create_item(tbl.rprobj, tbl.info[tbl.idx])
     end
@@ -747,8 +739,9 @@ end
 function SetCompLane(tbl, lane)
     local new_lane = lane and lane or MouseInfo(VT_TB).last_menu_lane
     tbl.comp_idx = tbl.comp_idx == 0 and new_lane or 0
+    SetCompActiveIcon(tbl)
     StoreStateToDocument(tbl)
-    CallSwipeScript()
+    CallSwipeScript(tbl)
 end
 
 function GetLinkVal()
@@ -769,7 +762,7 @@ function GetChild_ParentTrack_FromStored_PEXT(tracl_tbl)
             if not all_childs_parents[track] then all_childs_parents[track] = track end
             for i = 1, reaper.CountTrackEnvelopes(track) do
                 local env = reaper.GetTrackEnvelope(track, i - 1)
-                if On_Demand_STORED_PEXT_CHECK("TRACK", env) then 
+                if CheckInStored_PEXT_STATE(env) then
                     if not all_childs_parents[env] then all_childs_parents[env] = env end
                 end
             end
@@ -778,7 +771,7 @@ function GetChild_ParentTrack_FromStored_PEXT(tracl_tbl)
             if not all_childs_parents[parent_tr] then all_childs_parents[parent_tr] = parent_tr end
             for i = 1, reaper.CountTrackEnvelopes(parent_tr) do
                 local env = reaper.GetTrackEnvelope(parent_tr, i - 1)
-                if On_Demand_STORED_PEXT_CHECK("TRACK", env) then
+                if CheckInStored_PEXT_STATE(env) then
                     if not all_childs_parents[env] then all_childs_parents[env] = env end
                 end
             end
@@ -850,8 +843,8 @@ local function GetLaneColorOption() return GetEXTState_VAL("LANE_COLORS") end
 reaper.gmem_attach('Virtual_Tracks')
 local swipe_script_id = reaper.AddRemoveReaScript(true, 0, script_folder .. "Virtual_track_Swipe.lua", true)
 local swipe_script = reaper.NamedCommandLookup(swipe_script_id)
-function CallSwipeScript()
-    if not On_Demand_STORED_PEXT_CHECK("COMP") then reaper.gmem_write(1,1) return end
+function CallSwipeScript(tbl)
+    if tbl.comp_idx == 0 then reaper.gmem_write(1,1) return end
 
     if GetSwipe() then
         if reaper.gmem_read(2) ~= 1 then -- do not start script if its already started (other script is sending that its already opened in this mem field)
@@ -906,6 +899,20 @@ function SetLaneImageColors(tbl)
             if GetItemLane(item) == i then
                 reaper.SetMediaItemTakeInfo_Value(take, "I_CUSTOMCOLOR", calculate_color|0x1000000)
             end
+        end
+    end
+end
+
+local icon_path = script_folder .. "/Images/comp_test.png"
+function SetCompActiveIcon(tbl)
+    if tbl.comp_idx ~= 0 then
+        local retval, current_icon = reaper.GetSetMediaTrackInfo_String( tbl.rprobj, "P_ICON", 0, false )
+        tbl.def_icon = retval and current_icon or ""
+        reaper.GetSetMediaTrackInfo_String( tbl.rprobj, "P_ICON" , icon_path, true )
+    else
+        if tbl.def_icon ~= nil then
+            reaper.GetSetMediaTrackInfo_String( tbl.rprobj, "P_ICON" , tbl.def_icon, true )
+            tbl.def_icon = nil
         end
     end
 end

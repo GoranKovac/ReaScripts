@@ -19,9 +19,7 @@ local function Main()
     if not track then return end
     local VT_TB = Get_VT_TB()
     if reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") ~= 0 then return end
-    if On_Demand_STORED_PEXT_CHECK("COMP", track) then
-        if On_Demand_STORED_PEXT_CHECK("COMP", track) == track then return end
-    end
+    if VT_TB[track].comp_idx ~= 0 then return end
     reaper.PreventUIRefresh(1)
     reaper.Undo_BeginBlock2(0)
     UpdateInternalState(VT_TB[track])
