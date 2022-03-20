@@ -21,11 +21,12 @@ local function Main()
     local num = VT_TB[track].idx - 1
     if num == 0 then return end
     local focused_tracks = GetSelectedTracksData(track, true) -- THIS ADDS NEW TRACKS TO VT_TB FOR ON DEMAND SCRIPT AND RETURNS TRACK SELECTION
-    --local linked_VT = GetLinkedTracksVT_INFO(focused_tracks, true)
-    for ltrack in pairs(focused_tracks) do UpdateInternalState(VT_TB[ltrack]) end
+    local all_childrens_and_parents = GetChild_ParentTrack_FromStored_PEXT(focused_tracks)
+    local current_tracks = GetLinkVal() and all_childrens_and_parents or focused_tracks
+    for ltrack in pairs(current_tracks) do UpdateInternalState(VT_TB[ltrack]) end
     reaper.PreventUIRefresh(1)
     reaper.Undo_BeginBlock2(0)
-    for linked_track in pairs(focused_tracks) do
+    for linked_track in pairs(current_tracks) do
         UpdateInternalState(VT_TB[linked_track])
         if reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") == 0 then
             SwapVirtualTrack(VT_TB[linked_track], num)
