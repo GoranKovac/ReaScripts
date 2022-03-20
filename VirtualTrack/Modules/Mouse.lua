@@ -193,7 +193,6 @@ local function GetMouseTrackXYH(track)
 	end
 end
 
-
 local lane_offset = 14 -- schwa decided this number by carefully inspecting pixels in paint.net
 function Get_lane_from_mouse_coordinates(my, VT_TB)
 	if not VT_TB then return end
@@ -226,7 +225,7 @@ end
 function MouseInfo(VT_TB)
 	mouse.x, mouse.y = reaper.GetMousePosition()
 	mouse.p = X_to_pos(mouse.x)
-	mouse.tr, mouse.r_t, mouse.r_b = Get_track_under_mouse()
+	mouse.tr = Get_track_under_mouse()
 	mouse.lane = Get_lane_from_mouse_coordinates(mouse.y, VT_TB)
 	if mouse.tr then mouse.last_tr = mouse.tr end
 

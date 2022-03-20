@@ -106,7 +106,6 @@ end
 function Show_menu(rprobj, on_demand)
     MouseInfo(VT_TB).last_menu_lane = MouseInfo(VT_TB).lane-- SET LAST LANE BEFORE MENU OPENED
     MouseInfo(VT_TB).last_menu_tr = MouseInfo(VT_TB).tr -- SET LAST TRACK BEFORE MENU OPENED
-    MSG(MouseInfo(VT_TB).last_menu_tr)
     local focused_tracks = GetSelectedTracksData(rprobj, on_demand) -- THIS ADDS NEW TRACKS TO VT_TB FOR ON DEMAND SCRIPT AND RETURNS TRACK SELECTION
     local all_childrens_and_parents = GetChild_ParentTrack_FromStored_PEXT(focused_tracks)
     CheckTrackLaneModeState(VT_TB[rprobj])
