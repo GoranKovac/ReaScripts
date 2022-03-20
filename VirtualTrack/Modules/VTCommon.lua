@@ -750,7 +750,7 @@ function GetLinkVal()
     return false
 end
 
-function SetLinkVal(tbl)
+function SetLinkVal()
     local cur_value = GetLinkVal() == true and "false" or "true"
     reaper.SetProjExtState(0, "VirtualTrack", "LINK", cur_value)
 end
@@ -795,7 +795,7 @@ local function GetFolderChilds(track)
     return children
 end
 
-function Get_All_Same_Envelopes_FromSelectedTracks(tr_tbl)
+function Same_Envelope_AS_Mouse(tr_tbl)
     local same_envelopes = nil
     local all_childs = GetChild_ParentTrack_FromStored_PEXT(tr_tbl)
     if reaper.ValidatePtr(MouseInfo(VT_TB).last_menu_tr, "TrackEnvelope*") then
@@ -820,7 +820,7 @@ local function GetSelectedTracks()
         local track = reaper.GetSelectedTrack(0, i - 1)
         selected_tracks[track] = track
     end
-    local same_envelope_as_mouse = Get_All_Same_Envelopes_FromSelectedTracks(selected_tracks)
+    local same_envelope_as_mouse = Same_Envelope_AS_Mouse(selected_tracks)
     return same_envelope_as_mouse and same_envelope_as_mouse or selected_tracks
 end
 
