@@ -15,39 +15,43 @@ local function GetAndSetMenuByTrack(rprobj)
         [2] = { name = "Create New Variant",    fname = "CreateNew" },
         [3] = { name = "Duplicate Variant",     fname = "Duplicate" },
         [4] = { name = "Delete Variant",        fname = "Delete" },
-        [5] = { name = "Clear Variant",         fname = "Clear" },
-        [6] = { name = "Rename Variants",       fname = "Rename" },
-        [7] = { name = "Link Track/Envelope",   fname = "SetLinkVal" },
-        [8] = { name = "Show All Variants",     fname = "ShowAll" },
+        [5] = { name = "Rename Variants",       fname = "Rename" },
+        [6] = { name = "Link Track/Envelope",   fname = "SetLinkVal" },
+        [7] = { name = "Show All Variants",     fname = "ShowAll" },
     }
+
     local lane_menu = {
         [1] = { name = "",                      fname = "" },
         [2] = { name = "New Emtpy Comp",        fname = "NewComp" },
         [3] = { name = "ENABLE Comping on : ",  fname = "SetCompLane" },
-        [4] = { name = "Link Track/Envelope",   fname = "SetLinkVal" },
-        [5] = { name = "Show All Variants",     fname = "ShowAll" },
+        [4] = { name = "Create New Variant",    fname = "CreateNew" },
+        [5] = { name = "Duplicate Variant",     fname = "Duplicate" },
+        [6] = { name = "Delete Variant",        fname = "Delete" },
+        [7] = { name = "Rename Variants",       fname = "Rename" },
+        [8] = { name = "Link Track/Envelope",   fname = "SetLinkVal" },
+        [9] = { name = "Show All Variants",     fname = "ShowAll" },
     }
 
-    local folder_menu = {
-        [1] = { name = "",                      fname = "" }, -- NORMAL TRACK VERSIONS FOR FOLDER
-        [2] = { name = "",                      fname = "" }, -- FOLDER VERSIONS FOR CHILDS
-        [3] = { name = "Create New Variant",    fname = "CreateNewFolder" },
-        [4] = { name = "Duplicate Variant",     fname = "DuplicateFolder" },
-        [5] = { name = "Delete Variant",        fname = "DeleteFolder" },
-        [6] = { name = "Clear Variant",         fname = "ClearFolder" },
-        [7] = { name = "Rename Variants",       fname = "RenameFolder" },
-        [8] = { name = "Link Track/Envelope",   fname = "SetLinkValFolder" },
-    }
+    -- local folder_menu = {
+    --     [1] = { name = "",                      fname = "" }, -- NORMAL TRACK VERSIONS FOR FOLDER
+    --     [2] = { name = "",                      fname = "" }, -- FOLDER VERSIONS FOR CHILDS
+    --     [3] = { name = "Create New Variant",    fname = "CreateNewFolder" },
+    --     [4] = { name = "Duplicate Variant",     fname = "DuplicateFolder" },
+    --     [5] = { name = "Delete Variant",        fname = "DeleteFolder" },
+    --     [6] = { name = "Clear Variant",         fname = "ClearFolder" },
+    --     [7] = { name = "Rename Variants",       fname = "RenameFolder" },
+    --     [8] = { name = "Link Track/Envelope",   fname = "SetLinkValFolder" },
+    -- }
 
     if reaper.ValidatePtr(rprobj, "MediaTrack*") then
         -- if reaper.GetMediaTrackInfo_Value(rprobj, "I_FOLDERDEPTH") ~= 1 then
             local main_name = "Virtual TRACK : "
-            track_menu[7].name = GetLinkVal() == true and "!" .. track_menu[7].name or track_menu[7].name
-            lane_menu[4] = track_menu[7]
+            track_menu[6].name = GetLinkVal() == true and "!" .. track_menu[6].name or track_menu[6].name
+            lane_menu[8] = track_menu[6]
             if reaper.GetMediaTrackInfo_Value(rprobj, "I_FREEMODE") == 2 then
                 local lane_mode = true
-                track_menu[8].name = "!" .. track_menu[8].name
-                lane_menu[5] = track_menu[8]
+                track_menu[7].name = "!" .. track_menu[7].name
+                lane_menu[9] = track_menu[7]
                 return lane_menu, main_name, lane_mode
             end
             return track_menu, main_name
@@ -58,8 +62,8 @@ local function GetAndSetMenuByTrack(rprobj)
     elseif reaper.ValidatePtr(rprobj, "TrackEnvelope*") then
         local main_name = "Virtual ENV : "
         local parent_tr = reaper.GetEnvelopeInfo_Value(rprobj, "P_TRACK")
-        track_menu[7].name = GetLinkVal() == true and "!" .. track_menu[7].name or track_menu[7].name
-        table.remove(track_menu, 8) -- REMOVE "ShowAll" KEY IF ENVELOPE
+        track_menu[6].name = GetLinkVal() == true and "!" .. track_menu[6].name or track_menu[6].name
+        table.remove(track_menu, 7) -- REMOVE "ShowAll" KEY IF ENVELOPE
         if reaper.GetMediaTrackInfo_Value(parent_tr, "I_FREEMODE") == 2 then -- IF PARENT TRACK IS IN LANE MODE
             local lane_mode = true
             return track_menu, main_name, lane_mode
@@ -472,7 +476,8 @@ local function Get_Store_CurrentTrackState(tbl, name)
 end
 
 function Set_LaneView_mode(tbl)
-    reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", 0)
+    Clear(tbl)
+    --reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", 0)
     SetItemsInLanes(tbl)
     reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", 2)
     SetInsertLaneChunk(tbl, tbl.idx)
@@ -548,10 +553,10 @@ function Get_Razor_Data(track)
     return razor_info
 end
 
-function Set_Razor_Data(track, razor_data)
-    if not reaper.ValidatePtr(track, "MediaTrack*") then return end
+function Set_Razor_Data(tbl, razor_data)
+    if not reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then return end
     local razor_str = razor_data[1] .. " " .. razor_data[2] .. " " .. "'' " .. razor_data[3] .. " " .. razor_data[4]
-    reaper.GetSetMediaTrackInfo_String(track, "P_RAZOREDITS_EXT", razor_str, true)
+    reaper.GetSetMediaTrackInfo_String(tbl.rprobj, "P_RAZOREDITS_EXT", razor_str, true)
 end
 
 local function Get_items_in_razor(item, time_Start, time_End, razor_lane)
@@ -595,13 +600,13 @@ function Copy_area(tbl, razor_info)
     if reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then return end -- PREVENT DOING THIS ON ENVELOPES
     if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 0 then return end -- PREVENT DOING IN NON LANE MODE
     if tbl.comp_idx == 0 or tbl.comp_idx == razor_info.razor_lane then return end -- PREVENT COPY ONTO ITSELF
-    Set_Razor_Data(tbl.rprobj, razor_info) -- JUST SET RAZOR ON OTHER TRACKS (ONLY FOR VISUAL)
+    Set_Razor_Data(tbl, razor_info) -- JUST SET RAZOR ON OTHER TRACKS (ONLY FOR VISUAL)
     local current_razor_toggle_state = reaper.GetToggleCommandState(42421)
     if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN OFF ALWAYS TRIM BEHIND RAZORS (if enabled in project)
     local new_items = {}
     for i = 1, reaper.CountTrackMediaItems(tbl.rprobj) do
         local razor_item = Get_items_in_razor(reaper.GetTrackMediaItem(tbl.rprobj, i-1),razor_info[1], razor_info[2], razor_info.razor_lane)
-        new_items[#new_items+1] = razor_item
+        new_items[#new_items + 1] = razor_item
     end
     for i = 1, #new_items do Make_item_from_razor(tbl, new_items[i], razor_info[1], razor_info[2]) end
     if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN ON ALWAYS TRIM BEHIND RAZORS (if enabled in project)
@@ -625,13 +630,12 @@ function CheckTrackLaneModeState(tbl)
         UpdateInternalState(tbl)
         current_track_mode = current_track_mode ~= 1 and current_track_mode or 2
         reaper.PreventUIRefresh(1)
-        Clear(tbl)
+        tbl.lane_mode = current_track_mode
         if current_track_mode == 2 then
             Set_LaneView_mode(tbl)
         elseif current_track_mode == 0 then
             SwapVirtualTrack(tbl, tbl.idx)
         end
-        tbl.lane_mode = current_track_mode
         StoreStateToDocument(tbl)
         reaper.PreventUIRefresh(-1)
     end
@@ -642,7 +646,6 @@ function ShowAll(tbl)
     local fimp = reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE")
     tbl.lane_mode = fimp == 2 and 0 or 2
     if fimp == 2 then StoreLaneData(tbl) end
-    Clear(tbl)
     if fimp == 0 then
         Set_LaneView_mode(tbl)
     elseif fimp == 2 then
