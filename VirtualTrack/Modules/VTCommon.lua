@@ -78,15 +78,17 @@ local function MakeMenu(tbl)
     local versions= {}
     for i = 1, #tbl.info do versions[#versions+1] = i == tbl.idx  and "!" .. i .. " - ".. tbl.info[i].name or i .. " - " .. tbl.info[i].name end
     menu[1].name = ">" .. main_name .. (tbl.info[tbl.idx] and tbl.info[tbl.idx].name or "NO SELECTED VERSIONS") .. "|" .. table.concat(versions, "|") .."|<|"
-
     if lane_mode then
+        menu[2].name = tbl.comp_idx ~= 0 and "#" .. menu[2].name or menu[2].name
         menu[3].name = reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") and menu[3].name .. MouseInfo().last_menu_lane .. " " .. tbl.info[MouseInfo().last_menu_lane].name or menu[3].name
         menu[3].name = tbl.comp_idx ~= 0 and "!" .. "DISABLE Comping : " .. tbl.comp_idx .. " - ".. tbl.info[tbl.comp_idx].name or menu[3].name
-        menu[2].name = tbl.comp_idx ~= 0 and "#" .. menu[2].name or menu[2].name
+        menu[4].name = tbl.comp_idx ~= 0 and "#" .. menu[4].name or menu[4].name
+        menu[5].name = tbl.comp_idx ~= 0 and "#" .. menu[5].name or menu[5].name
+        menu[6].name = #tbl.info    == 1 and "#" .. menu[6].name or menu[6].name
+        menu[6].name = tbl.comp_idx ~= 0 and "#" .. menu[6].name or menu[6].name
     else
         menu[4].name = #tbl.info == 1 and "#" .. menu[4].name or menu[4].name
     end
-
     for i = 1, #menu do concat = concat .. menu[i].name .. (i ~= #menu and "|" or "") end
     return concat, menu, lane_mode
 end
@@ -468,7 +470,7 @@ function SwapVirtualTrack(tbl, idx)
 end
 
 local function Get_Store_CurrentTrackState(tbl, name)
-    local data =  GetChunkTableForObject(tbl.rprobj)
+    local data = GetChunkTableForObject(tbl.rprobj)
     table.insert(tbl.info, 1, data) --! ORDER NEWEST TO OLDEST
     --tbl.info[#tbl.info + 1] = data --! ORDER OLDEST TO NEWEST (CAUSES PROBLEMS WITH IF LAST LANE IS EMPTY ATM)
     tbl.idx = 1
@@ -491,8 +493,10 @@ function CreateNew(tbl, name)
     if tbl.lane_mode == 2 then Set_LaneView_mode(tbl) end
 end
 
+--! needs fixing
 function Duplicate(tbl)
     local name = tbl.info[tbl.idx].name:match("(%S+ %S+ %S+)") .. " DUP"
+    --local duplicate_tbl = deepcopy(tbl.info[tbl.idx])
     Get_Store_CurrentTrackState(tbl, name)
     if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
         if tbl.lane_mode == 2 then Set_LaneView_mode(tbl) end

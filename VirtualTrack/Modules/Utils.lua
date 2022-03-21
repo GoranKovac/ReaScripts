@@ -236,3 +236,18 @@ function GenPalette(val)
     col.b = math.floor(math.min(a.b + brightness + math.cos((c.b * val + d.b) * 6.28318) * b.b, 1) * 255 + 0.5)
     return col.r, col.g, col.b
 end
+
+function deepcopy(orig)
+    local orig_type = type(orig)
+    local copy
+    if orig_type == 'table' then
+        copy = {}
+        for orig_key, orig_value in next, orig, nil do
+            copy[deepcopy(orig_key)] = deepcopy(orig_value)
+        end
+        setmetatable(copy, deepcopy(getmetatable(orig)))
+    else -- number, string, boolean, etc
+        copy = orig
+    end
+    return copy
+end
