@@ -28,11 +28,12 @@ local function Main()
 	reaper.Undo_BeginBlock2(0)
 	for linked_track in pairs(current_tracks) do
         UpdateInternalState(VT_TB[linked_track])
-        if reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") == 0 then
-            SwapVirtualTrack(VT_TB[linked_track], num)
-        else
-            Lane_view(VT_TB[linked_track], num)
-        end
+		SwapVirtualTrack(VT_TB[linked_track], num)
+        -- if reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") == 0 then
+        --     SwapVirtualTrack(VT_TB[linked_track], num)
+        -- else
+        --     Lane_view(VT_TB[linked_track], num)
+        -- end
         StoreStateToDocument(VT_TB[linked_track])
     end
 	reaper.Undo_EndBlock2(0, "VT: Recall Version " .. VT_TB[track].info[num].name, -1)

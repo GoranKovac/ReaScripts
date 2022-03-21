@@ -14,14 +14,14 @@ require("Modules/Mouse")
 require("Modules/Utils")
 
 options = {
-    ["SWIPE"] = false,
+  --  ["SWIPE"] = false,
     ["LANE_COLORS"] = false
 }
 
 
 if reaper.HasExtState( "VirtualTrack", "options" ) then
    local state = reaper.GetExtState( "VirtualTrack", "options" )
-   options["SWIPE"] = state:match("SWIPE (%S+)") == "true" and true or false
+  -- options["SWIPE"] = state:match("SWIPE (%S+)") == "true" and true or false
    options["LANE_COLORS"] = state:match("LANE_COLORS (%S+)") == "true" and true or false
 end
 
@@ -50,7 +50,7 @@ function Main()
     reaper.ImGui_SetNextWindowSize(CTX, 250, 300, reaper.ImGui_Cond_Once())
 
     if visible then
-        _, options["SWIPE"] = reaper.ImGui_Checkbox(CTX, "SWIPE",  options["SWIPE"])
+       -- _, options["SWIPE"] = reaper.ImGui_Checkbox(CTX, "SWIPE",  options["SWIPE"])
         _, options["LANE_COLORS"] = reaper.ImGui_Checkbox(CTX, "LANE COLORS", options["LANE_COLORS"])
         reaper.ImGui_Spacing( CTX ) ; reaper.ImGui_Spacing( CTX )
         if reaper.ImGui_Button(CTX, 'SAVE', 80) then save() end

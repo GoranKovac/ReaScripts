@@ -17,7 +17,7 @@ Check_Requirements()
 local function Main()
     local track = OnDemand()
     if not track then return end
-    local mouse = MouseInfo(Get_VT_TB())
+    local mouse = MouseInfo()
     if not mouse.lane then return end
     local VT_TB = Get_VT_TB()
     local focused_tracks = GetSelectedTracksData(track, true) -- THIS ADDS NEW TRACKS TO VT_TB FOR ON DEMAND SCRIPT AND RETURNS TRACK SELECTION
@@ -29,7 +29,8 @@ local function Main()
             for linked_track in pairs(current_tracks) do
                 CheckTrackLaneModeState(VT_TB[linked_track])
                 UpdateInternalState(VT_TB[linked_track])
-                Lane_view(VT_TB[linked_track], mouse.lane)
+                --Lane_view(VT_TB[linked_track], mouse.lane)
+                SwapVirtualTrack(VT_TB[linked_track], mouse.lane)
                 StoreStateToDocument(VT_TB[linked_track])
             end
         end
