@@ -21,6 +21,7 @@ local function GetAndSetMenuByTrack(tbl)
         --[7] = { name = "Link Track/Envelope",   fname = "SetLinkVal" },
     }
 
+    track_menu[4].name = #tbl.info    == 1 and "#" .. track_menu[4].name or track_menu[4].name -- DISABLE DELETE IF ONLY 1 VERSION IS LEFT
     track_menu[6].name = tbl.lane_mode == 2 and "!" .. track_menu[6].name or track_menu[6].name -- Show All Variants
     --track_menu[7].name = GetLinkVal() == true and "!" .. track_menu[7].name or track_menu[7].name -- Link Track/Envelope
     if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
@@ -30,7 +31,6 @@ local function GetAndSetMenuByTrack(tbl)
                 track_menu[2].name = tbl.comp_idx ~= 0 and "#" .. track_menu[2].name or track_menu[2].name -- DISABLE CREATE NEW WHILE COMP IS ENABLED
                 track_menu[3].name = tbl.comp_idx ~= 0 and "#" .. track_menu[3].name or track_menu[3].name -- DISABLE DUPLICATE WHILE COMP IS ENABLED
                 track_menu[4].name = tbl.comp_idx ~= 0 and "#" .. track_menu[4].name or track_menu[4].name -- DISABLE DELETE WHILE COMP IS ENABLED
-                track_menu[4].name = #tbl.info    == 1 and "#" .. track_menu[4].name or track_menu[4].name -- DISABLE DELETE IF ONLY 1 VERSION IS LEFT
                 table.insert(track_menu, 2, { name = "New Emtpy Comp",        fname = "NewComp" })
                 track_menu[2].name = tbl.comp_idx ~= 0 and "#" .. track_menu[2].name or track_menu[2].name-- DISABLE NEW COMP IF ALREADY COMPING
                 table.insert(track_menu, 3, { name = "ENABLE Comping",  fname = "SetCompLane" })
