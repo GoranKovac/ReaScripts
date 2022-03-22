@@ -269,7 +269,6 @@ local function Get_Item_Chunk(item, keep_color)
     local _, chunk = reaper.GetItemStateChunk(item, "", false)
     chunk = keep_color and chunk or chunk:gsub("TAKECOLOR %S+ %S+", "") -- KEEP COLOR TEMPORARY ONLY WHEN IN LANE MODE
     chunk = chunk:gsub("SEL.-\n", "") -- REMOVE SELECTED FIELD IN CHUNK (WE DO NOT STORE SELECTED STATE)
-    --chunk = chunk:gsub("{.-}", "") --! GENERATE NEW GUIDS FOR NEW ITEM (fixes duplicate make pooled items) ---- NEED TO FIX TO ONLY HAPPEN WHEN DUPLICATING
     return chunk
 end
 
