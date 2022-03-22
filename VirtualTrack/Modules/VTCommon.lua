@@ -572,14 +572,17 @@ local function Make_item_from_razor(tbl, item, time_Start, time_End)
     local new_item_start, new_item_lenght, new_item_offset = Razor_item_position(item, time_Start, time_End)
     local item_start_offset = tonumber(item_chunk:match("SOFFS (%S+)"))
     local item_play_rate = tonumber(item_chunk:match("PLAYRATE (%S+)"))
-    local created_chunk = item_chunk:gsub("(POSITION) %S+", "%1 " .. new_item_start):gsub("(LENGTH) %S+", "%1 " .. new_item_lenght):gsub("(SOFFS) %S+", "%1 " .. item_start_offset + (new_item_offset * item_play_rate))
+    local auto_crossfade = reaper.GetToggleCommandState(40041)
+    local rv, def_auto_crossfade_value = reaper.get_config_var_string("defsplitxfadelen")
+    local crossfade_offset = auto_crossfade == 1 and def_auto_crossfade_value or 0
+    local created_chunk = item_chunk:gsub("(POSITION) %S+", "%1 " .. new_item_start - crossfade_offset):gsub("(LENGTH) %S+", "%1 " .. new_item_lenght + (crossfade_offset * 2)):gsub("(SOFFS) %S+", "%1 " .. item_start_offset + (new_item_offset * item_play_rate) - crossfade_offset)
     local createdItem = reaper.AddMediaItemToTrack(tbl.rprobj)
     reaper.SetItemStateChunk(createdItem, created_chunk, false)
     reaper.SetMediaItemInfo_Value(createdItem, "F_FREEMODE_Y", (tbl.comp_idx - 1) / #tbl.info)
     reaper.SetMediaItemInfo_Value(createdItem, "F_FREEMODE_H", 1 / #tbl.info)
-    reaper.SetMediaItemSelected(createdItem, true)
-    reaper.Main_OnCommand(40930, 0) -- TRIM BEHIND ONLY WORKS ON SELECTED ITEMS
-    reaper.SetMediaItemSelected(createdItem, false)
+    --reaper.SetMediaItemSelected(createdItem, true)
+    --reaper.Main_OnCommand(40930, 0) -- TRIM BEHIND ONLY WORKS ON SELECTED ITEMS
+    --reaper.SetMediaItemSelected(createdItem, false)
     return createdItem, created_chunk
 end
 
@@ -588,8 +591,8 @@ function Copy_area(tbl, razor_info)
     if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 0 then return end -- PREVENT DOING IN NON LANE MODE
     if tbl.comp_idx == 0 or tbl.comp_idx == razor_info.razor_lane then return end -- PREVENT COPY ONTO ITSELF
     Set_Razor_Data(tbl, razor_info) -- JUST SET RAZOR ON OTHER TRACKS (ONLY FOR VISUAL)
-    local current_razor_toggle_state = reaper.GetToggleCommandState(42421)
-    if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN OFF ALWAYS TRIM BEHIND RAZORS (if enabled in project)
+    --local current_razor_toggle_state = reaper.GetToggleCommandState(42421)
+    --if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN OFF ALWAYS TRIM BEHIND RAZORS (if enabled in project)
     local new_items, to_delete = {}, {}
     for i = 1, reaper.CountTrackMediaItems(tbl.rprobj) do
         new_items[#new_items + 1] = Get_items_in_Lane(reaper.GetTrackMediaItem(tbl.rprobj, i-1), razor_info[1], razor_info[2], razor_info.razor_lane) -- COPY ITEMS FROM RAZOR LANE
@@ -597,7 +600,7 @@ function Copy_area(tbl, razor_info)
     end
     for i = 1, #to_delete do Delete_items_or_area(to_delete[i], razor_info[1], razor_info[2]) end -- DELETE ITEMS CONTENT (IF RAZOR IS EMPTY) COMPING "SILENCE"
     for i = 1, #new_items do Make_item_from_razor(tbl, new_items[i], razor_info[1], razor_info[2]) end
-    if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN ON ALWAYS TRIM BEHIND RAZORS (if enabled in project)
+    --if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN ON ALWAYS TRIM BEHIND RAZORS (if enabled in project)
 end
 
 function SetItemsInLanes(tbl)
