@@ -532,12 +532,12 @@ function Set_Razor_Data(tbl, razor_data)
     reaper.GetSetMediaTrackInfo_String(tbl.rprobj, "P_RAZOREDITS_EXT", razor_str, true)
 end
 
-local function Get_items_in_razor(item, time_Start, time_End, razor_lane)
+local function Get_items_in_Lane(item, time_Start, time_End, lane)
     if not item then return end
     local item_start = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
     local item_len = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
     local item_end = item_start + item_len
-    if GetItemLane(item) == razor_lane then
+    if GetItemLane(item) == lane then
         if (time_Start < item_end and time_End > item_start) then return item end
     end
 end
@@ -550,6 +550,21 @@ local function Razor_item_position(item, time_Start, time_End)
     local new_lenght = time_End >= item_end and item_end - new_start or time_End - new_start
     local new_offset = time_Start <= item_start and 0 or (time_Start - item_start)
     return new_start, new_lenght, new_offset
+end
+
+function Delete_item_area(item, time_Start, time_End)
+    local first_to_delete = reaper.SplitMediaItem(item, time_End)
+    local last_to_delete = reaper.SplitMediaItem(item, time_Start)
+
+    if first_to_delete and last_to_delete then
+        reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( last_to_delete ), last_to_delete)
+    elseif last_to_delete and not first_to_delete then
+        reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( last_to_delete ), last_to_delete)
+    elseif first_to_delete and not last_to_delete then
+        reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( item ), item)
+    elseif not first_to_delete and not last_to_delete then
+        reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( item ), item)
+    end
 end
 
 local function Make_item_from_razor(tbl, item, time_Start, time_End)
@@ -577,10 +592,18 @@ function Copy_area(tbl, razor_info)
     local current_razor_toggle_state = reaper.GetToggleCommandState(42421)
     if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN OFF ALWAYS TRIM BEHIND RAZORS (if enabled in project)
     local new_items = {}
+    local to_delete = {}
     for i = 1, reaper.CountTrackMediaItems(tbl.rprobj) do
-        local razor_item = Get_items_in_razor(reaper.GetTrackMediaItem(tbl.rprobj, i-1),razor_info[1], razor_info[2], razor_info.razor_lane)
+        local razor_item = Get_items_in_Lane(reaper.GetTrackMediaItem(tbl.rprobj, i-1), razor_info[1], razor_info[2], razor_info.razor_lane)
         new_items[#new_items + 1] = razor_item
+        local to_delete_item = Get_items_in_Lane(reaper.GetTrackMediaItem(tbl.rprobj, i-1), razor_info[1], razor_info[2], tbl.comp_idx)
+        to_delete[#to_delete + 1] = to_delete_item
     end
+
+    for i = 1, #to_delete do
+        Delete_item_area(to_delete[i], razor_info[1], razor_info[2])
+    end
+
     for i = 1, #new_items do Make_item_from_razor(tbl, new_items[i], razor_info[1], razor_info[2]) end
     if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN ON ALWAYS TRIM BEHIND RAZORS (if enabled in project)
 end
