@@ -139,45 +139,6 @@ function X_to_pos(x)
 	return p
 end
 
--- function Get_track_under_mouse(x, y)
--- 	local TBH = Get_TBH()
---     local _, cy = To_client(x, y)
---     local track, env_info = reaper.GetTrackFromPoint(x, y)
-
--- 	if  reaper.CountTracks(0) == 0 then return end
-
---     if track and env_info == 0 and TBH[track].vis == true then
---         return track, TBH[track].t, TBH[track].b, TBH[track].h
---     elseif track and env_info == 1 then
---         for i = 1, reaper.CountTrackEnvelopes(track) do
---             local env = reaper.GetTrackEnvelope(track, i - 1)
---             if TBH[env].t <= cy and TBH[env].b >= cy and TBH[env].vis == true then
---                 return env, TBH[env].t, TBH[env].b, TBH[env].h
---             end
---         end
---     end
--- end
-
-function Get_track_under_mouse(x, y)
-    local _, cy = To_client(x, y)
-    local track, env_info = reaper.GetTrackFromPoint(x, y)
-	--if reaper.CountTracks(0) == 0 then return end
-
-    if track and env_info == 0 then
-        return track
-    elseif track and env_info == 1 then
-        for i = 1, reaper.CountTrackEnvelopes(track) do
-            local env = reaper.GetTrackEnvelope(track, i - 1)
-			local p_tr = reaper.GetEnvelopeInfo_Value(env, "P_TRACK")
-			local p_tr_t = reaper.GetMediaTrackInfo_Value(p_tr, "I_TCPY")
-			local env_h = reaper.GetEnvelopeInfo_Value(env, "I_TCPH")
-			local env_t = reaper.GetEnvelopeInfo_Value(env, "I_TCPY") + p_tr_t
-			local env_b = env_t + env_h
-            if env_t <= cy and env_b >= cy then return env end
-        end
-    end
-end
-
 local function GetMouseTrackXYH(track)
 	if reaper.ValidatePtr(track, "MediaTrack*") then
         local tr_t = reaper.GetMediaTrackInfo_Value(track, "I_TCPY")
@@ -192,43 +153,45 @@ local function GetMouseTrackXYH(track)
 	end
 end
 
+function Get_track_under_mouse()
+	local x, y = reaper.GetMousePosition()
+    local _, cy = To_client(x, y)
+    local track, env_info = reaper.GetTrackFromPoint(x, y)
+	--if reaper.CountTracks(0) == 0 then return end
+
+    if track and env_info == 0 then
+        return track
+    elseif track and env_info == 1 then
+        for i = 1, reaper.CountTrackEnvelopes(track) do
+            local env = reaper.GetTrackEnvelope(track, i - 1)
+			local env_t, _, env_b = GetMouseTrackXYH(env)
+            if env_t <= cy and env_b >= cy then return env end
+        end
+    end
+end
 
 local lane_offset = 14 -- schwa decided this number by carefully inspecting pixels in paint.net
-function Get_lane_from_mouse_coordinates(my, VT_TB)
-	if not VT_TB then return end
+function Get_lane_from_mouse_coordinates(my)
 	if mouse.tr == nil then return end
-	if not VT_TB[mouse.tr] or not VT_TB[mouse.tr].info then return end
+	if not reaper.ValidatePtr(mouse.tr, "MediaTrack*") then return end
+	local item_for_height = reaper.GetTrackMediaItem(mouse.tr, 0)
+	if not item_for_height then return 1 end
 	local _, cy = To_client(0, my)
+    local total_lanes = round(1 / reaper.GetMediaItemInfo_Value(item_for_height, 'F_FREEMODE_H')) -- WE CHECK LANE HEIGHT WITH ANY ITEM ON TRACK
 	local t, h, b = GetMouseTrackXYH(mouse.tr)
 	if cy > t and cy < b then
-		local lane = math.floor(((cy - t) / (h - lane_offset)) * #VT_TB[mouse.tr].info) + 1
-		lane = lane <= #VT_TB[mouse.tr].info and lane or #VT_TB[mouse.tr].info
+		local lane = math.floor(((cy - t) / (h - lane_offset)) * total_lanes) + 1
+		lane = lane <= total_lanes and lane or total_lanes
 		-- disable when track_h is less than 90px
 		return lane
 	end
 end
 
-function GetMouseTrack_BR()
-    local window, segment, details = reaper.BR_GetMouseCursorContext()
-    if window == "tcp" or window == "arrange" then
-        local rprobj, takeenv = nil, nil
-        if segment == "track" then
-            rprobj = reaper.BR_GetMouseCursorContext_Track();
-        elseif segment == "envelope" then
-            rprobj, takeenv = reaper.BR_GetMouseCursorContext_Envelope()
-            rprobj = takeenv and nil or rprobj
-        end
-        if rprobj then
-            return rprobj
-        end
-    end
-end
-
-function MouseInfo(VT_TB)
+function MouseInfo()
 	mouse.x, mouse.y = reaper.GetMousePosition()
 	mouse.p = X_to_pos(mouse.x)
-	mouse.tr, mouse.r_t, mouse.r_b = Get_track_under_mouse(mouse.x, mouse.y)
-	mouse.lane = Get_lane_from_mouse_coordinates(mouse.y, VT_TB)
+	mouse.tr = Get_track_under_mouse()
+	mouse.lane = Get_lane_from_mouse_coordinates(mouse.y)
 	if mouse.tr then mouse.last_tr = mouse.tr end
 
 	mouse.l_click   = false

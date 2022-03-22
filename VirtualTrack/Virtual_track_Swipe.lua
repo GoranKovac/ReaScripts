@@ -15,10 +15,21 @@ require("Modules/Utils")
 Check_Requirements()
 reaper.gmem_attach('Virtual_Tracks')
 
-function do_swipe()
+--! FIX ONLY WORKING ON MULTIOPLE TRACKS IF WAS TOGGLED ON FIRST TRACK
+local OLD_RAZOR_INFO
+function Do_swipe()
     local track = OnDemand()
     if not track then return end
-    Copy_area(Get_VT_TB()[track])
+    local razor_info = Get_Razor_Data(track)
+    if not razor_info then return end
+    if table.concat(razor_info) ~= OLD_RAZOR_INFO then
+        local focused_tracks = GetSelectedTracksData(track, true) -- THIS ADDS NEW TRACKS TO VT_TB FOR ON DEMAND SCRIPT AND RETURNS TRACK SELECTION
+        for sel_track in pairs(focused_tracks) do
+            Set_Razor_Data(sel_track, razor_info)
+            Copy_area(Get_VT_TB()[sel_track], razor_info)
+        end
+        OLD_RAZOR_INFO = table.concat(razor_info)
+    end
 end
 
 local function Main()
@@ -26,10 +37,10 @@ local function Main()
     if exit ~= 1 then
         reaper.gmem_write(2, 1)
         reaper.defer(Main)
-        do_swipe()
+        Do_swipe()
     else
         --EXIT CODE
-        local exit = reaper.gmem_write(1, 0)
+        reaper.gmem_write(1, 0)
         reaper.gmem_write(2, 0)
     end
 end

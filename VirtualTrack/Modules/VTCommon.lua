@@ -9,90 +9,58 @@ local script_folder = debug.getinfo(1).source:match("@?(.*[\\|/])"):gsub("[\\|/]
 local reaper, gfx = reaper, gfx
 local VT_TB, TBH = {}, nil
 
-local function GetAndSetMenuByTrack(rprobj)
+local function GetAndSetMenuByTrack(tbl)
+    local main_name
     local track_menu = {
         [1] = { name = "",                      fname = "" },
-        [2] = { name = "Create New Variant",    fname = "CreateNew" },
-        [3] = { name = "Duplicate Variant",     fname = "Duplicate" },
-        [4] = { name = "Delete Variant",        fname = "Delete" },
-        [5] = { name = "Clear Variant",         fname = "Clear" },
-        [6] = { name = "Rename Variants",       fname = "Rename" },
-        [7] = { name = "Link Track/Envelope",   fname = "SetLinkVal" },
-        [8] = { name = "Show All Variants",     fname = "ShowAll" },
-    }
-    local lane_menu = {
-        [1] = { name = "",                      fname = "" },
-        [2] = { name = "New Emtpy Comp",        fname = "NewComp" },
-        [3] = { name = "ENABLE Comping on : ",  fname = "SetCompLane" },
-        [4] = { name = "Link Track/Envelope",   fname = "SetLinkVal" },
-        [5] = { name = "Show All Variants",     fname = "ShowAll" },
+        [2] = { name = "Create New",            fname = "CreateNew" },
+        [3] = { name = "Duplicate",             fname = "Duplicate" },
+        [4] = { name = "Delete",                fname = "Delete" },
+        [5] = { name = "Rename",                fname = "Rename" },
+        [6] = { name = "Show All Variants",     fname = "ShowAll" },
+        --[7] = { name = "Link Track/Envelope",   fname = "SetLinkVal" },
     }
 
-    local folder_menu = {
-        [1] = { name = "",                      fname = "" }, -- NORMAL TRACK VERSIONS FOR FOLDER
-        [2] = { name = "",                      fname = "" }, -- FOLDER VERSIONS FOR CHILDS
-        [3] = { name = "Create New Variant",    fname = "CreateNewFolder" },
-        [4] = { name = "Duplicate Variant",     fname = "DuplicateFolder" },
-        [5] = { name = "Delete Variant",        fname = "DeleteFolder" },
-        [6] = { name = "Clear Variant",         fname = "ClearFolder" },
-        [7] = { name = "Rename Variants",       fname = "RenameFolder" },
-        [8] = { name = "Link Track/Envelope",   fname = "SetLinkValFolder" },
-    }
-
-    if reaper.ValidatePtr(rprobj, "MediaTrack*") then
-        -- if reaper.GetMediaTrackInfo_Value(rprobj, "I_FOLDERDEPTH") ~= 1 then
-            local main_name = "Virtual TRACK : "
-            track_menu[7].name = GetLinkVal() == true and "!" .. track_menu[7].name or track_menu[7].name
-            lane_menu[4] = track_menu[7]
-            if reaper.GetMediaTrackInfo_Value(rprobj, "I_FREEMODE") == 2 then
-                local lane_mode = true
-                --lane_menu[5].name = GetSwipe() == true and "!" .. lane_menu[5].name or lane_menu[5].name
-                track_menu[8].name = "!" .. track_menu[8].name
-                lane_menu[5] = track_menu[8]
-                return lane_menu, main_name, lane_mode
+    track_menu[4].name = #tbl.info    == 1 and "#" .. track_menu[4].name or track_menu[4].name -- DISABLE DELETE IF ONLY 1 VERSION IS LEFT
+    track_menu[6].name = tbl.lane_mode == 2 and "!" .. track_menu[6].name or track_menu[6].name -- Show All Variants
+    --track_menu[7].name = GetLinkVal() == true and "!" .. track_menu[7].name or track_menu[7].name -- Link Track/Envelope
+    if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
+        -- if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FOLDERDEPTH") ~= 1 then
+            main_name = "Virtual TRACK - " .. tbl.idx .. " : "
+            if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 2 then
+                track_menu[2].name = tbl.comp_idx ~= 0 and "#" .. track_menu[2].name or track_menu[2].name -- DISABLE CREATE NEW WHILE COMP IS ENABLED
+                track_menu[3].name = tbl.comp_idx ~= 0 and "#" .. track_menu[3].name or track_menu[3].name -- DISABLE DUPLICATE WHILE COMP IS ENABLED
+                track_menu[4].name = tbl.comp_idx ~= 0 and "#" .. track_menu[4].name or track_menu[4].name -- DISABLE DELETE WHILE COMP IS ENABLED
+                table.insert(track_menu, 2, { name = "New Emtpy Comp",        fname = "NewComp" })
+                track_menu[2].name = tbl.comp_idx ~= 0 and "#" .. track_menu[2].name or track_menu[2].name-- DISABLE NEW COMP IF ALREADY COMPING
+                table.insert(track_menu, 3, { name = "ENABLE Comping - ",  fname = "SetCompLane" })
+                track_menu[3].name = tbl.comp_idx ~= 0 and "!" .. "DISABLE Comping - " .. tbl.comp_idx .. " - ".. tbl.info[tbl.comp_idx].name or track_menu[3].name -- SHOW CURRENT SELECTION VERSION
+                track_menu[3].name = tbl.comp_idx == 0 and track_menu[3].name .. tbl.idx .. " " .. tbl.info[tbl.idx].name or track_menu[3].name -- SHOW CURRENT SELECTION VERSION
             end
-            return track_menu, main_name
-        -- elseif reaper.GetMediaTrackInfo_Value(rprobj, "I_FOLDERDEPTH") == 1 then
-        --     local main_name = "Virtual FOLDER : "
-        --     return folder_menu, main_name
-        -- end
-    elseif reaper.ValidatePtr(rprobj, "TrackEnvelope*") then
-        local main_name = "Virtual ENV : "
-        local parent_tr = reaper.GetEnvelopeInfo_Value(rprobj, "P_TRACK")
-        track_menu[7].name = GetLinkVal() == true and "!" .. track_menu[7].name or track_menu[7].name
-        table.remove(track_menu, 8) -- REMOVE "ShowAll" KEY IF ENVELOPE
-        if reaper.GetMediaTrackInfo_Value(parent_tr, "I_FREEMODE") == 2 then -- IF PARENT TRACK IS IN LANE MODE
-            local lane_mode = true
-            return track_menu, main_name, lane_mode
-        end
-        return track_menu, main_name
+        --elseif reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FOLDERDEPTH") == 1 then
+                -- main_name = "Virtual FOLDER - " .. tbl.idx .. " : "
+                -- FOLDER MENU HERE
+        --end
+    elseif reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then
+        main_name = "Virtual ENV - " .. tbl.idx .. " : "
+        table.remove(track_menu, 6) -- REMOVE "ShowAll" KEY IF ENVELOPE
     end
+    return track_menu, main_name
 end
 
 local function MakeMenu(tbl)
     local concat = ""
-    local menu, main_name, lane_mode = GetAndSetMenuByTrack(tbl.rprobj)
-    local versions= {}
+    local menu, main_name = GetAndSetMenuByTrack(tbl)
+    local versions = {}
     for i = 1, #tbl.info do versions[#versions+1] = i == tbl.idx  and "!" .. i .. " - ".. tbl.info[i].name or i .. " - " .. tbl.info[i].name end
-    menu[1].name = ">" .. main_name .. tbl.info[tbl.idx].name .. "|" .. table.concat(versions, "|") .."|<|"
-
-    if lane_mode then
-        menu[3].name = reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") and menu[3].name .. MouseInfo(VT_TB).last_menu_lane .. " " .. tbl.info[MouseInfo(VT_TB).last_menu_lane].name or menu[3].name
-        if On_Demand_STORED_PEXT_CHECK() then
-            menu[3].name = On_Demand_STORED_PEXT_CHECK() == tbl.rprobj and "!" .. "DISABLE Comping : " .. tbl.comp_idx .. " - ".. tbl.info[tbl.comp_idx].name or "#" .. menu[3].name
-            menu[2].name = On_Demand_STORED_PEXT_CHECK() and "#" .. menu[2].name or menu[2].name
-        end
-        --menu[2].name = (tbl.info[tbl.comp_idx] and tbl.info[tbl.comp_idx].name:find("COMP")) and "#" .. menu[2].name or menu[2].name
-    else
-        menu[4].name = #tbl.info == 1 and "#" .. menu[4].name or menu[4].name
-    end
-
+    menu[1].name = ">" .. main_name .. (tbl.info[tbl.idx] and tbl.info[tbl.idx].name or "NO SELECTED VERSIONS") .. "|" .. table.concat(versions, "|") .."|<|"
+    menu[3].name = tbl.lane_mode == 2 and menu[3].name .. "|" or menu[3].name -- ADD SEPARATOR TO COMP MENU
     for i = 1, #menu do concat = concat .. menu[i].name .. (i ~= #menu and "|" or "") end
-    return concat, menu, lane_mode
+    return concat, menu
 end
 
 local function CreateGFXWindow()
-    local title = "supper_awesome_mega_menu"
+    local title = "super_awesome_mega_menu"
     gfx.init( title, 0, 0, 0, 0, 0 )
     local hwnd = reaper.JS_Window_Find( title, true )
     if hwnd then reaper.JS_Window_Show( hwnd, "HIDE" ) end
@@ -108,9 +76,10 @@ local function Update_tempo_map()
 end
 
 function Show_menu(rprobj, on_demand)
+    MouseInfo().last_menu_lane = MouseInfo().lane-- SET LAST LANE BEFORE MENU OPENED
+    MouseInfo().last_menu_tr = MouseInfo().tr -- SET LAST TRACK BEFORE MENU OPENED
     local focused_tracks = GetSelectedTracksData(rprobj, on_demand) -- THIS ADDS NEW TRACKS TO VT_TB FOR ON DEMAND SCRIPT AND RETURNS TRACK SELECTION
-    MouseInfo(VT_TB).last_menu_lane = MouseInfo(VT_TB).lane-- SET LAST LANE BEFORE MENU OPENED
-    MouseInfo(VT_TB).last_menu_tr = MouseInfo(VT_TB).tr -- SET LAST TRACK BEFORE MENU OPENED
+    local all_childrens_and_parents = GetChild_ParentTrack_FromStored_PEXT(focused_tracks)
     CheckTrackLaneModeState(VT_TB[rprobj])
     CreateGFXWindow()
     reaper.PreventUIRefresh(1)
@@ -118,45 +87,41 @@ function Show_menu(rprobj, on_demand)
     local update_tempo = rprobj == reaper.GetMasterTrack(0) and true or false
     local tbl = rprobj == reaper.GetMasterTrack(0) and VT_TB[reaper.GetTrackEnvelopeByName( rprobj, "Tempo map" )] or VT_TB[rprobj]
 
-    local concat_menu, menu_options, lane_mode = MakeMenu(tbl)
+    local concat_menu, menu_options = MakeMenu(tbl)
     local m_num = gfx.showmenu(concat_menu)
     if m_num == 0 then return end
 
-    local linked_VT = GetLinkedTracksVT_INFO(focused_tracks, on_demand)
-    for track in pairs(linked_VT) do UpdateInternalState(VT_TB[track]) end
+    local current_tracks = focused_tracks -- GetLinkVal() and all_childrens_and_parents or focused_tracks
+    for track in pairs(current_tracks) do UpdateInternalState(VT_TB[track]) end
+
     local new_name, rename_retval
     if m_num > #tbl.info then
         m_num = (m_num - #tbl.info) + 1
-        reaper.Undo_BeginBlock2(0)
         if menu_options[m_num].fname == "Rename" then
             local current_name = tbl.info[tbl.idx].name
             local current_name_id = current_name:match("%S+ %S+ (%S+)")
-            rename_retval, new_name = reaper.GetUserInputs(current_name, 1, " New Name :", current_name_id)
+            rename_retval, new_name = reaper.GetUserInputs(current_name, 1, " New Name :", current_name)
             if not rename_retval then return end
         end
-        if menu_options[m_num].fname == "SetLinkVal" or menu_options[m_num].fname == "SetCompLane" or menu_options[m_num].fname == "NewComp" then
+        reaper.Undo_BeginBlock2(0)
+        if menu_options[m_num].fname == "SetLinkVal" then
             _G[menu_options[m_num].fname](VT_TB[rprobj])
         end
-        if menu_options[m_num].fname ~= "SetLinkVal" and menu_options[m_num].fname ~= "SetCompLane" and menu_options[m_num].fname ~= "NewComp" then
-            for track in pairs(linked_VT) do
+        if menu_options[m_num].fname ~= "SetLinkVal" then
+            for track in pairs(current_tracks) do
                 _G[menu_options[m_num].fname](VT_TB[track], new_name)
-                StoreStateToDocument(VT_TB[track])
+                StoreStateToDocument(VT_TB[rprobj])
             end
         end
         reaper.Undo_EndBlock2(0, "VT: " .. menu_options[m_num].name, -1)
     else
         reaper.Undo_BeginBlock2(0)
-        for track in pairs(linked_VT) do
-            if not lane_mode then
-                SwapVirtualTrack(VT_TB[track], m_num)
-            else
-                Lane_view(VT_TB[track], m_num)
-            end
+        for track in pairs(current_tracks) do
+            SwapVirtualTrack(VT_TB[track], m_num)
             StoreStateToDocument(VT_TB[track])
         end
-        reaper.Undo_EndBlock2(0, "VT: Recall Version " .. m_num, -1)
+        reaper.Undo_EndBlock2(0, "VT: Recall Version " .. math.floor(m_num), -1)
     end
-
     SetUpdateDraw()
     reaper.JS_LICE_Clear(tbl.font_bm, 0x00000000)
     gfx.quit()
@@ -231,7 +196,8 @@ local function Store_To_PEXT(el)
         info = el.info,
         idx = math.floor(el.idx),
         comp_idx = math.floor(el.comp_idx),
-        lane_mode = math.floor(el.lane_mode)
+        lane_mode = math.floor(el.lane_mode),
+        def_icon = el.def_icon,
     }
     local serialized = tableToString(storedTable)
     if reaper.ValidatePtr(el.rprobj, "MediaTrack*") then
@@ -255,19 +221,26 @@ local function Restore_From_PEXT(el)
             el.idx = storedTable.idx
             el.comp_idx = storedTable.comp_idx
             el.lane_mode = storedTable.lane_mode
+            el.def_icon = storedTable.def_icon
         end
     end
 end
 
-function On_Demand_STORED_PEXT_CHECK()
+function CheckInStored_PEXT_STATE(rprobj)
+    local stored_tbl = {}
     for i = 1, reaper.CountTracks(0) do
-        local temp_tbl = {}
-        temp_tbl.rprobj = reaper.GetTrack(0, i - 1)
-        Restore_From_PEXT(temp_tbl)
-        if temp_tbl.comp_idx ~= 0 and temp_tbl.comp_idx ~= nil then
-            return temp_tbl.rprobj
+        local track = reaper.GetTrack(0, i - 1)
+        stored_tbl[track] = {}
+        stored_tbl[track].rprobj = track
+        Restore_From_PEXT(stored_tbl[track])
+        for j = 1, reaper.CountTrackEnvelopes(track) do
+            local env = reaper.GetTrackEnvelope(track, j - 1)
+            stored_tbl[env] = {}
+            stored_tbl[env].rprobj = env
+            Restore_From_PEXT(stored_tbl[env])
         end
     end
+    if stored_tbl[rprobj].info then return true end
 end
 
 function Get_TBH_Info(tr) return TBH[tr] and TBH[tr].t, TBH[tr].h, TBH[tr].b end
@@ -296,6 +269,7 @@ local function Get_Item_Chunk(item, keep_color)
     local _, chunk = reaper.GetItemStateChunk(item, "", false)
     chunk = keep_color and chunk or chunk:gsub("TAKECOLOR %S+ %S+", "") -- KEEP COLOR TEMPORARY ONLY WHEN IN LANE MODE
     chunk = chunk:gsub("SEL.-\n", "") -- REMOVE SELECTED FIELD IN CHUNK (WE DO NOT STORE SELECTED STATE)
+    --chunk = chunk:gsub("{.-}", "") --! GENERATE NEW GUIDS FOR NEW ITEM (fixes duplicate make pooled items) ---- NEED TO FIX TO ONLY HAPPEN WHEN DUPLICATING
     return chunk
 end
 
@@ -354,6 +328,7 @@ function Get_Env_Chunk(env)
 end
 
 local function Set_Env_Chunk(env, data)
+    if data == nil then return end
     data[1] = data[1]:gsub("LANEHEIGHT.-\n", "") -- MAKE LANE HEIGHT CURRENT HEIGHT (REAPER GENERATES CURRENT LANE HEIGHT IF ITS REMOVED)
     reaper.SetEnvelopeStateChunk(env, data[1], false)
 end
@@ -372,6 +347,7 @@ local function Make_Empty_Env(env)
 end
 
 local function Create_item(tr, data)
+    if data == nil then return end
     local new_items = {}
     for i = 1, #data do
         local empty_item = reaper.AddMediaItemToTrack(tr)
@@ -413,6 +389,7 @@ local function StoreLaneData(tbl)
 end
 
 function UpdateInternalState(tbl)
+    if not tbl or not tbl.info[tbl.idx] then return false end
     if tbl.lane_mode == 2 then -- ONLY HAPPENS ON MEDIA TRACKS
         StoreLaneData(tbl)
         return true
@@ -445,39 +422,70 @@ end
 
 function SwapVirtualTrack(tbl, idx)
     if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
-        Clear(tbl) -- ONLY MEDIA TRACKS NEED TO BE CLEARD SINCE WE ARE INSERTING ITEMS INTO IT, ENVELOPES JUST SWAP CHUNKS
-        Create_item(tbl.rprobj, tbl.info[idx])
+        if tbl.lane_mode == 0 then
+            Clear(tbl)
+            Create_item(tbl.rprobj, tbl.info[idx])
+        elseif tbl.lane_mode == 2 then
+            SetInsertLaneChunk(tbl, idx)
+        end
     elseif reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then
+        Clear(tbl)
         Set_Env_Chunk(tbl.rprobj, tbl.info[idx])
     end
     tbl.idx = idx;
 end
 
 local function Get_Store_CurrentTrackState(tbl, name)
-    tbl.info[#tbl.info + 1] = GetChunkTableForObject(tbl.rprobj)
-    tbl.idx = #tbl.info
-    tbl.info[#tbl.info].name = name == "Version - " and name .. #tbl.info or name
+    local data = GetChunkTableForObject(tbl.rprobj)
+    table.insert(tbl.info, 1, data) --! ORDER NEWEST TO OLDEST
+    --tbl.info[#tbl.info + 1] = data --! ORDER OLDEST TO NEWEST (CAUSES PROBLEMS WITH IF LAST LANE IS EMPTY ATM)
+    tbl.idx = 1
+    tbl.info[1].name = name == "Version " and name .. #tbl.info or name
 end
 
-function CreateNew(tbl)
+function Set_LaneView_mode(tbl)
     Clear(tbl)
-    Get_Store_CurrentTrackState(tbl, "Version - ")
+    SetItemsInLanes(tbl)
+    reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", 2)
+    SetInsertLaneChunk(tbl, tbl.idx)
+    SetLaneImageColors(tbl)
+end
+
+function CreateNew(tbl, name)
+    Clear(tbl)
+    local version_name = name and name or "Version "
+    Get_Store_CurrentTrackState(tbl, version_name)
+    if tbl.lane_mode == 2 then Set_LaneView_mode(tbl) end
 end
 
 function Duplicate(tbl)
-    local name = tbl.info[tbl.idx].name:match("(%S+ %S+ %S+)") .. " DUP"
-    Get_Store_CurrentTrackState(tbl, name)
+    Clear(tbl) -- if its not clear for some reason it does not change guids (probably because of updateinternalstate)
+    local name = tbl.info[tbl.idx].name .. " DUP"
+    local duplicate_tbl = Deepcopy(tbl.info[tbl.idx]) -- DEEP COPY TABLE SO ITS UNIQUE (LUA DOES SHALLOW BY DEFAULT)
+    for i = 1, #duplicate_tbl do duplicate_tbl[i] = duplicate_tbl[i]:gsub("{.-}", "") end --! GENERATE NEW GUIDS FOR NEW ITEM (fixes duplicate make pooled items)
+    table.insert(tbl.info, 1, duplicate_tbl) --! ORDER NEWEST TO OLDEST
+    tbl.idx = 1
+    tbl.info[tbl.idx].name = name
+    SwapVirtualTrack(tbl,tbl.idx)
+    if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
+        if tbl.lane_mode == 2 then Set_LaneView_mode(tbl) end
+    end
 end
 
 function Delete(tbl)
     if #tbl.info == 1 then return end
     table.remove(tbl.info, tbl.idx)
     tbl.idx = tbl.idx <= #tbl.info and tbl.idx or #tbl.info
-    SwapVirtualTrack(tbl, tbl.idx)
+    if tbl.lane_mode == 2 then
+        Set_LaneView_mode(tbl)
+    elseif tbl.lane_mode == 0 then
+        SwapVirtualTrack(tbl, tbl.idx)
+    end
 end
 
 function Clear(tbl)
     if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
+        reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", 0) -- ALWAYS TURN OFF LANES WHEN CLEARING ITEMS
         local num_items = reaper.CountTrackMediaItems(tbl.rprobj)
         for i = num_items, 1, -1 do
             local item = reaper.GetTrackMediaItem(tbl.rprobj, i - 1)
@@ -491,14 +499,14 @@ end
 function Rename(tbl, name)
     if not name then return end
     local current_name = tbl.info[tbl.idx].name
-    tbl.info[tbl.idx].name = current_name:match("(%S+ %S+ )") .. name
+    tbl.info[tbl.idx].name = name -- current_name:match("(%S+ %S+ )") .. name
 end
 
-local function SetInsertLaneChunk(tbl, lane)
+function SetInsertLaneChunk(tbl, lane)
     local _, track_chunk = reaper.GetTrackStateChunk(tbl.rprobj, "", false)
     local lane_mask = 2^(lane-1)
     if not track_chunk:find("LANESOLO") then -- IF ANY LANE IS NOT SOLOED LANESOLO PART DOES NOT EXIST YET AND WE NEED TO INJECT IT
-        local insert_pos = string.find(track_chunk, "\n") -- insert after first new line <TRACK in this case
+        local insert_pos = string.find(track_chunk, "\n") -- INSERT AFTER FIRST NEW LINE <TRACK IN THIS CASE
         track_chunk = track_chunk:sub(1, insert_pos) .. string.format("LANESOLO %i 0", lane_mask .. "\n") ..track_chunk:sub(insert_pos + 1)
     else
         track_chunk = track_chunk:gsub("(LANESOLO )%d+", "%1" ..lane_mask)
@@ -506,18 +514,7 @@ local function SetInsertLaneChunk(tbl, lane)
     reaper.SetTrackStateChunk(tbl.rprobj, track_chunk, false)
 end
 
-function Lane_view(tbl, lane)
-    reaper.PreventUIRefresh(1)
-    if reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then
-        SwapVirtualTrack(tbl, lane)
-    elseif reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
-        SetInsertLaneChunk(tbl, lane)
-    end
-    tbl.idx = lane
-    reaper.PreventUIRefresh(-1)
-end
-
-local function Get_Razor_Data(track)
+function Get_Razor_Data(track)
     if not reaper.ValidatePtr(track, "MediaTrack*") then return end
     local _, razor_area = reaper.GetSetMediaTrackInfo_String(track, 'P_RAZOREDITS_EXT', '', false)
     if razor_area == "" then return nil end
@@ -529,12 +526,18 @@ local function Get_Razor_Data(track)
     return razor_info
 end
 
-local function Get_items_in_razor(item, time_Start, time_End, razor_lane)
+function Set_Razor_Data(tbl, razor_data)
+    if not reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then return end
+    local razor_str = razor_data[1] .. " " .. razor_data[2] .. " " .. "'' " .. razor_data[3] .. " " .. razor_data[4]
+    reaper.GetSetMediaTrackInfo_String(tbl.rprobj, "P_RAZOREDITS_EXT", razor_str, true)
+end
+
+local function Get_items_in_Lane(item, time_Start, time_End, lane)
     if not item then return end
     local item_start = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
     local item_len = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
     local item_end = item_start + item_len
-    if GetItemLane(item) == razor_lane then
+    if GetItemLane(item) == lane then
         if (time_Start < item_end and time_End > item_start) then return item end
     end
 end
@@ -549,56 +552,58 @@ local function Razor_item_position(item, time_Start, time_End)
     return new_start, new_lenght, new_offset
 end
 
+local function Delete_items_or_area(item, time_Start, time_End)
+    local first_to_delete = reaper.SplitMediaItem(item, time_End)
+    local last_to_delete = reaper.SplitMediaItem(item, time_Start)
+    if first_to_delete and last_to_delete then
+        reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( last_to_delete ), last_to_delete)
+    elseif last_to_delete and not first_to_delete then
+        reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( last_to_delete ), last_to_delete)
+    elseif first_to_delete and not last_to_delete then
+        reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( item ), item)
+    elseif not first_to_delete and not last_to_delete then
+        reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( item ), item)
+    end
+end
+
 local function Make_item_from_razor(tbl, item, time_Start, time_End)
     if not item then return end
-    local item_chunk = Get_Item_Chunk(item, true):gsub("{.-}", "") -- GENERATE NEW GUIDS FOR NEW ITEM
+    local item_chunk = Get_Item_Chunk(item, true):gsub("{.-}", "") -- GENERATE NEW GUIDS FOR NEW ITEM, WE KEEP COLOR HERE TO GET IT IN COMP LANE (ITS REMOVED WHEN COMP IS OFF)
     local new_item_start, new_item_lenght, new_item_offset = Razor_item_position(item, time_Start, time_End)
     local item_start_offset = tonumber(item_chunk:match("SOFFS (%S+)"))
     local item_play_rate = tonumber(item_chunk:match("PLAYRATE (%S+)"))
-    local created_chunk = item_chunk:gsub("(POSITION) %S+", "%1 " .. new_item_start):gsub("(LENGTH) %S+", "%1 " .. new_item_lenght):gsub("(SOFFS) %S+", "%1 " .. item_start_offset + (new_item_offset * item_play_rate))
+    local auto_crossfade = reaper.GetToggleCommandState(40041)
+    local rv, def_auto_crossfade_value = reaper.get_config_var_string("defsplitxfadelen")
+    local crossfade_offset = auto_crossfade == 1 and def_auto_crossfade_value or 0
+    local created_chunk = item_chunk:gsub("(POSITION) %S+", "%1 " .. new_item_start - crossfade_offset):gsub("(LENGTH) %S+", "%1 " .. new_item_lenght + (crossfade_offset * 2)):gsub("(SOFFS) %S+", "%1 " .. item_start_offset + (new_item_offset * item_play_rate) - crossfade_offset)
     local createdItem = reaper.AddMediaItemToTrack(tbl.rprobj)
     reaper.SetItemStateChunk(createdItem, created_chunk, false)
     reaper.SetMediaItemInfo_Value(createdItem, "F_FREEMODE_Y", (tbl.comp_idx - 1) / #tbl.info)
     reaper.SetMediaItemInfo_Value(createdItem, "F_FREEMODE_H", 1 / #tbl.info)
-    reaper.SetMediaItemSelected(createdItem, true)
-    reaper.Main_OnCommand(40930, 0) -- TRIM BEHIND ONLY WORKS ON SELECTED ITEMS
-    reaper.SetMediaItemSelected(createdItem, false)
+    --reaper.SetMediaItemSelected(createdItem, true)
+    --reaper.Main_OnCommand(40930, 0) -- TRIM BEHIND ONLY WORKS ON SELECTED ITEMS
+    --reaper.SetMediaItemSelected(createdItem, false)
     return createdItem, created_chunk
 end
 
-local OLD_RAZOR_INFO
-function Copy_area(tbl)
-    if not reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then return end -- PREVENT DOING THIS ON ENVELOPES
+function Copy_area(tbl, razor_info)
+    if reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then return end -- PREVENT DOING THIS ON ENVELOPES
     if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 0 then return end -- PREVENT DOING IN NON LANE MODE
-    local razor_info = Get_Razor_Data(tbl.rprobj)
-    if not razor_info then return end
     if tbl.comp_idx == 0 or tbl.comp_idx == razor_info.razor_lane then return end -- PREVENT COPY ONTO ITSELF
-    if table.concat(razor_info) ~= OLD_RAZOR_INFO then -- PREVENT DOING COPY IF RAZOR DATA HAS NOT CHANGED
-        reaper.Undo_BeginBlock2(0)
-        reaper.PreventUIRefresh(1)
-        local current_razor_toggle_state = reaper.GetToggleCommandState(42421)
-        if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN OFF ALWAYS TRIM BEHIND RAZORS (if enabled in project)
-        --! HACK FOR COPY PASTE REMOVING EMPTY LANE
-        local hack_item = reaper.AddMediaItemToTrack(tbl.rprobj)
-        reaper.SetMediaItemInfo_Value(hack_item, "F_FREEMODE_Y", (tbl.comp_idx - 1) / #tbl.info)
-        reaper.SetMediaItemInfo_Value(hack_item, "F_FREEMODE_H", 1 / #tbl.info)
-        --! HACK FOR COPY PASTE REMOVING EMPTY LANE
-        local new_items = {}
-        for i = 1, reaper.CountTrackMediaItems(tbl.rprobj) do
-            local razor_item = Get_items_in_razor(reaper.GetTrackMediaItem(tbl.rprobj, i-1),razor_info[1], razor_info[2], razor_info.razor_lane)
-            new_items[#new_items+1] = razor_item
-        end
-        for i = 1, #new_items do Make_item_from_razor(tbl, new_items[i], razor_info[1], razor_info[2]) end
-        if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN ON ALWAYS TRIM BEHIND RAZORS (if enabled in project)
-        reaper.DeleteTrackMediaItem(tbl.rprobj, hack_item) --! REMOVE EMPTY ITEM CREATED TO HACK AROUND COPY PASTE DELETING EMPTY LANE
-        reaper.PreventUIRefresh(-1)
-        reaper.Undo_EndBlock2(0, "VT: " .. "COPY AREA TO COMP", -1)
-        reaper.UpdateArrange()
-        OLD_RAZOR_INFO = table.concat(razor_info)
+    Set_Razor_Data(tbl, razor_info) -- JUST SET RAZOR ON OTHER TRACKS (ONLY FOR VISUAL)
+    --local current_razor_toggle_state = reaper.GetToggleCommandState(42421)
+    --if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN OFF ALWAYS TRIM BEHIND RAZORS (if enabled in project)
+    local new_items, to_delete = {}, {}
+    for i = 1, reaper.CountTrackMediaItems(tbl.rprobj) do
+        new_items[#new_items + 1] = Get_items_in_Lane(reaper.GetTrackMediaItem(tbl.rprobj, i-1), razor_info[1], razor_info[2], razor_info.razor_lane) -- COPY ITEMS FROM RAZOR LANE
+        to_delete[#to_delete + 1] = Get_items_in_Lane(reaper.GetTrackMediaItem(tbl.rprobj, i-1), razor_info[1], razor_info[2], tbl.comp_idx) -- WE ARE GONNA DELETE ON COMPING LANE IF RAZOR IS EMPTY
     end
+    for i = 1, #to_delete do Delete_items_or_area(to_delete[i], razor_info[1], razor_info[2]) end -- DELETE ITEMS CONTENT (IF RAZOR IS EMPTY) COMPING "SILENCE"
+    for i = 1, #new_items do Make_item_from_razor(tbl, new_items[i], razor_info[1], razor_info[2]) end
+    --if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN ON ALWAYS TRIM BEHIND RAZORS (if enabled in project)
 end
 
-local function SetItemsInLanes(tbl)
+function SetItemsInLanes(tbl)
     for i = 1, #tbl.info do
         local items = Create_item(tbl.rprobj, tbl.info[i])
         for j = 1, #items do
@@ -608,7 +613,6 @@ local function SetItemsInLanes(tbl)
     end
 end
 
---! FIXME: IF NEW VERSION IS CREATED AND IMMEDIATLY OVERRIDE TCP LANE MODE, THAT VERSION IS NOT STORED... NOT SURE HOW TO FIX IT
 function CheckTrackLaneModeState(tbl)
     if not reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then return end
     local current_track_mode = math.floor(reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE"))
@@ -616,39 +620,28 @@ function CheckTrackLaneModeState(tbl)
         UpdateInternalState(tbl)
         current_track_mode = current_track_mode ~= 1 and current_track_mode or 2
         reaper.PreventUIRefresh(1)
-        Clear(tbl)
-        if current_track_mode == 2 or current_track_mode == 1 then -- handle both fixed lanes and FIPM
-            reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", 0) -- need to reset (lanes must be set before entering fixed lanes mode)
-            SetItemsInLanes(tbl)
-            reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", 2)
-            Lane_view(tbl, tbl.idx)
+        tbl.lane_mode = current_track_mode
+        if current_track_mode == 2 then
+            Set_LaneView_mode(tbl)
         elseif current_track_mode == 0 then
             SwapVirtualTrack(tbl, tbl.idx)
         end
-        tbl.lane_mode = current_track_mode
         StoreStateToDocument(tbl)
         reaper.PreventUIRefresh(-1)
     end
 end
 
---! FIXME: hack to prevent empty lanes from removing
 function ShowAll(tbl)
     if not reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then return end
     local fimp = reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE")
-    local toggle = fimp == 2 and 0 or 2
-    tbl.lane_mode = toggle
+    tbl.lane_mode = fimp == 2 and 0 or 2
     if fimp == 2 then StoreLaneData(tbl) end
-    Clear(tbl)
-    if toggle == 2 then
-        SetItemsInLanes(tbl)
-        reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", toggle)
-        Lane_view(tbl, tbl.idx)
-        SetLaneImageColors(tbl)
-    elseif toggle == 0 then
-        reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", toggle)
-        tbl.comp_idx = 0 -- DISABLE COMPING
-        reaper.gmem_write(1,1) -- DISABLE SWIPE DEFER
-        Create_item(tbl.rprobj, tbl.info[tbl.idx])
+    if fimp == 0 then -- IF LANE MODE IS OFF TURN IT ON
+        Set_LaneView_mode(tbl)
+    elseif fimp == 2 then -- IF LANE MODE IS ON TURN IT OFF
+        SetCompLane(tbl,0) -- TURN OFF COMPING
+        SwapVirtualTrack(tbl, tbl.idx)
+        -- reaper.gmem_write(1,1) -- DISABLE SWIPE DEFER
     end
     reaper.UpdateTimeline()
 end
@@ -659,7 +652,7 @@ local function CreateVTElements(direct)
             local Element = Get_class_tbl()
             local tr_data, lane = GetChunkTableForObject(track, true)
             tr_data = lane and tr_data or {tr_data}
-            for i = 1, #tr_data do tr_data[i].name = "Version - " .. i end
+            for i = 1, #tr_data do tr_data[i].name = "Version " .. i end
             VT_TB[track] = Element:new(track, tr_data, direct)
             Restore_From_PEXT(VT_TB[track])
         end
@@ -698,7 +691,7 @@ function OnDemand()
     local rprobj
     local _, demand_mode = reaper.GetProjExtState(0, "VirtualTrack", "ONDEMAND_MODE")
     if demand_mode == "mouse" then
-        rprobj = GetMouseTrack_BR()
+        rprobj = Get_track_under_mouse()
     elseif demand_mode == "track" then
         local sel_env = reaper.GetSelectedEnvelope( 0 )
         rprobj = sel_env and sel_env or reaper.GetSelectedTrack(0,0)
@@ -728,10 +721,11 @@ function CheckUndoState()
 end
 
 function SetCompLane(tbl, lane)
-    local new_lane = lane and lane or MouseInfo(VT_TB).last_menu_lane
+    local new_lane = lane and lane or MouseInfo().last_menu_lane
     tbl.comp_idx = tbl.comp_idx == 0 and new_lane or 0
+    SetCompActiveIcon(tbl)
     StoreStateToDocument(tbl)
-    CallSwipeScript()
+    --CallSwipeScript(tbl)
 end
 
 function GetLinkVal()
@@ -740,76 +734,34 @@ function GetLinkVal()
     return false
 end
 
-function SetLinkVal(tbl)
+function SetLinkVal()
     local cur_value = GetLinkVal() == true and "false" or "true"
     reaper.SetProjExtState(0, "VirtualTrack", "LINK", cur_value)
 end
 
-local function CheckIfTableIDX_Exists(parent_tr, child_tr)
-    if #VT_TB[parent_tr].info ~= #VT_TB[child_tr].info then
-        for i = 1, #VT_TB[parent_tr].info do
-            if not VT_TB[child_tr].info[i] then CreateNew(VT_TB[child_tr]) end
-        end
-        StoreStateToDocument(VT_TB[child_tr])
-    end
-    if #VT_TB[child_tr].info ~= #VT_TB[parent_tr].info then
-        for i = 1, #VT_TB[child_tr].info do
-            if not VT_TB[parent_tr].info[i] then CreateNew(VT_TB[parent_tr]) end
-        end
-        StoreStateToDocument(VT_TB[parent_tr])
-    end
-end
-
-function GetLinkedTracksVT_INFO(tracl_tbl, on_demand) -- WE SEND ON DEMAND FROM DIRECT SCRIPT
-    local all_linked_tracks = {}
+function GetChild_ParentTrack_FromStored_PEXT(tracl_tbl)
+    local all_childs_parents = {}
     for track in pairs(tracl_tbl) do
         if reaper.ValidatePtr(track, "MediaTrack*") then
-            all_linked_tracks[track] = track
+            if not all_childs_parents[track] then all_childs_parents[track] = track end
             for i = 1, reaper.CountTrackEnvelopes(track) do
                 local env = reaper.GetTrackEnvelope(track, i - 1)
-                all_linked_tracks[env] = env
+                if CheckInStored_PEXT_STATE(env) then
+                    if not all_childs_parents[env] then all_childs_parents[env] = env end
+                end
             end
         elseif reaper.ValidatePtr(track, "TrackEnvelope*") then
             local parent_tr = reaper.GetEnvelopeInfo_Value(track, "P_TRACK")
-            all_linked_tracks[parent_tr] = parent_tr
+            if not all_childs_parents[parent_tr] then all_childs_parents[parent_tr] = parent_tr end
             for i = 1, reaper.CountTrackEnvelopes(parent_tr) do
                 local env = reaper.GetTrackEnvelope(parent_tr, i - 1)
-                all_linked_tracks[env] = env
-            end
-        end
-    end
-    local same_envelopes = {}
-    if reaper.ValidatePtr(MouseInfo(VT_TB).last_menu_tr, "TrackEnvelope*") then
-        local m_retval, m_name = reaper.GetEnvelopeName(MouseInfo(VT_TB).last_menu_tr)
-        for track in pairs(all_linked_tracks) do
-            if reaper.ValidatePtr(track, "TrackEnvelope*") and VT_TB[track] then
-                local env_retval, env_name = reaper.GetEnvelopeName(track)
-                if m_name == env_name then
-                    same_envelopes[track] = env_name
+                if CheckInStored_PEXT_STATE(env) then
+                    if not all_childs_parents[env] then all_childs_parents[env] = env end
                 end
             end
         end
     end
-    if not GetLinkVal() then
-        if reaper.ValidatePtr(MouseInfo(VT_TB).last_menu_tr, "TrackEnvelope*") then -- IF MOUSE TRACK IS UNDER ENVELPE GET ALL SAME ENVELOPES HERE
-            return same_envelopes
-        else
-            return tracl_tbl
-        end
-    end
-    for track in pairs(all_linked_tracks) do
-        if not on_demand then
-            if not VT_TB[track] then table.remove(all_linked_tracks, track) end
-        else
-            if not VT_TB[track] then SetupSingleElement(track) end
-        end
-    end
-    for linked_track in pairs(all_linked_tracks) do
-        for track in pairs(tracl_tbl) do
-            CheckIfTableIDX_Exists(track, linked_track)
-        end
-    end
-    return all_linked_tracks
+    return all_childs_parents
 end
 
 local function GetFolderChilds(track)
@@ -827,6 +779,24 @@ local function GetFolderChilds(track)
     return children
 end
 
+function Same_Envelope_AS_Mouse(tr_tbl)
+    local same_envelopes = nil
+    local all_childs = GetChild_ParentTrack_FromStored_PEXT(tr_tbl)
+    if reaper.ValidatePtr(MouseInfo().last_menu_tr, "TrackEnvelope*") then
+        same_envelopes = {}
+        local m_retval, m_name = reaper.GetEnvelopeName(MouseInfo().last_menu_tr)
+        for track in pairs(all_childs) do
+            if reaper.ValidatePtr(track, "TrackEnvelope*") and all_childs[track] then
+                local env_retval, env_name = reaper.GetEnvelopeName(track)
+                if m_name == env_name then
+                    same_envelopes[track] = env_name
+                end
+            end
+        end
+    end
+    return same_envelopes
+end
+
 local function GetSelectedTracks()
     if reaper.CountSelectedTracks(0) < 2 then return end -- MULTISELECTION START ONLY IF 2 OR MORE TRACKS ARE SELECTED
     local selected_tracks = {}
@@ -834,7 +804,8 @@ local function GetSelectedTracks()
         local track = reaper.GetSelectedTrack(0, i - 1)
         selected_tracks[track] = track
     end
-    return selected_tracks
+    local same_envelope_as_mouse = Same_Envelope_AS_Mouse(selected_tracks)
+    return same_envelope_as_mouse and same_envelope_as_mouse or selected_tracks
 end
 
 function GetSelectedTracksData(rprobj, on_demand)
@@ -850,45 +821,34 @@ function GetSelectedTracksData(rprobj, on_demand)
     end
 end
 
-function GetSwipe() return GetEXTState_VAL("SWIPE") end
+-- function GetSwipe() return GetEXTState_VAL("SWIPE") end
+
+-- reaper.gmem_attach('Virtual_Tracks')
+-- local swipe_script_id = reaper.AddRemoveReaScript(true, 0, script_folder .. "Virtual_track_Swipe.lua", true)
+-- local swipe_script = reaper.NamedCommandLookup(swipe_script_id)
+-- function CallSwipeScript(tbl)
+--     if tbl.comp_idx == 0 then reaper.gmem_write(1,1) return end
+
+--     if GetSwipe() then
+--         if reaper.gmem_read(2) ~= 1 then -- do not start script if its already started (other script is sending that its already opened in this mem field)
+--             reaper.gmem_write(1,0)
+--             reaper.Main_OnCommand(swipe_script,0)
+--         end
+--     else
+--         reaper.gmem_write(1,1) -- send to defer script to close
+--     end
+-- end
+
 local function GetLaneColorOption() return GetEXTState_VAL("LANE_COLORS") end
 
-reaper.gmem_attach('Virtual_Tracks')
-local swipe_script_id = reaper.AddRemoveReaScript(true, 0, script_folder .. "Virtual_track_Swipe.lua", true)
-local swipe_script = reaper.NamedCommandLookup(swipe_script_id)
-function CallSwipeScript()
-    if not On_Demand_STORED_PEXT_CHECK() then reaper.gmem_write(1,1) return end
-    --if VT_TB[On_Demand_STORED_PEXT_CHECK()].comp_idx == 0 then reaper.gmem_write(1,1) return end
-
-    if GetSwipe() then
-        if reaper.gmem_read(2) ~= 1 then -- do not start script if its already started (other script is sending that its already opened in this mem field)
-            reaper.gmem_write(1,0)
-            reaper.Main_OnCommand(swipe_script,0)
-        end
-    else
-        reaper.gmem_write(1,1) -- send to defer script to close
-    end
-end
-
---! FIXME COMP TRACK OFFSETS ENVELOPES WHEN LINK IS ENABLED
 function NewComp(tbl)
     reaper.PreventUIRefresh(1)
-    table.insert(tbl.info, 1, {})
-    Clear(tbl)
-    --! refresh lane mode
-    reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", 0) -- need to reset (lanes must be set before entering fixed lanes mode)
-    SetItemsInLanes(tbl)
-    reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", 2)
-    --! refresh lane mode
-    tbl.idx = tbl.idx + 1 -- increment selected lane in menu since its pushed down
-    --! FIXME SET COMP AS ACTIVE ??
-    Lane_view(tbl, tbl.idx)
-    SetLaneImageColors(tbl)
     local comp_cnt = 1
     for i = 1, #tbl.info do
         if tbl.info[i].name and tbl.info[i].name:find("COMP") then comp_cnt = comp_cnt + 1 end
     end
-    tbl.info[1].name = "COMP - " .. comp_cnt
+    local comp_name = "COMP - " .. comp_cnt
+    CreateNew(tbl, comp_name)
     SetCompLane(tbl, 1)
     reaper.PreventUIRefresh(-1)
 end
@@ -904,7 +864,7 @@ function SetLaneImageColors(tbl)
     if not GetLaneColorOption() then return end
     local num_items = reaper.CountTrackMediaItems(tbl.rprobj)
     for i = 1, #tbl.info do
-        local t = i/10
+        local t = i / 12
         local r, g, b = GenPalette(t + 0.33)
         local calculate_color = reaper.ColorToNative(r, g, b)
         for j = 1, num_items do
@@ -913,6 +873,20 @@ function SetLaneImageColors(tbl)
             if GetItemLane(item) == i then
                 reaper.SetMediaItemTakeInfo_Value(take, "I_CUSTOMCOLOR", calculate_color|0x1000000)
             end
+        end
+    end
+end
+
+local icon_path = script_folder .. "/Images/comp_test.png"
+function SetCompActiveIcon(tbl)
+    if tbl.comp_idx ~= 0 then
+        local retval, current_icon = reaper.GetSetMediaTrackInfo_String( tbl.rprobj, "P_ICON", 0, false )
+        tbl.def_icon = retval and current_icon or ""
+        reaper.GetSetMediaTrackInfo_String( tbl.rprobj, "P_ICON" , icon_path, true )
+    else
+        if tbl.def_icon ~= nil then
+            reaper.GetSetMediaTrackInfo_String( tbl.rprobj, "P_ICON" , tbl.def_icon, true )
+            tbl.def_icon = nil
         end
     end
 end
