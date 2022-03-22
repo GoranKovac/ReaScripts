@@ -25,7 +25,7 @@ local function GetAndSetMenuByTrack(tbl)
     --track_menu[7].name = GetLinkVal() == true and "!" .. track_menu[7].name or track_menu[7].name -- Link Track/Envelope
     if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
         -- if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FOLDERDEPTH") ~= 1 then
-            main_name = "Virtual TRACK : "
+            main_name = "Virtual TRACK - " .. tbl.idx .. " : "
             if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 2 then
                 track_menu[2].name = tbl.comp_idx ~= 0 and "#" .. track_menu[2].name or track_menu[2].name -- DISABLE CREATE NEW WHILE COMP IS ENABLED
                 track_menu[3].name = tbl.comp_idx ~= 0 and "#" .. track_menu[3].name or track_menu[3].name -- DISABLE DUPLICATE WHILE COMP IS ENABLED
@@ -37,10 +37,11 @@ local function GetAndSetMenuByTrack(tbl)
                 --track_menu[3].name = tbl.comp_idx == 0 and track_menu[3].name .. tbl.idx .. " " .. tbl.info[tbl.idx].name or track_menu[3].name -- SHOW CURRENT SELECTION VERSION
             end
         --elseif reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FOLDERDEPTH") == 1 then
+                -- main_name = "Virtual FOLDER - " .. tbl.idx .. " : "
                 -- FOLDER MENU HERE
         --end
     elseif reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then
-        main_name = "Virtual ENV : "
+        main_name = "Virtual ENV - " .. tbl.idx .. " : "
         table.remove(track_menu, 6) -- REMOVE "ShowAll" KEY IF ENVELOPE
     end
     return track_menu, main_name
@@ -438,7 +439,7 @@ local function Get_Store_CurrentTrackState(tbl, name)
     table.insert(tbl.info, 1, data) --! ORDER NEWEST TO OLDEST
     --tbl.info[#tbl.info + 1] = data --! ORDER OLDEST TO NEWEST (CAUSES PROBLEMS WITH IF LAST LANE IS EMPTY ATM)
     tbl.idx = 1
-    tbl.info[1].name = name == "Version - " and name .. #tbl.info or name
+    tbl.info[1].name = name == "Version " and name .. #tbl.info or name
 end
 
 function Set_LaneView_mode(tbl)
@@ -451,14 +452,14 @@ end
 
 function CreateNew(tbl, name)
     Clear(tbl)
-    local version_name = name and name or "Version - "
+    local version_name = name and name or "Version "
     Get_Store_CurrentTrackState(tbl, version_name)
     if tbl.lane_mode == 2 then Set_LaneView_mode(tbl) end
 end
 
 function Duplicate(tbl)
     Clear(tbl) -- if its not clear for some reason it does not change guids (probably because of updateinternalstate)
-    local name = tbl.info[tbl.idx].name:match("(%S+ %S+ %S+)") .. " DUP"
+    local name = tbl.info[tbl.idx].name:match("(%S+ %S+)") .. " DUP"
     local duplicate_tbl = Deepcopy(tbl.info[tbl.idx]) -- DEEP COPY TABLE SO ITS UNIQUE (LUA DOES SHALLOW BY DEFAULT)
     for i = 1, #duplicate_tbl do duplicate_tbl[i] = duplicate_tbl[i]:gsub("{.-}", "") end --! GENERATE NEW GUIDS FOR NEW ITEM (fixes duplicate make pooled items)
     table.insert(tbl.info, 1, duplicate_tbl) --! ORDER NEWEST TO OLDEST
@@ -632,7 +633,7 @@ local function CreateVTElements(direct)
             local Element = Get_class_tbl()
             local tr_data, lane = GetChunkTableForObject(track, true)
             tr_data = lane and tr_data or {tr_data}
-            for i = 1, #tr_data do tr_data[i].name = "Version - " .. i end
+            for i = 1, #tr_data do tr_data[i].name = "Version " .. i end
             VT_TB[track] = Element:new(track, tr_data, direct)
             Restore_From_PEXT(VT_TB[track])
         end
