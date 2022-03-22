@@ -21,17 +21,18 @@ local function Main()
     if not mouse.lane then return end
     local VT_TB = Get_VT_TB()
     local focused_tracks = GetSelectedTracksData(track, true) -- THIS ADDS NEW TRACKS TO VT_TB FOR ON DEMAND SCRIPT AND RETURNS TRACK SELECTION
-   -- local all_childrens_and_parents = GetChild_ParentTrack_FromStored_PEXT(focused_tracks)
+    local groups = GetTrackGroup(Get_VT_TB()[track])
+    --local all_childrens_and_parents = GetChild_ParentTrack_FromStored_PEXT(focused_tracks)
    -- local current_tracks = GetLinkVal() and all_childrens_and_parents or focused_tracks
     reaper.PreventUIRefresh(1)
     if reaper.ValidatePtr(track, "MediaTrack*") then
         if reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") == 2 then
-            for linked_track in pairs(focused_tracks) do
-                CheckTrackLaneModeState(VT_TB[linked_track])
-                UpdateInternalState(VT_TB[linked_track])
-                --Lane_view(VT_TB[linked_track], mouse.lane)
-                SwapVirtualTrack(VT_TB[linked_track], mouse.lane)
-                StoreStateToDocument(VT_TB[linked_track])
+            for _, tbl in pairs(groups) do
+                CheckTrackLaneModeState(tbl)
+                UpdateInternalState(tbl)
+                
+                SwapVirtualTrack(tbl, mouse.lane)
+                StoreStateToDocument(tbl)
             end
         end
     end

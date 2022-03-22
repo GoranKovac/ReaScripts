@@ -24,9 +24,10 @@ local function Main()
         reaper.Undo_BeginBlock2(0)
         reaper.PreventUIRefresh(1)
         local focused_tracks = GetSelectedTracksData(track, true) -- THIS ADDS NEW TRACKS TO VT_TB FOR ON DEMAND SCRIPT AND RETURNS TRACK SELECTION
-        for sel_track in pairs(focused_tracks) do
+        local groups = GetTrackGroup(Get_VT_TB()[track])
+        for sel_track, tbl in pairs(groups) do
            -- Set_Razor_Data(sel_track, razor_info)
-            Copy_area(Get_VT_TB()[sel_track],razor_info)
+            Copy_area(tbl,razor_info)
         end
         reaper.PreventUIRefresh(-1)
         reaper.Undo_EndBlock2(0, "VT: " .. "COPY AREA TO COMP", -1)

@@ -22,7 +22,7 @@ local function GetAndSetMenuByTrack(tbl)
     }
 
     track_menu[4].name = #tbl.info    == 1 and "#" .. track_menu[4].name or track_menu[4].name -- DISABLE DELETE IF ONLY 1 VERSION IS LEFT
-    track_menu[6].name = tbl.lane_mode == 2 and "!" .. track_menu[6].name or track_menu[6].name -- Show All Variants
+    track_menu[6].name = tbl.lane_mode == 2 and "|" .. "!" .. track_menu[6].name or "|" .. track_menu[6].name -- Show All Variants
     --track_menu[7].name = GetLinkVal() == true and "!" .. track_menu[7].name or track_menu[7].name -- Link Track/Envelope
     if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
         -- if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FOLDERDEPTH") ~= 1 then
@@ -35,11 +35,15 @@ local function GetAndSetMenuByTrack(tbl)
                 track_menu[2].name = tbl.comp_idx ~= 0 and "#" .. track_menu[2].name or track_menu[2].name-- DISABLE NEW COMP IF ALREADY COMPING
                 table.insert(track_menu, 3, { name = "ENABLE Comping - ",  fname = "SetCompLane" })
                 track_menu[3].name = tbl.comp_idx ~= 0 and "!" .. "DISABLE Comping - " .. tbl.comp_idx .. " - ".. tbl.info[tbl.comp_idx].name or track_menu[3].name -- SHOW CURRENT SELECTION VERSION
-                track_menu[3].name = tbl.comp_idx == 0 and track_menu[3].name .. tbl.idx .. " " .. tbl.info[tbl.idx].name or track_menu[3].name -- SHOW CURRENT SELECTION VERSION
+                track_menu[3].name = tbl.comp_idx == 0 and track_menu[3].name .. tbl.idx .. " : " .. tbl.info[tbl.idx].name or track_menu[3].name -- SHOW CURRENT SELECTION VERSION
             end
+            table.insert(track_menu, 2, { name = "GROUP - ",          fname = "SetGroup" })
+            local groups = {}
+            for i = 1, 10 do groups[i] = i == tbl.group and "!" .. i or i end
+            track_menu[2].name = ">" .. track_menu[2].name .. (tbl.group ~= 0 and math.floor(tbl.group) or "None").. "|" .. table.concat(groups, "|") .."|<|"
         --elseif reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FOLDERDEPTH") == 1 then
-                -- main_name = "Virtual FOLDER - " .. tbl.idx .. " : "
-                -- FOLDER MENU HERE
+            -- main_name = "Virtual FOLDER - " .. tbl.idx .. " : "
+            -- FOLDER MENU HERE
         --end
     elseif reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then
         main_name = "Virtual ENV - " .. tbl.idx .. " : "
@@ -54,7 +58,7 @@ local function MakeMenu(tbl)
     local versions = {}
     for i = 1, #tbl.info do versions[#versions+1] = i == tbl.idx  and "!" .. i .. " - ".. tbl.info[i].name or i .. " - " .. tbl.info[i].name end
     menu[1].name = ">" .. main_name .. (tbl.info[tbl.idx] and tbl.info[tbl.idx].name or "NO SELECTED VERSIONS") .. "|" .. table.concat(versions, "|") .."|<|"
-    menu[3].name = tbl.lane_mode == 2 and menu[3].name .. "|" or menu[3].name -- ADD SEPARATOR TO COMP MENU
+    menu[4].name = tbl.lane_mode == 2 and menu[4].name .. "|" or menu[4].name -- ADD SEPARATOR TO COMP MENU
     for i = 1, #menu do concat = concat .. menu[i].name .. (i ~= #menu and "|" or "") end
     return concat, menu
 end
@@ -80,6 +84,9 @@ function Show_menu(rprobj, on_demand)
     MouseInfo().last_menu_tr = MouseInfo().tr -- SET LAST TRACK BEFORE MENU OPENED
     local focused_tracks = GetSelectedTracksData(rprobj, on_demand) -- THIS ADDS NEW TRACKS TO VT_TB FOR ON DEMAND SCRIPT AND RETURNS TRACK SELECTION
     --local all_childrens_and_parents = GetChild_ParentTrack_FromStored_PEXT(focused_tracks)
+    --! groups
+    local groups = GetTrackGroup(VT_TB[rprobj])
+    
     CheckTrackLaneModeState(VT_TB[rprobj])
     CreateGFXWindow()
     reaper.PreventUIRefresh(1)
@@ -95,11 +102,11 @@ function Show_menu(rprobj, on_demand)
     for track in pairs(current_tracks) do UpdateInternalState(VT_TB[track]) end
 
     local new_name, rename_retval
-    if m_num > #tbl.info then
-        m_num = (m_num - #tbl.info) + 1
-        if menu_options[m_num].fname == "Rename" then
+    if m_num > #tbl.info + 10 then
+        m_num = (m_num - #tbl.info - 10 ) + 2
+        if menu_options[m_num] and menu_options[m_num].fname == "Rename" then
             local current_name = tbl.info[tbl.idx].name
-            local current_name_id = current_name:match("%S+ %S+ (%S+)")
+            --local current_name_id = current_name:match("%S+ %S+ (%S+)")
             rename_retval, new_name = reaper.GetUserInputs(current_name, 1, " New Name :", current_name)
             if not rename_retval then return end
         end
@@ -114,13 +121,18 @@ function Show_menu(rprobj, on_demand)
             end
         end
         reaper.Undo_EndBlock2(0, "VT: " .. menu_options[m_num].name, -1)
-    else
+    elseif m_num <= #tbl.info then
         reaper.Undo_BeginBlock2(0)
         for track in pairs(current_tracks) do
             SwapVirtualTrack(VT_TB[track], m_num)
             StoreStateToDocument(VT_TB[track])
         end
         reaper.Undo_EndBlock2(0, "VT: Recall Version " .. math.floor(m_num), -1)
+    elseif m_num > #tbl.info then
+        local group = m_num - #tbl.info
+        for track in pairs(current_tracks) do
+            SetGroup(VT_TB[track], group)
+        end
     end
     SetUpdateDraw()
     reaper.JS_LICE_Clear(tbl.font_bm, 0x00000000)
@@ -198,6 +210,7 @@ local function Store_To_PEXT(el)
         comp_idx = math.floor(el.comp_idx),
         lane_mode = math.floor(el.lane_mode),
         def_icon = el.def_icon,
+        group = el.group,
     }
     local serialized = tableToString(storedTable)
     if reaper.ValidatePtr(el.rprobj, "MediaTrack*") then
@@ -222,25 +235,27 @@ local function Restore_From_PEXT(el)
             el.comp_idx = storedTable.comp_idx
             el.lane_mode = storedTable.lane_mode
             el.def_icon = storedTable.def_icon
+            el.group = storedTable.group
+            return true
         end
     end
 end
 
-function CheckInStored_PEXT_STATE(rprobj)
+function Get_Stored_PEXT_STATE_TBL()
     local stored_tbl = {}
     for i = 1, reaper.CountTracks(0) do
         local track = reaper.GetTrack(0, i - 1)
         stored_tbl[track] = {}
         stored_tbl[track].rprobj = track
-        Restore_From_PEXT(stored_tbl[track])
+        if not Restore_From_PEXT(stored_tbl[track]) then stored_tbl[track] = nil end
         for j = 1, reaper.CountTrackEnvelopes(track) do
             local env = reaper.GetTrackEnvelope(track, j - 1)
             stored_tbl[env] = {}
             stored_tbl[env].rprobj = env
-            Restore_From_PEXT(stored_tbl[env])
+            if not Restore_From_PEXT(stored_tbl[env]) then stored_tbl[env] = nil end
         end
     end
-    if stored_tbl[rprobj].info then return true end
+    return next(stored_tbl) and stored_tbl
 end
 
 function Get_TBH_Info(tr) return TBH[tr] and TBH[tr].t, TBH[tr].h, TBH[tr].b end
@@ -727,16 +742,16 @@ function SetCompLane(tbl, lane)
     --CallSwipeScript(tbl)
 end
 
-function GetLinkVal()
-    local retval, link = reaper.GetProjExtState(0, "VirtualTrack", "LINK")
-    if retval ~= 0 then return link == "true" and true or false end
-    return false
-end
+-- function GetLinkVal()
+--     local retval, link = reaper.GetProjExtState(0, "VirtualTrack", "LINK")
+--     if retval ~= 0 then return link == "true" and true or false end
+--     return false
+-- end
 
-function SetLinkVal()
-    local cur_value = GetLinkVal() == true and "false" or "true"
-    reaper.SetProjExtState(0, "VirtualTrack", "LINK", cur_value)
-end
+-- function SetLinkVal()
+--     local cur_value = GetLinkVal() == true and "false" or "true"
+--     reaper.SetProjExtState(0, "VirtualTrack", "LINK", cur_value)
+-- end
 
 function GetChild_ParentTrack_FromStored_PEXT(tracl_tbl)
     local all_childs_parents = {}
@@ -745,7 +760,7 @@ function GetChild_ParentTrack_FromStored_PEXT(tracl_tbl)
             if not all_childs_parents[track] then all_childs_parents[track] = track end
             for i = 1, reaper.CountTrackEnvelopes(track) do
                 local env = reaper.GetTrackEnvelope(track, i - 1)
-                if CheckInStored_PEXT_STATE(env) then
+                if Get_Stored_PEXT_STATE_TBL()[env] then
                     if not all_childs_parents[env] then all_childs_parents[env] = env end
                 end
             end
@@ -754,7 +769,7 @@ function GetChild_ParentTrack_FromStored_PEXT(tracl_tbl)
             if not all_childs_parents[parent_tr] then all_childs_parents[parent_tr] = parent_tr end
             for i = 1, reaper.CountTrackEnvelopes(parent_tr) do
                 local env = reaper.GetTrackEnvelope(parent_tr, i - 1)
-                if CheckInStored_PEXT_STATE(env) then
+                if Get_Stored_PEXT_STATE_TBL()[env] then
                     if not all_childs_parents[env] then all_childs_parents[env] = env end
                 end
             end
@@ -888,4 +903,19 @@ function SetCompActiveIcon(tbl)
             tbl.def_icon = nil
         end
     end
+end
+
+function SetGroup(tbl, group)
+    tbl.group = tbl.group == group and 0 or group
+    StoreStateToDocument(tbl)
+end
+
+function GetTrackGroup(tbl)
+    local stored_tbl = Get_Stored_PEXT_STATE_TBL()
+    if not stored_tbl then return end
+    local groups = {}
+    for k, v in pairs(stored_tbl) do
+        if v.group == tbl.group then groups[k] = v end
+    end
+    return groups
 end
