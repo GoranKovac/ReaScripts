@@ -33,9 +33,9 @@ local function GetAndSetMenuByTrack(tbl)
                 track_menu[4].name = tbl.comp_idx ~= 0 and "#" .. track_menu[4].name or track_menu[4].name -- DISABLE DELETE WHILE COMP IS ENABLED
                 table.insert(track_menu, 2, { name = "New Emtpy Comp",        fname = "NewComp" })
                 track_menu[2].name = tbl.comp_idx ~= 0 and "#" .. track_menu[2].name or track_menu[2].name-- DISABLE NEW COMP IF ALREADY COMPING
-                table.insert(track_menu, 3, { name = "ENABLE Comping",  fname = "SetCompLane" })
-                track_menu[3].name = tbl.comp_idx ~= 0 and "!" .. "DISABLE Comping : " .. tbl.comp_idx .. " - ".. tbl.info[tbl.comp_idx].name or track_menu[3].name -- SHOW CURRENT SELECTION VERSION
-                --track_menu[3].name = tbl.comp_idx == 0 and track_menu[3].name .. tbl.idx .. " " .. tbl.info[tbl.idx].name or track_menu[3].name -- SHOW CURRENT SELECTION VERSION
+                table.insert(track_menu, 3, { name = "ENABLE Comping - ",  fname = "SetCompLane" })
+                track_menu[3].name = tbl.comp_idx ~= 0 and "!" .. "DISABLE Comping - " .. tbl.comp_idx .. " - ".. tbl.info[tbl.comp_idx].name or track_menu[3].name -- SHOW CURRENT SELECTION VERSION
+                track_menu[3].name = tbl.comp_idx == 0 and track_menu[3].name .. tbl.idx .. " " .. tbl.info[tbl.idx].name or track_menu[3].name -- SHOW CURRENT SELECTION VERSION
             end
         --elseif reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FOLDERDEPTH") == 1 then
                 -- main_name = "Virtual FOLDER - " .. tbl.idx .. " : "
