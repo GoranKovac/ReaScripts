@@ -9,86 +9,49 @@ local script_folder = debug.getinfo(1).source:match("@?(.*[\\|/])"):gsub("[\\|/]
 local reaper, gfx = reaper, gfx
 local VT_TB, TBH = {}, nil
 
-local function GetAndSetMenuByTrack(rprobj)
+local function GetAndSetMenuByTrack(tbl)
+    local main_name
     local track_menu = {
         [1] = { name = "",                      fname = "" },
-        [2] = { name = "Create New Variant",    fname = "CreateNew" },
-        [3] = { name = "Duplicate Variant",     fname = "Duplicate" },
-        [4] = { name = "Delete Variant",        fname = "Delete" },
-        [5] = { name = "Rename Variants",       fname = "Rename" },
+        [2] = { name = "Create New",            fname = "CreateNew" },
+        [3] = { name = "Duplicate",             fname = "Duplicate" },
+        [4] = { name = "Delete",                fname = "Delete" },
+        [5] = { name = "Rename",                fname = "Rename" },
         [6] = { name = "Link Track/Envelope",   fname = "SetLinkVal" },
         [7] = { name = "Show All Variants",     fname = "ShowAll" },
     }
 
-    local lane_menu = {
-        [1] = { name = "",                      fname = "" },
-        [2] = { name = "New Emtpy Comp",        fname = "NewComp" },
-        [3] = { name = "ENABLE Comping on : ",  fname = "SetCompLane" },
-        [4] = { name = "Create New Variant",    fname = "CreateNew" },
-        [5] = { name = "Duplicate Variant",     fname = "Duplicate" },
-        [6] = { name = "Delete Variant",        fname = "Delete" },
-        [7] = { name = "Rename Variants",       fname = "Rename" },
-        [8] = { name = "Link Track/Envelope",   fname = "SetLinkVal" },
-        [9] = { name = "Show All Variants",     fname = "ShowAll" },
-    }
-
-    -- local folder_menu = {
-    --     [1] = { name = "",                      fname = "" }, -- NORMAL TRACK VERSIONS FOR FOLDER
-    --     [2] = { name = "",                      fname = "" }, -- FOLDER VERSIONS FOR CHILDS
-    --     [3] = { name = "Create New Variant",    fname = "CreateNewFolder" },
-    --     [4] = { name = "Duplicate Variant",     fname = "DuplicateFolder" },
-    --     [5] = { name = "Delete Variant",        fname = "DeleteFolder" },
-    --     [6] = { name = "Clear Variant",         fname = "ClearFolder" },
-    --     [7] = { name = "Rename Variants",       fname = "RenameFolder" },
-    --     [8] = { name = "Link Track/Envelope",   fname = "SetLinkValFolder" },
-    -- }
-
-    if reaper.ValidatePtr(rprobj, "MediaTrack*") then
-        -- if reaper.GetMediaTrackInfo_Value(rprobj, "I_FOLDERDEPTH") ~= 1 then
-            local main_name = "Virtual TRACK : "
-            track_menu[6].name = GetLinkVal() == true and "!" .. track_menu[6].name or track_menu[6].name
-            lane_menu[8] = track_menu[6]
-            if reaper.GetMediaTrackInfo_Value(rprobj, "I_FREEMODE") == 2 then
-                local lane_mode = true
+    track_menu[6].name = GetLinkVal() == true and "!" .. track_menu[6].name or track_menu[6].name
+    if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
+        -- if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FOLDERDEPTH") ~= 1 then
+            main_name = "Virtual TRACK : "
+            if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 2 then
+                track_menu[2].name = tbl.comp_idx ~= 0 and "#" .. track_menu[2].name or track_menu[2].name -- DISABLE CREATE NEW WHILE COMP IS ENABLED
+                track_menu[3].name = tbl.comp_idx ~= 0 and "#" .. track_menu[3].name or track_menu[3].name -- DISABLE DUPLICATE WHILE COMP IS ENABLED
+                track_menu[4].name = tbl.comp_idx ~= 0 and "#" .. track_menu[4].name or track_menu[4].name -- DISABLE DELETE WHILE COMP IS ENABLED
+                track_menu[4].name = #tbl.info    == 1 and "#" .. track_menu[4].name or track_menu[4].name -- DISABLE DELETE IF ONLY 1 VERSION IS LEFT
                 track_menu[7].name = "!" .. track_menu[7].name
-                lane_menu[9] = track_menu[7]
-                return lane_menu, main_name, lane_mode
+                table.insert(track_menu, 2, { name = "New Emtpy Comp",        fname = "NewComp" })                
+                table.insert(track_menu, 3, { name = "ENABLE Comping on : ",  fname = "SetCompLane" })
+                track_menu[3].name = tbl.comp_idx ~= 0 and "!" .. "DISABLE Comping : " .. tbl.comp_idx .. " - ".. tbl.info[tbl.comp_idx].name or track_menu[3].name
+                track_menu[3].name = tbl.comp_idx == 0 and track_menu[3].name .. tbl.idx .. " " .. tbl.info[tbl.idx].name or track_menu[3].name
             end
-            return track_menu, main_name
-        -- elseif reaper.GetMediaTrackInfo_Value(rprobj, "I_FOLDERDEPTH") == 1 then
-        --     local main_name = "Virtual FOLDER : "
-        --     return folder_menu, main_name
-        -- end
-    elseif reaper.ValidatePtr(rprobj, "TrackEnvelope*") then
-        local main_name = "Virtual ENV : "
-        local parent_tr = reaper.GetEnvelopeInfo_Value(rprobj, "P_TRACK")
-        track_menu[6].name = GetLinkVal() == true and "!" .. track_menu[6].name or track_menu[6].name
+        --elseif reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FOLDERDEPTH") == 1 then
+                -- FOLDER MENU HERE
+        --end
+    elseif reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then
+        main_name = "Virtual ENV : "
         table.remove(track_menu, 7) -- REMOVE "ShowAll" KEY IF ENVELOPE
-        if reaper.GetMediaTrackInfo_Value(parent_tr, "I_FREEMODE") == 2 then -- IF PARENT TRACK IS IN LANE MODE
-            local lane_mode = true
-            return track_menu, main_name, lane_mode
-        end
-        return track_menu, main_name
     end
+    return track_menu, main_name
 end
 
 local function MakeMenu(tbl)
     local concat = ""
-    local menu, main_name, lane_mode = GetAndSetMenuByTrack(tbl.rprobj)
+    local menu, main_name, lane_mode = GetAndSetMenuByTrack(tbl)
     local versions= {}
     for i = 1, #tbl.info do versions[#versions+1] = i == tbl.idx  and "!" .. i .. " - ".. tbl.info[i].name or i .. " - " .. tbl.info[i].name end
     menu[1].name = ">" .. main_name .. (tbl.info[tbl.idx] and tbl.info[tbl.idx].name or "NO SELECTED VERSIONS") .. "|" .. table.concat(versions, "|") .."|<|"
-    if lane_mode then
-        menu[2].name = tbl.comp_idx ~= 0 and "#" .. menu[2].name or menu[2].name
-        menu[3].name = reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") and menu[3].name .. MouseInfo().last_menu_lane .. " " .. tbl.info[MouseInfo().last_menu_lane].name or menu[3].name
-        menu[3].name = tbl.comp_idx ~= 0 and "!" .. "DISABLE Comping : " .. tbl.comp_idx .. " - ".. tbl.info[tbl.comp_idx].name or menu[3].name
-        menu[4].name = tbl.comp_idx ~= 0 and "#" .. menu[4].name or menu[4].name
-        menu[5].name = tbl.comp_idx ~= 0 and "#" .. menu[5].name or menu[5].name
-        menu[6].name = #tbl.info    == 1 and "#" .. menu[6].name or menu[6].name
-        menu[6].name = tbl.comp_idx ~= 0 and "#" .. menu[6].name or menu[6].name
-    else
-        menu[4].name = #tbl.info == 1 and "#" .. menu[4].name or menu[4].name
-    end
     for i = 1, #menu do concat = concat .. menu[i].name .. (i ~= #menu and "|" or "") end
     return concat, menu, lane_mode
 end
@@ -303,7 +266,7 @@ local function Get_Item_Chunk(item, keep_color)
     local _, chunk = reaper.GetItemStateChunk(item, "", false)
     chunk = keep_color and chunk or chunk:gsub("TAKECOLOR %S+ %S+", "") -- KEEP COLOR TEMPORARY ONLY WHEN IN LANE MODE
     chunk = chunk:gsub("SEL.-\n", "") -- REMOVE SELECTED FIELD IN CHUNK (WE DO NOT STORE SELECTED STATE)
-    chunk = chunk:gsub("{.-}", "") --! GENERATE NEW GUIDS FOR NEW ITEM (fixes duplicate make pooled items) ---- NEED TO FIX TO ONLY HAPPEN WHEN DUPLICATING
+    --chunk = chunk:gsub("{.-}", "") --! GENERATE NEW GUIDS FOR NEW ITEM (fixes duplicate make pooled items) ---- NEED TO FIX TO ONLY HAPPEN WHEN DUPLICATING
     return chunk
 end
 
@@ -479,7 +442,6 @@ end
 
 function Set_LaneView_mode(tbl)
     Clear(tbl)
-    --reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", 0)
     SetItemsInLanes(tbl)
     reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", 2)
     SetInsertLaneChunk(tbl, tbl.idx)
@@ -493,11 +455,15 @@ function CreateNew(tbl, name)
     if tbl.lane_mode == 2 then Set_LaneView_mode(tbl) end
 end
 
---! needs fixing
 function Duplicate(tbl)
+    Clear(tbl) -- if its not clear for some reason it does not change guids (probably because of updateinternalstate)
     local name = tbl.info[tbl.idx].name:match("(%S+ %S+ %S+)") .. " DUP"
-    --local duplicate_tbl = deepcopy(tbl.info[tbl.idx])
-    Get_Store_CurrentTrackState(tbl, name)
+    local duplicate_tbl = Deepcopy(tbl.info[tbl.idx]) -- DEEP COPY TABLE SO ITS UNIQUE (LUA DOES SHALLOW BY DEFAULT)
+    for i = 1, #duplicate_tbl do duplicate_tbl[i] = duplicate_tbl[i]:gsub("{.-}", "") end --! GENERATE NEW GUIDS FOR NEW ITEM (fixes duplicate make pooled items)
+    table.insert(tbl.info, 1, duplicate_tbl) --! ORDER NEWEST TO OLDEST
+    tbl.idx = 1
+    tbl.info[tbl.idx].name = name
+    SwapVirtualTrack(tbl,tbl.idx)
     if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
         if tbl.lane_mode == 2 then Set_LaneView_mode(tbl) end
     end
@@ -626,7 +592,6 @@ function SetItemsInLanes(tbl)
     end
 end
 
---! FIXME: IF NEW VERSION IS CREATED AND IMMEDIATLY OVERRIDE TCP LANE MODE, THAT VERSION IS NOT STORED... NOT SURE HOW TO FIX IT
 function CheckTrackLaneModeState(tbl)
     if not reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then return end
     local current_track_mode = math.floor(reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE"))
@@ -650,10 +615,10 @@ function ShowAll(tbl)
     local fimp = reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE")
     tbl.lane_mode = fimp == 2 and 0 or 2
     if fimp == 2 then StoreLaneData(tbl) end
-    if fimp == 0 then
+    if fimp == 0 then -- IF LANE MODE IS OFF TURN IT ON
         Set_LaneView_mode(tbl)
-    elseif fimp == 2 then
-        SetCompLane(tbl,0)
+    elseif fimp == 2 then -- IF LANE MODE IS ON TURN IT OFF
+        SetCompLane(tbl,0) -- TURN OFF COMPING
         SwapVirtualTrack(tbl, tbl.idx)
         -- reaper.gmem_write(1,1) -- DISABLE SWIPE DEFER
     end
