@@ -79,7 +79,7 @@ function Show_menu(rprobj, on_demand)
     MouseInfo().last_menu_lane = MouseInfo().lane-- SET LAST LANE BEFORE MENU OPENED
     MouseInfo().last_menu_tr = MouseInfo().tr -- SET LAST TRACK BEFORE MENU OPENED
     local focused_tracks = GetSelectedTracksData(rprobj, on_demand) -- THIS ADDS NEW TRACKS TO VT_TB FOR ON DEMAND SCRIPT AND RETURNS TRACK SELECTION
-    local all_childrens_and_parents = GetChild_ParentTrack_FromStored_PEXT(focused_tracks)
+    --local all_childrens_and_parents = GetChild_ParentTrack_FromStored_PEXT(focused_tracks)
     CheckTrackLaneModeState(VT_TB[rprobj])
     CreateGFXWindow()
     reaper.PreventUIRefresh(1)
@@ -104,13 +104,13 @@ function Show_menu(rprobj, on_demand)
             if not rename_retval then return end
         end
         reaper.Undo_BeginBlock2(0)
-        if menu_options[m_num].fname == "SetLinkVal" then
-            _G[menu_options[m_num].fname](VT_TB[rprobj])
-        end
+        -- if menu_options[m_num].fname == "SetLinkVal" then
+        --     _G[menu_options[m_num].fname](VT_TB[rprobj])
+        -- end
         if menu_options[m_num].fname ~= "SetLinkVal" then
             for track in pairs(current_tracks) do
                 _G[menu_options[m_num].fname](VT_TB[track], new_name)
-                StoreStateToDocument(VT_TB[rprobj])
+                StoreStateToDocument(VT_TB[track])
             end
         end
         reaper.Undo_EndBlock2(0, "VT: " .. menu_options[m_num].name, -1)
