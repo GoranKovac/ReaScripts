@@ -1,14 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.14
+-- @version 1.15
 -- @changelog
---   + Small refactors and simplify logic
---   + Added comp icon when track is comp enabled
---   + Added menu actions to lane mode (Create,Delete,etc)
---   + Added comping "silence" (deletes content of item if razor is empty)
---   + Comping follows autocrossfade
---   + Removed Swiping and LINK for now
+--   + Fix menu storing wrong track state (fixes comping showing error)
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
