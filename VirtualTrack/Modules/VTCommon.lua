@@ -31,7 +31,8 @@ local function GetAndSetMenuByTrack(tbl)
                 track_menu[3].name = tbl.comp_idx ~= 0 and "#" .. track_menu[3].name or track_menu[3].name -- DISABLE DUPLICATE WHILE COMP IS ENABLED
                 track_menu[4].name = tbl.comp_idx ~= 0 and "#" .. track_menu[4].name or track_menu[4].name -- DISABLE DELETE WHILE COMP IS ENABLED
                 track_menu[4].name = #tbl.info    == 1 and "#" .. track_menu[4].name or track_menu[4].name -- DISABLE DELETE IF ONLY 1 VERSION IS LEFT
-                table.insert(track_menu, 2, { name = "New Emtpy Comp",        fname = "NewComp" })                
+                table.insert(track_menu, 2, { name = "New Emtpy Comp",        fname = "NewComp" })
+                track_menu[2].name = tbl.comp_idx ~= 0 and "#" .. track_menu[2].name or track_menu[2].name-- DISABLE NEW COMP IF ALREADY COMPING
                 table.insert(track_menu, 3, { name = "ENABLE Comping",  fname = "SetCompLane" })
                 track_menu[3].name = tbl.comp_idx ~= 0 and "!" .. "DISABLE Comping : " .. tbl.comp_idx .. " - ".. tbl.info[tbl.comp_idx].name or track_menu[3].name -- SHOW CURRENT SELECTION VERSION
                 --track_menu[3].name = tbl.comp_idx == 0 and track_menu[3].name .. tbl.idx .. " " .. tbl.info[tbl.idx].name or track_menu[3].name -- SHOW CURRENT SELECTION VERSION
@@ -99,7 +100,7 @@ function Show_menu(rprobj, on_demand)
         if menu_options[m_num].fname == "Rename" then
             local current_name = tbl.info[tbl.idx].name
             local current_name_id = current_name:match("%S+ %S+ (%S+)")
-            rename_retval, new_name = reaper.GetUserInputs(current_name, 1, " New Name :", current_name_id)
+            rename_retval, new_name = reaper.GetUserInputs(current_name, 1, " New Name :", current_name)
             if not rename_retval then return end
         end
         reaper.Undo_BeginBlock2(0)
@@ -459,7 +460,7 @@ end
 
 function Duplicate(tbl)
     Clear(tbl) -- if its not clear for some reason it does not change guids (probably because of updateinternalstate)
-    local name = tbl.info[tbl.idx].name:match("(%S+ %S+)") .. " DUP"
+    local name = tbl.info[tbl.idx].name .. " DUP"
     local duplicate_tbl = Deepcopy(tbl.info[tbl.idx]) -- DEEP COPY TABLE SO ITS UNIQUE (LUA DOES SHALLOW BY DEFAULT)
     for i = 1, #duplicate_tbl do duplicate_tbl[i] = duplicate_tbl[i]:gsub("{.-}", "") end --! GENERATE NEW GUIDS FOR NEW ITEM (fixes duplicate make pooled items)
     table.insert(tbl.info, 1, duplicate_tbl) --! ORDER NEWEST TO OLDEST
@@ -498,7 +499,7 @@ end
 function Rename(tbl, name)
     if not name then return end
     local current_name = tbl.info[tbl.idx].name
-    tbl.info[tbl.idx].name = current_name:match("(%S+ %S+ )") .. name
+    tbl.info[tbl.idx].name = name -- current_name:match("(%S+ %S+ )") .. name
 end
 
 function SetInsertLaneChunk(tbl, lane)
