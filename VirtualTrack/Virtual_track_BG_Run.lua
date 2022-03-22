@@ -1,9 +1,14 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.13
+-- @version 1.14
 -- @changelog
---   + do not allow creating empty comps if some track is in comp mode
+--   + Small refactors and simplify logic
+--   + Added comp icon when track is comp enabled
+--   + Added menu actions to lane mode (Create,Delete,etc)
+--   + Added comping "silence" (deletes content of item if razor is empty)
+--   + Comping follows autocrossfade
+--   + Removed Swiping and LINK for now
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
