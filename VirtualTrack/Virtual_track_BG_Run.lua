@@ -1,9 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.13
+-- @version 1.15
 -- @changelog
---   + do not allow creating empty comps if some track is in comp mode
+--   + Fix menu storing wrong track state (fixes comping showing error)
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
