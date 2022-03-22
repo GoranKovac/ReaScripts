@@ -17,11 +17,12 @@ local function GetAndSetMenuByTrack(tbl)
         [3] = { name = "Duplicate",             fname = "Duplicate" },
         [4] = { name = "Delete",                fname = "Delete" },
         [5] = { name = "Rename",                fname = "Rename" },
-        [6] = { name = "Link Track/Envelope",   fname = "SetLinkVal" },
-        [7] = { name = "Show All Variants",     fname = "ShowAll" },
+        [6] = { name = "Show All Variants",     fname = "ShowAll" },
+        --[7] = { name = "Link Track/Envelope",   fname = "SetLinkVal" },
     }
 
-    track_menu[6].name = GetLinkVal() == true and "!" .. track_menu[6].name or track_menu[6].name
+    track_menu[6].name = tbl.lane_mode == 2 and "!" .. track_menu[6].name or track_menu[6].name -- Show All Variants
+    --track_menu[7].name = GetLinkVal() == true and "!" .. track_menu[7].name or track_menu[7].name -- Link Track/Envelope
     if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
         -- if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FOLDERDEPTH") ~= 1 then
             main_name = "Virtual TRACK : "
@@ -30,30 +31,30 @@ local function GetAndSetMenuByTrack(tbl)
                 track_menu[3].name = tbl.comp_idx ~= 0 and "#" .. track_menu[3].name or track_menu[3].name -- DISABLE DUPLICATE WHILE COMP IS ENABLED
                 track_menu[4].name = tbl.comp_idx ~= 0 and "#" .. track_menu[4].name or track_menu[4].name -- DISABLE DELETE WHILE COMP IS ENABLED
                 track_menu[4].name = #tbl.info    == 1 and "#" .. track_menu[4].name or track_menu[4].name -- DISABLE DELETE IF ONLY 1 VERSION IS LEFT
-                track_menu[7].name = "!" .. track_menu[7].name
                 table.insert(track_menu, 2, { name = "New Emtpy Comp",        fname = "NewComp" })                
-                table.insert(track_menu, 3, { name = "ENABLE Comping on : ",  fname = "SetCompLane" })
-                track_menu[3].name = tbl.comp_idx ~= 0 and "!" .. "DISABLE Comping : " .. tbl.comp_idx .. " - ".. tbl.info[tbl.comp_idx].name or track_menu[3].name
-                track_menu[3].name = tbl.comp_idx == 0 and track_menu[3].name .. tbl.idx .. " " .. tbl.info[tbl.idx].name or track_menu[3].name
+                table.insert(track_menu, 3, { name = "ENABLE Comping",  fname = "SetCompLane" })
+                track_menu[3].name = tbl.comp_idx ~= 0 and "!" .. "DISABLE Comping : " .. tbl.comp_idx .. " - ".. tbl.info[tbl.comp_idx].name or track_menu[3].name -- SHOW CURRENT SELECTION VERSION
+                --track_menu[3].name = tbl.comp_idx == 0 and track_menu[3].name .. tbl.idx .. " " .. tbl.info[tbl.idx].name or track_menu[3].name -- SHOW CURRENT SELECTION VERSION
             end
         --elseif reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FOLDERDEPTH") == 1 then
                 -- FOLDER MENU HERE
         --end
     elseif reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then
         main_name = "Virtual ENV : "
-        table.remove(track_menu, 7) -- REMOVE "ShowAll" KEY IF ENVELOPE
+        table.remove(track_menu, 6) -- REMOVE "ShowAll" KEY IF ENVELOPE
     end
     return track_menu, main_name
 end
 
 local function MakeMenu(tbl)
     local concat = ""
-    local menu, main_name, lane_mode = GetAndSetMenuByTrack(tbl)
-    local versions= {}
+    local menu, main_name = GetAndSetMenuByTrack(tbl)
+    local versions = {}
     for i = 1, #tbl.info do versions[#versions+1] = i == tbl.idx  and "!" .. i .. " - ".. tbl.info[i].name or i .. " - " .. tbl.info[i].name end
     menu[1].name = ">" .. main_name .. (tbl.info[tbl.idx] and tbl.info[tbl.idx].name or "NO SELECTED VERSIONS") .. "|" .. table.concat(versions, "|") .."|<|"
+    menu[3].name = tbl.lane_mode == 2 and menu[3].name .. "|" or menu[3].name -- ADD SEPARATOR TO COMP MENU
     for i = 1, #menu do concat = concat .. menu[i].name .. (i ~= #menu and "|" or "") end
-    return concat, menu, lane_mode
+    return concat, menu
 end
 
 local function CreateGFXWindow()
@@ -88,19 +89,19 @@ function Show_menu(rprobj, on_demand)
     local m_num = gfx.showmenu(concat_menu)
     if m_num == 0 then return end
 
-    local current_tracks = GetLinkVal() and all_childrens_and_parents or focused_tracks
+    local current_tracks = focused_tracks -- GetLinkVal() and all_childrens_and_parents or focused_tracks
     for track in pairs(current_tracks) do UpdateInternalState(VT_TB[track]) end
 
     local new_name, rename_retval
     if m_num > #tbl.info then
         m_num = (m_num - #tbl.info) + 1
-        reaper.Undo_BeginBlock2(0)
         if menu_options[m_num].fname == "Rename" then
             local current_name = tbl.info[tbl.idx].name
             local current_name_id = current_name:match("%S+ %S+ (%S+)")
             rename_retval, new_name = reaper.GetUserInputs(current_name, 1, " New Name :", current_name_id)
             if not rename_retval then return end
         end
+        reaper.Undo_BeginBlock2(0)
         if menu_options[m_num].fname == "SetLinkVal" then
             _G[menu_options[m_num].fname](VT_TB[rprobj])
         end
