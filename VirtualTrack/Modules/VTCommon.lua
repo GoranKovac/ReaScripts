@@ -552,10 +552,9 @@ local function Razor_item_position(item, time_Start, time_End)
     return new_start, new_lenght, new_offset
 end
 
-function Delete_item_area(item, time_Start, time_End)
+local function Delete_item_area(item, time_Start, time_End)
     local first_to_delete = reaper.SplitMediaItem(item, time_End)
     local last_to_delete = reaper.SplitMediaItem(item, time_Start)
-
     if first_to_delete and last_to_delete then
         reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( last_to_delete ), last_to_delete)
     elseif last_to_delete and not first_to_delete then
@@ -591,19 +590,12 @@ function Copy_area(tbl, razor_info)
     Set_Razor_Data(tbl, razor_info) -- JUST SET RAZOR ON OTHER TRACKS (ONLY FOR VISUAL)
     local current_razor_toggle_state = reaper.GetToggleCommandState(42421)
     if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN OFF ALWAYS TRIM BEHIND RAZORS (if enabled in project)
-    local new_items = {}
-    local to_delete = {}
+    local new_items, to_delete = {}, {}
     for i = 1, reaper.CountTrackMediaItems(tbl.rprobj) do
-        local razor_item = Get_items_in_Lane(reaper.GetTrackMediaItem(tbl.rprobj, i-1), razor_info[1], razor_info[2], razor_info.razor_lane)
-        new_items[#new_items + 1] = razor_item
-        local to_delete_item = Get_items_in_Lane(reaper.GetTrackMediaItem(tbl.rprobj, i-1), razor_info[1], razor_info[2], tbl.comp_idx)
-        to_delete[#to_delete + 1] = to_delete_item
+        new_items[#new_items + 1] = Get_items_in_Lane(reaper.GetTrackMediaItem(tbl.rprobj, i-1), razor_info[1], razor_info[2], razor_info.razor_lane) -- COPY ITEMS FROM RAZOR LANE
+        to_delete[#to_delete + 1] = Get_items_in_Lane(reaper.GetTrackMediaItem(tbl.rprobj, i-1), razor_info[1], razor_info[2], tbl.comp_idx) -- WE ARE GONNA DELETE ON COMPING LANE IF RAZOR IS EMPTY
     end
-
-    for i = 1, #to_delete do
-        Delete_item_area(to_delete[i], razor_info[1], razor_info[2])
-    end
-
+    for i = 1, #to_delete do Delete_item_area(to_delete[i], razor_info[1], razor_info[2]) end -- DELETE ITEMS CONTENT (IF RAZOR IS EMPTY) COMPING "SILENCE"
     for i = 1, #new_items do Make_item_from_razor(tbl, new_items[i], razor_info[1], razor_info[2]) end
     if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN ON ALWAYS TRIM BEHIND RAZORS (if enabled in project)
 end
