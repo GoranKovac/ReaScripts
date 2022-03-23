@@ -905,31 +905,24 @@ function SetCompActiveIcon(tbl)
     end
 end
 
-function SetGroup(tbl, group)
-    local bit = 2^(group-1)
+function SetGroup(tbl, val)
+    local bit = 2^(val - 1)
     tbl.group = tbl.group & bit and tbl.group ~ bit or tbl.group & bit
-    MSG(tbl.group)
     StoreStateToDocument(tbl)
 end
 
-function CheckGroup(tbl,group)
-    local bit = 2^(group-1)
-    if tbl.group & bit == 1 then return true end
+function CheckGroup(tbl, group)
+    return tbl.group & group ~= 0 and true
 end
 
 function GetTrackGroup(tbl)
     local stored_tbl = Get_Stored_PEXT_STATE_TBL()
     if not stored_tbl then return end
     local groups = {}
-    local priority
-    for i = 64, -1 do
-        if CheckGroup(tbl, i) then
-            priority = i
-            break
-        end
-    end
     for k, v in pairs(stored_tbl) do
-        if CheckGroup(v, priority) then groups[k] = v end
+        if CheckGroup(tbl, v.group)then
+            if not groups[k] then groups[k] = v end
+        end
     end
     return groups
 end
