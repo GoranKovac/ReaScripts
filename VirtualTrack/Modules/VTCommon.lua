@@ -39,7 +39,7 @@ local function GetAndSetMenuByTrack(tbl)
             end
             table.insert(track_menu, 2, { name = "GROUP - ",          fname = "SetGroup" })
             local groups = {}
-            for i = 1, 10 do groups[i] = i == tbl.group and "!" .. i or i end
+            for i = 1, 10 do groups[i] = 2^(i-1) & tbl.group ~= 0 and "!" .. i or i end
             track_menu[2].name = ">" .. track_menu[2].name .. (tbl.group ~= 0 and math.floor(tbl.group) or "None").. "|" .. table.concat(groups, "|") .."|<|"
         --elseif reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FOLDERDEPTH") == 1 then
             -- main_name = "Virtual FOLDER - " .. tbl.idx .. " : "
@@ -85,7 +85,7 @@ function Show_menu(rprobj, on_demand)
     local focused_tracks = GetSelectedTracksData(rprobj, on_demand) -- THIS ADDS NEW TRACKS TO VT_TB FOR ON DEMAND SCRIPT AND RETURNS TRACK SELECTION
     --local all_childrens_and_parents = GetChild_ParentTrack_FromStored_PEXT(focused_tracks)
     --! groups
-    local groups = GetTrackGroup(VT_TB[rprobj])
+    --local groups = GetTrackGroup(VT_TB[rprobj])
     
     CheckTrackLaneModeState(VT_TB[rprobj])
     CreateGFXWindow()
@@ -255,7 +255,7 @@ function Get_Stored_PEXT_STATE_TBL()
             if not Restore_From_PEXT(stored_tbl[env]) then stored_tbl[env] = nil end
         end
     end
-    return next(stored_tbl) and stored_tbl
+    return stored_tbl
 end
 
 function Get_TBH_Info(tr) return TBH[tr] and TBH[tr].t, TBH[tr].h, TBH[tr].b end
@@ -906,16 +906,30 @@ function SetCompActiveIcon(tbl)
 end
 
 function SetGroup(tbl, group)
-    tbl.group = tbl.group == group and 0 or group
+    local bit = 2^(group-1)
+    tbl.group = tbl.group & bit and tbl.group ~ bit or tbl.group & bit
+    MSG(tbl.group)
     StoreStateToDocument(tbl)
+end
+
+function CheckGroup(tbl,group)
+    local bit = 2^(group-1)
+    if tbl.group & bit == 1 then return true end
 end
 
 function GetTrackGroup(tbl)
     local stored_tbl = Get_Stored_PEXT_STATE_TBL()
     if not stored_tbl then return end
     local groups = {}
+    local priority
+    for i = 64, -1 do
+        if CheckGroup(tbl, i) then
+            priority = i
+            break
+        end
+    end
     for k, v in pairs(stored_tbl) do
-        if v.group == tbl.group then groups[k] = v end
+        if CheckGroup(v, priority) then groups[k] = v end
     end
     return groups
 end
