@@ -120,7 +120,7 @@ function Show_menu(rprobj, on_demand)
         if menu_options[m_num].fname == "Start_GROUP" then
             _G[menu_options[m_num].fname](VT_TB[rprobj], new_name)
         end
- 
+        
         if menu_options[m_num].fname ~= "SetLinkVal" and menu_options[m_num].fname ~= "Start_GROUP" then
             for track in pairs(current_tracks) do
                 _G[menu_options[m_num].fname](VT_TB[track], new_name)

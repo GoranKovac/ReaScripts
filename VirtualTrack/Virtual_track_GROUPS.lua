@@ -82,9 +82,9 @@ function Main()
     local visible, open  = reaper.ImGui_Begin(CTX, 'Virtual Tracks GROUPS', true, window_flags)
 
     if visible then
-        --------
-        --YOUR GUI HERE
-        --------
+        -----------
+        -- GUI HERE
+        -----------
         reaper.ImGui_SetNextItemWidth(CTX, 147) -- OPTIONAL if you want to set docker width
         if reaper.ImGui_BeginCombo(CTX, '##docker', group_list[cur_group].name or group_list[1].name) then -- putting ## in the id section will make it without any name text in the UI
             for i = 1, #group_list do -- Iterate for each element in the combo list
@@ -131,9 +131,9 @@ function Main()
             tracks = GetTrackGroup(cur_group)
         end
         ToolTip('Remove tracks from list view')
-        --------
-        --END GUI
-        --------
+        ----------
+        -- END GUI
+        ----------
         reaper.ImGui_End(CTX)
         end
 
