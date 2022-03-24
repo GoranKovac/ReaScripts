@@ -53,7 +53,7 @@ function Main()
        -- _, options["SWIPE"] = reaper.ImGui_Checkbox(CTX, "SWIPE",  options["SWIPE"])
         _, options["LANE_COLORS"] = reaper.ImGui_Checkbox(CTX, "LANE COLORS", options["LANE_COLORS"])
         reaper.ImGui_Spacing( CTX ) ; reaper.ImGui_Spacing( CTX )
-        if reaper.ImGui_Button(CTX, 'SAVE', 80) then save() end
+        --if reaper.ImGui_Button(CTX, 'SAVE', 80) then save() end
         reaper.ImGui_End(CTX)
     end
     reaper.ImGui_PopFont(CTX)
@@ -61,6 +61,7 @@ function Main()
     if open then
         reaper.defer(Main)
     else
+        save()
         reaper.ImGui_DestroyContext(CTX)
     end
 end

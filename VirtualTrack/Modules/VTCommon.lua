@@ -37,10 +37,8 @@ local function GetAndSetMenuByTrack(tbl)
                 track_menu[3].name = tbl.comp_idx ~= 0 and "!" .. "DISABLE Comping - " .. tbl.comp_idx .. " - ".. tbl.info[tbl.comp_idx].name or track_menu[3].name -- SHOW CURRENT SELECTION VERSION
                 track_menu[3].name = tbl.comp_idx == 0 and track_menu[3].name .. tbl.idx .. " : " .. tbl.info[tbl.idx].name or track_menu[3].name -- SHOW CURRENT SELECTION VERSION
             end
-            table.insert(track_menu, 2, { name = "GROUP - ",          fname = "SetGroup" })
-            local groups = {}
-            for i = 1, 10 do groups[i] = 2^(i-1) & tbl.group ~= 0 and "!" .. i or i end
-            track_menu[2].name = ">" .. track_menu[2].name .. (tbl.group ~= 0 and math.floor(tbl.group) or "None").. "|" .. table.concat(groups, "|") .."|<|"
+            table.insert(track_menu, 2, { name = "GROUP - ",          fname = "Start_GROUP" })
+            track_menu[2].name = track_menu[2].name .. (tbl.group ~= 0 and math.floor(tbl.group) or "None") .. "|"
         --elseif reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FOLDERDEPTH") == 1 then
             -- main_name = "Virtual FOLDER - " .. tbl.idx .. " : "
             -- FOLDER MENU HERE
@@ -84,26 +82,22 @@ function Show_menu(rprobj, on_demand)
     MouseInfo().last_menu_tr = MouseInfo().tr -- SET LAST TRACK BEFORE MENU OPENED
     local focused_tracks = GetSelectedTracksData(rprobj, on_demand) -- THIS ADDS NEW TRACKS TO VT_TB FOR ON DEMAND SCRIPT AND RETURNS TRACK SELECTION
     --local all_childrens_and_parents = GetChild_ParentTrack_FromStored_PEXT(focused_tracks)
-    --! groups
-    --local groups = GetTrackGroup(VT_TB[rprobj])
-    
+
     CheckTrackLaneModeState(VT_TB[rprobj])
     CreateGFXWindow()
     reaper.PreventUIRefresh(1)
-
     local update_tempo = rprobj == reaper.GetMasterTrack(0) and true or false
     local tbl = rprobj == reaper.GetMasterTrack(0) and VT_TB[reaper.GetTrackEnvelopeByName( rprobj, "Tempo map" )] or VT_TB[rprobj]
 
     local concat_menu, menu_options = MakeMenu(tbl)
     local m_num = gfx.showmenu(concat_menu)
     if m_num == 0 then return end
-
     local current_tracks = focused_tracks -- GetLinkVal() and all_childrens_and_parents or focused_tracks
     for track in pairs(current_tracks) do UpdateInternalState(VT_TB[track]) end
 
     local new_name, rename_retval
-    if m_num > #tbl.info + 10 then
-        m_num = (m_num - #tbl.info - 10 ) + 2
+    if m_num > #tbl.info then
+        m_num = (m_num - #tbl.info) + 1
         if menu_options[m_num] and menu_options[m_num].fname == "Rename" then
             local current_name = tbl.info[tbl.idx].name
             --local current_name_id = current_name:match("%S+ %S+ (%S+)")
@@ -114,30 +108,28 @@ function Show_menu(rprobj, on_demand)
         -- if menu_options[m_num].fname == "SetLinkVal" then
         --     _G[menu_options[m_num].fname](VT_TB[rprobj])
         -- end
-        if menu_options[m_num].fname ~= "SetLinkVal" then
+        if menu_options[m_num].fname == "Start_GROUP" then
+            _G[menu_options[m_num].fname](VT_TB[rprobj], new_name)
+        end
+ 
+        if menu_options[m_num].fname ~= "SetLinkVal" and menu_options[m_num].fname ~= "Start_GROUP" then
             for track in pairs(current_tracks) do
                 _G[menu_options[m_num].fname](VT_TB[track], new_name)
                 StoreStateToDocument(VT_TB[track])
             end
         end
         reaper.Undo_EndBlock2(0, "VT: " .. menu_options[m_num].name, -1)
-    elseif m_num <= #tbl.info then
+    else
         reaper.Undo_BeginBlock2(0)
         for track in pairs(current_tracks) do
             SwapVirtualTrack(VT_TB[track], m_num)
             StoreStateToDocument(VT_TB[track])
         end
-        reaper.Undo_EndBlock2(0, "VT: Recall Version " .. math.floor(m_num), -1)
-    elseif m_num > #tbl.info then
-        local group = m_num - #tbl.info
-        for track in pairs(current_tracks) do
-            SetGroup(VT_TB[track], group)
-        end
+        reaper.Undo_EndBlock2(0, "VT: Recall Version " .. math.floor(m_num), -1)   
     end
     SetUpdateDraw()
     reaper.JS_LICE_Clear(tbl.font_bm, 0x00000000)
     gfx.quit()
-
     reaper.PreventUIRefresh(-1)
     if update_tempo then Update_tempo_map() end
     reaper.UpdateArrange()
@@ -580,8 +572,18 @@ local function Delete_items_or_area(item, time_Start, time_End)
     end
 end
 
-local function Make_item_from_razor(tbl, item, time_Start, time_End)
+function Set_Take_marker(item, name, pos)
+    local item_start = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
+    local new_pos = pos and pos or item_start
+    local take = reaper.GetActiveTake(item)
+    local rate = reaper.GetMediaItemTakeInfo_Value( take, "D_PLAYRATE" )
+    local offset = reaper.GetMediaItemTakeInfo_Value( take, "D_STARTOFFS" )
+    reaper.SetTakeMarker(take, -1, name, (new_pos - item_start + offset) * rate)
+  end
+
+local function Make_item_from_razor(tbl, item, razor_info)
     if not item then return end
+    local time_Start, time_End, razor_lane = razor_info[1], razor_info[2], razor_info.razor_lane
     local item_chunk = Get_Item_Chunk(item, true):gsub("{.-}", "") -- GENERATE NEW GUIDS FOR NEW ITEM, WE KEEP COLOR HERE TO GET IT IN COMP LANE (ITS REMOVED WHEN COMP IS OFF)
     local new_item_start, new_item_lenght, new_item_offset = Razor_item_position(item, time_Start, time_End)
     local item_start_offset = tonumber(item_chunk:match("SOFFS (%S+)"))
@@ -594,6 +596,7 @@ local function Make_item_from_razor(tbl, item, time_Start, time_End)
     reaper.SetItemStateChunk(createdItem, created_chunk, false)
     reaper.SetMediaItemInfo_Value(createdItem, "F_FREEMODE_Y", (tbl.comp_idx - 1) / #tbl.info)
     reaper.SetMediaItemInfo_Value(createdItem, "F_FREEMODE_H", 1 / #tbl.info)
+    --Set_Take_marker(createdItem, tbl.info[razor_lane].name)
     --reaper.SetMediaItemSelected(createdItem, true)
     --reaper.Main_OnCommand(40930, 0) -- TRIM BEHIND ONLY WORKS ON SELECTED ITEMS
     --reaper.SetMediaItemSelected(createdItem, false)
@@ -613,7 +616,7 @@ function Copy_area(tbl, razor_info)
         to_delete[#to_delete + 1] = Get_items_in_Lane(reaper.GetTrackMediaItem(tbl.rprobj, i-1), razor_info[1], razor_info[2], tbl.comp_idx) -- WE ARE GONNA DELETE ON COMPING LANE IF RAZOR IS EMPTY
     end
     for i = 1, #to_delete do Delete_items_or_area(to_delete[i], razor_info[1], razor_info[2]) end -- DELETE ITEMS CONTENT (IF RAZOR IS EMPTY) COMPING "SILENCE"
-    for i = 1, #new_items do Make_item_from_razor(tbl, new_items[i], razor_info[1], razor_info[2]) end
+    for i = 1, #new_items do Make_item_from_razor(tbl, new_items[i], razor_info) end
     --if current_razor_toggle_state == 1 then reaper.Main_OnCommand(42421, 0) end -- TURN ON ALWAYS TRIM BEHIND RAZORS (if enabled in project)
 end
 
@@ -835,24 +838,6 @@ function GetSelectedTracksData(rprobj, on_demand)
     end
 end
 
--- function GetSwipe() return GetEXTState_VAL("SWIPE") end
-
--- reaper.gmem_attach('Virtual_Tracks')
--- local swipe_script_id = reaper.AddRemoveReaScript(true, 0, script_folder .. "Virtual_track_Swipe.lua", true)
--- local swipe_script = reaper.NamedCommandLookup(swipe_script_id)
--- function CallSwipeScript(tbl)
---     if tbl.comp_idx == 0 then reaper.gmem_write(1,1) return end
-
---     if GetSwipe() then
---         if reaper.gmem_read(2) ~= 1 then -- do not start script if its already started (other script is sending that its already opened in this mem field)
---             reaper.gmem_write(1,0)
---             reaper.Main_OnCommand(swipe_script,0)
---         end
---     else
---         reaper.gmem_write(1,1) -- send to defer script to close
---     end
--- end
-
 local function GetLaneColorOption() return GetEXTState_VAL("LANE_COLORS") end
 
 function NewComp(tbl)
@@ -905,24 +890,41 @@ function SetCompActiveIcon(tbl)
     end
 end
 
-function SetGroup(tbl, val)
+function SetGroup(tbl, val, add)
     local bit = 2^(val - 1)
-    tbl.group = tbl.group & bit and tbl.group ~ bit or tbl.group & bit
+    if add then
+        if tbl.group & bit == 0 then tbl.group = tbl.group | bit end
+    else
+        if tbl.group & bit ~= 0 then tbl.group = tbl.group ~ bit end
+    end
+    --tbl.group = tbl.group & bit and tbl.group ~ bit or tbl.group & bit
     StoreStateToDocument(tbl)
 end
 
-function CheckGroup(tbl, group)
-    return tbl.group & group ~= 0 and true
+function CheckGroup(val, group)
+    local bit = 2^(val - 1)
+    return bit & group ~= 0 and true
 end
 
-function GetTrackGroup(tbl)
+function GetTrackGroup(val)
     local stored_tbl = Get_Stored_PEXT_STATE_TBL()
     if not stored_tbl then return end
     local groups = {}
     for k, v in pairs(stored_tbl) do
-        if CheckGroup(tbl, v.group)then
+        reaper.SetTrackSelected( k, false )
+        if CheckGroup(val, v.group) then
+            reaper.SetTrackSelected( k, true )
             if not groups[k] then groups[k] = v end
         end
     end
     return groups
+end
+
+local group_script_id = reaper.AddRemoveReaScript(true, 0, script_folder .. "Virtual_track_GROUPS.lua", true)
+local group_script = reaper.NamedCommandLookup(group_script_id)
+reaper.gmem_attach('VirtualTrack_GROUPS')
+function Start_GROUP(tbl)
+    local gr = tbl.group ~= 0 and math.floor(math.log(tbl.group,2) + 1) or 1
+    reaper.gmem_write(1, gr)
+    reaper.Main_OnCommand(group_script,0)
 end

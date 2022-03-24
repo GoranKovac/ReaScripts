@@ -7,7 +7,14 @@
 local reaper = reaper
 local main_wnd = reaper.GetMainHwnd()                            -- GET MAIN WINDOW
 local track_window = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8) -- GET TRACK VIEW
---local track_window = reaper.JS_Window_FindEx( main_wnd, main_wnd, "REAPERTCPDisplay", "" )
+
+local tIntercepts = {
+	        WM_MOUSEWHEEL    = true,
+	        WM_MOUSEHWHEEL   = true,
+	      }
+for key, value in pairs(tIntercepts) do
+    OK = reaper.JS_WindowMessage_Intercept(track_window, key, value)
+end
 
 local mouse = {
 	LB    = 1,
@@ -27,6 +34,13 @@ local mouse = {
 
 	lb_down = function() return reaper.JS_Mouse_GetState(95) &1 == 1 end,
 	rb_down = function() return reaper.JS_Mouse_GetState(95) &2 == 2 end,
+	-- wheel = function()
+	-- 			peekOK, _, time, keys, rotate, x, y = reaper.JS_WindowMessage_Peek(track_window, "WM_MOUSEWHEEL")
+	-- 			 if peekOK and time ~= prevTime then
+	-- 			 	return cnt--rotate/120
+	-- 			 end
+	-- 			return rotate
+	-- 		end,
 	uptime = 0,
 
 	last_x = -1,
@@ -72,6 +86,14 @@ local mouse = {
 	l_down = false,
 	r_down = false
 }
+
+function Wheel()
+	local peekOK, _, time, keys, rotate, x, y = reaper.JS_WindowMessage_Peek(track_window, "WM_MOUSEWHEEL")
+	if peekOK and time ~= prevTime then
+		reaper.ShowConsoleMsg(rotate/120 .. "\n")
+		prevTime = time
+	end
+end
 
 function OnMouseDown(lmb_down, rmb_down)
 	if not rmb_down and lmb_down and mouse.last_LMB_state == false then
@@ -201,6 +223,7 @@ function MouseInfo()
 	mouse.r_up      = false
 	mouse.l_down    = false
 	mouse.r_down    = false
+	--mouse.wheel = Wheel()
 	local LB_DOWN = mouse.lb_down()           -- Get current left mouse button state
 	local RB_DOWN = mouse.rb_down()           -- Get current right mouse button state
 

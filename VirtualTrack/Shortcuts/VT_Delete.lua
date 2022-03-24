@@ -24,10 +24,10 @@ local function Main()
     --local current_tracks = GetLinkVal() and all_childrens_and_parents or focused_tracks
     reaper.PreventUIRefresh(1)
     reaper.Undo_BeginBlock2(0)
-    for linked_track in pairs(focused_tracks) do
-        UpdateInternalState(VT_TB[linked_track])
-        Delete(VT_TB[linked_track])
-        StoreStateToDocument(VT_TB[linked_track])
+    for sel_track in pairs(focused_tracks) do
+        UpdateInternalState(VT_TB[sel_track])
+        Delete(VT_TB[sel_track])
+        StoreStateToDocument(VT_TB[sel_track])
     end
     reaper.Undo_EndBlock2(0, "VT: Delete Version ", -1)
     reaper.PreventUIRefresh(-1)
