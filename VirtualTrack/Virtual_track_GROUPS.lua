@@ -23,6 +23,7 @@ reaper.gmem_attach('VirtualTrack_GROUPS')
 function MSG(a) reaper.ShowConsoleMsg(a .. "\n") end
 
 function GuiInit()
+    group_list = Restore_GROUPS_FROM_Project_EXT_STATE()
     CTX = reaper.ImGui_CreateContext('VT_GROUPS') -- Add VERSION TODO
     FONT = reaper.ImGui_CreateFont('sans-serif', 15) -- Create the fonts you need
     reaper.ImGui_AttachFont(CTX, FONT)-- Attach the fonts you need
@@ -52,7 +53,7 @@ function Restore_GROUPS_FROM_Project_EXT_STATE()
         local storedTable = stringToTable(stored)
         if storedTable ~= nil then return storedTable.groups end
     end
-    for i = 1 ,64 do
+    for i = 1, 32 do
         group_list[i] = { name = "GROUP " .. i, enabled = true }
     end
     return group_list
@@ -73,7 +74,6 @@ function Add_Tracks()
     tracks = GetTrackGroup(cur_group)
 end
 
-group_list = Restore_GROUPS_FROM_Project_EXT_STATE()
 function Main()
     local window_flags = reaper.ImGui_WindowFlags_NoResize()-- set flags here. I put an autoresize
     reaper.ImGui_SetNextWindowSize(CTX, 260, 255, reaper.ImGui_Cond_Once())-- Set the size of the windows.  Use in the 4th argument reaper.ImGui_Cond_FirstUseEver() to just apply at the first user run, so ImGUI remembers user resize s2
@@ -125,7 +125,7 @@ function Main()
         if reaper.ImGui_Button(CTX, 'Remove Track', -1) then -- -1 set width to the end of the window
             for _, v in pairs(tracks) do
                 if v.Select then
-                    SetGroup(v, cur_group, false) 
+                    SetGroup(v, cur_group, false)
                 end
             end
             tracks = GetTrackGroup(cur_group)

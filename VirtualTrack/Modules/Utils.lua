@@ -261,3 +261,22 @@ function has_value(tab, val)
 
     return false
 end
+
+function Store_GROUPS_TO_Project_EXT_STATE2(tbl)
+    local storedTable = { groups = tbl }
+    local serialized = tableToString(storedTable)
+    reaper.SetProjExtState( 0, "VirtualTrack", "GROUPS", serialized )
+end
+
+function Restore_GROUPS_FROM_Project_EXT_STATE2()
+    local group_list = {}
+    local rv, stored = reaper.GetProjExtState( 0, "VirtualTrack", "GROUPS" )
+    if rv == 1 and stored ~= nil then
+        local storedTable = stringToTable(stored)
+        if storedTable ~= nil then return storedTable.groups end
+    end
+    for i = 1 ,64 do
+        group_list[i] = { name = "GROUP " .. i, enabled = true }
+    end
+    return group_list
+end

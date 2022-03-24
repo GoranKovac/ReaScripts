@@ -8,6 +8,7 @@
 local script_folder = debug.getinfo(1).source:match("@?(.*[\\|/])"):gsub("[\\|/]Modules", "")
 local reaper, gfx = reaper, gfx
 local VT_TB, TBH = {}, nil
+local group_list
 
 local function GetAndSetMenuByTrack(tbl)
     local main_name
@@ -38,7 +39,14 @@ local function GetAndSetMenuByTrack(tbl)
                 track_menu[3].name = tbl.comp_idx == 0 and track_menu[3].name .. tbl.idx .. " : " .. tbl.info[tbl.idx].name or track_menu[3].name -- SHOW CURRENT SELECTION VERSION
             end
             table.insert(track_menu, 2, { name = "GROUP - ",          fname = "Start_GROUP" })
-            track_menu[2].name = track_menu[2].name .. (tbl.group ~= 0 and math.floor(tbl.group) or "None") .. "|"
+            local groups, group_enabled = "", ""
+            for i = 1, #group_list-32 do
+                if CheckGroup(i, tbl.group) then
+                    groups = groups .. i .. " "
+                    group_enabled = group_list[i].enabled and "!" or ""
+                end
+            end
+            track_menu[2].name = group_enabled .. track_menu[2].name .. (tbl.group ~= 0 and groups or "None") .. "|"
         --elseif reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FOLDERDEPTH") == 1 then
             -- main_name = "Virtual FOLDER - " .. tbl.idx .. " : "
             -- FOLDER MENU HERE
@@ -78,6 +86,7 @@ local function Update_tempo_map()
 end
 
 function Show_menu(rprobj, on_demand)
+    group_list = Restore_GROUPS_FROM_Project_EXT_STATE2()
     MouseInfo().last_menu_lane = MouseInfo().lane-- SET LAST LANE BEFORE MENU OPENED
     MouseInfo().last_menu_tr = MouseInfo().tr -- SET LAST TRACK BEFORE MENU OPENED
     local focused_tracks = GetSelectedTracksData(rprobj, on_demand) -- THIS ADDS NEW TRACKS TO VT_TB FOR ON DEMAND SCRIPT AND RETURNS TRACK SELECTION
@@ -924,7 +933,20 @@ local group_script_id = reaper.AddRemoveReaScript(true, 0, script_folder .. "Vir
 local group_script = reaper.NamedCommandLookup(group_script_id)
 reaper.gmem_attach('VirtualTrack_GROUPS')
 function Start_GROUP(tbl)
-    local gr = tbl.group ~= 0 and math.floor(math.log(tbl.group,2) + 1) or 1
-    reaper.gmem_write(1, gr)
-    reaper.Main_OnCommand(group_script,0)
+    local cur_group = tbl.group ~= 0 and math.floor(math.log(tbl.group,2) + 1) or 1
+    reaper.gmem_write(1, cur_group)
+    if MouseInfo().Shift() then
+        reaper.Main_OnCommand(group_script,0)
+    else
+        Enable_Disable_Groups(tbl.group)
+        Store_GROUPS_TO_Project_EXT_STATE2(group_list)
+    end
+end
+
+function Enable_Disable_Groups(group)
+    for i = 1, #group_list-32 do
+        if CheckGroup(i, group) then
+            group_list[i].enabled = not group_list[i].enabled
+        end
+    end
 end
