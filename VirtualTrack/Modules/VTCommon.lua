@@ -180,10 +180,6 @@ function Group_GUI()
 end
 
 function GUI()
-    -- if not STARTED then
-    --     reaper.PreventUIRefresh(1)
-    --     STARTED = true
-    -- end
     if reaper.ImGui_IsWindowAppearing(ctx) then
         reaper.ImGui_SetNextWindowPos(ctx, reaper.ImGui_PointConvertNative(ctx, reaper.GetMousePosition()))
         reaper.ImGui_OpenPopup(ctx, 'Menu')
@@ -201,8 +197,6 @@ function GUI()
         for track, tr_tbl in pairs(CURRENT_TRACKS) do StoreStateToDocument(tr_tbl) end
         if UPDATE_TEMPO then Update_tempo_map() end
         UpdateChangeCount()
-        reaper.PreventUIRefresh(-1)
-        reaper.UpdateArrange()
     end
 end
 
@@ -216,9 +210,7 @@ function Show_menu(rprobj, on_demand)
     UPDATE_TEMPO = rprobj == reaper.GetMasterTrack(0) and true or false
     SEL_TRACK_TBL = rprobj == reaper.GetMasterTrack(0) and VT_TB[reaper.GetTrackEnvelopeByName( rprobj, "Tempo map" )] or VT_TB[rprobj]
     for track, tr_tbl in pairs(CURRENT_TRACKS) do UpdateInternalState(tr_tbl) end
-    reaper.PreventUIRefresh(1)
     GUI()
-    reaper.PreventUIRefresh(-1)
 end
 
 local prev_Arr_end_time, prev_proj_state, last_scroll, last_scroll_b, last_pr_t, last_pr_h
@@ -546,6 +538,7 @@ function Set_LaneView_mode(tbl)
 end
 
 function CreateNew(tbl, name)
+    reaper.PreventUIRefresh(1)
     local selected_tracks = tbl and {tbl} or CURRENT_TRACKS
     for track, tr_tbl in pairs(selected_tracks) do
         Clear(tr_tbl)
@@ -553,9 +546,12 @@ function CreateNew(tbl, name)
         Get_Store_CurrentTrackState(tr_tbl, version_name)
         if tr_tbl.lane_mode == 2 then Set_LaneView_mode(tr_tbl) end
     end
+    reaper.PreventUIRefresh(-1)
+    reaper.UpdateArrange()
 end
 
 function Duplicate(tbl)
+    reaper.PreventUIRefresh(1)
     local selected_tracks = tbl and {tbl} or CURRENT_TRACKS
     for track, tr_tbl in pairs(selected_tracks) do
         Clear(tr_tbl) -- if its not clear for some reason it does not change guids (probably because of updateinternalstate)
@@ -570,9 +566,12 @@ function Duplicate(tbl)
             if tr_tbl.lane_mode == 2 then Set_LaneView_mode(tr_tbl) end
         end
     end
+    reaper.PreventUIRefresh(-1)
+    reaper.UpdateArrange()
 end
 
 function Delete(tbl)
+    reaper.PreventUIRefresh(1)
     local selected_tracks = tbl and {tbl} or CURRENT_TRACKS
     for track, tr_tbl in pairs(selected_tracks) do
         if #tr_tbl.info == 1 then return end
@@ -584,9 +583,12 @@ function Delete(tbl)
             SwapVirtualTrack(tr_tbl, tr_tbl.idx)
         end
     end
+    reaper.PreventUIRefresh(-1)
+    reaper.UpdateArrange()
 end
 
 function Clear(tbl)
+    reaper.PreventUIRefresh(1)
     if reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then
         reaper.SetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE", 0) -- ALWAYS TURN OFF LANES WHEN CLEARING ITEMS
         local num_items = reaper.CountTrackMediaItems(tbl.rprobj)
@@ -597,14 +599,15 @@ function Clear(tbl)
     elseif reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") then
         Make_Empty_Env(tbl.rprobj)
     end
+    reaper.PreventUIRefresh(-1)
+    reaper.UpdateArrange()
 end
 
 function Rename(tbl, name)
     if not name then return end
     local selected_tracks = tbl and {tbl} or CURRENT_TRACKS
     for track, tr_tbl in pairs(selected_tracks) do
-    --local current_name = tbl.info[tbl.idx].name
-        tr_tbl.info[tr_tbl.idx].name = name -- current_name:match("(%S+ %S+ )") .. name
+        tr_tbl.info[tr_tbl.idx].name = name
     end
 end
 
@@ -749,6 +752,7 @@ function CheckTrackLaneModeState(c_tbl)
 end
 
 function ShowAll(tbl)
+    reaper.PreventUIRefresh(1)
     local selected_tracks = tbl and {tbl} or CURRENT_TRACKS
     for track, tr_tbl in pairs(selected_tracks) do
         if not reaper.ValidatePtr(tr_tbl.rprobj, "MediaTrack*") then return end
@@ -762,7 +766,9 @@ function ShowAll(tbl)
             SwapVirtualTrack(tr_tbl, tr_tbl.idx)
         end
     end
+    reaper.PreventUIRefresh(-1)
     reaper.UpdateTimeline()
+    reaper.UpdateArrange()
 end
 
 local function CreateVTElements(direct)
@@ -848,17 +854,6 @@ function SetCompLane(tbl, lane)
         StoreStateToDocument(tr_tbl)
     end
 end
-
--- function GetLinkVal()
---     local retval, link = reaper.GetProjExtState(0, "VirtualTrack", "LINK")
---     if retval ~= 0 then return link == "true" and true or false end
---     return false
--- end
-
--- function SetLinkVal()
---     local cur_value = GetLinkVal() == true and "false" or "true"
---     reaper.SetProjExtState(0, "VirtualTrack", "LINK", cur_value)
--- end
 
 function GetChild_ParentTrack_FromStored_PEXT(tracl_tbl)
     local all_childs_parents = {}
@@ -1033,20 +1028,10 @@ function GetTrackGroup(val)
     return groups
 end
 
---local group_script_id = reaper.AddRemoveReaScript(true, 0, script_folder .. "Virtual_track_GROUPS.lua", true)
---local group_script = reaper.NamedCommandLookup(group_script_id)
-reaper.gmem_attach('VirtualTrack_GROUPS')
-function Start_GROUP(tbl)
-    local cur_group = tbl.group ~= 0 and math.floor(math.log(tbl.group,2) + 1) or 1
-    CUR_GROUP = cur_group
-    --reaper.gmem_write(1, cur_group)
-    --if MouseInfo().Shift() then
-     --   reaper.Main_OnCommand(group_script,0)
-    --else
-    --    Enable_Disable_Groups(tbl.group)
-    --    Store_GROUPS_TO_Project_EXT_STATE()
-    --end
-end
+-- function Start_GROUP(tbl)
+--     local cur_group = tbl.group ~= 0 and math.floor(math.log(tbl.group,2) + 1) or 1
+--     CUR_GROUP = cur_group
+-- end
 
 function Enable_Disable_Groups(group)
     for i = 1, #GROUP_LIST-32 do
