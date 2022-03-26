@@ -7,7 +7,7 @@
 
 local script_folder = debug.getinfo(1).source:match("@?(.*[\\|/])"):gsub("[\\|/]Modules", "")
 local reaper = reaper
-local VT_TB, TBH, GROUP_LIST = {}, nil, nil
+local VT_TB, TBH, GROUP_LIST, CUR_GROUP = {}, nil, nil, 1
 
 local function Update_tempo_map()
     if reaper.CountTempoTimeSigMarkers(0) then
@@ -17,93 +17,208 @@ local function Update_tempo_map()
     reaper.UpdateTimeline()
 end
 
+
 local ctx = reaper.ImGui_CreateContext('My script', reaper.ImGui_ConfigFlags_NoSavedSettings())
+
+function Draw_Color_Rect()
+    local min_x, min_y = reaper.ImGui_GetItemRectMin(ctx)
+    local max_x, max_y = reaper.ImGui_GetItemRectMax(ctx)
+    local draw_list = reaper.ImGui_GetWindowDrawList(ctx)
+    reaper.ImGui_DrawList_AddRectFilled(draw_list, min_x, min_y, max_x, max_y, 0x11FFFF80)
+end
+
+local function rename222()
+    if reaper.ImGui_IsWindowAppearing(ctx) then
+        reaper.ImGui_SetKeyboardFocusHere(ctx)
+    end
+    reaper.ImGui_InputText(ctx, 'Name')
+    if reaper.ImGui_Button(ctx, 'OK') then
+        reaper.ImGui_CloseCurrentPopup(ctx)
+    end
+    reaper.ImGui_SameLine(ctx)
+    if reaper.ImGui_Button(ctx, 'Cancel') then
+        reaper.ImGui_CloseCurrentPopup(ctx)
+    end
+end
+
 function Popup()
-    reaper.PreventUIRefresh(1)
-    -----------------------------------------------------------------------------------------
-    --reaper.ImGui_TextColored( ctx, 0x00ffffff, "-> " .. SEL_TRACK_TBL.info[SEL_TRACK_TBL.idx].name)
-    --reaper.ImGui_Separator(ctx)
-    --local tr_name = reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") and "VT:" or "VT"
-    if reaper.ImGui_BeginMenu(ctx, "VT - " .. SEL_TRACK_TBL.info[SEL_TRACK_TBL.idx].name, true) then
+    reaper.ImGui_TextColored( ctx, 0x3EFF00FF, "    VIRTUAL TRACK     " )
+    Draw_Color_Rect()
+    reaper.ImGui_Separator(ctx)
+    if reaper.ImGui_BeginMenu(ctx, "      " .. SEL_TRACK_TBL.info[SEL_TRACK_TBL.idx].name, true) then
         for i = 1, #SEL_TRACK_TBL.info do
             if reaper.ImGui_MenuItem(ctx, SEL_TRACK_TBL.info[i].name, nil, i == SEL_TRACK_TBL.idx) then SwapVirtualTrack(nil, i) end
         end
         reaper.ImGui_EndMenu(ctx)
     end
     reaper.ImGui_Separator(ctx)
-    if reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") then
-        --local group_names = ""
-        --for i = 1, #group_list do
-        --    if CheckGroup(i, tbl.group) then group_names = group_names .. i .. " " end
-        --end
-        local is_group_enabled = true
-        if reaper.ImGui_MenuItem(ctx, 'GROUPS ' .. "group_names") then --[[ open group window ]]end
-        if is_group_enabled then reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Text(), 0x3EFF00FF) end -- MAKE TEXT GREEN WHEN ENABLED
-        if reaper.ImGui_MenuItem(ctx, 'ENABLED', nil, true) then end
-        if is_group_enabled then reaper.ImGui_PopStyleColor(ctx) end
-        reaper.ImGui_Separator(ctx)
-    end
     local is_button_enabled = SEL_TRACK_TBL.comp_idx == 0
     local comp_enabled = SEL_TRACK_TBL.comp_idx ~= 0
+    if reaper.ImGui_MenuItem(ctx, 'Create New', nil, nil, is_button_enabled) then CreateNew() end
+    if reaper.ImGui_MenuItem(ctx, 'Delete', nil, nil, (#SEL_TRACK_TBL.info > 1 and is_button_enabled)) then Delete() end
+    if reaper.ImGui_MenuItem(ctx, 'Duplicate', nil, nil, is_button_enabled) then Duplicate() end   
+    if reaper.ImGui_Selectable(ctx, 'Rename', nil, reaper.ImGui_SelectableFlags_DontClosePopups()) then
+        reaper.ImGui_OpenPopup(ctx, 'Rename Version')
+    end
+    if reaper.ImGui_BeginPopupModal(ctx, 'Rename Version', nil, reaper.ImGui_WindowFlags_AlwaysAutoResize()) then
+        rename222()
+        reaper.ImGui_EndPopup(ctx)
+    end
+    if reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") then
+        local group_names = SEL_TRACK_TBL.group ~= 0 and "" or "None"
+        for i = 1, #GROUP_LIST do
+             if CheckGroup(i, SEL_TRACK_TBL.group) then group_names = group_names .. i .. " " end
+        end
+        reaper.ImGui_Separator(ctx)
+        if reaper.ImGui_Selectable(ctx, 'GROUPS', nil, reaper.ImGui_SelectableFlags_DontClosePopups()) then
+            reaper.ImGui_OpenPopup(ctx, 'GROUP_WINDOW')
+        end
+        if reaper.ImGui_BeginPopupModal(ctx, 'GROUP_WINDOW', true, reaper.ImGui_WindowFlags_AlwaysAutoResize()) then
+            STORE_GROUPS = true
+            Group_GUI()
+            reaper.ImGui_EndPopup(ctx)
+        elseif STORE_GROUPS then
+            Store_GROUPS_TO_Project_EXT_STATE()
+        end
+        local is_group_enabled = GROUP_LIST[CUR_GROUP].enabled == true
+        if is_group_enabled then reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Text(), 0x3EFF00FF) end -- MAKE TEXT GREEN WHEN ENABLED
+        if reaper.ImGui_MenuItem(ctx, 'ENABLED', nil, is_group_enabled) then
+            GROUP_LIST[CUR_GROUP].enabled = not GROUP_LIST[CUR_GROUP].enabled
+            Store_GROUPS_TO_Project_EXT_STATE()
+        end
+        if is_group_enabled then Draw_Color_Rect() reaper.ImGui_PopStyleColor(ctx) end
+    end
     if reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") and SEL_TRACK_TBL.lane_mode == 2 then
+        reaper.ImGui_Separator(ctx)
         if reaper.ImGui_MenuItem(ctx, 'New Empty COMP', nil, nil, is_button_enabled) then NewComp() end
         if comp_enabled then reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Text(), 0x3EFF00FF) end -- MAKE TEXT GREEN WHEN ENABLED
         if reaper.ImGui_MenuItem(ctx, 'Enable COMP', nil, comp_enabled) then SetCompLane() end
-        if comp_enabled then reaper.ImGui_PopStyleColor(ctx) end
-        reaper.ImGui_Separator(ctx)
+        if comp_enabled then Draw_Color_Rect() reaper.ImGui_PopStyleColor(ctx) end
     end
-    if reaper.ImGui_MenuItem(ctx, 'Create New', nil, nil, is_button_enabled) then CreateNew() end
-    if reaper.ImGui_MenuItem(ctx, 'Delete', nil, nil, (#SEL_TRACK_TBL.info > 1 and is_button_enabled)) then Delete() end
-    if reaper.ImGui_MenuItem(ctx, 'Duplicate', nil, nil, is_button_enabled) then Duplicate() end
-    if reaper.ImGui_MenuItem(ctx, 'Rename', nil, nil, is_button_enabled) then
-        --! MOVE THIS INTO RENAME FUNCTION
-        local current_name = SEL_TRACK_TBL.info[SEL_TRACK_TBL.idx].name
-        local rename_retval, new_name = reaper.GetUserInputs(current_name, 1, " New Name :", current_name)
-        if not rename_retval then return end
-        Rename(nil, new_name) end
     if reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") then
         reaper.ImGui_Separator(ctx)
         local is_lane_mode = SEL_TRACK_TBL.lane_mode == 2
         if is_lane_mode then reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Text(), 0x3EFF00FF) end -- MAKE TEXT GREEN WHEN ENABLED
         if reaper.ImGui_MenuItem(ctx, 'Show All', nil, SEL_TRACK_TBL.lane_mode == 2, is_button_enabled) then ShowAll() end
-        if is_lane_mode then reaper.ImGui_PopStyleColor(ctx) end
+        if is_lane_mode then Draw_Color_Rect() reaper.ImGui_PopStyleColor(ctx) end
     end
-    -----------------------------------------------------------------------------------------
-    reaper.PreventUIRefresh(-1)
-    reaper.UpdateArrange()
+end
 
-    for track, tr_tbl in pairs(CURRENT_TRACKS) do StoreStateToDocument(tr_tbl) end
-    if UPDATE_TEMPO then Update_tempo_map() end
-    UpdateChangeCount()
+function Add_Tracks()
+    local sel_tracks = {}
+    local stored_tbl = Get_Stored_PEXT_STATE_TBL()
+    for i = 1,  reaper.CountSelectedTracks(0) do
+        local track = reaper.GetSelectedTrack(0, i - 1)
+        if stored_tbl[track] then
+            sel_tracks[track] = stored_tbl[track]
+        end
+    end
+    for _, v in pairs(sel_tracks) do
+        SetGroup(v, CUR_GROUP, true)
+    end
+    TRACK_GROUPS = GetTrackGroup(CUR_GROUP)
+end
+
+function ToolTip(text)
+    if reaper.ImGui_IsItemHovered(ctx) then
+        reaper.ImGui_BeginTooltip(ctx)
+        reaper.ImGui_PushTextWrapPos(ctx, reaper.ImGui_GetFontSize(ctx) * 35.0)
+        reaper.ImGui_PushTextWrapPos(ctx, 200)
+        reaper.ImGui_Text(ctx, text)
+        reaper.ImGui_PopTextWrapPos(ctx)
+        reaper.ImGui_EndTooltip(ctx)
+    end
+end
+
+function Group_GUI()
+    reaper.ImGui_SetNextItemWidth(ctx, 147) -- OPTIONAL if you want to set docker width
+    if reaper.ImGui_BeginCombo(ctx, '##docker', GROUP_LIST[CUR_GROUP].name or GROUP_LIST[1].name) then -- putting ## in the id section will make it without any name text in the UI
+        for i = 1, #GROUP_LIST do -- Iterate for each element in the combo list
+            local is_selected = i == CUR_GROUP
+            if reaper.ImGui_Selectable(ctx, GROUP_LIST[i].name, is_selected) then --this create each of the combo item. Be carefull if they have the same name you have ID problems. This is why I put ..'##'..i at the end. try to remove it and click on repeted nameded elements.
+                CUR_GROUP = i
+                TRACK_GROUPS = GetTrackGroup(i)
+            end
+        end
+        reaper.ImGui_EndCombo(ctx)
+    end
+
+    reaper.ImGui_SameLine(ctx)
+
+    RV, GROUP_LIST[CUR_GROUP].enabled = reaper.ImGui_Checkbox(ctx, 'ENABLED', GROUP_LIST[CUR_GROUP].enabled)
+    ToolTip('Enable or disable current group')
+
+    if reaper.ImGui_BeginListBox(ctx, '##listbox',-1) then -- -1 set width to the end of the window
+        for k, v in pairs(TRACK_GROUPS) do -- Iterate for each element in the combo list
+            if reaper.ValidatePtr( k, "MediaTrack*" ) then
+                local _, buf = reaper.GetTrackName( k )
+                if reaper.ImGui_Selectable(ctx, buf..'##', v.Select) then --this create each of items. Be carefull if they have the same name you have ID problems. This is why I put ..'##'..i at the end. try to remove it and click on repeted nameded elements.
+                    if (reaper.ImGui_GetKeyMods(ctx) & reaper.ImGui_KeyModFlags_Shift()) == 0 then
+                        for _, info in pairs(TRACK_GROUPS) do info.Select = false end
+                    end
+                    v.Select = not v.Select
+                end
+            else
+                TRACK_GROUPS[k] = nil
+            end
+        end
+        reaper.ImGui_EndListBox(ctx)
+    end
+
+    if reaper.ImGui_Button(ctx, 'Add Track', -1) then Add_Tracks() end -- -1 set width to the end of the window
+    ToolTip('Add selected tracks from TCP or MCP view')
+
+    if reaper.ImGui_Button(ctx, 'Remove Track', -1) then -- -1 set width to the end of the window
+        for _, v in pairs(TRACK_GROUPS) do
+            if v.Select then
+                SetGroup(v, CUR_GROUP, false)
+            end
+        end
+        TRACK_GROUPS = GetTrackGroup(CUR_GROUP)
+    end
+    ToolTip('Remove tracks from list view')
 end
 
 function GUI()
+    -- if not STARTED then
+    --     reaper.PreventUIRefresh(1)
+    --     STARTED = true
+    -- end
     if reaper.ImGui_IsWindowAppearing(ctx) then
         reaper.ImGui_SetNextWindowPos(ctx, reaper.ImGui_PointConvertNative(ctx, reaper.GetMousePosition()))
         reaper.ImGui_OpenPopup(ctx, 'Menu')
     end
     if reaper.ImGui_BeginPopup(ctx, 'Menu') then
-        --r.ImGui_PushFont(ctx, font)
         Popup()
-        --r.ImGui_PopFont(ctx)
         reaper.ImGui_EndPopup(ctx)
         reaper.defer(GUI)
     else
         reaper.ImGui_DestroyContext(ctx)
+        STORE_DATA = true
+    end
+
+     if STORE_DATA then
+        for track, tr_tbl in pairs(CURRENT_TRACKS) do StoreStateToDocument(tr_tbl) end
+        if UPDATE_TEMPO then Update_tempo_map() end
+        UpdateChangeCount()
+        reaper.PreventUIRefresh(-1)
+        reaper.UpdateArrange()
     end
 end
 
 function Show_menu(rprobj, on_demand)
-    GROUP_LIST = Restore_GROUPS_FROM_Project_EXT_STATE()
     MouseInfo().last_menu_lane = MouseInfo().lane-- SET LAST LANE BEFORE MENU OPENED
     MouseInfo().last_menu_tr = MouseInfo().tr -- SET LAST TRACK BEFORE MENU OPENED
     CheckTrackLaneModeState(VT_TB[rprobj])
-    local focused_tracks = GetSelectedTracksData(rprobj, on_demand) -- THIS ADDS NEW TRACKS TO VT_TB FOR ON DEMAND SCRIPT AND RETURNS TRACK SELECTION
+    GROUP_LIST = Restore_GROUPS_FROM_Project_EXT_STATE()
+    TRACK_GROUPS = GetTrackGroup(CUR_GROUP) or {}
+    CURRENT_TRACKS = GetSelectedTracksData(rprobj, on_demand) -- THIS ADDS NEW TRACKS TO VT_TB FOR ON DEMAND SCRIPT AND RETURNS TRACK SELECTION
     UPDATE_TEMPO = rprobj == reaper.GetMasterTrack(0) and true or false
     SEL_TRACK_TBL = rprobj == reaper.GetMasterTrack(0) and VT_TB[reaper.GetTrackEnvelopeByName( rprobj, "Tempo map" )] or VT_TB[rprobj]
-    CURRENT_TRACKS = focused_tracks -- GetLinkVal() and all_childrens_and_parents or focused_tracks
     for track, tr_tbl in pairs(CURRENT_TRACKS) do UpdateInternalState(tr_tbl) end
+    reaper.PreventUIRefresh(1)
     GUI()
+    reaper.PreventUIRefresh(-1)
 end
 
 local prev_Arr_end_time, prev_proj_state, last_scroll, last_scroll_b, last_pr_t, last_pr_h
@@ -907,27 +1022,30 @@ function GetTrackGroup(val)
     if not stored_tbl then return end
     local groups = {}
     for k, v in pairs(stored_tbl) do
-        reaper.SetTrackSelected( k, false )
-        if CheckGroup(val, v.group) then
-            reaper.SetTrackSelected( k, true )
-            if not groups[k] then groups[k] = v end
+        if reaper.ValidatePtr(k, "MediaTrack*") then
+            reaper.SetTrackSelected( k, false )
+            if CheckGroup(val, v.group) then
+                reaper.SetTrackSelected( k, true )
+                if not groups[k] then groups[k] = v end
+            end
         end
     end
     return groups
 end
 
-local group_script_id = reaper.AddRemoveReaScript(true, 0, script_folder .. "Virtual_track_GROUPS.lua", true)
-local group_script = reaper.NamedCommandLookup(group_script_id)
+--local group_script_id = reaper.AddRemoveReaScript(true, 0, script_folder .. "Virtual_track_GROUPS.lua", true)
+--local group_script = reaper.NamedCommandLookup(group_script_id)
 reaper.gmem_attach('VirtualTrack_GROUPS')
 function Start_GROUP(tbl)
     local cur_group = tbl.group ~= 0 and math.floor(math.log(tbl.group,2) + 1) or 1
-    reaper.gmem_write(1, cur_group)
-    if MouseInfo().Shift() then
-        reaper.Main_OnCommand(group_script,0)
-    else
-        Enable_Disable_Groups(tbl.group)
-        Store_GROUPS_TO_Project_EXT_STATE()
-    end
+    CUR_GROUP = cur_group
+    --reaper.gmem_write(1, cur_group)
+    --if MouseInfo().Shift() then
+     --   reaper.Main_OnCommand(group_script,0)
+    --else
+    --    Enable_Disable_Groups(tbl.group)
+    --    Store_GROUPS_TO_Project_EXT_STATE()
+    --end
 end
 
 function Enable_Disable_Groups(group)
