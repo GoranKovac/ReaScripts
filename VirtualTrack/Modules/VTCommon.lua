@@ -17,7 +17,6 @@ local function Update_tempo_map()
     reaper.UpdateTimeline()
 end
 
-
 local ctx = reaper.ImGui_CreateContext('My script', reaper.ImGui_ConfigFlags_NoSavedSettings())
 
 function Draw_Color_Rect()
@@ -56,7 +55,7 @@ function Popup()
     local comp_enabled = SEL_TRACK_TBL.comp_idx ~= 0
     if reaper.ImGui_MenuItem(ctx, 'Create New', nil, nil, is_button_enabled) then CreateNew() end
     if reaper.ImGui_MenuItem(ctx, 'Delete', nil, nil, (#SEL_TRACK_TBL.info > 1 and is_button_enabled)) then Delete() end
-    if reaper.ImGui_MenuItem(ctx, 'Duplicate', nil, nil, is_button_enabled) then Duplicate() end   
+    if reaper.ImGui_MenuItem(ctx, 'Duplicate', nil, nil, is_button_enabled) then Duplicate() end
     if reaper.ImGui_Selectable(ctx, 'Rename', nil, reaper.ImGui_SelectableFlags_DontClosePopups()) then
         reaper.ImGui_OpenPopup(ctx, 'Rename Version')
     end
@@ -192,8 +191,7 @@ function GUI()
         reaper.ImGui_DestroyContext(ctx)
         STORE_DATA = true
     end
-
-     if STORE_DATA then
+    if STORE_DATA then
         for track, tr_tbl in pairs(CURRENT_TRACKS) do StoreStateToDocument(tr_tbl) end
         if UPDATE_TEMPO then Update_tempo_map() end
         UpdateChangeCount()
