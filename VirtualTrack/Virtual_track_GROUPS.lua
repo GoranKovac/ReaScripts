@@ -20,7 +20,7 @@ local tracks = GetTrackGroup(cur_group) or {}
 
 reaper.gmem_attach('VirtualTrack_GROUPS')
 
-function MSG(a) reaper.ShowConsoleMsg(a .. "\n") end
+--function MSG(a) reaper.ShowConsoleMsg(a .. "\n") end
 
 function GuiInit()
     group_list = Restore_GROUPS_FROM_Project_EXT_STATE()
