@@ -261,3 +261,8 @@ function has_value(tab, val)
 
     return false
 end
+
+function trim(s)
+    -- from PiL2 20.4
+    return (s:gsub("^%s*(.-)%s*$", "%1"))
+end

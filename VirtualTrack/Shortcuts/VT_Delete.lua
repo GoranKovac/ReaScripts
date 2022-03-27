@@ -17,21 +17,8 @@ Check_Requirements()
 local function Main()
     local track = OnDemand()
     if not track then return end
-    local VT_TB = Get_VT_TB()
-    if reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") ~= 0 then return end
-    local focused_tracks = GetSelectedTracksData(track, true) -- THIS ADDS NEW TRACKS TO VT_TB FOR ON DEMAND SCRIPT AND RETURNS TRACK SELECTION
-    --local all_childrens_and_parents = GetChild_ParentTrack_FromStored_PEXT(focused_tracks)
-    --local current_tracks = GetLinkVal() and all_childrens_and_parents or focused_tracks
-    reaper.PreventUIRefresh(1)
-    reaper.Undo_BeginBlock2(0)
-    for sel_track in pairs(focused_tracks) do
-        UpdateInternalState(VT_TB[sel_track])
-        Delete(VT_TB[sel_track])
-        StoreStateToDocument(VT_TB[sel_track])
-    end
-    reaper.Undo_EndBlock2(0, "VT: Delete Version ", -1)
-    reaper.PreventUIRefresh(-1)
-    reaper.UpdateArrange()
+    local func = "Delete"
+    Show_menu(track, func)
 end
 
 xpcall(Main, GetCrash())
