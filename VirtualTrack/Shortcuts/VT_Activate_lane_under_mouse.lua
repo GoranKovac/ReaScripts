@@ -17,28 +17,8 @@ Check_Requirements()
 local function Main()
     local track = OnDemand()
     if not track then return end
-    local mouse = MouseInfo()
-    if not mouse.lane then return end
-    local VT_TB = Get_VT_TB()
-    local focused_tracks = GetSelectedTracksData(track, true) -- THIS ADDS NEW TRACKS TO VT_TB FOR ON DEMAND SCRIPT AND RETURNS TRACK SELECTION
-    local track_selection = Get_VT_TB()[track].group ~= 0 and GetTrackGroup(Get_VT_TB()[track].group) or focused_tracks
-
-    --local all_childrens_and_parents = GetChild_ParentTrack_FromStored_PEXT(focused_tracks)
-   -- local current_tracks = GetLinkVal() and all_childrens_and_parents or focused_tracks
-    reaper.PreventUIRefresh(1)
-    if reaper.ValidatePtr(track, "MediaTrack*") then
-        if reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") == 2 then
-            for _, tbl in pairs(track_selection) do
-                CheckTrackLaneModeState(tbl)
-                UpdateInternalState(tbl)
-                
-                SwapVirtualTrack(tbl, mouse.lane)
-                StoreStateToDocument(tbl)
-            end
-        end
-    end
-    reaper.PreventUIRefresh(-1)
-    reaper.UpdateArrange()
+    local func = "ActivateLaneUndeMouse"
+    Show_menu(track, func)
 end
 
 xpcall(Main, GetCrash())
