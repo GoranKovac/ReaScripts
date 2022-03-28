@@ -1,15 +1,15 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.15
+-- @version 1.16
 -- @changelog
---   + Fix menu storing wrong track state (fixes comping showing error)
+--   + ReaImGui refactor
+--   + Added Grups
+--   + Fixes and stuff
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
---   [main] Virtual_track_Mouse.lua
 --   [main] Virtual_track_SelTrack.lua
---   [main] Virtual_track_Swipe.lua
 --   [main] Virtual_track_Options.lua
 
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
