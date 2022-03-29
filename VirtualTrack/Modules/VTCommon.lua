@@ -108,7 +108,6 @@ function Popup()
     if reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Escape()) then
         reaper.ImGui_CloseCurrentPopup(ctx)
     end
-    --reaper.ImGui_TextColored( ctx, 0x3EFF00FF, "    VIRTUAL TRACK     " )
     if reaper.ImGui_Selectable(ctx, 'VIRTUAL TRACK', true, reaper.ImGui_SelectableFlags_DontClosePopups() | reaper.ImGui_SelectableFlags_AllowDoubleClick()) and reaper.ImGui_IsMouseDoubleClicked( ctx, 0 )then
         reaper.ImGui_OpenPopup(ctx, 'OPTIONS')
     end
@@ -117,11 +116,9 @@ function Popup()
         GUIOptions()
         reaper.ImGui_EndPopup(ctx)
     end
-   -- Draw_Color_Rect()
     reaper.ImGui_Separator(ctx)
     local vertical = reaper.ImGui_GetMouseWheel( ctx )
     if vertical ~= 0 then WHEEL_INCREMENT = vertical end
-    -- if reaper.ImGui_BeginMenu(ctx, SEL_TRACK_TBL.info[SEL_TRACK_TBL.idx].name, true) then
     for i = 1, #SEL_TRACK_TBL.info do
         if reaper.ImGui_MenuItem(ctx, SEL_TRACK_TBL.info[i].name, nil, i == SEL_TRACK_TBL.idx) then SwapVirtualTrack(i) end
         if reaper.ImGui_IsItemHovered(ctx) then
@@ -133,8 +130,6 @@ function Popup()
         end
         if comp_enabled and i == SEL_TRACK_TBL.comp_idx then Draw_Color_Rect() end
     end
-       -- reaper.ImGui_EndMenu(ctx)
-    --end
     reaper.ImGui_Separator(ctx)
     reaper.ImGui_Separator(ctx)
     if reaper.ImGui_MenuItem(ctx, 'Create New', nil, nil, is_button_enabled) then CreateNew() end
@@ -687,12 +682,21 @@ function Get_Razor_Data(track)
     local razor_t, razor_b = razor_info[3], razor_info[4]
     local razor_h = razor_b - razor_t
     razor_info.razor_lane = round(razor_b / razor_h)
+    razor_info.track = track
     return razor_info
+end
+
+local function Calculate_Track_Razor_data(tbl, razor_data)
+    local razor_b = razor_data.razor_lane * (1 / #tbl.info)
+    local razor_t = -(razor_b - (razor_data.razor_lane * razor_b)) / razor_data.razor_lane
+    return razor_t, razor_b
 end
 
 function Set_Razor_Data(tbl, razor_data)
     if not reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then return end
-    local razor_str = razor_data[1] .. " " .. razor_data[2] .. " " .. "'' " .. razor_data[3] .. " " .. razor_data[4]
+    if razor_data.razor_lane > #tbl.info then return end -- DO NOT CREATE RAZOR IF RAZOR LANE IS BIGGER THAN VERSIONS TABLE
+    local calc_razor_t, calc_razor_b = Calculate_Track_Razor_data(tbl, razor_data)
+    local razor_str = razor_data[1] .. " " .. razor_data[2] .. " " .. "'' " .. calc_razor_t .. " " .. calc_razor_b
     reaper.GetSetMediaTrackInfo_String(tbl.rprobj, "P_RAZOREDITS_EXT", razor_str, true)
 end
 
@@ -763,11 +767,13 @@ function CopyToCOMP(tbl)
         if reaper.ValidatePtr(tr_tbl.rprobj, "TrackEnvelope*") then return end -- PREVENT DOING THIS ON ENVELOPES
         if reaper.GetMediaTrackInfo_Value(tr_tbl.rprobj, "I_FREEMODE") == 0 then return end -- PREVENT DOING IN NON LANE MODE
         if tr_tbl.comp_idx == 0 or tr_tbl.comp_idx == RAZOR_INFO.razor_lane then return end -- PREVENT COPY ONTO ITSELF OR IF COMP DISABLED
-        Set_Razor_Data(tr_tbl, RAZOR_INFO) -- JUST SET RAZOR ON OTHER TRACKS (ONLY FOR VISUAL)
+        if RAZOR_INFO.track ~= tr_tbl.rprobj then Set_Razor_Data(tr_tbl, RAZOR_INFO) end-- JUST SET RAZOR ON OTHER TRACKS (ONLY FOR VISUAL) , do not add on self
         local new_items, to_delete = {}, {}
         for i = 1, reaper.CountTrackMediaItems(tr_tbl.rprobj) do
-            new_items[#new_items + 1] = Get_items_in_Lane(reaper.GetTrackMediaItem(tr_tbl.rprobj, i-1), RAZOR_INFO[1], RAZOR_INFO[2], RAZOR_INFO.razor_lane) -- COPY ITEMS FROM RAZOR LANE
-            to_delete[#to_delete + 1] = Get_items_in_Lane(reaper.GetTrackMediaItem(tr_tbl.rprobj, i-1), RAZOR_INFO[1], RAZOR_INFO[2], tr_tbl.comp_idx) -- WE ARE GONNA DELETE ON COMPING LANE IF RAZOR IS EMPTY
+            if RAZOR_INFO.razor_lane <= #tr_tbl.info then -- only add if razor lane is within lane numbers else skip it
+                new_items[#new_items + 1] = Get_items_in_Lane(reaper.GetTrackMediaItem(tr_tbl.rprobj, i-1), RAZOR_INFO[1], RAZOR_INFO[2], RAZOR_INFO.razor_lane) -- COPY ITEMS FROM RAZOR LANE
+                to_delete[#to_delete + 1] = Get_items_in_Lane(reaper.GetTrackMediaItem(tr_tbl.rprobj, i-1), RAZOR_INFO[1], RAZOR_INFO[2], tr_tbl.comp_idx) -- WE ARE GONNA DELETE ON COMPING LANE IF RAZOR IS EMPTY
+            end
         end
         for i = 1, #to_delete do Delete_items_or_area(to_delete[i], RAZOR_INFO[1], RAZOR_INFO[2]) end -- DELETE ITEMS CONTENT (IF RAZOR IS EMPTY) COMPING "SILENCE"
         for i = 1, #new_items do Make_item_from_razor(tr_tbl, new_items[i], RAZOR_INFO) end
