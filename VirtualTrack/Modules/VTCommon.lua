@@ -53,9 +53,9 @@ local function GUIRename(NEW_NAME)
         reaper.ImGui_SetKeyboardFocusHere(ctx)
     end
     RV, NEW_NAME = reaper.ImGui_InputText(ctx, 'Name' , NEW_NAME, reaper.ImGui_InputTextFlags_AutoSelectAll())
-    if reaper.ImGui_Button(ctx, 'OK') or reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Enter()) or reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_KeypadEnter()) then
+    if reaper.ImGui_Button(ctx, 'OK') or reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Enter()) or reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_KeypadEnter()) then        
         NEW_NAME = NEW_NAME:gsub("^%s*(.-)%s*$", "%1") -- remove trailing and leading
-        if #NEW_NAME == 0 then SAVED_NAME = NEW_NAME end
+        if #NEW_NAME ~= 0 then SAVED_NAME = NEW_NAME end
         if SAVED_NAME then Rename(SAVED_NAME) end
         reaper.ImGui_CloseCurrentPopup(ctx)
     end

@@ -1,9 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.24
+-- @version 1.25
 -- @changelog
---   + Fix same track appearing two times in group window
+--   + Fix Rename not working
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
