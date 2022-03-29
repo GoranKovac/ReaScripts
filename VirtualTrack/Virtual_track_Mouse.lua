@@ -1,11 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.19
+-- @version 1.20
 -- @changelog
---   + Save updated state to P_EXT STATE before opening menu
---   + fixes tracks not adding to groups if only single version
---   + on initial menu open
+--   + Simplify Storing current state in single loop
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua

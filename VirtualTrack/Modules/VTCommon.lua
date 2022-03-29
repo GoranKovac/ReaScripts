@@ -233,8 +233,7 @@ function Show_menu(rprobj, skip_gui_command)
     UPDATE_TEMPO = rprobj == reaper.GetMasterTrack(0) and true or false
     SEL_TRACK_TBL = rprobj == reaper.GetMasterTrack(0) and VT_TB[reaper.GetTrackEnvelopeByName( rprobj, "Tempo map" )] or VT_TB[rprobj]
     RAZOR_INFO = reaper.ValidatePtr(rprobj, "MediaTrack*") and Get_Razor_Data(rprobj) or nil
-    for track, tr_tbl in pairs(CURRENT_TRACKS) do UpdateInternalState(tr_tbl) end -- UPDATE INTERNAL TABLE BEFORE OPENING MENU
-    for track, tr_tbl in pairs(CURRENT_TRACKS) do StoreStateToDocument(tr_tbl) end --! STORE TABLE BEFORE OPENING MENU , FIXES TRACKS NOT ADDING TO GROUPS WHEN ONLY 1 VERSION STORE
+    for track, tr_tbl in pairs(CURRENT_TRACKS) do SaveCurrentState(tr_tbl) end -- UPDATE INTERNAL TABLE BEFORE OPENING MENU
     if not skip_gui_command then
         GUI()
     else
@@ -444,17 +443,8 @@ end
 
 function StoreStateToDocument(tbl) Store_To_PEXT(tbl) end
 
-local function SaveCurrentState(tbl)
-    if UpdateInternalState(tbl) == true then return Store_To_PEXT(tbl) end
-    return false
-end
-
-function StoreInProject()
-    local rv = true
-    for _, v in pairs(VT_TB) do
-        rv = (SaveCurrentState(v) and rv == true) and true or false
-    end
-    if rv == true then reaper.MarkProjectDirty(0) end -- at least mark the project dirty, even if we don't offer undo here
+function SaveCurrentState(tbl)
+    if UpdateInternalState(tbl) == true then Store_To_PEXT(tbl) end
 end
 
 function CycleVersionsUP()
