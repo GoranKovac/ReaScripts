@@ -13,7 +13,6 @@
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 
 require("Modules/VTCommon")
-require("Modules/Mouse")
 require("Modules/Utils")
 
 Check_Requirements()

@@ -4,8 +4,10 @@
    * Version: 0.03
 	 * NoIndex: true
 --]]
-local script_folder = debug.getinfo(1).source:match("@?(.*[\\|/])"):gsub("[\\|/]Modules", "")
 local reaper = reaper
+local script_folder = debug.getinfo(1).source:match("@?(.*[\\|/])"):gsub("[\\|/]Modules", "")
+local main_wnd = reaper.GetMainHwnd()                            -- GET MAIN WINDOW
+local track_window = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8) -- GET TRACK VIEW
 local VT_TB, GROUP_LIST, CUR_GROUP = {}, nil, 1
 
 local Element = {}
@@ -17,6 +19,17 @@ function Element:new(rprobj, info)
     setmetatable(elm, self)
     self.__index = self
     return elm
+end
+
+OPTIONS = {
+    ["TOOLTIPS"] = true,
+    ["LANE_COLORS"] = false
+}
+
+if reaper.HasExtState( "VirtualTrack", "options" ) then
+    local state = reaper.GetExtState( "VirtualTrack", "options" )
+    OPTIONS["LANE_COLORS"] = state:match("LANE_COLORS (%S+)") == "true" and true or false
+    OPTIONS["TOOLTIPS"] = state:match("TOOLTIPS (%S+)") == "true" and true or false
 end
 
 local function Update_tempo_map()
@@ -37,6 +50,7 @@ function Draw_Color_Rect()
 end
 
 function ToolTip(text)
+    if not OPTIONS["TOOLTIPS"] then return end
     if reaper.ImGui_IsItemHovered(ctx) then
         reaper.ImGui_BeginTooltip(ctx)
         reaper.ImGui_PushTextWrapPos(ctx, reaper.ImGui_GetFontSize(ctx) * 35.0)
@@ -47,13 +61,14 @@ function ToolTip(text)
     end
 end
 
-local function GUIRename(NEW_NAME)
+local function GUIRename(cur_name)
     local RV
     if reaper.ImGui_IsWindowAppearing(ctx) then
         reaper.ImGui_SetKeyboardFocusHere(ctx)
+        NEW_NAME = cur_name
     end
     RV, NEW_NAME = reaper.ImGui_InputText(ctx, 'Name' , NEW_NAME, reaper.ImGui_InputTextFlags_AutoSelectAll())
-    if reaper.ImGui_Button(ctx, 'OK') or reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Enter()) or reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_KeypadEnter()) then        
+    if reaper.ImGui_Button(ctx, 'OK') or reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Enter()) or reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_KeypadEnter()) then
         NEW_NAME = NEW_NAME:gsub("^%s*(.-)%s*$", "%1") -- remove trailing and leading
         if #NEW_NAME ~= 0 then SAVED_NAME = NEW_NAME end
         if SAVED_NAME then Rename(SAVED_NAME) end
@@ -65,14 +80,44 @@ local function GUIRename(NEW_NAME)
     end
 end
 
+local function save_options()
+    local store_string = ""
+    for k, v in pairs(OPTIONS) do
+        store_string = store_string .. tostring(k) .. " " .. tostring(v) .. " "
+    end
+    reaper.SetExtState( "VirtualTrack", "options", store_string, true )
+end
+
+local function GUIOptions()
+    local current_lane_colors = OPTIONS["LANE_COLORS"]
+    local current_tooltips = OPTIONS["TOOLTIPS"]
+    if reaper.ImGui_Checkbox(ctx, "TOOLTIPS", current_tooltips) then
+        OPTIONS["TOOLTIPS"] = not OPTIONS["TOOLTIPS"]
+        save_options()
+    end
+    if reaper.ImGui_Checkbox(ctx, "LANE COLORS", current_lane_colors) then
+        OPTIONS["LANE_COLORS"] = not OPTIONS["LANE_COLORS"]
+        save_options()
+    end
+    if reaper.ImGui_Button(ctx, 'Donate', -1) then open_url("https://www.paypal.com/paypalme/GoranK101") end
+end
+
 function Popup()
     local is_button_enabled = SEL_TRACK_TBL.comp_idx == 0
     local comp_enabled = SEL_TRACK_TBL.comp_idx ~= 0
     if reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Escape()) then
         reaper.ImGui_CloseCurrentPopup(ctx)
     end
-    reaper.ImGui_TextColored( ctx, 0x3EFF00FF, "    VIRTUAL TRACK     " )
-    Draw_Color_Rect()
+    --reaper.ImGui_TextColored( ctx, 0x3EFF00FF, "    VIRTUAL TRACK     " )
+    if reaper.ImGui_Selectable(ctx, 'VIRTUAL TRACK', true, reaper.ImGui_SelectableFlags_DontClosePopups() | reaper.ImGui_SelectableFlags_AllowDoubleClick()) and reaper.ImGui_IsMouseDoubleClicked( ctx, 0 )then
+        reaper.ImGui_OpenPopup(ctx, 'OPTIONS')
+    end
+    ToolTip("Double click for options")
+    if reaper.ImGui_BeginPopupModal(ctx, 'OPTIONS', true, reaper.ImGui_WindowFlags_AlwaysAutoResize()) then
+        GUIOptions()
+        reaper.ImGui_EndPopup(ctx)
+    end
+   -- Draw_Color_Rect()
     reaper.ImGui_Separator(ctx)
     local vertical = reaper.ImGui_GetMouseWheel( ctx )
     if vertical ~= 0 then WHEEL_INCREMENT = vertical end
@@ -216,10 +261,10 @@ function Group_GUI()
     ToolTip('Remove tracks from list view')
 end
 
-local mx, my = reaper.GetMousePosition()
+local mx, y = reaper.GetMousePosition()
 function GUI()
     if reaper.ImGui_IsWindowAppearing(ctx) then
-        reaper.ImGui_SetNextWindowPos(ctx, reaper.ImGui_PointConvertNative(ctx, mx-20, my-12))
+        reaper.ImGui_SetNextWindowPos(ctx, reaper.ImGui_PointConvertNative(ctx, mx-20, y-12))
         reaper.ImGui_OpenPopup(ctx, 'Menu')
     end
     if reaper.ImGui_BeginPopup(ctx, 'Menu') then
@@ -239,8 +284,7 @@ function GUI()
 end
 
 function Show_menu(rprobj, skip_gui_command)
-    MouseInfo().last_menu_lane = MouseInfo().lane-- SET LAST LANE BEFORE MENU OPENED
-    MouseInfo().last_menu_tr = MouseInfo().tr -- SET LAST TRACK BEFORE MENU OPENED
+    LAST_MOUSE_TR, LAST_MOUSE_LANE = MouseInfo()
     CheckTrackLaneModeState(VT_TB[rprobj])
     GROUP_LIST = Restore_GROUPS_FROM_Project_EXT_STATE()
     CURRENT_TRACKS = GetSelectedTracksData(rprobj)
@@ -529,7 +573,7 @@ function ActivateLaneUndeMouse()
     reaper.PreventUIRefresh(1)
     reaper.Undo_BeginBlock2()
     for track, tr_tbl in pairs(CURRENT_TRACKS) do
-        SwapVirtualTrack(MouseInfo().last_menu_lane, tr_tbl)
+        SwapVirtualTrack(LAST_MOUSE_LANE, tr_tbl)
     end
     reaper.Undo_EndBlock2(0, "VT: " .. "Activate Lane ", -1)
     reaper.PreventUIRefresh(-1)
@@ -865,9 +909,9 @@ end
 function Same_Envelope_AS_Mouse(tr_tbl)
     local same_envelopes = nil
     local all_childs = GetChild_ParentTrack_FromStored_PEXT(tr_tbl)
-    if reaper.ValidatePtr(MouseInfo().last_menu_tr, "TrackEnvelope*") then
+    if reaper.ValidatePtr(LAST_MOUSE_TR, "TrackEnvelope*") then
         same_envelopes = {}
-        local m_retval, m_name = reaper.GetEnvelopeName(MouseInfo().last_menu_tr)
+        local m_retval, m_name = reaper.GetEnvelopeName(LAST_MOUSE_TR)
         for track in pairs(all_childs) do
             if reaper.ValidatePtr(track, "TrackEnvelope*") and all_childs[track] then
                 local env_retval, env_name = reaper.GetEnvelopeName(track)
@@ -1060,4 +1104,62 @@ end
 
 function CheckGroupMaskBits(group, bits)
     return group & bits ~= 0 and true or false
+end
+
+local function GetMouseTrackXYH(track)
+	if reaper.ValidatePtr(track, "MediaTrack*") then
+        local tr_t = reaper.GetMediaTrackInfo_Value(track, "I_TCPY")
+		local tr_h = reaper.GetMediaTrackInfo_Value(track, "I_TCPH")
+		return tr_t, tr_h, tr_t + tr_h
+    elseif reaper.ValidatePtr(track, "TrackEnvelope*") then
+		local p_tr = reaper.GetEnvelopeInfo_Value(track, "P_TRACK")
+		local p_tr_t = reaper.GetMediaTrackInfo_Value(p_tr, "I_TCPY")
+		local env_t = reaper.GetEnvelopeInfo_Value(track, "I_TCPY") + p_tr_t
+		local env_h = reaper.GetEnvelopeInfo_Value(track, "I_TCPH")
+		return env_t, env_h, env_t + env_h
+	end
+end
+
+function To_client(x,y)
+    local cx, cy = reaper.JS_Window_ScreenToClient( track_window, x, y )
+    return cx, cy
+end
+
+function Get_track_under_mouse()
+	local x, y = reaper.GetMousePosition()
+    local _, cy = To_client(x, y)
+    local track, env_info = reaper.GetTrackFromPoint(x, y)
+    if track and env_info == 0 then
+        return track
+    elseif track and env_info == 1 then
+        for i = 1, reaper.CountTrackEnvelopes(track) do
+            local env = reaper.GetTrackEnvelope(track, i - 1)
+			local env_t, _, env_b = GetMouseTrackXYH(env)
+            if env_t <= cy and env_b >= cy then return env end
+        end
+    end
+end
+
+local lane_offset = 14 -- schwa decided this number by carefully inspecting pixels in paint.net
+function Get_lane_from_mouse_coordinates(mouse_tr)
+	if mouse_tr == nil then return end
+	if not reaper.ValidatePtr(mouse_tr, "MediaTrack*") then return end
+    local _, my = reaper.GetMousePosition()
+	local item_for_height = reaper.GetTrackMediaItem(mouse_tr, 0)
+	if not item_for_height then return 1 end
+	local _, cy = To_client(0, my)
+    local total_lanes = round(1 / reaper.GetMediaItemInfo_Value(item_for_height, 'F_FREEMODE_H')) -- WE CHECK LANE HEIGHT WITH ANY ITEM ON TRACK
+	local t, h, b = GetMouseTrackXYH(mouse_tr)
+	if cy > t and cy < b then
+		local lane = math.floor(((cy - t) / (h - lane_offset)) * total_lanes) + 1
+		lane = lane <= total_lanes and lane or total_lanes
+		-- disable when track_h is less than 90px
+		return lane
+	end
+end
+
+function MouseInfo()
+    local mouse_tr = Get_track_under_mouse()
+	local mouse_lane = Get_lane_from_mouse_coordinates(mouse_tr)
+    return mouse_tr, mouse_lane
 end

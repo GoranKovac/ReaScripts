@@ -16,7 +16,7 @@ function Break( msg )
     reaper.MB(tostring(msg) .. "\n\nContinue?", line, 0 )
 end
 
-local function open_url(url)
+function open_url(url)
     local OS = reaper.GetOS()
     if (OS == "OSX32" or OS == "OSX64") or OS == 'macOS-arm64' then
         os.execute('open "" "' .. url .. '"')
@@ -92,9 +92,13 @@ end
 
 function GetCrash() return crash end
 
-function round(num)
-    return math.floor(num + 0.5)
-end
+function MSG(m) reaper.ShowConsoleMsg(tostring(m) .. "\n") end
+
+function string.starts(String,Start) return string.sub(String,1,string.len(Start))==Start end
+
+function trim(s) return (s:gsub("^%s*(.-)%s*$", "%1")) end
+
+function round(num) return math.floor(num + 0.5) end
 
 function tableToString(table)
     return serializeTable(table)
@@ -136,10 +140,6 @@ function serializeTable(val, name, skipnewlines, depth)
     return tmp
 end
 
-function MSG(m)
-    reaper.ShowConsoleMsg(tostring(m) .. "\n")
-end
-
 function Literalize(str)
     return str:gsub(
         "[%(%)%.%%%+%-%*%?%[%]%^%$]",
@@ -147,10 +147,6 @@ function Literalize(str)
             return "%" .. c
         end
     )
-end
-
-function string.starts(String,Start)
-    return string.sub(String,1,string.len(Start))==Start
 end
 
 function Split_by_line(str)
@@ -204,24 +200,6 @@ function DBG_TBL(A)
     end
 end
 
-function GetSelItemChunk()
-    local retval, chunk = reaper.GetItemStateChunk( reaper.GetSelectedMediaItem( 0, 0 ), "", false )
-    reaper.ClearConsole()
-    reaper.ShowConsoleMsg(chunk)
-end
-
-function GetSelTrackChunk()
-    local retval, chunk = reaper.GetTrackStateChunk( reaper.GetSelectedTrack(0, 0), "", false )
-    reaper.ClearConsole()
-    reaper.ShowConsoleMsg(chunk)
-end
-
-function GetSeltEnvelopeChunk()
-    local retval, chunk = reaper.GetEnvelopeStateChunk(reaper.GetSelectedEnvelope(0,0),"", false)
-    reaper.ClearConsole()
-    reaper.ShowConsoleMsg(chunk)
-end
-
 function GenPalette(val)
     local a = {r = 0.5, g = 0.5,  b = 0.5}
     local b = {r = 0.5, g = 0.5,  b = 0.5}
@@ -250,19 +228,4 @@ function Deepcopy(orig)
         copy = orig
     end
     return copy
-end
-
-function has_value(tab, val)
-    for index, value in ipairs(tab) do
-        if value == val then
-            return true
-        end
-    end
-
-    return false
-end
-
-function trim(s)
-    -- from PiL2 20.4
-    return (s:gsub("^%s*(.-)%s*$", "%1"))
 end
