@@ -1,9 +1,11 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.18
+-- @version 1.19
 -- @changelog
---   + Fix crash in SelTrack script
+--   + Save updated state to P_EXT STATE before opening menu
+--   + fixes tracks not adding to groups if only single version
+--   + on initial menu open
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua

@@ -218,6 +218,7 @@ function GUI()
     end
     if STORE_DATA then
         Store_GROUPS_TO_Project_EXT_STATE()
+        for track, tr_tbl in pairs(CURRENT_TRACKS) do StoreStateToDocument(tr_tbl) end
         if UPDATE_TEMPO then Update_tempo_map() end
         UpdateChangeCount()
     end
@@ -232,7 +233,8 @@ function Show_menu(rprobj, skip_gui_command)
     UPDATE_TEMPO = rprobj == reaper.GetMasterTrack(0) and true or false
     SEL_TRACK_TBL = rprobj == reaper.GetMasterTrack(0) and VT_TB[reaper.GetTrackEnvelopeByName( rprobj, "Tempo map" )] or VT_TB[rprobj]
     RAZOR_INFO = reaper.ValidatePtr(rprobj, "MediaTrack*") and Get_Razor_Data(rprobj) or nil
-    for track, tr_tbl in pairs(CURRENT_TRACKS) do UpdateInternalState(tr_tbl) end
+    for track, tr_tbl in pairs(CURRENT_TRACKS) do UpdateInternalState(tr_tbl) end -- UPDATE INTERNAL TABLE BEFORE OPENING MENU
+    for track, tr_tbl in pairs(CURRENT_TRACKS) do StoreStateToDocument(tr_tbl) end --! STORE TABLE BEFORE OPENING MENU , FIXES TRACKS NOT ADDING TO GROUPS WHEN ONLY 1 VERSION STORE
     if not skip_gui_command then
         GUI()
     else
@@ -972,10 +974,16 @@ function GetTracksOfMask(val)
     local stored_tbl = Get_Stored_PEXT_STATE_TBL()
     if not stored_tbl then return end
     local groups = {}
-    for k, v in pairs(stored_tbl) do
-        if reaper.ValidatePtr(k, "MediaTrack*") then
-            if CheckGroupMaskBits(v.group, val) then -- GET ALL MATCHING GROUPS
-                if not groups[k] then groups[k] = v end
+    local active_groups = Get_active_groups(val)
+    for i = #active_groups, 1, -1 do
+       if not CheckSingleGroupBit(GROUP_LIST.enabled_mask, active_groups[i]) then table.remove(active_groups,i) end -- IF GROUP IS NOT ENABLED REMOVE IT FROM TABLE
+    end
+    for i = 1, #active_groups do
+        for k, v in pairs(stored_tbl) do
+            if reaper.ValidatePtr(k, "MediaTrack*") then
+                if CheckGroupMaskBits(v.group, active_groups[i]) then -- GET ONLY TRACKS OF ENABLED GROUPS
+                    if not groups[k] then groups[k] = v end
+                end
             end
         end
     end
