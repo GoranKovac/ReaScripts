@@ -1,9 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.23
+-- @version 1.24
 -- @changelog
---   + Highlight COMPING version
+--   + Fix same track appearing two times in group window
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua

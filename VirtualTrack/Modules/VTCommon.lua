@@ -91,6 +91,7 @@ function Popup()
        -- reaper.ImGui_EndMenu(ctx)
     --end
     reaper.ImGui_Separator(ctx)
+    reaper.ImGui_Separator(ctx)
     if reaper.ImGui_MenuItem(ctx, 'Create New', nil, nil, is_button_enabled) then CreateNew() end
     if reaper.ImGui_MenuItem(ctx, 'Delete', nil, nil, (#SEL_TRACK_TBL.info > 1 and is_button_enabled)) then Delete() end
     if reaper.ImGui_MenuItem(ctx, 'Duplicate', nil, nil, is_button_enabled) then Duplicate() end
@@ -305,7 +306,7 @@ function Get_Stored_PEXT_STATE_TBL()
             stored_tbl[env] = {}
             stored_tbl[env].rprobj = env
             if not Restore_From_PEXT(stored_tbl[env]) then stored_tbl[env] = nil end
-            table.insert(stored_tbl_sorted, stored_tbl[track])
+            table.insert(stored_tbl_sorted, stored_tbl[env])
         end
     end
     return stored_tbl, stored_tbl_sorted
@@ -674,20 +675,20 @@ end
 local function Delete_items_or_area(item, time_Start, time_End)
     local first_to_delete = reaper.SplitMediaItem(item, time_End)
     local last_to_delete = reaper.SplitMediaItem(item, time_Start)
-    -- if last_to_delete then
-    --     reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( last_to_delete ), last_to_delete)
-    -- else
-    --     reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( item ), item)
-    -- end
-    if first_to_delete and last_to_delete then
+    if last_to_delete then
         reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( last_to_delete ), last_to_delete)
-    elseif last_to_delete and not first_to_delete then
-        reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( last_to_delete ), last_to_delete)
-    elseif first_to_delete and not last_to_delete then
-        reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( item ), item)
-    elseif not first_to_delete and not last_to_delete then
+    else
         reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( item ), item)
     end
+    -- if first_to_delete and last_to_delete then
+    --     reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( last_to_delete ), last_to_delete)
+    -- elseif last_to_delete and not first_to_delete then
+    --     reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( last_to_delete ), last_to_delete)
+    -- elseif first_to_delete and not last_to_delete then
+    --     reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( item ), item)
+    -- elseif not first_to_delete and not last_to_delete then
+    --     reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( item ), item)
+    -- end
 end
 
 local function Make_item_from_razor(tbl, item, razor_info)
