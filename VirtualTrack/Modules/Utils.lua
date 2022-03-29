@@ -6,7 +6,6 @@
 --]]
 
 local reaper = reaper
-local script_path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]]:gsub("[\\|/]Modules", "") -- GET DIRECTORY FOR REQUIRE
 function Break( msg )
     local line = "Breakpoint at line " .. debug.getinfo(2).currentline
     local ln = "\n" .. string.rep("=", #line) .. "\n"
@@ -24,9 +23,6 @@ function open_url(url)
         os.execute('start "" "' .. url .. '"')
     end
 end
-
-local options_script_id = reaper.AddRemoveReaScript(true, 0, script_path .. "Virtual_track_Options.lua", true)
-local options_script = reaper.NamedCommandLookup(options_script_id)
 
 function Check_Requirements()
     local reaper_version = reaper.GetAppVersion()
@@ -54,11 +50,6 @@ function Check_Requirements()
     end
     if not reaper.ImGui_GetVersion then
         reaper.MB( "ReaImGui is required for this script. Please download it from ReaPack", "SCRIPT REQUIREMENTS", 0 )
-        return reaper.defer(function() end)
-    end
-    if not reaper.HasExtState( "VirtualTrack", "options" ) then
-        reaper.MB( "No global options stored please set them now. You can change settings later by opening Virual_track_Options script", "VIRTUAL TRACK OPTIONS", 0 )
-        reaper.Main_OnCommand(options_script,0)
         return reaper.defer(function() end)
     end
 end
