@@ -1,14 +1,13 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.25
+-- @version 1.26
 -- @changelog
---   + Fix Rename not working
+--   + Added internal options (double click on topbar)
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
 --   [main] Virtual_track_SelTrack.lua
---   [main] Virtual_track_Options.lua
 
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 
