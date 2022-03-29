@@ -1,9 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.22
+-- @version 1.23
 -- @changelog
---   + Allow mousewheel only in versions section
+--   + Highlight COMPING version
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua

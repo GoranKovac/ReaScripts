@@ -66,6 +66,8 @@ local function GUIRename(NEW_NAME)
 end
 
 function Popup()
+    local is_button_enabled = SEL_TRACK_TBL.comp_idx == 0
+    local comp_enabled = SEL_TRACK_TBL.comp_idx ~= 0
     if reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Escape()) then
         reaper.ImGui_CloseCurrentPopup(ctx)
     end
@@ -84,12 +86,11 @@ function Popup()
                 WHEEL_INCREMENT = nil
             end
         end
+        if comp_enabled and i == SEL_TRACK_TBL.comp_idx then Draw_Color_Rect() end
     end
        -- reaper.ImGui_EndMenu(ctx)
     --end
     reaper.ImGui_Separator(ctx)
-    local is_button_enabled = SEL_TRACK_TBL.comp_idx == 0
-    local comp_enabled = SEL_TRACK_TBL.comp_idx ~= 0
     if reaper.ImGui_MenuItem(ctx, 'Create New', nil, nil, is_button_enabled) then CreateNew() end
     if reaper.ImGui_MenuItem(ctx, 'Delete', nil, nil, (#SEL_TRACK_TBL.info > 1 and is_button_enabled)) then Delete() end
     if reaper.ImGui_MenuItem(ctx, 'Duplicate', nil, nil, is_button_enabled) then Duplicate() end
