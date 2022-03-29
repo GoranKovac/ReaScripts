@@ -23,7 +23,7 @@ end
 
 OPTIONS = {
     ["TOOLTIPS"] = true,
-    ["LANE_COLORS"] = false
+    ["LANE_COLORS"] = true
 }
 
 if reaper.HasExtState( "VirtualTrack", "options" ) then
