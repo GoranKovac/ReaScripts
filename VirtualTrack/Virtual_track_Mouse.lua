@@ -1,11 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.16
+-- @version 1.17
 -- @changelog
---   + ReaImGui refactor
---   + Added Grups
---   + Fixes and stuff
+--   + Fix crash in SelTrack script
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
