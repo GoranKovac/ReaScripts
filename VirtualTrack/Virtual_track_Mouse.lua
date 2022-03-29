@@ -1,7 +1,7 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.17
+-- @version 1.18
 -- @changelog
 --   + Fix crash in SelTrack script
 -- @provides

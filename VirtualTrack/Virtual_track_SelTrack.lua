@@ -17,7 +17,7 @@ reaper.SetProjExtState(0, "VirtualTrack", "ONDEMAND_MODE", "track")
 local function Main()
     local track = OnDemand()
     if not track then return end
-    Show_menu(track, true)
+    Show_menu(track)
 end
 
 xpcall(Main, GetCrash())

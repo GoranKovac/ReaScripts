@@ -228,7 +228,7 @@ function Show_menu(rprobj, skip_gui_command)
     MouseInfo().last_menu_tr = MouseInfo().tr -- SET LAST TRACK BEFORE MENU OPENED
     CheckTrackLaneModeState(VT_TB[rprobj])
     GROUP_LIST = Restore_GROUPS_FROM_Project_EXT_STATE()
-    CURRENT_TRACKS = GetSelectedTracksData(rprobj) -- THIS ADDS NEW TRACKS TO VT_TB FOR ON DEMAND SCRIPT AND RETURNS TRACK SELECTION
+    CURRENT_TRACKS = GetSelectedTracksData(rprobj)
     UPDATE_TEMPO = rprobj == reaper.GetMasterTrack(0) and true or false
     SEL_TRACK_TBL = rprobj == reaper.GetMasterTrack(0) and VT_TB[reaper.GetTrackEnvelopeByName( rprobj, "Tempo map" )] or VT_TB[rprobj]
     RAZOR_INFO = reaper.ValidatePtr(rprobj, "MediaTrack*") and Get_Razor_Data(rprobj) or nil
