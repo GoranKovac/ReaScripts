@@ -72,7 +72,7 @@ function Popup()
     reaper.ImGui_TextColored( ctx, 0x3EFF00FF, "    VIRTUAL TRACK     " )
     Draw_Color_Rect()
     reaper.ImGui_Separator(ctx)
-    if reaper.ImGui_BeginMenu(ctx, SEL_TRACK_TBL.info[SEL_TRACK_TBL.idx].name, true) then
+    -- if reaper.ImGui_BeginMenu(ctx, SEL_TRACK_TBL.info[SEL_TRACK_TBL.idx].name, true) then
         local vertical = reaper.ImGui_GetMouseWheel( ctx )
         if vertical ~= 0 then WHEEL_INCREMENT = vertical end
         if vertical == 0 and WHEEL_INCREMENT then
@@ -83,8 +83,8 @@ function Popup()
         for i = 1, #SEL_TRACK_TBL.info do
             if reaper.ImGui_MenuItem(ctx, SEL_TRACK_TBL.info[i].name, nil, i == SEL_TRACK_TBL.idx) then SwapVirtualTrack(i) end
         end
-        reaper.ImGui_EndMenu(ctx)
-    end
+       -- reaper.ImGui_EndMenu(ctx)
+    --end
     reaper.ImGui_Separator(ctx)
     local is_button_enabled = SEL_TRACK_TBL.comp_idx == 0
     local comp_enabled = SEL_TRACK_TBL.comp_idx ~= 0
@@ -104,6 +104,7 @@ function Popup()
         local groups_button_name = SEL_TRACK_TBL.group == 0 and "- None" or table.concat(ACTIVE_GROUPS, "-")
         if reaper.ImGui_Selectable(ctx, 'GROUPS ' .. groups_button_name, nil, reaper.ImGui_SelectableFlags_DontClosePopups()) then
             TRACK_GROUPS = GetTracksOfGroup(CUR_GROUP) or {}
+            _, ALL_VT_TRACKS = Get_Stored_PEXT_STATE_TBL()
             reaper.ImGui_OpenPopup(ctx, 'GROUP_WINDOW')
         end
         ToolTip("Add track to Groups")
@@ -138,26 +139,12 @@ function Popup()
     end
 end
 
-function Add_Tracks_To_Group()
-    local sel_tracks = {}
-    local stored_tbl = Get_Stored_PEXT_STATE_TBL()
-    for i = 1,  reaper.CountSelectedTracks(0) do
-        local track = reaper.GetSelectedTrack(0, i - 1)
-        if stored_tbl[track] then sel_tracks[track] = stored_tbl[track] end
-    end
-    for _, v in pairs(sel_tracks) do
-        ADD_REMOVE_GROUP_TO_TRACK(v, CUR_GROUP, true)
-        if v.rprobj == SEL_TRACK_TBL.rprobj then ADD_REMOVE_GROUP_TO_TRACK(SEL_TRACK_TBL, CUR_GROUP, true) end -- UPDATE MOUSE TRACK
-        StoreStateToDocument(v)
-    end
-    TRACK_GROUPS = GetTracksOfGroup(CUR_GROUP)
-end
-
-function Remove_Tracks_From_Group()
-    for _, v in pairs(TRACK_GROUPS) do
-        if v.Select then
-            ADD_REMOVE_GROUP_TO_TRACK(v, CUR_GROUP, false)
-            if v.rprobj == SEL_TRACK_TBL.rprobj then ADD_REMOVE_GROUP_TO_TRACK(SEL_TRACK_TBL, CUR_GROUP, false) end -- UPDATE MOUSE TRACK
+function Add_REMOVE_Tracks_To_Group(tbl, add)
+    for _, v in pairs(tbl) do
+        local is_found = add and v.AddSelect or v.DelSelect
+        if is_found then
+            ADD_REMOVE_GROUP_TO_TRACK(v, CUR_GROUP, add)
+            if v.rprobj == SEL_TRACK_TBL.rprobj then ADD_REMOVE_GROUP_TO_TRACK(SEL_TRACK_TBL, CUR_GROUP, add) end -- UPDATE MOUSE TRACK
             StoreStateToDocument(v)
         end
     end
@@ -165,7 +152,14 @@ function Remove_Tracks_From_Group()
 end
 
 function Group_GUI()
-    reaper.ImGui_SetNextItemWidth(ctx, 147)
+    reaper.ImGui_SetNextItemWidth(ctx, 200)
+    local vertical = reaper.ImGui_GetMouseWheel( ctx )
+    if vertical ~= 0 then WHEEL_INCREMENT = vertical end
+    if vertical == 0 and WHEEL_INCREMENT then
+        SEL_TRACK_TBL.idx = (SEL_TRACK_TBL.idx - WHEEL_INCREMENT <= #SEL_TRACK_TBL.info and SEL_TRACK_TBL.idx - WHEEL_INCREMENT >= 1) and SEL_TRACK_TBL.idx - WHEEL_INCREMENT or SEL_TRACK_TBL.idx
+        SwapVirtualTrack(SEL_TRACK_TBL.idx)
+        WHEEL_INCREMENT = nil
+    end
     if reaper.ImGui_BeginCombo(ctx, '##docker', GROUP_LIST[CUR_GROUP].name or GROUP_LIST[1].name) then
         for i = 1, #GROUP_LIST do
             if reaper.ImGui_Selectable(ctx, GROUP_LIST[i].name, CUR_GROUP == i) then
@@ -182,30 +176,46 @@ function Group_GUI()
     end
     ToolTip('Enable or disable current group')
 
-    if reaper.ImGui_BeginListBox(ctx, '##listbox',-1) then
-        for k, v in pairs(TRACK_GROUPS) do
-            if reaper.ValidatePtr( k, "MediaTrack*" ) then
-                local _, buf = reaper.GetTrackName( k )
-                if reaper.ImGui_Selectable(ctx, buf..'##', v.Select) then
+    if reaper.ImGui_BeginListBox(ctx, '##listbox', 160) then
+        for i = 1, #ALL_VT_TRACKS do
+            if reaper.ValidatePtr( ALL_VT_TRACKS[i].rprobj, "MediaTrack*" ) then
+                local _, buf = reaper.GetTrackName( ALL_VT_TRACKS[i].rprobj )
+                if reaper.ImGui_Selectable(ctx, buf..'##', ALL_VT_TRACKS[i].AddSelect) then
                     if (reaper.ImGui_GetKeyMods(ctx) & reaper.ImGui_KeyModFlags_Shift()) == 0 then
-                        for _, info in pairs(TRACK_GROUPS) do info.Select = false end
+                        for _, info in pairs(ALL_VT_TRACKS) do info.AddSelect = false end
                     end
-                    v.Select = not v.Select
+                    ALL_VT_TRACKS[i].AddSelect = not ALL_VT_TRACKS[i].AddSelect
                 end
             end
         end
         reaper.ImGui_EndListBox(ctx)
     end
-    if reaper.ImGui_Button(ctx, 'Add Track', -1) then Add_Tracks_To_Group() end
+    reaper.ImGui_SameLine(ctx)
+    if reaper.ImGui_BeginListBox(ctx, '##listbox2', 160) then
+        for k, v in pairs(TRACK_GROUPS) do
+            if reaper.ValidatePtr( k, "MediaTrack*" ) then
+                local _, buf = reaper.GetTrackName( k )
+                if reaper.ImGui_Selectable(ctx, buf..'##', v.DelSelect) then
+                    if (reaper.ImGui_GetKeyMods(ctx) & reaper.ImGui_KeyModFlags_Shift()) == 0 then
+                        for _, info in pairs(TRACK_GROUPS) do info.DelSelect = false end
+                    end
+                    v.DelSelect = not v.DelSelect
+                end
+            end
+        end
+        reaper.ImGui_EndListBox(ctx)
+    end
+    if reaper.ImGui_Button(ctx, 'Add Track', 160) then Add_REMOVE_Tracks_To_Group(ALL_VT_TRACKS, true)end
     ToolTip('Add selected tracks from TCP or MCP view')
-    if reaper.ImGui_Button(ctx, 'Remove Track', -1) then Remove_Tracks_From_Group() end
+    reaper.ImGui_SameLine(ctx)
+    if reaper.ImGui_Button(ctx, 'Remove Track',160) then Add_REMOVE_Tracks_To_Group(TRACK_GROUPS, false)end
     ToolTip('Remove tracks from list view')
 end
 
 local mx, my = reaper.GetMousePosition()
 function GUI()
     if reaper.ImGui_IsWindowAppearing(ctx) then
-        reaper.ImGui_SetNextWindowPos(ctx, reaper.ImGui_PointConvertNative(ctx, mx-25, my-35))
+        reaper.ImGui_SetNextWindowPos(ctx, reaper.ImGui_PointConvertNative(ctx, mx-20, my-12))
         reaper.ImGui_OpenPopup(ctx, 'Menu')
     end
     if reaper.ImGui_BeginPopup(ctx, 'Menu') then
@@ -280,20 +290,22 @@ local function Restore_From_PEXT(el)
 end
 
 function Get_Stored_PEXT_STATE_TBL()
-    local stored_tbl = {}
+    local stored_tbl, stored_tbl_sorted = {}, {}
     for i = 1, reaper.CountTracks(0) do
         local track = reaper.GetTrack(0, i - 1)
         stored_tbl[track] = {}
         stored_tbl[track].rprobj = track
         if not Restore_From_PEXT(stored_tbl[track]) then stored_tbl[track] = nil end
+        table.insert(stored_tbl_sorted, stored_tbl[track])
         for j = 1, reaper.CountTrackEnvelopes(track) do
             local env = reaper.GetTrackEnvelope(track, j - 1)
             stored_tbl[env] = {}
             stored_tbl[env].rprobj = env
             if not Restore_From_PEXT(stored_tbl[env]) then stored_tbl[env] = nil end
+            table.insert(stored_tbl_sorted, stored_tbl[track])
         end
     end
-    return stored_tbl
+    return stored_tbl, stored_tbl_sorted
 end
 
 local function GetItemLane(item)
@@ -811,9 +823,9 @@ end
 
 function SetCompLane(tbl, lane)
     reaper.Undo_BeginBlock2(0)
-    local new_lane = lane and lane or MouseInfo().last_menu_lane
     local selected_tracks = tbl and {tbl} or CURRENT_TRACKS
     for track, tr_tbl in pairs(selected_tracks) do
+        local new_lane = lane and lane or tr_tbl.idx
         tr_tbl.comp_idx = tr_tbl.comp_idx == 0 and new_lane or 0
         SetCompActiveIcon(tr_tbl)
         StoreStateToDocument(tr_tbl)

@@ -9,7 +9,6 @@ local reaper = reaper
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 
 require("Modules/VTCommon")
-require("Modules/Class")
 require("Modules/Mouse")
 require("Modules/Utils")
 
