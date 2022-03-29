@@ -1,11 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.21
+-- @version 1.22
 -- @changelog
---   + Improved group window
---   + sort tracks in group window
---   + Enable comp on selected version rather than under the mouse
+--   + Allow mousewheel only in versions section
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
