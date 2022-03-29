@@ -73,16 +73,18 @@ function Popup()
     Draw_Color_Rect()
     reaper.ImGui_Separator(ctx)
     -- if reaper.ImGui_BeginMenu(ctx, SEL_TRACK_TBL.info[SEL_TRACK_TBL.idx].name, true) then
-        local vertical = reaper.ImGui_GetMouseWheel( ctx )
-        if vertical ~= 0 then WHEEL_INCREMENT = vertical end
-        if vertical == 0 and WHEEL_INCREMENT then
-            SEL_TRACK_TBL.idx = (SEL_TRACK_TBL.idx - WHEEL_INCREMENT <= #SEL_TRACK_TBL.info and SEL_TRACK_TBL.idx - WHEEL_INCREMENT >= 1) and SEL_TRACK_TBL.idx - WHEEL_INCREMENT or SEL_TRACK_TBL.idx
-            SwapVirtualTrack(SEL_TRACK_TBL.idx)
-            WHEEL_INCREMENT = nil
+    for i = 1, #SEL_TRACK_TBL.info do
+        if reaper.ImGui_MenuItem(ctx, SEL_TRACK_TBL.info[i].name, nil, i == SEL_TRACK_TBL.idx) then SwapVirtualTrack(i) end
+        if reaper.ImGui_IsItemHovered(ctx) then
+            local vertical = reaper.ImGui_GetMouseWheel( ctx )
+            if vertical ~= 0 then WHEEL_INCREMENT = vertical end
+            if vertical == 0 and WHEEL_INCREMENT then
+                SEL_TRACK_TBL.idx = (SEL_TRACK_TBL.idx - WHEEL_INCREMENT <= #SEL_TRACK_TBL.info and SEL_TRACK_TBL.idx - WHEEL_INCREMENT >= 1) and SEL_TRACK_TBL.idx - WHEEL_INCREMENT or SEL_TRACK_TBL.idx
+                SwapVirtualTrack(SEL_TRACK_TBL.idx)
+                WHEEL_INCREMENT = nil
+            end
         end
-        for i = 1, #SEL_TRACK_TBL.info do
-            if reaper.ImGui_MenuItem(ctx, SEL_TRACK_TBL.info[i].name, nil, i == SEL_TRACK_TBL.idx) then SwapVirtualTrack(i) end
-        end
+    end
        -- reaper.ImGui_EndMenu(ctx)
     --end
     reaper.ImGui_Separator(ctx)
