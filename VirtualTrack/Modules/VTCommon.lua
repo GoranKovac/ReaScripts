@@ -184,12 +184,12 @@ function Popup()
 end
 
 function Add_REMOVE_Tracks_To_Group(tbl, add)
-    for _, v in pairs(tbl) do
-        local is_found = add and v.AddSelect or v.DelSelect
+    for track in pairs(tbl) do
+        local is_found = add and tbl[track].AddSelect or tbl[track].DelSelect
         if is_found then
-            ADD_REMOVE_GROUP_TO_TRACK(v, CUR_GROUP, add)
-            if v.rprobj == SEL_TRACK_TBL.rprobj then ADD_REMOVE_GROUP_TO_TRACK(SEL_TRACK_TBL, CUR_GROUP, add) end -- UPDATE MOUSE TRACK
-            StoreStateToDocument(v)
+            ADD_REMOVE_GROUP_TO_TRACK(tbl[track], CUR_GROUP, add)
+            if tbl[track].rprobj == SEL_TRACK_TBL.rprobj then ADD_REMOVE_GROUP_TO_TRACK(SEL_TRACK_TBL, CUR_GROUP, add) end -- UPDATE MOUSE TRACK
+            StoreStateToDocument(tbl[track])
         end
     end
     TRACK_GROUPS = GetTracksOfGroup(CUR_GROUP)
@@ -222,7 +222,7 @@ function Group_GUI()
 
     if reaper.ImGui_BeginListBox(ctx, '##listbox', 160) then
         for i = 1, #ALL_VT_TRACKS do
-            if reaper.ValidatePtr( ALL_VT_TRACKS[i].rprobj, "MediaTrack*" ) then
+            if reaper.ValidatePtr(ALL_VT_TRACKS[i].rprobj, "MediaTrack*" ) then
                 local _, buf = reaper.GetTrackName( ALL_VT_TRACKS[i].rprobj )
                 if reaper.ImGui_Selectable(ctx, buf..'##', ALL_VT_TRACKS[i].AddSelect) then
                     if (reaper.ImGui_GetKeyMods(ctx) & reaper.ImGui_KeyModFlags_Shift()) == 0 then
@@ -282,11 +282,11 @@ function Show_menu(rprobj, skip_gui_command)
     LAST_MOUSE_TR, LAST_MOUSE_LANE = MouseInfo()
     CheckTrackLaneModeState(VT_TB[rprobj])
     GROUP_LIST = Restore_GROUPS_FROM_Project_EXT_STATE()
-    CURRENT_TRACKS = GetSelectedTracksData(rprobj)
     UPDATE_TEMPO = rprobj == reaper.GetMasterTrack(0) and true or false
     SEL_TRACK_TBL = rprobj == reaper.GetMasterTrack(0) and VT_TB[reaper.GetTrackEnvelopeByName( rprobj, "Tempo map" )] or VT_TB[rprobj]
+    CURRENT_TRACKS = CheckGroupMaskBits(GROUP_LIST.enabled_mask, SEL_TRACK_TBL.group) and GetTracksOfMask(SEL_TRACK_TBL.group) or GetSelectedTracksData(rprobj)
     RAZOR_INFO = reaper.ValidatePtr(rprobj, "MediaTrack*") and Get_Razor_Data(rprobj) or nil
-    for track, tr_tbl in pairs(CURRENT_TRACKS) do SaveCurrentState(tr_tbl) end -- UPDATE INTERNAL TABLE BEFORE OPENING MENU
+    for track in pairs(CURRENT_TRACKS) do SaveCurrentState(CURRENT_TRACKS[track]) end -- UPDATE INTERNAL TABLE BEFORE OPENING MENU
     if not skip_gui_command then
         GUI()
     else
@@ -505,8 +505,10 @@ end
 function CycleVersionsUP()
     reaper.PreventUIRefresh(1)
     local selected_tracks = CURRENT_TRACKS
-    for track, tr_tbl in pairs(selected_tracks) do
-        SwapVirtualTrack(tr_tbl.idx + 1, tr_tbl)
+    for track in pairs(selected_tracks) do
+        local tr_tbl = selected_tracks[track]
+        SwapVirtualTrack(tr_tbl.idx - 1, tr_tbl.rprobj)
+        if RAZOR_INFO then Create_Razor_From_LANE(tr_tbl, RAZOR_INFO) end
     end
     reaper.PreventUIRefresh(-1)
     reaper.UpdateArrange()
@@ -515,19 +517,33 @@ end
 function CycleVersionsDOWN()
     reaper.PreventUIRefresh(1)
     local selected_tracks = CURRENT_TRACKS
-    for track, tr_tbl in pairs(selected_tracks) do
-        SwapVirtualTrack(tr_tbl.idx - 1, tr_tbl)
+    for track in pairs(selected_tracks) do
+        local tr_tbl = selected_tracks[track]
+        SwapVirtualTrack(tr_tbl.idx + 1, tr_tbl.rprobj)
+        if RAZOR_INFO then Create_Razor_From_LANE(tr_tbl, RAZOR_INFO) end
     end
     reaper.PreventUIRefresh(-1)
     reaper.UpdateArrange()
 end
 
-function SwapVirtualTrack(idx, tbl)
+function ActivateLaneUndeMouse()
     reaper.PreventUIRefresh(1)
     reaper.Undo_BeginBlock2()
-    local selected_tracks = tbl and {tbl} or CURRENT_TRACKS
-    selected_tracks = CheckGroupMaskBits(GROUP_LIST.enabled_mask, SEL_TRACK_TBL.group) and GetTracksOfMask(SEL_TRACK_TBL.group) or selected_tracks
-    for track, tr_tbl in pairs(selected_tracks) do
+    for track in pairs(CURRENT_TRACKS) do
+        local tr_tbl = CURRENT_TRACKS[track]
+        SwapVirtualTrack(LAST_MOUSE_LANE, tr_tbl.rprobj)
+        if RAZOR_INFO then Create_Razor_From_LANE(tr_tbl, RAZOR_INFO) end
+    end
+    reaper.Undo_EndBlock2(0, "VT: " .. "Activate Lane ", -1)
+    reaper.PreventUIRefresh(-1)
+end
+
+function SwapVirtualTrack(idx, tr)
+    reaper.PreventUIRefresh(1)
+    reaper.Undo_BeginBlock2()
+    local selected_tracks = tr and {CURRENT_TRACKS[tr]} or CURRENT_TRACKS
+    for track in pairs(selected_tracks) do
+        local tr_tbl = selected_tracks[track]
         if tr_tbl.info[idx] then
             if reaper.ValidatePtr(tr_tbl.rprobj, "MediaTrack*") then
                 if tr_tbl.lane_mode == 0 then
@@ -564,21 +580,12 @@ function Set_LaneView_mode(tbl)
     SetLaneImageColors(tbl)
 end
 
-function ActivateLaneUndeMouse()
+function CreateNew(tr, name)
     reaper.PreventUIRefresh(1)
     reaper.Undo_BeginBlock2()
-    for track, tr_tbl in pairs(CURRENT_TRACKS) do
-        SwapVirtualTrack(LAST_MOUSE_LANE, tr_tbl)
-    end
-    reaper.Undo_EndBlock2(0, "VT: " .. "Activate Lane ", -1)
-    reaper.PreventUIRefresh(-1)
-end
-
-function CreateNew(tbl, name)
-    reaper.PreventUIRefresh(1)
-    reaper.Undo_BeginBlock2()
-    local selected_tracks = tbl and {tbl} or CURRENT_TRACKS
-    for track, tr_tbl in pairs(selected_tracks) do
+    local selected_tracks = tr and {CURRENT_TRACKS[tr]} or CURRENT_TRACKS
+    for track in pairs(selected_tracks) do
+        local tr_tbl = selected_tracks[track]
         Clear(tr_tbl)
         local version_name = name and name or "Version "
         Get_Store_CurrentTrackState(tr_tbl, version_name)
@@ -590,19 +597,19 @@ function CreateNew(tbl, name)
     reaper.UpdateArrange()
 end
 
-function Duplicate(tbl)
+function Duplicate(tr)
     reaper.PreventUIRefresh(1)
     reaper.Undo_BeginBlock2()
-    local selected_tracks = tbl and {tbl} or CURRENT_TRACKS
-    for track, tr_tbl in pairs(selected_tracks) do
-        Clear(tr_tbl) -- if its not clear for some reason it does not change guids (probably because of updateinternalstate)
+    local selected_tracks = tr and {CURRENT_TRACKS[tr]} or CURRENT_TRACKS
+    for track in pairs(selected_tracks) do
+        local tr_tbl = selected_tracks[track]
         local name = tr_tbl.info[tr_tbl.idx].name .. " DUP"
         local duplicate_tbl = Deepcopy(tr_tbl.info[tr_tbl.idx]) -- DEEP COPY TABLE SO ITS UNIQUE (LUA DOES SHALLOW BY DEFAULT)
         for i = 1, #duplicate_tbl do duplicate_tbl[i] = duplicate_tbl[i]:gsub("{.-}", "") end --! GENERATE NEW GUIDS FOR NEW ITEM (fixes duplicate make pooled items)
         table.insert(tr_tbl.info, 1, duplicate_tbl) --! ORDER NEWEST TO OLDEST
         tr_tbl.idx = 1
         tr_tbl.info[tr_tbl.idx].name = name
-        SwapVirtualTrack(tr_tbl.idx, tr_tbl)
+        SwapVirtualTrack(tr_tbl.idx, tr_tbl.rprobj)
         if reaper.ValidatePtr(tr_tbl.rprobj, "MediaTrack*") then
             if tr_tbl.lane_mode == 2 then Set_LaneView_mode(tr_tbl) end
         end
@@ -613,18 +620,19 @@ function Duplicate(tbl)
     reaper.UpdateArrange()
 end
 
-function Delete(tbl)
+function Delete(tr)
     reaper.PreventUIRefresh(1)
     reaper.Undo_BeginBlock2()
-    local selected_tracks = tbl and {tbl} or CURRENT_TRACKS
-    for track, tr_tbl in pairs(selected_tracks) do
+    local selected_tracks = tr and {CURRENT_TRACKS[tr]} or CURRENT_TRACKS
+    for track in pairs(selected_tracks) do
+        local tr_tbl = selected_tracks[track]
         if #tr_tbl.info > 1 then
             table.remove(tr_tbl.info, tr_tbl.idx)
             tr_tbl.idx = tr_tbl.idx <= #tr_tbl.info and tr_tbl.idx or #tr_tbl.info
             if tr_tbl.lane_mode == 2 then
                 Set_LaneView_mode(tr_tbl)
             elseif tr_tbl.lane_mode == 0 then
-                SwapVirtualTrack(tr_tbl.idx, tr_tbl)
+                SwapVirtualTrack(tr_tbl.idx, tr_tbl.rprobj)
             end
             StoreStateToDocument(tr_tbl)
         end
@@ -650,11 +658,12 @@ function Clear(tbl)
     reaper.UpdateArrange()
 end
 
-function Rename(name, tbl)
+function Rename(name, tr)
     if not name then return end
     reaper.Undo_BeginBlock2()
-    local selected_tracks = tbl and {tbl} or CURRENT_TRACKS
-    for track, tr_tbl in pairs(selected_tracks) do
+    local selected_tracks = tr and {CURRENT_TRACKS[tr]} or CURRENT_TRACKS
+    for track in pairs(selected_tracks) do
+        local tr_tbl = selected_tracks[track]
         tr_tbl.info[tr_tbl.idx].name = name
         StoreStateToDocument(tr_tbl)
     end
@@ -690,6 +699,14 @@ local function Calculate_Track_Razor_data(tbl, razor_data)
     local razor_b = razor_data.razor_lane * (1 / #tbl.info)
     local razor_t = -(razor_b - (razor_data.razor_lane * razor_b)) / razor_data.razor_lane
     return razor_t, razor_b
+end
+
+function Create_Razor_From_LANE(tbl, razor_data)
+    if not tbl.info[razor_data.razor_lane] then return end -- DO NOT CREATE RAZOR IF LANE DOES NOT EXIST IN TABLE
+    local razor_b = tbl.idx * (1 / #tbl.info)
+    local razor_t = -(razor_b - (tbl.idx * razor_b)) / tbl.idx
+    local razor_str = razor_data[1] .. " " .. razor_data[2] .. " " .. "'' " .. razor_t .. " " .. razor_b
+    reaper.GetSetMediaTrackInfo_String(tbl.rprobj, "P_RAZOREDITS_EXT", razor_str, true)
 end
 
 function Set_Razor_Data(tbl, razor_data)
@@ -757,13 +774,13 @@ local function Make_item_from_razor(tbl, item, razor_info)
     return createdItem, created_chunk
 end
 
-function CopyToCOMP(tbl)
+function CopyToCOMP(tr)
     reaper.PreventUIRefresh(1)
     if not RAZOR_INFO then return end
     reaper.Undo_BeginBlock2()
-    local selected_tracks = tbl and {tbl} or CURRENT_TRACKS
-    selected_tracks = CheckGroupMaskBits(GROUP_LIST.enabled_mask, SEL_TRACK_TBL.group) and GetTracksOfMask(SEL_TRACK_TBL.group) or selected_tracks
-    for track, tr_tbl in pairs(selected_tracks) do
+    local selected_tracks = tr and {CURRENT_TRACKS[tr]} or CURRENT_TRACKS
+    for track in pairs(selected_tracks) do
+        local tr_tbl = selected_tracks[track]
         if reaper.ValidatePtr(tr_tbl.rprobj, "TrackEnvelope*") then return end -- PREVENT DOING THIS ON ENVELOPES
         if reaper.GetMediaTrackInfo_Value(tr_tbl.rprobj, "I_FREEMODE") == 0 then return end -- PREVENT DOING IN NON LANE MODE
         if tr_tbl.comp_idx == 0 or tr_tbl.comp_idx == RAZOR_INFO.razor_lane then return end -- PREVENT COPY ONTO ITSELF OR IF COMP DISABLED
@@ -805,18 +822,19 @@ function CheckTrackLaneModeState(tr_tbl)
         if current_track_mode == 2 then
             Set_LaneView_mode(tr_tbl)
         elseif current_track_mode == 0 then
-            SwapVirtualTrack(tr_tbl.idx, tr_tbl)
+            SwapVirtualTrack(tr_tbl.idx, tr_tbl.rprobj)
         end
         StoreStateToDocument(tr_tbl)
         reaper.PreventUIRefresh(-1)
     end
 end
 
-function ShowAll(tbl)
+function ShowAll(tr)
     reaper.PreventUIRefresh(1)
     reaper.Undo_BeginBlock2()
-    local selected_tracks = tbl and {tbl} or CURRENT_TRACKS
-    for track, tr_tbl in pairs(selected_tracks) do
+    local selected_tracks = tr and {CURRENT_TRACKS[tr]} or CURRENT_TRACKS
+    for track in pairs(selected_tracks) do
+        local tr_tbl = selected_tracks[track]
         if not reaper.ValidatePtr(tr_tbl.rprobj, "MediaTrack*") then return end
         local fimp = reaper.GetMediaTrackInfo_Value(tr_tbl.rprobj, "I_FREEMODE")
         tr_tbl.lane_mode = fimp == 2 and 0 or 2
@@ -824,8 +842,8 @@ function ShowAll(tbl)
         if fimp == 0 then -- IF LANE MODE IS OFF TURN IT ON
             Set_LaneView_mode(tr_tbl)
         elseif fimp == 2 then -- IF LANE MODE IS ON TURN IT OFF
-            SetCompLane(tr_tbl,0) -- TURN OFF COMPING
-            SwapVirtualTrack(tr_tbl.idx, tr_tbl)
+            SetCompLane(tr_tbl.rprobj,0) -- TURN OFF COMPING
+            SwapVirtualTrack(tr_tbl.idx, tr_tbl.rprobj)
         end
         StoreStateToDocument(tr_tbl)
     end
@@ -875,10 +893,11 @@ function CheckUndoState()
     end
 end
 
-function SetCompLane(tbl, lane)
+function SetCompLane(tr, lane)
     reaper.Undo_BeginBlock2(0)
-    local selected_tracks = tbl and {tbl} or CURRENT_TRACKS
-    for track, tr_tbl in pairs(selected_tracks) do
+    local selected_tracks = tr and {CURRENT_TRACKS[tr]} or CURRENT_TRACKS
+    for track in pairs(selected_tracks) do
+        local tr_tbl = selected_tracks[track]
         local new_lane = lane and lane or tr_tbl.idx
         tr_tbl.comp_idx = tr_tbl.comp_idx == 0 and new_lane or 0
         SetCompActiveIcon(tr_tbl)
@@ -957,18 +976,19 @@ end
 
 local function GetLaneColorOption() return GetEXTState_VAL("LANE_COLORS") end
 
-function NewComp(tbl)
+function NewComp(tr)
     reaper.PreventUIRefresh(1)
     reaper.Undo_BeginBlock2()
-    local selected_tracks = tbl and {tbl} or CURRENT_TRACKS
-    for track, tr_tbl in pairs(selected_tracks) do
+    local selected_tracks = tr and {CURRENT_TRACKS[tr]} or CURRENT_TRACKS
+    for track in pairs(selected_tracks) do
+        local tr_tbl = selected_tracks[track]
         local comp_cnt = 1
         for i = 1, #tr_tbl.info do
             if tr_tbl.info[i].name and tr_tbl.info[i].name:find("COMP") then comp_cnt = comp_cnt + 1 end
         end
         local comp_name = "COMP - " .. comp_cnt
-        CreateNew(tr_tbl, comp_name)
-        SetCompLane(tr_tbl, 1)
+        CreateNew(tr_tbl.rprobj, comp_name)
+        SetCompLane(tr_tbl.rprobj, 1)
     end
     reaper.Undo_EndBlock2(0, "VT: " .. "NewComp ", -1)
     reaper.PreventUIRefresh(-1)
@@ -1003,10 +1023,10 @@ function SetCompActiveIcon(tbl)
     if tbl.comp_idx ~= 0 then
         local retval, current_icon = reaper.GetSetMediaTrackInfo_String( tbl.rprobj, "P_ICON", 0, false )
         tbl.def_icon = retval and current_icon or ""
-        reaper.GetSetMediaTrackInfo_String( tbl.rprobj, "P_ICON" , icon_path, true )
+        reaper.GetSetMediaTrackInfo_String(tbl.rprobj, "P_ICON" , icon_path, true)
     else
         if tbl.def_icon ~= nil then
-            reaper.GetSetMediaTrackInfo_String( tbl.rprobj, "P_ICON" , tbl.def_icon, true )
+            reaper.GetSetMediaTrackInfo_String(tbl.rprobj, "P_ICON" , tbl.def_icon, true)
             tbl.def_icon = nil
         end
     end
