@@ -23,13 +23,15 @@ end
 
 OPTIONS = {
     ["TOOLTIPS"] = true,
-    ["LANE_COLORS"] = true
+    ["LANE_COLORS"] = true,
+    ["RAZOR_FOLLOW_SWAP"] = false
 }
 
 if reaper.HasExtState( "VirtualTrack", "options" ) then
     local state = reaper.GetExtState( "VirtualTrack", "options" )
     OPTIONS["LANE_COLORS"] = state:match("LANE_COLORS (%S+)") == "true" and true or false
     OPTIONS["TOOLTIPS"] = state:match("TOOLTIPS (%S+)") == "true" and true or false
+    OPTIONS["RAZOR_FOLLOW_SWAP"] = state:match("RAZOR_FOLLOW_SWAP (%S+)") == "true" and true or false
 end
 
 local function Update_tempo_map()
@@ -91,6 +93,7 @@ end
 local function GUIOptions()
     local current_lane_colors = OPTIONS["LANE_COLORS"]
     local current_tooltips = OPTIONS["TOOLTIPS"]
+    local current_razor_follow_swap = OPTIONS["RAZOR_FOLLOW_SWAP"]
     if reaper.ImGui_Checkbox(ctx, "TOOLTIPS", current_tooltips) then
         OPTIONS["TOOLTIPS"] = not OPTIONS["TOOLTIPS"]
         save_options()
@@ -99,6 +102,12 @@ local function GUIOptions()
         OPTIONS["LANE_COLORS"] = not OPTIONS["LANE_COLORS"]
         save_options()
     end
+    ToolTip("Enable unique color for each lane in lane mode")
+    if reaper.ImGui_Checkbox(ctx, "RAZOR FOLLOW VERSION SWAP", current_razor_follow_swap) then
+        OPTIONS["RAZOR_FOLLOW_SWAP"] = not OPTIONS["RAZOR_FOLLOW_SWAP"]
+        save_options()
+    end
+    ToolTip("Razor follow version selection in lane mode for easier comping")
     if reaper.ImGui_Button(ctx, 'Donate', -1) then open_url("https://www.paypal.com/paypalme/GoranK101") end
 end
 
@@ -508,7 +517,7 @@ function CycleVersionsUP()
     for track in pairs(selected_tracks) do
         local tr_tbl = selected_tracks[track]
         SwapVirtualTrack(tr_tbl.idx - 1, tr_tbl.rprobj)
-        if RAZOR_INFO then Create_Razor_From_LANE(tr_tbl, RAZOR_INFO) end
+        if tr_tbl.lane_mode == 2 and OPTIONS["RAZOR_FOLLOW_SWAP"] and RAZOR_INFO then Create_Razor_From_LANE(tr_tbl, RAZOR_INFO) end
     end
     reaper.PreventUIRefresh(-1)
     reaper.UpdateArrange()
@@ -520,7 +529,7 @@ function CycleVersionsDOWN()
     for track in pairs(selected_tracks) do
         local tr_tbl = selected_tracks[track]
         SwapVirtualTrack(tr_tbl.idx + 1, tr_tbl.rprobj)
-        if RAZOR_INFO then Create_Razor_From_LANE(tr_tbl, RAZOR_INFO) end
+        if tr_tbl.lane_mode == 2 and OPTIONS["RAZOR_FOLLOW_SWAP"] and RAZOR_INFO then Create_Razor_From_LANE(tr_tbl, RAZOR_INFO) end
     end
     reaper.PreventUIRefresh(-1)
     reaper.UpdateArrange()
@@ -532,7 +541,7 @@ function ActivateLaneUndeMouse()
     for track in pairs(CURRENT_TRACKS) do
         local tr_tbl = CURRENT_TRACKS[track]
         SwapVirtualTrack(LAST_MOUSE_LANE, tr_tbl.rprobj)
-        if RAZOR_INFO then Create_Razor_From_LANE(tr_tbl, RAZOR_INFO) end
+        if tr_tbl.lane_mode == 2 and OPTIONS["RAZOR_FOLLOW_SWAP"] and RAZOR_INFO then Create_Razor_From_LANE(tr_tbl, RAZOR_INFO) end
     end
     reaper.Undo_EndBlock2(0, "VT: " .. "Activate Lane ", -1)
     reaper.PreventUIRefresh(-1)
