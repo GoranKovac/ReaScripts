@@ -517,7 +517,7 @@ function CycleVersionsUP()
     for track in pairs(selected_tracks) do
         local tr_tbl = selected_tracks[track]
         SwapVirtualTrack(tr_tbl.idx - 1, tr_tbl.rprobj)
-        if tr_tbl.lane_mode == 2 and OPTIONS["RAZOR_FOLLOW_SWAP"] and RAZOR_INFO then Create_Razor_From_LANE(tr_tbl, RAZOR_INFO) end
+        --if tr_tbl.lane_mode == 2 and OPTIONS["RAZOR_FOLLOW_SWAP"] and RAZOR_INFO then Create_Razor_From_LANE(tr_tbl, RAZOR_INFO) end
     end
     reaper.PreventUIRefresh(-1)
     reaper.UpdateArrange()
@@ -529,7 +529,7 @@ function CycleVersionsDOWN()
     for track in pairs(selected_tracks) do
         local tr_tbl = selected_tracks[track]
         SwapVirtualTrack(tr_tbl.idx + 1, tr_tbl.rprobj)
-        if tr_tbl.lane_mode == 2 and OPTIONS["RAZOR_FOLLOW_SWAP"] and RAZOR_INFO then Create_Razor_From_LANE(tr_tbl, RAZOR_INFO) end
+        --if tr_tbl.lane_mode == 2 and OPTIONS["RAZOR_FOLLOW_SWAP"] and RAZOR_INFO then Create_Razor_From_LANE(tr_tbl, RAZOR_INFO) end
     end
     reaper.PreventUIRefresh(-1)
     reaper.UpdateArrange()
@@ -538,10 +538,11 @@ end
 function ActivateLaneUndeMouse()
     reaper.PreventUIRefresh(1)
     reaper.Undo_BeginBlock2()
+    SEL_TRACK_TBL.idx = LAST_MOUSE_LANE
+    if SEL_TRACK_TBL.lane_mode == 2 and OPTIONS["RAZOR_FOLLOW_SWAP"] and RAZOR_INFO then Create_Razor_From_LANE(SEL_TRACK_TBL, RAZOR_INFO) end
     for track in pairs(CURRENT_TRACKS) do
         local tr_tbl = CURRENT_TRACKS[track]
         SwapVirtualTrack(LAST_MOUSE_LANE, tr_tbl.rprobj)
-        if tr_tbl.lane_mode == 2 and OPTIONS["RAZOR_FOLLOW_SWAP"] and RAZOR_INFO then Create_Razor_From_LANE(tr_tbl, RAZOR_INFO) end
     end
     reaper.Undo_EndBlock2(0, "VT: " .. "Activate Lane ", -1)
     reaper.PreventUIRefresh(-1)
@@ -720,7 +721,10 @@ end
 
 function Set_Razor_Data(tbl, razor_data)
     if not reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then return end
-    if not tbl.info[razor_data.razor_lane] then return end -- DO NOT CREATE RAZOR IF LANE DOES NOT EXIST IN TABLE
+    if not tbl.info[razor_data.razor_lane] then 
+        reaper.GetSetMediaTrackInfo_String(tbl.rprobj, "P_RAZOREDITS_EXT", "", true)
+        return
+    end -- DO NOT CREATE RAZOR IF LANE DOES NOT EXIST IN TABLE
     local calc_razor_t, calc_razor_b = Calculate_Track_Razor_data(tbl, razor_data)
     local razor_str = razor_data[1] .. " " .. razor_data[2] .. " " .. "'' " .. calc_razor_t .. " " .. calc_razor_b
     reaper.GetSetMediaTrackInfo_String(tbl.rprobj, "P_RAZOREDITS_EXT", razor_str, true)

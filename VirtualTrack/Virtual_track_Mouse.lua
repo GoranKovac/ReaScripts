@@ -1,11 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.30
+-- @version 1.31
 -- @changelog
---   + Fix storing table data as reference instead of value
---   + Fix Multiselected tracks not storing group state
---   + Added razor follow version change in lane mode
+--   + Allow razor follow version swap only on activate under mouse shortcut
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
