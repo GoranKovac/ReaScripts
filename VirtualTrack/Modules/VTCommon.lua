@@ -694,7 +694,7 @@ end
 
 function Set_Razor_Data(tbl, razor_data)
     if not reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then return end
-    if razor_data.razor_lane > #tbl.info then return end -- DO NOT CREATE RAZOR IF RAZOR LANE IS BIGGER THAN VERSIONS TABLE
+    if not tbl.info[razor_data.razor_lane] then return end -- DO NOT CREATE RAZOR IF LANE DOES NOT EXIST IN TABLE
     local calc_razor_t, calc_razor_b = Calculate_Track_Razor_data(tbl, razor_data)
     local razor_str = razor_data[1] .. " " .. razor_data[2] .. " " .. "'' " .. calc_razor_t .. " " .. calc_razor_b
     reaper.GetSetMediaTrackInfo_String(tbl.rprobj, "P_RAZOREDITS_EXT", razor_str, true)
@@ -770,7 +770,7 @@ function CopyToCOMP(tbl)
         if RAZOR_INFO.track ~= tr_tbl.rprobj then Set_Razor_Data(tr_tbl, RAZOR_INFO) end-- JUST SET RAZOR ON OTHER TRACKS (ONLY FOR VISUAL) , do not add on self
         local new_items, to_delete = {}, {}
         for i = 1, reaper.CountTrackMediaItems(tr_tbl.rprobj) do
-            if RAZOR_INFO.razor_lane <= #tr_tbl.info then -- only add if razor lane is within lane numbers else skip it
+            if tr_tbl.info[RAZOR_INFO.razor_lane] then -- only add if razor lane is within lane numbers else skip it
                 new_items[#new_items + 1] = Get_items_in_Lane(reaper.GetTrackMediaItem(tr_tbl.rprobj, i-1), RAZOR_INFO[1], RAZOR_INFO[2], RAZOR_INFO.razor_lane) -- COPY ITEMS FROM RAZOR LANE
                 to_delete[#to_delete + 1] = Get_items_in_Lane(reaper.GetTrackMediaItem(tr_tbl.rprobj, i-1), RAZOR_INFO[1], RAZOR_INFO[2], tr_tbl.comp_idx) -- WE ARE GONNA DELETE ON COMPING LANE IF RAZOR IS EMPTY
             end

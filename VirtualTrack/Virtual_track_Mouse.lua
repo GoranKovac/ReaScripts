@@ -1,9 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.28
+-- @version 1.29
 -- @changelog
---   + fix multiselection add group not storing
+--   + better razor lane check
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
