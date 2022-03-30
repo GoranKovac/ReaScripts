@@ -249,10 +249,10 @@ function Group_GUI()
         end
         reaper.ImGui_EndListBox(ctx)
     end
-    if reaper.ImGui_Button(ctx, 'Add Track', 160) then Add_REMOVE_Tracks_To_Group(ALL_VT_TRACKS, true)end
+    if reaper.ImGui_Button(ctx, 'Add Track', 160) then Add_REMOVE_Tracks_To_Group(ALL_VT_TRACKS, true) end
     ToolTip('Add selected tracks from TCP or MCP view')
     reaper.ImGui_SameLine(ctx)
-    if reaper.ImGui_Button(ctx, 'Remove Track',160) then Add_REMOVE_Tracks_To_Group(TRACK_GROUPS, false)end
+    if reaper.ImGui_Button(ctx, 'Remove Track',160) then Add_REMOVE_Tracks_To_Group(TRACK_GROUPS, false) end
     ToolTip('Remove tracks from list view')
 end
 
@@ -272,7 +272,7 @@ function GUI()
     end
     if STORE_DATA then
         Store_GROUPS_TO_Project_EXT_STATE()
-        for track, tr_tbl in pairs(CURRENT_TRACKS) do StoreStateToDocument(tr_tbl) end
+        -- for track, tr_tbl in pairs(CURRENT_TRACKS) do StoreStateToDocument(tr_tbl) end -- NOT SURE WHY IT SET IT HERE SINCE ITS IN EVERY ACTION (THIS ONE RESETS CURRENT GROUP STATE)
         if UPDATE_TEMPO then Update_tempo_map() end
         UpdateChangeCount()
     end
