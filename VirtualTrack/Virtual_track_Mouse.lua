@@ -1,9 +1,11 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.29
+-- @version 1.30
 -- @changelog
---   + better razor lane check
+--   + Fix storing table data as reference instead of value
+--   + Fix Multiselected tracks not storing group state
+--   + Added razor follow version change in lane mode
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
