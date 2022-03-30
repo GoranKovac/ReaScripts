@@ -1,21 +1,17 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.21
+-- @version 1.29
 -- @changelog
---   + Improved group window
---   + sort tracks in group window
---   + Enable comp on selected version rather than under the mouse
+--   + better razor lane check
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
 --   [main] Virtual_track_SelTrack.lua
---   [main] Virtual_track_Options.lua
 
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 
 require("Modules/VTCommon")
-require("Modules/Mouse")
 require("Modules/Utils")
 
 Check_Requirements()

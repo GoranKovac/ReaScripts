@@ -4,8 +4,10 @@
    * Version: 0.03
 	 * NoIndex: true
 --]]
-local script_folder = debug.getinfo(1).source:match("@?(.*[\\|/])"):gsub("[\\|/]Modules", "")
 local reaper = reaper
+local script_folder = debug.getinfo(1).source:match("@?(.*[\\|/])"):gsub("[\\|/]Modules", "")
+local main_wnd = reaper.GetMainHwnd()                            -- GET MAIN WINDOW
+local track_window = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8) -- GET TRACK VIEW
 local VT_TB, GROUP_LIST, CUR_GROUP = {}, nil, 1
 
 local Element = {}
@@ -17,6 +19,17 @@ function Element:new(rprobj, info)
     setmetatable(elm, self)
     self.__index = self
     return elm
+end
+
+OPTIONS = {
+    ["TOOLTIPS"] = true,
+    ["LANE_COLORS"] = true
+}
+
+if reaper.HasExtState( "VirtualTrack", "options" ) then
+    local state = reaper.GetExtState( "VirtualTrack", "options" )
+    OPTIONS["LANE_COLORS"] = state:match("LANE_COLORS (%S+)") == "true" and true or false
+    OPTIONS["TOOLTIPS"] = state:match("TOOLTIPS (%S+)") == "true" and true or false
 end
 
 local function Update_tempo_map()
@@ -37,6 +50,7 @@ function Draw_Color_Rect()
 end
 
 function ToolTip(text)
+    if not OPTIONS["TOOLTIPS"] then return end
     if reaper.ImGui_IsItemHovered(ctx) then
         reaper.ImGui_BeginTooltip(ctx)
         reaper.ImGui_PushTextWrapPos(ctx, reaper.ImGui_GetFontSize(ctx) * 35.0)
@@ -47,15 +61,16 @@ function ToolTip(text)
     end
 end
 
-local function GUIRename(NEW_NAME)
+local function GUIRename(cur_name)
     local RV
     if reaper.ImGui_IsWindowAppearing(ctx) then
         reaper.ImGui_SetKeyboardFocusHere(ctx)
+        NEW_NAME = cur_name
     end
     RV, NEW_NAME = reaper.ImGui_InputText(ctx, 'Name' , NEW_NAME, reaper.ImGui_InputTextFlags_AutoSelectAll())
     if reaper.ImGui_Button(ctx, 'OK') or reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Enter()) or reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_KeypadEnter()) then
         NEW_NAME = NEW_NAME:gsub("^%s*(.-)%s*$", "%1") -- remove trailing and leading
-        if #NEW_NAME == 0 then SAVED_NAME = NEW_NAME end
+        if #NEW_NAME ~= 0 then SAVED_NAME = NEW_NAME end
         if SAVED_NAME then Rename(SAVED_NAME) end
         reaper.ImGui_CloseCurrentPopup(ctx)
     end
@@ -65,31 +80,58 @@ local function GUIRename(NEW_NAME)
     end
 end
 
+local function save_options()
+    local store_string = ""
+    for k, v in pairs(OPTIONS) do
+        store_string = store_string .. tostring(k) .. " " .. tostring(v) .. " "
+    end
+    reaper.SetExtState( "VirtualTrack", "options", store_string, true )
+end
+
+local function GUIOptions()
+    local current_lane_colors = OPTIONS["LANE_COLORS"]
+    local current_tooltips = OPTIONS["TOOLTIPS"]
+    if reaper.ImGui_Checkbox(ctx, "TOOLTIPS", current_tooltips) then
+        OPTIONS["TOOLTIPS"] = not OPTIONS["TOOLTIPS"]
+        save_options()
+    end
+    if reaper.ImGui_Checkbox(ctx, "LANE COLORS", current_lane_colors) then
+        OPTIONS["LANE_COLORS"] = not OPTIONS["LANE_COLORS"]
+        save_options()
+    end
+    if reaper.ImGui_Button(ctx, 'Donate', -1) then open_url("https://www.paypal.com/paypalme/GoranK101") end
+end
+
 function Popup()
+    local is_button_enabled = SEL_TRACK_TBL.comp_idx == 0
+    local comp_enabled = SEL_TRACK_TBL.comp_idx ~= 0
     if reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Escape()) then
         reaper.ImGui_CloseCurrentPopup(ctx)
     end
-    reaper.ImGui_TextColored( ctx, 0x3EFF00FF, "    VIRTUAL TRACK     " )
-    Draw_Color_Rect()
+    if reaper.ImGui_Selectable(ctx, 'VIRTUAL TRACK', true, reaper.ImGui_SelectableFlags_DontClosePopups() | reaper.ImGui_SelectableFlags_AllowDoubleClick()) and reaper.ImGui_IsMouseDoubleClicked( ctx, 0 )then
+        reaper.ImGui_OpenPopup(ctx, 'OPTIONS')
+    end
+    ToolTip("Double click for options")
+    if reaper.ImGui_BeginPopupModal(ctx, 'OPTIONS', true, reaper.ImGui_WindowFlags_AlwaysAutoResize()) then
+        GUIOptions()
+        reaper.ImGui_EndPopup(ctx)
+    end
     reaper.ImGui_Separator(ctx)
-    -- if reaper.ImGui_BeginMenu(ctx, SEL_TRACK_TBL.info[SEL_TRACK_TBL.idx].name, true) then
+    local vertical = reaper.ImGui_GetMouseWheel( ctx )
+    if vertical ~= 0 then WHEEL_INCREMENT = vertical end
     for i = 1, #SEL_TRACK_TBL.info do
         if reaper.ImGui_MenuItem(ctx, SEL_TRACK_TBL.info[i].name, nil, i == SEL_TRACK_TBL.idx) then SwapVirtualTrack(i) end
         if reaper.ImGui_IsItemHovered(ctx) then
-            local vertical = reaper.ImGui_GetMouseWheel( ctx )
-            if vertical ~= 0 then WHEEL_INCREMENT = vertical end
             if vertical == 0 and WHEEL_INCREMENT then
                 SEL_TRACK_TBL.idx = (SEL_TRACK_TBL.idx - WHEEL_INCREMENT <= #SEL_TRACK_TBL.info and SEL_TRACK_TBL.idx - WHEEL_INCREMENT >= 1) and SEL_TRACK_TBL.idx - WHEEL_INCREMENT or SEL_TRACK_TBL.idx
                 SwapVirtualTrack(SEL_TRACK_TBL.idx)
                 WHEEL_INCREMENT = nil
             end
         end
+        if comp_enabled and i == SEL_TRACK_TBL.comp_idx then Draw_Color_Rect() end
     end
-       -- reaper.ImGui_EndMenu(ctx)
-    --end
     reaper.ImGui_Separator(ctx)
-    local is_button_enabled = SEL_TRACK_TBL.comp_idx == 0
-    local comp_enabled = SEL_TRACK_TBL.comp_idx ~= 0
+    reaper.ImGui_Separator(ctx)
     if reaper.ImGui_MenuItem(ctx, 'Create New', nil, nil, is_button_enabled) then CreateNew() end
     if reaper.ImGui_MenuItem(ctx, 'Delete', nil, nil, (#SEL_TRACK_TBL.info > 1 and is_button_enabled)) then Delete() end
     if reaper.ImGui_MenuItem(ctx, 'Duplicate', nil, nil, is_button_enabled) then Duplicate() end
@@ -207,17 +249,17 @@ function Group_GUI()
         end
         reaper.ImGui_EndListBox(ctx)
     end
-    if reaper.ImGui_Button(ctx, 'Add Track', 160) then Add_REMOVE_Tracks_To_Group(ALL_VT_TRACKS, true)end
+    if reaper.ImGui_Button(ctx, 'Add Track', 160) then Add_REMOVE_Tracks_To_Group(ALL_VT_TRACKS, true) end
     ToolTip('Add selected tracks from TCP or MCP view')
     reaper.ImGui_SameLine(ctx)
-    if reaper.ImGui_Button(ctx, 'Remove Track',160) then Add_REMOVE_Tracks_To_Group(TRACK_GROUPS, false)end
+    if reaper.ImGui_Button(ctx, 'Remove Track',160) then Add_REMOVE_Tracks_To_Group(TRACK_GROUPS, false) end
     ToolTip('Remove tracks from list view')
 end
 
-local mx, my = reaper.GetMousePosition()
+local mx, y = reaper.GetMousePosition()
 function GUI()
     if reaper.ImGui_IsWindowAppearing(ctx) then
-        reaper.ImGui_SetNextWindowPos(ctx, reaper.ImGui_PointConvertNative(ctx, mx-20, my-12))
+        reaper.ImGui_SetNextWindowPos(ctx, reaper.ImGui_PointConvertNative(ctx, mx-20, y-12))
         reaper.ImGui_OpenPopup(ctx, 'Menu')
     end
     if reaper.ImGui_BeginPopup(ctx, 'Menu') then
@@ -230,15 +272,14 @@ function GUI()
     end
     if STORE_DATA then
         Store_GROUPS_TO_Project_EXT_STATE()
-        for track, tr_tbl in pairs(CURRENT_TRACKS) do StoreStateToDocument(tr_tbl) end
+        -- for track, tr_tbl in pairs(CURRENT_TRACKS) do StoreStateToDocument(tr_tbl) end -- NOT SURE WHY IT SET IT HERE SINCE ITS IN EVERY ACTION (THIS ONE RESETS CURRENT GROUP STATE)
         if UPDATE_TEMPO then Update_tempo_map() end
         UpdateChangeCount()
     end
 end
 
 function Show_menu(rprobj, skip_gui_command)
-    MouseInfo().last_menu_lane = MouseInfo().lane-- SET LAST LANE BEFORE MENU OPENED
-    MouseInfo().last_menu_tr = MouseInfo().tr -- SET LAST TRACK BEFORE MENU OPENED
+    LAST_MOUSE_TR, LAST_MOUSE_LANE = MouseInfo()
     CheckTrackLaneModeState(VT_TB[rprobj])
     GROUP_LIST = Restore_GROUPS_FROM_Project_EXT_STATE()
     CURRENT_TRACKS = GetSelectedTracksData(rprobj)
@@ -304,7 +345,7 @@ function Get_Stored_PEXT_STATE_TBL()
             stored_tbl[env] = {}
             stored_tbl[env].rprobj = env
             if not Restore_From_PEXT(stored_tbl[env]) then stored_tbl[env] = nil end
-            table.insert(stored_tbl_sorted, stored_tbl[track])
+            table.insert(stored_tbl_sorted, stored_tbl[env])
         end
     end
     return stored_tbl, stored_tbl_sorted
@@ -527,7 +568,7 @@ function ActivateLaneUndeMouse()
     reaper.PreventUIRefresh(1)
     reaper.Undo_BeginBlock2()
     for track, tr_tbl in pairs(CURRENT_TRACKS) do
-        SwapVirtualTrack(MouseInfo().last_menu_lane, tr_tbl)
+        SwapVirtualTrack(LAST_MOUSE_LANE, tr_tbl)
     end
     reaper.Undo_EndBlock2(0, "VT: " .. "Activate Lane ", -1)
     reaper.PreventUIRefresh(-1)
@@ -641,12 +682,21 @@ function Get_Razor_Data(track)
     local razor_t, razor_b = razor_info[3], razor_info[4]
     local razor_h = razor_b - razor_t
     razor_info.razor_lane = round(razor_b / razor_h)
+    razor_info.track = track
     return razor_info
+end
+
+local function Calculate_Track_Razor_data(tbl, razor_data)
+    local razor_b = razor_data.razor_lane * (1 / #tbl.info)
+    local razor_t = -(razor_b - (razor_data.razor_lane * razor_b)) / razor_data.razor_lane
+    return razor_t, razor_b
 end
 
 function Set_Razor_Data(tbl, razor_data)
     if not reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then return end
-    local razor_str = razor_data[1] .. " " .. razor_data[2] .. " " .. "'' " .. razor_data[3] .. " " .. razor_data[4]
+    if not tbl.info[razor_data.razor_lane] then return end -- DO NOT CREATE RAZOR IF LANE DOES NOT EXIST IN TABLE
+    local calc_razor_t, calc_razor_b = Calculate_Track_Razor_data(tbl, razor_data)
+    local razor_str = razor_data[1] .. " " .. razor_data[2] .. " " .. "'' " .. calc_razor_t .. " " .. calc_razor_b
     reaper.GetSetMediaTrackInfo_String(tbl.rprobj, "P_RAZOREDITS_EXT", razor_str, true)
 end
 
@@ -673,20 +723,20 @@ end
 local function Delete_items_or_area(item, time_Start, time_End)
     local first_to_delete = reaper.SplitMediaItem(item, time_End)
     local last_to_delete = reaper.SplitMediaItem(item, time_Start)
-    -- if last_to_delete then
-    --     reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( last_to_delete ), last_to_delete)
-    -- else
-    --     reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( item ), item)
-    -- end
-    if first_to_delete and last_to_delete then
+    if last_to_delete then
         reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( last_to_delete ), last_to_delete)
-    elseif last_to_delete and not first_to_delete then
-        reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( last_to_delete ), last_to_delete)
-    elseif first_to_delete and not last_to_delete then
-        reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( item ), item)
-    elseif not first_to_delete and not last_to_delete then
+    else
         reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( item ), item)
     end
+    -- if first_to_delete and last_to_delete then
+    --     reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( last_to_delete ), last_to_delete)
+    -- elseif last_to_delete and not first_to_delete then
+    --     reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( last_to_delete ), last_to_delete)
+    -- elseif first_to_delete and not last_to_delete then
+    --     reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( item ), item)
+    -- elseif not first_to_delete and not last_to_delete then
+    --     reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( item ), item)
+    -- end
 end
 
 local function Make_item_from_razor(tbl, item, razor_info)
@@ -717,11 +767,13 @@ function CopyToCOMP(tbl)
         if reaper.ValidatePtr(tr_tbl.rprobj, "TrackEnvelope*") then return end -- PREVENT DOING THIS ON ENVELOPES
         if reaper.GetMediaTrackInfo_Value(tr_tbl.rprobj, "I_FREEMODE") == 0 then return end -- PREVENT DOING IN NON LANE MODE
         if tr_tbl.comp_idx == 0 or tr_tbl.comp_idx == RAZOR_INFO.razor_lane then return end -- PREVENT COPY ONTO ITSELF OR IF COMP DISABLED
-        Set_Razor_Data(tr_tbl, RAZOR_INFO) -- JUST SET RAZOR ON OTHER TRACKS (ONLY FOR VISUAL)
+        if RAZOR_INFO.track ~= tr_tbl.rprobj then Set_Razor_Data(tr_tbl, RAZOR_INFO) end-- JUST SET RAZOR ON OTHER TRACKS (ONLY FOR VISUAL) , do not add on self
         local new_items, to_delete = {}, {}
         for i = 1, reaper.CountTrackMediaItems(tr_tbl.rprobj) do
-            new_items[#new_items + 1] = Get_items_in_Lane(reaper.GetTrackMediaItem(tr_tbl.rprobj, i-1), RAZOR_INFO[1], RAZOR_INFO[2], RAZOR_INFO.razor_lane) -- COPY ITEMS FROM RAZOR LANE
-            to_delete[#to_delete + 1] = Get_items_in_Lane(reaper.GetTrackMediaItem(tr_tbl.rprobj, i-1), RAZOR_INFO[1], RAZOR_INFO[2], tr_tbl.comp_idx) -- WE ARE GONNA DELETE ON COMPING LANE IF RAZOR IS EMPTY
+            if tr_tbl.info[RAZOR_INFO.razor_lane] then -- only add if razor lane is within lane numbers else skip it
+                new_items[#new_items + 1] = Get_items_in_Lane(reaper.GetTrackMediaItem(tr_tbl.rprobj, i-1), RAZOR_INFO[1], RAZOR_INFO[2], RAZOR_INFO.razor_lane) -- COPY ITEMS FROM RAZOR LANE
+                to_delete[#to_delete + 1] = Get_items_in_Lane(reaper.GetTrackMediaItem(tr_tbl.rprobj, i-1), RAZOR_INFO[1], RAZOR_INFO[2], tr_tbl.comp_idx) -- WE ARE GONNA DELETE ON COMPING LANE IF RAZOR IS EMPTY
+            end
         end
         for i = 1, #to_delete do Delete_items_or_area(to_delete[i], RAZOR_INFO[1], RAZOR_INFO[2]) end -- DELETE ITEMS CONTENT (IF RAZOR IS EMPTY) COMPING "SILENCE"
         for i = 1, #new_items do Make_item_from_razor(tr_tbl, new_items[i], RAZOR_INFO) end
@@ -863,9 +915,9 @@ end
 function Same_Envelope_AS_Mouse(tr_tbl)
     local same_envelopes = nil
     local all_childs = GetChild_ParentTrack_FromStored_PEXT(tr_tbl)
-    if reaper.ValidatePtr(MouseInfo().last_menu_tr, "TrackEnvelope*") then
+    if reaper.ValidatePtr(LAST_MOUSE_TR, "TrackEnvelope*") then
         same_envelopes = {}
-        local m_retval, m_name = reaper.GetEnvelopeName(MouseInfo().last_menu_tr)
+        local m_retval, m_name = reaper.GetEnvelopeName(LAST_MOUSE_TR)
         for track in pairs(all_childs) do
             if reaper.ValidatePtr(track, "TrackEnvelope*") and all_childs[track] then
                 local env_retval, env_name = reaper.GetEnvelopeName(track)
@@ -1058,4 +1110,62 @@ end
 
 function CheckGroupMaskBits(group, bits)
     return group & bits ~= 0 and true or false
+end
+
+local function GetMouseTrackXYH(track)
+	if reaper.ValidatePtr(track, "MediaTrack*") then
+        local tr_t = reaper.GetMediaTrackInfo_Value(track, "I_TCPY")
+		local tr_h = reaper.GetMediaTrackInfo_Value(track, "I_TCPH")
+		return tr_t, tr_h, tr_t + tr_h
+    elseif reaper.ValidatePtr(track, "TrackEnvelope*") then
+		local p_tr = reaper.GetEnvelopeInfo_Value(track, "P_TRACK")
+		local p_tr_t = reaper.GetMediaTrackInfo_Value(p_tr, "I_TCPY")
+		local env_t = reaper.GetEnvelopeInfo_Value(track, "I_TCPY") + p_tr_t
+		local env_h = reaper.GetEnvelopeInfo_Value(track, "I_TCPH")
+		return env_t, env_h, env_t + env_h
+	end
+end
+
+function To_client(x,y)
+    local cx, cy = reaper.JS_Window_ScreenToClient( track_window, x, y )
+    return cx, cy
+end
+
+function Get_track_under_mouse()
+	local x, y = reaper.GetMousePosition()
+    local _, cy = To_client(x, y)
+    local track, env_info = reaper.GetTrackFromPoint(x, y)
+    if track and env_info == 0 then
+        return track
+    elseif track and env_info == 1 then
+        for i = 1, reaper.CountTrackEnvelopes(track) do
+            local env = reaper.GetTrackEnvelope(track, i - 1)
+			local env_t, _, env_b = GetMouseTrackXYH(env)
+            if env_t <= cy and env_b >= cy then return env end
+        end
+    end
+end
+
+local lane_offset = 14 -- schwa decided this number by carefully inspecting pixels in paint.net
+function Get_lane_from_mouse_coordinates(mouse_tr)
+	if mouse_tr == nil then return end
+	if not reaper.ValidatePtr(mouse_tr, "MediaTrack*") then return end
+    local _, my = reaper.GetMousePosition()
+	local item_for_height = reaper.GetTrackMediaItem(mouse_tr, 0)
+	if not item_for_height then return 1 end
+	local _, cy = To_client(0, my)
+    local total_lanes = round(1 / reaper.GetMediaItemInfo_Value(item_for_height, 'F_FREEMODE_H')) -- WE CHECK LANE HEIGHT WITH ANY ITEM ON TRACK
+	local t, h, b = GetMouseTrackXYH(mouse_tr)
+	if cy > t and cy < b then
+		local lane = math.floor(((cy - t) / (h - lane_offset)) * total_lanes) + 1
+		lane = lane <= total_lanes and lane or total_lanes
+		-- disable when track_h is less than 90px
+		return lane
+	end
+end
+
+function MouseInfo()
+    local mouse_tr = Get_track_under_mouse()
+	local mouse_lane = Get_lane_from_mouse_coordinates(mouse_tr)
+    return mouse_tr, mouse_lane
 end
