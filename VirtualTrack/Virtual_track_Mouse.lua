@@ -1,12 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.27
+-- @version 1.28
 -- @changelog
---   + Do not add razors if lane does not exist
---   + Do not copy to COMP lane if current track does not have that lane
---   + Calculate new razor data from current track data
---   + (properly shows razors on groups with missmatch version count)
+--   + fix multiselection add group not storing
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
