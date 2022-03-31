@@ -12,12 +12,11 @@ require("Modules/Utils")
 
 Check_Requirements()
 
-local OLD_RAZOR_INFO
 local function Main()
-    local track = OnDemand()
-    if not track then return end
+    local track_tbl = OnDemand()
+    if not track_tbl then return end
     local func = "CopyToCOMP"
-    Show_menu(track, func)
+    Show_menu(track_tbl, func)
 end
 
 xpcall(Main, GetCrash())

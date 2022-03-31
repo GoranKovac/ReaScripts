@@ -13,11 +13,12 @@ require("Modules/Utils")
 Check_Requirements()
 
 local function Main()
-    local track = OnDemand()
-    if not track then return end
-    --retval, retvals_csv = reaper.GetUserInputs( title, num_inputs, captions_csv, retvals_csv )
-    --local func = "Rename"
-    --Show_menu(track, func)
+    local track_tbl = OnDemand()
+    if not track_tbl then return end
+    --local retval, retvals_csv = reaper.GetUserInputs( "VIRTUAL TRACK - RENAME", 1, "New Version name : ", track_tbl.info[track_tbl.idx].name )
+    --if not retval then return end
+    local func = "ReaperRename"
+    Show_menu(track_tbl, func)
 end
 
 xpcall(Main, GetCrash())

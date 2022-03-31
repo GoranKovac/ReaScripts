@@ -13,10 +13,11 @@ require("Modules/Utils")
 Check_Requirements()
 
 local function Main()
-    local track = OnDemand()
-    if not track then return end
+    local track_tbl = OnDemand()
+    if not track_tbl then return end
+    if reaper.ValidatePtr(track_tbl.rprobj, "TrackEnvelope*") then return end -- DO NOT ALLOW ON EVELOPES
     local func = "ActivateLaneUndeMouse"
-    Show_menu(track, func)
+    Show_menu(track_tbl, func)
 end
 
 xpcall(Main, GetCrash())
