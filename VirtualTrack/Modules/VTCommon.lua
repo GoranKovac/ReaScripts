@@ -359,7 +359,7 @@ function Show_menu(tbl, skip_gui_command)
     LAST_MOUSE_TR, LAST_MOUSE_LANE = MouseInfo()
     CheckTrackLaneModeState(tbl)
     GROUP_LIST = Restore_GROUPS_FROM_Project_EXT_STATE()
-    UPDATE_TEMPO = ( reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") and ({reaper.GetEnvelopeName( tbl.rprobj )})[2] == "Tempo map" ) and true or false
+    UPDATE_TEMPO = ( reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") and select(2, reaper.GetEnvelopeName(tbl.rprobj)) == "Tempo map" ) and true or false
     SEL_TRACK_TBL = tbl
     CURRENT_TRACKS = CheckGroupMaskBits(GROUP_LIST.enabled_mask, SEL_TRACK_TBL.group) and GetTracksOfMask(SEL_TRACK_TBL.group) or GetSelectedTracksData(tbl.rprobj)
     RAZOR_INFO = reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") and Get_Razor_Data(tbl.rprobj) or nil
