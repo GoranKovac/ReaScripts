@@ -579,7 +579,7 @@ function StoreStateToDocument(tbl) Store_To_PEXT(tbl) end
 function SaveCurrentState(tbl)
     if UpdateInternalState(tbl) == true then Store_To_PEXT(tbl) end
 end
---! fix going over versions
+
 function CycleVersionsUP()
     reaper.PreventUIRefresh(1)
     local selected_tracks = CURRENT_TRACKS
@@ -592,7 +592,7 @@ function CycleVersionsUP()
     reaper.PreventUIRefresh(-1)
     reaper.UpdateArrange()
 end
---! fix going over versions
+
 function CycleVersionsDOWN()
     reaper.PreventUIRefresh(1)
     local selected_tracks = CURRENT_TRACKS
@@ -685,10 +685,10 @@ function Duplicate(tr)
     reaper.PreventUIRefresh(1)
     reaper.Undo_BeginBlock2()
     local selected_tracks = tr and {CURRENT_TRACKS[tr]} or CURRENT_TRACKS
-    for track in pairs(selected_tracks) do
+    for track, value in pairs(selected_tracks) do
         local tr_tbl = selected_tracks[track]
         local name = tr_tbl.info[tr_tbl.idx].name .. " DUP"
-        local duplicate_tbl = Deepcopy(tr_tbl.info[tr_tbl.idx]) -- DEEP COPY TABLE SO ITS UNIQUE (LUA DOES SHALLOW BY DEFAULT)
+        local duplicate_tbl = value.info[value.idx] --Deepcopy(tr_tbl.info[tr_tbl.idx]) -- DEEP COPY TABLE SO ITS UNIQUE (LUA DOES SHALLOW BY DEFAULT)
         for i = 1, #duplicate_tbl do duplicate_tbl[i] = duplicate_tbl[i]:gsub("{.-}", "") end --! GENERATE NEW GUIDS FOR NEW ITEM (fixes duplicate make pooled items)
         table.insert(tr_tbl.info, 1, duplicate_tbl) --! ORDER NEWEST TO OLDEST
         tr_tbl.idx = 1
@@ -770,8 +770,7 @@ function Get_Razor_Data(track)
     if not reaper.ValidatePtr(track, "MediaTrack*") then return end
     local _, razor_area = reaper.GetSetMediaTrackInfo_String(track, 'P_RAZOREDITS_EXT', '', false)
     if razor_area == "" then return nil end
-    local razor_info = {}
-    for i in string.gmatch(razor_area, "%S+") do table.insert(razor_info, tonumber(i)) end
+    local razor_info = {razor_area:match('(%S+) (%S+) "%S-" (%S+) (%S+)')}
     local razor_t, razor_b = razor_info[3], razor_info[4]
     local razor_h = razor_b - razor_t
     razor_info.razor_lane = round(razor_b / razor_h)
@@ -829,17 +828,9 @@ local function Delete_items_or_area(item, time_Start, time_End)
     else
         reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( item ), item)
     end
-    -- if first_to_delete and last_to_delete then
-    --     reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( last_to_delete ), last_to_delete)
-    -- elseif last_to_delete and not first_to_delete then
-    --     reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( last_to_delete ), last_to_delete)
-    -- elseif first_to_delete and not last_to_delete then
-    --     reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( item ), item)
-    -- elseif not first_to_delete and not last_to_delete then
-    --     reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( item ), item)
-    -- end
 end
 
+--! implement proper autocrossfade
 local function Make_item_from_razor(tbl, item, razor_info)
     if not item then return end
     local time_Start, time_End, razor_lane = razor_info[1], razor_info[2], razor_info.razor_lane
