@@ -365,7 +365,6 @@ function Show_menu(tbl, skip_gui_command)
     RAZOR_INFO = reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") and Get_Razor_Data(tbl.rprobj) or nil
     FOLDER_CHILDS = GetFolderChilds(tbl.rprobj)
     for track in pairs(CURRENT_TRACKS) do SaveCurrentState(CURRENT_TRACKS[track]) end -- UPDATE INTERNAL TABLE BEFORE OPENING MENU
-    --if FOLDER_CHILDS then for track in pairs(FOLDER_CHILDS) do SaveCurrentState(FOLDER_CHILDS[track]) end end
     if not skip_gui_command then
         GUI()
     else
