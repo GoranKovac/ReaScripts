@@ -17,10 +17,13 @@ end
 
 function open_url(url)
     local OS = reaper.GetOS()
+    MSG(OS)
     if (OS == "OSX32" or OS == "OSX64") or OS == 'macOS-arm64' then
-        os.execute('open "" "' .. url .. '"')
-    else
+        os.execute('open "' .. url .. '"')
+    elseif OS == "Win64" or OS == "Win32" then
         os.execute('start "" "' .. url .. '"')
+    else
+        os.execute('xdg-open "' .. url .. '"')
     end
 end
 
@@ -34,7 +37,7 @@ function Check_Requirements()
     else
         if tonumber(small) < 50 then
             reaper.MB( "Reaper DEV Prerelease version v6.50+dev is required for this script. Please download latest DEV prerelease from www.landoleet.org", "SCRIPT REQUIREMENTS", 0 )
-            open_url("www.landoleet.org")
+            open_url("https://www.landoleet.org")
             return reaper.defer(function() end)
         end
     end

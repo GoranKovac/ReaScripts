@@ -334,10 +334,10 @@ function Group_GUI()
     ToolTip('Remove tracks from list view')
 end
 
-local mx, y = reaper.GetMousePosition()
+local mx, my = reaper.GetMousePosition()
 function GUI()
     if reaper.ImGui_IsWindowAppearing(ctx) then
-        reaper.ImGui_SetNextWindowPos(ctx, reaper.ImGui_PointConvertNative(ctx, mx-20, y-12))
+        reaper.ImGui_SetNextWindowPos(ctx, reaper.ImGui_PointConvertNative(ctx, mx-20, my-12))
         reaper.ImGui_OpenPopup(ctx, 'Menu')
     end
     if reaper.ImGui_BeginPopup(ctx, 'Menu') then
@@ -359,14 +359,14 @@ function Show_menu(tbl, skip_gui_command)
     LAST_MOUSE_TR, LAST_MOUSE_LANE = MouseInfo()
     CheckTrackLaneModeState(tbl)
     GROUP_LIST = Restore_GROUPS_FROM_Project_EXT_STATE()
-    UPDATE_TEMPO = ( reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") and select(2, reaper.GetEnvelopeName(tbl.rprobj)) == "Tempo map" ) and true or false
+    UPDATE_TEMPO = ( reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") and select(2,reaper.GetEnvelopeName(tbl.rprobj)) == "Tempo map" ) and true or false
     SEL_TRACK_TBL = tbl
     CURRENT_TRACKS = CheckGroupMaskBits(GROUP_LIST.enabled_mask, SEL_TRACK_TBL.group) and GetTracksOfMask(SEL_TRACK_TBL.group) or GetSelectedTracksData(tbl.rprobj)
     RAZOR_INFO = reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") and Get_Razor_Data(tbl.rprobj) or nil
     FOLDER_CHILDS = GetFolderChilds(tbl.rprobj)
     for track in pairs(CURRENT_TRACKS) do SaveCurrentState(CURRENT_TRACKS[track]) end -- UPDATE INTERNAL TABLE BEFORE OPENING MENU
     if not skip_gui_command then
-        GUI()
+        reaper.defer(GUI)
     else
         _G[skip_gui_command]()
     end
