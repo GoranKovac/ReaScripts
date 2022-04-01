@@ -63,7 +63,15 @@ function ToolTip(text)
     end
 end
 
-local function GUIRename(cur_name)
+function ReaperRename()
+    local cur_name = SEL_TRACK_TBL.info[SEL_TRACK_TBL.idx].name
+    local retval, saved_name = reaper.GetUserInputs( "VIRTUAL TRACK - RENAME", 1, "New Version name : ", cur_name )
+    if not retval then return end
+    Rename(saved_name)
+end
+
+local function GUIRename()
+    local cur_name = SEL_TRACK_TBL.info[SEL_TRACK_TBL.idx].name
     local RV
     if reaper.ImGui_IsWindowAppearing(ctx) then
         reaper.ImGui_SetKeyboardFocusHere(ctx)
@@ -84,9 +92,7 @@ end
 
 local function save_options()
     local store_string = ""
-    for k, v in pairs(OPTIONS) do
-        store_string = store_string .. tostring(k) .. " " .. tostring(v) .. " "
-    end
+    for k, v in pairs(OPTIONS) do store_string = store_string .. tostring(k) .. " " .. tostring(v) .. " " end
     reaper.SetExtState( "VirtualTrack", "options", store_string, true )
 end
 
@@ -108,26 +114,78 @@ local function GUIOptions()
         save_options()
     end
     ToolTip("Razor follow version selection in lane mode for easier comping")
-    if reaper.ImGui_Button(ctx, 'Donate', -1) then open_url("https://www.paypal.com/paypalme/GoranK101") end
+    if reaper.ImGui_Button(ctx, 'Donate', -1) then Open_url("https://www.paypal.com/paypalme/GoranK101") end
 end
 
+local function ctx_modifiers()
+    local shift = reaper.ImGui_GetKeyMods(ctx) & reaper.ImGui_KeyModFlags_Shift() ~= 0 and true
+    local ctrl = reaper.ImGui_GetKeyMods(ctx) & reaper.ImGui_KeyModFlags_Ctrl() ~= 0 and true
+    local alt = reaper.ImGui_GetKeyMods(ctx) & reaper.ImGui_KeyModFlags_Alt() ~= 0 and true
+    local win = reaper.ImGui_GetKeyMods(ctx) & reaper.ImGui_KeyModFlags_Super() ~= 0 and true
+    return shift, ctrl, alt, win
+end
+
+OLD_FOLDER_ACTION = false
+function Get_Selected_OR_Folder_tracks(folder)
+    FOLDER_CHILDS = GetFolderChilds(SEL_TRACK_TBL.rprobj)
+    if folder then _, _, current_folder_lane_mode, current_folder_comp_idx = Find_Highest(FOLDER_CHILDS) end
+    CURRENT_TRACKS = CheckGroupMaskBits(GROUP_LIST.enabled_mask, SEL_TRACK_TBL.group) and GetTracksOfMask(SEL_TRACK_TBL.group) or GetSelectedTracksData(SEL_TRACK_TBL)
+    if folder then CURRENT_TRACKS = FOLDER_CHILDS end
+end
+
+local MW_CNT = 0
 function Popup()
+    local shift, ctrl, alt, win = ctx_modifiers()
+    local is_folder = reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") and reaper.GetMediaTrackInfo_Value(SEL_TRACK_TBL.rprobj, "I_FOLDERDEPTH") == 1
+    local folder_action = is_folder and shift
+
+    if folder_action ~= OLD_FOLDER_ACTION then
+        OLD_FOLDER_ACTION = folder_action
+        Get_Selected_OR_Folder_tracks(folder_action)
+    end
+
     local is_button_enabled = SEL_TRACK_TBL.comp_idx == 0
     local comp_enabled = SEL_TRACK_TBL.comp_idx ~= 0
+
     if reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Escape()) then
         reaper.ImGui_CloseCurrentPopup(ctx)
     end
+    ------------------------------------------------------------------------------------
     if reaper.ImGui_Selectable(ctx, 'VIRTUAL TRACK', true, reaper.ImGui_SelectableFlags_DontClosePopups() | reaper.ImGui_SelectableFlags_AllowDoubleClick()) and reaper.ImGui_IsMouseDoubleClicked( ctx, 0 )then
         reaper.ImGui_OpenPopup(ctx, 'OPTIONS')
     end
     ToolTip("Double click for options")
+    ------------------------------------------------------------------------------------
     if reaper.ImGui_BeginPopupModal(ctx, 'OPTIONS', true, reaper.ImGui_WindowFlags_AlwaysAutoResize()) then
         GUIOptions()
         reaper.ImGui_EndPopup(ctx)
     end
+    ------------------------------------------------------------------------------------
     reaper.ImGui_Separator(ctx)
     local vertical = reaper.ImGui_GetMouseWheel( ctx )
-    if vertical ~= 0 then WHEEL_INCREMENT = vertical end
+    if vertical ~= 0 then WHEEL_INCREMENT = vertical > 0 and 1 or -1 end
+    ------------------------------------------------------------------------------------
+    if is_folder then
+        if reaper.ImGui_BeginMenu(ctx, "FOLDER", true) then
+            FOLDER = true
+            local number_of_folder_versions, current_folder_idx = Find_Highest(FOLDER_CHILDS) -- FIND WHICH CHILD HAST MOST VERSIONS AND USE THAT FOR VERSION NUMBERING
+            if vertical == 0 and WHEEL_INCREMENT then
+                MW_CNT = current_folder_idx
+                MW_CNT = (MW_CNT - WHEEL_INCREMENT <= number_of_folder_versions and MW_CNT - WHEEL_INCREMENT >= 1) and MW_CNT - WHEEL_INCREMENT or MW_CNT
+                SwapVirtualTrack(MW_CNT)
+                WHEEL_INCREMENT = nil
+            end
+            ------------------------------------------------------------------------------------
+            for i = 1, number_of_folder_versions do
+                if reaper.ImGui_MenuItem(ctx, i, nil, i == current_folder_idx) then FOLDER = true SwapVirtualTrack(i) end
+            end
+            reaper.ImGui_EndMenu(ctx)
+        end
+        ToolTip('Hold down SHIFT for folder Actions')
+        FOLDER = nil
+        reaper.ImGui_Separator(ctx)
+    end
+    ------------------------------------------------------------------------------------
     for i = 1, #SEL_TRACK_TBL.info do
         if reaper.ImGui_MenuItem(ctx, SEL_TRACK_TBL.info[i].name, nil, i == SEL_TRACK_TBL.idx) then SwapVirtualTrack(i) end
         if reaper.ImGui_IsItemHovered(ctx) then
@@ -140,27 +198,33 @@ function Popup()
         if comp_enabled and i == SEL_TRACK_TBL.comp_idx then Draw_Color_Rect() end
     end
     reaper.ImGui_Separator(ctx)
-    reaper.ImGui_Separator(ctx)
-    if reaper.ImGui_MenuItem(ctx, 'Create New', nil, nil, is_button_enabled) then CreateNew() end
-    if reaper.ImGui_MenuItem(ctx, 'Delete', nil, nil, (#SEL_TRACK_TBL.info > 1 and is_button_enabled)) then Delete() end
-    if reaper.ImGui_MenuItem(ctx, 'Duplicate', nil, nil, is_button_enabled) then Duplicate() end
-    if reaper.ImGui_Selectable(ctx, 'Rename', nil, reaper.ImGui_SelectableFlags_DontClosePopups()) then
+    local folder_sufix = folder_action and " Sub Version" or ""
+    ------------------------------------------------------------------------------------
+    if reaper.ImGui_MenuItem(ctx, 'Create New' .. folder_sufix, nil, nil, is_button_enabled) then CreateNew() end
+    if reaper.ImGui_MenuItem(ctx, 'Delete' .. folder_sufix, nil, nil, is_button_enabled) then Delete() end
+    ToolTip("Delete current version.\nIf there is only 1 Version remaining delete is ignored")
+    if reaper.ImGui_MenuItem(ctx, 'Duplicate' .. folder_sufix, nil, nil, is_button_enabled) then  Duplicate() end
+    if reaper.ImGui_Selectable(ctx, 'Rename' .. folder_sufix, nil, reaper.ImGui_SelectableFlags_DontClosePopups()) then
         reaper.ImGui_OpenPopup(ctx, 'Rename Version')
     end
+    ------------------------------------------------------------------------------------
     if reaper.ImGui_BeginPopupModal(ctx, 'Rename Version', nil, reaper.ImGui_WindowFlags_AlwaysAutoResize()) then
-        GUIRename(SEL_TRACK_TBL.info[SEL_TRACK_TBL.idx].name)
+        GUIRename()
         reaper.ImGui_EndPopup(ctx)
     end
+    ------------------------------------------------------------------------------------
     if reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") then
         reaper.ImGui_Separator(ctx)
         local ACTIVE_GROUPS = Get_active_groups(SEL_TRACK_TBL.group)
         local groups_button_name = SEL_TRACK_TBL.group == 0 and "- None" or table.concat(ACTIVE_GROUPS, "-")
+        ------------------------------------------------------------------------------------
         if reaper.ImGui_Selectable(ctx, 'GROUPS ' .. groups_button_name, nil, reaper.ImGui_SelectableFlags_DontClosePopups()) then
             TRACK_GROUPS = GetTracksOfGroup(CUR_GROUP) or {}
             _, ALL_VT_TRACKS = Get_Stored_PEXT_STATE_TBL()
             reaper.ImGui_OpenPopup(ctx, 'GROUP_WINDOW')
         end
-        ToolTip("Add track to Groups")
+        ToolTip("Open Track GOUP Window")
+        ------------------------------------------------------------------------------------
         if reaper.ImGui_BeginPopupModal(ctx, 'GROUP_WINDOW', true, reaper.ImGui_WindowFlags_AlwaysAutoResize()) then
             Group_GUI()
             reaper.ImGui_EndPopup(ctx)
@@ -168,27 +232,31 @@ function Popup()
         local is_track_in_group = SEL_TRACK_TBL.group ~= 0
         local is_group_enabled = CheckGroupMaskBits(GROUP_LIST.enabled_mask, SEL_TRACK_TBL.group)
         if is_group_enabled then reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Text(), 0x3EFF00FF) end -- MAKE TEXT GREEN WHEN ENABLED
+        ------------------------------------------------------------------------------------
         if reaper.ImGui_MenuItem(ctx, 'ENABLED', nil, is_group_enabled, is_track_in_group) then
             Set_MaskGroup_Enabled_Disabled(SEL_TRACK_TBL.group, not is_group_enabled)
         end
         if is_group_enabled then Draw_Color_Rect() reaper.ImGui_PopStyleColor(ctx) end
         ToolTip("Enable or Disable active groups")
+        ------------------------------------------------------------------------------------
     end
-    if reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") and SEL_TRACK_TBL.lane_mode == 2 then
+    ------------------------------------------------------------------------------------
+    if reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") and SEL_TRACK_TBL.lane_mode == 2 or (folder_action and current_folder_lane_mode == 2) then
         reaper.ImGui_Separator(ctx)
         if reaper.ImGui_MenuItem(ctx, 'New Empty COMP', nil, nil, is_button_enabled) then NewComp() end
         ToolTip("Create New empty COMP at top and start comping")
-        if comp_enabled then reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Text(), 0x3EFF00FF) end -- MAKE TEXT GREEN WHEN ENABLED
+        if comp_enabled or (folder_action and current_folder_comp_idx ~= 0) then reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Text(), 0x3EFF00FF) end -- MAKE TEXT GREEN WHEN ENABLED
         if reaper.ImGui_MenuItem(ctx, 'Enable COMP', nil, comp_enabled) then SetCompLane() end
-        if comp_enabled then Draw_Color_Rect() reaper.ImGui_PopStyleColor(ctx) end
+        if comp_enabled or (folder_action and current_folder_comp_idx ~= 0) then Draw_Color_Rect() reaper.ImGui_PopStyleColor(ctx) end
         ToolTip("Enable COMPING on currently selected version")
     end
+    ------------------------------------------------------------------------------------
     if reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") then
         reaper.ImGui_Separator(ctx)
         local is_lane_mode = SEL_TRACK_TBL.lane_mode == 2
-        if is_lane_mode then reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Text(), 0x3EFF00FF) end -- MAKE TEXT GREEN WHEN ENABLED
-        if reaper.ImGui_MenuItem(ctx, 'Show All', nil, SEL_TRACK_TBL.lane_mode == 2, is_button_enabled) then ShowAll() end
-        if is_lane_mode then Draw_Color_Rect() reaper.ImGui_PopStyleColor(ctx) end
+        if is_lane_mode or (folder_action and current_folder_lane_mode == 2) then reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Text(), 0x3EFF00FF) end -- MAKE TEXT GREEN WHEN ENABLED
+        if reaper.ImGui_MenuItem(ctx, 'Show All' .. folder_sufix, nil, SEL_TRACK_TBL.lane_mode == 2 or (folder_action and current_folder_lane_mode == 2), is_button_enabled) then ShowAll() end
+        if is_lane_mode or (folder_action and current_folder_lane_mode == 2) then Draw_Color_Rect() reaper.ImGui_PopStyleColor(ctx) end
     end
 end
 
@@ -205,6 +273,7 @@ function Add_REMOVE_Tracks_To_Group(tbl, add)
 end
 
 function Group_GUI()
+    local shift, ctrl, alt, win = ctx_modifiers()
     reaper.ImGui_SetNextItemWidth(ctx, 200)
     local vertical = reaper.ImGui_GetMouseWheel( ctx )
     if vertical ~= 0 then WHEEL_INCREMENT = vertical end
@@ -213,6 +282,7 @@ function Group_GUI()
         SwapVirtualTrack(SEL_TRACK_TBL.idx)
         WHEEL_INCREMENT = nil
     end
+    ------------------------------------------------------------------------------------
     if reaper.ImGui_BeginCombo(ctx, '##docker', GROUP_LIST[CUR_GROUP].name or GROUP_LIST[1].name) then
         for i = 1, #GROUP_LIST do
             if reaper.ImGui_Selectable(ctx, GROUP_LIST[i].name, CUR_GROUP == i) then
@@ -223,26 +293,34 @@ function Group_GUI()
         reaper.ImGui_EndCombo(ctx)
     end
     reaper.ImGui_SameLine(ctx)
+    ------------------------------------------------------------------------------------
     local is_group_enabled = CheckSingleGroupBit(GROUP_LIST.enabled_mask, CUR_GROUP)
     if reaper.ImGui_Checkbox(ctx, 'ENABLED', is_group_enabled) then
         Set_SingleGroup_Enabled_Disabled(CUR_GROUP, not is_group_enabled)
     end
     ToolTip('Enable or disable current group')
-
+    ------------------------------------------------------------------------------------
     if reaper.ImGui_BeginListBox(ctx, '##listbox', 160) then
         for i = 1, #ALL_VT_TRACKS do
             if reaper.ValidatePtr(ALL_VT_TRACKS[i].rprobj, "MediaTrack*" ) then
                 local _, buf = reaper.GetTrackName( ALL_VT_TRACKS[i].rprobj )
                 if reaper.ImGui_Selectable(ctx, buf..'##', ALL_VT_TRACKS[i].AddSelect) then
-                    if (reaper.ImGui_GetKeyMods(ctx) & reaper.ImGui_KeyModFlags_Shift()) == 0 then
+                    if not shift then
                         for _, info in pairs(ALL_VT_TRACKS) do info.AddSelect = false end
                     end
                     ALL_VT_TRACKS[i].AddSelect = not ALL_VT_TRACKS[i].AddSelect
+                end
+                if reaper.ImGui_IsItemHovered( ctx ) then
+                    if reaper.ImGui_IsMouseDown( ctx, 1 ) then
+                        ALL_VT_TRACKS[i].AddSelect = true
+                    end
                 end
             end
         end
         reaper.ImGui_EndListBox(ctx)
     end
+    ToolTip('Right-Click drag selects, Left-Click single selects/deselects')
+    ------------------------------------------------------------------------------------
     reaper.ImGui_SameLine(ctx)
     if reaper.ImGui_BeginListBox(ctx, '##listbox2', 160) then
         for k, v in pairs(TRACK_GROUPS) do
@@ -254,10 +332,17 @@ function Group_GUI()
                     end
                     v.DelSelect = not v.DelSelect
                 end
+                if reaper.ImGui_IsItemHovered( ctx ) then
+                    if reaper.ImGui_IsMouseDown( ctx, 1 ) then
+                        TRACK_GROUPS[k].DelSelect = true
+                    end
+                end
             end
         end
         reaper.ImGui_EndListBox(ctx)
     end
+    ToolTip('Right-Click drag selects, Left-Click single selects/deselects')
+    ------------------------------------------------------------------------------------
     if reaper.ImGui_Button(ctx, 'Add Track', 160) then Add_REMOVE_Tracks_To_Group(ALL_VT_TRACKS, true) end
     ToolTip('Add selected tracks from TCP or MCP view')
     reaper.ImGui_SameLine(ctx)
@@ -265,10 +350,9 @@ function Group_GUI()
     ToolTip('Remove tracks from list view')
 end
 
-local mx, y = reaper.GetMousePosition()
 function GUI()
     if reaper.ImGui_IsWindowAppearing(ctx) then
-        reaper.ImGui_SetNextWindowPos(ctx, reaper.ImGui_PointConvertNative(ctx, mx-20, y-12))
+        reaper.ImGui_SetNextWindowPos(ctx, reaper.ImGui_PointConvertNative(ctx, reaper.GetMousePosition()))
         reaper.ImGui_OpenPopup(ctx, 'Menu')
     end
     if reaper.ImGui_BeginPopup(ctx, 'Menu') then
@@ -281,23 +365,28 @@ function GUI()
     end
     if STORE_DATA then
         Store_GROUPS_TO_Project_EXT_STATE()
-        -- for track, tr_tbl in pairs(CURRENT_TRACKS) do StoreStateToDocument(tr_tbl) end -- NOT SURE WHY IT SET IT HERE SINCE ITS IN EVERY ACTION (THIS ONE RESETS CURRENT GROUP STATE)
         if UPDATE_TEMPO then Update_tempo_map() end
         UpdateChangeCount()
     end
 end
 
-function Show_menu(rprobj, skip_gui_command)
+function Show_menu(tbl, skip_gui_command)
     LAST_MOUSE_TR, LAST_MOUSE_LANE = MouseInfo()
-    CheckTrackLaneModeState(VT_TB[rprobj])
+    CheckTrackLaneModeState(tbl)
     GROUP_LIST = Restore_GROUPS_FROM_Project_EXT_STATE()
-    UPDATE_TEMPO = rprobj == reaper.GetMasterTrack(0) and true or false
-    SEL_TRACK_TBL = rprobj == reaper.GetMasterTrack(0) and VT_TB[reaper.GetTrackEnvelopeByName( rprobj, "Tempo map" )] or VT_TB[rprobj]
-    CURRENT_TRACKS = CheckGroupMaskBits(GROUP_LIST.enabled_mask, SEL_TRACK_TBL.group) and GetTracksOfMask(SEL_TRACK_TBL.group) or GetSelectedTracksData(rprobj)
-    RAZOR_INFO = reaper.ValidatePtr(rprobj, "MediaTrack*") and Get_Razor_Data(rprobj) or nil
+    UPDATE_TEMPO = tbl.rprobj == reaper.GetMasterTrack(0) and true or false
+    if tbl.rprobj == reaper.GetMasterTrack(0) then
+        CreateVTElements(reaper.GetTrackEnvelopeByName( tbl.rprobj, "Tempo map" ))
+        tbl = VT_TB[reaper.GetTrackEnvelopeByName( tbl.rprobj, "Tempo map" )]
+    end
+    SEL_TRACK_TBL = tbl
+    RAZOR_INFO = reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") and Get_Razor_Data(SEL_TRACK_TBL.rprobj) or nil
+    Get_Selected_OR_Folder_tracks()
+    --CURRENT_TRACKS = CheckGroupMaskBits(GROUP_LIST.enabled_mask, SEL_TRACK_TBL.group) and GetTracksOfMask(SEL_TRACK_TBL.group) or GetSelectedTracksData(SEL_TRACK_TBL)
+    --FOLDER_CHILDS = GetFolderChilds(SEL_TRACK_TBL.rprobj)
     for track in pairs(CURRENT_TRACKS) do SaveCurrentState(CURRENT_TRACKS[track]) end -- UPDATE INTERNAL TABLE BEFORE OPENING MENU
     if not skip_gui_command then
-        GUI()
+        reaper.defer(GUI)
     else
         _G[skip_gui_command]()
     end
@@ -516,8 +605,9 @@ function CycleVersionsUP()
     local selected_tracks = CURRENT_TRACKS
     for track in pairs(selected_tracks) do
         local tr_tbl = selected_tracks[track]
+        if tr_tbl.idx - 1 < 1 then return end
         SwapVirtualTrack(tr_tbl.idx - 1, tr_tbl.rprobj)
-        --if tr_tbl.lane_mode == 2 and OPTIONS["RAZOR_FOLLOW_SWAP"] and RAZOR_INFO then Create_Razor_From_LANE(tr_tbl, RAZOR_INFO) end
+        if tr_tbl.lane_mode == 2 and OPTIONS["RAZOR_FOLLOW_SWAP"] and RAZOR_INFO then Create_Razor_From_LANE(tr_tbl, RAZOR_INFO) end
     end
     reaper.PreventUIRefresh(-1)
     reaper.UpdateArrange()
@@ -526,10 +616,12 @@ end
 function CycleVersionsDOWN()
     reaper.PreventUIRefresh(1)
     local selected_tracks = CURRENT_TRACKS
+    local biggest = Find_Highest(selected_tracks) -- FIND WHICH TRACK HAST MOST VERSIONS AND USE THAT FOR IDX CYCLE
     for track in pairs(selected_tracks) do
         local tr_tbl = selected_tracks[track]
+        if tr_tbl.idx + 1 > biggest then return end
         SwapVirtualTrack(tr_tbl.idx + 1, tr_tbl.rprobj)
-        --if tr_tbl.lane_mode == 2 and OPTIONS["RAZOR_FOLLOW_SWAP"] and RAZOR_INFO then Create_Razor_From_LANE(tr_tbl, RAZOR_INFO) end
+        if tr_tbl.lane_mode == 2 and OPTIONS["RAZOR_FOLLOW_SWAP"] and RAZOR_INFO then Create_Razor_From_LANE(tr_tbl, RAZOR_INFO) end
     end
     reaper.PreventUIRefresh(-1)
     reaper.UpdateArrange()
@@ -538,11 +630,10 @@ end
 function ActivateLaneUndeMouse()
     reaper.PreventUIRefresh(1)
     reaper.Undo_BeginBlock2()
-    SEL_TRACK_TBL.idx = LAST_MOUSE_LANE
-    if SEL_TRACK_TBL.lane_mode == 2 and OPTIONS["RAZOR_FOLLOW_SWAP"] and RAZOR_INFO then Create_Razor_From_LANE(SEL_TRACK_TBL, RAZOR_INFO) end
     for track in pairs(CURRENT_TRACKS) do
         local tr_tbl = CURRENT_TRACKS[track]
         SwapVirtualTrack(LAST_MOUSE_LANE, tr_tbl.rprobj)
+        if tr_tbl.lane_mode == 2 and OPTIONS["RAZOR_FOLLOW_SWAP"] and RAZOR_INFO then Create_Razor_From_LANE(tr_tbl, RAZOR_INFO) end
     end
     reaper.Undo_EndBlock2(0, "VT: " .. "Activate Lane ", -1)
     reaper.PreventUIRefresh(-1)
@@ -552,9 +643,10 @@ function SwapVirtualTrack(idx, tr)
     reaper.PreventUIRefresh(1)
     reaper.Undo_BeginBlock2()
     local selected_tracks = tr and {CURRENT_TRACKS[tr]} or CURRENT_TRACKS
+    selected_tracks = FOLDER and FOLDER_CHILDS or selected_tracks
     for track in pairs(selected_tracks) do
         local tr_tbl = selected_tracks[track]
-        if tr_tbl.info[idx] then
+        --if tr_tbl.info[idx] then
             if reaper.ValidatePtr(tr_tbl.rprobj, "MediaTrack*") then
                 if tr_tbl.lane_mode == 0 then
                     Clear(tr_tbl)
@@ -566,9 +658,10 @@ function SwapVirtualTrack(idx, tr)
                 Clear(tr_tbl)
                 Set_Env_Chunk(tr_tbl.rprobj, tr_tbl.info[idx])
             end
+       -- if tr_tbl.info[idx] then
             tr_tbl.idx = idx
             StoreStateToDocument(tr_tbl)
-        end
+       -- end
     end
     reaper.Undo_EndBlock2(0, "VT: " .. "Select Versions ", -1)
     reaper.PreventUIRefresh(-1)
@@ -594,6 +687,7 @@ function CreateNew(tr, name)
     reaper.PreventUIRefresh(1)
     reaper.Undo_BeginBlock2()
     local selected_tracks = tr and {CURRENT_TRACKS[tr]} or CURRENT_TRACKS
+    --selected_tracks = FOLDER and FOLDER_CHILDS or selected_tracks
     for track in pairs(selected_tracks) do
         local tr_tbl = selected_tracks[track]
         Clear(tr_tbl)
@@ -611,10 +705,10 @@ function Duplicate(tr)
     reaper.PreventUIRefresh(1)
     reaper.Undo_BeginBlock2()
     local selected_tracks = tr and {CURRENT_TRACKS[tr]} or CURRENT_TRACKS
-    for track in pairs(selected_tracks) do
+    for track, value in pairs(selected_tracks) do
         local tr_tbl = selected_tracks[track]
         local name = tr_tbl.info[tr_tbl.idx].name .. " DUP"
-        local duplicate_tbl = Deepcopy(tr_tbl.info[tr_tbl.idx]) -- DEEP COPY TABLE SO ITS UNIQUE (LUA DOES SHALLOW BY DEFAULT)
+        local duplicate_tbl = value.info[value.idx] --Deepcopy(tr_tbl.info[tr_tbl.idx]) -- DEEP COPY TABLE SO ITS UNIQUE (LUA DOES SHALLOW BY DEFAULT)
         for i = 1, #duplicate_tbl do duplicate_tbl[i] = duplicate_tbl[i]:gsub("{.-}", "") end --! GENERATE NEW GUIDS FOR NEW ITEM (fixes duplicate make pooled items)
         table.insert(tr_tbl.info, 1, duplicate_tbl) --! ORDER NEWEST TO OLDEST
         tr_tbl.idx = 1
@@ -682,7 +776,7 @@ end
 
 function SetInsertLaneChunk(tbl, lane)
     local _, track_chunk = reaper.GetTrackStateChunk(tbl.rprobj, "", false)
-    local lane_mask = 2^(lane-1)
+    local lane_mask = 1 << (lane - 1)
     if not track_chunk:find("LANESOLO") then -- IF ANY LANE IS NOT SOLOED LANESOLO PART DOES NOT EXIST YET AND WE NEED TO INJECT IT
         local insert_pos = string.find(track_chunk, "\n") -- INSERT AFTER FIRST NEW LINE <TRACK IN THIS CASE
         track_chunk = track_chunk:sub(1, insert_pos) .. string.format("LANESOLO %i 0", lane_mask .. "\n") ..track_chunk:sub(insert_pos + 1)
@@ -712,7 +806,7 @@ local function Calculate_Track_Razor_data(tbl, razor_data)
 end
 
 function Create_Razor_From_LANE(tbl, razor_data)
-    if not tbl.info[razor_data.razor_lane] then return end -- DO NOT CREATE RAZOR IF LANE DOES NOT EXIST IN TABLE
+    if not reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then return end
     local razor_b = tbl.idx * (1 / #tbl.info)
     local razor_t = -(razor_b - (tbl.idx * razor_b)) / tbl.idx
     local razor_str = razor_data[1] .. " " .. razor_data[2] .. " " .. "'' " .. razor_t .. " " .. razor_b
@@ -721,10 +815,7 @@ end
 
 function Set_Razor_Data(tbl, razor_data)
     if not reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") then return end
-    if not tbl.info[razor_data.razor_lane] then 
-        reaper.GetSetMediaTrackInfo_String(tbl.rprobj, "P_RAZOREDITS_EXT", "", true)
-        return
-    end -- DO NOT CREATE RAZOR IF LANE DOES NOT EXIST IN TABLE
+    if not tbl.info[razor_data.razor_lane] then return end -- DO NOT CREATE RAZOR IF LANE DOES NOT EXIST IN TABLE
     local calc_razor_t, calc_razor_b = Calculate_Track_Razor_data(tbl, razor_data)
     local razor_str = razor_data[1] .. " " .. razor_data[2] .. " " .. "'' " .. calc_razor_t .. " " .. calc_razor_b
     reaper.GetSetMediaTrackInfo_String(tbl.rprobj, "P_RAZOREDITS_EXT", razor_str, true)
@@ -758,17 +849,9 @@ local function Delete_items_or_area(item, time_Start, time_End)
     else
         reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( item ), item)
     end
-    -- if first_to_delete and last_to_delete then
-    --     reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( last_to_delete ), last_to_delete)
-    -- elseif last_to_delete and not first_to_delete then
-    --     reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( last_to_delete ), last_to_delete)
-    -- elseif first_to_delete and not last_to_delete then
-    --     reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( item ), item)
-    -- elseif not first_to_delete and not last_to_delete then
-    --     reaper.DeleteTrackMediaItem(reaper.GetMediaItem_Track( item ), item)
-    -- end
 end
 
+--! implement proper autocrossfade
 local function Make_item_from_razor(tbl, item, razor_info)
     if not item then return end
     local time_Start, time_End, razor_lane = razor_info[1], razor_info[2], razor_info.razor_lane
@@ -795,7 +878,7 @@ function CopyToCOMP(tr)
     for track in pairs(selected_tracks) do
         local tr_tbl = selected_tracks[track]
         if reaper.ValidatePtr(tr_tbl.rprobj, "TrackEnvelope*") then return end -- PREVENT DOING THIS ON ENVELOPES
-        if reaper.GetMediaTrackInfo_Value(tr_tbl.rprobj, "I_FREEMODE") == 0 then return end -- PREVENT DOING IN NON LANE MODE
+        if tr_tbl.lane_mode == 0 then return end -- PREVENT DOING IN NON LANE MODE
         if tr_tbl.comp_idx == 0 or tr_tbl.comp_idx == RAZOR_INFO.razor_lane then return end -- PREVENT COPY ONTO ITSELF OR IF COMP DISABLED
         if RAZOR_INFO.track ~= tr_tbl.rprobj then Set_Razor_Data(tr_tbl, RAZOR_INFO) end-- JUST SET RAZOR ON OTHER TRACKS (ONLY FOR VISUAL) , do not add on self
         local new_items, to_delete = {}, {}
@@ -807,6 +890,7 @@ function CopyToCOMP(tr)
         end
         for i = 1, #to_delete do Delete_items_or_area(to_delete[i], RAZOR_INFO[1], RAZOR_INFO[2]) end -- DELETE ITEMS CONTENT (IF RAZOR IS EMPTY) COMPING "SILENCE"
         for i = 1, #new_items do Make_item_from_razor(tr_tbl, new_items[i], RAZOR_INFO) end
+        --SetInsertLaneChunk(tr_tbl, tr_tbl.idx) --! HACK TO LEAVE SOLO LANES UNSELECTED (NUMBER HIGHER THAN ACTUAL LANE NUMBERS)
         StoreStateToDocument(tr_tbl)
     end
     reaper.Undo_EndBlock2(0, "VT: " .. "Copy to comp lane ", -1)
@@ -866,7 +950,7 @@ function ShowAll(tr)
     reaper.UpdateArrange()
 end
 
-local function CreateVTElements(rprobj)
+function CreateVTElements(rprobj)
     if not VT_TB[rprobj] then
         local tr_data, lane = GetChunkTableForObject(rprobj, true)
         tr_data = lane and tr_data or {tr_data}
@@ -887,7 +971,7 @@ function OnDemand()
     end
     if rprobj then
         CreateVTElements(rprobj)
-        if next(VT_TB) then return rprobj end
+        if next(VT_TB) then return VT_TB[rprobj] end
     end
 end
 
@@ -906,6 +990,7 @@ function CheckUndoState()
     end
 end
 
+--! add explicit ON/OFF instead of toggle
 function SetCompLane(tr, lane)
     reaper.Undo_BeginBlock2(0)
     local selected_tracks = tr and {CURRENT_TRACKS[tr]} or CURRENT_TRACKS
@@ -973,12 +1058,12 @@ local function GetSelectedTracks()
     return same_envelope_as_mouse and same_envelope_as_mouse or selected_tracks
 end
 
-function GetSelectedTracksData(rprobj)
+function GetSelectedTracksData(tbl)
     local tracks = GetSelectedTracks()
     local tracks_tbl = {}
-    if not tracks then return { [rprobj] = VT_TB[rprobj] } end
+    if not tracks then return { [tbl.rprobj] = tbl } end
     if tracks then
-        if not tracks[rprobj] then tracks[rprobj] = rprobj end -- insert current track into selection also
+        if not tracks[tbl.rprobj] then tracks[tbl.rprobj] = tbl.rprobj end -- insert current track into selection also
         for track in pairs(tracks) do
             CreateVTElements(track)
             if not tracks_tbl[track] then tracks_tbl[track] = VT_TB[track] end
@@ -1192,7 +1277,6 @@ function Get_lane_from_mouse_coordinates(mouse_tr)
 	if cy > t and cy < b then
 		local lane = math.floor(((cy - t) / (h - lane_offset)) * total_lanes) + 1
 		lane = lane <= total_lanes and lane or total_lanes
-		-- disable when track_h is less than 90px
 		return lane
 	end
 end
@@ -1201,4 +1285,37 @@ function MouseInfo()
     local mouse_tr = Get_track_under_mouse()
 	local mouse_lane = Get_lane_from_mouse_coordinates(mouse_tr)
     return mouse_tr, mouse_lane
+end
+
+function Find_Highest(tbl)
+    local lane_mode, cur_comp_idx
+    local highest, cur_idx = 0, 0
+    for _, v in pairs(tbl)do
+        if #v.info > highest then
+            highest = #v.info
+            cur_idx = v.idx
+            cur_comp_idx = v.comp_idx
+            lane_mode = v.lane_mode
+        end
+    end
+    return highest, cur_idx, lane_mode, cur_comp_idx
+end
+
+function GetFolderChilds(track)
+    if not reaper.ValidatePtr(track, "MediaTrack*") then return end
+    if reaper.GetMediaTrackInfo_Value(track, "I_FOLDERDEPTH") ~= 1 then return end
+    if reaper.GetMediaTrackInfo_Value(track, "I_FOLDERDEPTH") <= 0 then return end -- ignore tracks and last folder child
+    local depth, children = 0, {}
+    local folderID = reaper.GetMediaTrackInfo_Value(track, "IP_TRACKNUMBER") - 1
+    for i = folderID + 1, reaper.CountTracks(0) - 1 do -- start from first track after folder
+        local child = reaper.GetTrack(0, i)
+        local currDepth = reaper.GetMediaTrackInfo_Value(child, "I_FOLDERDEPTH")
+        if currDepth ~= 1 then --! EXCLUDE SUB FOLDERS
+            CreateVTElements(child)
+            children[child] = VT_TB[child]
+        end
+        depth = depth + currDepth
+        if depth <= -1 then break end --until we are out of folder
+    end
+    return children
 end

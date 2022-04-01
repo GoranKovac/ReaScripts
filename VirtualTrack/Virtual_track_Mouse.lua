@@ -17,9 +17,9 @@ require("Modules/Utils")
 Check_Requirements()
 reaper.SetProjExtState(0, "VirtualTrack", "ONDEMAND_MODE", "mouse")
 local function Main()
-    local track = OnDemand()
-    if not track then return end
-    Show_menu(track)
+    local track_tbl = OnDemand()
+    if not track_tbl then return end
+    Show_menu(track_tbl)
 end
 
 xpcall(Main, GetCrash())
