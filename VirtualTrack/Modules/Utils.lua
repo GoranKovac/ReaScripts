@@ -15,7 +15,7 @@ function Break( msg )
     reaper.MB(tostring(msg) .. "\n\nContinue?", line, 0 )
 end
 
-function open_url(url)
+function Open_url(url)
     local OS = reaper.GetOS()
     if (OS == "OSX32" or OS == "OSX64") or OS == 'macOS-arm64' then
         os.execute('open "' .. url .. '"')
@@ -31,27 +31,30 @@ function Check_Requirements()
     local big, small = reaper_version:match("(6).(%d%d)")
     if not reaper_version:match("+dev") then
         reaper.MB( "Reaper DEV Prerelease version v6.50+dev is required for this script. Please download latest DEV prerelease from www.landoleet.org", "SCRIPT REQUIREMENTS", 0 )
-        open_url("www.landoleet.org")
+        Open_url("www.landoleet.org")
         return reaper.defer(function() end)
     else
-        if tonumber(small) < 50 then
+        if tonumber(small) < 53 then
             reaper.MB( "Reaper DEV Prerelease version v6.50+dev is required for this script. Please download latest DEV prerelease from www.landoleet.org", "SCRIPT REQUIREMENTS", 0 )
-            open_url("https://www.landoleet.org")
+            Open_url("https://www.landoleet.org")
             return reaper.defer(function() end)
         end
     end
     if not reaper.APIExists("JS_ReaScriptAPI_Version") then
         reaper.MB( "JS_ReaScriptAPI is required for this script. Please download it from ReaPack", "SCRIPT REQUIREMENTS", 0 )
+        reaper.ReaPack_BrowsePackages('JS_ReaScriptAPI:')
         return reaper.defer(function() end)
     else
         local version = reaper.JS_ReaScriptAPI_Version()
-        if version < 1.3 then
+        if version < 1.301 then
             reaper.MB( "Your JS_ReaScriptAPI version is " .. version .. "\nPlease update to latest version.", "Older version is installed", 0 )
+            reaper.ReaPack_BrowsePackages('JS_ReaScriptAPI:')
             return reaper.defer(function() end)
         end
     end
     if not reaper.ImGui_GetVersion then
         reaper.MB( "ReaImGui is required for this script. Please download it from ReaPack", "SCRIPT REQUIREMENTS", 0 )
+        reaper.ReaPack_BrowsePackages( 'ReaImGui:')
         return reaper.defer(function() end)
     end
 end
