@@ -358,9 +358,13 @@ function Show_menu(tbl, skip_gui_command)
     LAST_MOUSE_TR, LAST_MOUSE_LANE = MouseInfo()
     CheckTrackLaneModeState(tbl)
     GROUP_LIST = Restore_GROUPS_FROM_Project_EXT_STATE()
-    UPDATE_TEMPO = ( reaper.ValidatePtr(tbl.rprobj, "TrackEnvelope*") and select(2,reaper.GetEnvelopeName(tbl.rprobj)) == "Tempo map" ) and true or false
+    UPDATE_TEMPO = tbl.rprobj == reaper.GetMasterTrack(0) and true or false
+    if tbl.rprobj == reaper.GetMasterTrack(0) then
+        CreateVTElements(reaper.GetTrackEnvelopeByName( tbl.rprobj, "Tempo map" ))
+        tbl = VT_TB[reaper.GetTrackEnvelopeByName( tbl.rprobj, "Tempo map" )]
+    end
     SEL_TRACK_TBL = tbl
-    CURRENT_TRACKS = CheckGroupMaskBits(GROUP_LIST.enabled_mask, SEL_TRACK_TBL.group) and GetTracksOfMask(SEL_TRACK_TBL.group) or GetSelectedTracksData(tbl.rprobj)
+    CURRENT_TRACKS = CheckGroupMaskBits(GROUP_LIST.enabled_mask, SEL_TRACK_TBL.group) and GetTracksOfMask(SEL_TRACK_TBL.group) or GetSelectedTracksData(tbl)
     RAZOR_INFO = reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") and Get_Razor_Data(tbl.rprobj) or nil
     FOLDER_CHILDS = GetFolderChilds(tbl.rprobj)
     for track in pairs(CURRENT_TRACKS) do SaveCurrentState(CURRENT_TRACKS[track]) end -- UPDATE INTERNAL TABLE BEFORE OPENING MENU
@@ -769,7 +773,8 @@ function Get_Razor_Data(track)
     if not reaper.ValidatePtr(track, "MediaTrack*") then return end
     local _, razor_area = reaper.GetSetMediaTrackInfo_String(track, 'P_RAZOREDITS_EXT', '', false)
     if razor_area == "" then return nil end
-    local razor_info = {razor_area:match('(%S+) (%S+) "%S-" (%S+) (%S+)')}
+    local razor_info = {}
+    for i in string.gmatch(razor_area, "%S+") do table.insert(razor_info, tonumber(i)) end
     local razor_t, razor_b = razor_info[3], razor_info[4]
     local razor_h = razor_b - razor_t
     razor_info.razor_lane = round(razor_b / razor_h)
@@ -927,7 +932,7 @@ function ShowAll(tr)
     reaper.UpdateArrange()
 end
 
-local function CreateVTElements(rprobj)
+function CreateVTElements(rprobj)
     if not VT_TB[rprobj] then
         local tr_data, lane = GetChunkTableForObject(rprobj, true)
         tr_data = lane and tr_data or {tr_data}
@@ -945,7 +950,6 @@ function OnDemand()
     elseif demand_mode == "track" then
         local sel_env = reaper.GetSelectedEnvelope( 0 )
         rprobj = sel_env and sel_env or reaper.GetSelectedTrack(0,0)
-        if rprobj == reaper.GetMasterTrack(0) then rprobj = reaper.GetTrackEnvelopeByName(rprobj, "Tempo map" ) end
     end
     if rprobj then
         CreateVTElements(rprobj)
@@ -1036,12 +1040,12 @@ local function GetSelectedTracks()
     return same_envelope_as_mouse and same_envelope_as_mouse or selected_tracks
 end
 
-function GetSelectedTracksData(rprobj)
+function GetSelectedTracksData(tbl)
     local tracks = GetSelectedTracks()
     local tracks_tbl = {}
-    if not tracks then return { [rprobj] = VT_TB[rprobj] } end
+    if not tracks then return { [tbl.rprobj] = tbl } end
     if tracks then
-        if not tracks[rprobj] then tracks[rprobj] = rprobj end -- insert current track into selection also
+        if not tracks[tbl.rprobj] then tracks[tbl.rprobj] = tbl.rprobj end -- insert current track into selection also
         for track in pairs(tracks) do
             CreateVTElements(track)
             if not tracks_tbl[track] then tracks_tbl[track] = VT_TB[track] end
@@ -1232,7 +1236,6 @@ function Get_track_under_mouse()
     local _, cy = To_client(x, y)
     local track, env_info = reaper.GetTrackFromPoint(x, y)
     if track and env_info == 0 then
-        if track == reaper.GetMasterTrack(0) then track = reaper.GetTrackEnvelopeByName(track, "Tempo map" ) end
         return track
     elseif track and env_info == 1 then
         for i = 1, reaper.CountTrackEnvelopes(track) do
