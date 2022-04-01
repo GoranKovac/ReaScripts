@@ -890,7 +890,7 @@ function CopyToCOMP(tr)
         end
         for i = 1, #to_delete do Delete_items_or_area(to_delete[i], RAZOR_INFO[1], RAZOR_INFO[2]) end -- DELETE ITEMS CONTENT (IF RAZOR IS EMPTY) COMPING "SILENCE"
         for i = 1, #new_items do Make_item_from_razor(tr_tbl, new_items[i], RAZOR_INFO) end
-        SetInsertLaneChunk(tr_tbl, tr_tbl.idx) --! HACK TO LEAVE SOLO LANES UNSELECTED (NUMBER HIGHER THAN ACTUAL LANE NUMBERS)
+        --SetInsertLaneChunk(tr_tbl, tr_tbl.idx) --! HACK TO LEAVE SOLO LANES UNSELECTED (NUMBER HIGHER THAN ACTUAL LANE NUMBERS)
         StoreStateToDocument(tr_tbl)
     end
     reaper.Undo_EndBlock2(0, "VT: " .. "Copy to comp lane ", -1)
