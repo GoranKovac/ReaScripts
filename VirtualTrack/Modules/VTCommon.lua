@@ -114,7 +114,7 @@ local function GUIOptions()
         save_options()
     end
     ToolTip("Razor follow version selection in lane mode for easier comping")
-    if reaper.ImGui_Button(ctx, 'Donate', -1) then open_url("https://www.paypal.com/paypalme/GoranK101") end
+    if reaper.ImGui_Button(ctx, 'Donate', -1) then Open_url("https://www.paypal.com/paypalme/GoranK101") end
 end
 
 local MW_CNT = 0
