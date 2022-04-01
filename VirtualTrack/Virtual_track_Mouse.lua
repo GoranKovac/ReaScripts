@@ -1,9 +1,12 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.31
+-- @version 1.32
 -- @changelog
---   + Allow razor follow version swap only on activate under mouse shortcut
+--   + Folders
+--   + SHIFT while on folder shows folder actions
+--   + Comping visual improvements
+--   + Many little fixes
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
