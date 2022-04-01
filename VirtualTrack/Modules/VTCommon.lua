@@ -334,10 +334,9 @@ function Group_GUI()
     ToolTip('Remove tracks from list view')
 end
 
-local mx, my = reaper.GetMousePosition()
 function GUI()
     if reaper.ImGui_IsWindowAppearing(ctx) then
-        reaper.ImGui_SetNextWindowPos(ctx, reaper.ImGui_PointConvertNative(ctx, mx-20, my-12))
+        reaper.ImGui_SetNextWindowPos(ctx, reaper.ImGui_PointConvertNative(ctx, reaper.GetMousePosition()))
         reaper.ImGui_OpenPopup(ctx, 'Menu')
     end
     if reaper.ImGui_BeginPopup(ctx, 'Menu') then

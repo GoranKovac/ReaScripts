@@ -17,13 +17,12 @@ end
 
 function open_url(url)
     local OS = reaper.GetOS()
-    MSG(OS)
     if (OS == "OSX32" or OS == "OSX64") or OS == 'macOS-arm64' then
         os.execute('open "' .. url .. '"')
     elseif OS == "Win64" or OS == "Win32" then
         os.execute('start "" "' .. url .. '"')
     else
-        os.execute('xdg-open "' .. url .. '"')
+        os.execute('xdg-open "' .. url .. '"') -- LINUX
     end
 end
 
