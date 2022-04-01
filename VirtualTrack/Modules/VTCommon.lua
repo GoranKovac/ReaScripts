@@ -13,7 +13,7 @@ local VT_TB, GROUP_LIST, CUR_GROUP = {}, nil, 1
 local Element = {}
 function Element:new(rprobj, info)
     local elm = {}
-    elm.rprobj, elm.info = rprobj, info
+    elm.rprobj, elm.info, elm.fx = rprobj, info, {}
     elm.idx, elm.comp_idx, elm.lane_mode, elm.group  = 1, 0, 0, 0
     elm.def_icon = nil
     setmetatable(elm, self)
@@ -24,7 +24,8 @@ end
 OPTIONS = {
     ["TOOLTIPS"] = true,
     ["LANE_COLORS"] = true,
-    ["RAZOR_FOLLOW_SWAP"] = false
+    ["RAZOR_FOLLOW_SWAP"] = false,
+    --["FX_VERSIONS"] = true
 }
 
 if reaper.HasExtState( "VirtualTrack", "options" ) then
@@ -32,6 +33,7 @@ if reaper.HasExtState( "VirtualTrack", "options" ) then
     OPTIONS["LANE_COLORS"] = state:match("LANE_COLORS (%S+)") == "true" and true or false
     OPTIONS["TOOLTIPS"] = state:match("TOOLTIPS (%S+)") == "true" and true or false
     OPTIONS["RAZOR_FOLLOW_SWAP"] = state:match("RAZOR_FOLLOW_SWAP (%S+)") == "true" and true or false
+    --OPTIONS["FX_VERSIONS"] = state:match("FX_VERSIONS (%S+)") == "true" and true or false
 end
 
 local function Update_tempo_map()
@@ -100,6 +102,7 @@ local function GUIOptions()
     local current_lane_colors = OPTIONS["LANE_COLORS"]
     local current_tooltips = OPTIONS["TOOLTIPS"]
     local current_razor_follow_swap = OPTIONS["RAZOR_FOLLOW_SWAP"]
+    local current_fx_versions = OPTIONS["FX_VERSIONS"]
     if reaper.ImGui_Checkbox(ctx, "TOOLTIPS", current_tooltips) then
         OPTIONS["TOOLTIPS"] = not OPTIONS["TOOLTIPS"]
         save_options()
@@ -114,6 +117,11 @@ local function GUIOptions()
         save_options()
     end
     ToolTip("Razor follow version selection in lane mode for easier comping")
+    -- if reaper.ImGui_Checkbox(ctx, "FX VERSIONS", current_fx_versions) then
+    --     OPTIONS["FX_VERSIONS"] = not OPTIONS["FX_VERSIONS"]
+    --     save_options()
+    -- end
+    -- ToolTip("Show FX Versins")
     if reaper.ImGui_Button(ctx, 'Donate', -1) then Open_url("https://www.paypal.com/paypalme/GoranK101") end
 end
 
@@ -128,7 +136,7 @@ end
 OLD_FOLDER_ACTION = false
 function Get_Selected_OR_Folder_tracks(folder)
     FOLDER_CHILDS = GetFolderChilds(SEL_TRACK_TBL.rprobj)
-    if folder then _, _, current_folder_lane_mode, current_folder_comp_idx = Find_Highest(FOLDER_CHILDS) end
+    if folder then _, _, CURRENT_FOLDER_LANE_MODE, CURRENT_FOLDER_COMP_IDX = Find_Highest(FOLDER_CHILDS) end
     CURRENT_TRACKS = CheckGroupMaskBits(GROUP_LIST.enabled_mask, SEL_TRACK_TBL.group) and GetTracksOfMask(SEL_TRACK_TBL.group) or GetSelectedTracksData(SEL_TRACK_TBL)
     if folder then CURRENT_TRACKS = FOLDER_CHILDS end
 end
@@ -241,22 +249,22 @@ function Popup()
         ------------------------------------------------------------------------------------
     end
     ------------------------------------------------------------------------------------
-    if reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") and SEL_TRACK_TBL.lane_mode == 2 or (folder_action and current_folder_lane_mode == 2) then
+    if reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") and SEL_TRACK_TBL.lane_mode == 2 or (folder_action and CURRENT_FOLDER_LANE_MODE == 2) then
         reaper.ImGui_Separator(ctx)
         if reaper.ImGui_MenuItem(ctx, 'New Empty COMP', nil, nil, is_button_enabled) then NewComp() end
         ToolTip("Create New empty COMP at top and start comping")
-        if comp_enabled or (folder_action and current_folder_comp_idx ~= 0) then reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Text(), 0x3EFF00FF) end -- MAKE TEXT GREEN WHEN ENABLED
+        if comp_enabled or (folder_action and CURRENT_FOLDER_COMP_IDX ~= 0) then reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Text(), 0x3EFF00FF) end -- MAKE TEXT GREEN WHEN ENABLED
         if reaper.ImGui_MenuItem(ctx, 'Enable COMP', nil, comp_enabled) then SetCompLane() end
-        if comp_enabled or (folder_action and current_folder_comp_idx ~= 0) then Draw_Color_Rect() reaper.ImGui_PopStyleColor(ctx) end
+        if comp_enabled or (folder_action and CURRENT_FOLDER_COMP_IDX ~= 0) then Draw_Color_Rect() reaper.ImGui_PopStyleColor(ctx) end
         ToolTip("Enable COMPING on currently selected version")
     end
     ------------------------------------------------------------------------------------
     if reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") then
         reaper.ImGui_Separator(ctx)
         local is_lane_mode = SEL_TRACK_TBL.lane_mode == 2
-        if is_lane_mode or (folder_action and current_folder_lane_mode == 2) then reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Text(), 0x3EFF00FF) end -- MAKE TEXT GREEN WHEN ENABLED
-        if reaper.ImGui_MenuItem(ctx, 'Show All' .. folder_sufix, nil, SEL_TRACK_TBL.lane_mode == 2 or (folder_action and current_folder_lane_mode == 2), is_button_enabled) then ShowAll() end
-        if is_lane_mode or (folder_action and current_folder_lane_mode == 2) then Draw_Color_Rect() reaper.ImGui_PopStyleColor(ctx) end
+        if is_lane_mode or (folder_action and CURRENT_FOLDER_LANE_MODE == 2) then reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Text(), 0x3EFF00FF) end -- MAKE TEXT GREEN WHEN ENABLED
+        if reaper.ImGui_MenuItem(ctx, 'Show All' .. folder_sufix, nil, SEL_TRACK_TBL.lane_mode == 2 or (folder_action and CURRENT_FOLDER_LANE_MODE == 2), is_button_enabled) then ShowAll() end
+        if is_lane_mode or (folder_action and CURRENT_FOLDER_LANE_MODE == 2) then Draw_Color_Rect() reaper.ImGui_PopStyleColor(ctx) end
     end
 end
 
