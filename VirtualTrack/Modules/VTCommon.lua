@@ -774,7 +774,7 @@ end
 
 function SetInsertLaneChunk(tbl, lane)
     local _, track_chunk = reaper.GetTrackStateChunk(tbl.rprobj, "", false)
-    local lane_mask = 2^(lane-1)
+    local lane_mask = 1 << (lane - 1)
     if not track_chunk:find("LANESOLO") then -- IF ANY LANE IS NOT SOLOED LANESOLO PART DOES NOT EXIST YET AND WE NEED TO INJECT IT
         local insert_pos = string.find(track_chunk, "\n") -- INSERT AFTER FIRST NEW LINE <TRACK IN THIS CASE
         track_chunk = track_chunk:sub(1, insert_pos) .. string.format("LANESOLO %i 0", lane_mask .. "\n") ..track_chunk:sub(insert_pos + 1)
@@ -888,6 +888,7 @@ function CopyToCOMP(tr)
         end
         for i = 1, #to_delete do Delete_items_or_area(to_delete[i], RAZOR_INFO[1], RAZOR_INFO[2]) end -- DELETE ITEMS CONTENT (IF RAZOR IS EMPTY) COMPING "SILENCE"
         for i = 1, #new_items do Make_item_from_razor(tr_tbl, new_items[i], RAZOR_INFO) end
+        SetInsertLaneChunk(tr_tbl, tr_tbl.idx) --! HACK TO LEAVE SOLO LANES UNSELECTED (NUMBER HIGHER THAN ACTUAL LANE NUMBERS)
         StoreStateToDocument(tr_tbl)
     end
     reaper.Undo_EndBlock2(0, "VT: " .. "Copy to comp lane ", -1)
