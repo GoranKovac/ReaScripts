@@ -117,8 +117,6 @@ local function GUIOptions()
     if reaper.ImGui_Button(ctx, 'Donate', -1) then Open_url("https://www.paypal.com/paypalme/GoranK101") end
 end
 
-local MW_CNT = 0
-
 local function ctx_modifiers()
     local shift = reaper.ImGui_GetKeyMods(ctx) & reaper.ImGui_KeyModFlags_Shift() ~= 0 and true
     local ctrl = reaper.ImGui_GetKeyMods(ctx) & reaper.ImGui_KeyModFlags_Ctrl() ~= 0 and true
@@ -127,10 +125,24 @@ local function ctx_modifiers()
     return shift, ctrl, alt, win
 end
 
+OLD_FOLDER_ACTION = false
+function Get_Selected_OR_Folder_tracks(folder)
+    FOLDER_CHILDS = GetFolderChilds(SEL_TRACK_TBL.rprobj)
+    CURRENT_TRACKS = CheckGroupMaskBits(GROUP_LIST.enabled_mask, SEL_TRACK_TBL.group) and GetTracksOfMask(SEL_TRACK_TBL.group) or GetSelectedTracksData(SEL_TRACK_TBL)
+    if folder then CURRENT_TRACKS = FOLDER_CHILDS end
+end
+
+local MW_CNT = 0
 function Popup()
     local shift, ctrl, alt, win = ctx_modifiers()
     local is_folder = reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") and reaper.GetMediaTrackInfo_Value(SEL_TRACK_TBL.rprobj, "I_FOLDERDEPTH") == 1
     local folder_action = is_folder and shift
+
+    if folder_action ~= OLD_FOLDER_ACTION then
+        OLD_FOLDER_ACTION = folder_action
+        Get_Selected_OR_Folder_tracks(folder_action)
+    end
+
     local is_button_enabled = SEL_TRACK_TBL.comp_idx == 0
     local comp_enabled = SEL_TRACK_TBL.comp_idx ~= 0
 
@@ -152,8 +164,7 @@ function Popup()
     local vertical = reaper.ImGui_GetMouseWheel( ctx )
     if vertical ~= 0 then WHEEL_INCREMENT = vertical > 0 and 1 or -1 end
     ------------------------------------------------------------------------------------
-     if is_folder then
-        reaper.ImGui_Separator(ctx)
+    if is_folder then
         if reaper.ImGui_BeginMenu(ctx, "FOLDER", true) then
             FOLDER = true
             local number_of_folder_versions, current_folder_idx = Find_Highest(FOLDER_CHILDS) -- FIND WHICH CHILD HAST MOST VERSIONS AND USE THAT FOR VERSION NUMBERING
@@ -167,9 +178,10 @@ function Popup()
             for i = 1, number_of_folder_versions do
                 if reaper.ImGui_MenuItem(ctx, i, nil, i == current_folder_idx) then FOLDER = true SwapVirtualTrack(i) end
             end
-            FOLDER = nil
             reaper.ImGui_EndMenu(ctx)
         end
+        FOLDER = nil
+        reaper.ImGui_Separator(ctx)
     end
     ------------------------------------------------------------------------------------
     for i = 1, #SEL_TRACK_TBL.info do
@@ -184,11 +196,13 @@ function Popup()
         if comp_enabled and i == SEL_TRACK_TBL.comp_idx then Draw_Color_Rect() end
     end
     reaper.ImGui_Separator(ctx)
+    local folder_sufix = folder_action and " Folder" or ""
     ------------------------------------------------------------------------------------
-    if reaper.ImGui_MenuItem(ctx, 'Create New', nil, nil, is_button_enabled) then if folder_action then FOLDER = is_folder end CreateNew() FOLDER = nil end
-    if reaper.ImGui_MenuItem(ctx, 'Delete', nil, nil, (#SEL_TRACK_TBL.info > 1 and is_button_enabled)) then if folder_action then FOLDER = is_folder end Delete() FOLDER = nil end
-    if reaper.ImGui_MenuItem(ctx, 'Duplicate', nil, nil, is_button_enabled) then if folder_action then FOLDER = is_folder end  Duplicate() FOLDER = nil end
-    if reaper.ImGui_Selectable(ctx, 'Rename', nil, reaper.ImGui_SelectableFlags_DontClosePopups()) then
+    if reaper.ImGui_MenuItem(ctx, 'Create New' .. folder_sufix, nil, nil, is_button_enabled) then CreateNew() end
+    if reaper.ImGui_MenuItem(ctx, 'Delete' .. folder_sufix, nil, nil, is_button_enabled) then Delete() end
+    ToolTip("Delete current version.\nIf there is only 1 Version remaining delete is ignored")
+    if reaper.ImGui_MenuItem(ctx, 'Duplicate' .. folder_sufix, nil, nil, is_button_enabled) then  Duplicate() end
+    if reaper.ImGui_Selectable(ctx, 'Rename' .. folder_sufix, nil, reaper.ImGui_SelectableFlags_DontClosePopups()) then
         reaper.ImGui_OpenPopup(ctx, 'Rename Version')
     end
     ------------------------------------------------------------------------------------
@@ -207,7 +221,7 @@ function Popup()
             _, ALL_VT_TRACKS = Get_Stored_PEXT_STATE_TBL()
             reaper.ImGui_OpenPopup(ctx, 'GROUP_WINDOW')
         end
-        ToolTip("Add track to Groups")
+        ToolTip("Open Track GOUP Window")
         ------------------------------------------------------------------------------------
         if reaper.ImGui_BeginPopupModal(ctx, 'GROUP_WINDOW', true, reaper.ImGui_WindowFlags_AlwaysAutoResize()) then
             Group_GUI()
@@ -239,7 +253,7 @@ function Popup()
         reaper.ImGui_Separator(ctx)
         local is_lane_mode = SEL_TRACK_TBL.lane_mode == 2
         if is_lane_mode then reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Text(), 0x3EFF00FF) end -- MAKE TEXT GREEN WHEN ENABLED
-        if reaper.ImGui_MenuItem(ctx, 'Show All', nil, SEL_TRACK_TBL.lane_mode == 2, is_button_enabled) then if folder_action then FOLDER = is_folder end ShowAll() FOLDER = nil end
+        if reaper.ImGui_MenuItem(ctx, 'Show All' .. folder_sufix, nil, SEL_TRACK_TBL.lane_mode == 2, is_button_enabled) then ShowAll() end
         if is_lane_mode then Draw_Color_Rect() reaper.ImGui_PopStyleColor(ctx) end
     end
 end
@@ -364,9 +378,10 @@ function Show_menu(tbl, skip_gui_command)
         tbl = VT_TB[reaper.GetTrackEnvelopeByName( tbl.rprobj, "Tempo map" )]
     end
     SEL_TRACK_TBL = tbl
-    CURRENT_TRACKS = CheckGroupMaskBits(GROUP_LIST.enabled_mask, SEL_TRACK_TBL.group) and GetTracksOfMask(SEL_TRACK_TBL.group) or GetSelectedTracksData(tbl)
-    RAZOR_INFO = reaper.ValidatePtr(tbl.rprobj, "MediaTrack*") and Get_Razor_Data(tbl.rprobj) or nil
-    FOLDER_CHILDS = GetFolderChilds(tbl.rprobj)
+    RAZOR_INFO = reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") and Get_Razor_Data(SEL_TRACK_TBL.rprobj) or nil
+    Get_Selected_OR_Folder_tracks()
+    --CURRENT_TRACKS = CheckGroupMaskBits(GROUP_LIST.enabled_mask, SEL_TRACK_TBL.group) and GetTracksOfMask(SEL_TRACK_TBL.group) or GetSelectedTracksData(SEL_TRACK_TBL)
+    --FOLDER_CHILDS = GetFolderChilds(SEL_TRACK_TBL.rprobj)
     for track in pairs(CURRENT_TRACKS) do SaveCurrentState(CURRENT_TRACKS[track]) end -- UPDATE INTERNAL TABLE BEFORE OPENING MENU
     if not skip_gui_command then
         reaper.defer(GUI)
