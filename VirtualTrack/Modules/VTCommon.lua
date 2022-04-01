@@ -128,6 +128,7 @@ end
 OLD_FOLDER_ACTION = false
 function Get_Selected_OR_Folder_tracks(folder)
     FOLDER_CHILDS = GetFolderChilds(SEL_TRACK_TBL.rprobj)
+    if folder then _, _, current_folder_lane_mode = Find_Highest(FOLDER_CHILDS) end
     CURRENT_TRACKS = CheckGroupMaskBits(GROUP_LIST.enabled_mask, SEL_TRACK_TBL.group) and GetTracksOfMask(SEL_TRACK_TBL.group) or GetSelectedTracksData(SEL_TRACK_TBL)
     if folder then CURRENT_TRACKS = FOLDER_CHILDS end
 end
@@ -180,6 +181,7 @@ function Popup()
             end
             reaper.ImGui_EndMenu(ctx)
         end
+        ToolTip('Hold down SHIFT for folder Actions')
         FOLDER = nil
         reaper.ImGui_Separator(ctx)
     end
@@ -196,7 +198,7 @@ function Popup()
         if comp_enabled and i == SEL_TRACK_TBL.comp_idx then Draw_Color_Rect() end
     end
     reaper.ImGui_Separator(ctx)
-    local folder_sufix = folder_action and " Folder" or ""
+    local folder_sufix = folder_action and " Sub Version" or ""
     ------------------------------------------------------------------------------------
     if reaper.ImGui_MenuItem(ctx, 'Create New' .. folder_sufix, nil, nil, is_button_enabled) then CreateNew() end
     if reaper.ImGui_MenuItem(ctx, 'Delete' .. folder_sufix, nil, nil, is_button_enabled) then Delete() end
@@ -239,7 +241,7 @@ function Popup()
         ------------------------------------------------------------------------------------
     end
     ------------------------------------------------------------------------------------
-    if reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") and SEL_TRACK_TBL.lane_mode == 2 then
+    if reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") and SEL_TRACK_TBL.lane_mode == 2 or (folder_action and current_folder_lane_mode == 2) then
         reaper.ImGui_Separator(ctx)
         if reaper.ImGui_MenuItem(ctx, 'New Empty COMP', nil, nil, is_button_enabled) then NewComp() end
         ToolTip("Create New empty COMP at top and start comping")
@@ -1286,14 +1288,16 @@ function MouseInfo()
 end
 
 function Find_Highest(tbl)
+    local lane_mode
     local highest, cur_idx = 0, 0
     for _, v in pairs(tbl)do
         if #v.info > highest then
             highest = #v.info
             cur_idx = v.idx
+            lane_mode = v.lane_mode
         end
     end
-    return highest, cur_idx
+    return highest, cur_idx, lane_mode
 end
 
 function GetFolderChilds(track)
@@ -1305,8 +1309,10 @@ function GetFolderChilds(track)
     for i = folderID + 1, reaper.CountTracks(0) - 1 do -- start from first track after folder
         local child = reaper.GetTrack(0, i)
         local currDepth = reaper.GetMediaTrackInfo_Value(child, "I_FOLDERDEPTH")
-        CreateVTElements(child)
-        children[child] = VT_TB[child]
+        if currDepth ~= 1 then --! EXCLUDE SUB FOLDERS
+            CreateVTElements(child)
+            children[child] = VT_TB[child]
+        end
         depth = depth + currDepth
         if depth <= -1 then break end --until we are out of folder
     end
