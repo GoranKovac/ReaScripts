@@ -128,7 +128,7 @@ end
 OLD_FOLDER_ACTION = false
 function Get_Selected_OR_Folder_tracks(folder)
     FOLDER_CHILDS = GetFolderChilds(SEL_TRACK_TBL.rprobj)
-    if folder then _, _, current_folder_lane_mode = Find_Highest(FOLDER_CHILDS) end
+    if folder then _, _, current_folder_lane_mode, current_folder_comp_idx = Find_Highest(FOLDER_CHILDS) end
     CURRENT_TRACKS = CheckGroupMaskBits(GROUP_LIST.enabled_mask, SEL_TRACK_TBL.group) and GetTracksOfMask(SEL_TRACK_TBL.group) or GetSelectedTracksData(SEL_TRACK_TBL)
     if folder then CURRENT_TRACKS = FOLDER_CHILDS end
 end
@@ -245,18 +245,18 @@ function Popup()
         reaper.ImGui_Separator(ctx)
         if reaper.ImGui_MenuItem(ctx, 'New Empty COMP', nil, nil, is_button_enabled) then NewComp() end
         ToolTip("Create New empty COMP at top and start comping")
-        if comp_enabled then reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Text(), 0x3EFF00FF) end -- MAKE TEXT GREEN WHEN ENABLED
+        if comp_enabled or (folder_action and current_folder_comp_idx ~= 0) then reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Text(), 0x3EFF00FF) end -- MAKE TEXT GREEN WHEN ENABLED
         if reaper.ImGui_MenuItem(ctx, 'Enable COMP', nil, comp_enabled) then SetCompLane() end
-        if comp_enabled then Draw_Color_Rect() reaper.ImGui_PopStyleColor(ctx) end
+        if comp_enabled or (folder_action and current_folder_comp_idx ~= 0) then Draw_Color_Rect() reaper.ImGui_PopStyleColor(ctx) end
         ToolTip("Enable COMPING on currently selected version")
     end
     ------------------------------------------------------------------------------------
     if reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") then
         reaper.ImGui_Separator(ctx)
         local is_lane_mode = SEL_TRACK_TBL.lane_mode == 2
-        if is_lane_mode then reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Text(), 0x3EFF00FF) end -- MAKE TEXT GREEN WHEN ENABLED
-        if reaper.ImGui_MenuItem(ctx, 'Show All' .. folder_sufix, nil, SEL_TRACK_TBL.lane_mode == 2, is_button_enabled) then ShowAll() end
-        if is_lane_mode then Draw_Color_Rect() reaper.ImGui_PopStyleColor(ctx) end
+        if is_lane_mode or (folder_action and current_folder_lane_mode == 2) then reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Text(), 0x3EFF00FF) end -- MAKE TEXT GREEN WHEN ENABLED
+        if reaper.ImGui_MenuItem(ctx, 'Show All' .. folder_sufix, nil, SEL_TRACK_TBL.lane_mode == 2 or (folder_action and current_folder_lane_mode == 2), is_button_enabled) then ShowAll() end
+        if is_lane_mode or (folder_action and current_folder_lane_mode == 2) then Draw_Color_Rect() reaper.ImGui_PopStyleColor(ctx) end
     end
 end
 
@@ -1288,16 +1288,17 @@ function MouseInfo()
 end
 
 function Find_Highest(tbl)
-    local lane_mode
+    local lane_mode, cur_comp_idx
     local highest, cur_idx = 0, 0
     for _, v in pairs(tbl)do
         if #v.info > highest then
             highest = #v.info
             cur_idx = v.idx
+            cur_comp_idx = v.comp_idx
             lane_mode = v.lane_mode
         end
     end
-    return highest, cur_idx, lane_mode
+    return highest, cur_idx, lane_mode, cur_comp_idx
 end
 
 function GetFolderChilds(track)
