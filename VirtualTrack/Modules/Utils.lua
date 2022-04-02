@@ -188,7 +188,7 @@ function ChunkTableGetSection(chunk, key) -- Thanks BirdBird and daniellumertz! 
         i = i + 1
     end
 
-    return table.concat(section_chunks, "\n")
+    return next(section_chunks) and table.concat(section_chunks, "\n")
 end
 
 function DBG_TBL(A)
