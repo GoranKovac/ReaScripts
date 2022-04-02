@@ -90,8 +90,8 @@ local function GUIRename(track_type)
     local cur_name
     if track_type == "FX" then cur_name = SEL_TRACK_TBL.fx[1].name
     elseif track_type == "TRACK" then cur_name = SEL_TRACK_TBL.info[ACTION_ID].name
+    --elseif track_type == "FOLDER" then end
     end
-    --local cur_name = SEL_TRACK_TBL.info[SEL_TRACK_TBL.idx].name
     local RV
     if reaper.ImGui_IsWindowAppearing(ctx) then
         reaper.ImGui_SetKeyboardFocusHere(ctx)
@@ -168,11 +168,13 @@ function ContextMenu(idx, track_type)
     if reaper.ImGui_MenuItem(ctx, 'Delete') then
         if track_type == "FX" then DeleteFX()
         elseif track_type == "TRACK" then Delete()
+        elseif track_type == "FOLDER" then Delete()
         end
     end
     if reaper.ImGui_MenuItem(ctx, 'Duplicate') then
         if track_type == "FX" then DuplicateFX()
         elseif track_type == "TRACK" then Duplicate()
+        elseif track_type == "FOLDER" then Duplicate()
         end
     end
     if reaper.ImGui_Selectable(ctx, 'Rename', nil, reaper.ImGui_SelectableFlags_DontClosePopups()) then
@@ -791,7 +793,6 @@ function RenameFX(name, tr)
     local selected_tracks = tr and {CURRENT_TRACKS[tr]} or CURRENT_TRACKS
     for track in pairs(selected_tracks) do
         local tr_tbl = selected_tracks[track]
-        --tr_tbl.info[tr_tbl.idx].name = name
         tr_tbl.fx[ACTION_ID].name = name
         StoreStateToDocument(tr_tbl)
     end
@@ -868,7 +869,7 @@ function CreateFX(tr, name)
         tr_tbl.fx[1].name = name and name or "FX Ver " .. #tr_tbl.fx
         StoreStateToDocument(tr_tbl)
     end
-    reaper.Undo_EndBlock2(0, "VT: " .. "Select FX Versions ", -1)
+    reaper.Undo_EndBlock2(0, "VT: " .. "Create FX Versions ", -1)
     reaper.PreventUIRefresh(-1)
 end
 
