@@ -481,7 +481,6 @@ function Show_menu(tbl, skip_gui_command)
     RAZOR_INFO = reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") and Get_Razor_Data(SEL_TRACK_TBL.rprobj) or nil
     local is_folder = reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") and reaper.GetMediaTrackInfo_Value(SEL_TRACK_TBL.rprobj, "I_FOLDERDEPTH") == 1
     Get_Selected_OR_Folder_tracks(is_folder) -- CHECK IF SELECTED TRACK IS FOLDER
-
     CheckTrackLaneModeState(tbl) --! bring this back
     for track in pairs(CURRENT_TRACKS) do UpdateCurrentFX_State(CURRENT_TRACKS[track]) SaveCurrentState(CURRENT_TRACKS[track]) end -- UPDATE INTERNAL TABLE BEFORE OPENING MENU
     UpdateCurrentFX_State(SEL_TRACK_TBL)  SaveCurrentState(SEL_TRACK_TBL) -- store and update current track
@@ -1392,7 +1391,9 @@ function GetTracksOfMask(val)
     for i = 1, #active_groups do
         for k, v in pairs(stored_tbl) do
             if reaper.ValidatePtr(k, "MediaTrack*") then
-                if not groups[k] then groups[k] = v end
+                if CheckGroupMaskBits(v.group, active_groups[i]) then -- GET ONLY TRACKS OF ENABLED GROUPS
+                    if not groups[k] then groups[k] = v end
+                end
             end
         end
     end
@@ -1458,12 +1459,12 @@ function Get_active_groups(n)
 end
 
 function CheckSingleGroupBit(group, bit)
-    if not group or not bit then return end
+    if not group or not bit then return false end
     return group & (1 << (bit - 1)) ~= 0 and true
 end
 
 function CheckGroupMaskBits(group, bits)
-    if not group or not bits then return end
+    if not group or not bits then return false end
     return group & bits ~= 0 and true or false
 end
 
