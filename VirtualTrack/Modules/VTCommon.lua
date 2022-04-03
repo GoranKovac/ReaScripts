@@ -1175,7 +1175,7 @@ function ShowAll(lane_mode)
         if not reaper.ValidatePtr(tr_tbl.rprobj, "MediaTrack*") then return end
         local fimp = reaper.GetMediaTrackInfo_Value(tr_tbl.rprobj, "I_FREEMODE")
         tr_tbl.lane_mode = lane_mode == 2 and 0 or 2
-        if fimp == 2 then StoreLaneData(tr_tbl) end
+        if fimp == 2 then StoreLaneData(tr_tbl) end -- MAKE SURE TO CHECK WITH API IF IN LANE MODE BEFORE STORING (ELSE DATA WILL BE BROKEN)
         if lane_mode == 0 then -- IF LANE MODE IS OFF TURN IT ON
             Set_LaneView_mode(tr_tbl)
         elseif lane_mode == 2 then -- IF LANE MODE IS ON TURN IT OFF
