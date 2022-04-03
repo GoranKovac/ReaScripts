@@ -154,9 +154,8 @@ function Split_by_line(str)
     return t
 end
 
-function ChunkTableGetSection(chunk, key) -- Thanks BirdBird and daniellumertz! 🦜
+function ChunkTableGetSection(chunk, key) -- ADDOPTED FROM BirdBird and daniellumertz! 🦜
     local chunk_lines = Split_by_line(chunk)
-    --GET ITEM CHUNKS
     local section_chunks = {}
     local last_section_chunk = -1
     local current_scope = 0
@@ -164,7 +163,6 @@ function ChunkTableGetSection(chunk, key) -- Thanks BirdBird and daniellumertz! 
     while i <= #chunk_lines do
         local line = chunk_lines[i]
 
-        --MANAGE SCOPE
         local scope_end = false
         if line == '<'..key then
             last_section_chunk = i
@@ -176,7 +174,6 @@ function ChunkTableGetSection(chunk, key) -- Thanks BirdBird and daniellumertz! 
             scope_end = true
         end
 
-        --GRAB ITEM CHUNKS
         if current_scope == 1 and last_section_chunk ~= -1 and scope_end then
             local s = ''
             for j = last_section_chunk, i do
@@ -188,7 +185,29 @@ function ChunkTableGetSection(chunk, key) -- Thanks BirdBird and daniellumertz! 
         i = i + 1
     end
 
-    return table.concat(section_chunks, "\n")
+    return next(section_chunks) and table.concat(section_chunks, "\n")
+end
+
+function GetChunkSection(chunk, key) -- ADDOPTED FROM LBX
+    local chs, che
+    chs, _ = string.find(chunk,'<' .. key)
+    local level = 0
+    local cpos = chs
+    repeat
+        local s, e = string.find(chunk,'[%<%>]', cpos)
+        if s then
+            local char = string.sub(chunk,s - 1, s)
+            if char == '\n<' then level = level + 1
+            elseif char == '\n>' then level = level - 1
+            end
+        end
+        cpos = s + 1
+        if level == 0 then che = s break end
+    until level == 0
+
+    if chs == nil or che == nil then return end
+    local fchunk = string.sub(chunk,chs,che)
+    return fchunk
 end
 
 function DBG_TBL(A)
