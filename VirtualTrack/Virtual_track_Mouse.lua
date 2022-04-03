@@ -1,14 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.33
+-- @version 1.34
 -- @changelog
---   + Internal storing changes (do not store general track data in envelope)
---   + Menu revamp
---   + FX Versions
---   + fix toggle behavior to explicit on/off (no weird ON/OFF with multitrack stuff)
---   + folder improvements
---   + all around small fixes
+--   + Menu UI improvements
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
