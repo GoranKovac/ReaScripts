@@ -1,12 +1,14 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.32
+-- @version 1.33
 -- @changelog
---   + Folders
---   + SHIFT while on folder shows folder actions
---   + Comping visual improvements
---   + Many little fixes
+--   + Internal storing changes (do not store general track data in envelope)
+--   + Menu revamp
+--   + FX Versions
+--   + fix toggle behavior to explicit on/off (no weird ON/OFF with multitrack stuff)
+--   + folder improvements
+--   + all around small fixes
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
