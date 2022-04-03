@@ -30,7 +30,7 @@ OPTIONS = {
     ["TOOLTIPS"] = true,
     ["LANE_COLORS"] = true,
     ["RAZOR_FOLLOW_SWAP"] = false,
-    ["FX_VERSIONS"] = true
+   -- ["FX_VERSIONS"] = true
 }
 
 if reaper.HasExtState( "VirtualTrack", "options" ) then
@@ -38,7 +38,7 @@ if reaper.HasExtState( "VirtualTrack", "options" ) then
     OPTIONS["LANE_COLORS"]          = state:match("LANE_COLORS (%S+)") == "true" and true or false
     OPTIONS["TOOLTIPS"]             = state:match("TOOLTIPS (%S+)") == "true" and true or false
     OPTIONS["RAZOR_FOLLOW_SWAP"]    = state:match("RAZOR_FOLLOW_SWAP (%S+)") == "true" and true or false
-    OPTIONS["FX_VERSIONS"]          = state:match("FX_VERSIONS (%S+)") == "true" and true or false
+    --OPTIONS["FX_VERSIONS"]          = state:match("FX_VERSIONS (%S+)") == "true" and true or false
 end
 
 local function Update_tempo_map()
@@ -124,7 +124,7 @@ local function GUIOptions()
     local current_lane_colors = OPTIONS["LANE_COLORS"]
     local current_tooltips = OPTIONS["TOOLTIPS"]
     local current_razor_follow_swap = OPTIONS["RAZOR_FOLLOW_SWAP"]
-    local current_fx_versions = OPTIONS["FX_VERSIONS"]
+    -- local current_fx_versions = OPTIONS["FX_VERSIONS"]
     if reaper.ImGui_Checkbox(ctx, "TOOLTIPS", current_tooltips) then
         OPTIONS["TOOLTIPS"] = not OPTIONS["TOOLTIPS"]
         save_options()
@@ -139,11 +139,11 @@ local function GUIOptions()
         save_options()
     end
     ToolTip("Razor follow version selection in lane mode for easier comping")
-    if reaper.ImGui_Checkbox(ctx, "FX VERSIONS", current_fx_versions) then
-        OPTIONS["FX_VERSIONS"] = not OPTIONS["FX_VERSIONS"]
-        save_options()
-    end
-    ToolTip("Show FX Versins")
+    -- if reaper.ImGui_Checkbox(ctx, "FX VERSIONS", current_fx_versions) then
+    --     OPTIONS["FX_VERSIONS"] = not OPTIONS["FX_VERSIONS"]
+    --     save_options()
+    -- end
+    -- ToolTip("Show FX Versins")
     if reaper.ImGui_Button(ctx, 'Donate', -1) then Open_url("https://www.paypal.com/paypalme/GoranK101") end
 end
 
@@ -191,7 +191,7 @@ function ContextMenu(idx, track_type)
 end
 
 local MW_CNT = 0
-function Popup()
+function MenuGUI()
     --local shift, ctrl, alt, win = ctx_modifiers()
     local is_folder = reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") and reaper.GetMediaTrackInfo_Value(SEL_TRACK_TBL.rprobj, "I_FOLDERDEPTH") == 1
 
@@ -215,52 +215,63 @@ function Popup()
     end
     ------------------------------------------------------------------------------------
     reaper.ImGui_Separator(ctx)
-    if reaper.ImGui_BeginMenu(ctx, "TRACK", true) then
-        if vertical == 0 and WHEEL_INCREMENT then
-            SEL_TRACK_TBL.idx = (SEL_TRACK_TBL.idx - WHEEL_INCREMENT <= #SEL_TRACK_TBL.info and SEL_TRACK_TBL.idx - WHEEL_INCREMENT >= 1) and SEL_TRACK_TBL.idx - WHEEL_INCREMENT or SEL_TRACK_TBL.idx
-            SwapVirtualTrack(SEL_TRACK_TBL.idx)
-            WHEEL_INCREMENT = nil
-        end
-        for i = #SEL_TRACK_TBL.info, 1, -1 do
-            local new_i = math.abs(i - #SEL_TRACK_TBL.info) + 1 --! WE ARE REVERSING SINCE DELETING WILL ITERATING WILL BREAK STUFF (DELETING IS WITH PAIRS)
-            if reaper.ImGui_MenuItem(ctx, i .. " " .. SEL_TRACK_TBL.info[new_i].name, nil, new_i == SEL_TRACK_TBL.idx) then SwapVirtualTrack(new_i) end
-                local x, y = reaper.ImGui_GetCursorScreenPos( ctx )
-                reaper.ImGui_SetNextWindowPos( ctx, x, y)
-                if reaper.ImGui_BeginPopupContextItem(ctx) then
-                    HIGH = new_i
-                    Draw_Color_Rect()
-                    ContextMenu(new_i, "TRACK")
-                reaper.ImGui_EndPopup(ctx)
-            end
-            if new_i == HIGH then Draw_Color_Rect() HIGH = nil end
-            if comp_enabled and new_i == SEL_TRACK_TBL.comp_idx then Draw_Color_Rect() end
-        end
-        reaper.ImGui_EndMenu(ctx)
-    end
-    reaper.ImGui_Separator(ctx)
-    UpdateTrackCheck()
-
     is_button_enabled = reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "TrackEnvelope*") and true or is_button_enabled
-    if reaper.ImGui_MenuItem(ctx, 'Create New', nil, nil, is_button_enabled) then CreateNew() end
     if reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") then
-        if SEL_TRACK_TBL.lane_mode == 2 then
-            if reaper.ImGui_MenuItem(ctx, 'New Empty COMP', nil, nil, is_button_enabled) then NewComp() end
-            if comp_enabled then
-                if reaper.ImGui_MenuItem(ctx, 'DISABLE COMP', nil, comp_enabled) then SetCompLane(nil, 0) end
-                Draw_Color_Rect()
-            end
+        if reaper.ImGui_BeginMenu(ctx, "TRACK", true) then
+            --is_button_enabled = reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "TrackEnvelope*") and true or is_button_enabled
+            if reaper.ImGui_MenuItem(ctx, 'Create New', nil, nil, is_button_enabled) then CreateNew() end
             reaper.ImGui_Separator(ctx)
+            if vertical == 0 and WHEEL_INCREMENT then
+                SEL_TRACK_TBL.idx = (SEL_TRACK_TBL.idx - WHEEL_INCREMENT <= #SEL_TRACK_TBL.info and SEL_TRACK_TBL.idx - WHEEL_INCREMENT >= 1) and SEL_TRACK_TBL.idx - WHEEL_INCREMENT or SEL_TRACK_TBL.idx
+                SwapVirtualTrack(SEL_TRACK_TBL.idx)
+                WHEEL_INCREMENT = nil
+            end
+            for i = #SEL_TRACK_TBL.info, 1, -1 do
+                local new_i = math.abs(i - #SEL_TRACK_TBL.info) + 1 --! WE ARE REVERSING SINCE DELETING WILL ITERATING WILL BREAK STUFF (DELETING IS WITH PAIRS)
+                if reaper.ImGui_MenuItem(ctx, i .. " " .. SEL_TRACK_TBL.info[new_i].name, nil, new_i == SEL_TRACK_TBL.idx) then SwapVirtualTrack(new_i) end
+                    local x, y = reaper.ImGui_GetCursorScreenPos( ctx )
+                    reaper.ImGui_SetNextWindowPos( ctx, x, y)
+                    if reaper.ImGui_BeginPopupContextItem(ctx) then
+                        HIGH = new_i
+                        Draw_Color_Rect()
+                        ContextMenu(new_i, "TRACK")
+                    reaper.ImGui_EndPopup(ctx)
+                end
+                if new_i == HIGH then Draw_Color_Rect() HIGH = nil end
+                if comp_enabled and new_i == SEL_TRACK_TBL.comp_idx then Draw_Color_Rect() end
+            end
+            reaper.ImGui_EndMenu(ctx)
         end
-        local is_lane_mode = SEL_TRACK_TBL.lane_mode == 2
-        if is_lane_mode then reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Text(), 0x3EFF00FF) end -- MAKE TEXT GREEN WHEN ENABLED
-        if reaper.ImGui_MenuItem(ctx, 'Show All', nil, SEL_TRACK_TBL.lane_mode == 2 , is_button_enabled) then ShowAll(SEL_TRACK_TBL.lane_mode) end
-        if is_lane_mode then Draw_Color_Rect() reaper.ImGui_PopStyleColor(ctx) end
+    else
+        if reaper.ImGui_MenuItem(ctx, 'Create New', nil, nil, is_button_enabled) then CreateNew() end
+            reaper.ImGui_Separator(ctx)
+            if vertical == 0 and WHEEL_INCREMENT then
+                SEL_TRACK_TBL.idx = (SEL_TRACK_TBL.idx - WHEEL_INCREMENT <= #SEL_TRACK_TBL.info and SEL_TRACK_TBL.idx - WHEEL_INCREMENT >= 1) and SEL_TRACK_TBL.idx - WHEEL_INCREMENT or SEL_TRACK_TBL.idx
+                SwapVirtualTrack(SEL_TRACK_TBL.idx)
+                WHEEL_INCREMENT = nil
+            end
+            for i = #SEL_TRACK_TBL.info, 1, -1 do
+                local new_i = math.abs(i - #SEL_TRACK_TBL.info) + 1 --! WE ARE REVERSING SINCE DELETING WILL ITERATING WILL BREAK STUFF (DELETING IS WITH PAIRS)
+                if reaper.ImGui_MenuItem(ctx, i .. " " .. SEL_TRACK_TBL.info[new_i].name, nil, new_i == SEL_TRACK_TBL.idx) then SwapVirtualTrack(new_i) end
+                    local x, y = reaper.ImGui_GetCursorScreenPos( ctx )
+                    reaper.ImGui_SetNextWindowPos( ctx, x, y)
+                    if reaper.ImGui_BeginPopupContextItem(ctx) then
+                        HIGH = new_i
+                        Draw_Color_Rect()
+                        ContextMenu(new_i, "TRACK")
+                    reaper.ImGui_EndPopup(ctx)
+                end
+                if new_i == HIGH then Draw_Color_Rect() HIGH = nil end
+                if comp_enabled and new_i == SEL_TRACK_TBL.comp_idx then Draw_Color_Rect() end
+            end
     end
     UpdateTrackCheck()
-
-    if OPTIONS["FX_VERSIONS"] == true and reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") then
+    if reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") then
         reaper.ImGui_Separator(ctx)
         if reaper.ImGui_BeginMenu(ctx, "FX", true) then
+            if reaper.ImGui_MenuItem(ctx, 'Create New FX', nil, nil, is_button_enabled) then CreateFX() end
+            UpdateTrackCheck()
+            reaper.ImGui_Separator(ctx)
             if vertical == 0 and WHEEL_INCREMENT then
                 SEL_TRACK_TBL.fx_idx = (SEL_TRACK_TBL.fx_idx - WHEEL_INCREMENT <= #SEL_TRACK_TBL.fx and SEL_TRACK_TBL.fx_idx - WHEEL_INCREMENT >= 1) and SEL_TRACK_TBL.fx_idx - WHEEL_INCREMENT or SEL_TRACK_TBL.fx_idx
                 SwapFX(SEL_TRACK_TBL.fx_idx)
@@ -281,13 +292,30 @@ function Popup()
             reaper.ImGui_EndMenu(ctx)
         end
         UpdateTrackCheck()
-    if reaper.ImGui_MenuItem(ctx, 'Create New FX', nil, nil, is_button_enabled) then CreateFX() end
-        UpdateTrackCheck()
+        reaper.ImGui_Separator(ctx)
     end
-    ------------------------------------------------------------------------------------
+    if reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") then
+        if SEL_TRACK_TBL.lane_mode == 2 then
+            if reaper.ImGui_MenuItem(ctx, 'New Empty COMP', nil, nil, is_button_enabled) then NewComp() end
+            if comp_enabled then
+                if reaper.ImGui_MenuItem(ctx, 'DISABLE COMP', nil, comp_enabled) then SetCompLane(nil, 0) end
+                Draw_Color_Rect()
+            end
+            reaper.ImGui_Separator(ctx)
+        end
+        local is_lane_mode = SEL_TRACK_TBL.lane_mode == 2
+        if is_lane_mode then reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Text(), 0x3EFF00FF) end -- MAKE TEXT GREEN WHEN ENABLED
+        if reaper.ImGui_MenuItem(ctx, 'Show All', nil, SEL_TRACK_TBL.lane_mode == 2 , is_button_enabled) then ShowAll(SEL_TRACK_TBL.lane_mode) end
+        if is_lane_mode then Draw_Color_Rect() reaper.ImGui_PopStyleColor(ctx) end
+    end
+    UpdateTrackCheck()
+
     if is_folder then
         reaper.ImGui_Separator(ctx)
         if reaper.ImGui_BeginMenu(ctx, "FOLDER TRACKS", true) then
+            if reaper.ImGui_MenuItem(ctx, 'Create New', nil, nil, CURRENT_FOLDER_COMP_IDX == 0) then CreateNew() UpdateTrackCheck(true) end
+            UpdateTrackCheck(true)
+            reaper.ImGui_Separator(ctx)
             local number_of_folder_versions, current_folder_idx = Find_Highest(FOLDER_CHILDS) -- FIND WHICH CHILD HAST MOST VERSIONS AND USE THAT FOR VERSION NUMBERING
             if vertical == 0 and WHEEL_INCREMENT then
                 MW_CNT = current_folder_idx
@@ -311,8 +339,6 @@ function Popup()
             end
             reaper.ImGui_EndMenu(ctx)
         end
-        UpdateTrackCheck(true)
-        if reaper.ImGui_MenuItem(ctx, 'Create New Sub Version', nil, nil, CURRENT_FOLDER_COMP_IDX == 0) then CreateNew() UpdateTrackCheck(true) end
         UpdateTrackCheck(true)
         if reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") then
             if CURRENT_FOLDER_LANE_MODE == 2 then
@@ -449,13 +475,18 @@ function Group_GUI()
     ToolTip('Remove tracks from list view')
 end
 
+function dBFromVal(val) return 20*math.log(val, 10) end
+function ValFromdB(dB_val) return 10^(dB_val/20) end
+
+
 function GUI()
     if reaper.ImGui_IsWindowAppearing(ctx) then
         reaper.ImGui_SetNextWindowPos(ctx, reaper.ImGui_PointConvertNative(ctx, reaper.GetMousePosition()))
         reaper.ImGui_OpenPopup(ctx, 'Menu')
     end
+
     if reaper.ImGui_BeginPopup(ctx, 'Menu') then
-        Popup()
+        MenuGUI()
         reaper.ImGui_EndPopup(ctx)
         reaper.defer(GUI)
     else
