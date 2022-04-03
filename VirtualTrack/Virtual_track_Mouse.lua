@@ -1,10 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.37
+-- @version 1.38
 -- @changelog
---   + fix crash when lane is not calculated from mouse (very rare)
---   + small cleanup
+--   + fix one more crash when lane is not calculated from mouse
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua

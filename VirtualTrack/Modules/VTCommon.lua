@@ -489,6 +489,7 @@ end
 
 function Show_menu(tbl, skip_gui_command)
     LAST_MOUSE_TR, LAST_MOUSE_LANE = MouseInfo()
+    if not LAST_MOUSE_LANE then return end
     GROUP_LIST = Restore_GROUPS_FROM_Project_EXT_STATE()
     UPDATE_TEMPO = tbl.rprobj == reaper.GetMasterTrack(0) and true or false
     if tbl.rprobj == reaper.GetMasterTrack(0) then
