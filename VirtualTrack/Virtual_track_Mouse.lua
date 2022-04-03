@@ -1,11 +1,10 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.36
+-- @version 1.37
 -- @changelog
---   + Two SWIPING scripts
---   + Swipe hold - works while key is pressed down
---   + Swipe toggle - toggle action for toolbar (needs to remember terminate script on first run)
+--   + fix crash when lane is not calculated from mouse (very rare)
+--   + small cleanup
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua

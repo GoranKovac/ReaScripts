@@ -30,7 +30,6 @@ OPTIONS = {
     ["TOOLTIPS"] = true,
     ["LANE_COLORS"] = true,
     ["RAZOR_FOLLOW_SWAP"] = false,
-   -- ["FX_VERSIONS"] = true
 }
 
 if reaper.HasExtState( "VirtualTrack", "options" ) then
@@ -38,7 +37,6 @@ if reaper.HasExtState( "VirtualTrack", "options" ) then
     OPTIONS["LANE_COLORS"]          = state:match("LANE_COLORS (%S+)") == "true" and true or false
     OPTIONS["TOOLTIPS"]             = state:match("TOOLTIPS (%S+)") == "true" and true or false
     OPTIONS["RAZOR_FOLLOW_SWAP"]    = state:match("RAZOR_FOLLOW_SWAP (%S+)") == "true" and true or false
-    --OPTIONS["FX_VERSIONS"]          = state:match("FX_VERSIONS (%S+)") == "true" and true or false
 end
 
 local function Update_tempo_map()
@@ -124,7 +122,6 @@ local function GUIOptions()
     local current_lane_colors = OPTIONS["LANE_COLORS"]
     local current_tooltips = OPTIONS["TOOLTIPS"]
     local current_razor_follow_swap = OPTIONS["RAZOR_FOLLOW_SWAP"]
-    -- local current_fx_versions = OPTIONS["FX_VERSIONS"]
     if reaper.ImGui_Checkbox(ctx, "TOOLTIPS", current_tooltips) then
         OPTIONS["TOOLTIPS"] = not OPTIONS["TOOLTIPS"]
         save_options()
@@ -139,11 +136,6 @@ local function GUIOptions()
         save_options()
     end
     ToolTip("Razor follow version selection in lane mode for easier comping")
-    -- if reaper.ImGui_Checkbox(ctx, "FX VERSIONS", current_fx_versions) then
-    --     OPTIONS["FX_VERSIONS"] = not OPTIONS["FX_VERSIONS"]
-    --     save_options()
-    -- end
-    -- ToolTip("Show FX Versins")
     if reaper.ImGui_Button(ctx, 'Donate', -1) then Open_url("https://www.paypal.com/paypalme/GoranK101") end
 end
 
@@ -474,11 +466,6 @@ function Group_GUI()
     if reaper.ImGui_Button(ctx, 'Remove Track',160) then Add_REMOVE_Tracks_To_Group(TRACK_GROUPS, false) end
     ToolTip('Remove tracks from list view')
 end
-
-function dBFromVal(val) return 20*math.log(val, 10) end
-function ValFromdB(dB_val) return 10^(dB_val/20) end
-
-
 function GUI()
     if reaper.ImGui_IsWindowAppearing(ctx) then
         reaper.ImGui_SetNextWindowPos(ctx, reaper.ImGui_PointConvertNative(ctx, reaper.GetMousePosition()))
@@ -1047,6 +1034,7 @@ function SetFX_Chunk(tbl, fx_idx)
 end
 
 function SetInsertLaneChunk(tbl, lane)
+    if not lane then return end -- IN RARE SITUATIONS LANE IS NOT CALCULATED FROM MOUSE
     local track_chunk = GetTrackChunk(tbl.rprobj)
     local lane_mask = 1 << (lane - 1)
     if not track_chunk:find("LANESOLO") then -- IF ANY LANE IS NOT SOLOED LANESOLO PART DOES NOT EXIST YET AND WE NEED TO INJECT IT
@@ -1122,7 +1110,6 @@ local function Delete_items_or_area(item, time_Start, time_End)
     end
 end
 
---! implement proper autocrossfade
 local function Make_item_from_razor(tbl, item, razor_info)
     if not item then return end
     local time_Start, time_End, razor_lane = razor_info[1], razor_info[2], razor_info.razor_lane
