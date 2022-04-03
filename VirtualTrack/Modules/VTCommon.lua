@@ -46,8 +46,10 @@ local function Update_tempo_map()
     end
     reaper.UpdateTimeline()
 end
-
-local ctx = reaper.ImGui_CreateContext('My script', reaper.ImGui_ConfigFlags_NoSavedSettings())
+local ctx
+function ImGui_Create_CTX()
+    ctx = reaper.ImGui_CreateContext('My script', reaper.ImGui_ConfigFlags_NoSavedSettings())
+end
 
 function Draw_Color_Rect(color)
     local min_x, min_y = reaper.ImGui_GetItemRectMin(ctx)
@@ -488,8 +490,6 @@ function GUI()
 end
 
 function Show_menu(tbl, skip_gui_command)
-    LAST_MOUSE_TR, LAST_MOUSE_LANE = MouseInfo()
-    if not LAST_MOUSE_LANE then return end
     GROUP_LIST = Restore_GROUPS_FROM_Project_EXT_STATE()
     UPDATE_TEMPO = tbl.rprobj == reaper.GetMasterTrack(0) and true or false
     if tbl.rprobj == reaper.GetMasterTrack(0) then
@@ -504,6 +504,7 @@ function Show_menu(tbl, skip_gui_command)
     for track in pairs(CURRENT_TRACKS) do UpdateCurrentFX_State(CURRENT_TRACKS[track]) SaveCurrentState(CURRENT_TRACKS[track]) end -- UPDATE INTERNAL TABLE BEFORE OPENING MENU
     UpdateCurrentFX_State(SEL_TRACK_TBL)  SaveCurrentState(SEL_TRACK_TBL) -- store and update current track
     if not skip_gui_command then
+        ImGui_Create_CTX()
         reaper.defer(GUI)
     else
         _G[skip_gui_command]()
@@ -765,6 +766,8 @@ function CycleVersionsDOWN()
 end
 
 function ActivateLaneUndeMouse()
+    local LAST_MOUSE_LANE = MouseInfo(SEL_TRACK_TBL.rprobj)
+    if not LAST_MOUSE_LANE then return end
     reaper.PreventUIRefresh(1)
     reaper.Undo_BeginBlock2()
     for track in pairs(CURRENT_TRACKS) do
@@ -1296,9 +1299,9 @@ end
 function Same_Envelope_AS_Mouse(tr_tbl)
     local same_envelopes = nil
     local all_childs = GetChild_ParentTrack_FromStored_PEXT(tr_tbl)
-    if reaper.ValidatePtr(LAST_MOUSE_TR, "TrackEnvelope*") then
+    if reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "TrackEnvelope*") then
         same_envelopes = {}
-        local m_retval, m_name = reaper.GetEnvelopeName(LAST_MOUSE_TR)
+        local m_retval, m_name = reaper.GetEnvelopeName(SEL_TRACK_TBL.rprobj)
         for track in pairs(all_childs) do
             if reaper.ValidatePtr(track, "TrackEnvelope*") and all_childs[track] then
                 local env_retval, env_name = reaper.GetEnvelopeName(track)
@@ -1538,10 +1541,10 @@ function Get_lane_from_mouse_coordinates(mouse_tr)
 	end
 end
 
-function MouseInfo()
-    local mouse_tr = Get_track_under_mouse()
+function MouseInfo(mouse_tr)
+    --local mouse_tr = Get_track_under_mouse()
 	local mouse_lane = Get_lane_from_mouse_coordinates(mouse_tr)
-    return mouse_tr, mouse_lane
+    return mouse_lane
 end
 
 function Find_Highest(tbl)

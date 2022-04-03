@@ -1,9 +1,12 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.38
+-- @version 1.39
 -- @changelog
---   + fix one more crash when lane is not calculated from mouse
+--   + Create ImGUI context only when GUI needs to be created
+--   + Fix SelTrack not working (my bad)
+--   + Move mouse_lane function to activateunderlane function
+--   + small fixups
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
