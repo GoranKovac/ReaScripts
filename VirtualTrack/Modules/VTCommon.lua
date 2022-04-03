@@ -223,7 +223,7 @@ function Popup()
         end
         for i = #SEL_TRACK_TBL.info, 1, -1 do
             local new_i = math.abs(i - #SEL_TRACK_TBL.info) + 1 --! WE ARE REVERSING SINCE DELETING WILL ITERATING WILL BREAK STUFF (DELETING IS WITH PAIRS)
-            if reaper.ImGui_MenuItem(ctx, SEL_TRACK_TBL.info[new_i].name, nil, new_i == SEL_TRACK_TBL.idx) then SwapVirtualTrack(new_i) end
+            if reaper.ImGui_MenuItem(ctx, i .. " " .. SEL_TRACK_TBL.info[new_i].name, nil, new_i == SEL_TRACK_TBL.idx) then SwapVirtualTrack(new_i) end
                 local x, y = reaper.ImGui_GetCursorScreenPos( ctx )
                 reaper.ImGui_SetNextWindowPos( ctx, x, y)
                 if reaper.ImGui_BeginPopupContextItem(ctx) then
@@ -268,7 +268,7 @@ function Popup()
             end
             for i = #SEL_TRACK_TBL.fx , 1, -1 do
                 local new_i = math.abs(i - #SEL_TRACK_TBL.fx) + 1 --! WE ARE REVERSING SINCE DELETING WILL ITERATING WILL BREAK STUFF (DELETING IS WITH PAIRS)
-                if reaper.ImGui_MenuItem(ctx, SEL_TRACK_TBL.fx[new_i].name, nil, new_i == SEL_TRACK_TBL.fx_idx) then SwapFX(new_i) reaper.TrackFX_Show( SEL_TRACK_TBL.rprobj, 0, 1 ) end
+                if reaper.ImGui_MenuItem(ctx, i .. " " .. SEL_TRACK_TBL.fx[new_i].name, nil, new_i == SEL_TRACK_TBL.fx_idx) then FX_OPEN = true SwapFX(new_i) reaper.TrackFX_Show( SEL_TRACK_TBL.rprobj, 0, 1 ) end
                 local x, y = reaper.ImGui_GetCursorScreenPos( ctx )
                 reaper.ImGui_SetNextWindowPos( ctx, x, y)
                 if reaper.ImGui_BeginPopupContextItem(ctx) then
@@ -479,9 +479,11 @@ function Show_menu(tbl, skip_gui_command)
     end
     SEL_TRACK_TBL = tbl
     RAZOR_INFO = reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") and Get_Razor_Data(SEL_TRACK_TBL.rprobj) or nil
-    Get_Selected_OR_Folder_tracks(reaper.GetMediaTrackInfo_Value(ConvertToMediaTrack(SEL_TRACK_TBL.rprobj), "I_FOLDERDEPTH") == 1) -- CHECK IF SELECTED TRACK IS FOLDER
+    local is_folder = reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") and reaper.GetMediaTrackInfo_Value(SEL_TRACK_TBL.rprobj, "I_FOLDERDEPTH") == 1
+    Get_Selected_OR_Folder_tracks(is_folder) -- CHECK IF SELECTED TRACK IS FOLDER
+
     CheckTrackLaneModeState(tbl) --! bring this back
-    for track in pairs(CURRENT_TRACKS) do  UpdateCurrentFX_State(CURRENT_TRACKS[track])  SaveCurrentState(CURRENT_TRACKS[track]) end -- UPDATE INTERNAL TABLE BEFORE OPENING MENU
+    for track in pairs(CURRENT_TRACKS) do UpdateCurrentFX_State(CURRENT_TRACKS[track]) SaveCurrentState(CURRENT_TRACKS[track]) end -- UPDATE INTERNAL TABLE BEFORE OPENING MENU
     UpdateCurrentFX_State(SEL_TRACK_TBL)  SaveCurrentState(SEL_TRACK_TBL) -- store and update current track
     if not skip_gui_command then
         reaper.defer(GUI)
@@ -999,10 +1001,16 @@ function SetFX_Chunk(tbl, fx_idx)
     local new_fx_chunk = tbl.fx[fx_idx][1]
     local current_fx = GetFX_Chunk(tbl.rprobj)[1]
     local plugin_show = current_fx:match("(SHOW %S+)") -- GET CURRENT CHAIN SHOW STATUS
-    local plugin_float = current_fx:match("(FLOAT.-\n)") -- GET CURRENT CHAIN FLOATING POSITION 
+    local plugin_float = current_fx:match("(FLOAT.-\n)") -- GET CURRENT CHAIN FLOATING POSITION
+
+    if FX_OPEN then
+        local x,y = reaper.GetMousePosition()
+        new_fx_chunk = new_fx_chunk:gsub("(WNDRECT )%S+ %S+", "%1".. x .."%1" ..y) -- OPEN FX UNDER CURSOR WHEN CLICKED ON LIST
+    end
+
     new_fx_chunk = new_fx_chunk:gsub("(SHOW %S+)", plugin_show) -- SET STORED CHAIN SHOW TO CURRENT
     new_fx_chunk = new_fx_chunk:gsub("(FLOAT.-\n)",plugin_float) -- SET STORED CHAIN FLOAT TO CURRENT
-    
+
     local track_chunk = GetTrackChunk(tbl.rprobj)
     track_chunk = track_chunk:gsub(Literalize(current_fx), new_fx_chunk)
     SetTrackChunk(tbl.rprobj, track_chunk)
@@ -1538,10 +1546,10 @@ function GetFolderChilds(track)
     for i = folderID + 1, reaper.CountTracks(0) - 1 do -- start from first track after folder
         local child = reaper.GetTrack(0, i)
         local currDepth = reaper.GetMediaTrackInfo_Value(child, "I_FOLDERDEPTH")
-        if currDepth ~= 1 then --! EXCLUDE SUB FOLDERS
+        --if currDepth ~= 1 then --! EXCLUDE SUB FOLDERS
             CreateVT_Element(child)
             children[child] = VT_TB[child]
-        end
+        --end
         depth = depth + currDepth
         if depth <= -1 then break end --until we are out of folder
     end
