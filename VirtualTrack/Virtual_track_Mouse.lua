@@ -1,9 +1,11 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.34
+-- @version 1.35
 -- @changelog
---   + Menu UI improvements
+--   + Two SWIPING scripts
+--   + Swipe hold - works while key is pressed down
+--   + Swipe toggle - toggle action for toolbar (needs to remember terminate script on first run)
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
