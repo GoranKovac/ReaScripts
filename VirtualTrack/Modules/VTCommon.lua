@@ -1525,14 +1525,14 @@ function MouseInfo()
 end
 
 function Find_Highest(tbl)
-    local lane_mode
+    local cur_lane_mode
     local cur_comp_idx = 0
     local highest, cur_idx = 0, 0
     for _, v in pairs(tbl)do
         if #v.info > highest then
             highest = #v.info
             cur_idx = v.idx
-            lane_mode = v.lane_mode
+            cur_lane_mode = v.lane_mode
         end
     end
     for _, v in pairs(tbl)do
@@ -1541,7 +1541,7 @@ function Find_Highest(tbl)
             break
         end
     end
-    return highest, cur_idx, lane_mode, cur_comp_idx
+    return highest, cur_idx, cur_lane_mode, cur_comp_idx
 end
 
 function GetFolderChilds(track)
