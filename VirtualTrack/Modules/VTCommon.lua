@@ -1004,7 +1004,7 @@ function SetFX_Chunk(tbl, fx_idx)
     local plugin_float = current_fx:match("(FLOAT.-\n)") -- GET CURRENT CHAIN FLOATING POSITION
 
     if FX_OPEN then
-        local x,y = reaper.GetMousePosition()
+        local x, y = reaper.GetMousePosition()
         new_fx_chunk = new_fx_chunk:gsub("(WNDRECT )%S+ %S+", "%1".. x .."%1" ..y) -- OPEN FX UNDER CURSOR WHEN CLICKED ON LIST
     end
 
