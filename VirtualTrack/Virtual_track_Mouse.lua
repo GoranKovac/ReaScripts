@@ -1,7 +1,7 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.35
+-- @version 1.36
 -- @changelog
 --   + Two SWIPING scripts
 --   + Swipe hold - works while key is pressed down
