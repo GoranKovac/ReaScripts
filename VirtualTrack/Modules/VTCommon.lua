@@ -186,7 +186,7 @@ function ContextMenu(idx, track_type)
     end
     if reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") and (SEL_TRACK_TBL.lane_mode == 2 or CURRENT_FOLDER_LANE_MODE == 2) then
         reaper.ImGui_Separator(ctx)
-        if reaper.ImGui_MenuItem(ctx, 'SET as COMP', nil) then SetCompLane() end
+        if reaper.ImGui_MenuItem(ctx, 'SET as COMP', nil, nil, SEL_TRACK_TBL.comp_idx == 0) then SetCompLane() end
     end
 end
 
@@ -1525,14 +1525,20 @@ function MouseInfo()
 end
 
 function Find_Highest(tbl)
-    local lane_mode, cur_comp_idx
+    local lane_mode
+    local cur_comp_idx = 0
     local highest, cur_idx = 0, 0
     for _, v in pairs(tbl)do
         if #v.info > highest then
             highest = #v.info
             cur_idx = v.idx
-            cur_comp_idx = v.comp_idx
             lane_mode = v.lane_mode
+        end
+    end
+    for _, v in pairs(tbl)do
+        if v.comp_idx ~= 0 then
+            cur_comp_idx = v.comp_idx -- IS ANY CHILD IN COMP MODE
+            break
         end
     end
     return highest, cur_idx, lane_mode, cur_comp_idx
