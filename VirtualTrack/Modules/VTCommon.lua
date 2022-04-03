@@ -246,14 +246,14 @@ function Popup()
         if SEL_TRACK_TBL.lane_mode == 2 then
             if reaper.ImGui_MenuItem(ctx, 'New Empty COMP', nil, nil, is_button_enabled) then NewComp() end
             if comp_enabled then
-                if reaper.ImGui_MenuItem(ctx, 'DISABLE COMP', nil, comp_enabled) then SetCompLane() end
+                if reaper.ImGui_MenuItem(ctx, 'DISABLE COMP', nil, comp_enabled) then SetCompLane(nil, 0) end
                 Draw_Color_Rect()
             end
             reaper.ImGui_Separator(ctx)
         end
         local is_lane_mode = SEL_TRACK_TBL.lane_mode == 2
         if is_lane_mode then reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Text(), 0x3EFF00FF) end -- MAKE TEXT GREEN WHEN ENABLED
-        if reaper.ImGui_MenuItem(ctx, 'Show All', nil, SEL_TRACK_TBL.lane_mode == 2 , is_button_enabled) then ShowAll() end
+        if reaper.ImGui_MenuItem(ctx, 'Show All', nil, SEL_TRACK_TBL.lane_mode == 2 , is_button_enabled) then ShowAll(SEL_TRACK_TBL.lane_mode) end
         if is_lane_mode then Draw_Color_Rect() reaper.ImGui_PopStyleColor(ctx) end
     end
     UpdateTrackCheck()
@@ -318,12 +318,12 @@ function Popup()
             if CURRENT_FOLDER_LANE_MODE == 2 then
                 if reaper.ImGui_MenuItem(ctx, 'New Empty COMP', nil, nil, CURRENT_FOLDER_COMP_IDX == 0) then NewComp() end
                 if CURRENT_FOLDER_COMP_IDX ~= 0 then
-                    if reaper.ImGui_MenuItem(ctx, 'DISABLE COMP', nil, comp_enabled) then SetCompLane() end
+                    if reaper.ImGui_MenuItem(ctx, 'DISABLE COMP', nil, comp_enabled) then SetCompLane(nil, 0) end
                     Draw_Color_Rect()
                 end
                 reaper.ImGui_Separator(ctx)
             end
-            if reaper.ImGui_MenuItem(ctx, 'Show All', nil, CURRENT_FOLDER_LANE_MODE == 2, CURRENT_FOLDER_COMP_IDX == 0) then ShowAll() end
+            if reaper.ImGui_MenuItem(ctx, 'Show All', nil, CURRENT_FOLDER_LANE_MODE == 2, CURRENT_FOLDER_COMP_IDX == 0) then ShowAll(CURRENT_FOLDER_LANE_MODE) end
             UpdateTrackCheck(true)
            if CURRENT_FOLDER_LANE_MODE == 2 then Draw_Color_Rect() end
         end
@@ -1167,20 +1167,20 @@ function CheckTrackLaneModeState(tr_tbl)
     end
 end
 
-function ShowAll(tr)
+function ShowAll(lane_mode)
     reaper.PreventUIRefresh(1)
     reaper.Undo_BeginBlock2()
-    local selected_tracks = tr and {CURRENT_TRACKS[tr]} or CURRENT_TRACKS
+    local selected_tracks = CURRENT_TRACKS--tr and {CURRENT_TRACKS[tr]} or CURRENT_TRACKS
     for track in pairs(selected_tracks) do
         local tr_tbl = selected_tracks[track]
         if not reaper.ValidatePtr(tr_tbl.rprobj, "MediaTrack*") then return end
-        local fimp = reaper.GetMediaTrackInfo_Value(tr_tbl.rprobj, "I_FREEMODE")
-        tr_tbl.lane_mode = fimp == 2 and 0 or 2
-        if fimp == 2 then StoreLaneData(tr_tbl) end
-        if fimp == 0 then -- IF LANE MODE IS OFF TURN IT ON
+        --local fimp = reaper.GetMediaTrackInfo_Value(tr_main.rprobj, "I_FREEMODE")
+        tr_tbl.lane_mode = lane_mode == 2 and 0 or 2
+        if lane_mode == 2 then StoreLaneData(tr_tbl) end
+        if lane_mode == 0 then -- IF LANE MODE IS OFF TURN IT ON
             Set_LaneView_mode(tr_tbl)
-        elseif fimp == 2 then -- IF LANE MODE IS ON TURN IT OFF
-            SetCompLane(tr_tbl.rprobj,0) -- TURN OFF COMPING
+        elseif lane_mode == 2 then -- IF LANE MODE IS ON TURN IT OFF
+            SetCompLane(tr_tbl.rprobj, 0) -- TURN OFF COMPING
             SwapVirtualTrack(tr_tbl.idx, tr_tbl.rprobj)
         end
         StoreStateToDocument(tr_tbl)
@@ -1237,14 +1237,13 @@ function CheckUndoState()
     end
 end
 
---! add explicit ON/OFF instead of toggle
 function SetCompLane(tr, lane)
     reaper.Undo_BeginBlock2(0)
     local selected_tracks = tr and {CURRENT_TRACKS[tr]} or CURRENT_TRACKS
     for track in pairs(selected_tracks) do
         local tr_tbl = selected_tracks[track]
-        local new_lane = lane and lane or tr_tbl.idx
-        tr_tbl.comp_idx = tr_tbl.comp_idx == 0 and new_lane or 0
+        --local new_lane = lane and lane or tr_tbl.idx
+        tr_tbl.comp_idx = lane and lane or ACTION_ID--tr_tbl.comp_idx == 0 and new_lane or 0
         SetCompActiveIcon(tr_tbl)
         StoreStateToDocument(tr_tbl)
     end
@@ -1357,9 +1356,11 @@ end
 local icon_path = script_folder .. "/Images/comp_test.png"
 function SetCompActiveIcon(tbl)
     if tbl.comp_idx ~= 0 then
-        local retval, current_icon = reaper.GetSetMediaTrackInfo_String( tbl.rprobj, "P_ICON", 0, false )
-        tbl.def_icon = retval and current_icon or ""
-        reaper.GetSetMediaTrackInfo_String(tbl.rprobj, "P_ICON" , icon_path, true)
+        if tbl.def_icon == nil then
+            local retval, current_icon = reaper.GetSetMediaTrackInfo_String( tbl.rprobj, "P_ICON", 0, false )
+            tbl.def_icon = retval and current_icon or ""
+            reaper.GetSetMediaTrackInfo_String(tbl.rprobj, "P_ICON" , icon_path, true)
+        end
     else
         if tbl.def_icon ~= nil then
             reaper.GetSetMediaTrackInfo_String(tbl.rprobj, "P_ICON" , tbl.def_icon, true)
