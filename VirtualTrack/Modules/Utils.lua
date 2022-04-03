@@ -61,6 +61,7 @@ function Check_Requirements()
 end
 
 local crash = function(errObject)
+    reaper.JS_VKeys_Intercept(-1, -1)
     local byLine = "([^\r\n]*)\r?\n?"
     local trimPath = "[\\/]([^\\/]-:%d+:.+)$"
     local err = errObject and string.match(errObject, trimPath) or "Couldn't get error message."
