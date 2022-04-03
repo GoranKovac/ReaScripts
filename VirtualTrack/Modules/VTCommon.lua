@@ -186,7 +186,7 @@ function ContextMenu(idx, track_type)
     end
     if reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") and (SEL_TRACK_TBL.lane_mode == 2 or CURRENT_FOLDER_LANE_MODE == 2) then
         reaper.ImGui_Separator(ctx)
-        if reaper.ImGui_MenuItem(ctx, 'SET as COMP', nil, nil, SEL_TRACK_TBL.comp_idx == 0) then SetCompLane() end
+        if reaper.ImGui_MenuItem(ctx, 'SET as COMP', nil, nil, (SEL_TRACK_TBL.comp_idx == 0 and (CURRENT_FOLDER_COMP_IDX == 0 or CURRENT_FOLDER_COMP_IDX == nil))) then SetCompLane() end
     end
 end
 
