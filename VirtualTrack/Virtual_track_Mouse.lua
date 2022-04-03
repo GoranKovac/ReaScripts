@@ -1,12 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.39
+-- @version 1.40
 -- @changelog
---   + Create ImGUI context only when GUI needs to be created
---   + Fix SelTrack not working (my bad)
---   + Move mouse_lane function to activateunderlane function
---   + small fixups
+--   + Store lanes that user manually creates with draging
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua

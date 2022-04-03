@@ -688,7 +688,10 @@ end
 
 local function StoreLaneData(tbl)
     local num_items = reaper.CountTrackMediaItems(tbl.rprobj)
-    for i = 1, #tbl.info do
+    local item_for_height = reaper.GetTrackMediaItem(tbl.rprobj, 0)
+    local total_lanes = round(1 / reaper.GetMediaItemInfo_Value(item_for_height, 'F_FREEMODE_H')) -- WE CHECK LANE HEIGHT WITH ANY ITEM ON TRACK
+    --for i = 1, #tbl.info do
+    for i = 1 , total_lanes do
         local lane_chunk = {}
         for j = 1, num_items do
             local item = reaper.GetTrackMediaItem(tbl.rprobj, j - 1)
@@ -697,9 +700,14 @@ local function StoreLaneData(tbl)
                 lane_chunk[#lane_chunk + 1] = item_chunk
             end
         end
-        local name = tbl.info[i].name
-        tbl.info[i] = lane_chunk
-        tbl.info[i].name = name
+        local name = tbl.info[i] and tbl.info[i].name or "Version " .. i
+        if not tbl.info[i] then
+            table.insert(tbl.info,1,lane_chunk)
+            tbl.info[1].name = name
+        else
+            tbl.info[i] = lane_chunk
+            tbl.info[i].name = name
+        end
     end
 end
 
