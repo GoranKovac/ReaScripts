@@ -1606,18 +1606,3 @@ function GetFolderChilds(track)
     end
     return children
 end
-
--- PREV_TRACK = nil
--- local EG_projectStateChangeCount = reaper.GetProjectStateChangeCount(0)
--- function EG_UpdateChangeCount() EG_projectStateChangeCount = reaper.GetProjectStateChangeCount(0) end
-
--- function EDIT_GROUP()
---     if EG_projectStateChangeCount ~= reaper.GetProjectStateChangeCount(0) then
---         MSG("CHANGE")
---         reaper.SetOnlyTrackSelected( SEL_TRACK_TBL.rprobj )
---         for k, v in pairs(CURRENT_TRACKS) do
---             reaper.SetTrackSelected( v.rprobj, true )
---         end
---         EG_UpdateChangeCount()
---     end
--- end
