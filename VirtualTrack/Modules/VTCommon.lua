@@ -1142,8 +1142,10 @@ local function Make_item_from_razor(tbl, item, razor_info)
     local item_start_offset = tonumber(item_chunk:match("SOFFS (%S+)"))
     local item_play_rate = tonumber(item_chunk:match("PLAYRATE (%S+)"))
     local auto_crossfade = reaper.GetToggleCommandState(40041)
+    local is_midi = item_chunk:match("MIDI")
     local rv, def_auto_crossfade_value = reaper.get_config_var_string("defsplitxfadelen")
     local crossfade_offset = auto_crossfade == 1 and def_auto_crossfade_value or 0
+    crossfade_offset = is_midi and 0 or crossfade_offset
     local created_chunk = item_chunk:gsub("(POSITION) %S+", "%1 " .. new_item_start - crossfade_offset):gsub("(LENGTH) %S+", "%1 " .. new_item_lenght + (crossfade_offset * 2)):gsub("(SOFFS) %S+", "%1 " .. item_start_offset + (new_item_offset * item_play_rate) - crossfade_offset)
     local createdItem = reaper.AddMediaItemToTrack(tbl.rprobj)
     reaper.SetItemStateChunk(createdItem, created_chunk, false)
@@ -1562,7 +1564,6 @@ function Get_lane_from_mouse_coordinates(mouse_tr)
 end
 
 function MouseInfo(mouse_tr)
-    --local mouse_tr = Get_track_under_mouse()
 	local mouse_lane = Get_lane_from_mouse_coordinates(mouse_tr)
     return mouse_lane
 end
@@ -1605,3 +1606,18 @@ function GetFolderChilds(track)
     end
     return children
 end
+
+-- PREV_TRACK = nil
+-- local EG_projectStateChangeCount = reaper.GetProjectStateChangeCount(0)
+-- function EG_UpdateChangeCount() EG_projectStateChangeCount = reaper.GetProjectStateChangeCount(0) end
+
+-- function EDIT_GROUP()
+--     if EG_projectStateChangeCount ~= reaper.GetProjectStateChangeCount(0) then
+--         MSG("CHANGE")
+--         reaper.SetOnlyTrackSelected( SEL_TRACK_TBL.rprobj )
+--         for k, v in pairs(CURRENT_TRACKS) do
+--             reaper.SetTrackSelected( v.rprobj, true )
+--         end
+--         EG_UpdateChangeCount()
+--     end
+-- end

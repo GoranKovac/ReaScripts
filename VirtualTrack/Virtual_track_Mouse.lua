@@ -1,9 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.43
+-- @version 1.44
 -- @changelog
---   + Concat razor data in SWIPE scripts before storing
+--   + Do not add autocrossfade offset to midi items
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
