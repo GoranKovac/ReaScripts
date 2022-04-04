@@ -1,9 +1,10 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.41
+-- @version 1.42
 -- @changelog
---   + Fix crash when user switches manually to lane mode when only single version exists
+--   + Fix storing data when user manually overrides lane mode in TCP in some usecases
+--   + in TCP in some use cases (hopefully all of them)
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua

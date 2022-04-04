@@ -222,7 +222,7 @@ function MenuGUI()
             end
             for i = #SEL_TRACK_TBL.info, 1, -1 do
                 local new_i = math.abs(i - #SEL_TRACK_TBL.info) + 1 --! WE ARE REVERSING SINCE DELETING WILL ITERATING WILL BREAK STUFF (DELETING IS WITH PAIRS)
-                if reaper.ImGui_MenuItem(ctx, i .. " " .. SEL_TRACK_TBL.info[new_i].name, nil, new_i == SEL_TRACK_TBL.idx) then SwapVirtualTrack(new_i) end
+                if reaper.ImGui_MenuItem(ctx, new_i .. " " .. SEL_TRACK_TBL.info[new_i].name, nil, new_i == SEL_TRACK_TBL.idx) then SwapVirtualTrack(new_i) end
                     local x, y = reaper.ImGui_GetCursorScreenPos( ctx )
                     reaper.ImGui_SetNextWindowPos( ctx, x, y)
                     if reaper.ImGui_BeginPopupContextItem(ctx) then
@@ -500,9 +500,14 @@ function Show_menu(tbl, skip_gui_command)
     RAZOR_INFO = reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") and Get_Razor_Data(SEL_TRACK_TBL.rprobj) or nil
     local is_folder = reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") and reaper.GetMediaTrackInfo_Value(SEL_TRACK_TBL.rprobj, "I_FOLDERDEPTH") == 1
     Get_Selected_OR_Folder_tracks(is_folder) -- CHECK IF SELECTED TRACK IS FOLDER
-    CheckTrackLaneModeState(tbl) --! bring this back
-    for track in pairs(CURRENT_TRACKS) do UpdateCurrentFX_State(CURRENT_TRACKS[track]) SaveCurrentState(CURRENT_TRACKS[track]) end -- UPDATE INTERNAL TABLE BEFORE OPENING MENU
-    UpdateCurrentFX_State(SEL_TRACK_TBL)  SaveCurrentState(SEL_TRACK_TBL) -- store and update current track
+    --CheckTrackLaneModeState(tbl) --! bring this back
+    for track in pairs(CURRENT_TRACKS) do
+        CheckTrackLaneModeState(CURRENT_TRACKS[track])
+        UpdateCurrentFX_State(CURRENT_TRACKS[track])
+        --SaveCurrentState(CURRENT_TRACKS[track])
+    end -- UPDATE INTERNAL TABLE BEFORE OPENING MENU
+    --UpdateCurrentFX_State(SEL_TRACK_TBL) -- store and update current track
+    --SaveCurrentState(SEL_TRACK_TBL) -- store and update current track
     if not skip_gui_command then
         ImGui_Create_CTX()
         reaper.defer(GUI)
@@ -688,10 +693,15 @@ end
 
 local function StoreLaneData(tbl)
     local num_items = reaper.CountTrackMediaItems(tbl.rprobj)
-    if num_items == 0 then return 1 end -- NO ITEMS IN LANE MODE MEANS THERE IS ONLY VERSION 1
+    if num_items == 0 then return end -- NO ITEMS IN LANE MODE MEANS THERE IS ONLY VERSION 1
     local item_for_height = reaper.GetTrackMediaItem(tbl.rprobj, 0)
     local total_lanes = round(1 / reaper.GetMediaItemInfo_Value(item_for_height, 'F_FREEMODE_H')) -- WE CHECK LANE HEIGHT WITH ANY ITEM ON TRACK
-    --for i = 1, #tbl.info do
+
+    if tbl.lane_mode == 0 then -- IF ORIGINAL LANE MODE IS NORMAL TRACK
+        SwapVirtualTrack(tbl.idx, tbl.rprobj) -- SWAP TO CURRENT VERSION
+        return
+    end
+
     for i = 1 , total_lanes do
         local lane_chunk = {}
         for j = 1, num_items do
@@ -702,13 +712,13 @@ local function StoreLaneData(tbl)
             end
         end
         local name = tbl.info[i] and tbl.info[i].name or "Version " .. i
-        if not tbl.info[i] then
-            table.insert(tbl.info,1,lane_chunk)
-            tbl.info[1].name = name
-        else
+        -- if not tbl.info[i] then
+        --     tbl.info[i] = lane_chunk
+        --     tbl.info[i].name = name
+        -- else
             tbl.info[i] = lane_chunk
             tbl.info[i].name = name
-        end
+        --end
     end
 end
 
@@ -1181,21 +1191,21 @@ function SetItemsInLanes(tbl)
 end
 
 function CheckTrackLaneModeState(tr_tbl)
+    reaper.PreventUIRefresh(1)
     if not reaper.ValidatePtr(tr_tbl.rprobj, "MediaTrack*") then return end
     local current_track_mode = math.floor(reaper.GetMediaTrackInfo_Value(tr_tbl.rprobj, "I_FREEMODE"))
     if current_track_mode ~= tr_tbl.lane_mode then
-        UpdateInternalState(tr_tbl)
-        current_track_mode = current_track_mode ~= 1 and current_track_mode or 2
-        reaper.PreventUIRefresh(1)
-        tr_tbl.lane_mode = current_track_mode
-        if current_track_mode == 2 then
+        if current_track_mode == 2 then StoreLaneData(tr_tbl) end
+        local original_track_mode = SEL_TRACK_TBL.lane_mode
+        tr_tbl.lane_mode = original_track_mode
+        if original_track_mode == 2 then
             Set_LaneView_mode(tr_tbl)
-        elseif current_track_mode == 0 then
+        elseif original_track_mode == 0 then
             SwapVirtualTrack(tr_tbl.idx, tr_tbl.rprobj)
         end
-        StoreStateToDocument(tr_tbl)
-        reaper.PreventUIRefresh(-1)
     end
+    SaveCurrentState(tr_tbl)
+    reaper.PreventUIRefresh(-1)
 end
 
 function ShowAll(lane_mode)
