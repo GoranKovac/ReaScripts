@@ -500,7 +500,6 @@ function Show_menu(tbl, skip_gui_command)
     RAZOR_INFO = reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") and Get_Razor_Data(SEL_TRACK_TBL.rprobj) or nil
     local is_folder = reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") and reaper.GetMediaTrackInfo_Value(SEL_TRACK_TBL.rprobj, "I_FOLDERDEPTH") == 1
     Get_Selected_OR_Folder_tracks(is_folder) -- CHECK IF SELECTED TRACK IS FOLDER
-    --CheckTrackLaneModeState(tbl) --! bring this back
     for track in pairs(CURRENT_TRACKS) do
         CheckTrackLaneModeState(CURRENT_TRACKS[track])
         UpdateCurrentFX_State(CURRENT_TRACKS[track])

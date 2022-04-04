@@ -10,8 +10,6 @@ package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]]:gsub("[
 require("Modules/VTCommon")
 require("Modules/Utils")
 
---Check_Requirements()
-
 local function Main()
     local track_tbl = OnDemand()
     if not track_tbl then return end
