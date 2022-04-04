@@ -1,9 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.44
+-- @version 1.45
 -- @changelog
---   + Do not add autocrossfade offset to midi items
+--   + Properly calculate fade-in/fade-out for new item
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua

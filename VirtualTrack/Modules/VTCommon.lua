@@ -1118,10 +1118,17 @@ local function Razor_item_position(item, time_Start, time_End)
     local item_lenght = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
     local item_start = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
     local item_end = item_lenght + item_start
+
+    local item_fadein = reaper.GetMediaItemInfo_Value(item, "D_FADEINLEN")
+    local item_fadeout = reaper.GetMediaItemInfo_Value(item, "D_FADEOUTLEN")
     local new_start = time_Start <= item_start and item_start or time_Start
+    local new_fade_in = item_start + item_fadein - new_start > 0 and item_start + item_fadein - new_start or 0.01
+    new_fade_in = new_fade_in > item_fadein and item_fadein or new_fade_in
     local new_lenght = time_End >= item_end and item_end - new_start or time_End - new_start
+    local new_fade_out = item_fadeout - (item_end - time_End) > 0 and item_fadeout - (item_end - time_End) or 0.01
+    new_fade_out = new_fade_out > item_fadeout and item_fadeout or new_fade_out
     local new_offset = time_Start <= item_start and 0 or (time_Start - item_start)
-    return new_start, new_lenght, new_offset
+    return new_start, new_lenght, new_offset, new_fade_in, new_fade_out
 end
 
 local function Delete_items_or_area(item, time_Start, time_End)
@@ -1138,18 +1145,20 @@ local function Make_item_from_razor(tbl, item, razor_info)
     if not item then return end
     local time_Start, time_End, razor_lane = razor_info[1], razor_info[2], razor_info.razor_lane
     local item_chunk = Get_Item_Chunk(item, true):gsub("{.-}", "") -- GENERATE NEW GUIDS FOR NEW ITEM, WE KEEP COLOR HERE TO GET IT IN COMP LANE (ITS REMOVED WHEN COMP IS OFF)
-    local new_item_start, new_item_lenght, new_item_offset = Razor_item_position(item, time_Start, time_End)
+    local new_item_start, new_item_lenght, new_item_offset, fade_in, fade_out = Razor_item_position(item, time_Start, time_End)
     local item_start_offset = tonumber(item_chunk:match("SOFFS (%S+)"))
     local item_play_rate = tonumber(item_chunk:match("PLAYRATE (%S+)"))
     ----------------------------------
     local auto_crossfade = reaper.GetToggleCommandState(40041)
     local is_midi = item_chunk:match("MIDI")
     local rv, def_auto_crossfade_value = reaper.get_config_var_string("defsplitxfadelen")
-    local crossfade_offset = auto_crossfade == 0 or is_midi and 0 or def_auto_crossfade_value
+    local crossfade_offset = (auto_crossfade == 0 or is_midi) and 0 or def_auto_crossfade_value
     ----------------------------------
     local created_chunk = item_chunk:gsub("(POSITION) %S+", "%1 " .. new_item_start - crossfade_offset):gsub("(LENGTH) %S+", "%1 " .. new_item_lenght + (crossfade_offset * 2)):gsub("(SOFFS) %S+", "%1 " .. item_start_offset + (new_item_offset * item_play_rate) - crossfade_offset)
     local createdItem = reaper.AddMediaItemToTrack(tbl.rprobj)
     reaper.SetItemStateChunk(createdItem, created_chunk, false)
+    reaper.SetMediaItemInfo_Value(createdItem, "D_FADEINLEN", fade_in)
+    reaper.SetMediaItemInfo_Value(createdItem, "D_FADEOUTLEN", fade_out)
     reaper.SetMediaItemInfo_Value(createdItem, "F_FREEMODE_Y", (tbl.comp_idx - 1) / #tbl.info)
     reaper.SetMediaItemInfo_Value(createdItem, "F_FREEMODE_H", 1 / #tbl.info)
     return createdItem, created_chunk
