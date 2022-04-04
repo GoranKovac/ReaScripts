@@ -688,6 +688,7 @@ end
 
 local function StoreLaneData(tbl)
     local num_items = reaper.CountTrackMediaItems(tbl.rprobj)
+    if num_items == 0 then return 1 end -- NO ITEMS IN LANE MODE MEANS THERE IS ONLY VERSION 1
     local item_for_height = reaper.GetTrackMediaItem(tbl.rprobj, 0)
     local total_lanes = round(1 / reaper.GetMediaItemInfo_Value(item_for_height, 'F_FREEMODE_H')) -- WE CHECK LANE HEIGHT WITH ANY ITEM ON TRACK
     --for i = 1, #tbl.info do
@@ -725,10 +726,11 @@ end
 
 function UpdateInternalState(tbl)
     if not tbl or not tbl.info[tbl.idx] then return false end
-    if tbl.lane_mode == 2 then -- ONLY HAPPENS ON MEDIA TRACKS
+    --if tbl.lane_mode == 2 then -- ONLY HAPPENS ON MEDIA TRACKS
+    if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 2 then -- CHECK ACTUAL TRACK STATE
         StoreLaneData(tbl)
         return true
-    else
+    elseif reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 0 then
         local name = tbl.info[tbl.idx].name
         local chunk_tbl = GetChunkTableForObject(tbl.rprobj)
         if chunk_tbl then

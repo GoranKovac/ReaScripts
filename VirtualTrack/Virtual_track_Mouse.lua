@@ -1,9 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.40
+-- @version 1.41
 -- @changelog
---   + Store lanes that user manually creates with draging
+--   + Fix crash when user switches manually to lane mode when only single version exists
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua
