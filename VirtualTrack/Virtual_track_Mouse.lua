@@ -1,10 +1,9 @@
 -- @description Virtual Tracks
 -- @author Sexan
 -- @license GPL v3
--- @version 1.42
+-- @version 1.43
 -- @changelog
---   + Fix storing data when user manually overrides lane mode in TCP in some usecases
---   + in TCP in some use cases (hopefully all of them)
+--   + Concat razor data in SWIPE scripts before storing
 -- @provides
 --   {Images,Modules}/*
 --   [main] Shortcuts/*.lua

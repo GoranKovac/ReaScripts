@@ -72,6 +72,7 @@ function SWIPE()
     if track_tbl.lane_mode == 0 then return end -- IF NOT IN LANE MODE IGNORE
     local CURRENT_RAZOR_DATA = Get_Razor_Data(track_tbl.rprobj)
     if not CURRENT_RAZOR_DATA then return end
+    CURRENT_RAZOR_DATA = table.concat(Get_Razor_Data(track_tbl.rprobj))
     if CURRENT_RAZOR_DATA ~= PREV_RAZOR_DATA then
         Show_menu(track_tbl, func)
         PREV_RAZOR_DATA = CURRENT_RAZOR_DATA

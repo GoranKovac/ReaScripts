@@ -788,6 +788,7 @@ end
 function ActivateLaneUndeMouse()
     local LAST_MOUSE_LANE = MouseInfo(SEL_TRACK_TBL.rprobj)
     if not LAST_MOUSE_LANE then return end
+    if LAST_MOUSE_LANE == SEL_TRACK_TBL.idx then return end -- DO NOT CONTINUE IF ALREADY AT SAME LANE
     reaper.PreventUIRefresh(1)
     reaper.Undo_BeginBlock2()
     for track in pairs(CURRENT_TRACKS) do
@@ -1153,8 +1154,8 @@ local function Make_item_from_razor(tbl, item, razor_info)
 end
 
 function CopyToCOMP(tr)
-    reaper.PreventUIRefresh(1)
     if not RAZOR_INFO then return end
+    reaper.PreventUIRefresh(1)
     reaper.Undo_BeginBlock2()
     local selected_tracks = tr and {CURRENT_TRACKS[tr]} or CURRENT_TRACKS
     for track in pairs(selected_tracks) do
