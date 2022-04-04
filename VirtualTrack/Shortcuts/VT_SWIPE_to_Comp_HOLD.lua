@@ -10,8 +10,6 @@ package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]]:gsub("[
 require("Modules/VTCommon")
 require("Modules/Utils")
 
---Check_Requirements()
-
 -- adopted from BirdBird
 local terminateScript = false
 local VKLow, VKHi = 8, 0xFE
@@ -72,6 +70,7 @@ function SWIPE()
     if track_tbl.lane_mode == 0 then return end -- IF NOT IN LANE MODE IGNORE
     local CURRENT_RAZOR_DATA = Get_Razor_Data(track_tbl.rprobj)
     if not CURRENT_RAZOR_DATA then return end
+    CURRENT_RAZOR_DATA = table.concat(CURRENT_RAZOR_DATA)
     if CURRENT_RAZOR_DATA ~= PREV_RAZOR_DATA then
         Show_menu(track_tbl, func)
         PREV_RAZOR_DATA = CURRENT_RAZOR_DATA

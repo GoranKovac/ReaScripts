@@ -30,7 +30,6 @@ OPTIONS = {
     ["TOOLTIPS"] = true,
     ["LANE_COLORS"] = true,
     ["RAZOR_FOLLOW_SWAP"] = false,
-   -- ["FX_VERSIONS"] = true
 }
 
 if reaper.HasExtState( "VirtualTrack", "options" ) then
@@ -38,7 +37,6 @@ if reaper.HasExtState( "VirtualTrack", "options" ) then
     OPTIONS["LANE_COLORS"]          = state:match("LANE_COLORS (%S+)") == "true" and true or false
     OPTIONS["TOOLTIPS"]             = state:match("TOOLTIPS (%S+)") == "true" and true or false
     OPTIONS["RAZOR_FOLLOW_SWAP"]    = state:match("RAZOR_FOLLOW_SWAP (%S+)") == "true" and true or false
-    --OPTIONS["FX_VERSIONS"]          = state:match("FX_VERSIONS (%S+)") == "true" and true or false
 end
 
 local function Update_tempo_map()
@@ -48,8 +46,10 @@ local function Update_tempo_map()
     end
     reaper.UpdateTimeline()
 end
-
-local ctx = reaper.ImGui_CreateContext('My script', reaper.ImGui_ConfigFlags_NoSavedSettings())
+local ctx
+function ImGui_Create_CTX()
+    ctx = reaper.ImGui_CreateContext('My script', reaper.ImGui_ConfigFlags_NoSavedSettings())
+end
 
 function Draw_Color_Rect(color)
     local min_x, min_y = reaper.ImGui_GetItemRectMin(ctx)
@@ -124,7 +124,6 @@ local function GUIOptions()
     local current_lane_colors = OPTIONS["LANE_COLORS"]
     local current_tooltips = OPTIONS["TOOLTIPS"]
     local current_razor_follow_swap = OPTIONS["RAZOR_FOLLOW_SWAP"]
-    -- local current_fx_versions = OPTIONS["FX_VERSIONS"]
     if reaper.ImGui_Checkbox(ctx, "TOOLTIPS", current_tooltips) then
         OPTIONS["TOOLTIPS"] = not OPTIONS["TOOLTIPS"]
         save_options()
@@ -139,11 +138,6 @@ local function GUIOptions()
         save_options()
     end
     ToolTip("Razor follow version selection in lane mode for easier comping")
-    -- if reaper.ImGui_Checkbox(ctx, "FX VERSIONS", current_fx_versions) then
-    --     OPTIONS["FX_VERSIONS"] = not OPTIONS["FX_VERSIONS"]
-    --     save_options()
-    -- end
-    -- ToolTip("Show FX Versins")
     if reaper.ImGui_Button(ctx, 'Donate', -1) then Open_url("https://www.paypal.com/paypalme/GoranK101") end
 end
 
@@ -228,7 +222,7 @@ function MenuGUI()
             end
             for i = #SEL_TRACK_TBL.info, 1, -1 do
                 local new_i = math.abs(i - #SEL_TRACK_TBL.info) + 1 --! WE ARE REVERSING SINCE DELETING WILL ITERATING WILL BREAK STUFF (DELETING IS WITH PAIRS)
-                if reaper.ImGui_MenuItem(ctx, i .. " " .. SEL_TRACK_TBL.info[new_i].name, nil, new_i == SEL_TRACK_TBL.idx) then SwapVirtualTrack(new_i) end
+                if reaper.ImGui_MenuItem(ctx, new_i .. " " .. SEL_TRACK_TBL.info[new_i].name, nil, new_i == SEL_TRACK_TBL.idx) then SwapVirtualTrack(new_i) end
                     local x, y = reaper.ImGui_GetCursorScreenPos( ctx )
                     reaper.ImGui_SetNextWindowPos( ctx, x, y)
                     if reaper.ImGui_BeginPopupContextItem(ctx) then
@@ -474,11 +468,6 @@ function Group_GUI()
     if reaper.ImGui_Button(ctx, 'Remove Track',160) then Add_REMOVE_Tracks_To_Group(TRACK_GROUPS, false) end
     ToolTip('Remove tracks from list view')
 end
-
-function dBFromVal(val) return 20*math.log(val, 10) end
-function ValFromdB(dB_val) return 10^(dB_val/20) end
-
-
 function GUI()
     if reaper.ImGui_IsWindowAppearing(ctx) then
         reaper.ImGui_SetNextWindowPos(ctx, reaper.ImGui_PointConvertNative(ctx, reaper.GetMousePosition()))
@@ -501,7 +490,6 @@ function GUI()
 end
 
 function Show_menu(tbl, skip_gui_command)
-    LAST_MOUSE_TR, LAST_MOUSE_LANE = MouseInfo()
     GROUP_LIST = Restore_GROUPS_FROM_Project_EXT_STATE()
     UPDATE_TEMPO = tbl.rprobj == reaper.GetMasterTrack(0) and true or false
     if tbl.rprobj == reaper.GetMasterTrack(0) then
@@ -512,10 +500,15 @@ function Show_menu(tbl, skip_gui_command)
     RAZOR_INFO = reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") and Get_Razor_Data(SEL_TRACK_TBL.rprobj) or nil
     local is_folder = reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "MediaTrack*") and reaper.GetMediaTrackInfo_Value(SEL_TRACK_TBL.rprobj, "I_FOLDERDEPTH") == 1
     Get_Selected_OR_Folder_tracks(is_folder) -- CHECK IF SELECTED TRACK IS FOLDER
-    CheckTrackLaneModeState(tbl) --! bring this back
-    for track in pairs(CURRENT_TRACKS) do UpdateCurrentFX_State(CURRENT_TRACKS[track]) SaveCurrentState(CURRENT_TRACKS[track]) end -- UPDATE INTERNAL TABLE BEFORE OPENING MENU
-    UpdateCurrentFX_State(SEL_TRACK_TBL)  SaveCurrentState(SEL_TRACK_TBL) -- store and update current track
+    for track in pairs(CURRENT_TRACKS) do
+        CheckTrackLaneModeState(CURRENT_TRACKS[track])
+        UpdateCurrentFX_State(CURRENT_TRACKS[track])
+        --SaveCurrentState(CURRENT_TRACKS[track])
+    end -- UPDATE INTERNAL TABLE BEFORE OPENING MENU
+    --UpdateCurrentFX_State(SEL_TRACK_TBL) -- store and update current track
+    --SaveCurrentState(SEL_TRACK_TBL) -- store and update current track
     if not skip_gui_command then
+        ImGui_Create_CTX()
         reaper.defer(GUI)
     else
         _G[skip_gui_command]()
@@ -699,7 +692,16 @@ end
 
 local function StoreLaneData(tbl)
     local num_items = reaper.CountTrackMediaItems(tbl.rprobj)
-    for i = 1, #tbl.info do
+    if num_items == 0 then return end -- NO ITEMS IN LANE MODE MEANS THERE IS ONLY VERSION 1
+    local item_for_height = reaper.GetTrackMediaItem(tbl.rprobj, 0)
+    local total_lanes = round(1 / reaper.GetMediaItemInfo_Value(item_for_height, 'F_FREEMODE_H')) -- WE CHECK LANE HEIGHT WITH ANY ITEM ON TRACK
+
+    if tbl.lane_mode == 0 then -- IF ORIGINAL LANE MODE IS NORMAL TRACK
+        SwapVirtualTrack(tbl.idx, tbl.rprobj) -- SWAP TO CURRENT VERSION
+        return
+    end
+
+    for i = 1 , total_lanes do
         local lane_chunk = {}
         for j = 1, num_items do
             local item = reaper.GetTrackMediaItem(tbl.rprobj, j - 1)
@@ -708,9 +710,14 @@ local function StoreLaneData(tbl)
                 lane_chunk[#lane_chunk + 1] = item_chunk
             end
         end
-        local name = tbl.info[i].name
-        tbl.info[i] = lane_chunk
-        tbl.info[i].name = name
+        local name = tbl.info[i] and tbl.info[i].name or "Version " .. i
+        -- if not tbl.info[i] then
+        --     tbl.info[i] = lane_chunk
+        --     tbl.info[i].name = name
+        -- else
+            tbl.info[i] = lane_chunk
+            tbl.info[i].name = name
+        --end
     end
 end
 
@@ -728,10 +735,11 @@ end
 
 function UpdateInternalState(tbl)
     if not tbl or not tbl.info[tbl.idx] then return false end
-    if tbl.lane_mode == 2 then -- ONLY HAPPENS ON MEDIA TRACKS
+    --if tbl.lane_mode == 2 then -- ONLY HAPPENS ON MEDIA TRACKS
+    if reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 2 then -- CHECK ACTUAL TRACK STATE
         StoreLaneData(tbl)
         return true
-    else
+    elseif reaper.GetMediaTrackInfo_Value(tbl.rprobj, "I_FREEMODE") == 0 then
         local name = tbl.info[tbl.idx].name
         local chunk_tbl = GetChunkTableForObject(tbl.rprobj)
         if chunk_tbl then
@@ -777,6 +785,9 @@ function CycleVersionsDOWN()
 end
 
 function ActivateLaneUndeMouse()
+    local LAST_MOUSE_LANE = MouseInfo(SEL_TRACK_TBL.rprobj)
+    if not LAST_MOUSE_LANE then return end
+    if LAST_MOUSE_LANE == SEL_TRACK_TBL.idx then return end -- DO NOT CONTINUE IF ALREADY AT SAME LANE
     reaper.PreventUIRefresh(1)
     reaper.Undo_BeginBlock2()
     for track in pairs(CURRENT_TRACKS) do
@@ -1047,6 +1058,7 @@ function SetFX_Chunk(tbl, fx_idx)
 end
 
 function SetInsertLaneChunk(tbl, lane)
+    if not lane then return end -- IN RARE SITUATIONS LANE IS NOT CALCULATED FROM MOUSE
     local track_chunk = GetTrackChunk(tbl.rprobj)
     local lane_mask = 1 << (lane - 1)
     if not track_chunk:find("LANESOLO") then -- IF ANY LANE IS NOT SOLOED LANESOLO PART DOES NOT EXIST YET AND WE NEED TO INJECT IT
@@ -1106,10 +1118,17 @@ local function Razor_item_position(item, time_Start, time_End)
     local item_lenght = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
     local item_start = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
     local item_end = item_lenght + item_start
+
+    local item_fadein = reaper.GetMediaItemInfo_Value(item, "D_FADEINLEN")
+    local item_fadeout = reaper.GetMediaItemInfo_Value(item, "D_FADEOUTLEN")
     local new_start = time_Start <= item_start and item_start or time_Start
+    local new_fade_in = item_start + item_fadein - new_start > 0 and item_start + item_fadein - new_start or 0.01
+    new_fade_in = new_fade_in > item_fadein and item_fadein or new_fade_in
     local new_lenght = time_End >= item_end and item_end - new_start or time_End - new_start
+    local new_fade_out = item_fadeout - (item_end - time_End) > 0 and item_fadeout - (item_end - time_End) or 0.01
+    new_fade_out = new_fade_out > item_fadeout and item_fadeout or new_fade_out
     local new_offset = time_Start <= item_start and 0 or (time_Start - item_start)
-    return new_start, new_lenght, new_offset
+    return new_start, new_lenght, new_offset, new_fade_in, new_fade_out
 end
 
 local function Delete_items_or_area(item, time_Start, time_End)
@@ -1122,28 +1141,32 @@ local function Delete_items_or_area(item, time_Start, time_End)
     end
 end
 
---! implement proper autocrossfade
 local function Make_item_from_razor(tbl, item, razor_info)
     if not item then return end
     local time_Start, time_End, razor_lane = razor_info[1], razor_info[2], razor_info.razor_lane
     local item_chunk = Get_Item_Chunk(item, true):gsub("{.-}", "") -- GENERATE NEW GUIDS FOR NEW ITEM, WE KEEP COLOR HERE TO GET IT IN COMP LANE (ITS REMOVED WHEN COMP IS OFF)
-    local new_item_start, new_item_lenght, new_item_offset = Razor_item_position(item, time_Start, time_End)
+    local new_item_start, new_item_lenght, new_item_offset, fade_in, fade_out = Razor_item_position(item, time_Start, time_End)
     local item_start_offset = tonumber(item_chunk:match("SOFFS (%S+)"))
     local item_play_rate = tonumber(item_chunk:match("PLAYRATE (%S+)"))
+    ----------------------------------
     local auto_crossfade = reaper.GetToggleCommandState(40041)
+    local is_midi = item_chunk:match("MIDI")
     local rv, def_auto_crossfade_value = reaper.get_config_var_string("defsplitxfadelen")
-    local crossfade_offset = auto_crossfade == 1 and def_auto_crossfade_value or 0
+    local crossfade_offset = (auto_crossfade == 0 or is_midi) and 0 or def_auto_crossfade_value
+    ----------------------------------
     local created_chunk = item_chunk:gsub("(POSITION) %S+", "%1 " .. new_item_start - crossfade_offset):gsub("(LENGTH) %S+", "%1 " .. new_item_lenght + (crossfade_offset * 2)):gsub("(SOFFS) %S+", "%1 " .. item_start_offset + (new_item_offset * item_play_rate) - crossfade_offset)
     local createdItem = reaper.AddMediaItemToTrack(tbl.rprobj)
     reaper.SetItemStateChunk(createdItem, created_chunk, false)
+    reaper.SetMediaItemInfo_Value(createdItem, "D_FADEINLEN", fade_in)
+    reaper.SetMediaItemInfo_Value(createdItem, "D_FADEOUTLEN", fade_out)
     reaper.SetMediaItemInfo_Value(createdItem, "F_FREEMODE_Y", (tbl.comp_idx - 1) / #tbl.info)
     reaper.SetMediaItemInfo_Value(createdItem, "F_FREEMODE_H", 1 / #tbl.info)
     return createdItem, created_chunk
 end
 
 function CopyToCOMP(tr)
-    reaper.PreventUIRefresh(1)
     if not RAZOR_INFO then return end
+    reaper.PreventUIRefresh(1)
     reaper.Undo_BeginBlock2()
     local selected_tracks = tr and {CURRENT_TRACKS[tr]} or CURRENT_TRACKS
     for track in pairs(selected_tracks) do
@@ -1180,21 +1203,21 @@ function SetItemsInLanes(tbl)
 end
 
 function CheckTrackLaneModeState(tr_tbl)
+    reaper.PreventUIRefresh(1)
     if not reaper.ValidatePtr(tr_tbl.rprobj, "MediaTrack*") then return end
     local current_track_mode = math.floor(reaper.GetMediaTrackInfo_Value(tr_tbl.rprobj, "I_FREEMODE"))
     if current_track_mode ~= tr_tbl.lane_mode then
-        UpdateInternalState(tr_tbl)
-        current_track_mode = current_track_mode ~= 1 and current_track_mode or 2
-        reaper.PreventUIRefresh(1)
-        tr_tbl.lane_mode = current_track_mode
-        if current_track_mode == 2 then
+        if current_track_mode == 2 then StoreLaneData(tr_tbl) end
+        local original_track_mode = SEL_TRACK_TBL.lane_mode
+        tr_tbl.lane_mode = original_track_mode
+        if original_track_mode == 2 then
             Set_LaneView_mode(tr_tbl)
-        elseif current_track_mode == 0 then
+        elseif original_track_mode == 0 then
             SwapVirtualTrack(tr_tbl.idx, tr_tbl.rprobj)
         end
-        StoreStateToDocument(tr_tbl)
-        reaper.PreventUIRefresh(-1)
     end
+    SaveCurrentState(tr_tbl)
+    reaper.PreventUIRefresh(-1)
 end
 
 function ShowAll(lane_mode)
@@ -1308,9 +1331,9 @@ end
 function Same_Envelope_AS_Mouse(tr_tbl)
     local same_envelopes = nil
     local all_childs = GetChild_ParentTrack_FromStored_PEXT(tr_tbl)
-    if reaper.ValidatePtr(LAST_MOUSE_TR, "TrackEnvelope*") then
+    if reaper.ValidatePtr(SEL_TRACK_TBL.rprobj, "TrackEnvelope*") then
         same_envelopes = {}
-        local m_retval, m_name = reaper.GetEnvelopeName(LAST_MOUSE_TR)
+        local m_retval, m_name = reaper.GetEnvelopeName(SEL_TRACK_TBL.rprobj)
         for track in pairs(all_childs) do
             if reaper.ValidatePtr(track, "TrackEnvelope*") and all_childs[track] then
                 local env_retval, env_name = reaper.GetEnvelopeName(track)
@@ -1550,10 +1573,9 @@ function Get_lane_from_mouse_coordinates(mouse_tr)
 	end
 end
 
-function MouseInfo()
-    local mouse_tr = Get_track_under_mouse()
+function MouseInfo(mouse_tr)
 	local mouse_lane = Get_lane_from_mouse_coordinates(mouse_tr)
-    return mouse_tr, mouse_lane
+    return mouse_lane
 end
 
 function Find_Highest(tbl)
