@@ -1,9 +1,9 @@
 -- @description EDIT GROUPS
 -- @author Sexan
 -- @license GPL v3
--- @version 0.2
+-- @version 0.3
 -- @changelog
---   + Properly handle selected item
+--   + More handling of selected item
 
 local reaper = reaper
 local _, _, sectionID, cmdID, _, _, _ = reaper.get_action_context()
@@ -137,15 +137,20 @@ end
 
 OLD_RAZOR = nil
 local function Edit_groups()
-    local SEL_ITEM = reaper.GetSelectedMediaItem(0,0)
+    local MOUSE_TR = Get_track_under_mouse()
     local item_under_cursor = reaper.BR_ItemAtMouseCursor()
+    if MOUSE_TR then
+        for i = 1, reaper.CountTrackMediaItems( MOUSE_TR )do
+            SEL_ITEM = reaper.GetSelectedMediaItem(0, i - 1)
+            if SEL_ITEM and SEL_ITEM == item_under_cursor then
+                break
+            else
+                SEL_ITEM = nil
+            end -- found
+        end
+    end
 
-    if SEL_ITEM ~= item_under_cursor then SEL_ITEM = nil end
-
-    MOUSE_TR = Get_track_under_mouse()
-    --local sel_track =  reaper.GetMediaItem_Track( SEL_ITEM )
     RAZOR = Get_Razor_Data(MOUSE_TR)
-    --reaper.SelectAllMediaItems( 0, false )
 
     local sel_item_lenght = SEL_ITEM and reaper.GetMediaItemInfo_Value(SEL_ITEM, "D_LENGTH")
     local sel_item_start = SEL_ITEM and reaper.GetMediaItemInfo_Value(SEL_ITEM, "D_POSITION")
