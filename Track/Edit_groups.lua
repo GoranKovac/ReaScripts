@@ -1,7 +1,7 @@
 -- @description EDIT GROUPS
 -- @author Sexan
 -- @license GPL v3
--- @version 0.7
+-- @version 0.8
 -- @changelog
 --   + Lil small fix with razors
 
@@ -188,7 +188,6 @@ local function Edit_groups()
     end
 
     if RAZOR or SEL_ITEM then
-        MSG("JE")
         for j = 1, #GROUPS do
             for k = 1, #GROUPS[j] do
                 if In_table(GROUPS[j], MOUSE_TR) then
