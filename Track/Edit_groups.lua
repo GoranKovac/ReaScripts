@@ -1,9 +1,9 @@
 -- @description EDIT GROUPS
 -- @author Sexan
 -- @license GPL v3
--- @version 0.10
+-- @version 0.11
 -- @changelog
---   + add custom unselect item function (does not spam undo history li selectallitems API)
+--   + microfixing
 
 local reaper = reaper
 local _, _, sectionID, cmdID, _, _, _ = reaper.get_action_context()
@@ -21,12 +21,12 @@ local WML_intercept2 = reaper.JS_WindowMessage_Intercept(track_window, "WM_LBUTT
 
 local prevTime , prevTime2 = 0,0
 function Track_mouse_LCLICK()
-    CLICK = nil
+    CLICK, UP = nil, nil
     local pOK2, pass2, time2, wLow2, wHigh2, lLow2, lHigh2 = reaper.JS_WindowMessage_Peek(track_window, "WM_LBUTTONDOWN")
     local pOK, pass, time, wLow, wHigh, lLow, lHigh = reaper.JS_WindowMessage_Peek(track_window, "WM_LBUTTONUP")
     if pOK and time > prevTime then
         prevTime = time
-        CLICK = true
+        UP = true
     end
     if pOK2 and time2 > prevTime2 then
         prevTime2 = time2
@@ -189,20 +189,23 @@ end
 local function Edit_groups()
     local item_under_cursor = reaper.BR_ItemAtMouseCursor()
     if item_under_cursor then
-        UnselectAllItems()
-        SEL_ITEM = item_under_cursor
+        if CLICK then
+            CLICKED_ITEM = item_under_cursor
+            UnselectAllItems()
+        end
     end
 
-    if RAZOR or SEL_ITEM then
+    if RAZOR or CLICKED_ITEM then
         for j = 1, #GROUPS do
             for k = 1, #GROUPS[j] do
                 if In_table(GROUPS[j], MOUSE_TR) then
                     if RAZOR then Set_Razor_Data(GROUPS[j][k], RAZOR) end
-                    if SEL_ITEM then GetAndSelectItemsInGroups(GROUPS[j][k], SEL_ITEM) end
+                    if CLICKED_ITEM then GetAndSelectItemsInGroups(GROUPS[j][k], CLICKED_ITEM) end
                 end
             end
         end
-        SEL_ITEM, RAZOR = nil, nil
+        RAZOR = nil
+        if UP then CLICKED_ITEM = nil end
     end
 end
 
@@ -222,7 +225,7 @@ local function Main()
     MOUSE_TR = Get_track_under_mouse()
     Track_mouse_LCLICK()
     if Is_razor_created() then RAZOR = Get_Razor_Data(MOUSE_TR) end
-    if CLICK or RAZOR then
+    if CLICK or UP or RAZOR then
         reaper.PreventUIRefresh(1)
         Edit_groups()
         reaper.PreventUIRefresh(-1)
