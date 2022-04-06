@@ -1,9 +1,9 @@
 -- @description EDIT GROUPS
 -- @author Sexan
 -- @license GPL v3
--- @version 0.8
+-- @version 0.10
 -- @changelog
---   + Lil small fix with razors
+--   + add custom unselect item function (does not spam undo history li selectallitems API)
 
 local reaper = reaper
 local _, _, sectionID, cmdID, _, _, _ = reaper.get_action_context()
@@ -190,7 +190,6 @@ local function Edit_groups()
     local item_under_cursor = reaper.BR_ItemAtMouseCursor()
     if item_under_cursor then
         UnselectAllItems()
-        --reaper.SelectAllMediaItems(0, false)
         SEL_ITEM = item_under_cursor
     end
 
