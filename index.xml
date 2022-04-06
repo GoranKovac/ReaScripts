@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="edeb6ea0b269f019efb5ce85951ae8de7ea4bf4d" name="Sexan_Scripts">
+<index version="1" commit="9fe98253c2960278c9366b405cfd20b58f799878" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -711,6 +711,10 @@
       <version name="0.10" author="Sexan" time="2022-04-06T20:21:38Z">
         <changelog><![CDATA[+ add custom unselect item function (does not spam undo history li selectallitems API)]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/edeb6ea0b269f019efb5ce85951ae8de7ea4bf4d/Track/Edit_groups.lua</source>
+      </version>
+      <version name="0.11" author="Sexan" time="2022-04-06T20:49:34Z">
+        <changelog><![CDATA[+ microfixing]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/9fe98253c2960278c9366b405cfd20b58f799878/Track/Edit_groups.lua</source>
       </version>
     </reapack>
     <reapack name="Sexan_Create VCA master from selection.lua" type="script" desc="Create VCA Master from selection.lua">
