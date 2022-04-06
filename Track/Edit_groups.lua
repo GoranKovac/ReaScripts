@@ -180,10 +180,17 @@ local function GetAndSelectItemsInGroups(tr_tbl, item)
     end
 end
 
+local function UnselectAllItems()
+    for i = reaper.CountSelectedMediaItems(0), 1, -1 do
+        reaper.SetMediaItemSelected(reaper.GetSelectedMediaItem(0, i - 1), false) -- SELECT ITEMS ONLY
+    end
+end
+
 local function Edit_groups()
     local item_under_cursor = reaper.BR_ItemAtMouseCursor()
     if item_under_cursor then
-        reaper.SelectAllMediaItems(0, false)
+        UnselectAllItems()
+        --reaper.SelectAllMediaItems(0, false)
         SEL_ITEM = item_under_cursor
     end
 
