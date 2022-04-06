@@ -1,7 +1,7 @@
 -- @description EDIT GROUPS
 -- @author Sexan
 -- @license GPL v3
--- @version 0.11
+-- @version 0.12
 -- @changelog
 --   + microfixing
 
