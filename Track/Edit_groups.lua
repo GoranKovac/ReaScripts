@@ -1,14 +1,35 @@
 -- @description EDIT GROUPS
 -- @author Sexan
 -- @license GPL v3
--- @version 0.3
+-- @version 0.4
 -- @changelog
---   + More handling of selected item
+--   + More selection improvements
+--   + Selecting any part of item select items (fade,volume,edge etc)
 
 local reaper = reaper
 local _, _, sectionID, cmdID, _, _, _ = reaper.get_action_context()
 reaper.SetToggleCommandState(sectionID, cmdID, 1)
 reaper.RefreshToolbar2(sectionID, cmdID)
+
+local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
+local track_window = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8) -- GET TRACK VIEW
+local WML_intercept = reaper.JS_WindowMessage_Intercept(track_window, "WM_LBUTTONDOWN", true) -- INTERCEPT MOUSE L BUTTON
+local WML_intercept2 = reaper.JS_WindowMessage_Intercept(track_window, "WM_LBUTTONUP", true) -- INTERCEPT MOUSE L BUTTON
+
+local prevTime , prevTime2 = 0,0
+function Track_mouse_LCLICK()
+    CLICK = nil
+    local pOK2, pass2, time2, wLow2, wHigh2, lLow2, lHigh2 = reaper.JS_WindowMessage_Peek(track_window, "WM_LBUTTONDOWN")
+    local pOK, pass, time, wLow, wHigh, lLow, lHigh = reaper.JS_WindowMessage_Peek(track_window, "WM_LBUTTONUP")
+    if pOK and time > prevTime then
+        prevTime = time
+        CLICK = true
+    end
+    if pOK2 and time2 > prevTime2 then
+        prevTime2 = time2
+        CLICK = true
+    end
+end
 
 function Round(num) return math.floor(num + 0.5) end
 function MSG(m) reaper.ShowConsoleMsg(tostring(m) .. "\n") end
@@ -135,56 +156,63 @@ local function Get_track_under_mouse()
     if track then return track end
 end
 
-OLD_RAZOR = nil
-local function Edit_groups()
-    local MOUSE_TR = Get_track_under_mouse()
-    local item_under_cursor = reaper.BR_ItemAtMouseCursor()
-    if MOUSE_TR then
-        for i = 1, reaper.CountTrackMediaItems( MOUSE_TR )do
-            SEL_ITEM = reaper.GetSelectedMediaItem(0, i - 1)
-            if SEL_ITEM and SEL_ITEM == item_under_cursor then
-                break
-            else
-                SEL_ITEM = nil
-            end -- found
+local function GetAndSelectItemsInGroups(tr_tbl, item)
+    local sel_item_lenght = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
+    local sel_item_start = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
+    local sel_item_end = sel_item_lenght + sel_item_start
+
+    for i = 1, reaper.CountTrackMediaItems(tr_tbl) do
+        local item_in_group = reaper.GetTrackMediaItem(tr_tbl, i - 1)
+        local item_lenght = reaper.GetMediaItemInfo_Value(item_in_group, "D_LENGTH")
+        local item_start = reaper.GetMediaItemInfo_Value(item_in_group, "D_POSITION")
+        local item_end = item_lenght + item_start
+        if (item_start >= sel_item_start) and (item_start < sel_item_end) and (item_end <= sel_item_end) then
+            reaper.SetMediaItemSelected(item_in_group, true) -- SELECT ITEMS ONLY
         end
     end
+end
 
-    RAZOR = Get_Razor_Data(MOUSE_TR)
+local function Edit_groups()
+    local item_under_cursor = reaper.BR_ItemAtMouseCursor()
+    if item_under_cursor then
+        reaper.SelectAllMediaItems(0, false)
+        SEL_ITEM = item_under_cursor
+    end
 
-    local sel_item_lenght = SEL_ITEM and reaper.GetMediaItemInfo_Value(SEL_ITEM, "D_LENGTH")
-    local sel_item_start = SEL_ITEM and reaper.GetMediaItemInfo_Value(SEL_ITEM, "D_POSITION")
-    local sel_item_end = SEL_ITEM and sel_item_lenght + sel_item_start
-
-    reaper.PreventUIRefresh(1)
-    for j = 1, #GROUPS do
-        for k = 1, #GROUPS[j] do
-            if In_table(GROUPS[j], MOUSE_TR) then
-                if RAZOR then Set_Razor_Data(GROUPS[j][k], RAZOR) end
-                if SEL_ITEM then
-                    for i = 1, reaper.CountTrackMediaItems(GROUPS[j][k]) do
-                        local item_in_group = reaper.GetTrackMediaItem(GROUPS[j][k], i - 1)
-                        local item_lenght = reaper.GetMediaItemInfo_Value(item_in_group, "D_LENGTH")
-                        local item_start = reaper.GetMediaItemInfo_Value(item_in_group, "D_POSITION")
-                        local item_end = item_lenght + item_start
-                        if (item_start >= sel_item_start) and (item_start < sel_item_end) and (item_end <= sel_item_end) then
-                            reaper.SetMediaItemSelected(item_in_group, true) -- SELECT ITEMS ONLY
-                        end
-                    end
+    if RAZOR or SEL_ITEM then
+        reaper.PreventUIRefresh(1)
+        for j = 1, #GROUPS do
+            for k = 1, #GROUPS[j] do
+                if In_table(GROUPS[j], MOUSE_TR) then
+                    if RAZOR then Set_Razor_Data(GROUPS[j][k], RAZOR) end
+                    if SEL_ITEM then GetAndSelectItemsInGroups(GROUPS[j][k], SEL_ITEM) end
                 end
             end
         end
+        reaper.PreventUIRefresh(-1)
+        reaper.UpdateArrange()
+        SEL_ITEM, RAZOR = nil, nil
     end
-    reaper.PreventUIRefresh(-1)
-    reaper.UpdateArrange()
 end
 
-local old_state = reaper.GetProjectStateChangeCount(0)
+local lastProjectChangeCount = reaper.GetProjectStateChangeCount(0)
+local function Is_razor_created()
+    local razor_action = nil
+    local projectChangeCount = reaper.GetProjectStateChangeCount(0)
+    if lastProjectChangeCount ~= projectChangeCount then
+        local last_action = reaper.Undo_CanUndo2( 0 )
+        if last_action:match("Razor") then razor_action = true end
+        lastProjectChangeCount = projectChangeCount
+    end
+    return razor_action
+end
+
 local function Main()
-    local changeCount = reaper.GetProjectStateChangeCount(0)
-    if old_state ~= changeCount then
+    MOUSE_TR = Get_track_under_mouse()
+    Track_mouse_LCLICK()
+    if Is_razor_created() then RAZOR = Get_Razor_Data(MOUSE_TR) end
+    if CLICK or Is_razor_created() then
         Edit_groups()
-        old_state = changeCount
     end
     reaper.defer(Main)
 end
@@ -192,6 +220,7 @@ end
 function DoAtExit()
     reaper.SetToggleCommandState(sectionID, cmdID, 0);
     reaper.RefreshToolbar2(sectionID, cmdID);
+    reaper.JS_WindowMessage_Release(track_window, "WM_LBUTTONDOWN")
 end
 
 Fill_groups()
