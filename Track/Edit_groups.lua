@@ -1,10 +1,9 @@
 -- @description EDIT GROUPS
 -- @author Sexan
 -- @license GPL v3
--- @version 0.1
+-- @version 0.2
 -- @changelog
---   + initial release
-
+--   + Properly handle selected item
 
 local reaper = reaper
 local _, _, sectionID, cmdID, _, _, _ = reaper.get_action_context()
@@ -136,9 +135,13 @@ local function Get_track_under_mouse()
     if track then return track end
 end
 
-
+OLD_RAZOR = nil
 local function Edit_groups()
-    SEL_ITEM = reaper.BR_ItemAtMouseCursor()
+    local SEL_ITEM = reaper.GetSelectedMediaItem(0,0)
+    local item_under_cursor = reaper.BR_ItemAtMouseCursor()
+
+    if SEL_ITEM ~= item_under_cursor then SEL_ITEM = nil end
+
     MOUSE_TR = Get_track_under_mouse()
     --local sel_track =  reaper.GetMediaItem_Track( SEL_ITEM )
     RAZOR = Get_Razor_Data(MOUSE_TR)
