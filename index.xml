@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="ace51755924a099ae76cb990f8102b9983aa5ffc" name="Sexan_Scripts">
+<index version="1" commit="48c305a573fb133a6114473be29bd7bfefab14b2" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -695,6 +695,10 @@
       <version name="0.5" author="Sexan" time="2022-04-06T18:37:11Z">
         <changelog><![CDATA[+ Fix crash on tracks without items]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/ace51755924a099ae76cb990f8102b9983aa5ffc/Track/Edit_groups.lua</source>
+      </version>
+      <version name="0.6" author="Sexan" time="2022-04-06T19:43:11Z">
+        <changelog><![CDATA[+ Do not allow starting script if all groups are empty]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/48c305a573fb133a6114473be29bd7bfefab14b2/Track/Edit_groups.lua</source>
       </version>
     </reapack>
     <reapack name="Sexan_Create VCA master from selection.lua" type="script" desc="Create VCA Master from selection.lua">
