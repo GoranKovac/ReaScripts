@@ -1,9 +1,9 @@
 -- @description EDIT GROUPS
 -- @author Sexan
 -- @license GPL v3
--- @version 0.6
+-- @version 0.7
 -- @changelog
---   + Do not allow starting script if all groups are empty
+--   + Lil small fix with razors
 
 local reaper = reaper
 local _, _, sectionID, cmdID, _, _, _ = reaper.get_action_context()
@@ -188,6 +188,7 @@ local function Edit_groups()
     end
 
     if RAZOR or SEL_ITEM then
+        MSG("JE")
         for j = 1, #GROUPS do
             for k = 1, #GROUPS[j] do
                 if In_table(GROUPS[j], MOUSE_TR) then
@@ -216,7 +217,7 @@ local function Main()
     MOUSE_TR = Get_track_under_mouse()
     Track_mouse_LCLICK()
     if Is_razor_created() then RAZOR = Get_Razor_Data(MOUSE_TR) end
-    if CLICK or Is_razor_created() then
+    if CLICK or RAZOR then
         reaper.PreventUIRefresh(1)
         Edit_groups()
         reaper.PreventUIRefresh(-1)
