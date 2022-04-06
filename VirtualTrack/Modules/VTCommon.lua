@@ -1616,3 +1616,32 @@ function GetFolderChilds(track)
     end
     return children
 end
+
+
+function Edit_groups()
+    SEL_ITEM = reaper.GetSelectedMediaItem(0, 0)
+    if not SEL_ITEM then return end
+    reaper.PreventUIRefresh(1)
+    reaper.Main_OnCommand( 40289, 0 ) -- UNSELECT ALL ITEMS
+    local sel_item_lenght = reaper.GetMediaItemInfo_Value(SEL_ITEM, "D_LENGTH")
+    local sel_item_start = reaper.GetMediaItemInfo_Value(SEL_ITEM, "D_POSITION")
+    local sel_item_end = sel_item_lenght + sel_item_start
+
+    for k, v in pairs(CURRENT_TRACKS) do
+        for i = 1,  reaper.CountTrackMediaItems(k) do
+            local item_in_group = reaper.GetTrackMediaItem(k, i - 1)
+            local item_lenght = reaper.GetMediaItemInfo_Value(item_in_group, "D_LENGTH")
+            local item_start = reaper.GetMediaItemInfo_Value(item_in_group, "D_POSITION")
+            local item_end = item_lenght + item_start
+            -- if (sel_item_start < item_end and sel_item_end > item_start) then
+            --     reaper.SetMediaItemSelected(item_in_group, true)
+            -- end
+
+            if (item_start >= sel_item_start) and (item_start < sel_item_end) and (item_end <= sel_item_end) then
+                reaper.SetMediaItemSelected(item_in_group, true) -- SELECT ITEMS ONLY
+            end
+        end
+    end
+
+    reaper.PreventUIRefresh(-1)
+end
