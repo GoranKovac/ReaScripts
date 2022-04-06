@@ -1,14 +1,18 @@
 -- @description EDIT GROUPS
 -- @author Sexan
 -- @license GPL v3
--- @version 0.5
+-- @version 0.6
 -- @changelog
---   + Fix crash on tracks without items
+--   + Do not allow starting script if all groups are empty
 
 local reaper = reaper
 local _, _, sectionID, cmdID, _, _, _ = reaper.get_action_context()
 reaper.SetToggleCommandState(sectionID, cmdID, 1)
 reaper.RefreshToolbar2(sectionID, cmdID)
+
+function Round(num) return math.floor(num + 0.5) end
+function MSG(m) reaper.ShowConsoleMsg(tostring(m) .. "\n") end
+
 
 local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
 local track_window = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8) -- GET TRACK VIEW
@@ -29,9 +33,6 @@ function Track_mouse_LCLICK()
         CLICK = true
     end
 end
-
-function Round(num) return math.floor(num + 0.5) end
-function MSG(m) reaper.ShowConsoleMsg(tostring(m) .. "\n") end
 
 local GROUP_FLAGS = {
     "VOLUME_LEAD",
@@ -82,6 +83,13 @@ local function Fill_groups()
             end
         end
     end
+end
+
+local function IsAnyGroupFilled()
+    for i = 1 , 64 do
+        if #GROUPS[i] ~= 0 then return true end
+    end
+    return false
 end
 
 local function GetEnvGuidFromName(track, env_name )
@@ -180,7 +188,6 @@ local function Edit_groups()
     end
 
     if RAZOR or SEL_ITEM then
-        reaper.PreventUIRefresh(1)
         for j = 1, #GROUPS do
             for k = 1, #GROUPS[j] do
                 if In_table(GROUPS[j], MOUSE_TR) then
@@ -189,8 +196,6 @@ local function Edit_groups()
                 end
             end
         end
-        reaper.PreventUIRefresh(-1)
-        reaper.UpdateArrange()
         SEL_ITEM, RAZOR = nil, nil
     end
 end
@@ -212,7 +217,10 @@ local function Main()
     Track_mouse_LCLICK()
     if Is_razor_created() then RAZOR = Get_Razor_Data(MOUSE_TR) end
     if CLICK or Is_razor_created() then
+        reaper.PreventUIRefresh(1)
         Edit_groups()
+        reaper.PreventUIRefresh(-1)
+        reaper.UpdateArrange()
     end
     reaper.defer(Main)
 end
@@ -224,5 +232,11 @@ function DoAtExit()
 end
 
 Fill_groups()
-Main()
+if not IsAnyGroupFilled() then
+    reaper.MB( "All groups are empty, turning script off", "ALL GROUPS ARE EMPTY", 0 )
+    DoAtExit()
+    return reaper.defer(function() end)
+else
+    Main()
+end
 reaper.atexit(DoAtExit)
