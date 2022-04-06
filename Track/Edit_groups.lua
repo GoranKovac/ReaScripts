@@ -1,10 +1,9 @@
 -- @description EDIT GROUPS
 -- @author Sexan
 -- @license GPL v3
--- @version 0.4
+-- @version 0.5
 -- @changelog
---   + More selection improvements
---   + Selecting any part of item select items (fade,volume,edge etc)
+--   + Fix crash on tracks without items
 
 local reaper = reaper
 local _, _, sectionID, cmdID, _, _, _ = reaper.get_action_context()
@@ -96,6 +95,7 @@ end
 
 local function Get_Total_lanes(track)
     local item = reaper.GetTrackMediaItem(track, 0) -- get any item for checking lanes
+    if not item then return 1 end
     local _, chunk = reaper.GetItemStateChunk( item, "", false )
     local lane_h = tonumber(chunk:match("YPOS %S+ (%S+)")) and tonumber(chunk:match("YPOS %S+ (%S+)")) or 1
     return lane_h
