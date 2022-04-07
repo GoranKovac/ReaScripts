@@ -1,9 +1,9 @@
 -- @description EDIT GROUPS
 -- @author Sexan
 -- @license GPL v3
--- @version 0.17
+-- @version 0.18
 -- @changelog
---   + fix marquee select items not working
+--   + support for non-continuous (multiple razors)
 
 local reaper = reaper
 
@@ -128,45 +128,63 @@ local function Calculate_New_Razors_from_lanes(track, razor_data)
     return new_top, new_bot
 end
 
-local function Set_Razor_Data(track, razor_data)
+local function Set_Razor_Data(track, razors)
     local razor_str = ""
-    for i = 1, #razor_data.env do
-        local env_guid = GetEnvGuidFromName(track, razor_data.env[i])
-        if env_guid then -- ENVELOPE
-            razor_str = razor_str .. razor_data[1] .. " " .. razor_data[2] .. " "  .. env_guid .. " " .. "0 1" .. ","
-        elseif razor_data.env[i] == '""' then -- NORMAL TRACK
-            local new_top, new_bot = Calculate_New_Razors_from_lanes(track, razor_data)
-            if reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") == 0 and new_top ~= 0 then return end -- SINCE NORMAL TRACK ADDS RAZORS NO MATTER WHAT JUST SKIP IT IF TOP IS NOT 0
-            razor_str = razor_str .. razor_data[1] .. " " .. razor_data[2] .. " " .. "'' " .. new_top .. " " .. new_bot .. ","
+    for r = 1, #razors do
+        for i = 1, #razors[r].env do
+            local env_guid = GetEnvGuidFromName(track, razors[r].env[i])
+            if env_guid then -- ENVELOPE
+                razor_str = razor_str .. razors[r][1] .. " " .. razors[r][2] .. " "  .. env_guid .. " " .. "0 1" .. ","
+            elseif razors[r].env[i] == '""' then -- NORMAL TRACK
+                local new_top, new_bot = Calculate_New_Razors_from_lanes(track, razors[r])
+                if reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") == 0 and new_top ~= 0 then return end -- SINCE NORMAL TRACK ADDS RAZORS NO MATTER WHAT JUST SKIP IT IF TOP IS NOT 0
+                razor_str = razor_str .. razors[r][1] .. " " .. razors[r][2] .. " " .. "'' " .. new_top .. " " .. new_bot .. ","
+            end
         end
     end
     reaper.GetSetMediaTrackInfo_String(track, "P_RAZOREDITS_EXT", razor_str, true)
 end
 
+local function Get_Razor_string(track)
+    local all_razors = {}
+    local _, razor_str = reaper.GetSetMediaTrackInfo_String(track, 'P_RAZOREDITS_EXT', '', false)
+    if razor_str == "" then return nil end
+    if razor_str:match(',') then
+        for razor in razor_str:gmatch('([^,]+)') do
+            table.insert(all_razors, razor)
+        end
+    else
+        table.insert(all_razors, razor_str)
+    end
+    return all_razors
+end
+
 local function Get_Razor_Data(track)
     if not track then return end
-    local _, razor_area = reaper.GetSetMediaTrackInfo_String(track, 'P_RAZOREDITS_EXT', '', false)
-    if razor_area == "" then return nil end
-    razor_area = razor_area:gsub(","," ")
+    local razors_tbl = Get_Razor_string(track)
+    if not razors_tbl then return nil end
     local razor_info = {}
-    local razor_envelopes = {}
-    for i in string.gmatch(razor_area, "%S+") do
-        table.insert(razor_info,tonumber(i))
-        if not tonumber(i) then razor_envelopes[#razor_envelopes+1] = i end
-    end
-    if #razor_envelopes ~= 0 then
-        for i = 1, #razor_envelopes do
-            local env_guid = razor_envelopes[i]:match("({.-})")
-            if env_guid then
-                local env = reaper.GetTrackEnvelopeByChunkName( track, env_guid )
-                local _, env_name = reaper.GetEnvelopeName( env )
-                razor_envelopes[i] = env_name
+    for r = 1, #razors_tbl do
+        local razor_envelopes = {}
+        razor_info[r] = {}
+        for i in string.gmatch(razors_tbl[r], "%S+") do
+            table.insert(razor_info[r],tonumber(i))
+            if not tonumber(i) then razor_envelopes[#razor_envelopes+1] = i end
+        end
+        if #razor_envelopes ~= 0 then
+            for i = 1, #razor_envelopes do
+                local env_guid = razor_envelopes[i]:match("({.-})")
+                if env_guid then
+                    local env = reaper.GetTrackEnvelopeByChunkName( track, env_guid )
+                    local _, env_name = reaper.GetEnvelopeName( env )
+                    razor_envelopes[i] = env_name
+                end
             end
         end
+        local lane_h = Get_Total_lanes(track)
+        razor_info[r].lanes = { top = Round(razor_info[r][3] / lane_h) , bot = Round(razor_info[r][4] / lane_h)} -- CALCULATE RAZOR LANE FROM COORDS (1, 2, 3 ETC) FOR EASIER CALCULATION LATER
+        razor_info[r].env = next(razor_envelopes) and razor_envelopes
     end
-    local lane_h = Get_Total_lanes(track)
-    razor_info.lanes = { top = Round(razor_info[3] / lane_h) , bot = Round(razor_info[4] / lane_h)} -- CALCULATE RAZOR LANE FROM COORDS (1, 2, 3 ETC) FOR EASIER CALCULATION LATER
-    razor_info.env = next(razor_envelopes) and razor_envelopes
     razor_info.track = track
     return razor_info
 end
@@ -206,7 +224,7 @@ local function Edit_groups()
         local item_track = reaper.GetMediaItemTrack( item_under_cursor )
         if CLICK or UP  then
             CLICKED_ITEM = In_Any_Group(item_track) and item_under_cursor -- IF TRACK IS IN ANY GROUP
-            ITEM_TRACK = CLICKED_ITEM and item_track -- IF TRACK IS IN ANY GROUP
+            DEST_TRACK = CLICKED_ITEM and item_track -- IF TRACK IS IN ANY GROUP
             if CLICKED_ITEM then UnselectAllItems() end -- UNSELECT ONLY WHEN IN ANY GROUP
         end
     end
@@ -215,17 +233,17 @@ local function Edit_groups()
         local item = reaper.GetSelectedMediaItem(0,0)
         if item then
             CLICKED_ITEM = item
-            ITEM_TRACK = reaper.GetMediaItemTrack( item )
+            DEST_TRACK = reaper.GetMediaItemTrack( item )
         end
     end
 
-    if RAZOR and not CLICKED_ITEM then ITEM_TRACK = RAZOR.track end
+    if RAZOR and not CLICKED_ITEM then DEST_TRACK = RAZOR.track end
 
     if RAZOR or CLICKED_ITEM or MARQUEE_ITEM then
         reaper.PreventUIRefresh(1)
         for j = 1, #GROUPS do
             for k = 1, #GROUPS[j] do
-                if In_Group(GROUPS[j], ITEM_TRACK) then
+                if In_Group(GROUPS[j], DEST_TRACK) then
                     if RAZOR then Set_Razor_Data(GROUPS[j][k], RAZOR) end
                     if CLICKED_ITEM then GetAndSelectItemsInGroups(GROUPS[j][k], CLICKED_ITEM) end
                 end
@@ -240,7 +258,7 @@ local function Edit_groups()
             MARQUEE_ITEM = nil
             CLICKED_ITEM = nil
         end
-        ITEM_TRACK = nil
+        DEST_TRACK = nil
     end
 end
 
