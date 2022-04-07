@@ -249,12 +249,7 @@ local function Main()
     MOUSE_TR = Get_track_under_mouse()
     Track_mouse_LCLICK()
     if Is_razor_created() then RAZOR = Get_Razor_Data(MOUSE_TR) end
-    --if CLICK or UP or RAZOR then
-    --    reaper.PreventUIRefresh(1)
-        Edit_groups()
-    --    reaper.PreventUIRefresh(-1)
-    --    reaper.UpdateArrange()
-    --end
+    Edit_groups()
     reaper.defer(Main)
 end
 
