@@ -1,7 +1,7 @@
 -- @description EDIT GROUPS
 -- @author Sexan
 -- @license GPL v3
--- @version 0.20
+-- @version 0.21
 -- @changelog
 --   + Add enable disable edit group window
 --   + ImGUI
