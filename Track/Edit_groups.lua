@@ -1,15 +1,20 @@
 -- @description EDIT GROUPS
 -- @author Sexan
 -- @license GPL v3
--- @version 0.18
+-- @version 0.20
 -- @changelog
---   + support for non-continuous (multiple razors)
+--   + Add enable disable edit group window
+--   + ImGUI
 
 local reaper = reaper
 
 if not reaper.APIExists("JS_ReaScriptAPI_Version") then
     reaper.MB( "JS_ReaScriptAPI is required for this script. Please download it from ReaPack", "SCRIPT REQUIREMENTS", 0 )
     reaper.ReaPack_BrowsePackages('JS_ReaScriptAPI:')
+    return reaper.defer(function() end)
+elseif not reaper.ImGui_GetVersion then
+    reaper.MB( "ReaImGui is required for this script. Please download it from ReaPack", "SCRIPT REQUIREMENTS", 0 )
+    reaper.ReaPack_BrowsePackages( 'ReaImGui:')
     return reaper.defer(function() end)
 end
 
@@ -67,6 +72,20 @@ local GROUP_FLAGS = {
 }
 
 local GROUPS = {}
+GROUPS.enabled_mask = 0
+
+function Set_Group_EDIT_ENABLE(group, enable)
+    if not enable then -- BITS ARE 1
+        GROUPS.enabled_mask = GROUPS.enabled_mask | (1 << (group - 1))
+        GROUPS.enabled_mask = GROUPS.enabled_mask ~ (1 << (group - 1)) -- SET BITS TO 0 (DISABLE)
+    elseif enable then -- BITS ARE 0
+        GROUPS.enabled_mask = GROUPS.enabled_mask | (1 << (group - 1)) -- SET BITS TO 1 (ENABLE)
+    end
+end
+
+function CheckGroupEnable(group)
+    return GROUPS.enabled_mask & (1 << (group - 1)) ~= 0 and true
+end
 
 local function In_Group(tbl, val)
     for i = 1, #tbl do if tbl[i] == val then return true end end
@@ -74,7 +93,7 @@ end
 
 local function In_Any_Group(val)
     for i = 1, 64 do
-        if In_Group(GROUPS[i], val) then return true end
+        if In_Group(GROUPS[i], val) then return i end
     end
 end
 
@@ -223,9 +242,9 @@ local function Edit_groups()
     if item_under_cursor then
         local item_track = reaper.GetMediaItemTrack( item_under_cursor )
         if CLICK or UP  then
-            CLICKED_ITEM = In_Any_Group(item_track) and item_under_cursor -- IF TRACK IS IN ANY GROUP
+            CLICKED_ITEM = item_under_cursor -- IF TRACK IS IN ANY GROUP
             DEST_TRACK = CLICKED_ITEM and item_track -- IF TRACK IS IN ANY GROUP
-            if CLICKED_ITEM then UnselectAllItems() end -- UNSELECT ONLY WHEN IN ANY GROUP
+           -- if CLICKED_ITEM then UnselectAllItems() end -- UNSELECT ONLY WHEN IN ANY GROUP
         end
     end
 
@@ -242,10 +261,12 @@ local function Edit_groups()
     if RAZOR or CLICKED_ITEM or MARQUEE_ITEM then
         reaper.PreventUIRefresh(1)
         for j = 1, #GROUPS do
-            for k = 1, #GROUPS[j] do
-                if In_Group(GROUPS[j], DEST_TRACK) then
-                    if RAZOR then Set_Razor_Data(GROUPS[j][k], RAZOR) end
-                    if CLICKED_ITEM then GetAndSelectItemsInGroups(GROUPS[j][k], CLICKED_ITEM) end
+            if CheckGroupEnable(j) then
+                for k = 1, #GROUPS[j] do
+                    if In_Group(GROUPS[j], DEST_TRACK) then
+                        if RAZOR then Set_Razor_Data(GROUPS[j][k], RAZOR) end
+                        if CLICKED_ITEM then GetAndSelectItemsInGroups(GROUPS[j][k], CLICKED_ITEM)  reaper.SetTrackSelected(GROUPS[j][k], true ) end
+                    end
                 end
             end
         end
@@ -277,26 +298,67 @@ local function Is_razor_created()
     return razor_action
 end
 
+local ctx
+function ImGui_Create_CTX()
+    ctx = reaper.ImGui_CreateContext('My script', reaper.ImGui_ConfigFlags_NoSavedSettings())
+end
+
 local function Main()
     MOUSE_TR = Get_track_under_mouse()
     Track_mouse_LCLICK()
     if Is_razor_created() then RAZOR = Get_Razor_Data(MOUSE_TR) end
     Edit_groups()
-    reaper.defer(Main)
+end
+
+function GUI()
+    Main()
+    local visible, open  = reaper.ImGui_Begin(ctx, 'EDIT GROUPS', true, reaper.ImGui_WindowFlags_AlwaysAutoResize() | reaper.ImGui_WindowFlags_NoCollapse())
+    if visible then
+        if reaper.ImGui_BeginListBox(ctx, '##Group List',110) then
+            for i = 1, 64 do
+                if reaper.ImGui_MenuItem(ctx, "GROUP " .. i, nil, CheckGroupEnable(i)) then
+                    Set_Group_EDIT_ENABLE(i, not CheckGroupEnable(i))
+                end
+            end
+            reaper.ImGui_EndListBox(ctx)
+        end
+        reaper.ImGui_End(ctx)
+    end
+    if open then
+		reaper.defer(GUI)
+	else
+		reaper.ImGui_DestroyContext(ctx)
+        DoAtExit()
+	end
+end
+
+function SaveGroup_mask()
+    reaper.SetProjExtState(0, "EDIT_GROUPS", "MASK", GROUPS.enabled_mask)
+end
+
+local function RestoreGroupEnableMASK()
+    local rv, stored = reaper.GetProjExtState( 0, "EDIT_GROUPS", "MASK" )
+    if rv == 1 and stored ~= nil then
+        GROUPS.enabled_mask = stored
+    end
 end
 
 function DoAtExit()
+    SaveGroup_mask()
     reaper.SetToggleCommandState(sectionID, cmdID, 0);
     reaper.RefreshToolbar2(sectionID, cmdID);
     reaper.JS_WindowMessage_Release(track_window, "WM_LBUTTONDOWN")
 end
 
 Fill_groups()
+RestoreGroupEnableMASK()
+
 if not IsAnyGroupFilled() then
     reaper.MB( "All groups are empty, turning script off", "ALL GROUPS ARE EMPTY", 0 )
     DoAtExit()
     return reaper.defer(function() end)
 else
-    Main()
+    ImGui_Create_CTX()
+    GUI()
 end
 reaper.atexit(DoAtExit)
