@@ -1,9 +1,9 @@
 -- @description EDIT GROUPS
 -- @author Sexan
 -- @license GPL v3
--- @version 0.15
+-- @version 0.16
 -- @changelog
---   + Check for JS_API
+--   + fix razors to work separatly from items
 
 local reaper = reaper
 
@@ -19,7 +19,6 @@ reaper.RefreshToolbar2(sectionID, cmdID)
 
 function Round(num) return math.floor(num + 0.5) end
 function MSG(m) reaper.ShowConsoleMsg(tostring(m) .. "\n") end
-
 
 local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
 local track_window = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8) -- GET TRACK VIEW
@@ -168,6 +167,7 @@ local function Get_Razor_Data(track)
     local lane_h = Get_Total_lanes(track)
     razor_info.lanes = { top = Round(razor_info[3] / lane_h) , bot = Round(razor_info[4] / lane_h)} -- CALCULATE RAZOR LANE FROM COORDS (1, 2, 3 ETC) FOR EASIER CALCULATION LATER
     razor_info.env = next(razor_envelopes) and razor_envelopes
+    razor_info.track = track
     return razor_info
 end
 
@@ -201,16 +201,20 @@ end
 
 local function Edit_groups()
     local item_under_cursor = reaper.BR_ItemAtMouseCursor()
+
     if item_under_cursor then
         local item_track = reaper.GetMediaItemTrack( item_under_cursor )
-        if CLICK then
+        if CLICK or UP  then
             CLICKED_ITEM = In_Any_Group(item_track) and item_under_cursor -- IF TRACK IS IN ANY GROUP
             ITEM_TRACK = CLICKED_ITEM and item_track -- IF TRACK IS IN ANY GROUP
             if CLICKED_ITEM then UnselectAllItems() end -- UNSELECT ONLY WHEN IN ANY GROUP
         end
     end
 
+    if RAZOR and not CLICKED_ITEM then ITEM_TRACK = RAZOR.track end
+
     if RAZOR or CLICKED_ITEM then
+        reaper.PreventUIRefresh(1)
         for j = 1, #GROUPS do
             for k = 1, #GROUPS[j] do
                 if In_Group(GROUPS[j], ITEM_TRACK) then
@@ -219,7 +223,10 @@ local function Edit_groups()
                 end
             end
         end
-        RAZOR = nil
+        reaper.PreventUIRefresh(-1)
+        reaper.UpdateArrange()
+
+        if RAZOR then RAZOR = nil end
         if UP then CLICKED_ITEM = nil end
     end
 end
@@ -230,8 +237,9 @@ local function Is_razor_created()
     local projectChangeCount = reaper.GetProjectStateChangeCount(0)
     if lastProjectChangeCount ~= projectChangeCount then
         local last_action = reaper.Undo_CanUndo2( 0 ):lower()
-        if last_action:match("razor") then razor_action = true end
-        if last_action:match("group membership") then Fill_groups() end -- REFRESH GROUPS WHEN CHANGE IN GROUPS DETECTED
+        if last_action:match("razor") then razor_action = true
+        elseif last_action:match("group membership") then Fill_groups() -- REFRESH GROUPS WHEN CHANGE IN GROUPS DETECTED
+        end
         lastProjectChangeCount = projectChangeCount
     end
     return razor_action
@@ -241,12 +249,12 @@ local function Main()
     MOUSE_TR = Get_track_under_mouse()
     Track_mouse_LCLICK()
     if Is_razor_created() then RAZOR = Get_Razor_Data(MOUSE_TR) end
-    if CLICK or UP or RAZOR then
-        reaper.PreventUIRefresh(1)
+    --if CLICK or UP or RAZOR then
+    --    reaper.PreventUIRefresh(1)
         Edit_groups()
-        reaper.PreventUIRefresh(-1)
-        reaper.UpdateArrange()
-    end
+    --    reaper.PreventUIRefresh(-1)
+    --    reaper.UpdateArrange()
+    --end
     reaper.defer(Main)
 end
 
