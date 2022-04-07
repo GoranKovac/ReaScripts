@@ -1,11 +1,18 @@
 -- @description EDIT GROUPS
 -- @author Sexan
 -- @license GPL v3
--- @version 0.14
+-- @version 0.15
 -- @changelog
---   + Refresh groups when group settings change
+--   + Check for JS_API
 
 local reaper = reaper
+
+if not reaper.APIExists("JS_ReaScriptAPI_Version") then
+    reaper.MB( "JS_ReaScriptAPI is required for this script. Please download it from ReaPack", "SCRIPT REQUIREMENTS", 0 )
+    reaper.ReaPack_BrowsePackages('JS_ReaScriptAPI:')
+    return reaper.defer(function() end)
+end
+
 local _, _, sectionID, cmdID, _, _, _ = reaper.get_action_context()
 reaper.SetToggleCommandState(sectionID, cmdID, 1)
 reaper.RefreshToolbar2(sectionID, cmdID)
