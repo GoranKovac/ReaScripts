@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="c6addd7203a99a1204f74243c798f5fa78401f54" name="Sexan_Scripts">
+<index version="1" commit="7d5e0804f115d369cd759656a9cac013e90c942d" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -727,6 +727,10 @@
       <version name="0.14" author="Sexan" time="2022-04-07T05:56:47Z">
         <changelog><![CDATA[+ Refresh groups when group settings change]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/c6addd7203a99a1204f74243c798f5fa78401f54/Track/Edit_groups.lua</source>
+      </version>
+      <version name="0.15" author="Sexan" time="2022-04-07T06:05:24Z">
+        <changelog><![CDATA[+ Check for JS_API]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/7d5e0804f115d369cd759656a9cac013e90c942d/Track/Edit_groups.lua</source>
       </version>
     </reapack>
     <reapack name="Sexan_Create VCA master from selection.lua" type="script" desc="Create VCA Master from selection.lua">
