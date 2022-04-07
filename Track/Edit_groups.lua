@@ -1,9 +1,9 @@
 -- @description EDIT GROUPS
 -- @author Sexan
 -- @license GPL v3
--- @version 0.13
+-- @version 0.14
 -- @changelog
---   + fix normal items/tracks cant be edited/selected if not in group
+--   + Refresh groups when group settings change
 
 local reaper = reaper
 local _, _, sectionID, cmdID, _, _, _ = reaper.get_action_context()
@@ -61,7 +61,6 @@ local GROUP_FLAGS = {
 }
 
 local GROUPS = {}
-for i = 1 , 64 do GROUPS[i] = {} end
 
 local function In_Group(tbl, val)
     for i = 1, #tbl do if tbl[i] == val then return true end end
@@ -69,11 +68,12 @@ end
 
 local function In_Any_Group(val)
     for i = 1, 64 do
-        for j = 1, #GROUPS[i] do if GROUPS[i][j] == val then return true end end
+        if In_Group(GROUPS[i], val) then return true end
     end
 end
 
 local function Fill_groups()
+    for i = 1 , 64 do GROUPS[i] = {} end -- refresh table
     for k = 1, reaper.CountTracks(0) do
         local track = reaper.GetTrack(0, k-1)
         for i = 1 , #GROUPS do
@@ -222,8 +222,9 @@ local function Is_razor_created()
     local razor_action = nil
     local projectChangeCount = reaper.GetProjectStateChangeCount(0)
     if lastProjectChangeCount ~= projectChangeCount then
-        local last_action = reaper.Undo_CanUndo2( 0 )
-        if last_action:match("Razor") then razor_action = true end
+        local last_action = reaper.Undo_CanUndo2( 0 ):lower()
+        if last_action:match("razor") then razor_action = true end
+        if last_action:match("group membership") then Fill_groups() end -- REFRESH GROUPS WHEN CHANGE IN GROUPS DETECTED
         lastProjectChangeCount = projectChangeCount
     end
     return razor_action
