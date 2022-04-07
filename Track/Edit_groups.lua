@@ -1,9 +1,9 @@
 -- @description EDIT GROUPS
 -- @author Sexan
 -- @license GPL v3
--- @version 0.12
+-- @version 0.13
 -- @changelog
---   + microfixing
+--   + fix normal items/tracks cant be edited/selected if not in group
 
 local reaper = reaper
 local _, _, sectionID, cmdID, _, _, _ = reaper.get_action_context()
@@ -63,8 +63,14 @@ local GROUP_FLAGS = {
 local GROUPS = {}
 for i = 1 , 64 do GROUPS[i] = {} end
 
-function In_table(tbl, val)
+local function In_Group(tbl, val)
     for i = 1, #tbl do if tbl[i] == val then return true end end
+end
+
+local function In_Any_Group(val)
+    for i = 1, 64 do
+        for j = 1, #GROUPS[i] do if GROUPS[i][j] == val then return true end end
+    end
 end
 
 local function Fill_groups()
@@ -75,10 +81,10 @@ local function Fill_groups()
                 local G32 = reaper.GetSetTrackGroupMembership( track, GROUP_FLAGS[j], 0, 0 )
                 local G64 = reaper.GetSetTrackGroupMembershipHigh( track, GROUP_FLAGS[j], 0, 0 )
                 if G32 & (1 << (i - 1)) ~= 0 then
-                    if not In_table(GROUPS[i],track) then table.insert(GROUPS[i],track) end
+                    if not In_Group(GROUPS[i],track) then table.insert(GROUPS[i],track) end
                 end
                 if G64 & (1 << (i-32 - 1)) ~= 0 then
-                    if not In_table(GROUPS[i],track) then table.insert(GROUPS[i],track) end
+                    if not In_Group(GROUPS[i],track) then table.insert(GROUPS[i],track) end
                 end
             end
         end
@@ -175,30 +181,32 @@ local function GetAndSelectItemsInGroups(tr_tbl, item)
         local item_start = reaper.GetMediaItemInfo_Value(item_in_group, "D_POSITION")
         local item_end = item_lenght + item_start
         if (item_start >= sel_item_start) and (item_start < sel_item_end) and (item_end <= sel_item_end) then
-            reaper.SetMediaItemSelected(item_in_group, true) -- SELECT ITEMS ONLY
+            reaper.SetMediaItemSelected(item_in_group, true)
         end
     end
 end
 
 local function UnselectAllItems()
     for i = reaper.CountSelectedMediaItems(0), 1, -1 do
-        reaper.SetMediaItemSelected(reaper.GetSelectedMediaItem(0, i - 1), false) -- SELECT ITEMS ONLY
+        reaper.SetMediaItemSelected(reaper.GetSelectedMediaItem(0, i - 1), false)
     end
 end
 
 local function Edit_groups()
     local item_under_cursor = reaper.BR_ItemAtMouseCursor()
     if item_under_cursor then
+        local item_track = reaper.GetMediaItemTrack( item_under_cursor )
         if CLICK then
-            CLICKED_ITEM = item_under_cursor
-            UnselectAllItems()
+            CLICKED_ITEM = In_Any_Group(item_track) and item_under_cursor -- IF TRACK IS IN ANY GROUP
+            ITEM_TRACK = CLICKED_ITEM and item_track -- IF TRACK IS IN ANY GROUP
+            if CLICKED_ITEM then UnselectAllItems() end -- UNSELECT ONLY WHEN IN ANY GROUP
         end
     end
 
     if RAZOR or CLICKED_ITEM then
         for j = 1, #GROUPS do
             for k = 1, #GROUPS[j] do
-                if In_table(GROUPS[j], MOUSE_TR) then
+                if In_Group(GROUPS[j], ITEM_TRACK) then
                     if RAZOR then Set_Razor_Data(GROUPS[j][k], RAZOR) end
                     if CLICKED_ITEM then GetAndSelectItemsInGroups(GROUPS[j][k], CLICKED_ITEM) end
                 end
