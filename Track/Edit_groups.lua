@@ -1,9 +1,9 @@
 -- @description EDIT GROUPS
 -- @author Sexan
 -- @license GPL v3
--- @version 0.16
+-- @version 0.17
 -- @changelog
---   + fix razors to work separatly from items
+--   + fix marquee select items not working
 
 local reaper = reaper
 
@@ -211,9 +211,17 @@ local function Edit_groups()
         end
     end
 
+    if MARQUEE_ITEM then
+        local item = reaper.GetSelectedMediaItem(0,0)
+        if item then
+            CLICKED_ITEM = item
+            ITEM_TRACK = reaper.GetMediaItemTrack( item )
+        end
+    end
+
     if RAZOR and not CLICKED_ITEM then ITEM_TRACK = RAZOR.track end
 
-    if RAZOR or CLICKED_ITEM then
+    if RAZOR or CLICKED_ITEM or MARQUEE_ITEM then
         reaper.PreventUIRefresh(1)
         for j = 1, #GROUPS do
             for k = 1, #GROUPS[j] do
@@ -228,6 +236,11 @@ local function Edit_groups()
 
         if RAZOR then RAZOR = nil end
         if UP then CLICKED_ITEM = nil end
+        if MARQUEE_ITEM then
+            MARQUEE_ITEM = nil
+            CLICKED_ITEM = nil
+        end
+        ITEM_TRACK = nil
     end
 end
 
@@ -239,6 +252,7 @@ local function Is_razor_created()
         local last_action = reaper.Undo_CanUndo2( 0 ):lower()
         if last_action:match("razor") then razor_action = true
         elseif last_action:match("group membership") then Fill_groups() -- REFRESH GROUPS WHEN CHANGE IN GROUPS DETECTED
+        elseif last_action:match("marquee item selection") then MARQUEE_ITEM = true
         end
         lastProjectChangeCount = projectChangeCount
     end
