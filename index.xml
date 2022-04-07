@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="a7288764d53b31a3dcd7ca044c3bb518dd3ea09a" name="Sexan_Scripts">
+<index version="1" commit="97221672716dc315882bb311c479de8c8102a0d4" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -674,6 +674,77 @@
     </reapack>
   </category>
   <category name="Track">
+    <reapack name="Edit_groups.lua" type="script" desc="EDIT GROUPS">
+      <version name="0.1" author="Sexan" time="2022-04-06T10:54:07Z">
+        <changelog><![CDATA[+ initial release]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/55d884bfcb4a30dd604e61dff012d328ee09063b/Track/Edit_groups.lua</source>
+      </version>
+      <version name="0.2" author="Sexan" time="2022-04-06T11:45:38Z">
+        <changelog><![CDATA[+ Properly handle selected item]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/6138b733d09cfd6bc4a2a9c45c2db0340944ab72/Track/Edit_groups.lua</source>
+      </version>
+      <version name="0.3" author="Sexan" time="2022-04-06T11:57:21Z">
+        <changelog><![CDATA[+ More handling of selected item]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/d1134a05e2cf02195a75f113c9d669a36730d770/Track/Edit_groups.lua</source>
+      </version>
+      <version name="0.4" author="Sexan" time="2022-04-06T17:49:16Z">
+        <changelog><![CDATA[+ More selection improvements
++ Selecting any part of item select items (fade,volume,edge etc)]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/02ad867a1d6423c4f5489ce25d85540b6eb88118/Track/Edit_groups.lua</source>
+      </version>
+      <version name="0.5" author="Sexan" time="2022-04-06T18:37:11Z">
+        <changelog><![CDATA[+ Fix crash on tracks without items]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/ace51755924a099ae76cb990f8102b9983aa5ffc/Track/Edit_groups.lua</source>
+      </version>
+      <version name="0.6" author="Sexan" time="2022-04-06T19:43:11Z">
+        <changelog><![CDATA[+ Do not allow starting script if all groups are empty]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/48c305a573fb133a6114473be29bd7bfefab14b2/Track/Edit_groups.lua</source>
+      </version>
+      <version name="0.7" author="Sexan" time="2022-04-06T20:11:05Z">
+        <changelog><![CDATA[+ Lil small fix with razors]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/f874a928c8db8866b5947553a7f89c8aa4d91157/Track/Edit_groups.lua</source>
+      </version>
+      <version name="0.8" author="Sexan" time="2022-04-06T20:13:36Z">
+        <changelog><![CDATA[+ Lil small fix with razors]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/735618899540fd69c12f986078729c4e8b4f4c86/Track/Edit_groups.lua</source>
+      </version>
+      <version name="0.10" author="Sexan" time="2022-04-06T20:21:38Z">
+        <changelog><![CDATA[+ add custom unselect item function (does not spam undo history li selectallitems API)]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/edeb6ea0b269f019efb5ce85951ae8de7ea4bf4d/Track/Edit_groups.lua</source>
+      </version>
+      <version name="0.11" author="Sexan" time="2022-04-06T20:49:34Z">
+        <changelog><![CDATA[+ microfixing]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/9fe98253c2960278c9366b405cfd20b58f799878/Track/Edit_groups.lua</source>
+      </version>
+      <version name="0.12" author="Sexan" time="2022-04-06T20:50:29Z">
+        <changelog><![CDATA[+ microfixing]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/3583fd16ae598bfddbddf42b0e4f285a4d8bbb97/Track/Edit_groups.lua</source>
+      </version>
+      <version name="0.13" author="Sexan" time="2022-04-07T05:44:08Z">
+        <changelog><![CDATA[+ fix normal items/tracks cant be edited/selected if not in group]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/0b745865b46022eebeb2701740d5c985a472e33e/Track/Edit_groups.lua</source>
+      </version>
+      <version name="0.14" author="Sexan" time="2022-04-07T05:56:47Z">
+        <changelog><![CDATA[+ Refresh groups when group settings change]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/c6addd7203a99a1204f74243c798f5fa78401f54/Track/Edit_groups.lua</source>
+      </version>
+      <version name="0.15" author="Sexan" time="2022-04-07T06:05:24Z">
+        <changelog><![CDATA[+ Check for JS_API]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/7d5e0804f115d369cd759656a9cac013e90c942d/Track/Edit_groups.lua</source>
+      </version>
+      <version name="0.16" author="Sexan" time="2022-04-07T06:48:04Z">
+        <changelog><![CDATA[+ fix razors to work separatly from items]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/e1bb9b75e3f5df92b5028f07bec99b9bdf4ccbc0/Track/Edit_groups.lua</source>
+      </version>
+      <version name="0.17" author="Sexan" time="2022-04-07T06:55:48Z">
+        <changelog><![CDATA[+ fix marquee select items not working]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/a2c519a7a23afba9e7cbeeb5a3b7754154b06112/Track/Edit_groups.lua</source>
+      </version>
+      <version name="0.18" author="Sexan" time="2022-04-07T11:33:46Z">
+        <changelog><![CDATA[+ support for non-continuous (multiple razors)]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/97221672716dc315882bb311c479de8c8102a0d4/Track/Edit_groups.lua</source>
+      </version>
+    </reapack>
     <reapack name="Sexan_Create VCA master from selection.lua" type="script" desc="Create VCA Master from selection.lua">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
