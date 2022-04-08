@@ -1,9 +1,9 @@
 -- @description EDIT GROUPS
 -- @author Sexan
 -- @license GPL v3
--- @version 0.24
+-- @version 0.25
 -- @changelog
---   + Update groups when deleting/pasting tracks
+--   + Fix finding group with most selected tracks on select
 
 local reaper = reaper
 
@@ -268,20 +268,24 @@ local function Get_track_under_mouse()
     if track then return track end
 end
 
-local function GetAndSelectItemsInGroups(tr_tbl, item)
+local function GetAndSelectItemsInGroups(track, item)
+    local track_set = nil
     local sel_item_lenght = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
     local sel_item_start = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
     local sel_item_end = sel_item_lenght + sel_item_start
 
-    for i = 1, reaper.CountTrackMediaItems(tr_tbl) do
-        local item_in_group = reaper.GetTrackMediaItem(tr_tbl, i - 1)
+    for i = 1, reaper.CountTrackMediaItems(track) do
+        local item_in_group = reaper.GetTrackMediaItem(track, i - 1)
         local item_lenght = reaper.GetMediaItemInfo_Value(item_in_group, "D_LENGTH")
         local item_start = reaper.GetMediaItemInfo_Value(item_in_group, "D_POSITION")
         local item_end = item_lenght + item_start
         if (item_start >= sel_item_start) and (item_start < sel_item_end) and (item_end <= sel_item_end) then
             reaper.SetMediaItemSelected(item_in_group, true)
+            reaper.SetTrackSelected(track, true )
+            track_set = true
         end
     end
+    return track_set
 end
 
 function SelectAllItems(set)
@@ -319,24 +323,29 @@ local function Is_razor_created()
 end
 
 local function Edit_groups()
-    if CUR_GROUP ~= OLD_GROUP then
-        OLD_GROUP = CUR_GROUP
-    end
-
     if RAZOR then DEST_TRACK = RAZOR.track end
 
     if RAZOR or CLICKED_ITEM then
-        if CLICKED_ITEM then ITEMS = {} end
+        local CNT_TBL = CLICKED_ITEM and {} or nil
         reaper.PreventUIRefresh(1)
         for j = 1, #GROUPS do
             if CheckGroupEnable(j) then
+                if CLICKED_ITEM then CNT_TBL[j] = {} end
                 for k = 1, #GROUPS[j] do
                     if In_Group(GROUPS[j], DEST_TRACK) then
                         if RAZOR then Set_Razor_Data(GROUPS[j][k], RAZOR) end
-                        if CLICKED_ITEM then GetAndSelectItemsInGroups(GROUPS[j][k], CLICKED_ITEM) reaper.SetTrackSelected(GROUPS[j][k], true ) end
+                        if CLICKED_ITEM then CNT_TBL[j][#CNT_TBL[j]+1] = GetAndSelectItemsInGroups(GROUPS[j][k], CLICKED_ITEM) end
                     end
                 end
             end
+        end
+
+        if CNT_TBL then
+            local max, most_tracks_group = 1, 0
+            for k, v in pairs(CNT_TBL) do
+                if #v > max then max = #v most_tracks_group = k end
+            end
+            CUR_GROUP = most_tracks_group
         end
         reaper.PreventUIRefresh(-1)
         reaper.UpdateArrange()
