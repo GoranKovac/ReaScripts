@@ -1,10 +1,9 @@
 -- @description EDIT GROUPS
 -- @author Sexan
 -- @license GPL v3
--- @version 0.23
+-- @version 0.24
 -- @changelog
---   + select track with selection
---   + fix gui group selecting when non group items selected or no items selected
+--   + Update groups when deleting/pasting tracks
 
 local reaper = reaper
 
@@ -311,6 +310,7 @@ local function Is_razor_created()
             local last_action = reaper.Undo_CanUndo2( 0 ):lower()
             if last_action:match("razor") then razor_action = true
             elseif last_action:match("group membership") then Fill_groups() -- REFRESH GROUPS WHEN CHANGE IN GROUPS DETECTED
+            elseif last_action:match("remove tracks") or last_action:match("paste tracks") then Fill_groups() -- REFRESH GROUPS WHEN CHANGE IN GROUPS DETECTED
             end
         end
         lastProjectChangeCount = projectChangeCount
