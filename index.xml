@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="3ff7e1451d43dc42ff4b68b64671603796aa5587" name="Sexan_Scripts">
+<index version="1" commit="def0f3ef148cd7eb80bb23900083f7ec2266bf03" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -796,6 +796,10 @@
         <changelog><![CDATA[+ Fixed burning Reaper with fire when razor is created
 + handle icon offset only on CLICK]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/3ff7e1451d43dc42ff4b68b64671603796aa5587/Track/Edit_groups.lua</source>
+      </version>
+      <version name="0.33" author="Sexan" time="2022-04-08T21:36:09Z">
+        <changelog><![CDATA[+ check if items track is in group]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/def0f3ef148cd7eb80bb23900083f7ec2266bf03/Track/Edit_groups.lua</source>
       </version>
     </reapack>
     <reapack name="Sexan_Create VCA master from selection.lua" type="script" desc="Create VCA Master from selection.lua">
