@@ -1,9 +1,9 @@
 -- @description EDIT GROUPS
 -- @author Sexan
 -- @license GPL v3
--- @version 0.25
+-- @version 0.26
 -- @changelog
---   + Fix finding group with most selected tracks on select
+--   + Fix rename window always opening in center
 
 local reaper = reaper
 
@@ -414,6 +414,8 @@ function ContextMenu(i)
     if reaper.ImGui_MenuItem(ctx, 'Add selected tracks') then AddSelectedTracksTo_GROUP(i, true) end
     if reaper.ImGui_MenuItem(ctx, 'Remove selected tracks') then AddSelectedTracksTo_GROUP(i, false) end
     if reaper.ImGui_Selectable(ctx, 'Rename Group', nil, reaper.ImGui_SelectableFlags_DontClosePopups()) then
+        local x, y = reaper.ImGui_GetCursorScreenPos( ctx )
+        reaper.ImGui_SetNextWindowPos( ctx, x, y)
         reaper.ImGui_OpenPopup(ctx, 'Rename')
     end
     if reaper.ImGui_BeginPopupModal(ctx, 'Rename', nil, reaper.ImGui_WindowFlags_AlwaysAutoResize()) then
