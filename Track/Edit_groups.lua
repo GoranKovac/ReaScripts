@@ -1,10 +1,9 @@
 -- @description EDIT GROUPS
 -- @author Sexan
 -- @license GPL v3
--- @version 0.31
+-- @version 0.33
 -- @changelog
---   + Fixed burning Reaper with fire when razor is created
---   + handle icon offset only on CLICK
+--   + check if items track is in group
 
 local reaper = reaper
 
@@ -22,9 +21,8 @@ local _, _, sectionID, cmdID, _, _, _ = reaper.get_action_context()
 reaper.SetToggleCommandState(sectionID, cmdID, 1)
 reaper.RefreshToolbar2(sectionID, cmdID)
 
---function Round(num) return math.floor(num + 0.5) end
-local ceil, floor = math.ceil, math.floor
-function Round(n) return n % 1 >= 0.5 and ceil(n) or floor(n) end
+local floor = math.floor
+function Round(num) return floor(num + 0.5) end
 function MSG(m) reaper.ShowConsoleMsg(tostring(m) .. "\n") end
 
 local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
@@ -33,17 +31,6 @@ reaper.JS_WindowMessage_Intercept(track_window, "WM_LBUTTONDOWN", true) -- INTER
 reaper.JS_WindowMessage_Intercept(track_window, "WM_LBUTTONUP", true) -- INTERCEPT L MOUSE UP
 reaper.JS_WindowMessage_Intercept(track_window, "WM_RBUTTONUP", true) -- INTERCEPT R MOUSE UP
 
--- local reaper_cursors = {
---     [105] ='FADE L',
---     [184] ='FADE R',
---     [417] ='TRIM L',
---     [418] ='TRIM R',
---     [450] = 'DUAL TRIM',
---     [529] = 'CROSSFADE',
---     [183] = 'START OFFSET',
---     [98181] = 'VOLUME',
---     [187] = 'MOVE',
--- }
 local cursors_path = reaper.GetResourcePath() .."/Cursors/"
 local custom_cursors = {
     { [1] =  cursors_path .. "arrange_fadein.cur",       [2] = 105,   [3] = 'FADE L',      [4] = 1 },
@@ -79,14 +66,14 @@ function Track_mouse_LCLICK()
     local pOK, _, time = reaper.JS_WindowMessage_Peek(track_window, "WM_LBUTTONDOWN")
     if pOK and time > prevTime then
         prevTime = time
-        local cursor_offset = TrackCursors(x)
-        if cursor_offset then
-            ICON_OFFSET = cursor_offset
+        CURSOR_OFFSET = TrackCursors(x)
+        if CURSOR_OFFSET then
             local item_under_mouse = reaper.GetItemFromPoint( x, y, false )
             while not item_under_mouse do
-               x = x + cursor_offset
+               x = x + CURSOR_OFFSET
                item_under_mouse = reaper.GetItemFromPoint( x, y, false )
             end
+            if not Find_Group(reaper.GetMediaItemTrack( item_under_mouse )) then CURSOR_OFFSET = nil return end
             SelectAllItems(false)
             CLICKED_ITEM = item_under_mouse
             DEST_TRACK = CLICKED_ITEM and reaper.GetMediaItemTrack( CLICKED_ITEM )
@@ -100,17 +87,19 @@ function Track_mouse_LCLICK()
     if pOK2 and time2 > prevTime2 then
         prevTime2 = time2
         local UP_ITEM = reaper.GetItemFromPoint( x, y, false )
-        if ICON_OFFSET then
+        if CURSOR_OFFSET then
             while not UP_ITEM do
-               x = x + ICON_OFFSET
+               x = x + CURSOR_OFFSET
                UP_ITEM = reaper.GetItemFromPoint( x, y, false )
             end
+            if not Find_Group(reaper.GetMediaItemTrack( UP_ITEM )) then CURSOR_OFFSET = nil return end
             CLICKED_ITEM = UP_ITEM
             DEST_TRACK = CLICKED_ITEM and reaper.GetMediaItemTrack( CLICKED_ITEM )
             CUR_GROUP = Find_Group(DEST_TRACK)
-            ICON_OFFSET = nil
+            CURSOR_OFFSET = nil
         end
         if UP_ITEM then
+            if not Find_Group(reaper.GetMediaItemTrack( UP_ITEM )) then return end
             if reaper.GetMediaItemInfo_Value( UP_ITEM, "B_UISEL" ) == 1 then
                 CLICKED_ITEM = UP_ITEM
                 DEST_TRACK = CLICKED_ITEM and reaper.GetMediaItemTrack( CLICKED_ITEM )
