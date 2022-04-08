@@ -1,9 +1,10 @@
 -- @description EDIT GROUPS
 -- @author Sexan
 -- @license GPL v3
--- @version 0.30
+-- @version 0.31
 -- @changelog
---   + fix mouseup
+--   + Fixed burning Reaper with fire when razor is created
+--   + handle icon offset only on CLICK
 
 local reaper = reaper
 
@@ -80,6 +81,7 @@ function Track_mouse_LCLICK()
         prevTime = time
         local cursor_offset = TrackCursors(x)
         if cursor_offset then
+            ICON_OFFSET = cursor_offset
             local item_under_mouse = reaper.GetItemFromPoint( x, y, false )
             while not item_under_mouse do
                x = x + cursor_offset
@@ -98,14 +100,17 @@ function Track_mouse_LCLICK()
     if pOK2 and time2 > prevTime2 then
         prevTime2 = time2
         local UP_ITEM = reaper.GetItemFromPoint( x, y, false )
-        local cursor_offset = TrackCursors(x)
-        if cursor_offset or UP_ITEM then
-        --if UP_ITEM then
-            --local UP_ITEM = reaper.GetItemFromPoint( x, y, false )
+        if ICON_OFFSET then
             while not UP_ITEM do
-               x = x + cursor_offset
+               x = x + ICON_OFFSET
                UP_ITEM = reaper.GetItemFromPoint( x, y, false )
             end
+            CLICKED_ITEM = UP_ITEM
+            DEST_TRACK = CLICKED_ITEM and reaper.GetMediaItemTrack( CLICKED_ITEM )
+            CUR_GROUP = Find_Group(DEST_TRACK)
+            ICON_OFFSET = nil
+        end
+        if UP_ITEM then
             if reaper.GetMediaItemInfo_Value( UP_ITEM, "B_UISEL" ) == 1 then
                 CLICKED_ITEM = UP_ITEM
                 DEST_TRACK = CLICKED_ITEM and reaper.GetMediaItemTrack( CLICKED_ITEM )
