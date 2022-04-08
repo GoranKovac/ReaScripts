@@ -1,9 +1,9 @@
 -- @description EDIT GROUPS
 -- @author Sexan
 -- @license GPL v3
--- @version 0.29
+-- @version 0.30
 -- @changelog
---   + Hopefully tracking icons work
+--   + fix mouseup
 
 local reaper = reaper
 
@@ -32,36 +32,17 @@ reaper.JS_WindowMessage_Intercept(track_window, "WM_LBUTTONDOWN", true) -- INTER
 reaper.JS_WindowMessage_Intercept(track_window, "WM_LBUTTONUP", true) -- INTERCEPT L MOUSE UP
 reaper.JS_WindowMessage_Intercept(track_window, "WM_RBUTTONUP", true) -- INTERCEPT R MOUSE UP
 
--- local function Get_zoom_and_arrange_start(x, w)
---     local zoom_lvl = reaper.GetHZoomLevel() -- HORIZONTAL ZOOM LEVEL
---     local Arr_start_time = reaper.GetSet_ArrangeView2(0, false, 0, 0) -- GET ARRANGE VIEW
---     return zoom_lvl, Arr_start_time
--- end
-
--- local function Convert_time_to_pixel(t_start, t_end)
---     local zoom_lvl, Arr_start_time = Get_zoom_and_arrange_start()
---     local x = Round((t_start - Arr_start_time) * zoom_lvl) -- convert time to pixel
---     local w = Round(t_end * zoom_lvl) -- convert time to pixel
---     return x, w
--- end
-
--- local function In_item(item)
---     local item_pos = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
---     local item_length = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
---     local x, w = Convert_time_to_pixel(item_pos, item_length)
--- end
-
-local reaper_cursors = {
-    [105] ='FADE L',
-    [184] ='FADE R',
-    [417] ='TRIM L',
-    [418] ='TRIM R',
-    [450] = 'DUAL TRIM',
-    [529] = 'CROSSFADE',
-    [183] = 'START OFFSET',
-    [98181] = 'VOLUME',
-    [187] = 'MOVE',
-}
+-- local reaper_cursors = {
+--     [105] ='FADE L',
+--     [184] ='FADE R',
+--     [417] ='TRIM L',
+--     [418] ='TRIM R',
+--     [450] = 'DUAL TRIM',
+--     [529] = 'CROSSFADE',
+--     [183] = 'START OFFSET',
+--     [98181] = 'VOLUME',
+--     [187] = 'MOVE',
+-- }
 local cursors_path = reaper.GetResourcePath() .."/Cursors/"
 local custom_cursors = {
     { [1] =  cursors_path .. "arrange_fadein.cur",       [2] = 105,   [3] = 'FADE L',      [4] = 1 },
@@ -116,11 +97,11 @@ function Track_mouse_LCLICK()
     local pOK2, _, time2 = reaper.JS_WindowMessage_Peek(track_window, "WM_LBUTTONUP")
     if pOK2 and time2 > prevTime2 then
         prevTime2 = time2
-        --local UP_ITEM = reaper.GetItemFromPoint( x, y, false )
+        local UP_ITEM = reaper.GetItemFromPoint( x, y, false )
         local cursor_offset = TrackCursors(x)
-        if cursor_offset then
+        if cursor_offset or UP_ITEM then
         --if UP_ITEM then
-            local UP_ITEM = reaper.GetItemFromPoint( x, y, false )
+            --local UP_ITEM = reaper.GetItemFromPoint( x, y, false )
             while not UP_ITEM do
                x = x + cursor_offset
                UP_ITEM = reaper.GetItemFromPoint( x, y, false )
