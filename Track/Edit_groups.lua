@@ -1,9 +1,9 @@
 -- @description EDIT GROUPS
 -- @author Sexan
 -- @license GPL v3
--- @version 0.27
+-- @version 0.28
 -- @changelog
---   + check if media items track is in group before proceding
+--   + remove tracking icons and just track item under cursor and handle mouse clicks
 
 local reaper = reaper
 
@@ -54,13 +54,15 @@ local prevTime = 0
 local prevTime2 = 0
 local prevTime3 = 0
 function Track_mouse_LCLICK()
+    local x, y = reaper.GetMousePosition()
     local pOK, _, time = reaper.JS_WindowMessage_Peek(track_window, "WM_LBUTTONDOWN")
     if pOK and time > prevTime then
         prevTime = time
-        if TrackCursors() then
-            if not Find_Group(reaper.GetMediaItemTrack( reaper.BR_ItemAtMouseCursor() )) then return end
+        local item_under_mouse = reaper.GetItemFromPoint( x, y, false )
+        if item_under_mouse then
+      --      if not Find_Group(reaper.GetMediaItemTrack( reaper.BR_ItemAtMouseCursor() )) then return end
             SelectAllItems(false)
-            CLICKED_ITEM = reaper.BR_ItemAtMouseCursor()
+            CLICKED_ITEM = item_under_mouse
             DEST_TRACK = CLICKED_ITEM and reaper.GetMediaItemTrack( CLICKED_ITEM )
             CUR_GROUP = Find_Group(DEST_TRACK)
         else
@@ -71,11 +73,11 @@ function Track_mouse_LCLICK()
     local pOK2, _, time2 = reaper.JS_WindowMessage_Peek(track_window, "WM_LBUTTONUP")
     if pOK2 and time2 > prevTime2 then
         prevTime2 = time2
-        local UP_ITEM = reaper.BR_ItemAtMouseCursor()
+        local UP_ITEM = reaper.GetItemFromPoint( x, y, false )
         if UP_ITEM then
             if not Find_Group(reaper.GetMediaItemTrack( UP_ITEM )) then return end
             if reaper.GetMediaItemInfo_Value( UP_ITEM, "B_UISEL" ) == 1 then
-                CLICKED_ITEM = reaper.BR_ItemAtMouseCursor()
+                CLICKED_ITEM = UP_ITEM
                 DEST_TRACK = CLICKED_ITEM and reaper.GetMediaItemTrack( CLICKED_ITEM )
                 CUR_GROUP = Find_Group(DEST_TRACK)
             end
