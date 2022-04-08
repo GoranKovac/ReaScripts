@@ -1,10 +1,10 @@
 -- @description EDIT GROUPS
 -- @author Sexan
 -- @license GPL v3
--- @version 0.22
+-- @version 0.23
 -- @changelog
---   + GUI stuff
---   + Properly handle mouse clickes (left and right)
+--   + select track with selection
+--   + fix gui group selecting when non group items selected or no items selected
 
 local reaper = reaper
 
@@ -63,7 +63,10 @@ function Track_mouse_LCLICK()
             CLICKED_ITEM = reaper.BR_ItemAtMouseCursor()
             DEST_TRACK = CLICKED_ITEM and reaper.GetMediaItemTrack( CLICKED_ITEM )
             CUR_GROUP = Find_Group(DEST_TRACK)
+        else
+            CUR_GROUP = 0
         end
+
     end
     local pOK2, _, time2 = reaper.JS_WindowMessage_Peek(track_window, "WM_LBUTTONUP")
     if pOK2 and time2 > prevTime2 then
@@ -75,6 +78,8 @@ function Track_mouse_LCLICK()
                 DEST_TRACK = CLICKED_ITEM and reaper.GetMediaItemTrack( CLICKED_ITEM )
                 CUR_GROUP = Find_Group(DEST_TRACK)
             end
+        else
+            CUR_GROUP = 0
         end
     end
     local pOK3, _, time3 = reaper.JS_WindowMessage_Peek(track_window, "WM_RBUTTONUP")
@@ -85,6 +90,8 @@ function Track_mouse_LCLICK()
             CLICKED_ITEM = UP_ITEM
             DEST_TRACK = CLICKED_ITEM and reaper.GetMediaItemTrack( CLICKED_ITEM )
             CUR_GROUP = Find_Group(DEST_TRACK)
+        else
+            CUR_GROUP = 0
         end
     end
 end
@@ -326,7 +333,7 @@ local function Edit_groups()
                 for k = 1, #GROUPS[j] do
                     if In_Group(GROUPS[j], DEST_TRACK) then
                         if RAZOR then Set_Razor_Data(GROUPS[j][k], RAZOR) end
-                        if CLICKED_ITEM then GetAndSelectItemsInGroups(GROUPS[j][k], CLICKED_ITEM) --[[ reaper.SetTrackSelected(GROUPS[j][k], true ) ]] end
+                        if CLICKED_ITEM then GetAndSelectItemsInGroups(GROUPS[j][k], CLICKED_ITEM) reaper.SetTrackSelected(GROUPS[j][k], true ) end
                     end
                 end
             end
