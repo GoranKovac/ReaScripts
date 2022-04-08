@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="e3e21cfd896eb1b60ceb505d3af55ce5a7c68a8f" name="Sexan_Scripts">
+<index version="1" commit="b2d1768af01e9ee6266bfdbd6fa64f5cac173c20" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -763,6 +763,10 @@
         <changelog><![CDATA[+ select track with selection
 + fix gui group selecting when non group items selected or no items selected]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/e3e21cfd896eb1b60ceb505d3af55ce5a7c68a8f/Track/Edit_groups.lua</source>
+      </version>
+      <version name="0.24" author="Sexan" time="2022-04-08T17:25:13Z">
+        <changelog><![CDATA[+ Update groups when deleting/pasting tracks]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/b2d1768af01e9ee6266bfdbd6fa64f5cac173c20/Track/Edit_groups.lua</source>
       </version>
     </reapack>
     <reapack name="Sexan_Create VCA master from selection.lua" type="script" desc="Create VCA Master from selection.lua">
