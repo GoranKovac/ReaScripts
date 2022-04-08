@@ -1,9 +1,9 @@
 -- @description EDIT GROUPS
 -- @author Sexan
 -- @license GPL v3
--- @version 0.26
+-- @version 0.27
 -- @changelog
---   + Fix rename window always opening in center
+--   + check if media items track is in group before proceding
 
 local reaper = reaper
 
@@ -58,6 +58,7 @@ function Track_mouse_LCLICK()
     if pOK and time > prevTime then
         prevTime = time
         if TrackCursors() then
+            if not Find_Group(reaper.GetMediaItemTrack( reaper.BR_ItemAtMouseCursor() )) then return end
             SelectAllItems(false)
             CLICKED_ITEM = reaper.BR_ItemAtMouseCursor()
             DEST_TRACK = CLICKED_ITEM and reaper.GetMediaItemTrack( CLICKED_ITEM )
@@ -72,6 +73,7 @@ function Track_mouse_LCLICK()
         prevTime2 = time2
         local UP_ITEM = reaper.BR_ItemAtMouseCursor()
         if UP_ITEM then
+            if not Find_Group(reaper.GetMediaItemTrack( UP_ITEM )) then return end
             if reaper.GetMediaItemInfo_Value( UP_ITEM, "B_UISEL" ) == 1 then
                 CLICKED_ITEM = reaper.BR_ItemAtMouseCursor()
                 DEST_TRACK = CLICKED_ITEM and reaper.GetMediaItemTrack( CLICKED_ITEM )
@@ -86,6 +88,7 @@ function Track_mouse_LCLICK()
         prevTime3 = time3
         local UP_ITEM = reaper.GetSelectedMediaItem(0,0)
         if UP_ITEM then
+            if not Find_Group(reaper.GetMediaItemTrack( UP_ITEM )) then return end
             CLICKED_ITEM = UP_ITEM
             DEST_TRACK = CLICKED_ITEM and reaper.GetMediaItemTrack( CLICKED_ITEM )
             CUR_GROUP = Find_Group(DEST_TRACK)
