@@ -1,10 +1,10 @@
 -- @description EDIT GROUPS
 -- @author Sexan
 -- @license GPL v3
--- @version 0.21
+-- @version 0.22
 -- @changelog
---   + Add enable disable edit group window
---   + ImGUI
+--   + GUI stuff
+--   + Properly handle mouse clickes (left and right)
 
 local reaper = reaper
 
@@ -27,21 +27,65 @@ function MSG(m) reaper.ShowConsoleMsg(tostring(m) .. "\n") end
 
 local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
 local track_window = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8) -- GET TRACK VIEW
-local WML_intercept = reaper.JS_WindowMessage_Intercept(track_window, "WM_LBUTTONDOWN", true) -- INTERCEPT MOUSE L BUTTON
-local WML_intercept2 = reaper.JS_WindowMessage_Intercept(track_window, "WM_LBUTTONUP", true) -- INTERCEPT MOUSE L BUTTON
+reaper.JS_WindowMessage_Intercept(track_window, "WM_LBUTTONDOWN", true) -- INTERCEPT L MOUSE DOWN
+reaper.JS_WindowMessage_Intercept(track_window, "WM_LBUTTONUP", true) -- INTERCEPT L MOUSE UP
+reaper.JS_WindowMessage_Intercept(track_window, "WM_RBUTTONUP", true) -- INTERCEPT R MOUSE UP
 
-local prevTime , prevTime2 = 0,0
+local reaper_cursors = {
+    [105] ='FADE L',
+    [184] ='FADE R',
+    [417] ='TRIM L',
+    [418] ='TRIM R',
+    [450] = 'DUAL TRIM',
+    [529] = 'CROSSFADE',
+    [183] = 'START OFFSET',
+    [98181] = 'VOLUME',
+    [187] = 'MOVE',
+}
+
+local function TrackCursors()
+    local cur_cursor = reaper.JS_Mouse_GetCursor() -- returns han
+    for k in pairs(reaper_cursors) do
+        if cur_cursor == reaper.JS_Mouse_LoadCursor(k) then return true end
+    end
+end
+
+OLD_GROUP = -1
+local prevTime = 0
+local prevTime2 = 0
+local prevTime3 = 0
 function Track_mouse_LCLICK()
-    CLICK, UP = nil, nil
-    local pOK2, pass2, time2, wLow2, wHigh2, lLow2, lHigh2 = reaper.JS_WindowMessage_Peek(track_window, "WM_LBUTTONDOWN")
-    local pOK, pass, time, wLow, wHigh, lLow, lHigh = reaper.JS_WindowMessage_Peek(track_window, "WM_LBUTTONUP")
+    local pOK, _, time = reaper.JS_WindowMessage_Peek(track_window, "WM_LBUTTONDOWN")
     if pOK and time > prevTime then
         prevTime = time
-        UP = true
+        if TrackCursors() then
+            SelectAllItems(false)
+            CLICKED_ITEM = reaper.BR_ItemAtMouseCursor()
+            DEST_TRACK = CLICKED_ITEM and reaper.GetMediaItemTrack( CLICKED_ITEM )
+            CUR_GROUP = Find_Group(DEST_TRACK)
+        end
     end
+    local pOK2, _, time2 = reaper.JS_WindowMessage_Peek(track_window, "WM_LBUTTONUP")
     if pOK2 and time2 > prevTime2 then
         prevTime2 = time2
-        CLICK = true
+        local UP_ITEM = reaper.BR_ItemAtMouseCursor()
+        if UP_ITEM then
+            if reaper.GetMediaItemInfo_Value( UP_ITEM, "B_UISEL" ) == 1 then
+                CLICKED_ITEM = reaper.BR_ItemAtMouseCursor()
+                DEST_TRACK = CLICKED_ITEM and reaper.GetMediaItemTrack( CLICKED_ITEM )
+                CUR_GROUP = Find_Group(DEST_TRACK)
+            end
+        end
+    end
+    local pOK3, _, time3 = reaper.JS_WindowMessage_Peek(track_window, "WM_RBUTTONUP")
+    if pOK3 and time3 > prevTime3 then
+        prevTime3 = time3
+        local UP_ITEM = reaper.GetSelectedMediaItem(0,0)
+        if UP_ITEM then
+            CLICKED_ITEM = UP_ITEM
+            DEST_TRACK = CLICKED_ITEM and reaper.GetMediaItemTrack( CLICKED_ITEM )
+            CUR_GROUP = Find_Group(DEST_TRACK)
+        end
     end
 end
 
@@ -74,6 +118,9 @@ local GROUP_FLAGS = {
 local GROUPS = {}
 GROUPS.enabled_mask = 0
 
+local GROUP_NAMES = {}
+for i = 1, 64 do GROUP_NAMES[i] = "GROUP " .. i end
+
 function Set_Group_EDIT_ENABLE(group, enable)
     if not enable then -- BITS ARE 1
         GROUPS.enabled_mask = GROUPS.enabled_mask | (1 << (group - 1))
@@ -87,14 +134,18 @@ function CheckGroupEnable(group)
     return GROUPS.enabled_mask & (1 << (group - 1)) ~= 0 and true
 end
 
-local function In_Group(tbl, val)
-    for i = 1, #tbl do if tbl[i] == val then return true end end
+function Find_Group(val)
+    for i = 1, 64 do
+        for k, v in pairs(GROUPS[i]) do
+            if v == val then
+                if CheckGroupEnable(i) then return i end
+            end
+        end
+    end
 end
 
-local function In_Any_Group(val)
-    for i = 1, 64 do
-        if In_Group(GROUPS[i], val) then return i end
-    end
+local function In_Group(tbl, val)
+    for i = 1, #tbl do if tbl[i] == val then return true end end
 end
 
 local function Fill_groups()
@@ -116,11 +167,8 @@ local function Fill_groups()
     end
 end
 
-local function IsAnyGroupFilled()
-    for i = 1 , 64 do
-        if #GROUPS[i] ~= 0 then return true end
-    end
-    return false
+local function FreeGroup()
+    for i = 1 , 64 do if next(GROUPS[i]) == nil then GROUP_NAMES[i] = "GROUP " .. i return i end end
 end
 
 local function GetEnvGuidFromName(track, env_name )
@@ -230,56 +278,20 @@ local function GetAndSelectItemsInGroups(tr_tbl, item)
     end
 end
 
-local function UnselectAllItems()
+function SelectAllItems(set)
     for i = reaper.CountSelectedMediaItems(0), 1, -1 do
-        reaper.SetMediaItemSelected(reaper.GetSelectedMediaItem(0, i - 1), false)
+        reaper.SetMediaItemSelected(reaper.GetSelectedMediaItem(0, i - 1), set)
     end
 end
 
-local function Edit_groups()
-    local item_under_cursor = reaper.BR_ItemAtMouseCursor()
-
-    if item_under_cursor then
-        local item_track = reaper.GetMediaItemTrack( item_under_cursor )
-        if CLICK or UP  then
-            CLICKED_ITEM = item_under_cursor -- IF TRACK IS IN ANY GROUP
-            DEST_TRACK = CLICKED_ITEM and item_track -- IF TRACK IS IN ANY GROUP
-           -- if CLICKED_ITEM then UnselectAllItems() end -- UNSELECT ONLY WHEN IN ANY GROUP
-        end
-    end
-
-    if MARQUEE_ITEM then
-        local item = reaper.GetSelectedMediaItem(0,0)
-        if item then
-            CLICKED_ITEM = item
-            DEST_TRACK = reaper.GetMediaItemTrack( item )
-        end
-    end
-
-    if RAZOR and not CLICKED_ITEM then DEST_TRACK = RAZOR.track end
-
-    if RAZOR or CLICKED_ITEM or MARQUEE_ITEM then
-        reaper.PreventUIRefresh(1)
-        for j = 1, #GROUPS do
-            if CheckGroupEnable(j) then
-                for k = 1, #GROUPS[j] do
-                    if In_Group(GROUPS[j], DEST_TRACK) then
-                        if RAZOR then Set_Razor_Data(GROUPS[j][k], RAZOR) end
-                        if CLICKED_ITEM then GetAndSelectItemsInGroups(GROUPS[j][k], CLICKED_ITEM)  reaper.SetTrackSelected(GROUPS[j][k], true ) end
-                    end
-                end
-            end
-        end
-        reaper.PreventUIRefresh(-1)
-        reaper.UpdateArrange()
-
-        if RAZOR then RAZOR = nil end
-        if UP then CLICKED_ITEM = nil end
-        if MARQUEE_ITEM then
-            MARQUEE_ITEM = nil
-            CLICKED_ITEM = nil
-        end
-        DEST_TRACK = nil
+local function SelectTracksInGROUP(group)
+    if group == nil then return end
+    local tr_tbl = GROUPS[group]
+    if not tr_tbl then return end
+    if next(tr_tbl) == nil then return end
+    reaper.Main_OnCommand(40297,0)
+    for k,v in pairs(tr_tbl) do
+        reaper.SetTrackSelected(v, true)
     end
 end
 
@@ -288,58 +300,165 @@ local function Is_razor_created()
     local razor_action = nil
     local projectChangeCount = reaper.GetProjectStateChangeCount(0)
     if lastProjectChangeCount ~= projectChangeCount then
-        local last_action = reaper.Undo_CanUndo2( 0 ):lower()
-        if last_action:match("razor") then razor_action = true
-        elseif last_action:match("group membership") then Fill_groups() -- REFRESH GROUPS WHEN CHANGE IN GROUPS DETECTED
-        elseif last_action:match("marquee item selection") then MARQUEE_ITEM = true
+        if reaper.Undo_CanUndo2( 0 ) then
+            local last_action = reaper.Undo_CanUndo2( 0 ):lower()
+            if last_action:match("razor") then razor_action = true
+            elseif last_action:match("group membership") then Fill_groups() -- REFRESH GROUPS WHEN CHANGE IN GROUPS DETECTED
+            end
         end
         lastProjectChangeCount = projectChangeCount
     end
     return razor_action
 end
 
-local ctx
-function ImGui_Create_CTX()
-    ctx = reaper.ImGui_CreateContext('My script', reaper.ImGui_ConfigFlags_NoSavedSettings())
+local function Edit_groups()
+    if CUR_GROUP ~= OLD_GROUP then
+        OLD_GROUP = CUR_GROUP
+    end
+
+    if RAZOR then DEST_TRACK = RAZOR.track end
+
+    if RAZOR or CLICKED_ITEM then
+        if CLICKED_ITEM then ITEMS = {} end
+        reaper.PreventUIRefresh(1)
+        for j = 1, #GROUPS do
+            if CheckGroupEnable(j) then
+                for k = 1, #GROUPS[j] do
+                    if In_Group(GROUPS[j], DEST_TRACK) then
+                        if RAZOR then Set_Razor_Data(GROUPS[j][k], RAZOR) end
+                        if CLICKED_ITEM then GetAndSelectItemsInGroups(GROUPS[j][k], CLICKED_ITEM) --[[ reaper.SetTrackSelected(GROUPS[j][k], true ) ]] end
+                    end
+                end
+            end
+        end
+        reaper.PreventUIRefresh(-1)
+        reaper.UpdateArrange()
+
+        if RAZOR then RAZOR = nil end
+        if CLICKED_ITEM then CLICKED_ITEM = nil end
+        if DEST_TRACK then DEST_TRACK = nil end
+    end
 end
 
 local function Main()
     MOUSE_TR = Get_track_under_mouse()
-    Track_mouse_LCLICK()
     if Is_razor_created() then RAZOR = Get_Razor_Data(MOUSE_TR) end
+    Track_mouse_LCLICK()
     Edit_groups()
+end
+
+local function SetGroup(track, group, set)
+    if group <= 32 then
+        local add = set and (1 << (group - 1)) or 0
+        reaper.GetSetTrackGroupMembership( track, GROUP_FLAGS[1], (1 << (group - 1)), add )
+    else
+        local add = set and (1 << (group-32 - 1)) or 0
+        reaper.GetSetTrackGroupMembershipHigh( track, GROUP_FLAGS[1], (1 << (group-32 - 1)), add )
+    end
+end
+
+local function AddSelectedTracksTo_GROUP(group, set)
+    for i = 1, reaper.CountSelectedTracks(0) do
+        SetGroup( reaper.GetSelectedTrack(0, i -1), group, set)
+    end
+    Fill_groups()
+end
+
+local ctx
+local dock = 0
+function ImGui_Create_CTX()
+    ctx = reaper.ImGui_CreateContext('My script', reaper.ImGui_ConfigFlags_DockingEnable())
+    reaper.ImGui_SetNextWindowDockID(ctx, dock)
+end
+
+local function Rename(i)
+    local RV
+    if reaper.ImGui_IsWindowAppearing(ctx) then
+        reaper.ImGui_SetKeyboardFocusHere(ctx)
+        NEW_NAME = GROUP_NAMES[i]
+    end
+    RV, NEW_NAME = reaper.ImGui_InputText(ctx, 'Name' , NEW_NAME, reaper.ImGui_InputTextFlags_AutoSelectAll())
+    if reaper.ImGui_Button(ctx, 'OK') or reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Enter()) or reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_KeypadEnter()) then
+        NEW_NAME = NEW_NAME:gsub("^%s*(.-)%s*$", "%1") -- remove trailing and leading
+        if #NEW_NAME ~= 0 then SAVED_NAME = NEW_NAME end
+        if SAVED_NAME then
+            GROUP_NAMES[i] = SAVED_NAME
+        end
+        reaper.ImGui_CloseCurrentPopup(ctx)
+    end
+    reaper.ImGui_SameLine(ctx)
+    if reaper.ImGui_Button(ctx, 'Cancel') then
+        reaper.ImGui_CloseCurrentPopup(ctx)
+    end
+end
+
+function ContextMenu(i)
+    if reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Escape()) then reaper.ImGui_CloseCurrentPopup(ctx) end
+    if reaper.ImGui_MenuItem(ctx, 'Group settings') then reaper.Main_OnCommand( 40772, 0 ) end
+    if reaper.ImGui_MenuItem(ctx, 'Add selected tracks') then AddSelectedTracksTo_GROUP(i, true) end
+    if reaper.ImGui_MenuItem(ctx, 'Remove selected tracks') then AddSelectedTracksTo_GROUP(i, false) end
+    if reaper.ImGui_Selectable(ctx, 'Rename Group', nil, reaper.ImGui_SelectableFlags_DontClosePopups()) then
+        reaper.ImGui_OpenPopup(ctx, 'Rename')
+    end
+    if reaper.ImGui_BeginPopupModal(ctx, 'Rename', nil, reaper.ImGui_WindowFlags_AlwaysAutoResize()) then
+        Rename(i)
+        reaper.ImGui_EndPopup(ctx)
+    end
+end
+
+function Draw_Color_Rect(color)
+    local min_x, min_y = reaper.ImGui_GetItemRectMin(ctx)
+    local max_x, max_y = reaper.ImGui_GetItemRectMax(ctx)
+    local draw_list = reaper.ImGui_GetWindowDrawList(ctx)
+    reaper.ImGui_DrawList_AddRectFilled(draw_list, min_x, min_y, max_x, max_y, 0x11FFFF80)
 end
 
 function GUI()
     Main()
-    local visible, open  = reaper.ImGui_Begin(ctx, 'EDIT GROUPS', true, reaper.ImGui_WindowFlags_AlwaysAutoResize() | reaper.ImGui_WindowFlags_NoCollapse())
-    if visible then
-        if reaper.ImGui_BeginListBox(ctx, '##Group List',110) then
+    if reaper.ImGui_Begin(ctx, 'EDIT GROUPS', false, reaper.ImGui_WindowFlags_NoCollapse()) then
+        if reaper.ImGui_Button(ctx, 'ADD TO NEW GROUP', -1) then AddSelectedTracksTo_GROUP(FreeGroup(), true) end
+        if reaper.ImGui_BeginListBox(ctx, '##Group List',-1,-1) then
             for i = 1, 64 do
-                if reaper.ImGui_MenuItem(ctx, "GROUP " .. i, nil, CheckGroupEnable(i)) then
-                    Set_Group_EDIT_ENABLE(i, not CheckGroupEnable(i))
+                local has_tracks = next(GROUPS[i]) ~= nil
+                if has_tracks then
+                    if reaper.ImGui_Checkbox( ctx, '##'..i, CheckGroupEnable(i) ) then
+                        Set_Group_EDIT_ENABLE(i, not CheckGroupEnable(i))
+                    end
+                    reaper.ImGui_SameLine(ctx)
+                    if reaper.ImGui_Button(ctx, GROUP_NAMES[i], -1) then CUR_GROUP = i SelectTracksInGROUP(i) end
+                    if CUR_GROUP == i then Draw_Color_Rect() end
+                    if reaper.ImGui_BeginPopupContextItem(ctx) then
+                        ContextMenu(i)
+                        HIGH = i
+                        reaper.ImGui_EndPopup(ctx)
+                    end
+                    if i == HIGH then Draw_Color_Rect() HIGH = nil end
                 end
             end
             reaper.ImGui_EndListBox(ctx)
         end
         reaper.ImGui_End(ctx)
     end
-    if open then
-		reaper.defer(GUI)
-	else
-		reaper.ImGui_DestroyContext(ctx)
-        DoAtExit()
-	end
+    reaper.defer(GUI)
 end
 
 function SaveGroup_mask()
+    reaper.SetProjExtState(0, "EDIT_GROUPS", "GROUP_NAMES", table.concat(GROUP_NAMES,"\n"))
     reaper.SetProjExtState(0, "EDIT_GROUPS", "MASK", GROUPS.enabled_mask)
 end
 
 local function RestoreGroupEnableMASK()
-    local rv, stored = reaper.GetProjExtState( 0, "EDIT_GROUPS", "MASK" )
-    if rv == 1 and stored ~= nil then
-        GROUPS.enabled_mask = stored
+    local rv_mask, stored_mask = reaper.GetProjExtState( 0, "EDIT_GROUPS", "MASK" )
+    if rv_mask == 1 and stored_mask ~= nil then
+        GROUPS.enabled_mask = stored_mask
+    end
+    local rv_names, stored_names = reaper.GetProjExtState( 0, "EDIT_GROUPS", "GROUP_NAMES" )
+    if rv_names == 1 and stored_names ~= nil then
+        local cnt = 1
+        for name in string.gmatch(stored_names, "[^\r\n]+") do
+            GROUP_NAMES[cnt] = name
+            cnt = cnt + 1
+        end
     end
 end
 
@@ -353,12 +472,7 @@ end
 Fill_groups()
 RestoreGroupEnableMASK()
 
-if not IsAnyGroupFilled() then
-    reaper.MB( "All groups are empty, turning script off", "ALL GROUPS ARE EMPTY", 0 )
-    DoAtExit()
-    return reaper.defer(function() end)
-else
-    ImGui_Create_CTX()
-    GUI()
-end
+ImGui_Create_CTX()
+reaper.defer(GUI)
+
 reaper.atexit(DoAtExit)
