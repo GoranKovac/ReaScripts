@@ -440,9 +440,24 @@ function Draw_Color_Rect(color)
     reaper.ImGui_DrawList_AddRectFilled(draw_list, min_x, min_y, max_x, max_y, 0x11FFFF80)
 end
 
+function TextCentered(string)
+    local windowWidth = reaper.ImGui_GetWindowSize(ctx)
+    local textWidth = reaper.ImGui_CalcTextSize(ctx, string, w, h)
+    reaper.ImGui_SetCursorPosX(ctx, (windowWidth - textWidth) * 0.5);
+    reaper.ImGui_Text(ctx,string);
+end
+
 function GUI()
     Main()
     if reaper.ImGui_Begin(ctx, 'EDIT GROUPS', false, reaper.ImGui_WindowFlags_NoCollapse()) then
+        local sel_tracks = reaper.CountSelectedTracks(0)
+        if sel_tracks == 0 then
+            TextCentered("No tracks selected")
+            --reaper.ImGui_Text(ctx, "No tracks selected.")
+        else
+            local t_text = sel_tracks == 1 and " track " or " tracks "
+            TextCentered(sel_tracks .. t_text .. "selected.")
+        end
         if reaper.ImGui_Button(ctx, 'ADD TO NEW GROUP', -1) then AddSelectedTracksTo_GROUP(FreeGroup(), true) end
         if reaper.ImGui_BeginListBox(ctx, '##Group List',-1,-1) then
             for i = 1, 64 do
