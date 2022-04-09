@@ -1,9 +1,9 @@
 -- @description EDIT GROUPS
 -- @author Sexan
 -- @license GPL v3
--- @version 0.34
+-- @version 0.35
 -- @changelog
---   + Remove tracking icons (razors use same icons and its not reliable )
+--   + Lil UI improvements
 
 local reaper = reaper
 
@@ -69,7 +69,7 @@ function Track_mouse_LCLICK()
         --CURSOR_OFFSET = TrackCursors(x)
         ITEM_UNDER_MOUSE = reaper.GetItemFromPoint( x, y, false )
         if ITEM_UNDER_MOUSE then
-            if not Find_Group(reaper.GetMediaItemTrack( ITEM_UNDER_MOUSE )) then ITEM_UNDER_MOUSE = nil return end
+            if not Find_Group(reaper.GetMediaItemTrack( ITEM_UNDER_MOUSE )) then ITEM_UNDER_MOUSE = nil CUR_GROUP = 0 return end
             SelectAllItems(false)
             CLICKED_ITEM = ITEM_UNDER_MOUSE
             DEST_TRACK = CLICKED_ITEM and reaper.GetMediaItemTrack( CLICKED_ITEM )
@@ -94,7 +94,7 @@ function Track_mouse_LCLICK()
         prevTime3 = time3
         local UP_ITEM = reaper.GetSelectedMediaItem(0,0)
         if UP_ITEM then
-            if not Find_Group(reaper.GetMediaItemTrack( UP_ITEM )) then return end
+            if not Find_Group(reaper.GetMediaItemTrack( UP_ITEM )) then CUR_GROUP = 0 return end
             CLICKED_ITEM = UP_ITEM
             DEST_TRACK = CLICKED_ITEM and reaper.GetMediaItemTrack( CLICKED_ITEM )
             CUR_GROUP = Find_Group(DEST_TRACK)
@@ -394,6 +394,7 @@ local dock = 0
 function ImGui_Create_CTX()
     ctx = reaper.ImGui_CreateContext('My script', reaper.ImGui_ConfigFlags_DockingEnable())
     reaper.ImGui_SetNextWindowDockID(ctx, dock)
+    --reaper.ImGui_SetNextWindowSizeConstraints( ctx, 50, 50, 50, 550 )
 end
 
 local function Rename(i)
@@ -423,7 +424,7 @@ function ContextMenu(i)
     if reaper.ImGui_MenuItem(ctx, 'Add selected tracks') then AddSelectedTracksTo_GROUP(i, true) end
     if reaper.ImGui_MenuItem(ctx, 'Remove selected tracks') then AddSelectedTracksTo_GROUP(i, false) end
     if reaper.ImGui_Selectable(ctx, 'Rename Group', nil, reaper.ImGui_SelectableFlags_DontClosePopups()) then
-        local x, y = reaper.ImGui_GetCursorScreenPos( ctx )
+        local x, y = reaper.ImGui_GetMousePos( ctx )
         reaper.ImGui_SetNextWindowPos( ctx, x, y)
         reaper.ImGui_OpenPopup(ctx, 'Rename')
     end
@@ -442,39 +443,36 @@ end
 
 function TextCentered(string)
     local windowWidth = reaper.ImGui_GetWindowSize(ctx)
-    local textWidth = reaper.ImGui_CalcTextSize(ctx, string, w, h)
+    local textWidth = reaper.ImGui_CalcTextSize(ctx, string)
     reaper.ImGui_SetCursorPosX(ctx, (windowWidth - textWidth) * 0.5);
     reaper.ImGui_Text(ctx,string);
 end
 
 function GUI()
     Main()
+    reaper.ImGui_SetNextWindowSizeConstraints( ctx, 150, 150, 550, 550 )
     if reaper.ImGui_Begin(ctx, 'EDIT GROUPS', false, reaper.ImGui_WindowFlags_NoCollapse()) then
         local sel_tracks = reaper.CountSelectedTracks(0)
-        if sel_tracks == 0 then
-            TextCentered("No tracks selected")
-            --reaper.ImGui_Text(ctx, "No tracks selected.")
-        else
-            local t_text = sel_tracks == 1 and " track " or " tracks "
-            TextCentered(sel_tracks .. t_text .. "selected.")
-        end
+        local t_text = sel_tracks == 0 and "No tracks selected" or (sel_tracks == 1 and " track selected" or " tracks selected")
+        TextCentered(sel_tracks .. t_text)
         if reaper.ImGui_Button(ctx, 'ADD TO NEW GROUP', -1) then AddSelectedTracksTo_GROUP(FreeGroup(), true) end
         if reaper.ImGui_BeginListBox(ctx, '##Group List',-1,-1) then
             for i = 1, 64 do
                 local has_tracks = next(GROUPS[i]) ~= nil
                 if has_tracks then
-                    if reaper.ImGui_Checkbox( ctx, '##'..i, CheckGroupEnable(i) ) then
+                    if reaper.ImGui_Checkbox( ctx, '##' ..i , CheckGroupEnable(i)) then
                         Set_Group_EDIT_ENABLE(i, not CheckGroupEnable(i))
                     end
                     reaper.ImGui_SameLine(ctx)
                     if reaper.ImGui_Button(ctx, GROUP_NAMES[i], -1) then CUR_GROUP = i SelectTracksInGROUP(i) end
                     if CUR_GROUP == i then Draw_Color_Rect() end
+                    --if CheckGroupEnable(i) then Draw_Color_Rect() end
+                    local x, y = reaper.ImGui_GetCursorScreenPos( ctx )
+                    reaper.ImGui_SetNextWindowPos( ctx, x, y)
                     if reaper.ImGui_BeginPopupContextItem(ctx) then
                         ContextMenu(i)
-                        HIGH = i
                         reaper.ImGui_EndPopup(ctx)
                     end
-                    if i == HIGH then Draw_Color_Rect() HIGH = nil end
                 end
             end
             reaper.ImGui_EndListBox(ctx)
