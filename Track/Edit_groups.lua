@@ -1,9 +1,10 @@
 -- @description EDIT GROUPS
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35
+-- @version 0.36
 -- @changelog
---   + Lil UI improvements
+--   + Improve Fixed Lanes behavior
+--   + Instead of selecting all select items in same lane
 
 local reaper = reaper
 
@@ -57,7 +58,6 @@ reaper.JS_WindowMessage_Intercept(track_window, "WM_RBUTTONUP", true) -- INTERCE
 --     end
 -- end
 
-OLD_GROUP = -1
 local prevTime = 0
 local prevTime2 = 0
 local prevTime3 = 0
@@ -277,11 +277,19 @@ local function Get_track_under_mouse()
     if track then return track end
 end
 
+local function GetItemLane(item)
+    local y = reaper.GetMediaItemInfo_Value(item, 'F_FREEMODE_Y')
+    local h = reaper.GetMediaItemInfo_Value(item, 'F_FREEMODE_H')
+    return Round(y / h) + 1
+end
+
 local function GetAndSelectItemsInGroups(track, item)
     local track_set = nil
     local sel_item_lenght = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
     local sel_item_start = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
     local sel_item_end = sel_item_lenght + sel_item_start
+
+    local item_lane = reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") == 2 and GetItemLane(item) or 1
 
     for i = 1, reaper.CountTrackMediaItems(track) do
         local item_in_group = reaper.GetTrackMediaItem(track, i - 1)
@@ -289,7 +297,13 @@ local function GetAndSelectItemsInGroups(track, item)
         local item_start = reaper.GetMediaItemInfo_Value(item_in_group, "D_POSITION")
         local item_end = item_lenght + item_start
         if (item_start >= sel_item_start) and (item_start < sel_item_end) and (item_end <= sel_item_end) then
-            reaper.SetMediaItemSelected(item_in_group, true)
+            if reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") == 0 then
+                reaper.SetMediaItemSelected(item_in_group, true)
+            elseif reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") == 2 then
+                if item_lane == GetItemLane(item_in_group) then
+                    reaper.SetMediaItemSelected(item_in_group, true)
+                end
+            end
             reaper.SetTrackSelected(track, true )
             track_set = true
         end
@@ -394,7 +408,6 @@ local dock = 0
 function ImGui_Create_CTX()
     ctx = reaper.ImGui_CreateContext('My script', reaper.ImGui_ConfigFlags_DockingEnable())
     reaper.ImGui_SetNextWindowDockID(ctx, dock)
-    --reaper.ImGui_SetNextWindowSizeConstraints( ctx, 50, 50, 50, 550 )
 end
 
 local function Rename(i)
