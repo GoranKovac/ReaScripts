@@ -78,6 +78,7 @@ local mouse = {
 -- end
 
 function Track_mouse_LCLICK()
+    --MSG(tostring(mouse.l_click) .. " - " .. tostring(mouse.l_down))
     if mouse.l_click then
         if mouse.detail == "arrange" then
             ITEM_UNDER_MOUSE = reaper.GetItemFromPoint(mouse.x, mouse.y, false)
@@ -546,20 +547,19 @@ end
 
 local function OnMouseDown(lmb_down, rmb_down)
 	if not rmb_down and lmb_down and mouse.last_LMB_state == false then
-		mouse.last_LMB_state = true
-		mouse.l_click = true
+        mouse.last_LMB_state = true
+        mouse.l_click = true
 	end
 	if not lmb_down and rmb_down and mouse.last_RMB_state == false then
-		mouse.last_RMB_state = true
-		mouse.r_click = true
+        mouse.last_RMB_state = true
+        mouse.r_click = true
 	end
 	mouse.ox, mouse.oy = mouse.x, mouse.y -- mouse click coordinates
 end
 
 local function OnMouseUp(lmb_down, rmb_down)
 	mouse.uptime = os.clock()
-	mouse.dx = 0
-	mouse.dy = 0
+	mouse.dx, mouse.dy = 0, 0
 	if not lmb_down and mouse.last_LMB_state then mouse.last_LMB_state = false mouse.l_up = true end
 	if not rmb_down and mouse.last_RMB_state then mouse.last_RMB_state = false mouse.r_up = true end
 end
@@ -573,7 +573,6 @@ local function OnMouseHold(lmb_down, rmb_down)
 	mouse.r_down = rmb_down and true
 	mouse.dx = mouse.x - mouse.ox
 	mouse.dy = mouse.y - mouse.oy
-
 	mouse.last_x, mouse.last_y = mouse.x, mouse.y
 end
 
