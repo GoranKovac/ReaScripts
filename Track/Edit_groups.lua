@@ -1,9 +1,9 @@
 -- @description EDIT GROUPS
 -- @author Sexan
 -- @license GPL v3
--- @version 0.33
+-- @version 0.34
 -- @changelog
---   + check if items track is in group
+--   + Remove tracking icons (razors use same icons and its not reliable )
 
 local reaper = reaper
 
@@ -31,31 +31,31 @@ reaper.JS_WindowMessage_Intercept(track_window, "WM_LBUTTONDOWN", true) -- INTER
 reaper.JS_WindowMessage_Intercept(track_window, "WM_LBUTTONUP", true) -- INTERCEPT L MOUSE UP
 reaper.JS_WindowMessage_Intercept(track_window, "WM_RBUTTONUP", true) -- INTERCEPT R MOUSE UP
 
-local cursors_path = reaper.GetResourcePath() .."/Cursors/"
-local custom_cursors = {
-    { [1] =  cursors_path .. "arrange_fadein.cur",       [2] = 105,   [3] = 'FADE L',      [4] = 1 },
-    { [1] =  cursors_path .. "arrange_fadeout.cur",      [2] = 184,   [3] = 'FADE R',      [4] = -1 },
-    { [1] =  cursors_path .. "arrange_leftresize.cur",   [2] = 417,   [3] = 'TRIM L',      [4] = 1 },
-    { [1] =  cursors_path .. "arrange_rightresize.cur",  [2] = 418,   [3] = 'TRIM R',      [4] = -1 },
-    { [1] =  cursors_path .. "arrange_dualedge.cur",     [2] = 450,   [3] = 'DUAL TRIM',   [4] = 0 },
-    { [1] =  cursors_path .. "xfade_move.cur",           [2] = 529,   [3] = 'CROSSFADE',   [4] = 0 },
-    { [1] =  cursors_path .. "arrange_snapoffs.cur",     [2] = 183,   [3] = 'START OFFSET',[4] = 1 },
-    { [1] =  cursors_path .. "arrange_rightstretch.cur", [2] = 430,   [3] = 'STRETCH L',   [4] = 1 },
-    { [1] =  cursors_path .. "arrange_leftstretch.cur",  [2] = 431,   [3] = 'STRETCH R',   [4] = -1 },
-    { [1] =  cursors_path .. "arrange_move.cur",         [2] = 187,   [3] = 'MOVE',        [4] = 0 },
-    { [1] =  cursors_path .. "arrange_itemvol.cur",      [2] = 98181, [3] = 'VOLUME',      [4] = 0 },
-}
+-- local cursors_path = reaper.GetResourcePath() .."/Cursors/"
+-- local custom_cursors = {
+--     { [1] =  cursors_path .. "arrange_fadein.cur",       [2] = 105,   [3] = 'FADE L',      [4] = 1 },
+--     { [1] =  cursors_path .. "arrange_fadeout.cur",      [2] = 184,   [3] = 'FADE R',      [4] = -1 },
+--     { [1] =  cursors_path .. "arrange_leftresize.cur",   [2] = 417,   [3] = 'TRIM L',      [4] = 1 },
+--     { [1] =  cursors_path .. "arrange_rightresize.cur",  [2] = 418,   [3] = 'TRIM R',      [4] = -1 },
+--     { [1] =  cursors_path .. "arrange_dualedge.cur",     [2] = 450,   [3] = 'DUAL TRIM',   [4] = 0 },
+--     { [1] =  cursors_path .. "xfade_move.cur",           [2] = 529,   [3] = 'CROSSFADE',   [4] = 0 },
+--     { [1] =  cursors_path .. "arrange_snapoffs.cur",     [2] = 183,   [3] = 'START OFFSET',[4] = 1 },
+--     { [1] =  cursors_path .. "arrange_rightstretch.cur", [2] = 430,   [3] = 'STRETCH L',   [4] = 1 },
+--     { [1] =  cursors_path .. "arrange_leftstretch.cur",  [2] = 431,   [3] = 'STRETCH R',   [4] = -1 },
+--     { [1] =  cursors_path .. "arrange_move.cur",         [2] = 187,   [3] = 'MOVE',        [4] = 0 },
+--     { [1] =  cursors_path .. "arrange_itemvol.cur",      [2] = 98181, [3] = 'VOLUME',      [4] = 0 },
+-- }
 
-for i = 1, #custom_cursors do
-    custom_cursors[i][1] = reaper.file_exists( custom_cursors[i][1] ) and reaper.JS_Mouse_LoadCursorFromFile( custom_cursors[i][1] ) or reaper.JS_Mouse_LoadCursor(custom_cursors[i][2])
-end
+-- for i = 1, #custom_cursors do
+--     custom_cursors[i][1] = reaper.file_exists( custom_cursors[i][1] ) and reaper.JS_Mouse_LoadCursorFromFile( custom_cursors[i][1] ) or reaper.JS_Mouse_LoadCursor(custom_cursors[i][2])
+-- end
 
-local function TrackCursors(x)
-    local cur_cursor = reaper.JS_Mouse_GetCursor() -- returns han
-    for i = 1, #custom_cursors do
-        if custom_cursors[i][1] == cur_cursor then return custom_cursors[i][4] end
-    end
-end
+-- local function TrackCursors(x)
+--     local cur_cursor = reaper.JS_Mouse_GetCursor() -- returns han
+--     for i = 1, #custom_cursors do
+--         if custom_cursors[i][1] == cur_cursor then MSG(custom_cursors[i][3])return custom_cursors[i][4] end
+--     end
+-- end
 
 OLD_GROUP = -1
 local prevTime = 0
@@ -66,47 +66,27 @@ function Track_mouse_LCLICK()
     local pOK, _, time = reaper.JS_WindowMessage_Peek(track_window, "WM_LBUTTONDOWN")
     if pOK and time > prevTime then
         prevTime = time
-        CURSOR_OFFSET = TrackCursors(x)
-        if CURSOR_OFFSET then
-            local item_under_mouse = reaper.GetItemFromPoint( x, y, false )
-            while not item_under_mouse do
-               x = x + CURSOR_OFFSET
-               item_under_mouse = reaper.GetItemFromPoint( x, y, false )
-            end
-            if not Find_Group(reaper.GetMediaItemTrack( item_under_mouse )) then CURSOR_OFFSET = nil return end
+        --CURSOR_OFFSET = TrackCursors(x)
+        ITEM_UNDER_MOUSE = reaper.GetItemFromPoint( x, y, false )
+        if ITEM_UNDER_MOUSE then
+            if not Find_Group(reaper.GetMediaItemTrack( ITEM_UNDER_MOUSE )) then ITEM_UNDER_MOUSE = nil return end
             SelectAllItems(false)
-            CLICKED_ITEM = item_under_mouse
+            CLICKED_ITEM = ITEM_UNDER_MOUSE
             DEST_TRACK = CLICKED_ITEM and reaper.GetMediaItemTrack( CLICKED_ITEM )
             CUR_GROUP = Find_Group(DEST_TRACK)
         else
             CUR_GROUP = 0
         end
-
     end
     local pOK2, _, time2 = reaper.JS_WindowMessage_Peek(track_window, "WM_LBUTTONUP")
     if pOK2 and time2 > prevTime2 then
         prevTime2 = time2
-        local UP_ITEM = reaper.GetItemFromPoint( x, y, false )
-        if CURSOR_OFFSET then
-            while not UP_ITEM do
-               x = x + CURSOR_OFFSET
-               UP_ITEM = reaper.GetItemFromPoint( x, y, false )
-            end
-            if not Find_Group(reaper.GetMediaItemTrack( UP_ITEM )) then CURSOR_OFFSET = nil return end
-            CLICKED_ITEM = UP_ITEM
-            DEST_TRACK = CLICKED_ITEM and reaper.GetMediaItemTrack( CLICKED_ITEM )
-            CUR_GROUP = Find_Group(DEST_TRACK)
-            CURSOR_OFFSET = nil
-        end
-        if UP_ITEM then
-            if not Find_Group(reaper.GetMediaItemTrack( UP_ITEM )) then return end
-            if reaper.GetMediaItemInfo_Value( UP_ITEM, "B_UISEL" ) == 1 then
-                CLICKED_ITEM = UP_ITEM
+        if ITEM_UNDER_MOUSE then
+            if reaper.GetMediaItemInfo_Value( ITEM_UNDER_MOUSE, "B_UISEL" ) == 1 then
+                CLICKED_ITEM = ITEM_UNDER_MOUSE
                 DEST_TRACK = CLICKED_ITEM and reaper.GetMediaItemTrack( CLICKED_ITEM )
                 CUR_GROUP = Find_Group(DEST_TRACK)
             end
-        else
-            CUR_GROUP = 0
         end
     end
     local pOK3, _, time3 = reaper.JS_WindowMessage_Peek(track_window, "WM_RBUTTONUP")
