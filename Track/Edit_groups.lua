@@ -1,10 +1,9 @@
 -- @description EDIT GROUPS
 -- @author Sexan
 -- @license GPL v3
--- @version 0.36
+-- @version 0.37
 -- @changelog
---   + Improve Fixed Lanes behavior
---   + Instead of selecting all select items in same lane
+--   + Removed intercepts in favor of manual mouse tracking
 
 local reaper = reaper
 
@@ -26,11 +25,31 @@ local floor = math.floor
 function Round(num) return floor(num + 0.5) end
 function MSG(m) reaper.ShowConsoleMsg(tostring(m) .. "\n") end
 
-local main_wnd = reaper.GetMainHwnd() -- GET MAIN WINDOW
-local track_window = reaper.JS_Window_FindChildByID(main_wnd, 0x3E8) -- GET TRACK VIEW
-reaper.JS_WindowMessage_Intercept(track_window, "WM_LBUTTONDOWN", true) -- INTERCEPT L MOUSE DOWN
-reaper.JS_WindowMessage_Intercept(track_window, "WM_LBUTTONUP", true) -- INTERCEPT L MOUSE UP
-reaper.JS_WindowMessage_Intercept(track_window, "WM_RBUTTONUP", true) -- INTERCEPT R MOUSE UP
+local mouse = {
+	Ctrl  = function() return reaper.JS_Mouse_GetState(95)  &4 == 4  end,
+	Shift = function() return reaper.JS_Mouse_GetState(95)  &8 == 8  end,
+	Alt   = function() return reaper.JS_Mouse_GetState(95) &16 == 16 end,
+	Alt_Shift = function() return reaper.JS_Mouse_GetState(95) &24 == 24 end,
+	Ctrl_Shift = function() return reaper.JS_Mouse_GetState(95) &12 == 12 end,
+	Ctrl_Alt = function() return reaper.JS_Mouse_GetState(95) &20 == 20 end,
+	Ctrl_Shift_Alt = function() return reaper.JS_Mouse_GetState(95) &28 == 28 end,
+	cap = function (mask)
+			if mask == nil then
+				return reaper.JS_Mouse_GetState(95) end
+			return reaper.JS_Mouse_GetState(95)&mask == mask
+		end,
+	lb_down = function() return reaper.JS_Mouse_GetState(95) &1 == 1 end,
+	rb_down = function() return reaper.JS_Mouse_GetState(95) &2 == 2 end,
+    x = 0, 	y = 0,
+    ox = 0, oy = 0,
+    dx = 0, dy = 0,
+    last_LMB_state = false,
+	last_RMB_state = false,
+    l_click = false, r_click = false,
+	l_dclick = false,
+	l_up = false, r_up = false,
+	l_down = false, r_down = false,
+}
 
 -- local cursors_path = reaper.GetResourcePath() .."/Cursors/"
 -- local custom_cursors = {
@@ -58,48 +77,50 @@ reaper.JS_WindowMessage_Intercept(track_window, "WM_RBUTTONUP", true) -- INTERCE
 --     end
 -- end
 
-local prevTime = 0
-local prevTime2 = 0
-local prevTime3 = 0
 function Track_mouse_LCLICK()
-    local x, y = reaper.GetMousePosition()
-    local pOK, _, time = reaper.JS_WindowMessage_Peek(track_window, "WM_LBUTTONDOWN")
-    if pOK and time > prevTime then
-        prevTime = time
-        --CURSOR_OFFSET = TrackCursors(x)
-        ITEM_UNDER_MOUSE = reaper.GetItemFromPoint( x, y, false )
-        if ITEM_UNDER_MOUSE then
-            if not Find_Group(reaper.GetMediaItemTrack( ITEM_UNDER_MOUSE )) then ITEM_UNDER_MOUSE = nil CUR_GROUP = 0 return end
-            SelectAllItems(false)
-            CLICKED_ITEM = ITEM_UNDER_MOUSE
-            DEST_TRACK = CLICKED_ITEM and reaper.GetMediaItemTrack( CLICKED_ITEM )
-            CUR_GROUP = Find_Group(DEST_TRACK)
-        else
-            CUR_GROUP = 0
-        end
-    end
-    local pOK2, _, time2 = reaper.JS_WindowMessage_Peek(track_window, "WM_LBUTTONUP")
-    if pOK2 and time2 > prevTime2 then
-        prevTime2 = time2
-        if ITEM_UNDER_MOUSE then
-            if reaper.GetMediaItemInfo_Value( ITEM_UNDER_MOUSE, "B_UISEL" ) == 1 then
+    if mouse.l_click then
+        if mouse.detail == "arrange" then
+            ITEM_UNDER_MOUSE = reaper.GetItemFromPoint(mouse.x, mouse.y, false)
+            if ITEM_UNDER_MOUSE then
+                if not Find_Group(reaper.GetMediaItemTrack( ITEM_UNDER_MOUSE )) then ITEM_UNDER_MOUSE = nil CUR_GROUP = 0 return end
+                SelectAllItems(false)
                 CLICKED_ITEM = ITEM_UNDER_MOUSE
                 DEST_TRACK = CLICKED_ITEM and reaper.GetMediaItemTrack( CLICKED_ITEM )
                 CUR_GROUP = Find_Group(DEST_TRACK)
+            else
+                CUR_GROUP = 0
             end
+        elseif mouse.detail == "" then
+            CUR_GROUP = 0
         end
     end
-    local pOK3, _, time3 = reaper.JS_WindowMessage_Peek(track_window, "WM_RBUTTONUP")
-    if pOK3 and time3 > prevTime3 then
-        prevTime3 = time3
-        local UP_ITEM = reaper.GetSelectedMediaItem(0,0)
-        if UP_ITEM then
-            if not Find_Group(reaper.GetMediaItemTrack( UP_ITEM )) then CUR_GROUP = 0 return end
-            CLICKED_ITEM = UP_ITEM
-            DEST_TRACK = CLICKED_ITEM and reaper.GetMediaItemTrack( CLICKED_ITEM )
-            CUR_GROUP = Find_Group(DEST_TRACK)
-        else
-            CUR_GROUP = 0
+    if mouse.l_up then
+        if mouse.detail == "arrange" then
+            if ITEM_UNDER_MOUSE then
+                if reaper.GetMediaItemInfo_Value( ITEM_UNDER_MOUSE, "B_UISEL" ) == 1 then
+                    CLICKED_ITEM = ITEM_UNDER_MOUSE
+                    DEST_TRACK = CLICKED_ITEM and reaper.GetMediaItemTrack( CLICKED_ITEM )
+                    CUR_GROUP = Find_Group(DEST_TRACK)
+                end
+            end
+        elseif mouse.detail:match("tcp") then
+            local SEL_TRACK = reaper.GetSelectedTrack(0,0)
+            if not Find_Group(SEL_TRACK) then CUR_GROUP = 0 return end
+            CUR_GROUP = Find_Group(SEL_TRACK)
+            SelectTracksInGROUP(CUR_GROUP)
+        end
+    end
+    if mouse.r_up then
+        if mouse.detail == "arrange" then
+            local UP_ITEM = reaper.GetSelectedMediaItem(0,0)
+            if UP_ITEM then
+                if not Find_Group(reaper.GetMediaItemTrack( UP_ITEM )) then CUR_GROUP = 0 return end
+                CLICKED_ITEM = UP_ITEM
+                DEST_TRACK = CLICKED_ITEM and reaper.GetMediaItemTrack( CLICKED_ITEM )
+                CUR_GROUP = Find_Group(DEST_TRACK)
+            else
+                CUR_GROUP = 0
+            end
         end
     end
 end
@@ -317,7 +338,7 @@ function SelectAllItems(set)
     end
 end
 
-local function SelectTracksInGROUP(group)
+function SelectTracksInGROUP(group)
     if group == nil then return end
     local tr_tbl = GROUPS[group]
     if not tr_tbl then return end
@@ -380,6 +401,7 @@ local function Edit_groups()
 end
 
 local function Main()
+    Mouse()
     MOUSE_TR = Get_track_under_mouse()
     if Is_razor_created() then RAZOR = Get_Razor_Data(MOUSE_TR) end
     Track_mouse_LCLICK()
@@ -519,7 +541,60 @@ function DoAtExit()
     SaveGroup_mask()
     reaper.SetToggleCommandState(sectionID, cmdID, 0);
     reaper.RefreshToolbar2(sectionID, cmdID);
-    reaper.JS_WindowMessage_Release(track_window, "WM_LBUTTONDOWN")
+    --reaper.JS_WindowMessage_Release(track_window, "WM_LBUTTONDOWN")
+end
+
+local function OnMouseDown(lmb_down, rmb_down)
+	if not rmb_down and lmb_down and mouse.last_LMB_state == false then
+		mouse.last_LMB_state = true
+		mouse.l_click = true
+	end
+	if not lmb_down and rmb_down and mouse.last_RMB_state == false then
+		mouse.last_RMB_state = true
+		mouse.r_click = true
+	end
+	mouse.ox, mouse.oy = mouse.x, mouse.y -- mouse click coordinates
+end
+
+local function OnMouseUp(lmb_down, rmb_down)
+	mouse.uptime = os.clock()
+	mouse.dx = 0
+	mouse.dy = 0
+	if not lmb_down and mouse.last_LMB_state then mouse.last_LMB_state = false mouse.l_up = true end
+	if not rmb_down and mouse.last_RMB_state then mouse.last_RMB_state = false mouse.r_up = true end
+end
+
+local function OnMouseDoubleClick()
+	mouse.l_dclick = true
+end
+
+local function OnMouseHold(lmb_down, rmb_down)
+	mouse.l_down = lmb_down and true
+	mouse.r_down = rmb_down and true
+	mouse.dx = mouse.x - mouse.ox
+	mouse.dy = mouse.y - mouse.oy
+
+	mouse.last_x, mouse.last_y = mouse.x, mouse.y
+end
+
+function Mouse()
+    mouse.x, mouse.y = reaper.GetMousePosition()
+    _, mouse.detail = reaper.GetThingFromPoint( mouse.x, mouse.y )
+    mouse.l_click, mouse.r_click, mouse.l_dclick, mouse.l_up, mouse.r_up, mouse.l_down, mouse.r_down = false, false, false, false, false, false, false
+    local LB_DOWN, RB_DOWN = mouse.lb_down(), mouse.rb_down()          -- Get current left mouse button state
+
+    if (LB_DOWN and not RB_DOWN) or (RB_DOWN and not LB_DOWN) then   -- LMB or RMB pressed down?
+		if (mouse.last_LMB_state == false and not RB_DOWN) or (mouse.last_RMB_state == false and not LB_DOWN) then
+			OnMouseDown(LB_DOWN, RB_DOWN)
+			if mouse.uptime and os.clock() - mouse.uptime < 0.20 then
+				OnMouseDoubleClick()
+			end
+		else
+			OnMouseHold(LB_DOWN,RB_DOWN)
+		end
+	elseif not LB_DOWN and mouse.last_RMB_state or not RB_DOWN and mouse.last_LMB_state then
+		OnMouseUp(LB_DOWN, RB_DOWN)
+	end
 end
 
 Fill_groups()
