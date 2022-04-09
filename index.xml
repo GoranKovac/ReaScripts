@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="def0f3ef148cd7eb80bb23900083f7ec2266bf03" name="Sexan_Scripts">
+<index version="1" commit="2cc70f035e0338d93e88907d4ef0e91ce0b639e5" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -800,6 +800,10 @@
       <version name="0.33" author="Sexan" time="2022-04-08T21:36:09Z">
         <changelog><![CDATA[+ check if items track is in group]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/def0f3ef148cd7eb80bb23900083f7ec2266bf03/Track/Edit_groups.lua</source>
+      </version>
+      <version name="0.34" author="Sexan" time="2022-04-09T06:41:56Z">
+        <changelog><![CDATA[+ Remove tracking icons (razors use same icons and its not reliable )]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/2cc70f035e0338d93e88907d4ef0e91ce0b639e5/Track/Edit_groups.lua</source>
       </version>
     </reapack>
     <reapack name="Sexan_Create VCA master from selection.lua" type="script" desc="Create VCA Master from selection.lua">
