@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="2cc70f035e0338d93e88907d4ef0e91ce0b639e5" name="Sexan_Scripts">
+<index version="1" commit="daf44e911a5e98ad71964bb8d893b493d71b7cda" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -804,6 +804,19 @@
       <version name="0.34" author="Sexan" time="2022-04-09T06:41:56Z">
         <changelog><![CDATA[+ Remove tracking icons (razors use same icons and its not reliable )]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/2cc70f035e0338d93e88907d4ef0e91ce0b639e5/Track/Edit_groups.lua</source>
+      </version>
+      <version name="0.35" author="Sexan" time="2022-04-09T08:26:54Z">
+        <changelog><![CDATA[+ Lil UI improvements]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/e678d75a61ffb6038d1f7e34ad5c10828083e764/Track/Edit_groups.lua</source>
+      </version>
+      <version name="0.36" author="Sexan" time="2022-04-09T10:18:53Z">
+        <changelog><![CDATA[+ Improve Fixed Lanes behavior
++ Instead of selecting all select items in same lane]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/eb9a555c8c39527792065cfb3ab0d276b73747fe/Track/Edit_groups.lua</source>
+      </version>
+      <version name="0.37" author="Sexan" time="2022-04-09T11:25:29Z">
+        <changelog><![CDATA[+ Removed intercepts in favor of manual mouse tracking]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/daf44e911a5e98ad71964bb8d893b493d71b7cda/Track/Edit_groups.lua</source>
       </version>
     </reapack>
     <reapack name="Sexan_Create VCA master from selection.lua" type="script" desc="Create VCA Master from selection.lua">
