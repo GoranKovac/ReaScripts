@@ -1,3 +1,10 @@
+--[[
+   * Author: SeXan
+   * Licence: GPL v3
+   * Version: 0.01
+	 * NoIndex: true
+--]]
+
 local reaper = reaper
 
 local crash = function(errObject)
