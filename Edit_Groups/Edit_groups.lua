@@ -1,19 +1,23 @@
 -- @description EDIT GROUPS
 -- @author Sexan
 -- @license GPL v3
--- @version 0.37
+-- @version 0.39
+-- @provides
+--   Utils/*
 -- @changelog
---   + Removed intercepts in favor of manual mouse tracking
+--   + Added mouse class
+
+package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET SCRIPT DIRECTORY
+require("Utils/Mouse")
 
 local reaper = reaper
-
 if not reaper.APIExists("JS_ReaScriptAPI_Version") then
-    reaper.MB( "JS_ReaScriptAPI is required for this script. Please download it from ReaPack", "SCRIPT REQUIREMENTS", 0 )
+    reaper.MB("JS_ReaScriptAPI is required for this script. Please download it from ReaPack", "SCRIPT REQUIREMENTS", 0)
     reaper.ReaPack_BrowsePackages('JS_ReaScriptAPI:')
     return reaper.defer(function() end)
 elseif not reaper.ImGui_GetVersion then
-    reaper.MB( "ReaImGui is required for this script. Please download it from ReaPack", "SCRIPT REQUIREMENTS", 0 )
-    reaper.ReaPack_BrowsePackages( 'ReaImGui:')
+    reaper.MB("ReaImGui is required for this script. Please download it from ReaPack", "SCRIPT REQUIREMENTS", 0)
+    reaper.ReaPack_BrowsePackages('ReaImGui:')
     return reaper.defer(function() end)
 end
 
@@ -23,73 +27,29 @@ reaper.RefreshToolbar2(sectionID, cmdID)
 
 local floor = math.floor
 function Round(num) return floor(num + 0.5) end
-function MSG(m) reaper.ShowConsoleMsg(tostring(m) .. "\n") end
 
-local mouse = {
-	Ctrl  = function() return reaper.JS_Mouse_GetState(95)  &4 == 4  end,
-	Shift = function() return reaper.JS_Mouse_GetState(95)  &8 == 8  end,
-	Alt   = function() return reaper.JS_Mouse_GetState(95) &16 == 16 end,
-	Alt_Shift = function() return reaper.JS_Mouse_GetState(95) &24 == 24 end,
-	Ctrl_Shift = function() return reaper.JS_Mouse_GetState(95) &12 == 12 end,
-	Ctrl_Alt = function() return reaper.JS_Mouse_GetState(95) &20 == 20 end,
-	Ctrl_Shift_Alt = function() return reaper.JS_Mouse_GetState(95) &28 == 28 end,
-	cap = function (mask)
-			if mask == nil then
-				return reaper.JS_Mouse_GetState(95) end
-			return reaper.JS_Mouse_GetState(95)&mask == mask
-		end,
-	lb_down = function() return reaper.JS_Mouse_GetState(95) &1 == 1 end,
-	rb_down = function() return reaper.JS_Mouse_GetState(95) &2 == 2 end,
-    x = 0, 	y = 0,
-    ox = 0, oy = 0,
-    dx = 0, dy = 0,
-    last_LMB_state = false,
-	last_RMB_state = false,
-    l_click = false, r_click = false,
-	l_dclick = false,
-	l_up = false, r_up = false,
-	l_down = false, r_down = false,
-}
+function MSG(m, clear) if clear then reaper.ClearConsole() end reaper.ShowConsoleMsg(tostring(m) .. "\n") end
 
--- local cursors_path = reaper.GetResourcePath() .."/Cursors/"
--- local custom_cursors = {
---     { [1] =  cursors_path .. "arrange_fadein.cur",       [2] = 105,   [3] = 'FADE L',      [4] = 1 },
---     { [1] =  cursors_path .. "arrange_fadeout.cur",      [2] = 184,   [3] = 'FADE R',      [4] = -1 },
---     { [1] =  cursors_path .. "arrange_leftresize.cur",   [2] = 417,   [3] = 'TRIM L',      [4] = 1 },
---     { [1] =  cursors_path .. "arrange_rightresize.cur",  [2] = 418,   [3] = 'TRIM R',      [4] = -1 },
---     { [1] =  cursors_path .. "arrange_dualedge.cur",     [2] = 450,   [3] = 'DUAL TRIM',   [4] = 0 },
---     { [1] =  cursors_path .. "xfade_move.cur",           [2] = 529,   [3] = 'CROSSFADE',   [4] = 0 },
---     { [1] =  cursors_path .. "arrange_snapoffs.cur",     [2] = 183,   [3] = 'START OFFSET',[4] = 1 },
---     { [1] =  cursors_path .. "arrange_rightstretch.cur", [2] = 430,   [3] = 'STRETCH L',   [4] = 1 },
---     { [1] =  cursors_path .. "arrange_leftstretch.cur",  [2] = 431,   [3] = 'STRETCH R',   [4] = -1 },
---     { [1] =  cursors_path .. "arrange_move.cur",         [2] = 187,   [3] = 'MOVE',        [4] = 0 },
---     { [1] =  cursors_path .. "arrange_itemvol.cur",      [2] = 98181, [3] = 'VOLUME',      [4] = 0 },
--- }
-
--- for i = 1, #custom_cursors do
---     custom_cursors[i][1] = reaper.file_exists( custom_cursors[i][1] ) and reaper.JS_Mouse_LoadCursorFromFile( custom_cursors[i][1] ) or reaper.JS_Mouse_LoadCursor(custom_cursors[i][2])
--- end
-
--- local function TrackCursors(x)
---     local cur_cursor = reaper.JS_Mouse_GetCursor() -- returns han
---     for i = 1, #custom_cursors do
---         if custom_cursors[i][1] == cur_cursor then MSG(custom_cursors[i][3])return custom_cursors[i][4] end
---     end
--- end
-
+local mouse
 function Track_mouse_LCLICK()
-    --MSG(tostring(mouse.l_click) .. " - " .. tostring(mouse.l_down))
     if mouse.l_click then
         if mouse.detail == "arrange" then
-            ITEM_UNDER_MOUSE = reaper.GetItemFromPoint(mouse.x, mouse.y, false)
+            ITEM_UNDER_MOUSE = mouse.oitem
             if ITEM_UNDER_MOUSE then
-                if not Find_Group(reaper.GetMediaItemTrack( ITEM_UNDER_MOUSE )) then ITEM_UNDER_MOUSE = nil CUR_GROUP = 0 return end
+                if not Find_Group(reaper.GetMediaItemTrack(ITEM_UNDER_MOUSE)) then ITEM_UNDER_MOUSE = nil
+                    CUR_GROUP = 0
+                    return
+                end
                 SelectAllItems(false)
                 CLICKED_ITEM = ITEM_UNDER_MOUSE
-                DEST_TRACK = CLICKED_ITEM and reaper.GetMediaItemTrack( CLICKED_ITEM )
+                DEST_TRACK = CLICKED_ITEM and mouse.otr
                 CUR_GROUP = Find_Group(DEST_TRACK)
             else
                 CUR_GROUP = 0
+                local SEL_TRACK = mouse.otr --reaper.GetSelectedTrack(0,0)
+                if not Find_Group(SEL_TRACK) then CUR_GROUP = 0 return end
+                CUR_GROUP = Find_Group(SEL_TRACK)
+                SelectTracksInGROUP(CUR_GROUP)
             end
         elseif mouse.detail == "" then
             CUR_GROUP = 0
@@ -98,14 +58,14 @@ function Track_mouse_LCLICK()
     if mouse.l_up then
         if mouse.detail == "arrange" then
             if ITEM_UNDER_MOUSE then
-                if reaper.GetMediaItemInfo_Value( ITEM_UNDER_MOUSE, "B_UISEL" ) == 1 then
+                if reaper.GetMediaItemInfo_Value(ITEM_UNDER_MOUSE, "B_UISEL") == 1 then
                     CLICKED_ITEM = ITEM_UNDER_MOUSE
-                    DEST_TRACK = CLICKED_ITEM and reaper.GetMediaItemTrack( CLICKED_ITEM )
+                    DEST_TRACK = CLICKED_ITEM and mouse.otr
                     CUR_GROUP = Find_Group(DEST_TRACK)
                 end
             end
         elseif mouse.detail:match("tcp") then
-            local SEL_TRACK = reaper.GetSelectedTrack(0,0)
+            local SEL_TRACK = mouse.otr --reaper.GetSelectedTrack(0,0)
             if not Find_Group(SEL_TRACK) then CUR_GROUP = 0 return end
             CUR_GROUP = Find_Group(SEL_TRACK)
             SelectTracksInGROUP(CUR_GROUP)
@@ -113,11 +73,11 @@ function Track_mouse_LCLICK()
     end
     if mouse.r_up then
         if mouse.detail == "arrange" then
-            local UP_ITEM = reaper.GetSelectedMediaItem(0,0)
+            local UP_ITEM = reaper.GetSelectedMediaItem(0, 0)
             if UP_ITEM then
-                if not Find_Group(reaper.GetMediaItemTrack( UP_ITEM )) then CUR_GROUP = 0 return end
+                if not Find_Group(reaper.GetMediaItemTrack(UP_ITEM)) then CUR_GROUP = 0 return end
                 CLICKED_ITEM = UP_ITEM
-                DEST_TRACK = CLICKED_ITEM and reaper.GetMediaItemTrack( CLICKED_ITEM )
+                DEST_TRACK = CLICKED_ITEM and reaper.GetMediaItemTrack(CLICKED_ITEM)
                 CUR_GROUP = Find_Group(DEST_TRACK)
             else
                 CUR_GROUP = 0
@@ -167,9 +127,7 @@ function Set_Group_EDIT_ENABLE(group, enable)
     end
 end
 
-function CheckGroupEnable(group)
-    return GROUPS.enabled_mask & (1 << (group - 1)) ~= 0 and true
-end
+function CheckGroupEnable(group) return GROUPS.enabled_mask & (1 << (group - 1)) ~= 0 and true end
 
 function Find_Group(val)
     for i = 1, 64 do
@@ -186,18 +144,18 @@ local function In_Group(tbl, val)
 end
 
 local function Fill_groups()
-    for i = 1 , 64 do GROUPS[i] = {} end -- refresh table
+    for i = 1, 64 do GROUPS[i] = {} end -- refresh table
     for k = 1, reaper.CountTracks(0) do
-        local track = reaper.GetTrack(0, k-1)
-        for i = 1 , #GROUPS do
+        local track = reaper.GetTrack(0, k - 1)
+        for i = 1, #GROUPS do
             for j = 1, #GROUP_FLAGS do
-                local G32 = reaper.GetSetTrackGroupMembership( track, GROUP_FLAGS[j], 0, 0 )
-                local G64 = reaper.GetSetTrackGroupMembershipHigh( track, GROUP_FLAGS[j], 0, 0 )
+                local G32 = reaper.GetSetTrackGroupMembership(track, GROUP_FLAGS[j], 0, 0)
+                local G64 = reaper.GetSetTrackGroupMembershipHigh(track, GROUP_FLAGS[j], 0, 0)
                 if G32 & (1 << (i - 1)) ~= 0 then
-                    if not In_Group(GROUPS[i],track) then table.insert(GROUPS[i],track) end
+                    if not In_Group(GROUPS[i], track) then table.insert(GROUPS[i], track) end
                 end
-                if G64 & (1 << (i-32 - 1)) ~= 0 then
-                    if not In_Group(GROUPS[i],track) then table.insert(GROUPS[i],track) end
+                if G64 & (1 << (i - 32 - 1)) ~= 0 then
+                    if not In_Group(GROUPS[i], track) then table.insert(GROUPS[i], track) end
                 end
             end
         end
@@ -205,14 +163,14 @@ local function Fill_groups()
 end
 
 local function FreeGroup()
-    for i = 1 , 64 do if next(GROUPS[i]) == nil then GROUP_NAMES[i] = "GROUP " .. i return i end end
+    for i = 1, 64 do if next(GROUPS[i]) == nil then GROUP_NAMES[i] = "GROUP " .. i return i end end
 end
 
-local function GetEnvGuidFromName(track, env_name )
+local function GetEnvGuidFromName(track, env_name)
     if not track then return end
-    local env = reaper.GetTrackEnvelopeByName(track, env_name )
+    local env = reaper.GetTrackEnvelopeByName(track, env_name)
     if env then
-        local _, env_guid = reaper.GetSetEnvelopeInfo_String( env, "GUID", "", false )
+        local _, env_guid = reaper.GetSetEnvelopeInfo_String(env, "GUID", "", false)
         return env_guid
     end
 end
@@ -220,7 +178,7 @@ end
 local function Get_Total_lanes(track)
     local item = reaper.GetTrackMediaItem(track, 0) -- get any item for checking lanes
     if not item then return 1 end
-    local _, chunk = reaper.GetItemStateChunk( item, "", false )
+    local _, chunk = reaper.GetItemStateChunk(item, "", false)
     local lane_h = tonumber(chunk:match("YPOS %S+ (%S+)")) and tonumber(chunk:match("YPOS %S+ (%S+)")) or 1
     return lane_h
 end
@@ -238,7 +196,7 @@ local function Set_Razor_Data(track, razors)
         for i = 1, #razors[r].env do
             local env_guid = GetEnvGuidFromName(track, razors[r].env[i])
             if env_guid then -- ENVELOPE
-                razor_str = razor_str .. razors[r][1] .. " " .. razors[r][2] .. " "  .. env_guid .. " " .. "0 1" .. ","
+                razor_str = razor_str .. razors[r][1] .. " " .. razors[r][2] .. " " .. env_guid .. " " .. "0 1" .. ","
             elseif razors[r].env[i] == '""' then -- NORMAL TRACK
                 local new_top, new_bot = Calculate_New_Razors_from_lanes(track, razors[r])
                 if reaper.GetMediaTrackInfo_Value(track, "I_FREEMODE") == 0 and new_top ~= 0 then return end -- SINCE NORMAL TRACK ADDS RAZORS NO MATTER WHAT JUST SKIP IT IF TOP IS NOT 0
@@ -272,21 +230,21 @@ local function Get_Razor_Data(track)
         local razor_envelopes = {}
         razor_info[r] = {}
         for i in string.gmatch(razors_tbl[r], "%S+") do
-            table.insert(razor_info[r],tonumber(i))
-            if not tonumber(i) then razor_envelopes[#razor_envelopes+1] = i end
+            table.insert(razor_info[r], tonumber(i))
+            if not tonumber(i) then razor_envelopes[#razor_envelopes + 1] = i end
         end
         if #razor_envelopes ~= 0 then
             for i = 1, #razor_envelopes do
                 local env_guid = razor_envelopes[i]:match("({.-})")
                 if env_guid then
-                    local env = reaper.GetTrackEnvelopeByChunkName( track, env_guid )
-                    local _, env_name = reaper.GetEnvelopeName( env )
+                    local env = reaper.GetTrackEnvelopeByChunkName(track, env_guid)
+                    local _, env_name = reaper.GetEnvelopeName(env)
                     razor_envelopes[i] = env_name
                 end
             end
         end
         local lane_h = Get_Total_lanes(track)
-        razor_info[r].lanes = { top = Round(razor_info[r][3] / lane_h) , bot = Round(razor_info[r][4] / lane_h)} -- CALCULATE RAZOR LANE FROM COORDS (1, 2, 3 ETC) FOR EASIER CALCULATION LATER
+        razor_info[r].lanes = { top = Round(razor_info[r][3] / lane_h), bot = Round(razor_info[r][4] / lane_h) } -- CALCULATE RAZOR LANE FROM COORDS (1, 2, 3 ETC) FOR EASIER CALCULATION LATER
         razor_info[r].env = next(razor_envelopes) and razor_envelopes
     end
     razor_info.track = track
@@ -326,7 +284,7 @@ local function GetAndSelectItemsInGroups(track, item)
                     reaper.SetMediaItemSelected(item_in_group, true)
                 end
             end
-            reaper.SetTrackSelected(track, true )
+            reaper.SetTrackSelected(track, true)
             track_set = true
         end
     end
@@ -344,8 +302,8 @@ function SelectTracksInGROUP(group)
     local tr_tbl = GROUPS[group]
     if not tr_tbl then return end
     if next(tr_tbl) == nil then return end
-    reaper.Main_OnCommand(40297,0)
-    for k,v in pairs(tr_tbl) do
+    reaper.Main_OnCommand(40297, 0)
+    for k, v in pairs(tr_tbl) do
         reaper.SetTrackSelected(v, true)
     end
 end
@@ -355,8 +313,8 @@ local function Is_razor_created()
     local razor_action = nil
     local projectChangeCount = reaper.GetProjectStateChangeCount(0)
     if lastProjectChangeCount ~= projectChangeCount then
-        if reaper.Undo_CanUndo2( 0 ) then
-            local last_action = reaper.Undo_CanUndo2( 0 ):lower()
+        if reaper.Undo_CanUndo2(0) then
+            local last_action = reaper.Undo_CanUndo2(0):lower()
             if last_action:match("razor") then razor_action = true
             elseif last_action:match("group membership") then Fill_groups() -- REFRESH GROUPS WHEN CHANGE IN GROUPS DETECTED
             elseif last_action:match("remove tracks") or last_action:match("paste tracks") then Fill_groups() -- REFRESH GROUPS WHEN CHANGE IN GROUPS DETECTED
@@ -379,7 +337,7 @@ local function Edit_groups()
                 for k = 1, #GROUPS[j] do
                     if In_Group(GROUPS[j], DEST_TRACK) then
                         if RAZOR then Set_Razor_Data(GROUPS[j][k], RAZOR) end
-                        if CLICKED_ITEM then CNT_TBL[j][#CNT_TBL[j]+1] = GetAndSelectItemsInGroups(GROUPS[j][k], CLICKED_ITEM) end
+                        if CLICKED_ITEM then CNT_TBL[j][#CNT_TBL[j] + 1] = GetAndSelectItemsInGroups(GROUPS[j][k], CLICKED_ITEM) end
                     end
                 end
             end
@@ -388,7 +346,9 @@ local function Edit_groups()
         if CNT_TBL then
             local max, most_tracks_group = 1, 0
             for k, v in pairs(CNT_TBL) do
-                if #v > max then max = #v most_tracks_group = k end
+                if #v > max then max = #v
+                    most_tracks_group = k
+                end
             end
             CUR_GROUP = most_tracks_group
         end
@@ -402,7 +362,7 @@ local function Edit_groups()
 end
 
 local function Main()
-    Mouse()
+    mouse = Mouse()
     MOUSE_TR = Get_track_under_mouse()
     if Is_razor_created() then RAZOR = Get_Razor_Data(MOUSE_TR) end
     Track_mouse_LCLICK()
@@ -412,16 +372,16 @@ end
 local function SetGroup(track, group, set)
     if group <= 32 then
         local add = set and (1 << (group - 1)) or 0
-        reaper.GetSetTrackGroupMembership( track, GROUP_FLAGS[1], (1 << (group - 1)), add )
+        reaper.GetSetTrackGroupMembership(track, GROUP_FLAGS[1], (1 << (group - 1)), add)
     else
-        local add = set and (1 << (group-32 - 1)) or 0
-        reaper.GetSetTrackGroupMembershipHigh( track, GROUP_FLAGS[1], (1 << (group-32 - 1)), add )
+        local add = set and (1 << (group - 32 - 1)) or 0
+        reaper.GetSetTrackGroupMembershipHigh(track, GROUP_FLAGS[1], (1 << (group - 32 - 1)), add)
     end
 end
 
 local function AddSelectedTracksTo_GROUP(group, set)
     for i = 1, reaper.CountSelectedTracks(0) do
-        SetGroup( reaper.GetSelectedTrack(0, i -1), group, set)
+        SetGroup(reaper.GetSelectedTrack(0, i - 1), group, set)
     end
     Fill_groups()
 end
@@ -439,7 +399,7 @@ local function Rename(i)
         reaper.ImGui_SetKeyboardFocusHere(ctx)
         NEW_NAME = GROUP_NAMES[i]
     end
-    RV, NEW_NAME = reaper.ImGui_InputText(ctx, 'Name' , NEW_NAME, reaper.ImGui_InputTextFlags_AutoSelectAll())
+    RV, NEW_NAME = reaper.ImGui_InputText(ctx, 'Name', NEW_NAME, reaper.ImGui_InputTextFlags_AutoSelectAll())
     if reaper.ImGui_Button(ctx, 'OK') or reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Enter()) or reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_KeypadEnter()) then
         NEW_NAME = NEW_NAME:gsub("^%s*(.-)%s*$", "%1") -- remove trailing and leading
         if #NEW_NAME ~= 0 then SAVED_NAME = NEW_NAME end
@@ -456,12 +416,12 @@ end
 
 function ContextMenu(i)
     if reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Escape()) then reaper.ImGui_CloseCurrentPopup(ctx) end
-    if reaper.ImGui_MenuItem(ctx, 'Group settings') then reaper.Main_OnCommand( 40772, 0 ) end
+    if reaper.ImGui_MenuItem(ctx, 'Group settings') then reaper.Main_OnCommand(40772, 0) end
     if reaper.ImGui_MenuItem(ctx, 'Add selected tracks') then AddSelectedTracksTo_GROUP(i, true) end
     if reaper.ImGui_MenuItem(ctx, 'Remove selected tracks') then AddSelectedTracksTo_GROUP(i, false) end
     if reaper.ImGui_Selectable(ctx, 'Rename Group', nil, reaper.ImGui_SelectableFlags_DontClosePopups()) then
-        local x, y = reaper.ImGui_GetMousePos( ctx )
-        reaper.ImGui_SetNextWindowPos( ctx, x, y)
+        local x, y = reaper.ImGui_GetMousePos(ctx)
+        reaper.ImGui_SetNextWindowPos(ctx, x, y)
         reaper.ImGui_OpenPopup(ctx, 'Rename')
     end
     if reaper.ImGui_BeginPopupModal(ctx, 'Rename', nil, reaper.ImGui_WindowFlags_AlwaysAutoResize()) then
@@ -481,30 +441,30 @@ function TextCentered(string)
     local windowWidth = reaper.ImGui_GetWindowSize(ctx)
     local textWidth = reaper.ImGui_CalcTextSize(ctx, string)
     reaper.ImGui_SetCursorPosX(ctx, (windowWidth - textWidth) * 0.5);
-    reaper.ImGui_Text(ctx,string);
+    reaper.ImGui_Text(ctx, string);
 end
 
 function GUI()
     Main()
-    reaper.ImGui_SetNextWindowSizeConstraints( ctx, 150, 150, 550, 550 )
+    reaper.ImGui_SetNextWindowSizeConstraints(ctx, 150, 150, 550, 550)
     if reaper.ImGui_Begin(ctx, 'EDIT GROUPS', false, reaper.ImGui_WindowFlags_NoCollapse()) then
         local sel_tracks = reaper.CountSelectedTracks(0)
         local t_text = sel_tracks == 0 and "No tracks selected" or (sel_tracks == 1 and " track selected" or " tracks selected")
         TextCentered(sel_tracks .. t_text)
         if reaper.ImGui_Button(ctx, 'ADD TO NEW GROUP', -1) then AddSelectedTracksTo_GROUP(FreeGroup(), true) end
-        if reaper.ImGui_BeginListBox(ctx, '##Group List',-1,-1) then
+        if reaper.ImGui_BeginListBox(ctx, '##Group List', -1, -1) then
             for i = 1, 64 do
                 local has_tracks = next(GROUPS[i]) ~= nil
                 if has_tracks then
-                    if reaper.ImGui_Checkbox( ctx, '##' ..i , CheckGroupEnable(i)) then
+                    if reaper.ImGui_Checkbox(ctx, '##' .. i, CheckGroupEnable(i)) then
                         Set_Group_EDIT_ENABLE(i, not CheckGroupEnable(i))
                     end
                     reaper.ImGui_SameLine(ctx)
                     if reaper.ImGui_Button(ctx, GROUP_NAMES[i], -1) then CUR_GROUP = i SelectTracksInGROUP(i) end
                     if CUR_GROUP == i then Draw_Color_Rect() end
                     --if CheckGroupEnable(i) then Draw_Color_Rect() end
-                    local x, y = reaper.ImGui_GetCursorScreenPos( ctx )
-                    reaper.ImGui_SetNextWindowPos( ctx, x, y)
+                    local x, y = reaper.ImGui_GetCursorScreenPos(ctx)
+                    reaper.ImGui_SetNextWindowPos(ctx, x, y)
                     if reaper.ImGui_BeginPopupContextItem(ctx) then
                         ContextMenu(i)
                         reaper.ImGui_EndPopup(ctx)
@@ -519,16 +479,16 @@ function GUI()
 end
 
 function SaveGroup_mask()
-    reaper.SetProjExtState(0, "EDIT_GROUPS", "GROUP_NAMES", table.concat(GROUP_NAMES,"\n"))
+    reaper.SetProjExtState(0, "EDIT_GROUPS", "GROUP_NAMES", table.concat(GROUP_NAMES, "\n"))
     reaper.SetProjExtState(0, "EDIT_GROUPS", "MASK", GROUPS.enabled_mask)
 end
 
 local function RestoreGroupEnableMASK()
-    local rv_mask, stored_mask = reaper.GetProjExtState( 0, "EDIT_GROUPS", "MASK" )
+    local rv_mask, stored_mask = reaper.GetProjExtState(0, "EDIT_GROUPS", "MASK")
     if rv_mask == 1 and stored_mask ~= nil then
         GROUPS.enabled_mask = stored_mask
     end
-    local rv_names, stored_names = reaper.GetProjExtState( 0, "EDIT_GROUPS", "GROUP_NAMES" )
+    local rv_names, stored_names = reaper.GetProjExtState(0, "EDIT_GROUPS", "GROUP_NAMES")
     if rv_names == 1 and stored_names ~= nil then
         local cnt = 1
         for name in string.gmatch(stored_names, "[^\r\n]+") do
@@ -542,64 +502,16 @@ function DoAtExit()
     SaveGroup_mask()
     reaper.SetToggleCommandState(sectionID, cmdID, 0);
     reaper.RefreshToolbar2(sectionID, cmdID);
-    --reaper.JS_WindowMessage_Release(track_window, "WM_LBUTTONDOWN")
 end
 
-local function OnMouseDown(lmb_down, rmb_down)
-	if not rmb_down and lmb_down and mouse.last_LMB_state == false then
-        mouse.last_LMB_state = true
-        mouse.l_click = true
-	end
-	if not lmb_down and rmb_down and mouse.last_RMB_state == false then
-        mouse.last_RMB_state = true
-        mouse.r_click = true
-	end
-	mouse.ox, mouse.oy = mouse.x, mouse.y -- mouse click coordinates
-end
-
-local function OnMouseUp(lmb_down, rmb_down)
-	mouse.uptime = os.clock()
-	mouse.dx, mouse.dy = 0, 0
-	if not lmb_down and mouse.last_LMB_state then mouse.last_LMB_state = false mouse.l_up = true end
-	if not rmb_down and mouse.last_RMB_state then mouse.last_RMB_state = false mouse.r_up = true end
-end
-
-local function OnMouseDoubleClick()
-	mouse.l_dclick = true
-end
-
-local function OnMouseHold(lmb_down, rmb_down)
-	mouse.l_down = lmb_down and true
-	mouse.r_down = rmb_down and true
-	mouse.dx = mouse.x - mouse.ox
-	mouse.dy = mouse.y - mouse.oy
-	mouse.last_x, mouse.last_y = mouse.x, mouse.y
-end
-
-function Mouse()
-    mouse.x, mouse.y = reaper.GetMousePosition()
-    _, mouse.detail = reaper.GetThingFromPoint( mouse.x, mouse.y )
-    mouse.l_click, mouse.r_click, mouse.l_dclick, mouse.l_up, mouse.r_up, mouse.l_down, mouse.r_down = false, false, false, false, false, false, false
-    local LB_DOWN, RB_DOWN = mouse.lb_down(), mouse.rb_down()          -- Get current left mouse button state
-
-    if (LB_DOWN and not RB_DOWN) or (RB_DOWN and not LB_DOWN) then   -- LMB or RMB pressed down?
-		if (mouse.last_LMB_state == false and not RB_DOWN) or (mouse.last_RMB_state == false and not LB_DOWN) then
-			OnMouseDown(LB_DOWN, RB_DOWN)
-			if mouse.uptime and os.clock() - mouse.uptime < 0.20 then
-				OnMouseDoubleClick()
-			end
-		else
-			OnMouseHold(LB_DOWN,RB_DOWN)
-		end
-	elseif not LB_DOWN and mouse.last_RMB_state or not RB_DOWN and mouse.last_LMB_state then
-		OnMouseUp(LB_DOWN, RB_DOWN)
-	end
+function start_script()
+    reaper.defer(GUI)
 end
 
 Fill_groups()
 RestoreGroupEnableMASK()
 
 ImGui_Create_CTX()
-reaper.defer(GUI)
+xpcall(start_script, GetCrash())
 
 reaper.atexit(DoAtExit)
