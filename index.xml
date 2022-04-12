@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="af365b786165d79d9a736ffed17ddb20963c3f0c" name="Sexan_Scripts">
+<index version="1" commit="ef84d1a85a7a9b74b658c8e9e1ed15cfc0f948c2" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -580,10 +580,13 @@
     </reapack>
   </category>
   <category name="Lil_Series">
-    <reapack name="Lil_fader.lua" type="script" desc="Lil Mixing Homie">
-      <version name="1.0" author="Sexan" time="2022-04-11T18:21:16Z">
-        <changelog><![CDATA[+ Initial release]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/af365b786165d79d9a736ffed17ddb20963c3f0c/Lil_Series/Lil_fader.lua</source>
+    <reapack name="Lil_Mixing_Homie.lua" type="script" desc="Lil Mixing Homie">
+      <version name="1.1" author="Sexan" time="2022-04-12T08:02:23Z">
+        <changelog><![CDATA[+ Fix script name
++ Add all fader modes
++ Mousewheeling only when item is hoovered
++ DoubleClick resets values]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/ef84d1a85a7a9b74b658c8e9e1ed15cfc0f948c2/Lil_Series/Lil_Mixing_Homie.lua</source>
       </version>
     </reapack>
   </category>
