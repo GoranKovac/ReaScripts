@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="ef84d1a85a7a9b74b658c8e9e1ed15cfc0f948c2" name="Sexan_Scripts">
+<index version="1" commit="252aef8c9284b6861bf05361d93137bad8db67b5" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -587,6 +587,10 @@
 + Mousewheeling only when item is hoovered
 + DoubleClick resets values]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/ef84d1a85a7a9b74b658c8e9e1ed15cfc0f948c2/Lil_Series/Lil_Mixing_Homie.lua</source>
+      </version>
+      <version name="1.2" author="Sexan" time="2022-04-12T17:12:05Z">
+        <changelog><![CDATA[+ update pans to work with mousewheel]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/252aef8c9284b6861bf05361d93137bad8db67b5/Lil_Series/Lil_Mixing_Homie.lua</source>
       </version>
     </reapack>
   </category>
