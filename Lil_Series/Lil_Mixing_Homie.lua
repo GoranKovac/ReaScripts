@@ -1,9 +1,9 @@
 -- @description Lil Mixing Homie
 -- @author Sexan
 -- @license GPL v3
--- @version 1.2
+-- @version 1.3
 -- @changelog
---   + update pans to work with mousewheel
+--   + remove color code
 
 local reaper = reaper
 
@@ -94,9 +94,10 @@ for i = 1, reaper.CountSelectedTracks(0) do
     tracks[#tracks + 1] = reaper.GetSelectedTrack(0, i - 1)
 end
 
-local bgr_or_rgb = reaper.GetTrackColor(tracks[1]) -- byte order is platform-dependent
-local rgb = reaper.ImGui_ColorConvertNative(bgr_or_rgb)
-local rgba = (rgb << 8) | 0x33 -- 100% opacity
+
+--local bgr_or_rgb = reaper.GetTrackColor(tracks[1]) -- byte order is platform-dependent
+--local rgb = reaper.ImGui_ColorConvertNative(bgr_or_rgb)
+--local rgba = (rgb << 8) | 0x33 -- 100% opacity
 
 function Fader(val, vertical)
     for i = 1, #tracks do
