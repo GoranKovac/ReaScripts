@@ -1,9 +1,9 @@
 -- @description Lil Mixing Homie
 -- @author Sexan
 -- @license GPL v3
--- @version 1.3
+-- @version 1.4
 -- @changelog
---   + remove color code
+--   + Make knob mobe in any directions
 
 local reaper = reaper
 
@@ -157,9 +157,9 @@ local function MyKnob(label, p_value, v_min, v_max)
     local value_changed = false
     local is_active = reaper.ImGui_IsItemActive(ctx)
     local is_hovered = reaper.ImGui_IsItemHovered(ctx)
-    if is_active and mouse_delta[1] ~= 0.0 then
+    if is_active and (mouse_delta[2] ~= 0.0 or mouse_delta[1] ~= 0.0) then
         local step = (v_max - v_min) / 200.0
-        p_value = p_value + (mouse_delta[1] * step)
+        p_value = p_value + (mouse_delta[2] * step + mouse_delta[1] * step)
         if p_value < v_min then p_value = v_min end
         if p_value > v_max then p_value = v_max end
         value_changed = true
@@ -278,7 +278,7 @@ function GUI()
         reaper.ImGui_SameLine(ctx)
         reaper.ImGui_BeginGroup(ctx)
         local solo = reaper.GetMediaTrackInfo_Value(tracks[1], "I_SOLO")
-        if reaper.ImGui_Button(ctx, "S", 25, 25) then
+        if reaper.ImGui_Button(ctx, "S", 20, 25) then
             local toggle_solo = solo == 1 and 0 or 1
             for i = 1, #tracks do
                 reaper.SetMediaTrackInfo_Value(tracks[i], "I_SOLO", toggle_solo)
@@ -287,7 +287,7 @@ function GUI()
         if solo == 1 then Draw_Color_Rect("yellow") end
         --reaper.ImGui_SameLine(ctx)
         local mute = reaper.GetMediaTrackInfo_Value(tracks[1], "B_MUTE")
-        if reaper.ImGui_Button(ctx, "M", 25, 25) then
+        if reaper.ImGui_Button(ctx, "M", 20, 25) then
             local toggle_mute = mute == 1 and 0 or 1
             for i = 1, #tracks do
                 reaper.SetMediaTrackInfo_Value(tracks[i], "B_MUTE", toggle_mute)
@@ -295,19 +295,20 @@ function GUI()
         end
         if mute == 1 then Draw_Color_Rect("red") end
         reaper.ImGui_EndGroup(ctx)
-        reaper.ImGui_SameLine(ctx)
-        -- local fx = reaper.TrackFX_GetOpen(track, 0)
-        -- if reaper.ImGui_Button(ctx, "FX", 50, 50) then
-        --     local toggle_fx_open = fx == true and 0 or 1
-        --     reaper.TrackFX_Show(track, 0, toggle_fx_open)
-        -- end
         -- reaper.ImGui_SameLine(ctx)
-        -- local fx_enable = reaper.GetMediaTrackInfo_Value(track, "I_FXEN")
-        -- if reaper.ImGui_Button(ctx, "ON", 20, 50) then
+        -- reaper.ImGui_BeginGroup(ctx)
+        -- local fx = reaper.TrackFX_GetOpen(tracks[1], 0)
+        -- if reaper.ImGui_Button(ctx, "FX", 20, 25) then
+        --     local toggle_fx_open = fx == true and 0 or 1
+        --     reaper.TrackFX_Show(tracks[1], 0, toggle_fx_open)
+        -- end
+        -- local fx_enable = reaper.GetMediaTrackInfo_Value(tracks[1], "I_FXEN")
+        -- if reaper.ImGui_Button(ctx, "ON", 20, 15) then
         --     local toggle_fx = fx_enable == 1 and 0 or 1
-        --     reaper.SetMediaTrackInfo_Value(track, "I_FXEN", toggle_fx)
+        --     reaper.SetMediaTrackInfo_Value(tracks[1], "I_FXEN", toggle_fx)
         -- end
         -- if fx_enable == 0 then Draw_Color_Rect("red") end
+        -- reaper.ImGui_EndGroup(ctx)
         reaper.ImGui_End(ctx)
     end
     --reaper.ImGui_PopStyleColor(ctx)
