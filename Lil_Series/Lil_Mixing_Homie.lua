@@ -1,9 +1,9 @@
 -- @description Lil Mixing Homie
 -- @author Sexan
 -- @license GPL v3
--- @version 1.6
+-- @version 1.7
 -- @changelog
---   + Add FX open/close and bypass
+--   + fmall button fixes
 
 local reaper = reaper
 
@@ -261,7 +261,7 @@ function GUI()
                 reaper.SetMediaTrackInfo_Value(tracks[1], D_PAN, p2)
             end
         else
-            reaper.ImGui_SetNextItemWidth(ctx, 94)
+            reaper.ImGui_SetNextItemWidth(ctx, 100)
             local pan = reaper.GetMediaTrackInfo_Value(tracks[1], "D_PAN")
             RVS, pan = reaper.ImGui_SliderDouble(ctx, '##pan', pan, -1, 1, '%.2f')
             if reaper.ImGui_IsItemHovered(ctx) and reaper.ImGui_IsMouseDoubleClicked(ctx, reaper.ImGui_MouseButton_Left()) then
@@ -275,7 +275,7 @@ function GUI()
         end
         reaper.ImGui_BeginGroup(ctx)
         vol = VAL2DB(vol)
-        RVK, vol = MyKnob('VOLUME', vol or 0, -150, 12)
+        RVK, vol = MyKnob('VOL', vol or 0, -150, 12)
         if reaper.ImGui_IsItemHovered(ctx) then
             if reaper.ImGui_IsMouseDoubleClicked(ctx, 0) then Fader(0) end
             Fader(nil, vertical)
@@ -309,7 +309,7 @@ function GUI()
         reaper.ImGui_BeginGroup(ctx)
         local fx = reaper.TrackFX_GetChainVisible(tracks[1]) --reaper.TrackFX_GetOpen(tracks[1], 0)
         local fx_enable = reaper.GetMediaTrackInfo_Value(tracks[1], "I_FXEN")
-        if reaper.ImGui_Button(ctx, "FX", 20, 32) then
+        if reaper.ImGui_Button(ctx, "FX", 25, 32) then
             local toggle_fx_open = fx == (-1 or 0) and 1 or 0
             reaper.TrackFX_Show(tracks[1], 0, toggle_fx_open)
         end
@@ -317,7 +317,7 @@ function GUI()
         elseif fx_enable == 0 then Draw_Color_Rect("red")
         end
         reaper.ImGui_SetCursorPosY(ctx, reaper.ImGui_GetCursorPosY(ctx) - 3)
-        if reaper.ImGui_Button(ctx, "ON", 20, 20) then
+        if reaper.ImGui_Button(ctx, "ON", 25, 20) then
             local toggle_fx = fx_enable == 1 and 0 or 1
             reaper.SetMediaTrackInfo_Value(tracks[1], "I_FXEN", toggle_fx)
         end
