@@ -1,13 +1,17 @@
 -- @description Lil Mixing Homie
 -- @author Sexan
 -- @license GPL v3
--- @version 1.¸5
+-- @version 1.6
 -- @changelog
---   + Make knobs rotate as reaper
+--   + Add FX open/close and bypass
 
 local reaper = reaper
 
 local ctx = reaper.ImGui_CreateContext('My script', reaper.ImGui_ConfigFlags_NoSavedSettings())
+local size = reaper.GetAppVersion():match('OSX') and 12 or 14
+local font = reaper.ImGui_CreateFont('sans-serif', size)
+reaper.ImGui_AttachFont(ctx, font)
+
 local floor = math.floor
 local max = math.max
 local abs = math.abs
@@ -150,8 +154,11 @@ local function MyKnob(label, p_value, v_min, v_max)
     local item_inner_spacing = { reaper.ImGui_GetStyleVar(ctx, reaper.ImGui_StyleVar_ItemInnerSpacing()) }
     local mouse_delta = { reaper.ImGui_GetMouseDelta(ctx) }
 
-    local ANGLE_MIN = 3.141592 * 0.75
-    local ANGLE_MAX = 3.141592 * 2.25
+    --local ANGLE_MIN = 3.141592 * 0.75
+    --local ANGLE_MAX = 3.141592 * 2.25
+
+    local ANGLE_MIN = 3.141592 * (v_min < 0 and 0.75 or 1.5)
+    local ANGLE_MAX = 3.141592 * (v_max > 0 and 2.25 or 1.5)
 
     reaper.ImGui_InvisibleButton(ctx, label, radius_outer * 2, radius_outer * 2 + line_height + item_inner_spacing[2])
     local value_changed = false
@@ -166,6 +173,7 @@ local function MyKnob(label, p_value, v_min, v_max)
     end
 
     local t = (p_value - v_min) / (v_max - v_min)
+    --local t = p_value < 0 and ((p_value - v_min) / -v_min / 2) or ((p_value / v_max * 0.5) + 0.5)
     local angle = ANGLE_MIN + (ANGLE_MAX - ANGLE_MIN) * t
     local angle_cos, angle_sin = math.cos(angle), math.sin(angle)
     local radius_inner = radius_outer * 0.40
@@ -193,7 +201,7 @@ function TextCentered(string)
 end
 
 function Draw_Color_Rect(color)
-    local button_col = color == "yellow" and 0xFFFF00FF or 0xFF0000FF
+    local button_col = color == "yellow" and 0xFFFF0077 or (color == "red" and 0xFF000077 or 0x00FF0077)
     local min_x, min_y = reaper.ImGui_GetItemRectMin(ctx)
     local max_x, max_y = reaper.ImGui_GetItemRectMax(ctx)
     local draw_list = reaper.ImGui_GetWindowDrawList(ctx)
@@ -215,6 +223,7 @@ function GUI()
 
     local tr_name = #tracks == 1 and buf or "MULTI-TR"
     --reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_WindowBg(), rgba)
+    reaper.ImGui_PushFont(ctx, font)
     if reaper.ImGui_Begin(ctx, 'FADER', false, reaper.ImGui_WindowFlags_NoDecoration() | reaper.ImGui_WindowFlags_AlwaysAutoResize()) then
         TextCentered(tr_name)
         if pan_mode == 5 or pan_mode == 6 then
@@ -228,7 +237,7 @@ function GUI()
                 p1 = reaper.GetMediaTrackInfo_Value(tracks[1], "D_PAN")
                 p2 = reaper.GetMediaTrackInfo_Value(tracks[1], "D_WIDTH")
             end
-            reaper.ImGui_SetNextItemWidth(ctx, 40)
+            reaper.ImGui_SetNextItemWidth(ctx, 44)
             RVD1, p1 = reaper.ImGui_SliderDouble(ctx, '##pan1', p1, -1, 1, '%.2f')
             if reaper.ImGui_IsItemHovered(ctx) and reaper.ImGui_IsMouseDoubleClicked(ctx, reaper.ImGui_MouseButton_Left()) then
                 RESET = true
@@ -238,7 +247,7 @@ function GUI()
             end
             if reaper.ImGui_IsItemHovered(ctx) then Pan(nil, vertical, L_PAN) end
             reaper.ImGui_SameLine(ctx)
-            reaper.ImGui_SetNextItemWidth(ctx, 40)
+            reaper.ImGui_SetNextItemWidth(ctx, 44)
             RVD, p2 = reaper.ImGui_SliderDouble(ctx, '##pan2', p2, -1, 1, '%.2f')
             if reaper.ImGui_IsItemHovered(ctx) and reaper.ImGui_IsMouseDoubleClicked(ctx, reaper.ImGui_MouseButton_Left()) then
                 RESET = true
@@ -252,7 +261,7 @@ function GUI()
                 reaper.SetMediaTrackInfo_Value(tracks[1], D_PAN, p2)
             end
         else
-            reaper.ImGui_SetNextItemWidth(ctx, 80)
+            reaper.ImGui_SetNextItemWidth(ctx, 94)
             local pan = reaper.GetMediaTrackInfo_Value(tracks[1], "D_PAN")
             RVS, pan = reaper.ImGui_SliderDouble(ctx, '##pan', pan, -1, 1, '%.2f')
             if reaper.ImGui_IsItemHovered(ctx) and reaper.ImGui_IsMouseDoubleClicked(ctx, reaper.ImGui_MouseButton_Left()) then
@@ -295,22 +304,29 @@ function GUI()
         end
         if mute == 1 then Draw_Color_Rect("red") end
         reaper.ImGui_EndGroup(ctx)
-        -- reaper.ImGui_SameLine(ctx)
-        -- reaper.ImGui_BeginGroup(ctx)
-        -- local fx = reaper.TrackFX_GetOpen(tracks[1], 0)
-        -- if reaper.ImGui_Button(ctx, "FX", 20, 25) then
-        --     local toggle_fx_open = fx == true and 0 or 1
-        --     reaper.TrackFX_Show(tracks[1], 0, toggle_fx_open)
-        -- end
-        -- local fx_enable = reaper.GetMediaTrackInfo_Value(tracks[1], "I_FXEN")
-        -- if reaper.ImGui_Button(ctx, "ON", 20, 15) then
-        --     local toggle_fx = fx_enable == 1 and 0 or 1
-        --     reaper.SetMediaTrackInfo_Value(tracks[1], "I_FXEN", toggle_fx)
-        -- end
-        -- if fx_enable == 0 then Draw_Color_Rect("red") end
-        -- reaper.ImGui_EndGroup(ctx)
+        reaper.ImGui_SameLine(ctx)
+        reaper.ImGui_SetCursorPosX(ctx, reaper.ImGui_GetCursorPosX(ctx) - 3)
+        reaper.ImGui_BeginGroup(ctx)
+        local fx = reaper.TrackFX_GetChainVisible(tracks[1]) --reaper.TrackFX_GetOpen(tracks[1], 0)
+        local fx_enable = reaper.GetMediaTrackInfo_Value(tracks[1], "I_FXEN")
+        if reaper.ImGui_Button(ctx, "FX", 20, 32) then
+            local toggle_fx_open = fx == (-1 or 0) and 1 or 0
+            reaper.TrackFX_Show(tracks[1], 0, toggle_fx_open)
+        end
+        if reaper.TrackFX_GetCount(tracks[1]) ~= 0 and fx_enable == 1 then Draw_Color_Rect("green")
+        elseif fx_enable == 0 then Draw_Color_Rect("red")
+        end
+        reaper.ImGui_SetCursorPosY(ctx, reaper.ImGui_GetCursorPosY(ctx) - 3)
+        if reaper.ImGui_Button(ctx, "ON", 20, 20) then
+            local toggle_fx = fx_enable == 1 and 0 or 1
+            reaper.SetMediaTrackInfo_Value(tracks[1], "I_FXEN", toggle_fx)
+        end
+        if fx_enable == 0 then Draw_Color_Rect("red") else Draw_Color_Rect("green") end
+        reaper.ImGui_EndGroup(ctx)
         reaper.ImGui_End(ctx)
     end
+    reaper.ImGui_PopFont(ctx)
+
     --reaper.ImGui_PopStyleColor(ctx)
     reaper.defer(GUI)
 end
