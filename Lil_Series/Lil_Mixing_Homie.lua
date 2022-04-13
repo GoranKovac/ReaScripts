@@ -1,9 +1,9 @@
 -- @description Lil Mixing Homie
 -- @author Sexan
 -- @license GPL v3
--- @version 1.4
+-- @version 1.¸5
 -- @changelog
---   + Make knob mobe in any directions
+--   + Make knobs rotate as reaper
 
 local reaper = reaper
 
@@ -159,7 +159,7 @@ local function MyKnob(label, p_value, v_min, v_max)
     local is_hovered = reaper.ImGui_IsItemHovered(ctx)
     if is_active and (mouse_delta[2] ~= 0.0 or mouse_delta[1] ~= 0.0) then
         local step = (v_max - v_min) / 200.0
-        p_value = p_value + (mouse_delta[2] * step + mouse_delta[1] * step)
+        p_value = p_value - (mouse_delta[2] * step - mouse_delta[1] * step)
         if p_value < v_min then p_value = v_min end
         if p_value > v_max then p_value = v_max end
         value_changed = true
