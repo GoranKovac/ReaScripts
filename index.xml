@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="761ee82dcb6b85f67d9792b1da760f21c38948cb" name="Sexan_Scripts">
+<index version="1" commit="a3029dd40b5603fd105b5e05741208a8e3661c1c" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -595,6 +595,10 @@
       <version name="1.3" author="Sexan" time="2022-04-12T17:13:17Z">
         <changelog><![CDATA[+ remove color code]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/761ee82dcb6b85f67d9792b1da760f21c38948cb/Lil_Series/Lil_Mixing_Homie.lua</source>
+      </version>
+      <version name="1.4" author="Sexan" time="2022-04-13T15:08:26Z">
+        <changelog><![CDATA[+ Make knob mobe in any directions]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/a3029dd40b5603fd105b5e05741208a8e3661c1c/Lil_Series/Lil_Mixing_Homie.lua</source>
       </version>
     </reapack>
   </category>
