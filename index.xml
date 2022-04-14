@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="d834e5a7c05ed8058cd297eb2711dc994814cb3d" name="Sexan_Scripts">
+<index version="1" commit="522e0f6e4737e7335ad2de3f5fcaa770e114f5a9" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -580,41 +580,16 @@
     </reapack>
   </category>
   <category name="Lil_Series">
-    <reapack name="Lil_Mixing_Homie.lua" type="script" desc="Lil Mixing Homie">
-      <version name="1.1" author="Sexan" time="2022-04-12T08:02:23Z">
-        <changelog><![CDATA[+ Fix script name
-+ Add all fader modes
-+ Mousewheeling only when item is hoovered
-+ DoubleClick resets values]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/ef84d1a85a7a9b74b658c8e9e1ed15cfc0f948c2/Lil_Series/Lil_Mixing_Homie.lua</source>
+    <reapack name="Lil_Item_Homie.lua" type="script" desc="Lil Item Homie">
+      <version name="1.0" author="Sexan" time="2022-04-14T10:23:50Z">
+        <changelog><![CDATA[+ Initial release]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/522e0f6e4737e7335ad2de3f5fcaa770e114f5a9/Lil_Series/Lil_Item_Homie.lua</source>
       </version>
-      <version name="1.2" author="Sexan" time="2022-04-12T17:12:05Z">
-        <changelog><![CDATA[+ update pans to work with mousewheel]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/252aef8c9284b6861bf05361d93137bad8db67b5/Lil_Series/Lil_Mixing_Homie.lua</source>
-      </version>
-      <version name="1.3" author="Sexan" time="2022-04-12T17:13:17Z">
-        <changelog><![CDATA[+ remove color code]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/761ee82dcb6b85f67d9792b1da760f21c38948cb/Lil_Series/Lil_Mixing_Homie.lua</source>
-      </version>
-      <version name="1.4" author="Sexan" time="2022-04-13T15:08:26Z">
-        <changelog><![CDATA[+ Make knob mobe in any directions]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/a3029dd40b5603fd105b5e05741208a8e3661c1c/Lil_Series/Lil_Mixing_Homie.lua</source>
-      </version>
-      <version name="1.¸5" author="Sexan" time="2022-04-13T15:17:51Z">
-        <changelog><![CDATA[+ Make knobs rotate as reaper]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/83f04a670d6e214e9765a730245b576dbd4c4e1c/Lil_Series/Lil_Mixing_Homie.lua</source>
-      </version>
-      <version name="1.6" author="Sexan" time="2022-04-13T16:29:28Z">
-        <changelog><![CDATA[+ Add FX open/close and bypass]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/e65baa29f8169f04c3db36a4bdea99854a6b24a9/Lil_Series/Lil_Mixing_Homie.lua</source>
-      </version>
-      <version name="1.7" author="Sexan" time="2022-04-13T16:32:48Z">
-        <changelog><![CDATA[+ fmall button fixes]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/f1c66bce3b75154f16b52076f02987e5515092da/Lil_Series/Lil_Mixing_Homie.lua</source>
-      </version>
-      <version name="1.8" author="Sexan" time="2022-04-14T07:00:41Z">
-        <changelog><![CDATA[+ Change all selected tracks relative at once]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/d834e5a7c05ed8058cd297eb2711dc994814cb3d/Lil_Series/Lil_Mixing_Homie.lua</source>
+    </reapack>
+    <reapack name="Lil_Track_Homie.lua" type="script" desc="Lil Track Homie">
+      <version name="1.9" author="Sexan" time="2022-04-14T10:23:50Z">
+        <changelog><![CDATA[+ Changed Scritpt name to Lil Track Homie]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/522e0f6e4737e7335ad2de3f5fcaa770e114f5a9/Lil_Series/Lil_Track_Homie.lua</source>
       </version>
     </reapack>
   </category>
