@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="f1c66bce3b75154f16b52076f02987e5515092da" name="Sexan_Scripts">
+<index version="1" commit="d834e5a7c05ed8058cd297eb2711dc994814cb3d" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -611,6 +611,10 @@
       <version name="1.7" author="Sexan" time="2022-04-13T16:32:48Z">
         <changelog><![CDATA[+ fmall button fixes]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/f1c66bce3b75154f16b52076f02987e5515092da/Lil_Series/Lil_Mixing_Homie.lua</source>
+      </version>
+      <version name="1.8" author="Sexan" time="2022-04-14T07:00:41Z">
+        <changelog><![CDATA[+ Change all selected tracks relative at once]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/d834e5a7c05ed8058cd297eb2711dc994814cb3d/Lil_Series/Lil_Mixing_Homie.lua</source>
       </version>
     </reapack>
   </category>
