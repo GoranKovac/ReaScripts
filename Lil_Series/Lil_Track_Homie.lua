@@ -1,9 +1,9 @@
--- @description Lil Mixing Homie
+-- @description Lil Track Homie
 -- @author Sexan
 -- @license GPL v3
--- @version 1.8
+-- @version 1.9
 -- @changelog
---   + Change all selected tracks relative at once
+--   + Changed Scritpt name to Lil Track Homie
 
 local reaper = reaper
 
