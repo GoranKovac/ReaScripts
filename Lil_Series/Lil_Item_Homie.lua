@@ -1,9 +1,9 @@
 -- @description Lil Item Homie
 -- @author Sexan
 -- @license GPL v3
--- @version 1.0
+-- @version 1.1
 -- @changelog
---   + Initial release
+--   + fixed crash when swaping items while menu is opened
 
 local reaper = reaper
 
@@ -232,7 +232,7 @@ function GUI()
     --reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_WindowBg(), rgba)
     reaper.ImGui_PushFont(ctx, font)
     if reaper.ImGui_Begin(ctx, 'FADER', false, reaper.ImGui_WindowFlags_NoDecoration() | reaper.ImGui_WindowFlags_AlwaysAutoResize()) then
-        local itemM = reaper.GetSelectedMediaItem(0, 0)
+        local itemM = items[1]
         local takeM = reaper.GetActiveTake(itemM)
         local take_name = reaper.GetTakeName(takeM)
         local pan = reaper.GetMediaItemTakeInfo_Value(takeM, "D_PAN")
