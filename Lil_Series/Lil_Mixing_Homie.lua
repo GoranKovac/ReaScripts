@@ -1,9 +1,9 @@
 -- @description Lil Mixing Homie
 -- @author Sexan
 -- @license GPL v3
--- @version 1.7
+-- @version 1.8
 -- @changelog
---   + fmall button fixes
+--   + Change all selected tracks relative at once
 
 local reaper = reaper
 
@@ -139,7 +139,7 @@ function Pan(knob_val, vertical, type)
             new_val = new_val > 1 and 1 or new_val
             new_val = new_val < -1 and -1 or new_val
             reaper.SetMediaTrackInfo_Value(tracks[i], type, new_val)
-        else
+            --else
             -- reaper.SetMediaTrackInfo_Value(tracks[i], "D_PAN", knob_val)
         end
     end
@@ -154,18 +154,16 @@ local function MyKnob(label, p_value, v_min, v_max)
     local item_inner_spacing = { reaper.ImGui_GetStyleVar(ctx, reaper.ImGui_StyleVar_ItemInnerSpacing()) }
     local mouse_delta = { reaper.ImGui_GetMouseDelta(ctx) }
 
-    --local ANGLE_MIN = 3.141592 * 0.75
-    --local ANGLE_MAX = 3.141592 * 2.25
-
-    local ANGLE_MIN = 3.141592 * (v_min < 0 and 0.75 or 1.5)
-    local ANGLE_MAX = 3.141592 * (v_max > 0 and 2.25 or 1.5)
+    local ANGLE_MIN = 3.141592 * 0.75
+    local ANGLE_MAX = 3.141592 * 2.25
 
     reaper.ImGui_InvisibleButton(ctx, label, radius_outer * 2, radius_outer * 2 + line_height + item_inner_spacing[2])
     local value_changed = false
     local is_active = reaper.ImGui_IsItemActive(ctx)
     local is_hovered = reaper.ImGui_IsItemHovered(ctx)
     if is_active and (mouse_delta[2] ~= 0.0 or mouse_delta[1] ~= 0.0) then
-        local step = (v_max - v_min) / 200.0
+        --local val_step = p_value >= 0 and 1800 or 400
+        local step = (v_max - v_min) / 300
         p_value = p_value - (mouse_delta[2] * step - mouse_delta[1] * step)
         if p_value < v_min then p_value = v_min end
         if p_value > v_max then p_value = v_max end
@@ -242,23 +240,36 @@ function GUI()
             if reaper.ImGui_IsItemHovered(ctx) and reaper.ImGui_IsMouseDoubleClicked(ctx, reaper.ImGui_MouseButton_Left()) then
                 RESET = true
             elseif reaper.ImGui_IsItemDeactivated(ctx) and RESET then
-                reaper.SetMediaTrackInfo_Value(tracks[1], L_PAN, 0)
+                for i = 1, #tracks do
+                    reaper.SetMediaTrackInfo_Value(tracks[i], L_PAN, 0)
+                end
                 RESET = nil
             end
             if reaper.ImGui_IsItemHovered(ctx) then Pan(nil, vertical, L_PAN) end
             reaper.ImGui_SameLine(ctx)
             reaper.ImGui_SetNextItemWidth(ctx, 44)
-            RVD, p2 = reaper.ImGui_SliderDouble(ctx, '##pan2', p2, -1, 1, '%.2f')
+            RVD2, p2 = reaper.ImGui_SliderDouble(ctx, '##pan2', p2, -1, 1, '%.2f')
             if reaper.ImGui_IsItemHovered(ctx) and reaper.ImGui_IsMouseDoubleClicked(ctx, reaper.ImGui_MouseButton_Left()) then
                 RESET = true
             elseif reaper.ImGui_IsItemDeactivated(ctx) and RESET then
-                reaper.SetMediaTrackInfo_Value(tracks[1], D_PAN, 0)
+                for i = 1, #tracks do
+                    reaper.SetMediaTrackInfo_Value(tracks[i], D_PAN, 0)
+                end
                 RESET = nil
             end
             if reaper.ImGui_IsItemHovered(ctx) then Pan(nil, vertical, D_PAN) end
-            if RVD or RVD1 and not RESET then
-                reaper.SetMediaTrackInfo_Value(tracks[1], L_PAN, p1)
-                reaper.SetMediaTrackInfo_Value(tracks[1], D_PAN, p2)
+            if RVD2 and not RESET then
+                local mouse_delta = { reaper.ImGui_GetMouseDelta(ctx) }
+                if mouse_delta[2] ~= 0 or mouse_delta[1] ~= 0 then
+                    local delta = mouse_delta[1] - mouse_delta[2]
+                    Pan(nil, delta, D_PAN)
+                end
+            elseif RVD1 and not RESET then
+                local mouse_delta = { reaper.ImGui_GetMouseDelta(ctx) }
+                if mouse_delta[2] ~= 0 or mouse_delta[1] ~= 0 then
+                    local delta = mouse_delta[1] - mouse_delta[2]
+                    Pan(nil, delta, L_PAN)
+                end
             end
         else
             reaper.ImGui_SetNextItemWidth(ctx, 100)
@@ -267,10 +278,18 @@ function GUI()
             if reaper.ImGui_IsItemHovered(ctx) and reaper.ImGui_IsMouseDoubleClicked(ctx, reaper.ImGui_MouseButton_Left()) then
                 RESET = true
             elseif reaper.ImGui_IsItemDeactivated(ctx) and RESET then
-                reaper.SetMediaTrackInfo_Value(tracks[1], "D_PAN", 0)
+                for i = 1, #tracks do
+                    reaper.SetMediaTrackInfo_Value(tracks[i], "D_PAN", 0)
+                end
                 RESET = nil
             end
-            if RVS and not RESET then reaper.SetMediaTrackInfo_Value(tracks[1], "D_PAN", pan) end
+            if RVS and not RESET then
+                local mouse_delta = { reaper.ImGui_GetMouseDelta(ctx) }
+                if mouse_delta[2] ~= 0 or mouse_delta[1] ~= 0 then
+                    local delta = mouse_delta[1] - mouse_delta[2]
+                    Pan(nil, delta, "D_PAN")
+                end
+            end
             if reaper.ImGui_IsItemHovered(ctx) then Pan(nil, vertical, "D_PAN") end
         end
         reaper.ImGui_BeginGroup(ctx)
@@ -281,7 +300,11 @@ function GUI()
             Fader(nil, vertical)
         end
         if RVK then
-            reaper.SetMediaTrackInfo_Value(tracks[1], "D_VOL", DB2VAL(vol))
+            local mouse_delta = { reaper.ImGui_GetMouseDelta(ctx) }
+            if mouse_delta[2] ~= 0 or mouse_delta[1] ~= 0 then
+                local delta = mouse_delta[1] - mouse_delta[2]
+                Fader(nil, delta)
+            end
         end
         reaper.ImGui_EndGroup(ctx)
         reaper.ImGui_SameLine(ctx)
@@ -319,7 +342,9 @@ function GUI()
         reaper.ImGui_SetCursorPosY(ctx, reaper.ImGui_GetCursorPosY(ctx) - 3)
         if reaper.ImGui_Button(ctx, "ON", 25, 20) then
             local toggle_fx = fx_enable == 1 and 0 or 1
-            reaper.SetMediaTrackInfo_Value(tracks[1], "I_FXEN", toggle_fx)
+            for i = 1, #tracks do
+                reaper.SetMediaTrackInfo_Value(tracks[i], "I_FXEN", toggle_fx)
+            end
         end
         if fx_enable == 0 then Draw_Color_Rect("red") else Draw_Color_Rect("green") end
         reaper.ImGui_EndGroup(ctx)
