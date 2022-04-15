@@ -1,9 +1,9 @@
 -- @description Lil Track Homie
 -- @author Sexan
 -- @license GPL v3
--- @version 1.9
+-- @version 1.¸10
 -- @changelog
---   + Changed Scritpt name to Lil Track Homie
+--   + Fix panning
 
 local reaper = reaper
 
@@ -139,8 +139,11 @@ function Pan(knob_val, vertical, type)
             new_val = new_val > 1 and 1 or new_val
             new_val = new_val < -1 and -1 or new_val
             reaper.SetMediaTrackInfo_Value(tracks[i], type, new_val)
-            --else
-            -- reaper.SetMediaTrackInfo_Value(tracks[i], "D_PAN", knob_val)
+        elseif knob_val then
+            local new_val = cur_val + knob_val
+            new_val = new_val > 1 and 1 or new_val
+            new_val = new_val < -1 and -1 or new_val
+            reaper.SetMediaTrackInfo_Value(tracks[i], type, new_val)
         end
     end
 end
@@ -229,14 +232,14 @@ function GUI()
             local L_PAN = pan_mode == 6 and "D_DUALPANL" or "D_PAN"
             local D_PAN = pan_mode == 6 and "D_DUALPANR" or "D_WIDTH"
             if pan_mode == 6 then
-                p1 = reaper.GetMediaTrackInfo_Value(tracks[1], "D_DUALPANL")
-                p2 = reaper.GetMediaTrackInfo_Value(tracks[1], "D_DUALPANR")
+                p1_old = reaper.GetMediaTrackInfo_Value(tracks[1], "D_DUALPANL")
+                p2_old = reaper.GetMediaTrackInfo_Value(tracks[1], "D_DUALPANR")
             elseif pan_mode == 5 then
-                p1 = reaper.GetMediaTrackInfo_Value(tracks[1], "D_PAN")
-                p2 = reaper.GetMediaTrackInfo_Value(tracks[1], "D_WIDTH")
+                p1_old = reaper.GetMediaTrackInfo_Value(tracks[1], "D_PAN")
+                p2_old = reaper.GetMediaTrackInfo_Value(tracks[1], "D_WIDTH")
             end
             reaper.ImGui_SetNextItemWidth(ctx, 44)
-            RVD1, p1 = reaper.ImGui_SliderDouble(ctx, '##pan1', p1, -1, 1, '%.2f')
+            RVD1, p1 = reaper.ImGui_SliderDouble(ctx, '##pan1', p1_old, -1, 1, '%.2f')
             if reaper.ImGui_IsItemHovered(ctx) and reaper.ImGui_IsMouseDoubleClicked(ctx, reaper.ImGui_MouseButton_Left()) then
                 RESET = true
             elseif reaper.ImGui_IsItemDeactivated(ctx) and RESET then
@@ -248,7 +251,7 @@ function GUI()
             if reaper.ImGui_IsItemHovered(ctx) then Pan(nil, vertical, L_PAN) end
             reaper.ImGui_SameLine(ctx)
             reaper.ImGui_SetNextItemWidth(ctx, 44)
-            RVD2, p2 = reaper.ImGui_SliderDouble(ctx, '##pan2', p2, -1, 1, '%.2f')
+            RVD2, p2 = reaper.ImGui_SliderDouble(ctx, '##pan2', p2_old, -1, 1, '%.2f')
             if reaper.ImGui_IsItemHovered(ctx) and reaper.ImGui_IsMouseDoubleClicked(ctx, reaper.ImGui_MouseButton_Left()) then
                 RESET = true
             elseif reaper.ImGui_IsItemDeactivated(ctx) and RESET then
@@ -259,22 +262,26 @@ function GUI()
             end
             if reaper.ImGui_IsItemHovered(ctx) then Pan(nil, vertical, D_PAN) end
             if RVD2 and not RESET then
-                local mouse_delta = { reaper.ImGui_GetMouseDelta(ctx) }
-                if mouse_delta[2] ~= 0 or mouse_delta[1] ~= 0 then
-                    local delta = mouse_delta[1] - mouse_delta[2]
-                    Pan(nil, delta, D_PAN)
-                end
+                local pan_delta = p2 - p2_old
+                Pan(pan_delta, nil, D_PAN)
+                --local mouse_delta = { reaper.ImGui_GetMouseDelta(ctx) }
+                --if mouse_delta[2] ~= 0 or mouse_delta[1] ~= 0 then
+                --    local delta = mouse_delta[1] - mouse_delta[2]
+                --    Pan(nil, delta, D_PAN)
+                --end
             elseif RVD1 and not RESET then
-                local mouse_delta = { reaper.ImGui_GetMouseDelta(ctx) }
-                if mouse_delta[2] ~= 0 or mouse_delta[1] ~= 0 then
-                    local delta = mouse_delta[1] - mouse_delta[2]
-                    Pan(nil, delta, L_PAN)
-                end
+                local pan_delta = p1 - p1_old
+                Pan(pan_delta, nil, L_PAN)
+                --local mouse_delta = { reaper.ImGui_GetMouseDelta(ctx) }
+                --if mouse_delta[2] ~= 0 or mouse_delta[1] ~= 0 then
+                --    local delta = mouse_delta[1] - mouse_delta[2]
+                --    Pan(nil, delta, L_PAN)
+                --end
             end
         else
             reaper.ImGui_SetNextItemWidth(ctx, 100)
-            local pan = reaper.GetMediaTrackInfo_Value(tracks[1], "D_PAN")
-            RVS, pan = reaper.ImGui_SliderDouble(ctx, '##pan', pan, -1, 1, '%.2f')
+            local old_pan = reaper.GetMediaTrackInfo_Value(tracks[1], "D_PAN")
+            RVS, pan = reaper.ImGui_SliderDouble(ctx, '##pan', old_pan, -1, 1, '%.2f')
             if reaper.ImGui_IsItemHovered(ctx) and reaper.ImGui_IsMouseDoubleClicked(ctx, reaper.ImGui_MouseButton_Left()) then
                 RESET = true
             elseif reaper.ImGui_IsItemDeactivated(ctx) and RESET then
@@ -284,11 +291,13 @@ function GUI()
                 RESET = nil
             end
             if RVS and not RESET then
-                local mouse_delta = { reaper.ImGui_GetMouseDelta(ctx) }
-                if mouse_delta[2] ~= 0 or mouse_delta[1] ~= 0 then
-                    local delta = mouse_delta[1] - mouse_delta[2]
-                    Pan(nil, delta, "D_PAN")
-                end
+                local pan_delta = pan - old_pan
+                Pan(pan_delta, nil, "D_PAN")
+                -- local mouse_delta = { reaper.ImGui_GetMouseDelta(ctx) }
+                --if mouse_delta[2] ~= 0 or mouse_delta[1] ~= 0 then
+                --     local delta = mouse_delta[1] - mouse_delta[2]
+                --Pan(pan_delta, nil, "D_PAN")
+                -- end
             end
             if reaper.ImGui_IsItemHovered(ctx) then Pan(nil, vertical, "D_PAN") end
         end
