@@ -1,9 +1,9 @@
 -- @description Lil Item Homie
 -- @author Sexan
 -- @license GPL v3
--- @version 1.1
+-- @version 1.2
 -- @changelog
---   + fixed crash when swaping items while menu is opened
+--   + fix slider pan
 
 local reaper = reaper
 
@@ -129,7 +129,7 @@ function Fader(val, vertical)
     reaper.UpdateArrange()
 end
 
-function Pan(vertical, type, s_min, s_max)
+function Pan(knob_val, vertical, type, s_min, s_max)
     local pan_step = type == "D_PAN" and 0.05 or 0.5
     for i = 1, reaper.CountSelectedMediaItems(0) do
         local item = reaper.GetSelectedMediaItem(0, i - 1)
@@ -140,6 +140,11 @@ function Pan(vertical, type, s_min, s_max)
             local new_val = cur_val + add_vol
             new_val = new_val > s_max and s_max or new_val
             new_val = new_val < s_min and s_min or new_val
+            reaper.SetMediaItemTakeInfo_Value(take, type, new_val)
+        elseif knob_val then
+            local new_val = cur_val + knob_val
+            new_val = new_val > 1 and 1 or new_val
+            new_val = new_val < -1 and -1 or new_val
             reaper.SetMediaItemTakeInfo_Value(take, type, new_val)
         end
     end
@@ -235,10 +240,10 @@ function GUI()
         local itemM = items[1]
         local takeM = reaper.GetActiveTake(itemM)
         local take_name = reaper.GetTakeName(takeM)
-        local pan = reaper.GetMediaItemTakeInfo_Value(takeM, "D_PAN")
+        local old_pan = reaper.GetMediaItemTakeInfo_Value(takeM, "D_PAN")
         TextCentered(#items == 1 and take_name or "MULTI-ITEMS")
         reaper.ImGui_SetNextItemWidth(ctx, 135)
-        RVS, pan = reaper.ImGui_SliderDouble(ctx, '##pan', pan, -1, 1, '%.2f')
+        RVS, pan = reaper.ImGui_SliderDouble(ctx, '##pan', old_pan, -1, 1, '%.2f')
         if reaper.ImGui_IsItemHovered(ctx) and reaper.ImGui_IsMouseDoubleClicked(ctx, reaper.ImGui_MouseButton_Left()) then
             RESET = true
         elseif reaper.ImGui_IsItemDeactivated(ctx) and RESET then
@@ -249,13 +254,15 @@ function GUI()
             RESET = nil
         end
         if RVS and not RESET then
-            local mouse_delta = { reaper.ImGui_GetMouseDelta(ctx) }
-            if mouse_delta[2] ~= 0 or mouse_delta[1] ~= 0 then
-                local delta = mouse_delta[1] - mouse_delta[2]
-                Pan(delta, "D_PAN", -1, 1)
-            end
+            --local mouse_delta = { reaper.ImGui_GetMouseDelta(ctx) }
+            --if mouse_delta[2] ~= 0 or mouse_delta[1] ~= 0 then
+            --    local delta = mouse_delta[1] - mouse_delta[2]
+            --Pan(delta, "D_PAN", -1, 1)
+            local pan_delta = pan - old_pan
+            Pan(pan_delta, nil, "D_PAN", -1, 1)
+            --end
         end
-        if reaper.ImGui_IsItemHovered(ctx) then Pan(vertical, "D_PAN", -1, 1) end
+        if reaper.ImGui_IsItemHovered(ctx) then Pan(nil, vertical, "D_PAN", -1, 1) end
         reaper.ImGui_BeginGroup(ctx)
         local vol = reaper.GetMediaItemTakeInfo_Value(takeM, "D_VOL")
         vol = VAL2DB(vol)
@@ -278,7 +285,7 @@ function GUI()
         RVP, pitch = MyKnob('PITCH', pitch or 0, -24, 24)
         if reaper.ImGui_IsItemHovered(ctx) then
             if reaper.ImGui_IsMouseDoubleClicked(ctx, 0) then reaper.SetMediaItemTakeInfo_Value(takeM, "D_PITCH", 0) end
-            Pan(vertical, "D_PITCH", -24, 24)
+            Pan(nil, vertical, "D_PITCH", -24, 24)
         end
         if RVP then
             local mouse_delta = { reaper.ImGui_GetMouseDelta(ctx) }
@@ -304,7 +311,7 @@ function GUI()
                 end
                 reaper.UpdateArrange()
             end
-            Pan(vertical, "D_PLAYRATE", 0, 20)
+            Pan(nil, vertical, "D_PLAYRATE", 0, 20)
         end
         if RVR then
             local mouse_delta = { reaper.ImGui_GetMouseDelta(ctx) }
