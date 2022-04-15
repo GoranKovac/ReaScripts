@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="522e0f6e4737e7335ad2de3f5fcaa770e114f5a9" name="Sexan_Scripts">
+<index version="1" commit="f1fad58f3a23881c4dc369074cc949393088e123" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -584,6 +584,10 @@
       <version name="1.0" author="Sexan" time="2022-04-14T10:23:50Z">
         <changelog><![CDATA[+ Initial release]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/522e0f6e4737e7335ad2de3f5fcaa770e114f5a9/Lil_Series/Lil_Item_Homie.lua</source>
+      </version>
+      <version name="1.1" author="Sexan" time="2022-04-14T17:50:38Z">
+        <changelog><![CDATA[+ fixed crash when swaping items while menu is opened]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/f1fad58f3a23881c4dc369074cc949393088e123/Lil_Series/Lil_Item_Homie.lua</source>
       </version>
     </reapack>
     <reapack name="Lil_Track_Homie.lua" type="script" desc="Lil Track Homie">
