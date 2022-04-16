@@ -1,9 +1,9 @@
 -- @description Lil Track Homie
 -- @author Sexan
 -- @license GPL v3
--- @version 1.¸11
+-- @version 1.12
 -- @changelog
---   + better intercept
+--   + cleanup
 
 local reaper = reaper
 
@@ -325,12 +325,8 @@ function GUI()
     reaper.ImGui_PopFont(ctx)
 
     --reaper.ImGui_PopStyleColor(ctx)
-    reaper.defer(GUI)
+    reaper.defer(function() xpcall(GUI, Handle_errors) end)
 end
 
-function Exit()
-    reaper.JS_VKeys_Intercept(-1, -1)
-end
-
-reaper.defer(GUI)
-reaper.atexit(Exit)
+reaper.defer(function() xpcall(GUI, Handle_errors) end)
+reaper.atexit(Release)

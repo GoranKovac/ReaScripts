@@ -1,9 +1,9 @@
 -- @description Lil Item Homie
 -- @author Sexan
 -- @license GPL v3
--- @version 1.21
+-- @version 1.22
 -- @changelog
---   + better intercept
+--   + cleanup
 
 local reaper = reaper
 
@@ -336,20 +336,8 @@ function GUI()
     reaper.ImGui_PopFont(ctx)
 
     --reaper.ImGui_PopStyleColor(ctx)
-    reaper.defer(GUI)
+    reaper.defer(function() xpcall(GUI, Handle_errors) end)
 end
 
-function Main()
-    if ScriptShouldStop() or terminateScript then
-        Exit()
-        return 0
-    end
-    reaper.defer(GUI)
-end
-
-function Exit()
-    reaper.JS_VKeys_Intercept(-1, -1)
-end
-
-reaper.defer(GUI)
-reaper.atexit(Exit)
+reaper.defer(function() xpcall(GUI, Handle_errors) end)
+reaper.atexit(Release)
