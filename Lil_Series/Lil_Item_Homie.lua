@@ -1,9 +1,9 @@
 -- @description Lil Item Homie
 -- @author Sexan
 -- @license GPL v3
--- @version 1.2
+-- @version 1.21
 -- @changelog
---   + fix slider pan
+--   + better intercept
 
 local reaper = reaper
 

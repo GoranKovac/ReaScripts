@@ -1,9 +1,9 @@
 -- @description Lil Track Homie
 -- @author Sexan
 -- @license GPL v3
--- @version 1.¸10
+-- @version 1.¸11
 -- @changelog
---   + Fix panning
+--   + better intercept
 
 local reaper = reaper
 
