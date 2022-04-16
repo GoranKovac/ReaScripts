@@ -7,11 +7,6 @@
 
 local reaper = reaper
 
-local ctx = reaper.ImGui_CreateContext('My script', reaper.ImGui_ConfigFlags_NoSavedSettings())
-local size = reaper.GetAppVersion():match('OSX') and 12 or 14
-local font = reaper.ImGui_CreateFont('sans-serif', size)
-reaper.ImGui_AttachFont(ctx, font)
-
 local floor = math.floor
 local max = math.max
 local abs = math.abs
@@ -20,58 +15,29 @@ local log = math.log
 
 function Round(num) return floor(num + 0.5) end
 
--- adopted from BirdBird
-local terminateScript = false
-local VKLow, VKHi = 8, 0xFE
-local VKState0 = string.rep("\0", VKHi - VKLow + 1)
-local startTime = 0
+local start_time = reaper.time_precise()
+local key_state, KEY = reaper.JS_VKeys_GetState(start_time - 2), nil
+for i = 1, 255 do
+    if key_state:byte(i) ~= 0 then KEY = i; reaper.JS_VKeys_Intercept(KEY, 1) break end
+end
+if not KEY then return end
 
--- adopted from BirdBird
-function Awake()
-    keyState = reaper.JS_VKeys_GetState(startTime - 0.5):sub(VKLow, VKHi)
-    startTime = reaper.time_precise()
-    thisCycleTime = startTime
-
-    reaper.atexit(Exit)
-    reaper.JS_VKeys_Intercept(-1, 1)
-
-    keyState = reaper.JS_VKeys_GetState(-2):sub(VKLow, VKHi)
-
-    local terminate = false
-    if terminate == true then
-        return true
-    else
-        return false
-    end
+function Key_held()
+    key_state = reaper.JS_VKeys_GetState(start_time - 2)
+    return key_state:byte(KEY) == 1
 end
 
--- adopted from BirdBird
-function ScriptShouldStop()
-    local prevCycleTime = thisCycleTime or startTime
-    thisCycleTime = reaper.time_precise()
-    local prevKeyState = keyState
-    keyState = reaper.JS_VKeys_GetState(startTime - 0.5):sub(VKLow, VKHi)
-    -- All keys are released.
-    if keyState ~= prevKeyState and keyState == VKState0 then return true end
-    -- Any keys were pressed.
-    local keyDown = reaper.JS_VKeys_GetDown(prevCycleTime):sub(VKLow, VKHi)
-    if keyDown ~= prevKeyState and keyDown ~= VKState0 then
-        local p = 0
-        ::checkNextKeyDown::
-        do
-            p = keyDown:find("\1", p + 1)
-            if p then
-                if prevKeyState:byte(p) == 0 then
-                    return true
-                else
-                    goto checkNextKeyDown
-                end
-            end
-        end
-    end
+function Release() reaper.JS_VKeys_Intercept(KEY, -1) end
 
-    return false
+function Handle_errors(err)
+    reaper.ShowConsoleMsg(err .. '\n' .. debug.traceback())
+    Release()
 end
+
+local ctx = reaper.ImGui_CreateContext('My script', reaper.ImGui_ConfigFlags_NoSavedSettings())
+local size = reaper.GetAppVersion():match('OSX') and 12 or 14
+local font = reaper.ImGui_CreateFont('sans-serif', size)
+reaper.ImGui_AttachFont(ctx, font)
 
 local dB_step = 0.2
 
@@ -225,10 +191,7 @@ end
 local img_x, img_y = reaper.ImGui_PointConvertNative(ctx, reaper.GetMousePosition())
 reaper.ImGui_SetNextWindowPos(ctx, img_x - 25, img_y - 65)
 function GUI()
-    if ScriptShouldStop() or terminateScript then
-        Exit()
-        return 0
-    end
+    if not Key_held() then reaper.ImGui_DestroyContext(ctx) return end
     if next(items) == nil then reaper.ImGui_DestroyContext(ctx) terminateScript = true return end
 
     local vertical, horizontal = reaper.ImGui_GetMouseWheel(ctx)
@@ -388,9 +351,5 @@ function Exit()
     reaper.JS_VKeys_Intercept(-1, -1)
 end
 
---------------------------------------
-local terminate = Awake()
-if terminate == false then
-    reaper.defer(GUI)
-end
+reaper.defer(GUI)
 reaper.atexit(Exit)

@@ -1,23 +1,28 @@
 local reaper = reaper
-local startTime = reaper.time_precise()
-local key_state = reaper.JS_VKeys_GetState(startTime - 2)
+local start_time = reaper.time_precise()
+local key_state, KEY = reaper.JS_VKeys_GetState(start_time - 2), nil
 for i = 1, 255 do
-    if key_state:byte(i) ~= 0 then KEY = i; reaper.JS_VKeys_Intercept(KEY, 1) --[[ reaper.ShowConsoleMsg(string.char(i)) ]] end
+    if key_state:byte(i) ~= 0 then KEY = i; reaper.JS_VKeys_Intercept(KEY, 1) break end
+end
+if not KEY then return end
+
+function Key_held()
+    key_state = reaper.JS_VKeys_GetState(start_time - 2)
+    return key_state:byte(KEY) == 1
 end
 
-function Kill_script()
-    if not KEY then return true end
-    key_state = reaper.JS_VKeys_GetState(startTime - 2)
-    reaper.ShowConsoleMsg("SCRIPT RUNNING")
-    if key_state:byte(KEY) == 0 then reaper.JS_VKeys_Intercept(KEY, -1) return true end
+function Release() reaper.JS_VKeys_Intercept(KEY, -1) end
+
+function Handle_errors(err)
+    reaper.ShowConsoleMsg(err .. '\n' .. debug.traceback())
+    Release()
 end
 
 function Main()
-    if Kill_script() then return end
-    reaper.defer(Main)
+    if not Key_held() then return end
+    reaper.ShowConsoleMsg('Hello!' .. '\n')
+    reaper.defer(function() xpcall(Main, Handle_errors) end)
 end
 
-function atExit() reaper.JS_VKeys_Intercept(-1, -1) end -- JUST IN CASE RELEASE ALL KEYS
-
-reaper.atexit(atExit)
-Main()
+reaper.atexit(Release)
+xpcall(Main, Handle_errors)
