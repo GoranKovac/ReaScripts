@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="f58de477f165f9f623c0b4337eee5d00dbda5663" name="Sexan_Scripts">
+<index version="1" commit="5e6d27d53ede07435096949f3f8a73311eabf1b5" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -593,6 +593,10 @@
         <changelog><![CDATA[+ fix slider pan]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/f58de477f165f9f623c0b4337eee5d00dbda5663/Lil_Series/Lil_Item_Homie.lua</source>
       </version>
+      <version name="1.21" author="Sexan" time="2022-04-16T16:05:36Z">
+        <changelog><![CDATA[+ better intercept]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/5e6d27d53ede07435096949f3f8a73311eabf1b5/Lil_Series/Lil_Item_Homie.lua</source>
+      </version>
     </reapack>
     <reapack name="Lil_Track_Homie.lua" type="script" desc="Lil Track Homie">
       <version name="1.9" author="Sexan" time="2022-04-14T10:23:50Z">
@@ -602,6 +606,10 @@
       <version name="1.¸10" author="Sexan" time="2022-04-15T10:42:00Z">
         <changelog><![CDATA[+ Fix panning]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/9337eeb8deb7aac95c2fc8883e67b4767c5f06d9/Lil_Series/Lil_Track_Homie.lua</source>
+      </version>
+      <version name="1.¸11" author="Sexan" time="2022-04-16T16:05:36Z">
+        <changelog><![CDATA[+ better intercept]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/5e6d27d53ede07435096949f3f8a73311eabf1b5/Lil_Series/Lil_Track_Homie.lua</source>
       </version>
     </reapack>
   </category>
