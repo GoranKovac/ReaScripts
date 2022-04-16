@@ -6,6 +6,7 @@ for i = 1, 255 do
 end
 
 function Kill_script()
+    if not KEY then return true end
     key_state = reaper.JS_VKeys_GetState(startTime - 2)
     reaper.ShowConsoleMsg("SCRIPT RUNNING")
     if key_state:byte(KEY) == 0 then reaper.JS_VKeys_Intercept(KEY, -1) return true end
