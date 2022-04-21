@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="991ce3ff4cf774aa6b61abe5da2ee4b43a273eb1" name="Sexan_Scripts">
+<index version="1" commit="4c8700888993a3366d9eebd9fc78df3697426394" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -619,6 +619,10 @@
         <changelog><![CDATA[+ cleanup]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/991ce3ff4cf774aa6b61abe5da2ee4b43a273eb1/Lil_Series/Lil_Track_Homie.lua</source>
       </version>
+      <version name="1.13" author="Sexan" time="2022-04-21T19:16:50Z">
+        <changelog><![CDATA[+ use mouse under track unless multiple tracks are selected]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/4c8700888993a3366d9eebd9fc78df3697426394/Lil_Series/Lil_Track_Homie.lua</source>
+      </version>
     </reapack>
   </category>
   <category name="Other">
@@ -654,15 +658,6 @@
   </category>
   <category name="Project">
     <reapack name="Sexan_Multi_project_time_counter.lua" type="script" desc="Multi project time counter">
-      <metadata>
-        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
-{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
-\widowctrl\hyphauto
-
-{\pard \ql \f0 \sa180 \li0 \fi0 Script shows 3 timers: Windows time, how long project has been opened and third timer has AFK mode that that counts time only while you work in the project\par}
-}
-]]></description>
-      </metadata>
       <version name="1.1" author="SeXan" time="2017-08-13T16:49:03Z">
         <changelog><![CDATA[+ Initial release]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/07e692a4c26d1cac727212deb0515e4aa035ae71/Project/Sexan_Multi_project_time_counter.lua</source>
@@ -691,17 +686,12 @@
         <changelog><![CDATA[+ simplifed code]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/8bb0a0ef6b5f5b38c8bd09bd977f8c0021e1ca7c/Project/Sexan_Multi_project_time_counter.lua</source>
       </version>
+      <version name="1.45" author="Sexan" time="2022-04-18T14:53:21Z">
+        <changelog><![CDATA[+ cleanup]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/22a60533b38d8d9485c3bdf0b64e2af3d865d0c3/Project/Sexan_Multi_project_time_counter.lua</source>
+      </version>
     </reapack>
     <reapack name="Sexan_Project time counter with AFK mode.lua" type="script" desc="Project Time Counter with AFK mode">
-      <metadata>
-        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
-{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
-\widowctrl\hyphauto
-
-{\pard \ql \f0 \sa180 \li0 \fi0 Script counts working time on projects and stop counting when AFK mode kicks in\par}
-}
-]]></description>
-      </metadata>
       <version name="1.31" author="SeXan" time="2017-07-13T12:49:54Z">
         <changelog><![CDATA[+ Simplified the code]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/530d66124dfb322f9f4a5b9dbd3bdd3738677207/Project/Sexan_Project%20time%20counter%20with%20AFK%20mode.lua</source>
@@ -721,6 +711,10 @@
       <version name="1.38" author="SeXan" time="2017-08-14T09:59:12Z">
         <changelog><![CDATA[+ code improvement]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/fde2b0f51281accbca0002061a107fb3ecc32864/Project/Sexan_Project%20time%20counter%20with%20AFK%20mode.lua</source>
+      </version>
+      <version name="1.40" author="Sexan" time="2022-04-18T14:53:21Z">
+        <changelog><![CDATA[+ cleanup]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/22a60533b38d8d9485c3bdf0b64e2af3d865d0c3/Project/Sexan_Project%20time%20counter%20with%20AFK%20mode.lua</source>
       </version>
     </reapack>
   </category>
