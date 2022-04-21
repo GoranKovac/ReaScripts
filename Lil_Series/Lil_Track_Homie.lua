@@ -1,9 +1,9 @@
 -- @description Lil Track Homie
 -- @author Sexan
 -- @license GPL v3
--- @version 1.12
+-- @version 1.13
 -- @changelog
---   + cleanup
+--   + use mouse under track unless multiple tracks are selected
 
 local reaper = reaper
 
@@ -61,9 +61,16 @@ function DB2VAL(x)
     return exp(x * 0.11512925464970228420089957273422)
 end
 
+local mx, my = reaper.GetMousePosition()
+local mouse_track = reaper.GetTrackFromPoint(mx, my)
+
 local tracks = {}
 for i = 1, reaper.CountSelectedTracks(0) do
     tracks[#tracks + 1] = reaper.GetSelectedTrack(0, i - 1)
+end
+
+if mouse_track then
+    if #tracks == 1 then tracks[1] = mouse_track end
 end
 
 
