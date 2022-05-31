@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="4c8700888993a3366d9eebd9fc78df3697426394" name="Sexan_Scripts">
+<index version="1" commit="b6f1f9a6f62490486c7e5cf92d4e386aa6714ce8" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -715,6 +715,14 @@
       <version name="1.40" author="Sexan" time="2022-04-18T14:53:21Z">
         <changelog><![CDATA[+ cleanup]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/22a60533b38d8d9485c3bdf0b64e2af3d865d0c3/Project/Sexan_Project%20time%20counter%20with%20AFK%20mode.lua</source>
+      </version>
+    </reapack>
+  </category>
+  <category name="Theme">
+    <reapack name="V6_Button_organizer.lua" type="script" desc="V6_Button_organizer">
+      <version name="1.0" author="Sexan" time="2022-05-31T21:30:26Z">
+        <changelog><![CDATA[+ Innitial release]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/b6f1f9a6f62490486c7e5cf92d4e386aa6714ce8/Theme/V6_Button_organizer.lua</source>
       </version>
     </reapack>
   </category>
