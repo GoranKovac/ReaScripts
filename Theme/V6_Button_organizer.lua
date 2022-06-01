@@ -1,11 +1,9 @@
 -- @description V6_Button_organizer
 -- @author Sexan
 -- @license GPL v3
--- @version 1.1
+-- @version 1.2
 -- @changelog
---   + Removed unnecessary things from button names
---   + Show only layouts that can be reordered
---   + Removed unnecessary thins from layout name
+--   + Limit section finding
 
 local reaper = reaper
 
@@ -41,12 +39,12 @@ local layouts, moded_layouts
 local function Get_Layouts()
     layouts = {
         [1] = { name = "TCP" },
-        --["MCP"] = {},
+        --[2] = {name = "MCP"},
         [2] = { name = "ENV" },
         [3] = { name = "MASTER" },
     }
     -- TCP
-    local tcp = rtconfig_content:match("TRACK CONTROL PANELS(.*)")
+    local tcp = rtconfig_content:match("TRACK CONTROL PANELS(.*)MASTER TRACK CONTROL PANEL")
     for layout in tcp:gmatch('(Layout ".-".-)drawTcp') do -- MATCH EVERYTHING BETWEEN "LAYOUT "X" AND drawTcp
         layouts[1][#layouts[1] + 1] = layout
     end
@@ -58,20 +56,20 @@ local function Get_Layouts()
     -- end
 
     -- MASTER
-    local master = rtconfig_content:match("MASTER TRACK CONTROL PANEL(.*)")
+    local master = rtconfig_content:match("MASTER TRACK CONTROL PANEL(.*)ENVELOPE CONTROL PANELS")
     for layout in master:gmatch('(Layout ".-".-)drawMasterTcp') do -- MATCH EVERYTHING BETWEEN "LAYOUT "X" AND drawMasterTcp
         layouts[3][#layouts[3] + 1] = layout
     end
 
     -- ENV
-    local env_tcp = rtconfig_content:match("ENVELOPE CONTROL PANELS(.*)")
+    local env_tcp = rtconfig_content:match("ENVELOPE CONTROL PANELS(.*)THE MIXER")
     for layout in env_tcp:gmatch('(Layout ".-".-)drawEnvcp') do -- MATCH EVERYTHING BETWEEN "LAYOUT "X" AND drawEnvcp
         layouts[2][#layouts[2] + 1] = layout
     end
 
     moded_layouts = {
         [1] = { name = "TCP" },
-        --["MCP"] = {},
+        --[2] = {name = "MCP"},
         [2] = { name = "ENV" },
         [3] = { name = "MASTER" },
     }
