@@ -1,9 +1,9 @@
 -- @description V6_Button_organizer
 -- @author Sexan
 -- @license GPL v3
--- @version 1.31
+-- @version 1.32
 -- @changelog
---   + remove hash from layouts
+--   + do not allow drag droping between different layouts
 
 local reaper = reaper
 
@@ -146,7 +146,7 @@ local function GUI()
                             reaper.ImGui_SameLine(ctx)
                             -- IF BUTTON IS DRAGGED START DRAG AND DROP
                             if reaper.ImGui_BeginDragDropSource(ctx) then
-                                reaper.ImGui_SetDragDropPayload(ctx, 'DND_BUTTON', tostring(k))
+                                reaper.ImGui_SetDragDropPayload(ctx, 'DND_BUTTON', tostring(k .. "," .. i))
                                 reaper.ImGui_Text(ctx, button_name)
                                 reaper.ImGui_EndDragDropSource(ctx)
                             end
@@ -154,10 +154,14 @@ local function GUI()
                             if reaper.ImGui_BeginDragDropTarget(ctx) then
                                 RV_P, PAYLOAD = reaper.ImGui_AcceptDragDropPayload(ctx, 'DND_BUTTON')
                                 if RV_P then
-                                    local payload_n = tonumber(PAYLOAD)
-                                    tbl[k] = tbl[payload_n]
-                                    tbl[payload_n] = v
-                                    Store_and_Update_new_button(j, i)
+                                    local p_tbl_key, p_layout = PAYLOAD:match("(%d+),(%d+)")
+                                    local payload_n = tonumber(p_tbl_key)
+                                    local payload_layout = tonumber(p_layout)
+                                    if payload_layout == i then
+                                        tbl[k] = tbl[payload_n]
+                                        tbl[payload_n] = v
+                                        Store_and_Update_new_button(j, i)
+                                    end
                                 end
                                 reaper.ImGui_EndDragDropTarget(ctx)
                             end
