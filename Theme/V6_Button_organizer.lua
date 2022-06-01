@@ -1,16 +1,16 @@
 -- @description V6_Button_organizer
 -- @author Sexan
 -- @license GPL v3
--- @version 1.2
+-- @version 1.3
 -- @changelog
---   + Limit section finding
+--   + Fix button sharing same id
 
 local reaper = reaper
 
 local rtconfig_content = ''
-local theme = reaper.GetResourcePath() .. "\\ColorThemes\\Default_6.0.ReaperThemeZip"
-local ENTRY_NAME = "Default_6.0_unpacked\\rtconfig.txt"
---theme = reaper.GetLastColorThemeFile() .. "Zip"
+--local theme = reaper.GetResourcePath() .. "\\ColorThemes\\Default_6.0.ReaperThemeZip"
+--local ENTRY_NAME = "Default_6.0_unpacked\\rtconfig.txt"
+local theme = reaper.GetLastColorThemeFile() .. "Zip"
 local function str_split(s, delimiter)
     local result = {};
     for match in (s .. delimiter):gmatch("(.-)" .. delimiter) do table.insert(result, match) end
@@ -27,11 +27,22 @@ end
 -- READ RTCONFIG CONTENT
 local function Get_RTCONFIG_Content()
     local zipHandle, ok = reaper.JS_Zip_Open(theme, 'r', 6)
-    --local retval, list = reaper.JS_Zip_ListAllEntries(zipHandle)
-    --ENTRY_NAME = list:gsub("%.ReaperTheme", "\\rtconfig.txt")
-    local entry_id_r = reaper.JS_Zip_Entry_OpenByName(zipHandle, ENTRY_NAME)
-    buf_size, rtconfig_content = reaper.JS_Zip_Entry_ExtractToMemory(zipHandle)
-    reaper.JS_Zip_Entry_Close(zipHandle)
+    if not ENTRY_NAME then
+        local retval, list = reaper.JS_Zip_ListAllEntries(zipHandle)
+        -- FIND RTCONFIG
+        for l in list:gmatch("(.-\0)") do
+            if l:find("rtconfig") then
+                if not l:lower():find("osx") then
+                    ENTRY_NAME = l
+                end
+            end
+        end
+    end
+    if ENTRY_NAME then
+        local entry_id_r = reaper.JS_Zip_Entry_OpenByName(zipHandle, ENTRY_NAME)
+        _, rtconfig_content = reaper.JS_Zip_Entry_ExtractToMemory(zipHandle)
+        reaper.JS_Zip_Entry_Close(zipHandle)
+    end
     reaper.JS_Zip_Close(theme)
 end
 
@@ -44,25 +55,25 @@ local function Get_Layouts()
         [3] = { name = "MASTER" },
     }
     -- TCP
-    local tcp = rtconfig_content:match("TRACK CONTROL PANELS(.*)MASTER TRACK CONTROL PANEL")
+    local tcp = rtconfig_content:match("TRACK CONTROL PANEL(.*)MASTER TRACK CONTROL PANEL")
     for layout in tcp:gmatch('(Layout ".-".-)drawTcp') do -- MATCH EVERYTHING BETWEEN "LAYOUT "X" AND drawTcp
         layouts[1][#layouts[1] + 1] = layout
     end
 
     -- MCP
     -- local mcp = rtconfig_content:match("THE MIXER(.*)")
-    -- for layout in mcp:gmatch('(Layout ".-".-)drawMcp') do -- MATCH EVERYTHING BETWEEN "LAYOUT "X" AND drawMasterTcp
+    -- for layout in mcp:gmatch('(Layout ".-".-)drawMcp') do -- MATCH EVERYTHING BETWEEN "LAYOUT "X" AND drawMcp
     --     layouts["MCP"][#layouts["MCP"] + 1] = layout
     -- end
 
     -- MASTER
-    local master = rtconfig_content:match("MASTER TRACK CONTROL PANEL(.*)ENVELOPE CONTROL PANELS")
+    local master = rtconfig_content:match("MASTER TRACK CONTROL PANEL(.*)ENVELOPE CONTROL PANEL")
     for layout in master:gmatch('(Layout ".-".-)drawMasterTcp') do -- MATCH EVERYTHING BETWEEN "LAYOUT "X" AND drawMasterTcp
         layouts[3][#layouts[3] + 1] = layout
     end
 
     -- ENV
-    local env_tcp = rtconfig_content:match("ENVELOPE CONTROL PANELS(.*)THE MIXER")
+    local env_tcp = rtconfig_content:match("ENVELOPE CONTROL PANEL(.*)THE MIXER")
     for layout in env_tcp:gmatch('(Layout ".-".-)drawEnvcp') do -- MATCH EVERYTHING BETWEEN "LAYOUT "X" AND drawEnvcp
         layouts[2][#layouts[2] + 1] = layout
     end
@@ -108,7 +119,7 @@ end
 
 local patterns = { "tcp", "envcp", "master_", "master" }
 local function Pattern_remove(str)
-    str = str:gsub("%.", "") -- GET WORD AFTER "THEN" and remove dot
+    str = str:gsub("%.", "") --remove dot
     for _, v in ipairs(patterns) do str = str:gsub(v, "") end
     return str
 end
@@ -124,14 +135,14 @@ local function GUI()
                 -- ITERATE THRU LAYOUT LINES
                 local layout_name = tbl[1]:match('(Layout ".-")') -- GET ONLY 'Layout "xxx"'
                 if layouts[j][i]:lower():find('then') then -- IF ORIGINAL LAYOUT STRING HAS 'THEN' (WE ONLY NEED LAYOUTS THAT HAVE REORDERING)
-                    reaper.ImGui_Text(ctx, moded_layouts[j].name .. " - " .. layout_name) -- SET TEXT AS NAME LAYOUT
+                    reaper.ImGui_Text(ctx, moded_layouts[j].name .. " - " .. layout_name .. "##" .. i) -- SET TEXT AS NAME LAYOUT
                     reaper.ImGui_BeginGroup(ctx)
                     for k, v in ipairs(tbl) do
                         -- FIND "THEN" LINES (WHICH ARE USED FOR REORDER)
                         if string.find(v:lower(), 'then') then
                             local button_name = v:match("%S+ (%S+)") -- GET WORD AFTER "THEN"
                             button_name = Pattern_remove(button_name)
-                            reaper.ImGui_Button(ctx, button_name .. "##" .. i)
+                            reaper.ImGui_Button(ctx, button_name .. "##" .. i .. v)
                             reaper.ImGui_SameLine(ctx)
                             -- IF BUTTON IS DRAGGED START DRAG AND DROP
                             if reaper.ImGui_BeginDragDropSource(ctx) then
