@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="b6f1f9a6f62490486c7e5cf92d4e386aa6714ce8" name="Sexan_Scripts">
+<index version="1" commit="460223e1939b72a38b0c142690b5a9461e702c0a" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -723,6 +723,12 @@
       <version name="1.0" author="Sexan" time="2022-05-31T21:30:26Z">
         <changelog><![CDATA[+ Innitial release]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/b6f1f9a6f62490486c7e5cf92d4e386aa6714ce8/Theme/V6_Button_organizer.lua</source>
+      </version>
+      <version name="1.1" author="Sexan" time="2022-06-01T11:01:07Z">
+        <changelog><![CDATA[+ Removed unnecessary things from button names
++ Show only layouts that can be reordered
++ Removed unnecessary thins from layout name]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/460223e1939b72a38b0c142690b5a9461e702c0a/Theme/V6_Button_organizer.lua</source>
       </version>
     </reapack>
   </category>
