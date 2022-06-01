@@ -1,9 +1,9 @@
 -- @description V6_Button_organizer
 -- @author Sexan
 -- @license GPL v3
--- @version 1.3
+-- @version 1.31
 -- @changelog
---   + Fix button sharing same id
+--   + remove hash from layouts
 
 local reaper = reaper
 
@@ -135,7 +135,7 @@ local function GUI()
                 -- ITERATE THRU LAYOUT LINES
                 local layout_name = tbl[1]:match('(Layout ".-")') -- GET ONLY 'Layout "xxx"'
                 if layouts[j][i]:lower():find('then') then -- IF ORIGINAL LAYOUT STRING HAS 'THEN' (WE ONLY NEED LAYOUTS THAT HAVE REORDERING)
-                    reaper.ImGui_Text(ctx, moded_layouts[j].name .. " - " .. layout_name .. "##" .. i) -- SET TEXT AS NAME LAYOUT
+                    reaper.ImGui_Text(ctx, moded_layouts[j].name .. " - " .. layout_name) -- SET TEXT AS NAME LAYOUT
                     reaper.ImGui_BeginGroup(ctx)
                     for k, v in ipairs(tbl) do
                         -- FIND "THEN" LINES (WHICH ARE USED FOR REORDER)
