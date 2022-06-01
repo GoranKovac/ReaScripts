@@ -1,16 +1,18 @@
 -- @description V6_Button_organizer
 -- @author Sexan
 -- @license GPL v3
--- @version 1.0
+-- @version 1.1
 -- @changelog
---   + Innitial release
+--   + Removed unnecessary things from button names
+--   + Show only layouts that can be reordered
+--   + Removed unnecessary thins from layout name
 
 local reaper = reaper
 
 local rtconfig_content = ''
 local theme = reaper.GetResourcePath() .. "\\ColorThemes\\Default_6.0.ReaperThemeZip"
 local ENTRY_NAME = "Default_6.0_unpacked\\rtconfig.txt"
---local theme = reaper.GetLastColorThemeFile() .. "Zip"
+--theme = reaper.GetLastColorThemeFile() .. "Zip"
 local function str_split(s, delimiter)
     local result = {};
     for match in (s .. delimiter):gmatch("(.-)" .. delimiter) do table.insert(result, match) end
@@ -106,6 +108,13 @@ local function Store_and_Update_new_button(section, layout_idx)
     Init() -- GET RTCONFIG DATA AGAIN
 end
 
+local patterns = { "tcp", "envcp", "master_", "master" }
+local function Pattern_remove(str)
+    str = str:gsub("%.", "") -- GET WORD AFTER "THEN" and remove dot
+    for _, v in ipairs(patterns) do str = str:gsub(v, "") end
+    return str
+end
+
 local ctx = reaper.ImGui_CreateContext('My script')
 local function GUI()
     local visible, open = reaper.ImGui_Begin(ctx, 'V6 THEME BUTTON ORGANIZER', true, flags)
@@ -115,34 +124,38 @@ local function GUI()
             for i = 1, #moded_layouts[j] do
                 local tbl = moded_layouts[j][i]
                 -- ITERATE THRU LAYOUT LINES
-                reaper.ImGui_Text(ctx, moded_layouts[j].name .. " - " .. tbl[1]) -- SET TEXT AS NAME LAYOUT
-                reaper.ImGui_BeginGroup(ctx)
-                for k, v in ipairs(tbl) do
-                    -- FIND "THEN" LINES (WHICH ARE USED FOR REORDER)
-                    if string.find(v:lower(), 'then') then
-                        local button_name = v:match("%S+ (%S+)") -- GET WORD AFTER "THEN"
-                        reaper.ImGui_Button(ctx, button_name .. "##" .. i)
-                        reaper.ImGui_SameLine(ctx)
-                        -- IF BUTTON IS DRAGGED START DRAG AND DROP
-                        if reaper.ImGui_BeginDragDropSource(ctx) then
-                            reaper.ImGui_SetDragDropPayload(ctx, 'DND_BUTTON', tostring(k))
-                            reaper.ImGui_Text(ctx, button_name)
-                            reaper.ImGui_EndDragDropSource(ctx)
-                        end
-                        -- GET DRAG AND DROP TARGET
-                        if reaper.ImGui_BeginDragDropTarget(ctx) then
-                            RV_P, PAYLOAD = reaper.ImGui_AcceptDragDropPayload(ctx, 'DND_BUTTON')
-                            if RV_P then
-                                local payload_n = tonumber(PAYLOAD)
-                                tbl[k] = tbl[payload_n]
-                                tbl[payload_n] = v
-                                Store_and_Update_new_button(j, i)
+                local layout_name = tbl[1]:match('(Layout ".-")') -- GET ONLY 'Layout "xxx"'
+                if layouts[j][i]:lower():find('then') then -- IF ORIGINAL LAYOUT STRING HAS 'THEN' (WE ONLY NEED LAYOUTS THAT HAVE REORDERING)
+                    reaper.ImGui_Text(ctx, moded_layouts[j].name .. " - " .. layout_name) -- SET TEXT AS NAME LAYOUT
+                    reaper.ImGui_BeginGroup(ctx)
+                    for k, v in ipairs(tbl) do
+                        -- FIND "THEN" LINES (WHICH ARE USED FOR REORDER)
+                        if string.find(v:lower(), 'then') then
+                            local button_name = v:match("%S+ (%S+)") -- GET WORD AFTER "THEN"
+                            button_name = Pattern_remove(button_name)
+                            reaper.ImGui_Button(ctx, button_name .. "##" .. i)
+                            reaper.ImGui_SameLine(ctx)
+                            -- IF BUTTON IS DRAGGED START DRAG AND DROP
+                            if reaper.ImGui_BeginDragDropSource(ctx) then
+                                reaper.ImGui_SetDragDropPayload(ctx, 'DND_BUTTON', tostring(k))
+                                reaper.ImGui_Text(ctx, button_name)
+                                reaper.ImGui_EndDragDropSource(ctx)
                             end
-                            reaper.ImGui_EndDragDropTarget(ctx)
+                            -- GET DRAG AND DROP TARGET
+                            if reaper.ImGui_BeginDragDropTarget(ctx) then
+                                RV_P, PAYLOAD = reaper.ImGui_AcceptDragDropPayload(ctx, 'DND_BUTTON')
+                                if RV_P then
+                                    local payload_n = tonumber(PAYLOAD)
+                                    tbl[k] = tbl[payload_n]
+                                    tbl[payload_n] = v
+                                    Store_and_Update_new_button(j, i)
+                                end
+                                reaper.ImGui_EndDragDropTarget(ctx)
+                            end
                         end
                     end
+                    reaper.ImGui_EndGroup(ctx)
                 end
-                reaper.ImGui_EndGroup(ctx)
                 --RV, contents = reaper.ImGui_InputTextMultiline(ctx, '##source', contents, -1, -1) -- TEXT EDITOR IN SCRIPT
             end
         end
