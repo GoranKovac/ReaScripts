@@ -1666,17 +1666,20 @@ end
 
 local function DeleteNodeTable(tbl)
     if not tbl then return end
-
     for i = #tbl, 1, -1 do
         -- DONT DELETE START AND RETURN NODE
-        if tbl[i].selected and tbl[i].type ~= "m" and tbl[i].type ~= "retnode" then
-            local src_guid = tbl[i].guid
-            DIRTY = true
+        if tbl[i] then
+            if tbl[i].selected and tbl[i].type ~= "m" and tbl[i].type ~= "retnode" then
+                local src_guid = tbl[i].guid
+                DIRTY = true
 
-            Remove_Connections(tbl, i)
-            table.remove(tbl, i)
-            -- REMOVE ALL ASSOCIATED GETTERS/SETTERS
-            RemoveSourceGettersSetters(src_guid)
+                Remove_Connections(tbl, i)
+                table.remove(tbl, i)
+                -- REMOVE ALL ASSOCIATED GETTERS/SETTERS
+                --if tbl[i].type ~= "func" then
+                --RemoveSourceGettersSetters(src_guid)
+                --end
+            end
         end
     end
 
