@@ -1,7 +1,7 @@
 -- @description ReaLegos
 -- @author Sexan
 -- @license GPL v3
--- @version 0.1
+-- @version 0.2
 -- @changelog
 --   + Initial upload
 -- @provides
