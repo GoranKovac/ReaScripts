@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="51f85cba0010ea2e39e08ec68594c1d05166f647" name="Sexan_Scripts">
+<index version="1" commit="1de2c0d8a5ed47e744d8eb6510bfcd49453acb51" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -718,103 +718,47 @@
       </version>
     </reapack>
   </category>
-  <category name="ReaLegos">
+  <category name="ReaSpaghetti">
     <reapack name="Sexan_ReaSpaghetti.lua" type="script" desc="ReaSpaghetti Visual Scripter">
-      <version name="0.3" author="Sexan" time="2023-04-13T12:24:28Z">
-        <changelog><![CDATA[+ Script Rename
-+ Added Examples
-+ Added SCHWARMINATOR
-+ Filemanager automatically Appends extension
-+ Fixed Crashes with MathRandom Nodes
-+ Only Math nodes can mix/match different pins (INTEGER/FLOAT),fixed issue with APi pins could connect mismatching pins]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/5d9c7638ace941e982a7e226efabcbd0393026e6/ReaLegos/Sexan_ReaSpaghetti.lua</source>
-      </version>
-      <version name="0.4" author="Sexan" time="2023-04-13T12:28:54Z">
-        <changelog><![CDATA[+ Script Rename
-+ Added Examples
-+ Added SCHWARMINATOR
-+ Filemanager automatically Appends extension
-+ Fixed Crashes with MathRandom Nodes
-+ Only Math nodes can mix/match different pins (INTEGER/FLOAT),fixed issue with APi pins could connect mismatching pins]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/fdd7f36780f3b86114e43c77e90c06caf74ae09d/ReaLegos/Sexan_ReaSpaghetti.lua</source>
-      </version>
-      <version name="0.5" author="Sexan" time="2023-04-13T12:43:36Z">
-        <changelog><![CDATA[+ Script Rename
-+ Added Examples
-+ Added SCHWARMINATOR
-+ Filemanager automatically Appends extension
-+ Fixed Crashes with MathRandom Nodes
-+ Only Math nodes can mix/match different pins (INTEGER/FLOAT),fixed issue with APi pins could connect mismatching pins]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/8ebfd43cd05d4587957421a0bada1c2a839ac917/ReaLegos/Sexan_ReaSpaghetti.lua</source>
-      </version>
-      <version name="0.6" author="Sexan" time="2023-04-13T12:47:26Z">
-        <changelog><![CDATA[Script Rename
-Added Examples
-Added SCHWARMINATOR
-Filemanager automatically Appends extension
-Fixed Crashes with MathRandom Nodes
-Only Math nodes can mix/match different pins (INTEGER/FLOAT),fixed issue with APi pins could connect mismatching pins]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/f5b002c0d64a01951c2a0f8cade3cb46588c5f32/ReaLegos/Sexan_ReaSpaghetti.lua</source>
-      </version>
-      <version name="0.7" author="Sexan" time="2023-04-13T12:53:57Z">
-        <changelog><![CDATA[Script Rename
-Added Examples
-Added SCHWARMINATOR
-Filemanager automatically Appends extension
-Fixed Crashes with MathRandom Nodes
-Only Math nodes can mix/match different pins (INTEGER/FLOAT),fixed issue with APi pins could connect mismatching pins]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/26ee7fa14e0539ec0c8c6b20246ba87584319fdf/ReaLegos/Sexan_ReaSpaghetti.lua</source>
-      </version>
-      <version name="0.8" author="Sexan" time="2023-04-13T12:56:27Z">
-        <changelog><![CDATA[Script Rename
-Added Examples
-Added SCHWARMINATOR
-Filemanager automatically Appends extension
-Fixed Crashes with MathRandom Nodes
-Only Math nodes can mix/match different pins (INTEGER/FLOAT),fixed issue with APi pins could connect mismatching pins]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/305a7a0f972f990a4b7a8b38f98135a4f123854c/ReaLegos/Sexan_ReaSpaghetti.lua</source>
-      </version>
-      <version name="0.9.1" author="Sexan" time="2023-04-13T13:01:50Z">
-        <changelog><![CDATA[Script Rename
-Added Examples
-Added SCHWARMINATOR
-Filemanager automatically Appends extension
-Fixed Crashes with MathRandom Nodes
-Only Math nodes can mix/match different pins (INTEGER/FLOAT),fixed issue with APi pins could connect mismatching pins]]></changelog>
-        <source file="Modules/APIParser.lua">https://github.com/GoranKovac/ReaScripts/raw/51f85cba0010ea2e39e08ec68594c1d05166f647/ReaLegos/Modules/APIParser.lua</source>
-        <source file="Modules/Canvas.lua">https://github.com/GoranKovac/ReaScripts/raw/51f85cba0010ea2e39e08ec68594c1d05166f647/ReaLegos/Modules/Canvas.lua</source>
-        <source file="Modules/CustomFunctions.lua">https://github.com/GoranKovac/ReaScripts/raw/51f85cba0010ea2e39e08ec68594c1d05166f647/ReaLegos/Modules/CustomFunctions.lua</source>
-        <source file="Modules/Defaults.lua">https://github.com/GoranKovac/ReaScripts/raw/51f85cba0010ea2e39e08ec68594c1d05166f647/ReaLegos/Modules/Defaults.lua</source>
-        <source file="Modules/FileManager.lua">https://github.com/GoranKovac/ReaScripts/raw/51f85cba0010ea2e39e08ec68594c1d05166f647/ReaLegos/Modules/FileManager.lua</source>
-        <source file="Modules/Flow.lua">https://github.com/GoranKovac/ReaScripts/raw/51f85cba0010ea2e39e08ec68594c1d05166f647/ReaLegos/Modules/Flow.lua</source>
-        <source file="Modules/NodeDraw.lua">https://github.com/GoranKovac/ReaScripts/raw/51f85cba0010ea2e39e08ec68594c1d05166f647/ReaLegos/Modules/NodeDraw.lua</source>
-        <source file="Modules/ProFi.lua">https://github.com/GoranKovac/ReaScripts/raw/51f85cba0010ea2e39e08ec68594c1d05166f647/ReaLegos/Modules/ProFi.lua</source>
-        <source file="Modules/UI.lua">https://github.com/GoranKovac/ReaScripts/raw/51f85cba0010ea2e39e08ec68594c1d05166f647/ReaLegos/Modules/UI.lua</source>
-        <source file="Modules/Utils.lua">https://github.com/GoranKovac/ReaScripts/raw/51f85cba0010ea2e39e08ec68594c1d05166f647/ReaLegos/Modules/Utils.lua</source>
-        <source file="Modules/flux.lua">https://github.com/GoranKovac/ReaScripts/raw/51f85cba0010ea2e39e08ec68594c1d05166f647/ReaLegos/Modules/flux.lua</source>
-        <source file="Modules/glue.lua">https://github.com/GoranKovac/ReaScripts/raw/51f85cba0010ea2e39e08ec68594c1d05166f647/ReaLegos/Modules/glue.lua</source>
-        <source file="Modules/inspect.lua">https://github.com/GoranKovac/ReaScripts/raw/51f85cba0010ea2e39e08ec68594c1d05166f647/ReaLegos/Modules/inspect.lua</source>
-        <source file="Modules/json.lua">https://github.com/GoranKovac/ReaScripts/raw/51f85cba0010ea2e39e08ec68594c1d05166f647/ReaLegos/Modules/json.lua</source>
-        <source file="Modules/path2d_bezier3.lua">https://github.com/GoranKovac/ReaScripts/raw/51f85cba0010ea2e39e08ec68594c1d05166f647/ReaLegos/Modules/path2d_bezier3.lua</source>
-        <source file="Modules/path2d_bezier3_hit.lua">https://github.com/GoranKovac/ReaScripts/raw/51f85cba0010ea2e39e08ec68594c1d05166f647/ReaLegos/Modules/path2d_bezier3_hit.lua</source>
-        <source file="Modules/path2d_bezier_length.lua">https://github.com/GoranKovac/ReaScripts/raw/51f85cba0010ea2e39e08ec68594c1d05166f647/ReaLegos/Modules/path2d_bezier_length.lua</source>
-        <source file="Modules/path2d_point.lua">https://github.com/GoranKovac/ReaScripts/raw/51f85cba0010ea2e39e08ec68594c1d05166f647/ReaLegos/Modules/path2d_point.lua</source>
-        <source file="Modules/profiler.lua">https://github.com/GoranKovac/ReaScripts/raw/51f85cba0010ea2e39e08ec68594c1d05166f647/ReaLegos/Modules/profiler.lua</source>
-        <source file="Examples/Envelopes_Increase_Points_Bellow_Threshold.lego">https://github.com/GoranKovac/ReaScripts/raw/51f85cba0010ea2e39e08ec68594c1d05166f647/ReaLegos/Examples/Envelopes_Increase_Points_Bellow_Threshold.lego</source>
-        <source file="Examples/Function_Advance.lego">https://github.com/GoranKovac/ReaScripts/raw/51f85cba0010ea2e39e08ec68594c1d05166f647/ReaLegos/Examples/Function_Advance.lego</source>
-        <source file="Examples/Functions_Basic.lego">https://github.com/GoranKovac/ReaScripts/raw/51f85cba0010ea2e39e08ec68594c1d05166f647/ReaLegos/Examples/Functions_Basic.lego</source>
-        <source file="Examples/SCHWARMINATOR.lego">https://github.com/GoranKovac/ReaScripts/raw/51f85cba0010ea2e39e08ec68594c1d05166f647/ReaLegos/Examples/SCHWARMINATOR.lego</source>
-        <source file="Examples/Toggle_Mute_Tracks.lego">https://github.com/GoranKovac/ReaScripts/raw/51f85cba0010ea2e39e08ec68594c1d05166f647/ReaLegos/Examples/Toggle_Mute_Tracks.lego</source>
-        <source file="Examples/Track_volume_defer.lego">https://github.com/GoranKovac/ReaScripts/raw/51f85cba0010ea2e39e08ec68594c1d05166f647/ReaLegos/Examples/Track_volume_defer.lego</source>
-        <source file="Examples/SCHWA/BG.png">https://github.com/GoranKovac/ReaScripts/raw/51f85cba0010ea2e39e08ec68594c1d05166f647/ReaLegos/Examples/SCHWA/BG.png</source>
-        <source file="Examples/SCHWA/Explosion.png">https://github.com/GoranKovac/ReaScripts/raw/51f85cba0010ea2e39e08ec68594c1d05166f647/ReaLegos/Examples/SCHWA/Explosion.png</source>
-        <source file="Examples/SCHWA/MENU.png">https://github.com/GoranKovac/ReaScripts/raw/51f85cba0010ea2e39e08ec68594c1d05166f647/ReaLegos/Examples/SCHWA/MENU.png</source>
-        <source file="Examples/SCHWA/Schwa_ATTACK.png">https://github.com/GoranKovac/ReaScripts/raw/51f85cba0010ea2e39e08ec68594c1d05166f647/ReaLegos/Examples/SCHWA/Schwa_ATTACK.png</source>
-        <source file="Examples/SCHWA/Schwa_IDLE.png">https://github.com/GoranKovac/ReaScripts/raw/51f85cba0010ea2e39e08ec68594c1d05166f647/ReaLegos/Examples/SCHWA/Schwa_IDLE.png</source>
-        <source file="Examples/SCHWA/invader.png">https://github.com/GoranKovac/ReaScripts/raw/51f85cba0010ea2e39e08ec68594c1d05166f647/ReaLegos/Examples/SCHWA/invader.png</source>
-        <source file="Examples/SCHWA/invader2.png">https://github.com/GoranKovac/ReaScripts/raw/51f85cba0010ea2e39e08ec68594c1d05166f647/ReaLegos/Examples/SCHWA/invader2.png</source>
-        <source file="Examples/SCHWA/squid.png">https://github.com/GoranKovac/ReaScripts/raw/51f85cba0010ea2e39e08ec68594c1d05166f647/ReaLegos/Examples/SCHWA/squid.png</source>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/51f85cba0010ea2e39e08ec68594c1d05166f647/ReaLegos/Sexan_ReaSpaghetti.lua</source>
+      <version name="0.9.3" author="Sexan" time="2023-04-13T13:57:59Z">
+        <changelog><![CDATA[Added Native OS Slash Separator
+Fixed Schwarminator on osx (path issue)
+Renamed folder to ReaSpaghetti
+Renamed extension from .lego to .reanodes]]></changelog>
+        <source file="Modules/APIParser.lua">https://github.com/GoranKovac/ReaScripts/raw/1de2c0d8a5ed47e744d8eb6510bfcd49453acb51/ReaSpaghetti/Modules/APIParser.lua</source>
+        <source file="Modules/Canvas.lua">https://github.com/GoranKovac/ReaScripts/raw/1de2c0d8a5ed47e744d8eb6510bfcd49453acb51/ReaSpaghetti/Modules/Canvas.lua</source>
+        <source file="Modules/CustomFunctions.lua">https://github.com/GoranKovac/ReaScripts/raw/1de2c0d8a5ed47e744d8eb6510bfcd49453acb51/ReaSpaghetti/Modules/CustomFunctions.lua</source>
+        <source file="Modules/Defaults.lua">https://github.com/GoranKovac/ReaScripts/raw/1de2c0d8a5ed47e744d8eb6510bfcd49453acb51/ReaSpaghetti/Modules/Defaults.lua</source>
+        <source file="Modules/FileManager.lua">https://github.com/GoranKovac/ReaScripts/raw/1de2c0d8a5ed47e744d8eb6510bfcd49453acb51/ReaSpaghetti/Modules/FileManager.lua</source>
+        <source file="Modules/Flow.lua">https://github.com/GoranKovac/ReaScripts/raw/1de2c0d8a5ed47e744d8eb6510bfcd49453acb51/ReaSpaghetti/Modules/Flow.lua</source>
+        <source file="Modules/NodeDraw.lua">https://github.com/GoranKovac/ReaScripts/raw/1de2c0d8a5ed47e744d8eb6510bfcd49453acb51/ReaSpaghetti/Modules/NodeDraw.lua</source>
+        <source file="Modules/ProFi.lua">https://github.com/GoranKovac/ReaScripts/raw/1de2c0d8a5ed47e744d8eb6510bfcd49453acb51/ReaSpaghetti/Modules/ProFi.lua</source>
+        <source file="Modules/UI.lua">https://github.com/GoranKovac/ReaScripts/raw/1de2c0d8a5ed47e744d8eb6510bfcd49453acb51/ReaSpaghetti/Modules/UI.lua</source>
+        <source file="Modules/Utils.lua">https://github.com/GoranKovac/ReaScripts/raw/1de2c0d8a5ed47e744d8eb6510bfcd49453acb51/ReaSpaghetti/Modules/Utils.lua</source>
+        <source file="Modules/flux.lua">https://github.com/GoranKovac/ReaScripts/raw/1de2c0d8a5ed47e744d8eb6510bfcd49453acb51/ReaSpaghetti/Modules/flux.lua</source>
+        <source file="Modules/glue.lua">https://github.com/GoranKovac/ReaScripts/raw/1de2c0d8a5ed47e744d8eb6510bfcd49453acb51/ReaSpaghetti/Modules/glue.lua</source>
+        <source file="Modules/inspect.lua">https://github.com/GoranKovac/ReaScripts/raw/1de2c0d8a5ed47e744d8eb6510bfcd49453acb51/ReaSpaghetti/Modules/inspect.lua</source>
+        <source file="Modules/json.lua">https://github.com/GoranKovac/ReaScripts/raw/1de2c0d8a5ed47e744d8eb6510bfcd49453acb51/ReaSpaghetti/Modules/json.lua</source>
+        <source file="Modules/path2d_bezier3.lua">https://github.com/GoranKovac/ReaScripts/raw/1de2c0d8a5ed47e744d8eb6510bfcd49453acb51/ReaSpaghetti/Modules/path2d_bezier3.lua</source>
+        <source file="Modules/path2d_bezier3_hit.lua">https://github.com/GoranKovac/ReaScripts/raw/1de2c0d8a5ed47e744d8eb6510bfcd49453acb51/ReaSpaghetti/Modules/path2d_bezier3_hit.lua</source>
+        <source file="Modules/path2d_bezier_length.lua">https://github.com/GoranKovac/ReaScripts/raw/1de2c0d8a5ed47e744d8eb6510bfcd49453acb51/ReaSpaghetti/Modules/path2d_bezier_length.lua</source>
+        <source file="Modules/path2d_point.lua">https://github.com/GoranKovac/ReaScripts/raw/1de2c0d8a5ed47e744d8eb6510bfcd49453acb51/ReaSpaghetti/Modules/path2d_point.lua</source>
+        <source file="Modules/profiler.lua">https://github.com/GoranKovac/ReaScripts/raw/1de2c0d8a5ed47e744d8eb6510bfcd49453acb51/ReaSpaghetti/Modules/profiler.lua</source>
+        <source file="Examples/Envelopes_Increase_Points_Bellow_Threshold.reanodes">https://github.com/GoranKovac/ReaScripts/raw/1de2c0d8a5ed47e744d8eb6510bfcd49453acb51/ReaSpaghetti/Examples/Envelopes_Increase_Points_Bellow_Threshold.reanodes</source>
+        <source file="Examples/Function_Advance.reanodes">https://github.com/GoranKovac/ReaScripts/raw/1de2c0d8a5ed47e744d8eb6510bfcd49453acb51/ReaSpaghetti/Examples/Function_Advance.reanodes</source>
+        <source file="Examples/Functions_Basic.reanodes">https://github.com/GoranKovac/ReaScripts/raw/1de2c0d8a5ed47e744d8eb6510bfcd49453acb51/ReaSpaghetti/Examples/Functions_Basic.reanodes</source>
+        <source file="Examples/SCHWARMINATOR.reanodes">https://github.com/GoranKovac/ReaScripts/raw/1de2c0d8a5ed47e744d8eb6510bfcd49453acb51/ReaSpaghetti/Examples/SCHWARMINATOR.reanodes</source>
+        <source file="Examples/Toggle_Mute_Tracks.reanodes">https://github.com/GoranKovac/ReaScripts/raw/1de2c0d8a5ed47e744d8eb6510bfcd49453acb51/ReaSpaghetti/Examples/Toggle_Mute_Tracks.reanodes</source>
+        <source file="Examples/Track_volume_defer.reanodes">https://github.com/GoranKovac/ReaScripts/raw/1de2c0d8a5ed47e744d8eb6510bfcd49453acb51/ReaSpaghetti/Examples/Track_volume_defer.reanodes</source>
+        <source file="Examples/SCHWA/BG.png">https://github.com/GoranKovac/ReaScripts/raw/1de2c0d8a5ed47e744d8eb6510bfcd49453acb51/ReaSpaghetti/Examples/SCHWA/BG.png</source>
+        <source file="Examples/SCHWA/Explosion.png">https://github.com/GoranKovac/ReaScripts/raw/1de2c0d8a5ed47e744d8eb6510bfcd49453acb51/ReaSpaghetti/Examples/SCHWA/Explosion.png</source>
+        <source file="Examples/SCHWA/MENU.png">https://github.com/GoranKovac/ReaScripts/raw/1de2c0d8a5ed47e744d8eb6510bfcd49453acb51/ReaSpaghetti/Examples/SCHWA/MENU.png</source>
+        <source file="Examples/SCHWA/Schwa_ATTACK.png">https://github.com/GoranKovac/ReaScripts/raw/1de2c0d8a5ed47e744d8eb6510bfcd49453acb51/ReaSpaghetti/Examples/SCHWA/Schwa_ATTACK.png</source>
+        <source file="Examples/SCHWA/Schwa_IDLE.png">https://github.com/GoranKovac/ReaScripts/raw/1de2c0d8a5ed47e744d8eb6510bfcd49453acb51/ReaSpaghetti/Examples/SCHWA/Schwa_IDLE.png</source>
+        <source file="Examples/SCHWA/invader.png">https://github.com/GoranKovac/ReaScripts/raw/1de2c0d8a5ed47e744d8eb6510bfcd49453acb51/ReaSpaghetti/Examples/SCHWA/invader.png</source>
+        <source file="Examples/SCHWA/invader2.png">https://github.com/GoranKovac/ReaScripts/raw/1de2c0d8a5ed47e744d8eb6510bfcd49453acb51/ReaSpaghetti/Examples/SCHWA/invader2.png</source>
+        <source file="Examples/SCHWA/squid.png">https://github.com/GoranKovac/ReaScripts/raw/1de2c0d8a5ed47e744d8eb6510bfcd49453acb51/ReaSpaghetti/Examples/SCHWA/squid.png</source>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/1de2c0d8a5ed47e744d8eb6510bfcd49453acb51/ReaSpaghetti/Sexan_ReaSpaghetti.lua</source>
       </version>
     </reapack>
   </category>
