@@ -1,17 +1,18 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.5
+-- @version 0.6
 -- @changelog
---   + Script Rename
---   + Added Examples
---   + Added SCHWARMINATOR
---   + Filemanager automatically Appends extension
---   + Fixed Crashes with MathRandom Nodes
---   + Only Math nodes can mix/match different pins (INTEGER/FLOAT),fixed issue with APi pins could connect mismatching pins
+--  Script Rename
+--  Added Examples
+--  Added SCHWARMINATOR
+--  Filemanager automatically Appends extension
+--  Fixed Crashes with MathRandom Nodes
+--  Only Math nodes can mix/match different pins (INTEGER/FLOAT),fixed issue with APi pins could connect mismatching pins
 
 -- @provides
---   {Examples,Modules}/*
+-- Modules/*
+-- Examples/*
 
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 PATH = debug.getinfo(1).source:match("@?(.*[\\|/])")
