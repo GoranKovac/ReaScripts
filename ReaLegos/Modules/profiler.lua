@@ -1,4 +1,10 @@
 --[[
+   * Author: SeXan
+   * Licence: GPL v3
+   * Version: 0.1
+	 * NoIndex: true
+--]]
+--[[
 @title lua-profiler
 @version 1.1
 @description Code profiling for Lua based code;
@@ -76,22 +82,23 @@ new table using the matched key names:
 `                  }
 `profiler.configuration(overrides)
 ]]
-
---[[ Configuration ]]--
+--[[ Configuration ]]
+--
 
 local config = {
-  outputFile = "profiler.lua", -- Name of this profiler (to remove itself from reports)
-  emptyToThis = "~", -- Rows with no time are set to this value
-  fW = 20, -- Width of the file column
-  fnW = 28, -- Width of the function name column
-  lW = 7, -- Width of the line column
-  tW = 7, -- Width of the time taken column
-  rW = 6, -- Width of the relative percentage column
-  cW = 5, -- Width of the call count column
+  outputFile = "profiler.lua",         -- Name of this profiler (to remove itself from reports)
+  emptyToThis = "~",                   -- Rows with no time are set to this value
+  fW = 20,                             -- Width of the file column
+  fnW = 28,                            -- Width of the function name column
+  lW = 7,                              -- Width of the line column
+  tW = 7,                              -- Width of the time taken column
+  rW = 6,                              -- Width of the relative percentage column
+  cW = 5,                              -- Width of the call count column
   reportSaved = "> Report saved to: ", -- Text for the file output confirmation
 }
 
---[[ Locals ]]--
+--[[ Locals ]]
+--
 
 local module = {}
 local getTime = os.clock
@@ -123,7 +130,7 @@ local function charRepetition(n, character)
   local s = ""
   character = character or " "
   for _ = 1, n do
-    s = s..character
+    s = s .. character
   end
   return s
 end
@@ -138,16 +145,16 @@ end
 local function rebuildColumnPatterns()
   local c = config
   local str = "s: %-"
-  outputHeader = "| %-"..c.fW..str..c.fnW..str..c.lW..str..c.tW..str..c.rW..str..c.cW.."s|\n"
+  outputHeader = "| %-" .. c.fW .. str .. c.fnW .. str .. c.lW .. str .. c.tW .. str .. c.rW .. str .. c.cW .. "s|\n"
   formatHeader = string.format(outputHeader, "FILE", "FUNCTION", "LINE", "TIME", "%", "#")
-  outputTitle = "%-"..c.fW.."."..c.fW..str..c.fnW.."."..c.fnW..str..c.lW.."s"
-  formatOutput = "| %s: %-"..c.tW..str..c.rW..str..c.cW.."s|\n"
+  outputTitle = "%-" .. c.fW .. "." .. c.fW .. str .. c.fnW .. "." .. c.fnW .. str .. c.lW .. "s"
+  formatOutput = "| %s: %-" .. c.tW .. str .. c.rW .. str .. c.cW .. "s|\n"
   formatTotalTime = "Total time: %f s\n"
-  formatFunLine = "%"..(c.lW - 2).."i"
+  formatFunLine = "%" .. (c.lW - 2) .. "i"
   formatFunTime = "%04.4f"
   formatFunRelative = "%03.1f"
-  formatFunCount = "%"..(c.cW - 1).."i"
-  divider = charRepetition(#formatHeader - 1, "-").."\n"
+  formatFunCount = "%" .. (c.cW - 1) .. "i"
+  divider = charRepetition(#formatHeader - 1, "-") .. "\n"
   -- nilTime = "0."..charRepetition(c.tW - 3, "0")
   nilTime = "0.0000"
 end
@@ -166,13 +173,14 @@ local function functionReport(information)
     name = string.sub(name, 1, #name - 2)
   end
   local title = string.format(outputTitle, src, name,
-  string.format(formatFunLine, information.linedefined or 0))
+    string.format(formatFunLine, information.linedefined or 0))
   local report = reportCache[title]
   if not report then
     report = {
       title = string.format(outputTitle, src, name,
-      string.format(formatFunLine, information.linedefined or 0)),
-      count = 0, timer = 0,
+        string.format(formatFunLine, information.linedefined or 0)),
+      count = 0,
+      timer = 0,
     }
     reportCache[title] = report
     reportCount = reportCount + 1
@@ -195,7 +203,8 @@ local onDebugHook = function(hookType)
   end
 end
 
---[[ Functions ]]--
+--[[ Functions ]]
+--
 
 --[[Attach a print function to the profiler, to receive a single string parameter
 @param fn (function) <required>
@@ -239,7 +248,7 @@ function module.report(filename)
   local fileWriter = io.open(filename, "w+")
   local divide = false
   local totalTime = stopTime - startTime
-  local totalTimeOutput = "> "..string.format(formatTotalTime, totalTime)
+  local totalTimeOutput = "> " .. string.format(formatTotalTime, totalTime)
   fileWriter:write(totalTimeOutput)
   if printFun ~= nil then
     printFun(totalTimeOutput)
@@ -286,7 +295,7 @@ function module.report(filename)
   fileWriter:write(divider)
   fileWriter:close()
   if printFun ~= nil then
-    printFun(config.reportSaved.."'"..filename.."'")
+    printFun(config.reportSaved .. "'" .. filename .. "'")
   end
 end
 
@@ -299,7 +308,7 @@ function module.configuration(overrides)
   local safe = deepCopy(overrides)
   for k, v in pairs(safe) do
     if config[k] == nil then
-      print("error: override field '"..k.."' not found (configuration)")
+      print("error: override field '" .. k .. "' not found (configuration)")
     else
       config[k] = v
     end
@@ -307,5 +316,6 @@ function module.configuration(overrides)
   rebuildColumnPatterns()
 end
 
---[[ End ]]--
+--[[ End ]]
+--
 return module

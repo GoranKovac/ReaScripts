@@ -1,3 +1,9 @@
+--[[
+   * Author: SeXan
+   * Licence: GPL v3
+   * Version: 0.1
+	 * NoIndex: true
+--]]
 --basic math for the cartesian plane.
 --angles are expressed in degrees, not radians.
 
@@ -8,18 +14,18 @@ local sqrt, abs, min, max, sin, cos, radians, degrees, atan2 =
 local function hypot(a, b)
 	if a == 0 and b == 0 then return 0 end
 	a, b = abs(a), abs(b)
-	a, b = max(a,b), min(a,b)
-	return a * sqrt(1 + (b / a)^2)
+	a, b = max(a, b), min(a, b)
+	return a * sqrt(1 + (b / a) ^ 2)
 end
 
 --distance between two points. avoids underflow and overflow.
 local function distance(x1, y1, x2, y2)
-	return hypot(x2-x1, y2-y1)
+	return hypot(x2 - x1, y2 - y1)
 end
 
 --distance between two points squared.
 local function distance2(x1, y1, x2, y2)
-	return (x2-x1)^2 + (y2-y1)^2
+	return (x2 - x1) ^ 2 + (y2 - y1) ^ 2
 end
 
 --point at a specified angle on a circle.
@@ -34,9 +40,9 @@ end
 local function rotate_point(x, y, cx, cy, angle)
 	if angle == 0 then return x, y end
 	angle = radians(angle)
-	x, y = x-cx, y-cy
+	x, y = x - cx, y - cy
 	local c, s = cos(angle), sin(angle)
-	return cx + x*c - y*s, cy + y*c + x*s
+	return cx + x * c - y * s, cy + y * c + x * s
 end
 
 --angle between two points in -180..180 degree range.

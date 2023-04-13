@@ -1,3 +1,9 @@
+--[[
+   * Author: SeXan
+   * Licence: GPL v3
+   * Version: 0.1
+	 * NoIndex: true
+--]]
 local r = reaper
 for key in pairs(r) do _G[key] = r[key] end
 

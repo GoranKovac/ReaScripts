@@ -1,3 +1,9 @@
+--[[
+   * Author: SeXan
+   * Licence: GPL v3
+   * Version: 0.1
+	 * NoIndex: true
+--]]
 WIDGETS_LIVE_UPDATE_SPEED = 10 -- FRAMES
 
 -- EDGE GRAG SCROLLING

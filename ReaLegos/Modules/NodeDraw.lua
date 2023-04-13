@@ -1,3 +1,9 @@
+--[[
+   * Author: SeXan
+   * Licence: GPL v3
+   * Version: 0.1
+	 * NoIndex: true
+--]]
 local r = reaper
 
 local pad_x, pad_y = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_FramePadding())

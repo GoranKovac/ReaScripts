@@ -1,3 +1,9 @@
+--[[
+   * Author: SeXan
+   * Licence: GPL v3
+   * Version: 0.1
+	 * NoIndex: true
+--]]
 --[[ json.lua
 
 A compact pure-Lua JSON library.
