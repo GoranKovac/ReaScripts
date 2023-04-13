@@ -3,7 +3,7 @@
 -- @license GPL v3
 -- @version 0.9.5
 -- @changelog
---  Fix Function Arguments/Return names propagate to child functions
+--  Fix Function Arguments/Returns names propagate to child functions
 -- @provides
 --   Modules/*.lua
 --   Examples/*.reanodes
