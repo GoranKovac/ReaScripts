@@ -1,10 +1,9 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.9.4
+-- @version 0.9.5
 -- @changelog
---  XRaym fixed schwa attack sprite
---  Schwa is now properly Y aligned
+--  Fix Function Arguments/Return names propagate to child functions
 -- @provides
 --   Modules/*.lua
 --   Examples/*.reanodes

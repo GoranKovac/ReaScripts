@@ -789,7 +789,7 @@ local function DrawPinLabel(node, pin_type, pin_tbl, name, s, x, y)
     if pin_type == "in" then
         -- ONLY DRAW REAPER SPECIFIC TYPES (EXCLUDE INT,FLOAT,STRING, BOOL)
         if PinType[pin_tbl.type] then
-            if node.type == "tc" or node.type == "retnode" then
+            if node.type == "tc" or node.type == "retnode" or node.type == "func" then
                 txt_size_w = s
             else
                 return
@@ -1289,6 +1289,18 @@ local function RenameInPlace(node, x, y, w, title_h)
     r.ImGui_PopStyleVar(ctx)
 end
 
+function UpdateChildFunctionsNames(fid, io, i, name)
+    for f = 1, #FUNCTIONS do
+        for n = 1, #FUNCTIONS[f].NODES do
+            local node = FUNCTIONS[f].NODES[n]
+            if node.FID == fid then
+                local io_tbl = io == "ARG" and node.inputs or node.outputs
+                io_tbl[i].label = name
+            end
+        end
+    end
+end
+
 function UpdateChildFunctions(fid, io, add_remove_update, tbl, pin_num, pin_type)
     for f = 1, #FUNCTIONS do
         for n = 1, #FUNCTIONS[f].NODES do
@@ -1296,10 +1308,11 @@ function UpdateChildFunctions(fid, io, add_remove_update, tbl, pin_num, pin_type
             if node.FID == fid then
                 local node_io_tbl = io == "ARG" and node.inputs or node.outputs
                 if add_remove_update == "add" then
-                    local ins = { { name = "ARG " .. #FUNCTIONS[CURRENT_FUNCTION].inputs + 1, type = "INTEGER" } }
-                    local out = { { name = "RET " .. #FUNCTIONS[CURRENT_FUNCTION].outputs + 1, type = "INTEGER" } }
+                    local ins = { { name = "ARG " .. #FUNCTIONS[CURRENT_FUNCTION].inputs, type = "INTEGER" } }
+                    local out = { { name = "RET " .. #FUNCTIONS[CURRENT_FUNCTION].outputs, type = "INTEGER" } }
                     -- r.ShowConsoleMsg("ADD\n")
-                    node_io_tbl[#node_io_tbl + 1] = "ARG" and CreateInputs("in", ins)[1] or CreateInputs("out", out)[1]
+                    node_io_tbl[#node_io_tbl + 1] = io == "ARG" and CreateInputs("in", ins)[1] or
+                        CreateInputs("out", out)[1]
                     --tbl
                 elseif add_remove_update == "remove" then
                     -- REMOVE ANY CONNECTION TO THIS PIN

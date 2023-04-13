@@ -474,8 +474,11 @@ local function FunctionIO2(func)
                     r.ImGui_PopID(ctx)
                     r.ImGui_SameLine(ctx)
                     r.ImGui_PushID(ctx, "args name" .. inp)
-                    _, func.NODES[1].outputs[inp].label = r.ImGui_InputText(ctx, "##labeli" .. inp,
+                    RV_I_NAME, func.NODES[1].outputs[inp].label = r.ImGui_InputText(ctx, "##labeli" .. inp,
                         func.NODES[1].outputs[inp].label)
+                    if RV_I_NAME then
+                        UpdateChildFunctionsNames(CURRENT_FUNCTION, "ARG", inp, func.NODES[1].outputs[inp].label)
+                    end
                     r.ImGui_PopID(ctx)
                 end
                 r.ImGui_EndListBox(ctx)
@@ -544,8 +547,11 @@ local function FunctionIO2(func)
                     r.ImGui_PopID(ctx)
                     r.ImGui_SameLine(ctx)
                     r.ImGui_PushID(ctx, "ret name" .. out)
-                    _, func.NODES[2].inputs[out].label = r.ImGui_InputText(ctx, "##labelo" .. out,
+                    RV_O_NAME, func.NODES[2].inputs[out].label = r.ImGui_InputText(ctx, "##labelo" .. out,
                         func.NODES[2].inputs[out].label)
+                    if RV_O_NAME then
+                        UpdateChildFunctionsNames(CURRENT_FUNCTION, "RET", out, func.NODES[2].inputs[out].label)
+                    end
                     r.ImGui_PopID(ctx)
                 end
                 r.ImGui_EndListBox(ctx)
