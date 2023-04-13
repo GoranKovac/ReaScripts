@@ -1,9 +1,6 @@
---[[
-   * Author: SeXan
-   * Licence: GPL v3
-   * Version: 0.1
-	 * NoIndex: true
---]]
+--@noindex
+--NoIndex: true
+
 --[[
 @title lua-profiler
 @version 1.1

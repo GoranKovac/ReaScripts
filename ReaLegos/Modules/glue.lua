@@ -1,9 +1,6 @@
---[[
-   * Author: SeXan
-   * Licence: GPL v3
-   * Version: 0.1
-	 * NoIndex: true
---]]
+--@noindex
+--NoIndex: true
+
 --Lua GLUE: Ideal for wood and paper.
 --Written by Cosmin Apreutesei. Public domain.
 

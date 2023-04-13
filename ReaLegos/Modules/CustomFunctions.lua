@@ -1,9 +1,6 @@
---[[
-   * Author: SeXan
-   * Licence: GPL v3
-   * Version: 0.1
-	 * NoIndex: true
---]]
+--@noindex
+--NoIndex: true
+
 local random, huge, pi, abs, cos, acos, sin, asin, atan, ceil, floor, deg, exp, log, modf, rad, sqrt, randomseed, fmod, min, max, mtype =
     math.random, math.huge, math.pi, math.abs, math.cos, math.acos, math.sin, math.asin, math.atan, math.ceil,
     math.floor, math.deg, math.exp, math.log, math.modf, math.rad, math.sqrt, math.randomseed, math.fmod, math.min,

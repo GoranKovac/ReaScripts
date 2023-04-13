@@ -1,9 +1,6 @@
---[[
-   * Author: SeXan
-   * Licence: GPL v3
-   * Version: 0.1
-	 * NoIndex: true
---]]
+--@noindex
+--NoIndex: true
+
 --math for 2D cubic bezier curves defined as (x1, y1, x2, y2, x3, y3, x4, y4)
 --where (x2, y2) and (x3, y3) are the control points and (x1, y1) and (x4, y4) are the end points.
 

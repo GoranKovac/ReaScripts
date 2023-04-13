@@ -1,9 +1,6 @@
---[[
-   * Author: SeXan
-   * Licence: GPL v3
-   * Version: 0.1
-	 * NoIndex: true
---]]
+--@noindex
+--NoIndex: true
+
 --basic math for the cartesian plane.
 --angles are expressed in degrees, not radians.
 

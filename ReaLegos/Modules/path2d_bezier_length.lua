@@ -1,9 +1,6 @@
---[[
-   * Author: SeXan
-   * Licence: GPL v3
-   * Version: 0.1
-	 * NoIndex: true
---]]
+--@noindex
+--NoIndex: true
+
 --computing the length of any picewise polynomial curve using the Gauss quadrature.
 --taken from http://processingjs.nihongoresources.com/bezierinfo/
 

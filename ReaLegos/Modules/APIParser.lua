@@ -1,9 +1,7 @@
---[[
-   * Author: SeXan
-   * Licence: GPL v3
-   * Version: 0.1
-	 * NoIndex: true
---]]
+--@noindex
+--NoIndex: true
+
+
 local r = reaper
 local API_PATH = PATH .. "api_file.txt"
 

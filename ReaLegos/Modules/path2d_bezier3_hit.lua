@@ -1,9 +1,6 @@
---[[
-   * Author: SeXan
-   * Licence: GPL v3
-   * Version: 0.1
-	 * NoIndex: true
---]]
+--@noindex
+--NoIndex: true
+
 --finding the nearest-point on a cubic bezier curve.
 --solution from Graphics Gems (NearestPoint.c) adapted by Cosmin Apreutesei (public domain).
 

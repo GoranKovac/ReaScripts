@@ -1,7 +1,7 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.4
+-- @version 0.5
 -- @changelog
 --   + Script Rename
 --   + Added Examples
