@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="f5b002c0d64a01951c2a0f8cade3cb46588c5f32" name="Sexan_Scripts">
+<index version="1" commit="26ee7fa14e0539ec0c8c6b20246ba87584319fdf" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -755,6 +755,15 @@ Filemanager automatically Appends extension
 Fixed Crashes with MathRandom Nodes
 Only Math nodes can mix/match different pins (INTEGER/FLOAT),fixed issue with APi pins could connect mismatching pins]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/f5b002c0d64a01951c2a0f8cade3cb46588c5f32/ReaLegos/Sexan_ReaSpaghetti.lua</source>
+      </version>
+      <version name="0.7" author="Sexan" time="2023-04-13T12:53:57Z">
+        <changelog><![CDATA[Script Rename
+Added Examples
+Added SCHWARMINATOR
+Filemanager automatically Appends extension
+Fixed Crashes with MathRandom Nodes
+Only Math nodes can mix/match different pins (INTEGER/FLOAT),fixed issue with APi pins could connect mismatching pins]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/26ee7fa14e0539ec0c8c6b20246ba87584319fdf/ReaLegos/Sexan_ReaSpaghetti.lua</source>
       </version>
     </reapack>
   </category>
