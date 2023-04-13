@@ -51,7 +51,9 @@ function Top_Menu()
                 FM_TYPE = "SAVE"
                 Init_FM_database()
             end
-            -- if r.ImGui_MenuItem(ctx, 'Export to lua') then            end
+            if r.ImGui_MenuItem(ctx, 'Export to Action') then
+                ExportTest(PROJECT_NAME, PROJECT_PATH)
+            end
             if r.ImGui_MenuItem(ctx, 'Update API') then
                 CurlToFile()
             end
@@ -1084,9 +1086,20 @@ function Popups()
         UPDATE = nil
     end
 
+    if ADDED_TO_ACTIONS then
+        r.ImGui_OpenPopup(ctx, "ADDED TO ACTIONS")
+        ADDED_TO_ACTIONS = nil
+    end
+
     r.ImGui_SetNextWindowPos(ctx, center[1], center[2], r.ImGui_Cond_Appearing(), 0.5, 0.5)
     if r.ImGui_BeginPopup(ctx, "UPDATE") then
         r.ImGui_Text(ctx, "\n\t\tAPI FILE UPDATED\t\t\n\n")
+        r.ImGui_EndPopup(ctx)
+    end
+
+    r.ImGui_SetNextWindowPos(ctx, center[1], center[2], r.ImGui_Cond_Appearing(), 0.5, 0.5)
+    if r.ImGui_BeginPopup(ctx, "ADDED TO ACTIONS") then
+        r.ImGui_Text(ctx, "\n\t\tADDED " .. "ReaSpaghetti_StandAlone_" .. PROJECT_NAME .. " TO ACTION LIST\t\t\n\n")
         r.ImGui_EndPopup(ctx)
     end
 

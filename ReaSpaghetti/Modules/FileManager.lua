@@ -202,6 +202,7 @@ function LoadFile()
     local file = io.open(load_path, "r")
     if file then
         PROJECT_NAME = filelist.current
+        PROJECT_PATH = path .. os_separator
         local string = file:read("*all")
         RestoreNodes(string)
         --r.ShowConsoleMsg(string)
@@ -219,6 +220,8 @@ function SaveToFIle(save_path)
     if file then
         file:write(data)
         file:close()
+        PROJECT_NAME = filelist.current
+        PROJECT_PATH = path .. os_separator
         DIRTY = nil
     end
 end

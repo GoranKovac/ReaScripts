@@ -114,7 +114,7 @@ function TableToString(table) return SerializeTable(table) end
 function StringToTable(str)
     local f, err = load("return " .. str)
     if err then
-        reaper.ShowConsoleMsg(err)
+        reaper.ShowConsoleMsg("\nerror" .. err)
     end
     return f ~= nil and f() or nil
 end

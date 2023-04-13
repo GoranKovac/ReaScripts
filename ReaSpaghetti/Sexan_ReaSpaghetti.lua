@@ -1,9 +1,10 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.9.5
+-- @version 0.9.6
 -- @changelog
 --  Fix Function Arguments/Returns names propagate to child functions
+--  Added exporting to standalone Action
 -- @provides
 --   Modules/*.lua
 --   Examples/*.reanodes
@@ -54,6 +55,11 @@ require("Modules/Canvas")
 require("Modules/NodeDraw")
 require("Modules/Flow")
 require("Modules/CustomFunctions")
+require("Modules/ExportToAction")
+
+if STANDALONE_RUN then
+    return
+end
 
 local old_time = r.time_precise()
 local function UpdateDeltaTime()
