@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="93ec52434d96b2206bf7d6b4170a31e54f8a07ad" name="Sexan_Scripts">
+<index version="1" commit="a43c44c67a13270ef30c8164dfd327594a2ebbea" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -834,6 +834,45 @@ Schwa is now properly Y aligned]]></changelog>
         <source file="Examples/SCHWA/invader2.png">https://github.com/GoranKovac/ReaScripts/raw/13a22306b24f099a2ed02ae3c62cffb90f73c073/ReaSpaghetti/Examples/SCHWA/invader2.png</source>
         <source file="Examples/SCHWA/squid.png">https://github.com/GoranKovac/ReaScripts/raw/13a22306b24f099a2ed02ae3c62cffb90f73c073/ReaSpaghetti/Examples/SCHWA/squid.png</source>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/13a22306b24f099a2ed02ae3c62cffb90f73c073/ReaSpaghetti/Sexan_ReaSpaghetti.lua</source>
+      </version>
+      <version name="0.9.6" author="Sexan" time="2023-04-13T17:33:53Z">
+        <changelog><![CDATA[Fix Function Arguments/Returns names propagate to child functions
+Added exporting to standalone Action]]></changelog>
+        <source file="Modules/APIParser.lua">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Modules/APIParser.lua</source>
+        <source file="Modules/Canvas.lua">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Modules/Canvas.lua</source>
+        <source file="Modules/CustomFunctions.lua">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Modules/CustomFunctions.lua</source>
+        <source file="Modules/Defaults.lua">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Modules/Defaults.lua</source>
+        <source file="Modules/ExportToAction.lua">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Modules/ExportToAction.lua</source>
+        <source file="Modules/FileManager.lua">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Modules/FileManager.lua</source>
+        <source file="Modules/Flow.lua">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Modules/Flow.lua</source>
+        <source file="Modules/NodeDraw.lua">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Modules/NodeDraw.lua</source>
+        <source file="Modules/ProFi.lua">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Modules/ProFi.lua</source>
+        <source file="Modules/UI.lua">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Modules/UI.lua</source>
+        <source file="Modules/Utils.lua">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Modules/Utils.lua</source>
+        <source file="Modules/flux.lua">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Modules/flux.lua</source>
+        <source file="Modules/glue.lua">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Modules/glue.lua</source>
+        <source file="Modules/inspect.lua">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Modules/inspect.lua</source>
+        <source file="Modules/json.lua">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Modules/json.lua</source>
+        <source file="Modules/path2d_bezier3.lua">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Modules/path2d_bezier3.lua</source>
+        <source file="Modules/path2d_bezier3_hit.lua">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Modules/path2d_bezier3_hit.lua</source>
+        <source file="Modules/path2d_bezier_length.lua">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Modules/path2d_bezier_length.lua</source>
+        <source file="Modules/path2d_point.lua">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Modules/path2d_point.lua</source>
+        <source file="Modules/profiler.lua">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Modules/profiler.lua</source>
+        <source file="Examples/Envelopes_Increase_Points_Bellow_Threshold.reanodes">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Examples/Envelopes_Increase_Points_Bellow_Threshold.reanodes</source>
+        <source file="Examples/Function_Advance.reanodes">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Examples/Function_Advance.reanodes</source>
+        <source file="Examples/Functions_Basic.reanodes">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Examples/Functions_Basic.reanodes</source>
+        <source file="Examples/SCHWARMINATOR.reanodes">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Examples/SCHWARMINATOR.reanodes</source>
+        <source file="Examples/Toggle_Mute_Tracks.reanodes">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Examples/Toggle_Mute_Tracks.reanodes</source>
+        <source file="Examples/Track_volume_defer.reanodes">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Examples/Track_volume_defer.reanodes</source>
+        <source file="Examples/SCHWA/BG.png">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Examples/SCHWA/BG.png</source>
+        <source file="Examples/SCHWA/Explosion.png">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Examples/SCHWA/Explosion.png</source>
+        <source file="Examples/SCHWA/MENU.png">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Examples/SCHWA/MENU.png</source>
+        <source file="Examples/SCHWA/Schwa_ATTACK.png">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Examples/SCHWA/Schwa_ATTACK.png</source>
+        <source file="Examples/SCHWA/Schwa_IDLE.png">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Examples/SCHWA/Schwa_IDLE.png</source>
+        <source file="Examples/SCHWA/invader.png">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Examples/SCHWA/invader.png</source>
+        <source file="Examples/SCHWA/invader2.png">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Examples/SCHWA/invader2.png</source>
+        <source file="Examples/SCHWA/squid.png">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Examples/SCHWA/squid.png</source>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/a43c44c67a13270ef30c8164dfd327594a2ebbea/ReaSpaghetti/Sexan_ReaSpaghetti.lua</source>
       </version>
     </reapack>
   </category>
