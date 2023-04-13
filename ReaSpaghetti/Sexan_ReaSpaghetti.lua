@@ -1,12 +1,10 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.9.3
+-- @version 0.9.4
 -- @changelog
---  Added Native OS Slash Separator
---  Fixed Schwarminator on osx (path issue)
---  Renamed folder to ReaSpaghetti
---  Renamed extension from .lego to .reanodes
+--  XRaym fixed schwa attack sprite
+--  Schwa is now properly Y aligned
 -- @provides
 --   Modules/*.lua
 --   Examples/*.reanodes
