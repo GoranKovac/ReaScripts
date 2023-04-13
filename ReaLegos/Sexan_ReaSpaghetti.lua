@@ -1,7 +1,7 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.7
+-- @version 0.8
 -- @changelog
 --  Script Rename
 --  Added Examples
@@ -11,10 +11,10 @@
 --  Only Math nodes can mix/match different pins (INTEGER/FLOAT),fixed issue with APi pins could connect mismatching pins
 
 -- @provides
--- Modules/*.lua
--- Modules/Examples/*.lego
--- Modules/Examples/SCHWA/*.png
--- [main] Sexan_ReaSpaghetti.lua
+--   Modules/*.lua
+--   Modules/Examples/*.lego
+--   Modules/Examples/SCHWA/*.png
+--   [main] Sexan_ReaSpaghetti.lua
 
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 PATH = debug.getinfo(1).source:match("@?(.*[\\|/])")
