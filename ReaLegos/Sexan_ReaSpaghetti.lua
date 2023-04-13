@@ -1,7 +1,7 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.8
+-- @version 0.9
 -- @changelog
 --  Script Rename
 --  Added Examples
@@ -9,7 +9,6 @@
 --  Filemanager automatically Appends extension
 --  Fixed Crashes with MathRandom Nodes
 --  Only Math nodes can mix/match different pins (INTEGER/FLOAT),fixed issue with APi pins could connect mismatching pins
-
 -- @provides
 --   Modules/*.lua
 --   Modules/Examples/*.lego
