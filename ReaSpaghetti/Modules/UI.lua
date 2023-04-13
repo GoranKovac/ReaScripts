@@ -52,7 +52,8 @@ function Top_Menu()
                 Init_FM_database()
             end
             if r.ImGui_MenuItem(ctx, 'Export to Action') then
-                ExportTest(PROJECT_NAME, PROJECT_PATH)
+                EXPORT_ACTION_POPUP = true
+                --ExportTest(PROJECT_NAME, PROJECT_PATH, true)
             end
             if r.ImGui_MenuItem(ctx, 'Update API') then
                 CurlToFile()
@@ -1089,6 +1090,29 @@ function Popups()
     if ADDED_TO_ACTIONS then
         r.ImGui_OpenPopup(ctx, "ADDED TO ACTIONS")
         ADDED_TO_ACTIONS = nil
+    end
+    r.ImGui_SetNextWindowPos(ctx, center[1], center[2], r.ImGui_Cond_Appearing(), 0.5, 0.5)
+    if EXPORT_ACTION_POPUP then
+        EXPORT_ACTION_POPUP = nil
+        r.ImGui_OpenPopup(ctx, "EXPORT_ACTION_POPUP")
+    end
+    if r.ImGui_BeginPopupModal(ctx, 'EXPORT_ACTION_POPUP', nil, r.ImGui_WindowFlags_AlwaysAutoResize()) then
+        r.ImGui_Text(ctx, 'DEFERED SCRIPT?\n\n')
+        r.ImGui_Separator(ctx)
+        if r.ImGui_Button(ctx, 'YES', 120, 0) then
+            ExportTest(PROJECT_NAME, PROJECT_PATH, true)
+            r.ImGui_CloseCurrentPopup(ctx)
+        end
+        r.ImGui_SameLine(ctx)
+        if r.ImGui_Button(ctx, 'NO', 120, 0) then
+            ExportTest(PROJECT_NAME, PROJECT_PATH)
+            r.ImGui_CloseCurrentPopup(ctx)
+        end
+        r.ImGui_SameLine(ctx)
+        if r.ImGui_Button(ctx, 'CANCEL', 120, 0) then
+            r.ImGui_CloseCurrentPopup(ctx)
+        end
+        r.ImGui_EndPopup(ctx)
     end
 
     r.ImGui_SetNextWindowPos(ctx, center[1], center[2], r.ImGui_Cond_Appearing(), 0.5, 0.5)

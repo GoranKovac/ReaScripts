@@ -1,10 +1,10 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.9.6
+-- @version 0.9.7
 -- @changelog
---  Fix Function Arguments/Returns names propagate to child functions
---  Added exporting to standalone Action
+--  Exporting Defered scripts
+--  Exporting To Actions popups defered confirmation
 -- @provides
 --   Modules/*.lua
 --   Examples/*.reanodes
