@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="f86d5fd6b6f8a6cfedba7de1079cea653cff49f9" name="Sexan_Scripts">
+<index version="1" commit="5d9c7638ace941e982a7e226efabcbd0393026e6" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -719,52 +719,15 @@
     </reapack>
   </category>
   <category name="ReaLegos">
-    <reapack name="Main.lua" type="script" desc="ReaLegos">
-      <version name="0.1" author="Sexan" time="2023-04-12T17:18:27Z">
-        <changelog><![CDATA[+ Initial upload]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/154ab3f00d2cafc2a4fa2932990087c9f9ceafc3/ReaLegos/Main.lua</source>
-        <source main="main" file="Modules/APIParser.lua">https://github.com/GoranKovac/ReaScripts/raw/154ab3f00d2cafc2a4fa2932990087c9f9ceafc3/ReaLegos/Modules/APIParser.lua</source>
-        <source main="main" file="Modules/Canvas.lua">https://github.com/GoranKovac/ReaScripts/raw/154ab3f00d2cafc2a4fa2932990087c9f9ceafc3/ReaLegos/Modules/Canvas.lua</source>
-        <source main="main" file="Modules/CustomFunctions.lua">https://github.com/GoranKovac/ReaScripts/raw/154ab3f00d2cafc2a4fa2932990087c9f9ceafc3/ReaLegos/Modules/CustomFunctions.lua</source>
-        <source main="main" file="Modules/Defaults.lua">https://github.com/GoranKovac/ReaScripts/raw/154ab3f00d2cafc2a4fa2932990087c9f9ceafc3/ReaLegos/Modules/Defaults.lua</source>
-        <source main="main" file="Modules/FileManager.lua">https://github.com/GoranKovac/ReaScripts/raw/154ab3f00d2cafc2a4fa2932990087c9f9ceafc3/ReaLegos/Modules/FileManager.lua</source>
-        <source main="main" file="Modules/Flow.lua">https://github.com/GoranKovac/ReaScripts/raw/154ab3f00d2cafc2a4fa2932990087c9f9ceafc3/ReaLegos/Modules/Flow.lua</source>
-        <source main="main" file="Modules/NodeDraw.lua">https://github.com/GoranKovac/ReaScripts/raw/154ab3f00d2cafc2a4fa2932990087c9f9ceafc3/ReaLegos/Modules/NodeDraw.lua</source>
-        <source main="main" file="Modules/ProFi.lua">https://github.com/GoranKovac/ReaScripts/raw/154ab3f00d2cafc2a4fa2932990087c9f9ceafc3/ReaLegos/Modules/ProFi.lua</source>
-        <source main="main" file="Modules/UI.lua">https://github.com/GoranKovac/ReaScripts/raw/154ab3f00d2cafc2a4fa2932990087c9f9ceafc3/ReaLegos/Modules/UI.lua</source>
-        <source main="main" file="Modules/Utils.lua">https://github.com/GoranKovac/ReaScripts/raw/154ab3f00d2cafc2a4fa2932990087c9f9ceafc3/ReaLegos/Modules/Utils.lua</source>
-        <source main="main" file="Modules/flux.lua">https://github.com/GoranKovac/ReaScripts/raw/154ab3f00d2cafc2a4fa2932990087c9f9ceafc3/ReaLegos/Modules/flux.lua</source>
-        <source main="main" file="Modules/glue.lua">https://github.com/GoranKovac/ReaScripts/raw/154ab3f00d2cafc2a4fa2932990087c9f9ceafc3/ReaLegos/Modules/glue.lua</source>
-        <source main="main" file="Modules/inspect.lua">https://github.com/GoranKovac/ReaScripts/raw/154ab3f00d2cafc2a4fa2932990087c9f9ceafc3/ReaLegos/Modules/inspect.lua</source>
-        <source main="main" file="Modules/json.lua">https://github.com/GoranKovac/ReaScripts/raw/154ab3f00d2cafc2a4fa2932990087c9f9ceafc3/ReaLegos/Modules/json.lua</source>
-        <source main="main" file="Modules/path2d_bezier3.lua">https://github.com/GoranKovac/ReaScripts/raw/154ab3f00d2cafc2a4fa2932990087c9f9ceafc3/ReaLegos/Modules/path2d_bezier3.lua</source>
-        <source main="main" file="Modules/path2d_bezier3_hit.lua">https://github.com/GoranKovac/ReaScripts/raw/154ab3f00d2cafc2a4fa2932990087c9f9ceafc3/ReaLegos/Modules/path2d_bezier3_hit.lua</source>
-        <source main="main" file="Modules/path2d_bezier_length.lua">https://github.com/GoranKovac/ReaScripts/raw/154ab3f00d2cafc2a4fa2932990087c9f9ceafc3/ReaLegos/Modules/path2d_bezier_length.lua</source>
-        <source main="main" file="Modules/path2d_point.lua">https://github.com/GoranKovac/ReaScripts/raw/154ab3f00d2cafc2a4fa2932990087c9f9ceafc3/ReaLegos/Modules/path2d_point.lua</source>
-        <source main="main" file="Modules/profiler.lua">https://github.com/GoranKovac/ReaScripts/raw/154ab3f00d2cafc2a4fa2932990087c9f9ceafc3/ReaLegos/Modules/profiler.lua</source>
-      </version>
-      <version name="0.2" author="Sexan" time="2023-04-12T19:08:17Z">
-        <changelog><![CDATA[+ Initial upload]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/f86d5fd6b6f8a6cfedba7de1079cea653cff49f9/ReaLegos/Main.lua</source>
-        <source main="main" file="Modules/APIParser.lua">https://github.com/GoranKovac/ReaScripts/raw/f86d5fd6b6f8a6cfedba7de1079cea653cff49f9/ReaLegos/Modules/APIParser.lua</source>
-        <source main="main" file="Modules/Canvas.lua">https://github.com/GoranKovac/ReaScripts/raw/f86d5fd6b6f8a6cfedba7de1079cea653cff49f9/ReaLegos/Modules/Canvas.lua</source>
-        <source main="main" file="Modules/CustomFunctions.lua">https://github.com/GoranKovac/ReaScripts/raw/f86d5fd6b6f8a6cfedba7de1079cea653cff49f9/ReaLegos/Modules/CustomFunctions.lua</source>
-        <source main="main" file="Modules/Defaults.lua">https://github.com/GoranKovac/ReaScripts/raw/f86d5fd6b6f8a6cfedba7de1079cea653cff49f9/ReaLegos/Modules/Defaults.lua</source>
-        <source main="main" file="Modules/FileManager.lua">https://github.com/GoranKovac/ReaScripts/raw/f86d5fd6b6f8a6cfedba7de1079cea653cff49f9/ReaLegos/Modules/FileManager.lua</source>
-        <source main="main" file="Modules/Flow.lua">https://github.com/GoranKovac/ReaScripts/raw/f86d5fd6b6f8a6cfedba7de1079cea653cff49f9/ReaLegos/Modules/Flow.lua</source>
-        <source main="main" file="Modules/NodeDraw.lua">https://github.com/GoranKovac/ReaScripts/raw/f86d5fd6b6f8a6cfedba7de1079cea653cff49f9/ReaLegos/Modules/NodeDraw.lua</source>
-        <source main="main" file="Modules/ProFi.lua">https://github.com/GoranKovac/ReaScripts/raw/f86d5fd6b6f8a6cfedba7de1079cea653cff49f9/ReaLegos/Modules/ProFi.lua</source>
-        <source main="main" file="Modules/UI.lua">https://github.com/GoranKovac/ReaScripts/raw/f86d5fd6b6f8a6cfedba7de1079cea653cff49f9/ReaLegos/Modules/UI.lua</source>
-        <source main="main" file="Modules/Utils.lua">https://github.com/GoranKovac/ReaScripts/raw/f86d5fd6b6f8a6cfedba7de1079cea653cff49f9/ReaLegos/Modules/Utils.lua</source>
-        <source main="main" file="Modules/flux.lua">https://github.com/GoranKovac/ReaScripts/raw/f86d5fd6b6f8a6cfedba7de1079cea653cff49f9/ReaLegos/Modules/flux.lua</source>
-        <source main="main" file="Modules/glue.lua">https://github.com/GoranKovac/ReaScripts/raw/f86d5fd6b6f8a6cfedba7de1079cea653cff49f9/ReaLegos/Modules/glue.lua</source>
-        <source main="main" file="Modules/inspect.lua">https://github.com/GoranKovac/ReaScripts/raw/f86d5fd6b6f8a6cfedba7de1079cea653cff49f9/ReaLegos/Modules/inspect.lua</source>
-        <source main="main" file="Modules/json.lua">https://github.com/GoranKovac/ReaScripts/raw/f86d5fd6b6f8a6cfedba7de1079cea653cff49f9/ReaLegos/Modules/json.lua</source>
-        <source main="main" file="Modules/path2d_bezier3.lua">https://github.com/GoranKovac/ReaScripts/raw/f86d5fd6b6f8a6cfedba7de1079cea653cff49f9/ReaLegos/Modules/path2d_bezier3.lua</source>
-        <source main="main" file="Modules/path2d_bezier3_hit.lua">https://github.com/GoranKovac/ReaScripts/raw/f86d5fd6b6f8a6cfedba7de1079cea653cff49f9/ReaLegos/Modules/path2d_bezier3_hit.lua</source>
-        <source main="main" file="Modules/path2d_bezier_length.lua">https://github.com/GoranKovac/ReaScripts/raw/f86d5fd6b6f8a6cfedba7de1079cea653cff49f9/ReaLegos/Modules/path2d_bezier_length.lua</source>
-        <source main="main" file="Modules/path2d_point.lua">https://github.com/GoranKovac/ReaScripts/raw/f86d5fd6b6f8a6cfedba7de1079cea653cff49f9/ReaLegos/Modules/path2d_point.lua</source>
-        <source main="main" file="Modules/profiler.lua">https://github.com/GoranKovac/ReaScripts/raw/f86d5fd6b6f8a6cfedba7de1079cea653cff49f9/ReaLegos/Modules/profiler.lua</source>
+    <reapack name="Sexan_ReaSpaghetti.lua" type="script" desc="ReaSpaghetti Visual Scripter">
+      <version name="0.3" author="Sexan" time="2023-04-13T12:24:28Z">
+        <changelog><![CDATA[+ Script Rename
++ Added Examples
++ Added SCHWARMINATOR
++ Filemanager automatically Appends extension
++ Fixed Crashes with MathRandom Nodes
++ Only Math nodes can mix/match different pins (INTEGER/FLOAT),fixed issue with APi pins could connect mismatching pins]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/5d9c7638ace941e982a7e226efabcbd0393026e6/ReaLegos/Sexan_ReaSpaghetti.lua</source>
       </version>
     </reapack>
   </category>
