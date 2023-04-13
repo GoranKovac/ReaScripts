@@ -8,13 +8,13 @@ local os_separator = package.config:sub(1, 1)
 local FLT_MIN, FLT_MAX = r.ImGui_NumericLimits_Float()
 
 local exstensions = {
-    "%.lego",
+    "%.reanodes",
     -- "%.txt",
     --  ""
 }
 
 local exstensions_preview = {
-    ".lego",
+    ".reanodes",
     -- ".txt",
     --  ".*"
 }

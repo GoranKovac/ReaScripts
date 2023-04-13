@@ -974,6 +974,17 @@ function Fill_Api_list()
     }
 
     api[#api + 1] = {
+        fname = "CUSTOM_GetOsNativeSeparator",
+        label = "Get Native OS Separator",
+        desc = "",
+        ins = {},
+        out = {
+            { name = "PATH", type = "STRING" }
+        },
+        run = "in/out"
+    }
+
+    api[#api + 1] = {
         fname = "CUSTOM_MultiIfElse",
         label = "Multi IF-ELSE",
         desc = "",

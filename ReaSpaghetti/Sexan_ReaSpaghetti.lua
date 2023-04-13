@@ -1,22 +1,21 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.9.1
+-- @version 0.9.3
 -- @changelog
---  Script Rename
---  Added Examples
---  Added SCHWARMINATOR
---  Filemanager automatically Appends extension
---  Fixed Crashes with MathRandom Nodes
---  Only Math nodes can mix/match different pins (INTEGER/FLOAT),fixed issue with APi pins could connect mismatching pins
+--  Added Native OS Slash Separator
+--  Fixed Schwarminator on osx (path issue)
+--  Renamed folder to ReaSpaghetti
+--  Renamed extension from .lego to .reanodes
 -- @provides
 --   Modules/*.lua
---   Examples/*.lego
+--   Examples/*.reanodes
 --   Examples/SCHWA/*.png
 --   [main] Sexan_ReaSpaghetti.lua
 
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 PATH = debug.getinfo(1).source:match("@?(.*[\\|/])")
+NATIVE_SEPARATOR = package.config:sub(1, 1)
 
 local r = reaper
 

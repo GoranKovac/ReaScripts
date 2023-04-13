@@ -365,6 +365,10 @@ function CUSTOM_GetScriptPath(called_node, func_node)
     called_node.outputs[1].o_val = PATH --debug.getinfo(1).source:match("@?(.*[\\|/])")
 end
 
+function CUSTOM_GetOsNativeSeparator(called_node, func_node)
+    called_node.outputs[1].o_val = NATIVE_SEPARATOR --debug.getinfo(1).source:match("@?(.*[\\|/])")
+end
+
 function CUSTOM_MultiIfElse(called_node, func_node)
     called_node.outputs[1].run = false
     called_node.outputs[2].run = false
