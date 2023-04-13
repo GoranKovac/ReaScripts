@@ -862,7 +862,7 @@ local function Pin_Drag_Drop(pin, node, p_num, table_type)
         r.ImGui_EndDragDropTarget(ctx)
         if ret then
             -- NUMBER OF (.+) NEEDS TO MATCH ABOVE dnd_data NO MATTER ARE THEY USED OR NOT (OTHERWISE CONNECTING PINS DOES NOT WORK)
-            local con_guid, node_guid, tbl_type, pin_type, pin_num = payload:match(
+            local con_guid, node_guid, tbl_type, pin_type, pin_num, node_label = payload:match(
                 "(.+),(.+),(.+),(.+),(.+),(.+),(.+),(.+)")
             -- DONT ALLOW CONNECTING PINS ON SAME NODE
             if node.guid == node_guid then return end
@@ -875,8 +875,13 @@ local function Pin_Drag_Drop(pin, node, p_num, table_type)
                     if pin.type == "RUN" or pin_type == "RUN" then
                         return
                     end
+                    --elseif node.fname:match("Math") or
                     -- CHECK MATCH IN BOTH DIRECTIONS
-                elseif not pin.type:match(pin_type) and not pin_type:match(pin.type) then
+                elseif node.label:match("Math") or node_label:match("Math") then
+                    if not pin.type:match(pin_type) and not pin_type:match(pin.type) then
+                        return
+                    end
+                elseif not pin.type:match(pin_type) or not pin_type:match(pin.type) then
                     -- PIN TYPES MISSMATCH
                     return
                 end

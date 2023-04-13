@@ -161,25 +161,28 @@ function File_dialog()
 
     if FM_TYPE == "SAVE" then
         r.ImGui_SameLine(ctx)
-        if not filelist.current_text_input or Ltrim(filelist.current_text_input) == "" or not filelist.current_text_input:match(exstension) then
-            r.ImGui_BeginDisabled(ctx, true)
+        if not filelist.current_text_input or Ltrim(filelist.current_text_input) == "" then
+            r.ImGui_BeginDisabled(ctx, true) --or not filelist.current_text_input:match(exstension) then
+            -- r.ImGui_BeginDisabled(ctx, true)
         end
         if r.ImGui_Button(ctx, "save") then
-            local save_path = path .. os_separator .. filelist.current_text_input
+            local save_extension = filelist.current_text_input:match(exstension) and filelist.current_text_input or
+                filelist.current_text_input .. exstensions_preview[1]
+            local save_path = path .. os_separator .. save_extension
             local file = io.open(save_path, "r")
             if file ~= nil then
                 io.close(file)
                 r.ImGui_OpenPopup(ctx, 'Overwrite')
             else
                 --r.ShowConsoleMsg("Saving to :" .. save_path)
-                SaveToFIle()
+                SaveToFIle(save_path)
                 FM_TYPE = nil
                 OPEN_FM = nil
                 if NEED_SAVE then ClearProject() end
                 if WANT_CLOSE then CLOSE = true end
             end
         end
-        if not filelist.current_text_input or Ltrim(filelist.current_text_input) == "" or not filelist.current_text_input:match(exstension) then
+        if not filelist.current_text_input or Ltrim(filelist.current_text_input) == "" then --or not filelist.current_text_input:match(exstension) then
             r.ImGui_EndDisabled(ctx)
         end
     end
@@ -206,8 +209,8 @@ function LoadFile()
 end
 
 --! CHECK IF EXTENSION IS ALREADY PROVIDED, IF NOT THEN USE EXTENSTION
-function SaveToFIle()
-    local save_path = path .. os_separator .. filelist.current_text_input
+function SaveToFIle(save_path)
+    --local save_path = path .. os_separator .. filelist.current_text_input
     local data = StoreNodes()
     local file = io.open(save_path, "w")
     if file then
@@ -224,7 +227,10 @@ function FM_Modal_POPUP()
         r.ImGui_Text(ctx, filelist.current_text_input .. ' - already exists.\nOverwrite file ?\n\n')
         r.ImGui_Separator(ctx)
         if r.ImGui_Button(ctx, 'OK', 120, 0) then
-            SaveToFIle()
+            local save_extension = filelist.current_text_input:match(exstension) and filelist.current_text_input or
+                filelist.current_text_input .. exstensions_preview[1]
+            local save_path = path .. os_separator .. save_extension
+            SaveToFIle(save_path)
             r.ImGui_CloseCurrentPopup(ctx)
             FM_TYPE = nil
             OPEN_FM = nil

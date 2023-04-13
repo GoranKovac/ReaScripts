@@ -1,11 +1,17 @@
--- @description ReaLegos
+-- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.2
+-- @version 0.3
 -- @changelog
---   + Initial upload
+--   + Script Rename
+--   + Added Examples
+--   + Added SCHWARMINATOR
+--   + Filemanager automatically Appends extension
+--   + Fixed Crashes with MathRandom Nodes
+--   + Only Math nodes can mix/match different pins (INTEGER/FLOAT),fixed issue with APi pins could connect mismatching pins
+
 -- @provides
---   [main] Modules/*.lua
+--   {Examples,Modules}/*
 
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 PATH = debug.getinfo(1).source:match("@?(.*[\\|/])")
@@ -101,7 +107,7 @@ local function loop()
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_WindowBg(), 0x111111FF)
     r.ImGui_SetNextWindowSizeConstraints(ctx, 1100, 500, FLT_MAX, FLT_MAX)
     r.ImGui_SetNextWindowSize(ctx, 1000, 800, r.ImGui_Cond_FirstUseEver())
-    local visible, open = r.ImGui_Begin(ctx, 'ReaLegos - ALPHA - ' .. PROJECT_NAME .. '###ReaLegos', true,
+    local visible, open = r.ImGui_Begin(ctx, 'ReaSpaghetti - ALPHA - ' .. PROJECT_NAME .. '###ReaSpaghetti', true,
         WND_FLAGS)
     r.ImGui_PopStyleColor(ctx)
     TOOLBAR_DRAG = r.ImGui_IsItemHovered(ctx)

@@ -85,8 +85,8 @@ local Math = {
     ["rad"]        = function(x) return rad(x) end,
     ["sqrt"]       = function(x) return sqrt(x) end,
     ["randomseed"] = function(x) return randomseed(x) end,
-    ["randomS"]    = function(x) return random(x) end,
-    ["randomM"]    = function(x, y) return random(x, y) end,
+    ["randomS"]    = function(x) if x == 0 then return 0 else return random(abs(x)) end end,
+    ["randomM"]    = function(x, y) if x == 0 or y == 0 then return 0 else return random(abs(x), abs(y)) end end,
     ["fmod"]       = function(x, y) return fmod(x, y) end,
     ["max"]        = function(x, y) return max(x, y) end,
     ["min"]        = function(x, y) return min(x, y) end,
@@ -359,7 +359,7 @@ function CUSTOM_FunctionStartArgs(called_node, func_node)
 end
 
 function CUSTOM_GetScriptPath(called_node, func_node)
-    called_node.outputs[1].o_val = debug.getinfo(1).source:match("@?(.*[\\|/])")
+    called_node.outputs[1].o_val = PATH --debug.getinfo(1).source:match("@?(.*[\\|/])")
 end
 
 function CUSTOM_MultiIfElse(called_node, func_node)

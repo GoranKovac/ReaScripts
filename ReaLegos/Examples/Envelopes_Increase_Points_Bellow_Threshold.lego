@@ -1,0 +1,2524 @@
+{
+ CURRENT_FUNCTION = 2,
+ FUNCTIONS = {
+  [2] = {
+   label = "Main",
+   in_values = {
+   },
+   guid = "{50592578-2D3E-44B3-9003-7E8733C94879}",
+   selected = false,
+   y = 0,
+   CANVAS = {
+    MY = 239.6160083644,
+    off_y = 260.14399686335,
+    view_x = 436.0,
+    w = 0,
+    view_y = 659.0,
+    ry = 707.0,
+    zone_B = false,
+    MouseIN = true,
+    zone_R = false,
+    zone_T = false,
+    off_x = 453.71074194623,
+    zone_L = false,
+    h = 0,
+    rx = 1343.0,
+    MX = 216.77135481006,
+    scale = 0.375,
+   },
+   inputs = {
+    [0] = {
+     label = "RUN",
+     x = 0,
+     connection = {
+     },
+     type = "RUN",
+     y = 0,
+    },
+   },
+   x = 0,
+   w = 0,
+   type = "func",
+   NODES = {
+    [1] = {
+     label = "START",
+     in_values = {
+     },
+     guid = "{F1FFFA91-CA3C-4D8B-B8E3-69A520625DF1}",
+     fname = "CUSTOM_FunctionStartArgs",
+     y = -423.92380952381,
+     inputs = {
+     },
+     outputs = {
+      [0] = {
+       label = "RUN",
+       x = 702.78217051766,
+       connection = {
+        [1] = {
+         node = "{CBAA5DCC-2138-4EE1-B801-619698A50E39}",
+         pin = 0,
+         link = "{F1FFFA91-CA3C-4D8B-B8E3-69A520625DF1}:RUN-{CBAA5DCC-2138-4EE1-B801-619698A50E39}:RUN",
+        },
+       },
+       type = "RUN",
+       y = 765.79756829192,
+       trace = false,
+      },
+     },
+     x = -658.47619047619,
+     w = 160.0,
+     type = "m",
+     h = 30,
+     selected = false,
+     trace = false,
+    },
+    [2] = {
+     label = "CountTracks",
+     in_values = {
+      [1] = 0,
+     },
+     guid = "{CBAA5DCC-2138-4EE1-B801-619698A50E39}",
+     fname = "CountTracks",
+     y = -424.62380952381,
+     inputs = {
+      [0] = {
+       label = "RUN",
+       x = 735.55717051766,
+       connection = {
+        [1] = {
+         node = "{F1FFFA91-CA3C-4D8B-B8E3-69A520625DF1}",
+         pin = 0,
+         link = "{F1FFFA91-CA3C-4D8B-B8E3-69A520625DF1}:RUN-{CBAA5DCC-2138-4EE1-B801-619698A50E39}:RUN",
+        },
+       },
+       type = "RUN",
+       y = 765.53506829192,
+       trace = false,
+      },
+      [1] = {
+       label = "PROJ",
+       pin = 1,
+       x = 735.55717051766,
+       connection = {
+       },
+       type = "INTEGER",
+       y = 776.78506829192,
+       i_val = 0,
+       trace = false,
+      },
+     },
+     outputs = {
+      [0] = {
+       label = "RUN",
+       x = 813.55717051766,
+       connection = {
+        [1] = {
+         node = "{3AEA5879-5736-4AF7-AD7D-3D59755D42CE}",
+         pin = 0,
+         link = "{CBAA5DCC-2138-4EE1-B801-619698A50E39}:RUN-{3AEA5879-5736-4AF7-AD7D-3D59755D42CE}:RUN",
+        },
+       },
+       type = "RUN",
+       y = 765.53506829192,
+       trace = false,
+      },
+      [1] = {
+       label = "INTEGER",
+       o_val = 2,
+       pin = 1,
+       connection = {
+        [1] = {
+         node = "{3AEA5879-5736-4AF7-AD7D-3D59755D42CE}",
+         pin = 3,
+         link = "{3AEA5879-5736-4AF7-AD7D-3D59755D42CE}:END-{CBAA5DCC-2138-4EE1-B801-619698A50E39}:INTEGER",
+        },
+       },
+       type = "INTEGER",
+       y = 788.03506829192,
+       x = 813.55717051766,
+       trace = false,
+      },
+     },
+     x = -411.07619047619,
+     w = 208.0,
+     type = "api",
+     h = 90,
+     selected = false,
+     trace = false,
+    },
+    [3] = {
+     label = "GetTrack",
+     in_values = {
+      [1] = 0,
+      [2] = 1,
+     },
+     guid = "{94A26773-74FA-4CC7-B896-F9A7F51F95D0}",
+     fname = "GetTrack",
+     y = -447.02380952381,
+     inputs = {
+      [0] = {
+       label = "RUN",
+       x = 1047.0071705177,
+       connection = {
+        [1] = {
+         node = "{3AEA5879-5736-4AF7-AD7D-3D59755D42CE}",
+         pin = 1,
+         link = "{3AEA5879-5736-4AF7-AD7D-3D59755D42CE}:LOOP-{94A26773-74FA-4CC7-B896-F9A7F51F95D0}:RUN",
+        },
+       },
+       type = "RUN",
+       y = 757.13506829192,
+       trace = false,
+      },
+      [1] = {
+       label = "PROJ",
+       pin = 1,
+       x = 1047.0071705177,
+       connection = {
+       },
+       type = "INTEGER",
+       y = 768.38506829192,
+       i_val = 0,
+       trace = false,
+      },
+      [2] = {
+       label = "TRACKIDX",
+       i_val = 1,
+       y = 779.63506829192,
+       x = 1047.0071705177,
+       type = "INTEGER",
+       pin = 2,
+       connection = {
+        [1] = {
+         node = "{3AEA5879-5736-4AF7-AD7D-3D59755D42CE}",
+         pin = 2,
+         link = "{3AEA5879-5736-4AF7-AD7D-3D59755D42CE}:IDX-{94A26773-74FA-4CC7-B896-F9A7F51F95D0}:TRACKIDX",
+        },
+       },
+       trace = false,
+      },
+     },
+     outputs = {
+      [0] = {
+       label = "RUN",
+       x = 1116.0071705177,
+       connection = {
+        [1] = {
+         node = "{E360D3F9-A70E-48C0-A817-B566A732256B}",
+         pin = 0,
+         link = "{94A26773-74FA-4CC7-B896-F9A7F51F95D0}:RUN-{E360D3F9-A70E-48C0-A817-B566A732256B}:RUN",
+        },
+       },
+       type = "RUN",
+       y = 757.13506829192,
+       trace = false,
+      },
+      [1] = {
+       label = "MEDIATRACK",
+       o_val = nil,
+       x = 1116.0071705177,
+       connection = {
+        [1] = {
+         node = "{E360D3F9-A70E-48C0-A817-B566A732256B}",
+         pin = 1,
+         link = "{94A26773-74FA-4CC7-B896-F9A7F51F95D0}:MEDIATRACK-{E360D3F9-A70E-48C0-A817-B566A732256B}:MEDIATRACK",
+        },
+       },
+       type = "MEDIATRACK",
+       y = 790.88506829192,
+       pin = 1,
+       trace = false,
+      },
+     },
+     x = 419.45714285715,
+     w = 184.0,
+     type = "api",
+     h = 120,
+     selected = false,
+     trace = false,
+    },
+    [4] = {
+     label = "CountEnvelopePoints",
+     in_values = {
+      [1] = nil,
+     },
+     guid = "{664FD814-C405-44B2-A3DF-76E58DEB284E}",
+     fname = "CountEnvelopePoints",
+     y = 30.766666666667,
+     inputs = {
+      [0] = {
+       label = "RUN",
+       x = 1193.1607419462,
+       connection = {
+        [1] = {
+         node = "{FD29ED8A-8D34-4D11-B9F8-239C1EE9068B}",
+         pin = 0,
+         link = "{FD29ED8A-8D34-4D11-B9F8-239C1EE9068B}:RUN-{664FD814-C405-44B2-A3DF-76E58DEB284E}:RUN",
+        },
+       },
+       type = "RUN",
+       y = 936.30649686335,
+       trace = false,
+      },
+      [1] = {
+       label = "ENVELOPE",
+       x = 1193.1607419462,
+       connection = {
+        [1] = {
+         node = "{FD29ED8A-8D34-4D11-B9F8-239C1EE9068B}",
+         pin = 1,
+         link = "{FD29ED8A-8D34-4D11-B9F8-239C1EE9068B}:TRACKENVELOPE-{664FD814-C405-44B2-A3DF-76E58DEB284E}:ENVELOPE",
+        },
+       },
+       type = "TRACKENVELOPE",
+       y = 947.55649686335,
+       pin = 1,
+       trace = false,
+      },
+     },
+     outputs = {
+      [0] = {
+       label = "RUN",
+       x = 1295.1607419462,
+       connection = {
+        [1] = {
+         node = "{B01FA235-2CA2-431B-865A-4BC3098890F9}",
+         pin = 0,
+         link = "{664FD814-C405-44B2-A3DF-76E58DEB284E}:RUN-{B01FA235-2CA2-431B-865A-4BC3098890F9}:RUN",
+        },
+       },
+       type = "RUN",
+       y = 936.30649686335,
+       trace = false,
+      },
+      [1] = {
+       label = "INTEGER",
+       o_val = 19,
+       x = 1295.1607419462,
+       connection = {
+        [1] = {
+         node = "{B01FA235-2CA2-431B-865A-4BC3098890F9}",
+         pin = 3,
+         link = "{664FD814-C405-44B2-A3DF-76E58DEB284E}:INTEGER-{B01FA235-2CA2-431B-865A-4BC3098890F9}:END",
+        },
+       },
+       type = "INTEGER",
+       y = 958.80649686335,
+       pin = 1,
+       trace = false,
+      },
+     },
+     x = 809.2,
+     w = 272.0,
+     type = "api",
+     h = 90,
+     selected = false,
+     trace = false,
+    },
+    [5] = {
+     label = "CountTrackEnvelopes",
+     in_values = {
+      [1] = nil,
+     },
+     guid = "{E8B06743-EC26-40DA-A2FB-541819EE427D}",
+     fname = "CountTrackEnvelopes",
+     y = -445.29047619047,
+     inputs = {
+      [0] = {
+       label = "RUN",
+       x = 1256.2821705177,
+       connection = {
+        [1] = {
+         node = "{E360D3F9-A70E-48C0-A817-B566A732256B}",
+         pin = 0,
+         link = "{E360D3F9-A70E-48C0-A817-B566A732256B}:RUN-{E8B06743-EC26-40DA-A2FB-541819EE427D}:RUN",
+        },
+       },
+       type = "RUN",
+       y = 757.78506829192,
+       trace = false,
+      },
+      [1] = {
+       label = "TRACK",
+       x = 1256.2821705177,
+       connection = {
+        [1] = {
+         node = "{E360D3F9-A70E-48C0-A817-B566A732256B}",
+         pin = 1,
+         link = "{E360D3F9-A70E-48C0-A817-B566A732256B}:MEDIATRACK-{E8B06743-EC26-40DA-A2FB-541819EE427D}:TRACK",
+        },
+       },
+       type = "MEDIATRACK",
+       y = 769.03506829192,
+       pin = 1,
+       trace = false,
+      },
+     },
+     outputs = {
+      [0] = {
+       label = "RUN",
+       x = 1358.2821705177,
+       connection = {
+        [1] = {
+         node = "{51F9F45E-899E-4738-943A-31E02175D23C}",
+         pin = 0,
+         link = "{E8B06743-EC26-40DA-A2FB-541819EE427D}:RUN-{51F9F45E-899E-4738-943A-31E02175D23C}:RUN",
+        },
+       },
+       type = "RUN",
+       y = 757.78506829192,
+       trace = false,
+      },
+      [1] = {
+       label = "INTEGER",
+       o_val = 1,
+       x = 1358.2821705177,
+       connection = {
+        [1] = {
+         node = "{51F9F45E-899E-4738-943A-31E02175D23C}",
+         pin = 1,
+         link = "{E8B06743-EC26-40DA-A2FB-541819EE427D}:INTEGER-{51F9F45E-899E-4738-943A-31E02175D23C}:INTEGER",
+        },
+       },
+       type = "INTEGER",
+       y = 780.28506829192,
+       pin = 1,
+       trace = false,
+      },
+     },
+     x = 977.5238095238,
+     w = 272.0,
+     type = "api",
+     h = 90,
+     selected = false,
+     trace = false,
+    },
+    [6] = {
+     label = "GetTrackEnvelope",
+     in_values = {
+      [1] = nil,
+      [2] = 0,
+     },
+     guid = "{7BE4753A-53C5-4D58-9A23-24A07E0FC95B}",
+     fname = "GetTrackEnvelope",
+     y = 35.3,
+     inputs = {
+      [0] = {
+       label = "RUN",
+       x = 966.86074194623,
+       connection = {
+        [1] = {
+         node = "{4F4C186E-F147-4506-A286-0025B70CFDC6}",
+         pin = 0,
+         link = "{4F4C186E-F147-4506-A286-0025B70CFDC6}:RUN-{7BE4753A-53C5-4D58-9A23-24A07E0FC95B}:RUN",
+        },
+       },
+       type = "RUN",
+       y = 938.00649686335,
+       trace = false,
+      },
+      [1] = {
+       label = "TRACK",
+       x = 966.86074194623,
+       connection = {
+        [1] = {
+         node = "{FAAF2D2D-B1BF-49B8-ABC0-DDC517ADF911}",
+         pin = 1,
+         link = "{FAAF2D2D-B1BF-49B8-ABC0-DDC517ADF911}:-{7BE4753A-53C5-4D58-9A23-24A07E0FC95B}:TRACK",
+        },
+       },
+       type = "MEDIATRACK",
+       y = 949.25649686335,
+       pin = 1,
+       trace = false,
+      },
+      [2] = {
+       label = "ENVIDX",
+       i_val = 0,
+       y = 960.50649686335,
+       x = 966.86074194623,
+       type = "INTEGER",
+       pin = 2,
+       connection = {
+        [1] = {
+         node = "{4F4C186E-F147-4506-A286-0025B70CFDC6}",
+         pin = 1,
+         link = "{4F4C186E-F147-4506-A286-0025B70CFDC6}:INTEGER-{7BE4753A-53C5-4D58-9A23-24A07E0FC95B}:ENVIDX",
+        },
+       },
+       trace = false,
+      },
+     },
+     outputs = {
+      [0] = {
+       label = "RUN",
+       x = 1059.8607419462,
+       connection = {
+        [1] = {
+         node = "{FD29ED8A-8D34-4D11-B9F8-239C1EE9068B}",
+         pin = 0,
+         link = "{7BE4753A-53C5-4D58-9A23-24A07E0FC95B}:RUN-{FD29ED8A-8D34-4D11-B9F8-239C1EE9068B}:RUN",
+        },
+       },
+       type = "RUN",
+       y = 938.00649686335,
+       trace = false,
+      },
+      [1] = {
+       label = "TRACKENVELOPE",
+       o_val = nil,
+       x = 1059.8607419462,
+       connection = {
+        [1] = {
+         node = "{FD29ED8A-8D34-4D11-B9F8-239C1EE9068B}",
+         pin = 1,
+         link = "{7BE4753A-53C5-4D58-9A23-24A07E0FC95B}:TRACKENVELOPE-{FD29ED8A-8D34-4D11-B9F8-239C1EE9068B}:TRACKENVELOPE",
+        },
+       },
+       type = "TRACKENVELOPE",
+       y = 971.75649686335,
+       pin = 1,
+       trace = false,
+      },
+     },
+     x = 205.73333333333,
+     w = 248.0,
+     type = "api",
+     h = 120,
+     selected = false,
+     trace = false,
+    },
+    [7] = {
+     label = "VAR GetTrack",
+     in_values = {
+      [1] = nil,
+     },
+     guid = "{E360D3F9-A70E-48C0-A817-B566A732256B}",
+     fname = "CUSTOM_Set",
+     y = -451.02380952381,
+     outputs = {
+      [0] = {
+       label = "RUN",
+       x = 1223.6821705177,
+       connection = {
+        [1] = {
+         node = "{E8B06743-EC26-40DA-A2FB-541819EE427D}",
+         pin = 0,
+         link = "{E360D3F9-A70E-48C0-A817-B566A732256B}:RUN-{E8B06743-EC26-40DA-A2FB-541819EE427D}:RUN",
+        },
+       },
+       type = "RUN",
+       y = 755.63506829192,
+       trace = false,
+      },
+      [1] = {
+       label = "MEDIATRACK",
+       o_val = nil,
+       x = 1223.6821705177,
+       connection = {
+        [1] = {
+         node = "{E8B06743-EC26-40DA-A2FB-541819EE427D}",
+         pin = 1,
+         link = "{E360D3F9-A70E-48C0-A817-B566A732256B}:MEDIATRACK-{E8B06743-EC26-40DA-A2FB-541819EE427D}:TRACK",
+        },
+       },
+       type = "MEDIATRACK",
+       y = 778.13506829192,
+       pin = 1,
+       trace = false,
+      },
+     },
+     inputs = {
+      [0] = {
+       label = "RUN",
+       x = 1142.6821705177,
+       connection = {
+        [1] = {
+         node = "{94A26773-74FA-4CC7-B896-F9A7F51F95D0}",
+         pin = 0,
+         link = "{94A26773-74FA-4CC7-B896-F9A7F51F95D0}:RUN-{E360D3F9-A70E-48C0-A817-B566A732256B}:RUN",
+        },
+       },
+       type = "RUN",
+       y = 755.63506829192,
+       trace = false,
+      },
+      [1] = {
+       label = "MEDIATRACK",
+       x = 1142.6821705177,
+       connection = {
+        [1] = {
+         node = "{94A26773-74FA-4CC7-B896-F9A7F51F95D0}",
+         pin = 1,
+         link = "{94A26773-74FA-4CC7-B896-F9A7F51F95D0}:MEDIATRACK-{E360D3F9-A70E-48C0-A817-B566A732256B}:MEDIATRACK",
+        },
+       },
+       type = "MEDIATRACK",
+       y = 766.88506829192,
+       pin = 1,
+       trace = false,
+      },
+     },
+     set = {
+      api = true,
+      pin = 1,
+      guid = "{94A26773-74FA-4CC7-B896-F9A7F51F95D0}",
+     },
+     x = 674.59047619048,
+     w = 216.0,
+     type = "api_var",
+     selected = false,
+     h = 90,
+     trace = false,
+    },
+    [8] = {
+     label = "SENDER",
+     in_values = {
+     },
+     guid = "{A39FFE07-4CD2-4D4D-BE68-AFD846445C43}",
+     selected = false,
+     y = -450.62380952381,
+     inputs = {
+      [0] = {
+       label = "RUN",
+       x = 1539.3821705177,
+       connection = {
+        [1] = {
+         node = "{51F9F45E-899E-4738-943A-31E02175D23C}",
+         pin = 0,
+         link = "{51F9F45E-899E-4738-943A-31E02175D23C}:RUN-{A39FFE07-4CD2-4D4D-BE68-AFD846445C43}:RUN",
+        },
+       },
+       type = "RUN",
+       y = 755.78506829192,
+       trace = false,
+      },
+     },
+     wireless_id = "{B010C70D-7B55-43AD-AE78-53CF9BEFDDC8}",
+     outputs = {
+     },
+     x = 1732.4571428572,
+     w = 168.0,
+     type = "ws",
+     sender = "{8713B92D-6238-4E68-91D2-CDE1049CAA65}",
+     h = 30,
+     trace = false,
+    },
+    [9] = {
+     label = "RECEIVER",
+     in_values = {
+     },
+     guid = "{8713B92D-6238-4E68-91D2-CDE1049CAA65}",
+     selected = false,
+     y = -17.766666666667,
+     wireless_id = "{B010C70D-7B55-43AD-AE78-53CF9BEFDDC8}",
+     inputs = {
+     },
+     x = -740.64946236559,
+     w = 184.0,
+     type = "wr",
+     outputs = {
+      [0] = {
+       label = "RUN",
+       x = 680.96719355913,
+       connection = {
+        [1] = {
+         node = "{D647DB65-94A5-4E81-976C-519AB67979DC}",
+         pin = 0,
+         link = "{8713B92D-6238-4E68-91D2-CDE1049CAA65}:RUN-{D647DB65-94A5-4E81-976C-519AB67979DC}:RUN",
+        },
+       },
+       type = "RUN",
+       y = 918.10649686335,
+       trace = false,
+      },
+     },
+     h = 30,
+     trace = false,
+    },
+    [10] = {
+     label = "ENV_CNT",
+     in_values = {
+      [1] = 1,
+     },
+     guid = "{51F9F45E-899E-4738-943A-31E02175D23C}",
+     fname = "CUSTOM_Set",
+     y = -446.89047619047,
+     outputs = {
+      [0] = {
+       label = "RUN",
+       x = 1465.0821705176,
+       connection = {
+        [1] = {
+         node = "{A39FFE07-4CD2-4D4D-BE68-AFD846445C43}",
+         pin = 0,
+         link = "{51F9F45E-899E-4738-943A-31E02175D23C}:RUN-{A39FFE07-4CD2-4D4D-BE68-AFD846445C43}:RUN",
+        },
+       },
+       type = "RUN",
+       y = 757.18506829192,
+       trace = false,
+      },
+      [1] = {
+       label = "INTEGER",
+       o_val = 1,
+       x = 1465.0821705176,
+       connection = {
+       },
+       type = "INTEGER",
+       y = 779.68506829192,
+       pin = 1,
+       trace = false,
+      },
+     },
+     inputs = {
+      [0] = {
+       label = "RUN",
+       x = 1399.0821705176,
+       connection = {
+        [1] = {
+         node = "{E8B06743-EC26-40DA-A2FB-541819EE427D}",
+         pin = 0,
+         link = "{E8B06743-EC26-40DA-A2FB-541819EE427D}:RUN-{51F9F45E-899E-4738-943A-31E02175D23C}:RUN",
+        },
+       },
+       type = "RUN",
+       y = 757.18506829192,
+       trace = false,
+      },
+      [1] = {
+       label = "INTEGER",
+       x = 1399.0821705176,
+       connection = {
+        [1] = {
+         node = "{E8B06743-EC26-40DA-A2FB-541819EE427D}",
+         pin = 1,
+         link = "{E8B06743-EC26-40DA-A2FB-541819EE427D}:INTEGER-{51F9F45E-899E-4738-943A-31E02175D23C}:INTEGER",
+        },
+       },
+       type = "INTEGER",
+       y = 768.43506829192,
+       pin = 1,
+       trace = false,
+      },
+     },
+     set = {
+      api = true,
+      pin = 1,
+      guid = "{E8B06743-EC26-40DA-A2FB-541819EE427D}",
+     },
+     x = 1358.3238095238,
+     w = 176.0,
+     type = "api_var",
+     selected = false,
+     h = 90,
+     trace = false,
+    },
+    [11] = {
+     label = "GET VAR GetTrack",
+     in_values = {
+     },
+     guid = "{FAAF2D2D-B1BF-49B8-ABC0-DDC517ADF911}",
+     selected = false,
+     y = -41.517535153019,
+     inputs = {
+     },
+     outputs = {
+      [1] = {
+       label = "",
+       x = 921.48828537055,
+       connection = {
+        [1] = {
+         node = "{7BE4753A-53C5-4D58-9A23-24A07E0FC95B}",
+         pin = 1,
+         link = "{FAAF2D2D-B1BF-49B8-ABC0-DDC517ADF911}:-{7BE4753A-53C5-4D58-9A23-24A07E0FC95B}:TRACK",
+        },
+       },
+       type = "MEDIATRACK",
+       y = 920.44992118097,
+       pin = 1,
+       trace = false,
+      },
+     },
+     x = -163.25988420182,
+     w = 248.0,
+     type = "get",
+     h = 60,
+     get = "{E360D3F9-A70E-48C0-A817-B566A732256B}",
+     trace = false,
+    },
+    [12] = {
+     label = "ENVELOPE",
+     in_values = {
+      [1] = nil,
+     },
+     guid = "{FD29ED8A-8D34-4D11-B9F8-239C1EE9068B}",
+     fname = "CUSTOM_Set",
+     y = 35.433333333333,
+     outputs = {
+      [0] = {
+       label = "RUN",
+       x = 1158.4607419462,
+       connection = {
+        [1] = {
+         node = "{664FD814-C405-44B2-A3DF-76E58DEB284E}",
+         pin = 0,
+         link = "{FD29ED8A-8D34-4D11-B9F8-239C1EE9068B}:RUN-{664FD814-C405-44B2-A3DF-76E58DEB284E}:RUN",
+        },
+       },
+       type = "RUN",
+       y = 938.05649686335,
+       trace = false,
+      },
+      [1] = {
+       label = "TRACKENVELOPE",
+       o_val = nil,
+       x = 1158.4607419462,
+       connection = {
+        [1] = {
+         node = "{664FD814-C405-44B2-A3DF-76E58DEB284E}",
+         pin = 1,
+         link = "{FD29ED8A-8D34-4D11-B9F8-239C1EE9068B}:TRACKENVELOPE-{664FD814-C405-44B2-A3DF-76E58DEB284E}:ENVELOPE",
+        },
+       },
+       type = "TRACKENVELOPE",
+       y = 960.55649686335,
+       pin = 1,
+       trace = false,
+      },
+     },
+     inputs = {
+      [0] = {
+       label = "RUN",
+       x = 1089.4607419462,
+       connection = {
+        [1] = {
+         node = "{7BE4753A-53C5-4D58-9A23-24A07E0FC95B}",
+         pin = 0,
+         link = "{7BE4753A-53C5-4D58-9A23-24A07E0FC95B}:RUN-{FD29ED8A-8D34-4D11-B9F8-239C1EE9068B}:RUN",
+        },
+       },
+       type = "RUN",
+       y = 938.05649686335,
+       trace = false,
+      },
+      [1] = {
+       label = "TRACKENVELOPE",
+       x = 1089.4607419462,
+       connection = {
+        [1] = {
+         node = "{7BE4753A-53C5-4D58-9A23-24A07E0FC95B}",
+         pin = 1,
+         link = "{7BE4753A-53C5-4D58-9A23-24A07E0FC95B}:TRACKENVELOPE-{FD29ED8A-8D34-4D11-B9F8-239C1EE9068B}:TRACKENVELOPE",
+        },
+       },
+       type = "TRACKENVELOPE",
+       y = 949.30649686335,
+       pin = 1,
+       trace = false,
+      },
+     },
+     set = {
+      api = true,
+      pin = 1,
+      guid = "{7BE4753A-53C5-4D58-9A23-24A07E0FC95B}",
+     },
+     x = 532.66666666667,
+     w = 184.0,
+     type = "api_var",
+     selected = false,
+     h = 90,
+     trace = false,
+    },
+    [13] = {
+     label = "NUMERIC FOR LOOP",
+     in_values = {
+      [1] = 1,
+      [2] = 1,
+      [3] = 19,
+      [4] = true,
+     },
+     guid = "{B01FA235-2CA2-431B-865A-4BC3098890F9}",
+     fname = "CUSTOM_ForLoop",
+     y = 30.633333333333,
+     inputs = {
+      [0] = {
+       label = "RUN",
+       x = 1322.2607419462,
+       connection = {
+        [1] = {
+         node = "{664FD814-C405-44B2-A3DF-76E58DEB284E}",
+         pin = 0,
+         link = "{664FD814-C405-44B2-A3DF-76E58DEB284E}:RUN-{B01FA235-2CA2-431B-865A-4BC3098890F9}:RUN",
+        },
+       },
+       type = "RUN",
+       y = 936.25649686335,
+       trace = false,
+      },
+      [1] = {
+       label = "START",
+       pin = 1,
+       x = 1322.2607419462,
+       connection = {
+       },
+       type = "INTEGER",
+       y = 947.50649686335,
+       i_val = 1,
+       trace = false,
+      },
+      [2] = {
+       label = "INCREMENT",
+       pin = 2,
+       x = 1322.2607419462,
+       connection = {
+       },
+       type = "INTEGER",
+       y = 958.75649686335,
+       i_val = 1,
+       trace = false,
+      },
+      [3] = {
+       label = "END",
+       pin = 3,
+       x = 1322.2607419462,
+       connection = {
+        [1] = {
+         node = "{664FD814-C405-44B2-A3DF-76E58DEB284E}",
+         pin = 1,
+         link = "{664FD814-C405-44B2-A3DF-76E58DEB284E}:INTEGER-{B01FA235-2CA2-431B-865A-4BC3098890F9}:END",
+        },
+       },
+       type = "INTEGER",
+       y = 970.00649686335,
+       i_val = 19,
+       trace = false,
+      },
+      [4] = {
+       label = "OUT IDX -1",
+       pin = 4,
+       x = 1322.2607419462,
+       connection = {
+       },
+       type = "BOOLEAN",
+       y = 981.25649686335,
+       pin_disable = true,
+       i_val = true,
+      },
+     },
+     outputs = {
+      [0] = {
+       label = "RUN",
+       x = 1415.2607419462,
+       connection = {
+       },
+       type = "RUN",
+       y = 936.25649686335,
+       trace = false,
+      },
+      [1] = {
+       label = "LOOP",
+       connection = {
+        [1] = {
+         node = "{9B869E59-8C25-4A04-B250-9AA0FD9324C3}",
+         pin = 0,
+         link = "{B01FA235-2CA2-431B-865A-4BC3098890F9}:LOOP-{9B869E59-8C25-4A04-B250-9AA0FD9324C3}:RUN",
+        },
+       },
+       y = 992.50649686335,
+       run = true,
+       pin = 1,
+       type = "RUN",
+       x = 1415.2607419462,
+       trace = false,
+      },
+      [2] = {
+       label = "IDX",
+       y = 1003.7564968634,
+       x = 1415.2607419462,
+       connection = {
+        [1] = {
+         node = "{9B869E59-8C25-4A04-B250-9AA0FD9324C3}",
+         pin = 1,
+         link = "{B01FA235-2CA2-431B-865A-4BC3098890F9}:IDX-{9B869E59-8C25-4A04-B250-9AA0FD9324C3}:INTEGER",
+        },
+       },
+       type = "INTEGER",
+       o_val = 18,
+       pin = 2,
+       trace = false,
+      },
+     },
+     x = 1153.4666666667,
+     w = 248.0,
+     type = "api",
+     h = 210,
+     selected = false,
+     trace = false,
+    },
+    [14] = {
+     label = "GetEnvelopePoint",
+     in_values = {
+      [1] = nil,
+      [2] = 18,
+     },
+     guid = "{B5DEFF72-3B56-4E07-8D39-A0A3D2E0751C}",
+     fname = "GetEnvelopePoint",
+     y = 496.27142857143,
+     inputs = {
+      [0] = {
+       label = "RUN",
+       x = 889.0893133748,
+       connection = {
+        [1] = {
+         node = "{19BB93A7-2077-4D73-A29F-BEBA26A196E1}",
+         pin = 0,
+         link = "{19BB93A7-2077-4D73-A29F-BEBA26A196E1}:RUN-{B5DEFF72-3B56-4E07-8D39-A0A3D2E0751C}:RUN",
+        },
+       },
+       type = "RUN",
+       y = 1110.8707825776,
+       trace = false,
+      },
+      [1] = {
+       label = "ENVELOPE",
+       x = 889.0893133748,
+       connection = {
+        [1] = {
+         node = "{ADEC12A1-FD0B-403B-934E-2473F51DB644}",
+         pin = 1,
+         link = "{ADEC12A1-FD0B-403B-934E-2473F51DB644}:-{B5DEFF72-3B56-4E07-8D39-A0A3D2E0751C}:ENVELOPE",
+        },
+       },
+       type = "TRACKENVELOPE",
+       y = 1122.1207825776,
+       pin = 1,
+       trace = false,
+      },
+      [2] = {
+       label = "PTIDX",
+       pin = 2,
+       x = 889.0893133748,
+       connection = {
+        [1] = {
+         node = "{B9D1CA2C-3C22-41A3-BBD0-039440637638}",
+         pin = 1,
+         link = "{B9D1CA2C-3C22-41A3-BBD0-039440637638}:-{B5DEFF72-3B56-4E07-8D39-A0A3D2E0751C}:PTIDX",
+        },
+       },
+       type = "INTEGER",
+       y = 1133.3707825776,
+       i_val = 18,
+       trace = false,
+      },
+     },
+     outputs = {
+      [0] = {
+       label = "RUN",
+       x = 982.0893133748,
+       connection = {
+        [1] = {
+         node = "{B0AD189D-C548-4560-B977-B9A54E7BE998}",
+         pin = 0,
+         link = "{B5DEFF72-3B56-4E07-8D39-A0A3D2E0751C}:RUN-{B0AD189D-C548-4560-B977-B9A54E7BE998}:RUN",
+        },
+       },
+       type = "RUN",
+       y = 1110.8707825776,
+       trace = false,
+      },
+      [1] = {
+       label = "RETVAL",
+       o_val = true,
+       x = 982.0893133748,
+       connection = {
+       },
+       type = "BOOLEAN",
+       y = 1144.6207825776,
+       pin = 1,
+       trace = false,
+      },
+      [2] = {
+       label = "TIME",
+       o_val = 0.18515352,
+       x = 982.0893133748,
+       connection = {
+        [1] = {
+         node = "{15CFEC1E-A3B4-4911-9AB9-FDB34038138C}",
+         pin = 3,
+         link = "{B5DEFF72-3B56-4E07-8D39-A0A3D2E0751C}:TIME-{15CFEC1E-A3B4-4911-9AB9-FDB34038138C}:TIMEIN",
+        },
+       },
+       type = "NUMBER",
+       y = 1155.8707825776,
+       pin = 2,
+       trace = false,
+      },
+      [3] = {
+       label = "VALUE",
+       o_val = 716.21785031261,
+       x = 982.0893133748,
+       connection = {
+        [1] = {
+         node = "{B0AD189D-C548-4560-B977-B9A54E7BE998}",
+         pin = 1,
+         link = "{B5DEFF72-3B56-4E07-8D39-A0A3D2E0751C}:VALUE-{B0AD189D-C548-4560-B977-B9A54E7BE998}:NUMBER",
+        },
+       },
+       type = "NUMBER",
+       y = 1167.1207825776,
+       pin = 3,
+       trace = false,
+      },
+      [4] = {
+       label = "SHAPE",
+       o_val = 0,
+       x = 982.0893133748,
+       connection = {
+        [1] = {
+         node = "{15CFEC1E-A3B4-4911-9AB9-FDB34038138C}",
+         pin = 5,
+         link = "{B5DEFF72-3B56-4E07-8D39-A0A3D2E0751C}:SHAPE-{15CFEC1E-A3B4-4911-9AB9-FDB34038138C}:SHAPEIN",
+        },
+       },
+       type = "INTEGER",
+       y = 1178.3707825776,
+       pin = 4,
+       trace = false,
+      },
+      [5] = {
+       label = "TENSION",
+       o_val = 0.0,
+       x = 982.0893133748,
+       connection = {
+        [1] = {
+         node = "{15CFEC1E-A3B4-4911-9AB9-FDB34038138C}",
+         pin = 6,
+         link = "{B5DEFF72-3B56-4E07-8D39-A0A3D2E0751C}:TENSION-{15CFEC1E-A3B4-4911-9AB9-FDB34038138C}:TENSIONIN",
+        },
+       },
+       type = "NUMBER",
+       y = 1189.6207825776,
+       pin = 5,
+       trace = false,
+      },
+      [6] = {
+       label = "SELECTED",
+       o_val = false,
+       x = 982.0893133748,
+       connection = {
+        [1] = {
+         node = "{15CFEC1E-A3B4-4911-9AB9-FDB34038138C}",
+         pin = 7,
+         link = "{B5DEFF72-3B56-4E07-8D39-A0A3D2E0751C}:SELECTED-{15CFEC1E-A3B4-4911-9AB9-FDB34038138C}:SELECTEDIN",
+        },
+       },
+       type = "BOOLEAN",
+       y = 1200.8707825776,
+       pin = 6,
+       trace = false,
+      },
+     },
+     x = -1.6571428571396,
+     w = 248.0,
+     type = "api",
+     h = 270,
+     selected = false,
+     trace = false,
+    },
+    [15] = {
+     label = "SENDER",
+     in_values = {
+     },
+     guid = "{9CB7A0D6-74A1-414F-AE32-81ED0938FEE3}",
+     selected = false,
+     y = 61.033333333333,
+     inputs = {
+      [0] = {
+       label = "RUN",
+       x = 1534.6607419462,
+       connection = {
+        [1] = {
+         node = "{9B869E59-8C25-4A04-B250-9AA0FD9324C3}",
+         pin = 0,
+         link = "{9B869E59-8C25-4A04-B250-9AA0FD9324C3}:RUN-{9CB7A0D6-74A1-414F-AE32-81ED0938FEE3}:RUN",
+        },
+       },
+       type = "RUN",
+       y = 947.65649686335,
+       trace = false,
+      },
+     },
+     wireless_id = "{EB31B596-515E-41C6-B845-A8BDB515EA52}",
+     outputs = {
+     },
+     x = 1719.8666666667,
+     w = 168.0,
+     type = "ws",
+     sender = "{19BB93A7-2077-4D73-A29F-BEBA26A196E1}",
+     h = 30,
+     trace = false,
+    },
+    [16] = {
+     label = "RECEIVER",
+     in_values = {
+     },
+     guid = "{19BB93A7-2077-4D73-A29F-BEBA26A196E1}",
+     selected = false,
+     y = 499.07142857143,
+     wireless_id = "{EB31B596-515E-41C6-B845-A8BDB515EA52}",
+     inputs = {
+     },
+     x = -294.45714285714,
+     w = 184.0,
+     type = "wr",
+     outputs = {
+      [0] = {
+       label = "RUN",
+       x = 848.2893133748,
+       connection = {
+        [1] = {
+         node = "{B5DEFF72-3B56-4E07-8D39-A0A3D2E0751C}",
+         pin = 0,
+         link = "{19BB93A7-2077-4D73-A29F-BEBA26A196E1}:RUN-{B5DEFF72-3B56-4E07-8D39-A0A3D2E0751C}:RUN",
+        },
+       },
+       type = "RUN",
+       y = 1111.9207825776,
+       trace = false,
+      },
+     },
+     h = 30,
+     trace = false,
+    },
+    [17] = {
+     label = "GET ENVELOPE",
+     in_values = {
+     },
+     guid = "{ADEC12A1-FD0B-403B-934E-2473F51DB644}",
+     selected = false,
+     y = 560.27142857143,
+     inputs = {
+     },
+     outputs = {
+      [1] = {
+       label = "",
+       x = 841.0893133748,
+       connection = {
+        [1] = {
+         node = "{B5DEFF72-3B56-4E07-8D39-A0A3D2E0751C}",
+         pin = 1,
+         link = "{ADEC12A1-FD0B-403B-934E-2473F51DB644}:-{B5DEFF72-3B56-4E07-8D39-A0A3D2E0751C}:ENVELOPE",
+        },
+       },
+       type = "TRACKENVELOPE",
+       y = 1146.1207825776,
+       pin = 1,
+       trace = false,
+      },
+     },
+     x = -345.65714285714,
+     w = 216.0,
+     type = "get",
+     h = 60,
+     get = "{FD29ED8A-8D34-4D11-B9F8-239C1EE9068B}",
+     trace = false,
+    },
+    [18] = {
+     label = "POINT IDX",
+     in_values = {
+      [1] = 18,
+     },
+     guid = "{9B869E59-8C25-4A04-B250-9AA0FD9324C3}",
+     fname = "CUSTOM_Set",
+     y = 73.833333333333,
+     outputs = {
+      [0] = {
+       label = "RUN",
+       x = 1516.0607419462,
+       connection = {
+        [1] = {
+         node = "{9CB7A0D6-74A1-414F-AE32-81ED0938FEE3}",
+         pin = 0,
+         link = "{9B869E59-8C25-4A04-B250-9AA0FD9324C3}:RUN-{9CB7A0D6-74A1-414F-AE32-81ED0938FEE3}:RUN",
+        },
+       },
+       type = "RUN",
+       y = 952.45649686335,
+       trace = false,
+      },
+      [1] = {
+       label = "INTEGER",
+       o_val = 18,
+       x = 1516.0607419462,
+       connection = {
+       },
+       type = "INTEGER",
+       y = 974.95649686335,
+       pin = 1,
+       trace = false,
+      },
+     },
+     inputs = {
+      [0] = {
+       label = "RUN",
+       x = 1444.0607419462,
+       connection = {
+        [1] = {
+         node = "{B01FA235-2CA2-431B-865A-4BC3098890F9}",
+         pin = 1,
+         link = "{B01FA235-2CA2-431B-865A-4BC3098890F9}:LOOP-{9B869E59-8C25-4A04-B250-9AA0FD9324C3}:RUN",
+        },
+       },
+       type = "RUN",
+       y = 952.45649686335,
+       trace = false,
+      },
+      [1] = {
+       label = "INTEGER",
+       x = 1444.0607419462,
+       connection = {
+        [1] = {
+         node = "{B01FA235-2CA2-431B-865A-4BC3098890F9}",
+         pin = 2,
+         link = "{B01FA235-2CA2-431B-865A-4BC3098890F9}:IDX-{9B869E59-8C25-4A04-B250-9AA0FD9324C3}:INTEGER",
+        },
+       },
+       type = "INTEGER",
+       y = 963.70649686335,
+       pin = 1,
+       trace = false,
+      },
+     },
+     set = {
+      api = true,
+      pin = 2,
+      guid = "{B01FA235-2CA2-431B-865A-4BC3098890F9}",
+     },
+     x = 1478.2666666667,
+     w = 192.0,
+     type = "api_var",
+     selected = false,
+     h = 90,
+     trace = false,
+    },
+    [19] = {
+     label = "GET POINT IDX",
+     in_values = {
+     },
+     guid = "{B9D1CA2C-3C22-41A3-BBD0-039440637638}",
+     selected = false,
+     y = 682.67142857143,
+     inputs = {
+     },
+     outputs = {
+      [1] = {
+       label = "",
+       x = 844.7393133748,
+       connection = {
+        [1] = {
+         node = "{B5DEFF72-3B56-4E07-8D39-A0A3D2E0751C}",
+         pin = 2,
+         link = "{B9D1CA2C-3C22-41A3-BBD0-039440637638}:-{B5DEFF72-3B56-4E07-8D39-A0A3D2E0751C}:PTIDX",
+        },
+       },
+       type = "INTEGER",
+       y = 1192.0207825776,
+       pin = 1,
+       trace = false,
+      },
+     },
+     x = -343.92380952381,
+     w = 224.0,
+     type = "get",
+     h = 60,
+     get = "{9B869E59-8C25-4A04-B250-9AA0FD9324C3}",
+     trace = false,
+    },
+    [20] = {
+     label = "Math Float Compare",
+     in_values = {
+     },
+     guid = "{13A7D75C-7477-40E9-85EC-FF13F67D82BB}",
+     fname = "MATH_FLOAT_Compare",
+     y = 871.82893772893,
+     inputs = {
+      [1] = {
+       label = "X",
+       i_val = 716.21785031261,
+       y = 1262.9548485117,
+       x = 982.66019249568,
+       type = "NUMBER/INTEGER",
+       pin = 1,
+       connection = {
+        [1] = {
+         node = "{7F2A6A7E-5E47-4385-9345-11BE8741ACDC}",
+         pin = 1,
+         link = "{13A7D75C-7477-40E9-85EC-FF13F67D82BB}:X-{7F2A6A7E-5E47-4385-9345-11BE8741ACDC}:",
+        },
+       },
+       trace = false,
+      },
+      [2] = {
+       label = "",
+       connection = {
+       },
+       y = 1274.2048485117,
+       pin_disable = true,
+       x = 982.66019249568,
+       type = "LIST",
+       i_val = "<",
+       pin = 2,
+       list = {
+        [1] = "==",
+        [2] = "~=",
+        [3] = ">",
+        [4] = ">=",
+        [5] = "<",
+        [6] = "<=",
+       },
+      },
+      [3] = {
+       label = "Y",
+       pin = 3,
+       x = 982.66019249568,
+       connection = {
+        [1] = {
+         node = "{5BFB6321-39FD-4E49-8836-DA1134C6C4FE}",
+         pin = 1,
+         link = "{5BFB6321-39FD-4E49-8836-DA1134C6C4FE}:-{13A7D75C-7477-40E9-85EC-FF13F67D82BB}:Y",
+        },
+       },
+       type = "NUMBER/INTEGER",
+       y = 1285.4548485117,
+       i_val = 500.0,
+       trace = false,
+      },
+     },
+     outputs = {
+      [1] = {
+       label = "RESULT",
+       x = 1081.6601924957,
+       connection = {
+        [1] = {
+         node = "{F05374BA-C165-4B21-B6EA-D5BC51B925E7}",
+         pin = 1,
+         link = "{13A7D75C-7477-40E9-85EC-FF13F67D82BB}:RESULT-{F05374BA-C165-4B21-B6EA-D5BC51B925E7}:INP",
+        },
+       },
+       type = "BOOLEAN",
+       y = 1296.7048485117,
+       pin = 1,
+       trace = false,
+      },
+     },
+     x = 247.8652014652,
+     w = 264.0,
+     type = "api",
+     h = 150,
+     selected = false,
+     trace = false,
+    },
+    [21] = {
+     label = "SetEnvelopePoint",
+     in_values = {
+      [1] = nil,
+      [2] = 17,
+      [3] = 0.18467877,
+      [4] = 503.92432951092,
+      [5] = 0,
+      [6] = 0.0,
+      [7] = true,
+      [8] = false,
+     },
+     guid = "{15CFEC1E-A3B4-4911-9AB9-FDB34038138C}",
+     fname = "SetEnvelopePoint",
+     y = 515.7,
+     inputs = {
+      [0] = {
+       label = "RUN",
+       x = 1378.3107419462,
+       connection = {
+        [1] = {
+         node = "{F05374BA-C165-4B21-B6EA-D5BC51B925E7}",
+         pin = 1,
+         link = "{F05374BA-C165-4B21-B6EA-D5BC51B925E7}:TRUE-{15CFEC1E-A3B4-4911-9AB9-FDB34038138C}:RUN",
+        },
+       },
+       type = "RUN",
+       y = 1118.1564968633,
+       trace = false,
+      },
+      [1] = {
+       label = "ENVELOPE",
+       x = 1378.3107419462,
+       connection = {
+        [1] = {
+         node = "{50B841A7-FE81-46B8-831D-C9EB3C090B1D}",
+         pin = 1,
+         link = "{50B841A7-FE81-46B8-831D-C9EB3C090B1D}:-{15CFEC1E-A3B4-4911-9AB9-FDB34038138C}:ENVELOPE",
+        },
+       },
+       type = "TRACKENVELOPE",
+       y = 1129.4064968633,
+       pin = 1,
+       trace = false,
+      },
+      [2] = {
+       label = "PTIDX",
+       pin = 2,
+       x = 1378.3107419462,
+       connection = {
+        [1] = {
+         node = "{54430A45-65FE-4323-8B81-0DAC15BAD05D}",
+         pin = 1,
+         link = "{54430A45-65FE-4323-8B81-0DAC15BAD05D}:-{15CFEC1E-A3B4-4911-9AB9-FDB34038138C}:PTIDX",
+        },
+       },
+       type = "INTEGER",
+       y = 1140.6564968633,
+       i_val = 18,
+       trace = false,
+      },
+      [3] = {
+       label = "TIMEIN",
+       pin = 3,
+       x = 1378.3107419462,
+       connection = {
+        [1] = {
+         node = "{B5DEFF72-3B56-4E07-8D39-A0A3D2E0751C}",
+         pin = 2,
+         link = "{B5DEFF72-3B56-4E07-8D39-A0A3D2E0751C}:TIME-{15CFEC1E-A3B4-4911-9AB9-FDB34038138C}:TIMEIN",
+        },
+       },
+       type = "NUMBER",
+       y = 1151.9064968633,
+       i_val = 0.18515352,
+       trace = false,
+      },
+      [4] = {
+       label = "VALUEIN",
+       pin = 4,
+       x = 1378.3107419462,
+       connection = {
+        [1] = {
+         node = "{91FCCCD0-4E61-4776-9903-7667A360676E}",
+         pin = 1,
+         link = "{91FCCCD0-4E61-4776-9903-7667A360676E}:RESULT-{15CFEC1E-A3B4-4911-9AB9-FDB34038138C}:VALUEIN",
+        },
+       },
+       type = "NUMBER",
+       y = 1163.1564968633,
+       i_val = 726.21785031261,
+       trace = false,
+      },
+      [5] = {
+       label = "SHAPEIN",
+       pin = 5,
+       x = 1378.3107419462,
+       connection = {
+        [1] = {
+         node = "{B5DEFF72-3B56-4E07-8D39-A0A3D2E0751C}",
+         pin = 4,
+         link = "{B5DEFF72-3B56-4E07-8D39-A0A3D2E0751C}:SHAPE-{15CFEC1E-A3B4-4911-9AB9-FDB34038138C}:SHAPEIN",
+        },
+       },
+       type = "INTEGER",
+       y = 1174.4064968633,
+       i_val = 0,
+       trace = false,
+      },
+      [6] = {
+       label = "TENSIONIN",
+       pin = 6,
+       x = 1378.3107419462,
+       connection = {
+        [1] = {
+         node = "{B5DEFF72-3B56-4E07-8D39-A0A3D2E0751C}",
+         pin = 5,
+         link = "{B5DEFF72-3B56-4E07-8D39-A0A3D2E0751C}:TENSION-{15CFEC1E-A3B4-4911-9AB9-FDB34038138C}:TENSIONIN",
+        },
+       },
+       type = "NUMBER",
+       y = 1185.6564968633,
+       i_val = 0.0,
+       trace = false,
+      },
+      [7] = {
+       label = "SELECTEDIN",
+       pin = 7,
+       x = 1378.3107419462,
+       connection = {
+        [1] = {
+         node = "{B5DEFF72-3B56-4E07-8D39-A0A3D2E0751C}",
+         pin = 6,
+         link = "{B5DEFF72-3B56-4E07-8D39-A0A3D2E0751C}:SELECTED-{15CFEC1E-A3B4-4911-9AB9-FDB34038138C}:SELECTEDIN",
+        },
+       },
+       type = "BOOLEAN",
+       y = 1196.9064968633,
+       i_val = false,
+       trace = false,
+      },
+      [8] = {
+       label = "NOSORTIN",
+       pin = 8,
+       x = 1378.3107419462,
+       connection = {
+       },
+       type = "BOOLEAN",
+       y = 1208.1564968633,
+       i_val = false,
+       trace = false,
+      },
+     },
+     outputs = {
+      [0] = {
+       label = "RUN",
+       x = 1471.3107419462,
+       connection = {
+       },
+       type = "RUN",
+       y = 1118.1564968633,
+       trace = false,
+      },
+      [1] = {
+       label = "BOOLEAN",
+       o_val = true,
+       x = 1471.3107419462,
+       connection = {
+       },
+       type = "BOOLEAN",
+       y = 1219.4064968633,
+       pin = 1,
+       trace = false,
+      },
+     },
+     x = 1302.9333333333,
+     w = 248.0,
+     type = "api",
+     h = 300,
+     selected = false,
+     trace = false,
+    },
+    [22] = {
+     label = "GET ENVELOPE",
+     in_values = {
+     },
+     guid = "{50B841A7-FE81-46B8-831D-C9EB3C090B1D}",
+     selected = false,
+     y = 347.47142857143,
+     inputs = {
+     },
+     outputs = {
+      [1] = {
+       label = "",
+       x = 1319.5678848034,
+       connection = {
+        [1] = {
+         node = "{15CFEC1E-A3B4-4911-9AB9-FDB34038138C}",
+         pin = 1,
+         link = "{50B841A7-FE81-46B8-831D-C9EB3C090B1D}:-{15CFEC1E-A3B4-4911-9AB9-FDB34038138C}:ENVELOPE",
+        },
+       },
+       type = "TRACKENVELOPE",
+       y = 1066.3207825776,
+       pin = 1,
+       trace = false,
+      },
+     },
+     x = 930.28571428571,
+     w = 216.0,
+     type = "get",
+     h = 60,
+     get = "{FD29ED8A-8D34-4D11-B9F8-239C1EE9068B}",
+     trace = false,
+    },
+    [23] = {
+     label = "GET POINT IDX",
+     in_values = {
+     },
+     guid = "{54430A45-65FE-4323-8B81-0DAC15BAD05D}",
+     selected = false,
+     y = 440.04285714285,
+     inputs = {
+     },
+     outputs = {
+      [1] = {
+       label = "",
+       x = 1320.2821705177,
+       connection = {
+        [1] = {
+         node = "{15CFEC1E-A3B4-4911-9AB9-FDB34038138C}",
+         pin = 2,
+         link = "{54430A45-65FE-4323-8B81-0DAC15BAD05D}:-{15CFEC1E-A3B4-4911-9AB9-FDB34038138C}:PTIDX",
+        },
+       },
+       type = "INTEGER",
+       y = 1101.0350682919,
+       pin = 1,
+       trace = false,
+      },
+     },
+     x = 924.19047619049,
+     w = 224.0,
+     type = "get",
+     h = 60,
+     get = "{9B869E59-8C25-4A04-B250-9AA0FD9324C3}",
+     trace = false,
+    },
+    [24] = {
+     label = "IF ELSE",
+     in_values = {
+      [1] = false,
+      [2] = true,
+     },
+     guid = "{F05374BA-C165-4B21-B6EA-D5BC51B925E7}",
+     fname = "CUSTOM_IF_Else",
+     y = 431.58571428572,
+     inputs = {
+      [0] = {
+       label = "RUN",
+       x = 1138.4250276605,
+       connection = {
+        [1] = {
+         node = "{B0AD189D-C548-4560-B977-B9A54E7BE998}",
+         pin = 0,
+         link = "{B0AD189D-C548-4560-B977-B9A54E7BE998}:RUN-{F05374BA-C165-4B21-B6EA-D5BC51B925E7}:RUN",
+        },
+       },
+       type = "RUN",
+       y = 1086.6136397205,
+       trace = false,
+      },
+      [1] = {
+       label = "INP",
+       pin = 1,
+       x = 1138.4250276605,
+       connection = {
+        [1] = {
+         node = "{13A7D75C-7477-40E9-85EC-FF13F67D82BB}",
+         pin = 1,
+         link = "{13A7D75C-7477-40E9-85EC-FF13F67D82BB}:RESULT-{F05374BA-C165-4B21-B6EA-D5BC51B925E7}:INP",
+        },
+       },
+       type = "BOOLEAN",
+       y = 1097.8636397205,
+       i_val = false,
+       trace = false,
+      },
+      [2] = {
+       label = "CONDITION",
+       pin = 2,
+       x = 1138.4250276605,
+       connection = {
+       },
+       type = "BOOLEAN",
+       y = 1109.1136397205,
+       i_val = true,
+       trace = false,
+      },
+     },
+     outputs = {
+      [0] = {
+       label = "RUN",
+       x = 1204.4250276605,
+       connection = {
+       },
+       type = "RUN",
+       y = 1086.6136397205,
+       trace = false,
+      },
+      [1] = {
+       label = "TRUE",
+       connection = {
+        [1] = {
+         node = "{15CFEC1E-A3B4-4911-9AB9-FDB34038138C}",
+         pin = 0,
+         link = "{F05374BA-C165-4B21-B6EA-D5BC51B925E7}:TRUE-{15CFEC1E-A3B4-4911-9AB9-FDB34038138C}:RUN",
+        },
+       },
+       y = 1120.3636397205,
+       run = false,
+       pin = 1,
+       type = "RUN",
+       x = 1204.4250276605,
+       trace = false,
+      },
+      [2] = {
+       label = "FALSE",
+       connection = {
+       },
+       y = 1131.6136397205,
+       run = true,
+       pin = 2,
+       type = "RUN",
+       x = 1204.4250276605,
+       trace = false,
+      },
+     },
+     x = 663.2380952381,
+     w = 176.0,
+     type = "api",
+     h = 150,
+     selected = false,
+     trace = false,
+    },
+    [25] = {
+     label = "Math Float",
+     in_values = {
+     },
+     guid = "{91FCCCD0-4E61-4776-9903-7667A360676E}",
+     fname = "MATH_FLOAT",
+     y = 862.30512820513,
+     inputs = {
+      [1] = {
+       label = "X",
+       i_val = 716.21785031261,
+       y = 1259.3834199403,
+       x = 1258.7030496385,
+       type = "NUMBER/INTEGER",
+       pin = 1,
+       connection = {
+        [1] = {
+         node = "{366AA38C-A113-4EF4-A83C-5B80C8D446B9}",
+         pin = 1,
+         link = "{366AA38C-A113-4EF4-A83C-5B80C8D446B9}:-{91FCCCD0-4E61-4776-9903-7667A360676E}:X",
+        },
+       },
+       trace = false,
+      },
+      [2] = {
+       label = "",
+       connection = {
+       },
+       y = 1270.6334199403,
+       pin_disable = true,
+       x = 1258.7030496385,
+       type = "LIST",
+       i_val = "+",
+       pin = 2,
+       list = {
+        [1] = "+",
+        [2] = "-",
+        [3] = "*",
+        [4] = "/",
+        [5] = "%",
+        [6] = "^",
+       },
+      },
+      [3] = {
+       label = "Y",
+       pin = 3,
+       x = 1258.7030496385,
+       connection = {
+        [1] = {
+         node = "{F9DF140B-6CF1-4A25-86BD-FFFCD29FBBA0}",
+         pin = 1,
+         link = "{F9DF140B-6CF1-4A25-86BD-FFFCD29FBBA0}:-{91FCCCD0-4E61-4776-9903-7667A360676E}:Y",
+        },
+       },
+       type = "NUMBER/INTEGER",
+       y = 1281.8834199403,
+       i_val = 10.0,
+       trace = false,
+      },
+     },
+     outputs = {
+      [1] = {
+       label = "RESULT",
+       x = 1333.7030496385,
+       connection = {
+        [1] = {
+         node = "{15CFEC1E-A3B4-4911-9AB9-FDB34038138C}",
+         pin = 4,
+         link = "{91FCCCD0-4E61-4776-9903-7667A360676E}:RESULT-{15CFEC1E-A3B4-4911-9AB9-FDB34038138C}:VALUEIN",
+        },
+       },
+       type = "NUMBER",
+       y = 1293.1334199403,
+       pin = 1,
+       trace = false,
+      },
+     },
+     x = 983.97948717949,
+     w = 200.0,
+     type = "api",
+     h = 150,
+     selected = false,
+     trace = false,
+    },
+    [26] = {
+     label = "THRESHOLD",
+     guid = "{5BFB6321-39FD-4E49-8836-DA1134C6C4FE}",
+     selected = false,
+     y = 961.05238095238,
+     inputs = {
+     },
+     x = -22.483882783883,
+     w = 192.0,
+     outputs = {
+      [1] = {
+       label = "",
+       connection = {
+        [1] = {
+         node = "{13A7D75C-7477-40E9-85EC-FF13F67D82BB}",
+         pin = 3,
+         link = "{5BFB6321-39FD-4E49-8836-DA1134C6C4FE}:-{13A7D75C-7477-40E9-85EC-FF13F67D82BB}:Y",
+        },
+       },
+       y = 1296.4136397205,
+       pin = 1,
+       x = 953.27928590227,
+       type = "NUMBER",
+       i_val = 500.0,
+       o_val = 500.0,
+       trace = false,
+      },
+     },
+     in_values = {
+     },
+     h = 60,
+     trace = false,
+     type = "f",
+    },
+    [27] = {
+     label = "INCREMENT_VALUE",
+     guid = "{F9DF140B-6CF1-4A25-86BD-FFFCD29FBBA0}",
+     selected = false,
+     y = 973.05285359801,
+     inputs = {
+     },
+     x = 647.69217771476,
+     w = 240.0,
+     outputs = {
+      [1] = {
+       label = "",
+       connection = {
+        [1] = {
+         node = "{91FCCCD0-4E61-4776-9903-7667A360676E}",
+         pin = 3,
+         link = "{F9DF140B-6CF1-4A25-86BD-FFFCD29FBBA0}:-{91FCCCD0-4E61-4776-9903-7667A360676E}:Y",
+        },
+       },
+       y = 1300.9138169626,
+       o_val = 10.0,
+       pin = 1,
+       x = 1222.5953085893,
+       type = "NUMBER",
+       i_val = 10.0,
+       trace = false,
+      },
+     },
+     in_values = {
+     },
+     h = 60,
+     trace = false,
+     type = "f",
+    },
+    [28] = {
+     label = "NUMERIC FOR LOOP",
+     guid = "{3AEA5879-5736-4AF7-AD7D-3D59755D42CE}",
+     fname = "CUSTOM_ForLoop",
+     y = -439.38725038402,
+     inputs = {
+      [1] = {
+       label = "START",
+       connection = {
+       },
+       y = 771.24877796934,
+       pin = 1,
+       x = 900.76005070199,
+       type = "INTEGER",
+       i_val = 1,
+       trace = false,
+      },
+      [2] = {
+       label = "INCREMENT",
+       connection = {
+       },
+       y = 782.49877796934,
+       pin = 2,
+       x = 900.76005070199,
+       type = "INTEGER",
+       i_val = 1,
+       trace = false,
+      },
+      [3] = {
+       label = "END",
+       connection = {
+        [1] = {
+         node = "{CBAA5DCC-2138-4EE1-B801-619698A50E39}",
+         pin = 1,
+         link = "{3AEA5879-5736-4AF7-AD7D-3D59755D42CE}:END-{CBAA5DCC-2138-4EE1-B801-619698A50E39}:INTEGER",
+        },
+       },
+       y = 793.74877796934,
+       pin = 3,
+       x = 900.76005070199,
+       type = "INTEGER",
+       i_val = 2,
+       trace = false,
+      },
+      [4] = {
+       label = "OUT IDX -1",
+       connection = {
+       },
+       y = 804.99877796934,
+       pin_disable = true,
+       pin = 4,
+       x = 900.76005070199,
+       type = "BOOLEAN",
+       i_val = true,
+      },
+      [0] = {
+       label = "RUN",
+       connection = {
+        [1] = {
+         node = "{CBAA5DCC-2138-4EE1-B801-619698A50E39}",
+         pin = 0,
+         link = "{CBAA5DCC-2138-4EE1-B801-619698A50E39}:RUN-{3AEA5879-5736-4AF7-AD7D-3D59755D42CE}:RUN",
+        },
+       },
+       y = 759.99877796934,
+       x = 900.76005070199,
+       type = "RUN",
+       trace = false,
+      },
+     },
+     x = 29.464823348691,
+     w = 248.0,
+     outputs = {
+      [1] = {
+       label = "LOOP",
+       connection = {
+        [1] = {
+         node = "{94A26773-74FA-4CC7-B896-F9A7F51F95D0}",
+         pin = 0,
+         link = "{3AEA5879-5736-4AF7-AD7D-3D59755D42CE}:LOOP-{94A26773-74FA-4CC7-B896-F9A7F51F95D0}:RUN",
+        },
+       },
+       y = 816.24877796934,
+       run = true,
+       pin = 1,
+       x = 993.76005070199,
+       type = "RUN",
+       trace = false,
+      },
+      [2] = {
+       label = "IDX",
+       connection = {
+        [1] = {
+         node = "{94A26773-74FA-4CC7-B896-F9A7F51F95D0}",
+         pin = 2,
+         link = "{3AEA5879-5736-4AF7-AD7D-3D59755D42CE}:IDX-{94A26773-74FA-4CC7-B896-F9A7F51F95D0}:TRACKIDX",
+        },
+       },
+       y = 827.49877796934,
+       pin = 2,
+       x = 993.76005070199,
+       type = "INTEGER",
+       o_val = 1,
+       trace = false,
+      },
+      [0] = {
+       label = "RUN",
+       connection = {
+       },
+       y = 759.99877796934,
+       x = 993.76005070199,
+       type = "RUN",
+       trace = false,
+      },
+     },
+     in_values = {
+      [1] = 1,
+      [2] = 1,
+      [3] = 2,
+      [4] = true,
+     },
+     h = 210,
+     trace = false,
+     type = "api",
+     selected = false,
+    },
+    [29] = {
+     label = "NUMERIC FOR LOOP",
+     guid = "{D647DB65-94A5-4E81-976C-519AB67979DC}",
+     fname = "CUSTOM_ForLoop",
+     y = 3.0841900035479,
+     inputs = {
+      [1] = {
+       label = "START",
+       connection = {
+       },
+       y = 937.17556811468,
+       pin = 1,
+       x = 699.09724052829,
+       type = "INTEGER",
+       i_val = 1,
+       trace = false,
+      },
+      [2] = {
+       label = "INCREMENT",
+       connection = {
+       },
+       y = 948.42556811468,
+       pin = 2,
+       x = 699.09724052829,
+       type = "INTEGER",
+       i_val = 1,
+       trace = false,
+      },
+      [3] = {
+       label = "END",
+       connection = {
+        [1] = {
+         node = "{EEB464F2-5E25-4A4A-8CF2-8E9AFFC24929}",
+         pin = 1,
+         link = "{EEB464F2-5E25-4A4A-8CF2-8E9AFFC24929}:-{D647DB65-94A5-4E81-976C-519AB67979DC}:END",
+        },
+       },
+       y = 959.67556811468,
+       pin = 3,
+       x = 699.09724052829,
+       type = "INTEGER",
+       i_val = 1,
+       trace = false,
+      },
+      [4] = {
+       label = "OUT IDX -1",
+       connection = {
+       },
+       y = 970.92556811468,
+       pin_disable = true,
+       pin = 4,
+       x = 699.09724052829,
+       type = "BOOLEAN",
+       i_val = true,
+      },
+      [0] = {
+       label = "RUN",
+       connection = {
+        [1] = {
+         node = "{8713B92D-6238-4E68-91D2-CDE1049CAA65}",
+         pin = 0,
+         link = "{8713B92D-6238-4E68-91D2-CDE1049CAA65}:RUN-{D647DB65-94A5-4E81-976C-519AB67979DC}:RUN",
+        },
+       },
+       y = 925.92556811468,
+       x = 699.09724052829,
+       type = "RUN",
+       trace = false,
+      },
+     },
+     x = -508.30267044783,
+     w = 248.0,
+     outputs = {
+      [1] = {
+       label = "LOOP",
+       connection = {
+        [1] = {
+         node = "{4F4C186E-F147-4506-A286-0025B70CFDC6}",
+         pin = 0,
+         link = "{D647DB65-94A5-4E81-976C-519AB67979DC}:LOOP-{4F4C186E-F147-4506-A286-0025B70CFDC6}:RUN",
+        },
+       },
+       y = 982.17556811468,
+       run = true,
+       pin = 1,
+       x = 792.09724052829,
+       type = "RUN",
+       trace = false,
+      },
+      [2] = {
+       label = "IDX",
+       connection = {
+        [1] = {
+         node = "{4F4C186E-F147-4506-A286-0025B70CFDC6}",
+         pin = 1,
+         link = "{D647DB65-94A5-4E81-976C-519AB67979DC}:IDX-{4F4C186E-F147-4506-A286-0025B70CFDC6}:INTEGER",
+        },
+       },
+       y = 993.42556811468,
+       pin = 2,
+       x = 792.09724052829,
+       type = "INTEGER",
+       o_val = 0,
+       trace = false,
+      },
+      [0] = {
+       label = "RUN",
+       connection = {
+       },
+       y = 925.92556811468,
+       x = 792.09724052829,
+       type = "RUN",
+       trace = false,
+      },
+     },
+     in_values = {
+      [1] = 1,
+      [2] = 1,
+      [3] = 1,
+      [4] = true,
+     },
+     h = 210,
+     trace = false,
+     type = "api",
+     selected = false,
+    },
+    [30] = {
+     label = "GET ENV_CNT",
+     guid = "{EEB464F2-5E25-4A4A-8CF2-8E9AFFC24929}",
+     selected = false,
+     y = 71.90552995392,
+     inputs = {
+     },
+     x = -788.62466028595,
+     w = 208.0,
+     outputs = {
+      [1] = {
+       label = "",
+       connection = {
+        [1] = {
+         node = "{D647DB65-94A5-4E81-976C-519AB67979DC}",
+         pin = 3,
+         link = "{EEB464F2-5E25-4A4A-8CF2-8E9AFFC24929}:-{D647DB65-94A5-4E81-976C-519AB67979DC}:END",
+        },
+       },
+       y = 962.98357059607,
+       pin = 1,
+       x = 671.97649433899,
+       type = "INTEGER",
+       trace = false,
+      },
+     },
+     in_values = {
+     },
+     h = 60,
+     trace = false,
+     type = "get",
+     get = "{51F9F45E-899E-4738-943A-31E02175D23C}",
+    },
+    [31] = {
+     label = "VAR ENVELOPE IDX",
+     guid = "{4F4C186E-F147-4506-A286-0025B70CFDC6}",
+     fname = "CUSTOM_Set",
+     y = 54.982453030843,
+     inputs = {
+      [1] = {
+       label = "INTEGER",
+       connection = {
+        [1] = {
+         node = "{D647DB65-94A5-4E81-976C-519AB67979DC}",
+         pin = 2,
+         link = "{D647DB65-94A5-4E81-976C-519AB67979DC}:IDX-{4F4C186E-F147-4506-A286-0025B70CFDC6}:INTEGER",
+        },
+       },
+       y = 956.63741674992,
+       pin = 1,
+       x = 827.63034049284,
+       type = "INTEGER",
+       trace = false,
+      },
+      [0] = {
+       label = "RUN",
+       connection = {
+        [1] = {
+         node = "{D647DB65-94A5-4E81-976C-519AB67979DC}",
+         pin = 1,
+         link = "{D647DB65-94A5-4E81-976C-519AB67979DC}:LOOP-{4F4C186E-F147-4506-A286-0025B70CFDC6}:RUN",
+        },
+       },
+       y = 945.38741674992,
+       x = 827.63034049284,
+       type = "RUN",
+       trace = false,
+      },
+     },
+     x = -165.54773720903,
+     w = 248.0,
+     outputs = {
+      [1] = {
+       label = "INTEGER",
+       connection = {
+        [1] = {
+         node = "{7BE4753A-53C5-4D58-9A23-24A07E0FC95B}",
+         pin = 2,
+         link = "{4F4C186E-F147-4506-A286-0025B70CFDC6}:INTEGER-{7BE4753A-53C5-4D58-9A23-24A07E0FC95B}:ENVIDX",
+        },
+       },
+       y = 967.88741674992,
+       pin = 1,
+       x = 920.63034049284,
+       type = "INTEGER",
+       o_val = 0,
+       trace = false,
+      },
+      [0] = {
+       label = "RUN",
+       connection = {
+        [1] = {
+         node = "{7BE4753A-53C5-4D58-9A23-24A07E0FC95B}",
+         pin = 0,
+         link = "{4F4C186E-F147-4506-A286-0025B70CFDC6}:RUN-{7BE4753A-53C5-4D58-9A23-24A07E0FC95B}:RUN",
+        },
+       },
+       y = 945.38741674992,
+       x = 920.63034049284,
+       type = "RUN",
+       trace = false,
+      },
+     },
+     in_values = {
+      [1] = 0,
+     },
+     set = {
+      api = true,
+      guid = "{D647DB65-94A5-4E81-976C-519AB67979DC}",
+      pin = 2,
+     },
+     h = 90,
+     trace = false,
+     type = "api_var",
+     selected = false,
+    },
+    [32] = {
+     label = "VAR POINT VALUE",
+     guid = "{B0AD189D-C548-4560-B977-B9A54E7BE998}",
+     fname = "CUSTOM_Set",
+     y = 430.85019639859,
+     inputs = {
+      [1] = {
+       label = "NUMBER",
+       connection = {
+        [1] = {
+         node = "{B5DEFF72-3B56-4E07-8D39-A0A3D2E0751C}",
+         pin = 3,
+         link = "{B5DEFF72-3B56-4E07-8D39-A0A3D2E0751C}:VALUE-{B0AD189D-C548-4560-B977-B9A54E7BE998}:NUMBER",
+        },
+       },
+       y = 1097.5878205128,
+       pin = 1,
+       x = 1019.0754578755,
+       type = "NUMBER",
+       trace = false,
+      },
+      [0] = {
+       label = "RUN",
+       connection = {
+        [1] = {
+         node = "{B5DEFF72-3B56-4E07-8D39-A0A3D2E0751C}",
+         pin = 0,
+         link = "{B5DEFF72-3B56-4E07-8D39-A0A3D2E0751C}:RUN-{B0AD189D-C548-4560-B977-B9A54E7BE998}:RUN",
+        },
+       },
+       y = 1086.3378205128,
+       x = 1019.0754578755,
+       type = "RUN",
+       trace = false,
+      },
+     },
+     x = 344.97257581128,
+     w = 240.0,
+     outputs = {
+      [1] = {
+       label = "NUMBER",
+       connection = {
+       },
+       y = 1108.8378205128,
+       o_val = 716.21785031261,
+       pin = 1,
+       x = 1109.0754578755,
+       type = "NUMBER",
+       trace = false,
+      },
+      [0] = {
+       label = "RUN",
+       connection = {
+        [1] = {
+         node = "{F05374BA-C165-4B21-B6EA-D5BC51B925E7}",
+         pin = 0,
+         link = "{B0AD189D-C548-4560-B977-B9A54E7BE998}:RUN-{F05374BA-C165-4B21-B6EA-D5BC51B925E7}:RUN",
+        },
+       },
+       y = 1086.3378205128,
+       x = 1109.0754578755,
+       type = "RUN",
+       trace = false,
+      },
+     },
+     in_values = {
+      [1] = 716.21785031261,
+     },
+     set = {
+      api = true,
+      guid = "{B5DEFF72-3B56-4E07-8D39-A0A3D2E0751C}",
+      pin = 3,
+     },
+     h = 90,
+     trace = false,
+     type = "api_var",
+     selected = true,
+    },
+    [33] = {
+     label = "GET VAR POINT VALUE",
+     guid = "{7F2A6A7E-5E47-4385-9345-11BE8741ACDC}",
+     selected = false,
+     y = 863.25556880396,
+     inputs = {
+     },
+     x = -81.779560940853,
+     w = 272.0,
+     outputs = {
+      [1] = {
+       label = "",
+       connection = {
+        [1] = {
+         node = "{13A7D75C-7477-40E9-85EC-FF13F67D82BB}",
+         pin = 1,
+         link = "{13A7D75C-7477-40E9-85EC-FF13F67D82BB}:X-{7F2A6A7E-5E47-4385-9345-11BE8741ACDC}:",
+        },
+       },
+       y = 1259.7398351648,
+       pin = 1,
+       x = 961.04340659341,
+       type = "NUMBER",
+       trace = false,
+      },
+     },
+     in_values = {
+     },
+     h = 60,
+     trace = false,
+     type = "get",
+     get = "{B0AD189D-C548-4560-B977-B9A54E7BE998}",
+    },
+    [34] = {
+     label = "GET VAR POINT VALUE",
+     in_values = {
+     },
+     guid = "{366AA38C-A113-4EF4-A83C-5B80C8D446B9}",
+     selected = false,
+     y = 882.52296807136,
+     inputs = {
+     },
+     h = 60,
+     x = 625.50981634852,
+     w = 272.0,
+     type = "get",
+     trace = false,
+     get = "{B0AD189D-C548-4560-B977-B9A54E7BE998}",
+     outputs = {
+      [1] = {
+       label = "",
+       pin = 1,
+       connection = {
+        [1] = {
+         node = "{91FCCCD0-4E61-4776-9903-7667A360676E}",
+         pin = 1,
+         link = "{366AA38C-A113-4EF4-A83C-5B80C8D446B9}:-{91FCCCD0-4E61-4776-9903-7667A360676E}:X",
+        },
+       },
+       type = "NUMBER",
+       y = 1266.9651098901,
+       x = 1226.2769230769,
+       trace = false,
+      },
+     },
+    },
+   },
+   h = 0,
+   outputs = {
+    [0] = {
+     label = "RUN",
+     x = 0,
+     connection = {
+     },
+     type = "RUN",
+     y = 0,
+    },
+   },
+  },
+  [1] = {
+   label = "Init",
+   in_values = {
+   },
+   guid = "{C0146FE2-B335-444C-AAC4-9D0EAB437946}",
+   selected = false,
+   y = 0,
+   CANVAS = {
+    MY = -3.4028234663853e+038,
+    off_y = 152.5,
+    view_x = 414.0,
+    w = 0,
+    view_y = 458.0,
+    ry = 678.0,
+    zone_B = false,
+    MouseIN = false,
+    zone_R = false,
+    zone_T = false,
+    off_x = 62.0,
+    zone_L = false,
+    h = 0,
+    rx = 1315.0,
+    MX = -3.4028234663853e+038,
+    scale = 1,
+   },
+   inputs = {
+    [0] = {
+     label = "RUN",
+     x = 0,
+     connection = {
+     },
+     type = "RUN",
+     y = 0,
+    },
+   },
+   x = 0,
+   w = 0,
+   type = "func",
+   NODES = {
+    [1] = {
+     label = "START",
+     in_values = {
+     },
+     guid = "{3CB910BD-7DBC-4720-8946-54C2F9BFD63D}",
+     fname = "CUSTOM_FunctionStartArgs",
+     y = 0,
+     inputs = {
+     },
+     outputs = {
+      [0] = {
+       label = "RUN",
+       x = 636.0,
+       connection = {
+       },
+       type = "RUN",
+       y = 625.5,
+       trace = false,
+      },
+     },
+     x = 0,
+     w = 160.0,
+     type = "m",
+     h = 30,
+     selected = false,
+     trace = false,
+    },
+   },
+   h = 0,
+   outputs = {
+    [0] = {
+     label = "RUN",
+     x = 0,
+     connection = {
+     },
+     type = "RUN",
+     y = 0,
+    },
+   },
+  },
+ },
+}

@@ -94,6 +94,7 @@ function Fill_Api_list()
                     if return_vals then
                         -- STRIP , AND WHITESPACES
                         return_vals = return_vals:gsub(",", ""):gsub("optional", ""):gsub("%s+", "")
+
                         for a_type, a_name in return_vals:gmatch('<em>([^<]-)</em>(%a* ?)') do
                             -- IMGUI SPECIFIC TYPE OBJECT
                             if name:match("ImGui_Create") then
@@ -118,9 +119,9 @@ function Fill_Api_list()
                         for a_type, a_name in argument_vals:gmatch('<em>([^<]-)</em>(%a+)') do
                             a_type = a_type:upper()
                             if convert[a_type] then a_type = convert[a_type] end
-                            if name:lower():find("showconsolemsg") then
-                                a_type = "ANY"
-                            end
+                            --if name:lower():find("showconsolemsg") then
+                            --     a_type = "ANY"
+                            --end
                             api[#api].ins[#api[#api].ins + 1] = {
                                 type = a_type,
                                 name = a_name:upper(),
