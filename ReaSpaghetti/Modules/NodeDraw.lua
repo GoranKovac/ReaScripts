@@ -542,7 +542,7 @@ function FilterBox()
                 InsertNode("wr", "RECEIVER")
                 DIRTY = true
             end
-            if r.ImGui_Selectable(ctx, "GROUP NODE", false) then
+            if r.ImGui_Selectable(ctx, "ADD GROUP NODE", false) then
                 InsertNode("group", "GROUP")
                 DIRTY = true
             end
@@ -1510,7 +1510,7 @@ local function Draw_Node(node)
 
     if node.can_resize then
         r.ImGui_SetCursorScreenPos(ctx, x + w - (10 * CANVAS.scale), h + y - (10 * CANVAS.scale))
-        r.ImGui_Button(ctx, '##RS', (10 * CANVAS.scale), (10 * CANVAS.scale))
+        r.ImGui_Button(ctx, '##RS' .. node.guid, (10 * CANVAS.scale), (10 * CANVAS.scale))
         if r.ImGui_IsItemHovered(ctx) or r.ImGui_IsItemActive(ctx) then
             r.ImGui_SetMouseCursor(ctx, r.ImGui_MouseCursor_ResizeAll())
         end

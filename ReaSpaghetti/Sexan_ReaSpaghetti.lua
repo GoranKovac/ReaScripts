@@ -1,13 +1,9 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.15
+-- @version 0.16
 -- @changelog
---  Fixed renaming functions propagate to child functions
---  Fixed Crash when deleting parent function
---  Fixed crash when saving project not loading name and crashing
---  Added Group Node
---  Added per node comment
+--  Fixed group node resize ID
 -- @provides
 --   Modules/*.lua
 --   Examples/*.reanodes
