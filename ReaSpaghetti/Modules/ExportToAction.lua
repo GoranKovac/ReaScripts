@@ -52,7 +52,6 @@ function ExportTest(name, proj_path, is_defer)
     if file then
         file:write(table.concat(lua_string, "\n"))
         file:close()
-        --reaper.AddRemoveReaScript(true, integer sectionID, lua_string, true)
         local ret = r.AddRemoveReaScript(true, 0, path, 1)
         if ret then
             ADDED_TO_ACTIONS = true

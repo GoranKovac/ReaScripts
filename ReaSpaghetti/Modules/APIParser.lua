@@ -13,7 +13,7 @@ function CurlToFile()
         curl_cmd = '/usr/bin/curl'
     end
     r.ExecProcess(
-    ([[%s -so "%s" https://www.extremraym.com/cloud/reascript-doc/ --ssl-no-revoke]]):format(curl_cmd, API_PATH), 0)
+        ([[%s -so "%s" https://www.extremraym.com/cloud/reascript-doc/ --ssl-no-revoke]]):format(curl_cmd, API_PATH), 0)
     UPDATE = true
 end
 
@@ -349,7 +349,7 @@ function Fill_Api_list()
     -- MATH FLOAT
     api[#api + 1] = {
         fname = "MATH_FLOAT",
-        label = "Math Float",
+        label = "Math Operations",
         desc = "Math FLOAT/NUMBER + - / * ^ %",
         ins = {
             { name = "X", type = "NUMBER/INTEGER", def_val = 0 },
@@ -363,7 +363,7 @@ function Fill_Api_list()
     -- MATH COMPARE FLOAT
     api[#api + 1] = {
         fname = "MATH_FLOAT_Compare",
-        label = "Math Float Compare",
+        label = "Math Compare",
         desc = "Compare == > >= < <=",
         ins = {
             { name = "X", type = "NUMBER/INTEGER", def_val = 0 },

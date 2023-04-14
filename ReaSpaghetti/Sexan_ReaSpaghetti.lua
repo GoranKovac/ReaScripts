@@ -1,10 +1,10 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.9.9
+-- @version 0.11
 -- @changelog
---  Deselect all nodes when changing tab
---  Fix double click API node openinx xraym site for explanation
+--  Renamed Math Float to Math Operations
+--  Renamed Math Float Compare to Math Compare
 -- @provides
 --   Modules/*.lua
 --   Examples/*.reanodes
