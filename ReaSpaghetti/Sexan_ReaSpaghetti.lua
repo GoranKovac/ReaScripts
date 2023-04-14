@@ -1,10 +1,9 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.11
+-- @version 0.13
 -- @changelog
---  Renamed Math Float to Math Operations
---  Renamed Math Float Compare to Math Compare
+--  Added Node tooltips
 -- @provides
 --   Modules/*.lua
 --   Examples/*.reanodes
@@ -21,7 +20,6 @@ local crash = function(e)
     r.ShowConsoleMsg(e .. '\n' .. debug.traceback())
 end
 
---DEBUG = true
 -- IMGUI SETUP
 ctx = r.ImGui_CreateContext('My script')
 

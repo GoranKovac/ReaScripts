@@ -146,9 +146,6 @@ function Run_Flow(tbl, func_node)
     FOLLOW_WARNING = true
     for i = 1, #tbl do
         local node = tbl[i]
-        -- CLEAR OUTPUTS (RETURN VALUES)
-        --ClearReturnValues(node)
-        --CollectArguments(node)
         local out_values
 
         if node.type == "func" then
@@ -187,7 +184,6 @@ function Run_Flow(tbl, func_node)
                 end
                 UpdateReturnValues(node, out_values)
             end
-            --UpdateReturnValues(node, out_values)
         end
     end
 end

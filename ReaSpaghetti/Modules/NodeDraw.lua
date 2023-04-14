@@ -309,6 +309,7 @@ local function Get_Node(type, label, x, y, w, h, guid, tbl)
         h           = h and h or 0,
         inputs      = CreateInputs("in", tbl.ins, tbl.run),
         outputs     = CreateInputs("out", tbl.out, tbl.run),
+        desc        = tbl.desc,
         selected    = false,
         NODES       = tbl.NODES,
         in_values   = {},
@@ -1327,6 +1328,19 @@ function UpdateChildFunctions(fid, io, add_remove_update, tbl, pin_num, pin_type
     end
 end
 
+local function DrawTooltip(dsc)
+    if not TOOLTIP then return end
+    if not dsc then return end
+    if r.ImGui_IsItemHovered(ctx) then
+        if r.ImGui_BeginTooltip(ctx) then
+            r.ImGui_PushFont(ctx, FONT_STATIC)
+            r.ImGui_Text(ctx, dsc)
+            r.ImGui_PopFont(ctx)
+            r.ImGui_EndTooltip(ctx)
+        end
+    end
+end
+
 local function Draw_Node(node)
     AutoAdjust_Node_WH(node)
     local x, y, xe, ye, w, h = Get_Node_Screen_position(node)
@@ -1387,6 +1401,7 @@ local function Draw_Node(node)
         MOVE_NODE = r.ImGui_IsItemActive(ctx)
     end
 
+    DrawTooltip(node.desc)
     MoveNode(node)
 
     x, y = x - edge_offset, y - edge_offset

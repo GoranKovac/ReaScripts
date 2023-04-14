@@ -15,7 +15,7 @@ local help_tbl = {
     "\tKEYS :",
     "\t\tF2           - Rename Single node (ignores multiselection)",
     "\t\tDelete       - Deletes selected nodes",
-    "\t\tCTRL + C/V   - Copy Paste (Start Node excluded)",
+    "\t\tCTRL + C/V   - Copy Paste (Start/Return Node excluded)",
     "\t\tCTRL + A     - Select all",
     "\t\tHome         - Resets view to center",
     "\n",
@@ -23,10 +23,13 @@ local help_tbl = {
     "\tNodes TAB      - Double Click scoll node into view",
     "\tVariables TAB  - STRING, INTEGER, FLOAT nodes",
     "\tAPI TAB        - Left Drag - Drag and drop node",
+    "\tAPI TAB        - Double Click - Open API Site for info",
     "Search Bar :",
     "\tLeft Drag      - Drag and drop node",
     "NODES :",
     "\tShift hover    - Trace all Input/Output lines",
+    "\tALT CLICK PIN  - Deletes all connections to that pin",
+    "\tALT CLICK WIRE - Deletes that specific wire",
 }
 
 function Top_Menu()
@@ -58,7 +61,19 @@ function Top_Menu()
             if r.ImGui_MenuItem(ctx, 'Update API') then
                 CurlToFile()
             end
-            if r.ImGui_MenuItem(ctx, 'Help') then
+            -- if r.ImGui_MenuItem(ctx, 'Help') then
+            --     HELP = true
+            -- end
+            r.ImGui_EndMenu(ctx)
+        end
+        if r.ImGui_BeginMenu(ctx, 'Options') then
+            if r.ImGui_MenuItem(ctx, 'Preferences') then
+                PREFERENCES = true
+            end
+            r.ImGui_EndMenu(ctx)
+        end
+        if r.ImGui_BeginMenu(ctx, 'Help') then
+            if r.ImGui_MenuItem(ctx, 'Keys And Shortcuts') then
                 HELP = true
             end
             r.ImGui_EndMenu(ctx)
@@ -1136,10 +1151,24 @@ function Popups()
         r.ImGui_OpenPopup(ctx, "Help")
         HELP = nil
     end
+
     r.ImGui_SetNextWindowPos(ctx, center[1], center[2], r.ImGui_Cond_Appearing(), 0.5, 0.5)
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_PopupBg(), 0x000000FF)
     if r.ImGui_BeginPopup(ctx, "Help") then
         r.ImGui_Text(ctx, table.concat(help_tbl, "\n"))
+        r.ImGui_EndPopup(ctx)
+    end
+    r.ImGui_PopStyleColor(ctx)
+
+    if PREFERENCES then
+        r.ImGui_OpenPopup(ctx, "PREFERENCES")
+        PREFERENCES = nil
+    end
+    r.ImGui_SetNextWindowPos(ctx, center[1], center[2], r.ImGui_Cond_Appearing(), 0.5, 0.5)
+    r.ImGui_PushStyleColor(ctx, r.ImGui_Col_PopupBg(), 0x000000FF)
+    if r.ImGui_BeginPopup(ctx, "PREFERENCES") then
+        _, DEBUG = r.ImGui_Checkbox(ctx, "DEBUG", DEBUG)
+        _, TOOLTIP = r.ImGui_Checkbox(ctx, "Tooltips", TOOLTIP)
         r.ImGui_EndPopup(ctx)
     end
     r.ImGui_PopStyleColor(ctx)

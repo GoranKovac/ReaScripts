@@ -208,7 +208,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "CUSTOM_DBG_View",
         label = "DEBUG MSG",
-        desc = "",
+        desc = "Outpus to DEBUG VIEW",
         ins = {
             { name = "", type = "ANY" },
         },
@@ -219,7 +219,7 @@ function Fill_Api_list()
     -- TEST DEFER (HACK)
     api[#api + 1] = {
         fname = "CUSTOM_TestDefer",
-        label = "LEGO Defer",
+        label = "Spaghetti Defer",
         desc = "",
         ins = {},
         out = {},
@@ -229,7 +229,7 @@ function Fill_Api_list()
     -- TEST DEFER END (HACK)
     api[#api + 1] = {
         fname = "CUSTOM_TestDeferEND",
-        label = "LEGO Defer End",
+        label = "Spaghetti Defer End",
         desc = "",
         ins = {},
         out = {},
@@ -379,7 +379,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "MathAbs",
         label = "MathAbs",
-        desc = "",
+        desc = "Returns Absolute value -> -10 = 10, 10 = 10",
         ins = {
             { name = "X", type = "NUMBER/INTEGER", def_val = 0 },
             { name = "",  type = "STRING",         def_val = "abs", pin_disable = true, no_draw = true },
@@ -393,7 +393,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "MathCos",
         label = "MathCos",
-        desc = "",
+        --desc = "",
         ins = {
             { name = "X", type = "NUMBER/INTEGER", def_val = 0 },
             { name = "",  type = "STRING",         def_val = "cos", pin_disable = true, no_draw = true },
@@ -407,7 +407,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "MathACos",
         label = "MathACos",
-        desc = "",
+        --desc = "",
         ins = {
             { name = "X", type = "NUMBER/INTEGER", def_val = 0 },
             { name = "",  type = "STRING",         def_val = "acos", pin_disable = true, no_draw = true },
@@ -421,7 +421,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "MathSin",
         label = "MathSin",
-        desc = "",
+        --desc = "",
         ins = {
             { name = "X", type = "NUMBER/INTEGER", def_val = 0 },
             { name = "",  type = "STRING",         def_val = "sin", pin_disable = true, no_draw = true },
@@ -435,7 +435,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "MathASin",
         label = "MathASin",
-        desc = "",
+        --desc = "",
         ins = {
             { name = "X", type = "NUMBER/INTEGER", def_val = 0 },
             { name = "",  type = "STRING",         def_val = "asin", pin_disable = true, no_draw = true },
@@ -449,7 +449,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "MathAtan",
         label = "MathAtan",
-        desc = "",
+        --desc = "",
         ins = {
             { name = "X", type = "NUMBER/INTEGER", def_val = 0 },
             { name = "",  type = "STRING",         def_val = "atan", pin_disable = true, no_draw = true },
@@ -463,7 +463,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "MathCeil",
         label = "MathCeil",
-        desc = "",
+        desc = "Returns Ceil Value - 0.6 = 1",
         ins = {
             { name = "X", type = "NUMBER/INTEGER", def_val = 0 },
             { name = "",  type = "STRING",         def_val = "ceil", pin_disable = true, no_draw = true },
@@ -477,7 +477,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "MathFloor",
         label = "MathFloor",
-        desc = "",
+        desc = "Returns Floor value - 0.6 = 0",
         ins = {
             { name = "X", type = "NUMBER/INTEGER", def_val = 0 },
             { name = "",  type = "STRING",         def_val = "floor", pin_disable = true, no_draw = true },
@@ -491,7 +491,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "MathDeg",
         label = "MathDeg",
-        desc = "",
+        --desc = "",
         ins = {
             { name = "X", type = "NUMBER/INTEGER", def_val = 0 },
             { name = "",  type = "STRING",         def_val = "deg", pin_disable = true, no_draw = true },
@@ -505,7 +505,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "MathExp",
         label = "MathExp",
-        desc = "",
+        --desc = "",
         ins = {
             { name = "X", type = "NUMBER/INTEGER", def_val = 0 },
             { name = "",  type = "STRING",         def_val = "exp", pin_disable = true, no_draw = true },
@@ -519,7 +519,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "MathLog",
         label = "MathLog",
-        desc = "",
+        --desc = "",
         ins = {
             { name = "X", type = "NUMBER/INTEGER", def_val = 0 },
             { name = "",  type = "STRING",         def_val = "log", pin_disable = true, no_draw = true },
@@ -533,7 +533,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fnam = "MathModf",
         label = "MathModF",
-        desc = "",
+        --desc = "",
         ins = {
             { name = "X", type = "NUMBER/INTEGER", def_val = 0 },
             { name = "",  type = "STRING",         def_val = "modf", pin_disable = true, no_draw = true },
@@ -547,7 +547,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "MathRad",
         label = "MathRad",
-        desc = "",
+        --desc = "",
         ins = {
             { name = "X", type = "NUMBER/INTEGER", def_val = 0 },
             { name = "",  type = "STRING",         def_val = "rad", pin_disable = true, no_draw = true },
@@ -561,7 +561,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "MathSqrt",
         label = "MathSqrt",
-        desc = "",
+        --desc = "",
         ins = {
             { name = "X", type = "NUMBER/INTEGER", def_val = 0 },
             { name = "",  type = "STRING",         def_val = "sqrt", pin_disable = true, no_draw = true },
@@ -575,7 +575,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "MathRandomSeed",
         label = "MathRandomSeed",
-        desc = "",
+        --desc = "",
         ins = {
             { name = "X", type = "NUMBER/INTEGER", def_val = 0 },
             { name = "",  type = "STRING",         def_val = "randomseed", pin_disable = true, no_draw = true },
@@ -589,7 +589,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "MathRandom",
         label = "MathRandom",
-        desc = "",
+        desc = "Returns Random value between 0-1",
         ins = {
             { name = "", type = "DUMMY",  def_val = 1,        pin_disable = true, no_draw = true },
             { name = "", type = "STRING", def_val = "random", pin_disable = true, no_draw = true },
@@ -603,7 +603,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "MathHuge",
         label = "MathHuge",
-        desc = "",
+        desc = "Returns High number",
         ins = {
             { name = "", type = "DUMMY",  def_val = 1,      pin_disable = true, no_draw = true },
             { name = "", type = "STRING", def_val = "huge", pin_disable = true, no_draw = true },
@@ -617,7 +617,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "MathPi",
         label = "MathPi",
-        desc = "",
+        --desc = "",
         ins = {
             { name = "", type = "DUMMY",  def_val = 1,    pin_disable = true, no_draw = true },
             { name = "", type = "STRING", def_val = "pi", pin_disable = true, no_draw = true },
@@ -631,7 +631,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "MathRandomSingleRange",
         label = "MathRandomSingleRange",
-        desc = "",
+        desc = "Returns Random value from 0-Number",
         ins = {
             { name = "X", type = "INTEGER", def_val = 0 },
             { name = "",  type = "STRING",  def_val = "randomS", pin_disable = true, no_draw = true },
@@ -645,7 +645,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "MathRandomMultiRange",
         label = "MathRandomMultiRange",
-        desc = "",
+        desc = "Returns Random value between to Numbers",
         ins = {
             { name = "X", type = "INTEGER", def_val = 1 },
             { name = "",  type = "STRING",  def_val = "randomM", pin_disable = true, no_draw = true },
@@ -660,7 +660,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "MathFmod",
         label = "MathFmod",
-        desc = "",
+        --desc = "",
         ins = {
             { name = "X", type = "NUMBER/INTEGER", def_val = 1 },
             { name = "",  type = "STRING",         def_val = "fmod", pin_disable = true, no_draw = true },
@@ -675,7 +675,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "MathMax",
         label = "MathMax",
-        desc = "",
+        desc = "Returns Maximal Value",
         ins = {
             { name = "X", type = "NUMBER/INTEGER", def_val = 1 },
             { name = "",  type = "STRING",         def_val = "max", pin_disable = true, no_draw = true },
@@ -690,7 +690,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "MathMin",
         label = "MathMin",
-        desc = "",
+        desc = "Returns Minimal Value",
         ins = {
             { name = "X", type = "NUMBER/INTEGER", def_val = 1 },
             { name = "",  type = "STRING",         def_val = "min", pin_disable = true, no_draw = true },
@@ -705,7 +705,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "MathPow",
         label = "MathPow",
-        desc = "",
+        --desc = "",
         ins = {
             { name = "X", type = "NUMBER/INTEGER", def_val = 1 },
             { name = "",  type = "STRING",         def_val = "pow", pin_disable = true, no_draw = true },
@@ -720,7 +720,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "MathType",
         label = "MathType",
-        desc = "",
+        desc = "Returns Type of the number : Integer - Float",
         ins = {
             { name = "X", type = "NUMBER/INTEGER", def_val = 0 },
             { name = "",  type = "DUMMY",          def_val = "mathtype", pin_disable = true, no_draw = true },
@@ -733,7 +733,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "MathIntToFloat",
         label = "INT TO FLOAT",
-        desc = "",
+        desc = "Converte Integer to Float/Number",
         ins = {
             { name = "INT", type = "INTEGER", def_val = 1 },
             { name = "",    type = "STRING",  def_val = "IntToFloat", pin_disable = true, no_draw = true },
@@ -746,7 +746,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "MathFloatToInt",
         label = "FLOAT TO INT",
-        desc = "",
+        desc = "Converts Float/Number to Integer",
         ins = {
             { name = "FLOAT", type = "NUMBER", def_val = 1 },
             { name = "",      type = "STRING", def_val = "FloatToInt", pin_disable = true, no_draw = true },
@@ -762,7 +762,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "STD_Bitwise AND &",
         label = "Bitwise AND &",
-        desc = "",
+        --desc = "",
         ins = {
             { name = "A", type = "INTEGER", def_val = 1 },
             { name = "",  type = "STRING",  def_val = "&", pin_disable = true, no_draw = true },
@@ -777,7 +777,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "STD_Bitwise OR |",
         label = "Bitwise OR |",
-        desc = "",
+        --desc = "",
         ins = {
             { name = "A", type = "INTEGER", def_val = 1 },
             { name = "",  type = "STRING",  def_val = "|", pin_disable = true, no_draw = true },
@@ -792,7 +792,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "STD_Bitwise XOR ~",
         label = "Bitwise XOR ~",
-        desc = "",
+        --desc = "",
         ins = {
             { name = "A", type = "INTEGER", def_val = 1 },
             { name = "",  type = "STRING",  def_val = "~", pin_disable = true, no_draw = true },
@@ -807,7 +807,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "STD_Bitwise NOT",
         label = "Bitwise NOT",
-        desc = "",
+        -- desc = "",
         ins = {
             { name = "A", type = "INTEGER", def_val = 1 },
             { name = "",  type = "STRING",  def_val = "~x", pin_disable = true, no_draw = true },
@@ -821,7 +821,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "STD_Bitwise LEFT SHIFT",
         label = "Bitwise LEFT SHIFT",
-        desc = "",
+        --desc = "",
         ins = {
             { name = "A", type = "INTEGER", def_val = 1 },
             { name = "",  type = "STRING",  def_val = "<<", pin_disable = true, no_draw = true },
@@ -836,7 +836,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "STD_Bitwise RIGHT SHIFT",
         label = "Bitwise RIGHT SHIFT",
-        desc = "",
+        --desc = "",
         ins = {
             { name = "A", type = "INTEGER", def_val = 1 },
             { name = "",  type = "STRING",  def_val = ">>", pin_disable = true, no_draw = true },
@@ -850,7 +850,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "CUSTOM_Concat",
         label = "Concat",
-        desc = "",
+        desc = "Standard Concatation\nHELLO + WORLD = HELO WORLD",
         ins = {
             { name = "A", type = "ANY" },
             -- { name = "",  type = "STRING", def_val = "concat", pin_disable = true, no_draw = true },
@@ -865,7 +865,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "CUSTOM_ToString",
         label = "ToString",
-        desc = "",
+        desc = "CONVERTS TO STRING",
         ins = {
             { name = "VAL", type = "ANY" },
             --     { name = "",  type = "STRING", def_val = "tostring", pin_disable = true, no_draw = true },
@@ -880,7 +880,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "CUSTOM_Type",
         label = "Type",
-        desc = "",
+        desc = "RETURNS TYPE OF PIN",
         ins = {
             { name = "VAL", type = "ANY" },
             --     { name = "",  type = "STRING", def_val = "tostring", pin_disable = true, no_draw = true },
@@ -911,7 +911,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "STD_And",
         label = "LOGICAL AND",
-        desc = "",
+        desc = "A AND B == TRUE -> TRUE AND TRUE = TRUE\n TRUE AND FALSE = FALSE",
         ins = {
             { name = "A", type = "ANY" },
             { name = "",  type = "STRING", def_val = "and", pin_disable = true, no_draw = true },
@@ -952,7 +952,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "STD_Or",
         label = "LOGICAL OR",
-        desc = "",
+        desc = "A OR B == TRUE -> TRUE AND FALSE = TRUE",
         ins = {
             { name = "A", type = "ANY" },
             { name = "",  type = "STRING", def_val = "or", pin_disable = true, no_draw = true },
@@ -966,7 +966,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "CUSTOM_GetScriptPath",
         label = "Get Script Path",
-        desc = "",
+        desc = "Returns Scripts PATH",
         ins = {},
         out = {
             { name = "PATH", type = "STRING" }
@@ -977,7 +977,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "CUSTOM_GetOsNativeSeparator",
         label = "Get Native OS Separator",
-        desc = "",
+        desc = "Get native OS SLASH separator",
         ins = {},
         out = {
             { name = "PATH", type = "STRING" }
@@ -988,7 +988,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "CUSTOM_MultiIfElse",
         label = "Multi IF-ELSE",
-        desc = "",
+        desc = "Open Node Inspector to add/remove inputs",
         ins = {
             { name = "CONDITION", type = "BOOLEAN", def_val = true },
             { name = "INP 1",     type = "BOOLEAN" },
@@ -1003,7 +1003,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "CUSTOM_MultiIfElseifElse",
         label = "SWITCH",
-        desc = "",
+        desc = "SWITCH STATEMENT\nOpen Node inspector to add/remove inputs",
         ins = {
             { name = "INP 1", type = "BOOLEAN" },
         },
