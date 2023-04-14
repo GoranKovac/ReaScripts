@@ -495,7 +495,7 @@ local function FunctionIO2(func)
                     RV_I_NAME, func.NODES[1].outputs[inp].label = r.ImGui_InputText(ctx, "##labeli" .. inp,
                         func.NODES[1].outputs[inp].label)
                     if RV_I_NAME then
-                        UpdateChildFunctionsNames(CURRENT_FUNCTION, "ARG", inp, func.NODES[1].outputs[inp].label)
+                        UpdateChildFunctionsIO(CURRENT_FUNCTION, "ARG", inp, func.NODES[1].outputs[inp].label)
                     end
                     r.ImGui_PopID(ctx)
                 end
@@ -568,7 +568,7 @@ local function FunctionIO2(func)
                     RV_O_NAME, func.NODES[2].inputs[out].label = r.ImGui_InputText(ctx, "##labelo" .. out,
                         func.NODES[2].inputs[out].label)
                     if RV_O_NAME then
-                        UpdateChildFunctionsNames(CURRENT_FUNCTION, "RET", out, func.NODES[2].inputs[out].label)
+                        UpdateChildFunctionsIO(CURRENT_FUNCTION, "RET", out, func.NODES[2].inputs[out].label)
                     end
                     r.ImGui_PopID(ctx)
                 end
@@ -926,6 +926,7 @@ function Sidebar()
                 r.ImGui_SetKeyboardFocusHere(ctx)
                 _, final_tbl[i].label = r.ImGui_InputText(ctx, '##t', final_tbl[i].label)
                 if ENTER or (not r.ImGui_IsItemActive(ctx) and r.ImGui_IsMouseClicked(ctx, 0)) then
+                    UpdateChildFunctionsNames(RENAME_FUNC, final_tbl[i].label)
                     RENAME_FUNC, CUR_SIDEBAR_ID = nil, nil
                 end
             else
@@ -1009,10 +1010,14 @@ function Sidebar()
                             for n = #FUNCTIONS[i].NODES, 1, -1 do
                                 local node = FUNCTIONS[i].NODES[n]
                                 if node.FID and node.FID == CUR_SIDEBAR_ID then
-                                    local next_node = GetNodeInfo(FUNCTIONS[i].NODES[n].outputs[0].connection[1].node)
-                                    local next_pin = FUNCTIONS[i].NODES[n].outputs[0].connection[1].pin
-                                    local prev_node = GetNodeInfo(FUNCTIONS[i].NODES[n].inputs[0].connection[1].node)
-                                    local prev_pin = FUNCTIONS[i].NODES[n].inputs[0].connection[1].pin
+                                    local next_node = FUNCTIONS[i].NODES[n].outputs[0].connection[1] and
+                                        GetNodeInfo(FUNCTIONS[i].NODES[n].outputs[0].connection[1].node)
+                                    local next_pin = FUNCTIONS[i].NODES[n].outputs[0].connection[1] and
+                                        FUNCTIONS[i].NODES[n].outputs[0].connection[1].pin
+                                    local prev_node = FUNCTIONS[i].NODES[n].inputs[0].connection[1] and
+                                        GetNodeInfo(FUNCTIONS[i].NODES[n].inputs[0].connection[1].node)
+                                    local prev_pin = FUNCTIONS[i].NODES[n].inputs[0].connection[1] and
+                                        FUNCTIONS[i].NODES[n].inputs[0].connection[1].pin
                                     DeleteNode(FUNCTIONS[i].NODES, n)
                                     -- AUTOCONNECT PREVIOUS/NEXT NODES IF THIS NODE WAS IN MIDDLE
                                     ConnectNextPreviousFunctionNodes(prev_node, prev_pin, next_node, next_pin)

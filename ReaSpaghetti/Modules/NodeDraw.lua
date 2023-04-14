@@ -1290,7 +1290,20 @@ local function RenameInPlace(node, x, y, w, title_h)
     r.ImGui_PopStyleVar(ctx)
 end
 
-function UpdateChildFunctionsNames(fid, io, i, name)
+function UpdateChildFunctionsNames(fid, name)
+    for f = 1, #FUNCTIONS do
+        for n = 1, #FUNCTIONS[f].NODES do
+            local node = FUNCTIONS[f].NODES[n]
+            if node.FID == fid then
+                node.label = name
+                --local io_tbl = io == "ARG" and node.inputs or node.outputs
+                --io_tbl[i].label = name
+            end
+        end
+    end
+end
+
+function UpdateChildFunctionsIO(fid, io, i, name)
     for f = 1, #FUNCTIONS do
         for n = 1, #FUNCTIONS[f].NODES do
             local node = FUNCTIONS[f].NODES[n]
