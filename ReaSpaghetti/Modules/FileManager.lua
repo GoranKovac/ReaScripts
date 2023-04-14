@@ -220,7 +220,7 @@ function SaveToFIle(save_path)
     if file then
         file:write(data)
         file:close()
-        PROJECT_NAME = filelist.current
+        PROJECT_NAME = filelist.current_text_input
         PROJECT_PATH = path .. os_separator
         DIRTY = nil
     end

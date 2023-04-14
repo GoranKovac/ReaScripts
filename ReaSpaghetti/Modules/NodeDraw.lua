@@ -14,8 +14,13 @@ DL = r.ImGui_GetWindowDrawList(ctx)
 
 local FUNCTIONS = {}
 
+local NODE_Buttons_LEFT = {
+    [1] = { name = "i", func = function(self) self.toggle_comment = not self.toggle_comment end },
+}
+
 local NODE_CFG = {
     MIN_W = 200,
+    MIN_H = 100,
     SEGMENT = 30,
     ROUND_CORNER = 12,
     PIN_SIZE = 6,
@@ -154,7 +159,9 @@ local NodeCOLOR = {
     ["route"]   = 0x88ceffff,
     ["ws"]      = 0x88ceffff,
     ["wr"]      = 0x88ceffff,
-    ["api_var"] = 0xac5cd9ff, --
+    ["api_var"] = 0xac5cd9ff,
+    ["group"]   = 0x00fffbff,
+    ["groupbg"] = 0x00fffb11,
 }
 
 local PinCOLOR = {
@@ -199,6 +206,7 @@ local NodeDLChannel = {
     ["ws"]      = 7,
     ["wr"]      = 7,
     ["api_var"] = 7,
+    ["group"]   = 5,
 }
 
 function Create_constant_tbl(type)
@@ -261,6 +269,13 @@ function Create_constant_tbl(type)
             run = "in",
             fname = "CUSTOM_ReturnNode"
         }
+    elseif type == "group" then
+        tbl = {
+            ins = {},
+            out = {},
+            --fname = "CUSTOM_ReturnNode"
+            resizeable = true
+        }
     end
     return tbl
 end
@@ -316,7 +331,8 @@ local function Get_Node(type, label, x, y, w, h, guid, tbl)
         get         = tbl.get,
         sender      = tbl.sender,
         receiver    = tbl.receiver,
-        wireless_id = tbl.wireless_id
+        wireless_id = tbl.wireless_id,
+        can_resize  = tbl.resizeable
     }
 end
 
@@ -474,7 +490,9 @@ function AddNode(type, name, api_tbl)
     local NODES = GetNodeTBL()
     local receiver_guid = type == "wr" and NODES[#NODES].sender or nil
     local wireless_id = type == "wr" and NODES[#NODES].wireless_id or nil
-    local node = Get_Node(type, name, 0, 0, 100, 50, receiver_guid or r.genGuid(), api_tbl)
+    local w = type == "group" and NODE_CFG.MIN_W or 100
+    local h = type == "group" and NODE_CFG.MIN_H or 50
+    local node = Get_Node(type, name, 0, 0, w, h, receiver_guid or r.genGuid(), api_tbl)
     if type == "wr" then node.wireless_id = wireless_id end
     return node
 end
@@ -522,6 +540,10 @@ function FilterBox()
             if r.ImGui_Selectable(ctx, "ADD WIRELESS ROUTE NODES", false) then
                 InsertNode("ws", "SENDER")
                 InsertNode("wr", "RECEIVER")
+                DIRTY = true
+            end
+            if r.ImGui_Selectable(ctx, "GROUP NODE", false) then
+                InsertNode("group", "GROUP")
                 DIRTY = true
             end
         end
@@ -574,6 +596,7 @@ end
 
 --! EXCLUDE NO DRAW PINS
 local function AutoAdjust_Node_WH(node)
+    if node.can_resize then return end
     local ins, outs = CalculateIOSize(node)
     local total_ins = ins + outs
     node.h = (total_ins * NODE_CFG.SEGMENT) + NODE_CFG.SEGMENT
@@ -1201,13 +1224,13 @@ local function MoveNode(node)
     if r.ImGui_IsMouseDragging(ctx, 0) then
         local off_x, off_y = 0, 0
         if EDGE_SCROLLING then
-            off_x = EDGE_SCROLLING.x
-            off_y = EDGE_SCROLLING.y
+            off_x = EDGE_SCROLLING.x / CANVAS.scale
+            off_y = EDGE_SCROLLING.y / CANVAS.scale
         end
         local drag_x, drag_y = r.ImGui_GetMouseDelta(ctx)
         if node.selected then
-            node.x = node.x + drag_x / CANVAS.scale - off_x / CANVAS.scale
-            node.y = node.y + drag_y / CANVAS.scale - off_y / CANVAS.scale
+            node.x = node.x + drag_x / CANVAS.scale - off_x
+            node.y = node.y + drag_y / CANVAS.scale - off_y
         end
     elseif r.ImGui_IsMouseReleased(ctx, 0) then
         MOVE_NODE = nil
@@ -1294,11 +1317,7 @@ function UpdateChildFunctionsNames(fid, name)
     for f = 1, #FUNCTIONS do
         for n = 1, #FUNCTIONS[f].NODES do
             local node = FUNCTIONS[f].NODES[n]
-            if node.FID == fid then
-                node.label = name
-                --local io_tbl = io == "ARG" and node.inputs or node.outputs
-                --io_tbl[i].label = name
-            end
+            if node.FID == fid then node.label = name end
         end
     end
 end
@@ -1331,7 +1350,6 @@ function UpdateChildFunctions(fid, io, add_remove_update, tbl, pin_num, pin_type
                 elseif add_remove_update == "remove" then
                     -- REMOVE ANY CONNECTION TO THIS PIN
                     Delete_Wire(node_io_tbl[#node_io_tbl].connection, FUNCTIONS[f].NODES)
-                    -- r.ShowConsoleMsg("DELETE\n")
                     table.remove(node_io_tbl, #node_io_tbl)
                 elseif add_remove_update == "update" then
                     node_io_tbl[pin_num].type = pin_type
@@ -1343,6 +1361,7 @@ end
 
 local function DrawTooltip(dsc)
     if not TOOLTIP then return end
+    if MOVE_NODE then return end
     if not dsc then return end
     if r.ImGui_IsItemHovered(ctx) then
         if r.ImGui_BeginTooltip(ctx) then
@@ -1354,6 +1373,71 @@ local function DrawTooltip(dsc)
     end
 end
 
+local function GetGroupChildNodes(node, NODES)
+    if node.type ~= "group" then return end
+    if not MOVE_NODE then
+        local tmp_childs = {}
+        for i = 1, #NODES do
+            -- GROUP NODE OVERLAPS WITH CHILD NODE
+            if Check_Overlap(node, NODES[i], true) then
+                tmp_childs[#tmp_childs + 1] = NODES[i].guid
+                NODES[i].has_parent = node.guid
+            else
+                -- IF CHILD NODE HAS PARENT CHECK IS IT STILL WITHIN IT
+                if NODES[i].has_parent then
+                    if not Check_Overlap(In_TBL(NODES, NODES[i].has_parent), NODES[i], true) then
+                        NODES[i].has_parent = false
+                    end
+                end
+            end
+        end
+        node.childs = tmp_childs
+    elseif MOVE_NODE and MOVE_NODE == node.guid then
+        if node.childs and #node.childs ~= 0 then
+            local drag_x, drag_y = r.ImGui_GetMouseDelta(ctx)
+            local off_x, off_y = 0, 0
+            if EDGE_SCROLLING then
+                off_x = EDGE_SCROLLING.x / CANVAS.scale
+                off_y = EDGE_SCROLLING.y / CANVAS.scale
+            end
+            for i = 1, #node.childs do
+                -- for k in pairs(node.childs) do
+                local child_node = In_TBL(NODES, node.childs[i])
+                -- EXCLUDE SELECTED CHILDS SINCE THEY ARE MOVED ANYWAY
+                if child_node and not child_node.selected then
+                    child_node.x = child_node.x - off_x + drag_x / CANVAS.scale
+                    child_node.y = child_node.y - off_y + drag_y / CANVAS.scale
+                end
+            end
+        end
+    end
+end
+
+local function CalculateNewSize(node)
+    local drag_x, drag_y = r.ImGui_GetMouseDelta(ctx)
+    local off_x, off_y = 0, 0
+    if EDGE_SCROLLING then
+        off_x = EDGE_SCROLLING.x / CANVAS.scale
+        off_y = EDGE_SCROLLING.y / CANVAS.scale
+    end
+    local new_w = node.w + drag_x > NODE_CFG.MIN_W and node.w - off_x + drag_x / CANVAS.scale or NODE_CFG.MIN_W
+    local new_h = node.h + drag_y > NODE_CFG.MIN_H and node.h - off_y + drag_y / CANVAS.scale or NODE_CFG.MIN_H
+    node.w = new_w
+    node.h = new_h
+end
+
+local function Draw_Toolbar_Button(btn, node, btn_n, x, y, s, c)
+    r.ImGui_SetCursorScreenPos(ctx, x, y)
+    if r.ImGui_InvisibleButton(ctx, btn.name .. "##" .. node.guid .. btn_n, s, s) then
+        btn.func(node)
+    end
+    r.ImGui_DrawList_AddCircleFilled(DL, x + s / 2, y + s / 2, s / 3,
+        r.ImGui_IsItemHovered(ctx) and c | 0x66666600 or c)
+    local FONT_SIZE = r.ImGui_GetFontSize(ctx) --* canvas.scale
+    r.ImGui_DrawList_AddTextEx(DL, nil, FONT_SIZE, x + s / 1.8 - FONT_SIZE / 4, y + s / 2 - FONT_SIZE / 2,
+        0xFFFFFFFF, btn.name)
+end
+
 local function Draw_Node(node)
     AutoAdjust_Node_WH(node)
     local x, y, xe, ye, w, h = Get_Node_Screen_position(node)
@@ -1361,7 +1445,7 @@ local function Draw_Node(node)
     local edge_thickness = NODE_CFG.EDGE_THICKNESS * CANVAS.scale
     local edge_offset = edge_thickness / 2
 
-    local has_body = (#node.inputs ~= 0 or #node.outputs ~= 0)
+    local has_body = #node.inputs ~= 0 or #node.outputs ~= 0 or node.can_resize
     local sel = node.selected
 
     if node.missing_arg then
@@ -1378,7 +1462,8 @@ local function Draw_Node(node)
     ---- DRAW NODE
     r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, active_ch)
     -- BG
-    r.ImGui_DrawList_AddRectFilled(DL, x, y, xe, ye, node.missing_arg and NodeCOLOR["warning"] or NodeCOLOR["bg"],
+    r.ImGui_DrawList_AddRectFilled(DL, x, y, xe, ye,
+        node.missing_arg and NodeCOLOR["warning"] or (node.type == "group" and NodeCOLOR["groupbg"] or NodeCOLOR["bg"]),
         NODE_CFG.ROUND_CORNER * CANVAS.scale)
 
     -- TITLE BG
@@ -1397,6 +1482,12 @@ local function Draw_Node(node)
     else
         Node_Label(DL, node, x, y, w, title_h)
     end
+
+    for i = 1, #NODE_Buttons_LEFT do
+        local button = NODE_Buttons_LEFT[i]
+        local distance = x + (title_h * (i - 1))
+        Draw_Toolbar_Button(button, node, i, distance, y, title_h, NodeCOLOR["bg"])
+    end
     -- CENTER NEXT BUTTON IN THE FRAME
     x, y = x + edge_offset, y + edge_offset
     w, h = w - edge_offset, h - edge_offset
@@ -1411,11 +1502,28 @@ local function Draw_Node(node)
     ClickSelectNode(node)
 
     if not MOVE_NODE then
-        MOVE_NODE = r.ImGui_IsItemActive(ctx)
+        MOVE_NODE = r.ImGui_IsItemActive(ctx) and node.guid or nil
     end
 
     DrawTooltip(node.desc)
     MoveNode(node)
+
+    if node.can_resize then
+        r.ImGui_SetCursorScreenPos(ctx, x + w - (10 * CANVAS.scale), h + y - (10 * CANVAS.scale))
+        r.ImGui_Button(ctx, '##RS', (10 * CANVAS.scale), (10 * CANVAS.scale))
+        if r.ImGui_IsItemHovered(ctx) or r.ImGui_IsItemActive(ctx) then
+            r.ImGui_SetMouseCursor(ctx, r.ImGui_MouseCursor_ResizeAll())
+        end
+        if r.ImGui_IsItemActive(ctx) then
+            CalculateNewSize(node)
+        end
+    end
+
+    if node.toggle_comment then
+        r.ImGui_SetCursorScreenPos(ctx, x, y - title_h - 10 * CANVAS.scale)
+        _, node.text = r.ImGui_InputTextMultiline(ctx, '##source' .. node.guid, node.text, w, --w - edge_thickness / 2 ,
+            title_h, r.ImGui_InputTextFlags_CharsUppercase() |  r.ImGui_InputTextFlags_NoHorizontalScroll())
+    end
 
     x, y = x - edge_offset, y - edge_offset
 
@@ -1648,6 +1756,7 @@ local function Node_Drawing()
     for i = 1, #NODES do
         local node = NODES[i]
         Draw_Node(node)
+        GetGroupChildNodes(node, NODES)
     end
     for i = 1, #NODES do
         Draw_Wire(NODES[i], NODES[i].outputs)

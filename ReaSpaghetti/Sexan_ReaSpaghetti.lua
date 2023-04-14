@@ -5,6 +5,9 @@
 -- @changelog
 --  Fixed renaming functions propagate to child functions
 --  Fixed Crash when deleting parent function
+--  Fixed crash when saving project not loading name and crashing
+--  Added Group Node
+--  Added per node comment
 -- @provides
 --   Modules/*.lua
 --   Examples/*.reanodes
