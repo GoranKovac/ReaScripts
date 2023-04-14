@@ -1,10 +1,9 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.9.7
+-- @version 0.9.8
 -- @changelog
---  Exporting Defered scripts
---  Exporting To Actions popups defered confirmation
+--  ADD --ssl-no-revoke to curl command to fix some curl issue on windows 11
 -- @provides
 --   Modules/*.lua
 --   Examples/*.reanodes

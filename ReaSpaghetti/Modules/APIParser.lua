@@ -12,7 +12,8 @@ function CurlToFile()
     else
         curl_cmd = '/usr/bin/curl'
     end
-    r.ExecProcess(([[%s -so "%s" https://www.extremraym.com/cloud/reascript-doc/]]):format(curl_cmd, API_PATH), 0)
+    r.ExecProcess(
+    ([[%s -so "%s" https://www.extremraym.com/cloud/reascript-doc/ --ssl-no-revoke]]):format(curl_cmd, API_PATH), 0)
     UPDATE = true
 end
 
