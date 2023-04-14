@@ -17,7 +17,7 @@ function Ltrim(s)
     return (s:gsub("^%s*", ""))
 end
 
-function OpenUrlTooltip(api)
+function OpenUrlHelp(api)
     local cmd
     if r.GetOS():sub(1, 3) == 'Win' then
         cmd = 'cmd.exe /C start ""'

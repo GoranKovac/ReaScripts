@@ -808,10 +808,12 @@ function FunctionTabs()
     r.ImGui_SetCursorPosX(ctx, 5)
     if r.ImGui_BeginTabBar(ctx, "F_TABS") then
         if r.ImGui_BeginTabItem(ctx, "Init", false, CHANGE_TAB == 1 and r.ImGui_TabItemFlags_SetSelected() or 0) then
+            if CURRENT_FUNCTION ~= 1 then Deselect_all() end
             CURRENT_FUNCTION = 1
             r.ImGui_EndTabItem(ctx)
         end
         if r.ImGui_BeginTabItem(ctx, "Main", false, CHANGE_TAB == 2 and r.ImGui_TabItemFlags_SetSelected() or 0) then
+            if CURRENT_FUNCTION ~= 2 then Deselect_all() end
             CURRENT_FUNCTION = 2
             r.ImGui_EndTabItem(ctx)
         end
@@ -821,6 +823,7 @@ function FunctionTabs()
                 RTV, FUNCTIONS[i].tab_open = r.ImGui_BeginTabItem(ctx, FUNCTIONS[i].label, true,
                     CHANGE_TAB == i and r.ImGui_TabItemFlags_SetSelected() or 0)
                 if RTV then
+                    if CURRENT_FUNCTION ~= i then Deselect_all() end
                     CURRENT_FUNCTION = i
                     -- CANVAS = FUNCTIONS[CURRENT_FUNCTION].CANVAS
                     r.ImGui_EndTabItem(ctx)
@@ -918,10 +921,12 @@ function Sidebar()
                     end
                     if r.ImGui_IsMouseDoubleClicked(ctx, 0) then
                         if CUR_TAB == "API" then
-                            OpenUrl(final_tbl[i].label)
+                            OpenUrlHelp(final_tbl[i].label)
                         elseif CUR_TAB == "NODES" or CUR_TAB == "VARS" then
                             CenterNodeToScreen(final_tbl[i])
                         elseif CUR_TAB == "FUNC" then
+                            if CHANGE_TAB ~= i then Deselect_all() end
+
                             CHANGE_TAB = i
                             CURRENT_FUNCTION = i
                             final_tbl[i].tab_open = true

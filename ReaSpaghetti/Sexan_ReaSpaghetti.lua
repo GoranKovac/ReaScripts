@@ -1,9 +1,10 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.9.8
+-- @version 0.9.9
 -- @changelog
---  ADD --ssl-no-revoke to curl command to fix some curl issue on windows 11
+--  Deselect all nodes when changing tab
+--  Fix double click API node openinx xraym site for explanation
 -- @provides
 --   Modules/*.lua
 --   Examples/*.reanodes
