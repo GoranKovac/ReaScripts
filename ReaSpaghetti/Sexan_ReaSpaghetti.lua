@@ -1,7 +1,7 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.14
+-- @version 0.15
 -- @changelog
 --  Fixed renaming functions propagate to child functions
 --  Fixed Crash when deleting parent function
