@@ -1,9 +1,9 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.16
+-- @version 0.17
 -- @changelog
---  Fixed group node resize ID
+--  Pop up warning to save project before exporting to action
 -- @provides
 --   Modules/*.lua
 --   Examples/*.reanodes

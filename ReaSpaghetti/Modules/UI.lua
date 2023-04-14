@@ -55,7 +55,11 @@ function Top_Menu()
                 Init_FM_database()
             end
             if r.ImGui_MenuItem(ctx, 'Export to Action') then
-                EXPORT_ACTION_POPUP = true
+                if not PROJECT_PATH then
+                    EXPORT_ACTION_WARNING = true
+                else
+                    EXPORT_ACTION_POPUP = true
+                end
                 --ExportTest(PROJECT_NAME, PROJECT_PATH, true)
             end
             if r.ImGui_MenuItem(ctx, 'Update API') then
@@ -1121,6 +1125,17 @@ function Popups()
         EXPORT_ACTION_POPUP = nil
         r.ImGui_OpenPopup(ctx, "EXPORT_ACTION_POPUP")
     end
+
+    if EXPORT_ACTION_WARNING then
+        EXPORT_ACTION_WARNING = nil
+        r.ImGui_OpenPopup(ctx, "EXPORT_ACTION_WARNING")
+    end
+    r.ImGui_SetNextWindowPos(ctx, center[1], center[2], r.ImGui_Cond_Appearing(), 0.5, 0.5)
+    if r.ImGui_BeginPopup(ctx, "EXPORT_ACTION_WARNING") then
+        r.ImGui_Text(ctx, "\n\t\tPROJECT NEEDS TO BE SAVED FIRST\t\t\n\n")
+        r.ImGui_EndPopup(ctx)
+    end
+
     if r.ImGui_BeginPopupModal(ctx, 'EXPORT_ACTION_POPUP', nil, r.ImGui_WindowFlags_AlwaysAutoResize()) then
         r.ImGui_Text(ctx, 'DEFERED SCRIPT?\n\n')
         r.ImGui_Separator(ctx)
