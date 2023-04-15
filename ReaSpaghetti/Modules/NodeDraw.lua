@@ -16,6 +16,10 @@ local FUNCTIONS = {}
 
 local NODE_Buttons_LEFT = {
     [1] = { name = "i", func = function(self) self.toggle_comment = not self.toggle_comment end },
+    -- [2] = { name = "", func = function(self)
+    --     RV_COL, self.rgba = r.ImGui_ColorEdit4(ctx, 'MyColor##3' .. self.guid,
+    --         self.rgba, r.ImGui_ColorEditFlags_NoInputs() | r.ImGui_ColorEditFlags_NoLabel())
+    -- end },
 }
 
 local NODE_CFG = {
@@ -1221,16 +1225,18 @@ end
 local function MoveNode(node)
     --if DRAG_COPY then return end
     if not MOVE_NODE then return end
-    if r.ImGui_IsMouseDragging(ctx, 0) then
+    if r.ImGui_IsMouseDown(ctx, 0) then
+        r.ImGui_SetMouseCursor(ctx, r.ImGui_MouseCursor_ResizeAll())
+        --if r.ImGui_IsMouseDragging(ctx, 0) then
         local off_x, off_y = 0, 0
         if EDGE_SCROLLING then
             off_x = EDGE_SCROLLING.x / CANVAS.scale
             off_y = EDGE_SCROLLING.y / CANVAS.scale
         end
-        local drag_x, drag_y = r.ImGui_GetMouseDelta(ctx)
+        --local drag_x, drag_y = r.ImGui_GetMouseDelta(ctx)
         if node.selected then
-            node.x = node.x + drag_x / CANVAS.scale - off_x
-            node.y = node.y + drag_y / CANVAS.scale - off_y
+            node.x = node.x + DX / CANVAS.scale - off_x
+            node.y = node.y + DY / CANVAS.scale - off_y
         end
     elseif r.ImGui_IsMouseReleased(ctx, 0) then
         MOVE_NODE = nil
@@ -1268,20 +1274,20 @@ local function DrawOffSceenHelper(x, y, xe, ye)
     r.ImGui_Button(ctx, "HELPER", 50, 50)
 end
 
-
 local function Warning_box(node, x, y)
     if FOLLOW_WARNING then
         node.selected = true
         CenterNodeToScreen(node)
         FOLLOW_WARNING = nil
     end
-    r.ImGui_SetNextWindowPos(ctx, x + 5, y - 75)
-    r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x110000FF)
     r.ImGui_PushFont(ctx, FONT_STATIC)
     local txt = "WARNING MISSING INPUTS! \n\n" .. table.concat(node.missing_arg, "\n")
 
     local w, h = r.ImGui_CalcTextSize(ctx, txt)
-    if r.ImGui_BeginChild(ctx, "##warning_ch" .. node.guid, (w + 15), (h + (15 * #node.missing_arg)), 10, r.ImGui_WindowFlags_NoInputs()
+    r.ImGui_SetNextWindowPos(ctx, x + 5, y - 10 - h)
+    r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x110000FF)
+
+    if r.ImGui_BeginChild(ctx, "##warning_ch" .. node.guid, (w + 15), (h + 10), 10, r.ImGui_WindowFlags_NoInputs()
             | r.ImGui_WindowFlags_NoDecoration()
             | r.ImGui_WindowFlags_NoMove()
             | r.ImGui_WindowFlags_NoSavedSettings()
@@ -1394,7 +1400,7 @@ local function GetGroupChildNodes(node, NODES)
         node.childs = tmp_childs
     elseif MOVE_NODE and MOVE_NODE == node.guid then
         if node.childs and #node.childs ~= 0 then
-            local drag_x, drag_y = r.ImGui_GetMouseDelta(ctx)
+            --local drag_x, drag_y = r.ImGui_GetMouseDelta(ctx)
             local off_x, off_y = 0, 0
             if EDGE_SCROLLING then
                 off_x = EDGE_SCROLLING.x / CANVAS.scale
@@ -1405,8 +1411,8 @@ local function GetGroupChildNodes(node, NODES)
                 local child_node = In_TBL(NODES, node.childs[i])
                 -- EXCLUDE SELECTED CHILDS SINCE THEY ARE MOVED ANYWAY
                 if child_node and not child_node.selected then
-                    child_node.x = child_node.x - off_x + drag_x / CANVAS.scale
-                    child_node.y = child_node.y - off_y + drag_y / CANVAS.scale
+                    child_node.x = child_node.x - off_x + DX / CANVAS.scale
+                    child_node.y = child_node.y - off_y + DY / CANVAS.scale
                 end
             end
         end
@@ -1414,14 +1420,14 @@ local function GetGroupChildNodes(node, NODES)
 end
 
 local function CalculateNewSize(node)
-    local drag_x, drag_y = r.ImGui_GetMouseDelta(ctx)
+    -- local drag_x, drag_y = r.ImGui_GetMouseDelta(ctx)
     local off_x, off_y = 0, 0
     if EDGE_SCROLLING then
         off_x = EDGE_SCROLLING.x / CANVAS.scale
         off_y = EDGE_SCROLLING.y / CANVAS.scale
     end
-    local new_w = node.w + drag_x > NODE_CFG.MIN_W and node.w - off_x + drag_x / CANVAS.scale or NODE_CFG.MIN_W
-    local new_h = node.h + drag_y > NODE_CFG.MIN_H and node.h - off_y + drag_y / CANVAS.scale or NODE_CFG.MIN_H
+    local new_w = node.w + DX > NODE_CFG.MIN_W and node.w - off_x + DX / CANVAS.scale or NODE_CFG.MIN_W
+    local new_h = node.h + DY > NODE_CFG.MIN_H and node.h - off_y + DY / CANVAS.scale or NODE_CFG.MIN_H
     node.w = new_w
     node.h = new_h
 end
@@ -1433,7 +1439,7 @@ local function Draw_Toolbar_Button(btn, node, btn_n, x, y, s, c)
     end
     r.ImGui_DrawList_AddCircleFilled(DL, x + s / 2, y + s / 2, s / 3,
         r.ImGui_IsItemHovered(ctx) and c | 0x66666600 or c)
-    local FONT_SIZE = r.ImGui_GetFontSize(ctx) --* canvas.scale
+    local FONT_SIZE = r.ImGui_GetFontSize(ctx)
     r.ImGui_DrawList_AddTextEx(DL, nil, FONT_SIZE, x + s / 1.8 - FONT_SIZE / 4, y + s / 2 - FONT_SIZE / 2,
         0xFFFFFFFF, btn.name)
 end
@@ -1467,7 +1473,8 @@ local function Draw_Node(node)
         NODE_CFG.ROUND_CORNER * CANVAS.scale)
 
     -- TITLE BG
-    r.ImGui_DrawList_AddRectFilled(DL, x, y, xe, y + title_h - 2 * CANVAS.scale, NodeCOLOR[node.type],
+    r.ImGui_DrawList_AddRectFilled(DL, x, y, xe, y + title_h - 2 * CANVAS.scale,
+        node.rgba ~= 0x00000000 and node.rgba or NodeCOLOR[node.type],
         NODE_CFG.ROUND_CORNER * CANVAS.scale, has_body and r.ImGui_DrawFlags_RoundCornersTop() or 0)
 
     if sel then
@@ -1483,10 +1490,18 @@ local function Draw_Node(node)
         Node_Label(DL, node, x, y, w, title_h)
     end
 
-    for i = 1, #NODE_Buttons_LEFT do
+    for i = 1, 2 do --#NODE_Buttons_LEFT do
         local button = NODE_Buttons_LEFT[i]
-        local distance = x + (title_h * (i - 1))
-        Draw_Toolbar_Button(button, node, i, distance, y, title_h, NodeCOLOR["bg"])
+        --local distance = x + (title_h * (i - 1)) -- OFFSET FROM LEFT
+        local distance = xe - (title_h * i) -- OFFSET FROM RIGHT
+        if i == 1 then
+            Draw_Toolbar_Button(button, node, i, distance, y, title_h, NodeCOLOR["bg"])
+        elseif i == 2 then
+            -- r.ImGui_SetCursorScreenPos(ctx, distance + 10, y + title_h / 2 - 12)
+            -- RV_COL, node.rgba = r.ImGui_ColorEdit4(ctx, 'MyColor##3' .. node.guid,
+            --     node.rgba ~= 0x00000000 and node.rgba or NodeCOLOR[node.type],
+            --     r.ImGui_ColorEditFlags_NoInputs() | r.ImGui_ColorEditFlags_NoLabel())
+        end
     end
     -- CENTER NEXT BUTTON IN THE FRAME
     x, y = x + edge_offset, y + edge_offset
@@ -1512,7 +1527,7 @@ local function Draw_Node(node)
         r.ImGui_SetCursorScreenPos(ctx, x + w - (10 * CANVAS.scale), h + y - (10 * CANVAS.scale))
         r.ImGui_Button(ctx, '##RS' .. node.guid, (10 * CANVAS.scale), (10 * CANVAS.scale))
         if r.ImGui_IsItemHovered(ctx) or r.ImGui_IsItemActive(ctx) then
-            r.ImGui_SetMouseCursor(ctx, r.ImGui_MouseCursor_ResizeAll())
+            r.ImGui_SetMouseCursor(ctx, r.ImGui_MouseCursor_ResizeNWSE())
         end
         if r.ImGui_IsItemActive(ctx) then
             CalculateNewSize(node)
@@ -1520,9 +1535,28 @@ local function Draw_Node(node)
     end
 
     if node.toggle_comment then
-        r.ImGui_SetCursorScreenPos(ctx, x, y - title_h - 10 * CANVAS.scale)
-        _, node.text = r.ImGui_InputTextMultiline(ctx, '##source' .. node.guid, node.text, w, --w - edge_thickness / 2 ,
-            title_h, r.ImGui_InputTextFlags_CharsUppercase() |  r.ImGui_InputTextFlags_NoHorizontalScroll())
+        local tw, th = r.ImGui_CalcTextSize(ctx, node.text)
+        r.ImGui_SetNextWindowPos(ctx, x, y - title_h / 1.5 - th) -- 10 * CANVAS.scale)
+        r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x00000088)
+        if r.ImGui_BeginChild(ctx, "##comment" .. node.guid, w, th + 10 * CANVAS.scale, 10, r.ImGui_WindowFlags_NoInputs()
+                | r.ImGui_WindowFlags_NoDecoration()
+                | r.ImGui_WindowFlags_NoMove()
+                | r.ImGui_WindowFlags_NoSavedSettings()
+                | r.ImGui_WindowFlags_AlwaysAutoResize()
+                | r.ImGui_WindowFlags_NoDocking()
+                | r.ImGui_WindowFlags_NoFocusOnAppearing()
+            --| r.ImGui_WindowFlags_TopMost()
+            ) then
+            r.ImGui_PushStyleColor(ctx, r.ImGui_Col_FrameBg(), 0x00000000)
+            r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_FramePadding(), pad_x, 0)
+            r.ImGui_SetCursorPos(ctx, 2 * CANVAS.scale, title_h / 4)
+            _, node.text = r.ImGui_InputTextMultiline(ctx, '##text' .. node.guid, node.text, w, title_h + th)
+            r.ImGui_PopStyleColor(ctx)
+            r.ImGui_PopStyleVar(ctx)
+            r.ImGui_EndChild(ctx)
+        end
+        --r.ImGui_PopStyleVar(ctx)
+        r.ImGui_PopStyleColor(ctx)
     end
 
     x, y = x - edge_offset, y - edge_offset

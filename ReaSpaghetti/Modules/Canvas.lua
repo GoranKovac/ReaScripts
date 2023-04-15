@@ -62,6 +62,7 @@ local function Update()
     MX, MY                       = r.ImGui_GetMousePos(ctx)
     CANVAS.view_x, CANVAS.view_y = r.ImGui_GetCursorScreenPos(ctx)
     DRAGX, DRAGY                 = r.ImGui_GetMouseDragDelta(ctx, nil, nil, 0)
+    DX, DY                       = r.ImGui_GetMouseDelta(ctx)
     CANVAS.rx, CANVAS.ry         = r.ImGui_GetContentRegionAvail(ctx)
     CANVAS.MX, CANVAS.MY         =
         (MX - (CANVAS.view_x + CANVAS.off_x)) / CANVAS.scale,

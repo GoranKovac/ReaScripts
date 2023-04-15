@@ -14,7 +14,7 @@ function ExportTest(name, proj_path, is_defer)
     -- lua_string[11] = 'InitRunFlow()'
 
 
-    table.insert(lua_string, 'package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\\/])[^\\/]-$]] .. "?.lua;"')
+    table.insert(lua_string, 'package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\\/])[^\\/]-$]] .. "../?.lua;"')
     table.insert(lua_string, 'STANDALONE_RUN = true')
     if is_defer then
         table.insert(lua_string, 'DEFER = true')
@@ -47,7 +47,7 @@ function ExportTest(name, proj_path, is_defer)
         table.insert(lua_string, 'Main()')
     end
 
-    local path = PATH .. "ReaSpaghetti_StandAlone_" .. name:gsub(".reanodes", "") .. ".lua"
+    local path = PATH .. "Exported_Actions/ReaSpaghetti_StandAlone_" .. name:gsub(".reanodes", "") .. ".lua"
     local file = io.open(path, "w")
     if file then
         file:write(table.concat(lua_string, "\n"))

@@ -1,12 +1,15 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.17
+-- @version 0.19
 -- @changelog
---  Pop up warning to save project before exporting to action
+--  Better Comment Boxes
+--  Added Documentation in Docs Folder
 -- @provides
 --   Modules/*.lua
 --   Examples/*.reanodes
+--   Exported_Actions/
+--   Docs/*.pdf
 --   Examples/SCHWA/*.png
 --   [main] Sexan_ReaSpaghetti.lua
 
