@@ -17,6 +17,16 @@ function Ltrim(s)
     return (s:gsub("^%s*", ""))
 end
 
+function OpenFile(file)
+    local cmd
+    if r.GetOS():sub(1, 3) == 'Win' then
+        cmd = 'cmd.exe /C start ""'
+    else
+        cmd = '/bin/sh -c open ""'
+    end
+    r.ExecProcess(([[%s "%s"]]):format(cmd, file), 0)
+end
+
 function OpenUrlHelp(api)
     local cmd
     if r.GetOS():sub(1, 3) == 'Win' then

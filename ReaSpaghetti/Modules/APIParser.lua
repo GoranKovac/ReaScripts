@@ -1,7 +1,6 @@
 --@noindex
 --NoIndex: true
 
-
 local r = reaper
 local API_PATH = PATH .. "api_file.txt"
 

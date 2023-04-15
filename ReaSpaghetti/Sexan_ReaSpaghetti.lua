@@ -1,13 +1,14 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.21
+-- @version 0.22
 -- @changelog
---  Better Comment Boxes
---  Added Documentation in Docs Folder
+--  Open documentation via Help/Documentation
+--  Export actions to dedicated folder ExportedActions
 -- @provides
 --   Modules/*.lua
 --   Examples/*.reanodes
+--   ExportedActions/dummy.lua
 --   Docs/*.pdf
 --   Examples/SCHWA/*.png
 --   [main] Sexan_ReaSpaghetti.lua

@@ -60,14 +60,10 @@ function Top_Menu()
                 else
                     EXPORT_ACTION_POPUP = true
                 end
-                --ExportTest(PROJECT_NAME, PROJECT_PATH, true)
             end
             if r.ImGui_MenuItem(ctx, 'Update API') then
                 CurlToFile()
             end
-            -- if r.ImGui_MenuItem(ctx, 'Help') then
-            --     HELP = true
-            -- end
             r.ImGui_EndMenu(ctx)
         end
         if r.ImGui_BeginMenu(ctx, 'Options') then
@@ -79,6 +75,9 @@ function Top_Menu()
         if r.ImGui_BeginMenu(ctx, 'Help') then
             if r.ImGui_MenuItem(ctx, 'Keys And Shortcuts') then
                 HELP = true
+            end
+            if r.ImGui_MenuItem(ctx, 'Open Documentation') then
+                OpenFile(PATH .. NATIVE_SEPARATOR .. "Docs" .. NATIVE_SEPARATOR .. "ReaSpaghetti.pdf")
             end
             r.ImGui_EndMenu(ctx)
         end
