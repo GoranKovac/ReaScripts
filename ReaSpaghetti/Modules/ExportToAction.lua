@@ -1,3 +1,5 @@
+--@noindex
+--NoIndex: true
 local r = reaper
 function ExportTest(name, proj_path, is_defer)
     local lua_string = {}
