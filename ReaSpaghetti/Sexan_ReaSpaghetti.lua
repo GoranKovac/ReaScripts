@@ -8,7 +8,7 @@
 -- @provides
 --   Modules/*.lua
 --   Examples/*.reanodes
---   Exported_Actions/
+--   Exported_Actions/*.*
 --   Docs/*.pdf
 --   Examples/SCHWA/*.png
 --   [main] Sexan_ReaSpaghetti.lua
