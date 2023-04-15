@@ -73,6 +73,14 @@ local function ArgumentsMissing(node)
                 end
             end
         end
+
+        if node.fname == "CUSTOM_TableGetVal" then
+            if node.in_values[1] then
+                if not node.in_values[1][node.in_values[2]] then
+                    missing[#missing + 1] = "INDEX OUT OF BOUNDS"
+                end
+            end
+        end
     end
 
     -- INPUTS MISSMATCH SO ARGUMENTS ARE MISSING

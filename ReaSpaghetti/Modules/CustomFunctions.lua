@@ -207,6 +207,7 @@ end
 
 function CUSTOM_Ipairs(called_node, func_node, tbl)
     if not tbl then return "ERROR" end
+    if type(tbl) ~= "table" then return "ERROR" end
     GetChildFlow(called_node, func_node)
     for k, v in ipairs(tbl) do
         called_node.outputs[2].o_val = k
@@ -218,6 +219,7 @@ end
 
 function CUSTOM_Pairs(called_node, func_node, tbl)
     if not tbl then return "ERROR" end
+    if type(tbl) ~= "table" then return "ERROR" end
     GetChildFlow(called_node, func_node)
     for k, v in ipairs(tbl) do
         called_node.outputs[2].o_val = k
