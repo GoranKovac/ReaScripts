@@ -1,14 +1,9 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.25
+-- @version 0.26
 -- @changelog
---  Removed Defer Checkbox
---  Script will now automatically defer if Defered node is executed
---  Removed native defer from api since script uses its own (exporting scripts uses native defer)
---  Updated Export script to properly handle defer now
---  Added advance type error checking to eliminate connecting table value output (ANY) to mismatching pins (ALPHA needs testing)
---  Added more documentation (Math, SWITCH, MULTI-IF-ELSE)
+--  Added advance type error checking - Simplified code to only check Get Table Value node
 -- @provides
 --   Modules/*.lua
 --   Examples/*.reanodes

@@ -753,6 +753,7 @@ end
 
 function DeferTest()
     if r.ImGui_Button(ctx, "RUN") then
+        BREAK_RUN = nil
         r.ImGui_SetKeyboardFocusHere(ctx)
         LEGO_MGS = {}
         --START_FLOW = true

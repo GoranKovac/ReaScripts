@@ -12,7 +12,7 @@ local API_LIST = {}
 
 DL = r.ImGui_GetWindowDrawList(ctx)
 
-FUNCTIONS = {}
+local FUNCTIONS = {}
 
 local NODE_Buttons_LEFT = {
     [1] = { name = "i", func = function(self) self.toggle_comment = not self.toggle_comment end },

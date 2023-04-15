@@ -42,7 +42,7 @@ local function UpdateReturnValues(node, out_values)
 end
 local inp_types = {
     --["NIL"] = true,
-    ["NUMBER"] = function(i_type) if i_type ~= "NUMBER" and i_type ~= "INTEGER" then return true end end,
+    ["NUMBER"] = function(i_type) if i_type ~= "NUMBER" and i_type ~= "INTEGER" and i_type ~= "NUMBER/INTEGER" then return true end end,
     ["STRING"] = function(i_type) if i_type ~= "STRING" then return true end end,
     ["BOOLEAN"] = function(i_type) if i_type ~= "BOOLEAN" then return true end end,
     ["TABLE"] = function(i_type) if i_type ~= "TABLE" then return true end end,
@@ -82,7 +82,7 @@ local RPR_TYPES = {
 local function ValidateRpr(pointer)
     for i = 1, #RPR_PTRS do
         if r.ValidatePtr(pointer, RPR_PTRS[i]) then
-            return true
+            return RPR_PTRS[i]
         end
     end
     return false
@@ -91,46 +91,93 @@ end
 local function ValidateImgui(pointer)
     for i = 1, #IMGUI_PTRS do
         if r.ImGui_ValidatePtr(pointer, IMGUI_PTRS[i]) then
-            return true
+            return IMGUI_PTRS[i]
         end
     end
     return false
 end
-
 local function CheckInputType(node, NODES)
+    if not node.fname:match("CUSTOM_TableGetVal") then return end
+    if #node.outputs[1].connection == 0 then return end
+
     local missing = {}
-    for i = 1, #node.inputs do
-        if node.in_values[i] then
-            if #node.inputs[i].connection ~= 0 and node.inputs[i].type ~= "ANY" then
-                local prev_node = In_TBL(NODES, node.inputs[i].connection[1].node)
-                local prev_pin = node.inputs[i].connection[1].pin
-                local prev_type = prev_node.outputs[prev_pin].type
-                if prev_type == "ANY" then
-                    local out_type = type(prev_node.outputs[prev_pin].o_val):upper()
-                    if out_type == "USERDATA" then
-                        if node.inputs[i].type:find("IMGUI") then
-                            if not ValidateImgui(prev_node.outputs[prev_pin].o_val) then
-                                missing[#missing + 1] = node.inputs[i].type .. " TYPE NOT COMPATIBLE WITH : " .. out_type
-                            end
-                        elseif RPR_TYPES[node.inputs[i].type] then
-                            if not ValidateRpr(prev_node.outputs[prev_pin].o_val) then
-                                missing[#missing + 1] = node.inputs[i].type .. " TYPE NOT COMPATIBLE WITH : " .. out_type
-                            end
-                        end
-                    else
-                        if inp_types[out_type](node.inputs[i].type) then
-                            missing[#missing + 1] = node.inputs[i].type .. " TYPE NOT COMPATIBLE WITH : " .. out_type
-                        end
-                    end
+
+    local target_node = In_TBL(NODES, node.outputs[1].connection[1].node)
+    local target_pin = node.outputs[1].connection[1].pin
+    local target_type = target_node.inputs[target_pin].type
+
+    if target_type ~= "ANY" then
+        local out_type = type(node.outputs[1].o_val):upper()
+        if out_type == "USERDATA" then
+            if target_type:find("IMGUI") then
+                if not ValidateImgui(node.outputs[1].o_val) then
+                    missing[#missing + 1] = target_type ..
+                        " TYPE NOT COMPATIBLE WITH : " .. out_type
                 end
+            elseif RPR_TYPES[target_type] then
+                if not ValidateRpr(node.outputs[1].o_val) then
+                    missing[#missing + 1] = target_type ..
+                        " TYPE NOT COMPATIBLE WITH : " .. out_type
+                end
+            else
+                if ValidateImgui(node.outputs[1].o_val) then
+                    missing[#missing + 1] = target_type ..
+                        " TYPE NOT COMPATIBLE WITH : " .. ValidateImgui(node.outputs[1].o_val)
+                elseif ValidateRpr(node.outputs[1].o_val) then
+                    missing[#missing + 1] = target_type ..
+                        " TYPE NOT COMPATIBLE WITH : " .. ValidateRpr(node.outputs[1].o_val)
+                else
+                    inp_types[out_type](target_type)
+                    missing[#missing + 1] = target_type .. " TYPE NOT COMPATIBLE WITH : " .. out_type
+                end
+            end
+        else
+            if inp_types[out_type](target_type) then
+                missing[#missing + 1] = target_type .. " TYPE NOT COMPATIBLE WITH : " .. out_type
             end
         end
     end
     if #missing ~= 0 then
-        node.missing_arg = missing
+        target_node.missing_arg = missing
         return true
     end
 end
+
+-- local function CheckInputType(node, NODES)
+--     if not node.fname:match("CUSTOM_TableGetVal") then return end
+--     local missing = {}
+--     for i = 1, #node.inputs do
+--         if node.in_values[i] then
+--             if #node.inputs[i].connection ~= 0 and node.inputs[i].type ~= "ANY" then
+--                 local prev_node = In_TBL(NODES, node.inputs[i].connection[1].node)
+--                 local prev_pin = node.inputs[i].connection[1].pin
+--                 local prev_type = prev_node.outputs[prev_pin].type
+--                 if prev_type == "ANY" then
+--                     local out_type = type(prev_node.outputs[prev_pin].o_val):upper()
+--                     if out_type == "USERDATA" then
+--                         if node.inputs[i].type:find("IMGUI") then
+--                             if not ValidateImgui(prev_node.outputs[prev_pin].o_val) then
+--                                 missing[#missing + 1] = node.inputs[i].type .. " TYPE NOT COMPATIBLE WITH : " .. out_type
+--                             end
+--                         elseif RPR_TYPES[node.inputs[i].type] then
+--                             if not ValidateRpr(prev_node.outputs[prev_pin].o_val) then
+--                                 missing[#missing + 1] = node.inputs[i].type .. " TYPE NOT COMPATIBLE WITH : " .. out_type
+--                             end
+--                         end
+--                     else
+--                         if inp_types[out_type](node.inputs[i].type) then
+--                             missing[#missing + 1] = node.inputs[i].type .. " TYPE NOT COMPATIBLE WITH : " .. out_type
+--                         end
+--                     end
+--                 end
+--             end
+--         end
+--     end
+--     if #missing ~= 0 then
+--         node.missing_arg = missing
+--         return true
+--     end
+-- end
 
 -- local function CheckInputType(node)
 --     local missing = {}
@@ -275,41 +322,35 @@ function Run_Flow(tbl, func_node)
             ClearReturnValues(node)
             CollectArguments(node)
             if node.fname then
-                if CheckInputType(node, func_node.NODES) then
-                    if DEFERED_NODE then
-                        DEFERED_NODE, DEFER, START_FLOW = nil, false, false
-                    end
-                    Deselect_all()
-                    CHANGE_TAB = func_node.FID
-                    break
-                end
                 if node.fname:find("CUSTOM_") then
                     out_values = { _G[node.fname](node, func_node, table.unpack(node.in_values)) }
 
                     if out_values[1] == "ERROR" then
                         if ArgumentsMissing(node) then
-                            if DEFERED_NODE then
-                                DEFERED_NODE, DEFER, START_FLOW = nil, false, false
-                            end
+                            --if DEFERED_NODE then
+                            -- DEFERED_NODE, DEFER, START_FLOW = nil, false, false
+                            BREAK_RUN = true
+                            --end
                             Deselect_all()
                             CHANGE_TAB = func_node.FID
                             break
                         end
                     end
                 else
-                    if CheckInputType(node, func_node.NODES) then
-                        if DEFERED_NODE then
-                            DEFERED_NODE, DEFER, START_FLOW = nil, false, false
-                        end
-                        Deselect_all()
-                        CHANGE_TAB = func_node.FID
-                        break
-                    end
+                    -- if CheckInputType(node, func_node.NODES) then
+                    --     if DEFERED_NODE then
+                    --         DEFERED_NODE, DEFER, START_FLOW = nil, false, false
+                    --     end
+                    --     Deselect_all()
+                    --     CHANGE_TAB = func_node.FID
+                    --     break
+                    -- end
                     -- BREAK ONLY ON API CALL
                     if ArgumentsMissing(node) then
-                        if DEFERED_NODE then
-                            DEFERED_NODE, DEFER, START_FLOW = nil, false, false
-                        end
+                        --if DEFERED_NODE then
+                        -- DEFERED_NODE, DEFER, START_FLOW = nil, false, false
+                        BREAK_RUN = true
+                        --end
                         Deselect_all()
                         CHANGE_TAB = func_node.FID
                         break
@@ -317,6 +358,15 @@ function Run_Flow(tbl, func_node)
                     out_values = { _G[node.fname](table.unpack(node.in_values)) }
                 end
                 UpdateReturnValues(node, out_values)
+                if CheckInputType(node, func_node.NODES) then
+                    --if DEFERED_NODE then
+                    --    DEFERED_NODE, DEFER, START_FLOW = nil, false, false
+                    BREAK_RUN = true
+                    --end
+                    Deselect_all()
+                    CHANGE_TAB = func_node.FID
+                    break
+                end
             end
         end
     end
@@ -368,5 +418,9 @@ function InitRunFlow()
         ResetVars(NODES)
         local FLOW = TraceFlow(NODES)
         Run_Flow(FLOW, FUNCTIONS[i])
+        if BREAK_RUN then
+            DEFERED_NODE = nil
+            break
+        end
     end
 end

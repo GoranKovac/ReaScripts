@@ -147,6 +147,7 @@ function CheckCurrentInput2(node_inp)
         else
             -- IN CASE VALUE IS NIL (CONNECTED TO API NODE) RETURN 0 SO LIVE CALCULATING WONT CRASH (API IS CALCULATED AFTER RUNNING)
             a = node_inp[1].o_val or 0
+            a = type(a) == "number" and a or 0
         end
     end
     if node_inp[3] then
@@ -155,6 +156,7 @@ function CheckCurrentInput2(node_inp)
         else
             -- IN CASE VALUE IS NIL (CONNECTED TO API NODE) RETURN 0 SO LIVE CALCULATING WONT CRASH (API IS CALCULATED AFTER RUNNING)
             b = node_inp[3].o_val or 0
+            b = type(b) == "number" and b or 0
         end
         return a, b
     end

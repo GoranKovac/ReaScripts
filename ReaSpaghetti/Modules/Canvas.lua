@@ -213,6 +213,7 @@ local function CheckShortcuts()
     if CTRL_DOWN and KEY_R then
         r.ImGui_SetKeyboardFocusHere(ctx)
         LEGO_MGS = {}
+        BREAK_RUN = nil
         ClearNodesWarning()
         InitRunFlow()
     end
