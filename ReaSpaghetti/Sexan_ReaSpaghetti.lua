@@ -1,7 +1,7 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.19
+-- @version 0.21
 -- @changelog
 --  Better Comment Boxes
 --  Added Documentation in Docs Folder
