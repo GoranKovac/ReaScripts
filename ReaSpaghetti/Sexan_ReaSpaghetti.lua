@@ -1,9 +1,9 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.23
+-- @version 0.24
 -- @changelog
---  Updated Documentation With Tables and Utility nodes
+--  Updated Documentation little fix at last page
 -- @provides
 --   Modules/*.lua
 --   Examples/*.reanodes
