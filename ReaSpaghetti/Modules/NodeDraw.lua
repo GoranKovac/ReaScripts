@@ -12,7 +12,7 @@ local API_LIST = {}
 
 DL = r.ImGui_GetWindowDrawList(ctx)
 
-local FUNCTIONS = {}
+FUNCTIONS = {}
 
 local NODE_Buttons_LEFT = {
     [1] = { name = "i", func = function(self) self.toggle_comment = not self.toggle_comment end },
@@ -1038,6 +1038,8 @@ local function Draw_input(node, io_type, pin, x, y, pin_n, h)
                 --     pin.label .. separator .. '%d%',
                 --     r.ImGui_SliderFlags_AlwaysClamp())
             else
+                --! new error check
+                current_input = type(current_input) == "number" and current_input or 0
                 _, pin.i_val = r.ImGui_DragInt(ctx, "##" .. pin.label, current_input, 1, 0, nil,
                     pin.label .. separator .. '%d%',
                     r.ImGui_SliderFlags_AlwaysClamp())
@@ -1053,6 +1055,8 @@ local function Draw_input(node, io_type, pin, x, y, pin_n, h)
                 -- _, pin.o_val = r.ImGui_DragDouble(ctx, "##" .. pin.label, pin.o_val, 0.01, 0.0, 0.0,
                 --     pin.label .. separator .. '%.03f')
             else
+                --! new error check
+                current_input = type(current_input) == "number" and current_input or 0.0
                 _, pin.i_val = r.ImGui_DragDouble(ctx, "##" .. pin.label, current_input, 0.01, 0.0, 0.0,
                     pin.label .. separator .. '%.03f')
             end
@@ -1063,6 +1067,8 @@ local function Draw_input(node, io_type, pin, x, y, pin_n, h)
                 -- _, pin.o_val = pin.i_val
                 if S_RV then pin.o_val = pin.i_val end
             else
+                --! new error check
+                current_input = type(current_input) == "string" and current_input or ""
                 _, pin.i_val = r.ImGui_InputTextWithHint(ctx, "##" .. pin.label, pin.label, current_input)
             end
         elseif pin.type == "BOOLEAN" then
@@ -1072,6 +1078,7 @@ local function Draw_input(node, io_type, pin, x, y, pin_n, h)
                 if B_RV then pin.o_val = pin.i_val end
                 -- _, pin.o_val = pin.i_val
             else
+                current_input = type(current_input) == "boolean" and current_input or false
                 _, pin.i_val = r.ImGui_Checkbox(ctx, pin.label, current_input)
             end
         elseif pin.type == "LIST" then
@@ -1903,7 +1910,8 @@ function DrawLoop()
     r.ImGui_PushFont(ctx, FONT)
     Node_Drawing()
     r.ImGui_PopFont(ctx)
-    if START_FLOW and DEFER then
+    --if START_FLOW and DEFER then
+    if DEFERED_NODE then
         InitRunFlow()
     end
 end

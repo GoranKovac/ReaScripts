@@ -49,13 +49,15 @@ local convert = {
     ["IMGUI_RESOURCE"] = "IMGUI_OBJ",
 }
 
---local Math_INT = { "+", "-", "*" }
+local exclude_api = {
+    ["defer"] = true
+}
+
 
 local Math_FLOAT = { "+", "-", "*", "/", "%", "^" }
 
 local Compare = { '==', '~=', '>', '>=', '<', '<=' }
 
---local Bitwise = { '&', '|', '~', '<<', '>>', '~n' }
 
 function Fill_Api_list()
     local start, found
@@ -87,7 +89,7 @@ function Fill_Api_list()
             if filter_line:match('reaper.') and not filter_line:match('{reaper.') then
                 --! FIX {reaper.array} functions
                 local name = filter_line:match('reaper.(.+%))'):gsub("%((.-)%)", "")
-                if r.APIExists(name) then
+                if r.APIExists(name) and not exclude_api[name] then
                     --if r[name] then
                     found = true
                     api[#api + 1] = { fname = name, label = name, out = {}, ins = {}, desc = "", run = "in/out" }
@@ -594,7 +596,7 @@ function Fill_Api_list()
             { name = "", type = "STRING", def_val = "random", pin_disable = true, no_draw = true },
         },
         out = {
-            { name = "RND", type = "INTEGER" }
+            { name = "RND", type = "NUMBER" }
         },
     }
 
@@ -636,7 +638,7 @@ function Fill_Api_list()
             { name = "",  type = "STRING",  def_val = "randomS", pin_disable = true, no_draw = true },
         },
         out = {
-            { name = "RND", type = "INTEGER" }
+            { name = "RND", type = "NUMBER" }
         },
     }
 
@@ -651,7 +653,7 @@ function Fill_Api_list()
             { name = "Y", type = "INTEGER", def_val = 1 },
         },
         out = {
-            { name = "RND", type = "INTEGER" }
+            { name = "RND", type = "NUMBER" }
         },
     }
 

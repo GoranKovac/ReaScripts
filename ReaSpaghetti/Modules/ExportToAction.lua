@@ -23,12 +23,12 @@ function ExportTest(name, proj_path, is_defer)
 
     table.insert(lua_string, 'InitRunFlow()')
     if is_defer then
-        table.insert(lua_string, 'if DEFER then reaper.defer(Main) end')
+        table.insert(lua_string, 'if DEFERED_NODE and DEFER then reaper.defer(Main) end')
     end
     table.insert(lua_string, 'end')
     table.insert(lua_string, 'local function Exit()')
     if is_defer then
-        table.insert(lua_string, 'DEFER = false')
+        table.insert(lua_string, 'DEFER = nil')
     end
     table.insert(lua_string, 'end')
     table.insert(lua_string, 'reaper.atexit(Exit)')

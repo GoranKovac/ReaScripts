@@ -40,6 +40,116 @@ local function UpdateReturnValues(node, out_values)
         if node.outputs[i] then node.outputs[i].o_val = out_values[i] end
     end
 end
+local inp_types = {
+    --["NIL"] = true,
+    ["NUMBER"] = function(i_type) if i_type ~= "NUMBER" and i_type ~= "INTEGER" then return true end end,
+    ["STRING"] = function(i_type) if i_type ~= "STRING" then return true end end,
+    ["BOOLEAN"] = function(i_type) if i_type ~= "BOOLEAN" then return true end end,
+    ["TABLE"] = function(i_type) if i_type ~= "TABLE" then return true end end,
+    ["USERDATA"] = function(i_type) if i_type ~= "USERDATA" then return true end end,
+}
+
+local IMGUI_PTRS = {
+    "ImGui_Context*",
+    "ImGui_DrawList*",
+    "ImGui_DrawListSplitter*",
+    "ImGui_Font*",
+    "ImGui_Image*",
+    "ImGui_ImageSet*",
+    "ImGui_ListClipper*",
+    "ImGui_TextFilter*",
+    "ImGui_Viewport*",
+}
+
+local RPR_PTRS = {
+    "ReaProject*",
+    "MediaTrack*",
+    "MediaItem*",
+    "MediaItem_Take*",
+    "TrackEnvelope*",
+    "PCM_source*"
+}
+
+local RPR_TYPES = {
+    "REAPROJECT",
+    "MEDIATRACK",
+    "MEDIAITEM",
+    "MEDIAITEM_TAKE",
+    "TRACKENVELOPE",
+    "PCM_SOURCE"
+}
+
+local function ValidateRpr(pointer)
+    for i = 1, #RPR_PTRS do
+        if r.ValidatePtr(pointer, RPR_PTRS[i]) then
+            return true
+        end
+    end
+    return false
+end
+
+local function ValidateImgui(pointer)
+    for i = 1, #IMGUI_PTRS do
+        if r.ImGui_ValidatePtr(pointer, IMGUI_PTRS[i]) then
+            return true
+        end
+    end
+    return false
+end
+
+local function CheckInputType(node, NODES)
+    local missing = {}
+    for i = 1, #node.inputs do
+        if node.in_values[i] then
+            if #node.inputs[i].connection ~= 0 and node.inputs[i].type ~= "ANY" then
+                local prev_node = In_TBL(NODES, node.inputs[i].connection[1].node)
+                local prev_pin = node.inputs[i].connection[1].pin
+                local prev_type = prev_node.outputs[prev_pin].type
+                if prev_type == "ANY" then
+                    local out_type = type(prev_node.outputs[prev_pin].o_val):upper()
+                    if out_type == "USERDATA" then
+                        if node.inputs[i].type:find("IMGUI") then
+                            if not ValidateImgui(prev_node.outputs[prev_pin].o_val) then
+                                missing[#missing + 1] = node.inputs[i].type .. " TYPE NOT COMPATIBLE WITH : " .. out_type
+                            end
+                        elseif RPR_TYPES[node.inputs[i].type] then
+                            if not ValidateRpr(prev_node.outputs[prev_pin].o_val) then
+                                missing[#missing + 1] = node.inputs[i].type .. " TYPE NOT COMPATIBLE WITH : " .. out_type
+                            end
+                        end
+                    else
+                        if inp_types[out_type](node.inputs[i].type) then
+                            missing[#missing + 1] = node.inputs[i].type .. " TYPE NOT COMPATIBLE WITH : " .. out_type
+                        end
+                    end
+                end
+            end
+        end
+    end
+    if #missing ~= 0 then
+        node.missing_arg = missing
+        return true
+    end
+end
+
+-- local function CheckInputType(node)
+--     local missing = {}
+--     for i = 1, #node.inputs do
+--         if node.in_values[i] then
+--             local input_type = type(node.in_values[i]):upper()
+--             if node.inputs[i].type ~= "ANY" then
+--                 if inp_types[input_type](node.inputs[i].type) then
+--                     -- if input_type ~= node.inputs[i].type then
+--                     missing[#missing + 1] = node.inputs[i].type .. " TYPE NOT COMPATIBLE WITH : " .. input_type
+--                 end
+--             end
+--         end
+--     end
+--     if #missing ~= 0 then
+--         node.missing_arg = missing
+--         return true
+--     end
+-- end
 
 local function ArgumentsMissing(node)
     local missing = {}
@@ -165,12 +275,20 @@ function Run_Flow(tbl, func_node)
             ClearReturnValues(node)
             CollectArguments(node)
             if node.fname then
+                if CheckInputType(node, func_node.NODES) then
+                    if DEFERED_NODE then
+                        DEFERED_NODE, DEFER, START_FLOW = nil, false, false
+                    end
+                    Deselect_all()
+                    CHANGE_TAB = func_node.FID
+                    break
+                end
                 if node.fname:find("CUSTOM_") then
                     out_values = { _G[node.fname](node, func_node, table.unpack(node.in_values)) }
 
                     if out_values[1] == "ERROR" then
                         if ArgumentsMissing(node) then
-                            if DEFER then
+                            if DEFERED_NODE then
                                 DEFERED_NODE, DEFER, START_FLOW = nil, false, false
                             end
                             Deselect_all()
@@ -179,9 +297,17 @@ function Run_Flow(tbl, func_node)
                         end
                     end
                 else
+                    if CheckInputType(node, func_node.NODES) then
+                        if DEFERED_NODE then
+                            DEFERED_NODE, DEFER, START_FLOW = nil, false, false
+                        end
+                        Deselect_all()
+                        CHANGE_TAB = func_node.FID
+                        break
+                    end
                     -- BREAK ONLY ON API CALL
                     if ArgumentsMissing(node) then
-                        if DEFER then
+                        if DEFERED_NODE then
                             DEFERED_NODE, DEFER, START_FLOW = nil, false, false
                         end
                         Deselect_all()

@@ -282,17 +282,17 @@ function CUSTOM_DBG_View(called_node, func_node)
 end
 
 function CUSTOM_TestDefer(called_node)
-    if DEFER then
-        DEFERED_NODE = called_node
-    end
+    --if DEFER then
+    DEFERED_NODE = called_node
+    --end
 end
 
 function CUSTOM_TestDeferEND(called_node, func_node)
-    if DEFER then
-        DEFER = false
-        START_FLOW = false
-        DEFERED_NODE = nil
-    end
+    --if DEFER then
+    --DEFER = false
+    --START_FLOW = false
+    DEFERED_NODE = nil
+    --end
 end
 
 function CUSTOM_Set(called_node)

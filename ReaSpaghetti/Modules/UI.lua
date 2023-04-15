@@ -382,6 +382,8 @@ local function InspectorFrame(node)
                             r.ImGui_SliderFlags_AlwaysClamp())
                         if I_RV2 then pin.o_val = pin.i_val end
                     else
+                        --! new error check
+                        current_input = type(current_input) == "number" and current_input or 0
                         _, pin.i_val = r.ImGui_DragInt(ctx, "##" .. pin.label, current_input, 1, 0, nil,
                             pin.label .. separator .. '%d%',
                             r.ImGui_SliderFlags_AlwaysClamp())
@@ -393,6 +395,8 @@ local function InspectorFrame(node)
                             pin.label .. separator .. '%.03f')
                         if F_RV2 then pin.o_val = pin.i_val end
                     else
+                        --! new error check
+                        current_input = type(current_input) == "number" and current_input or 0.0
                         _, pin.i_val = r.ImGui_DragDouble(ctx, "##" .. pin.label, current_input, 0.01, 0.0, 0.0,
                             pin.label .. separator .. '%.03f')
                     end
@@ -401,6 +405,8 @@ local function InspectorFrame(node)
                         S_RV2, pin.i_val = r.ImGui_InputTextWithHint(ctx, "##" .. pin.label, pin.label, pin.i_val)
                         if S_RV2 then pin.o_val = pin.i_val end
                     else
+                        --! new error check
+                        current_input = type(current_input) == "string" and current_input or ""
                         _, pin.i_val = r.ImGui_InputTextWithHint(ctx, "##" .. pin.label, pin.label, current_input)
                     end
                 elseif pin.type == "BOOLEAN" then
@@ -408,6 +414,8 @@ local function InspectorFrame(node)
                         B_RV2, pin.i_val = r.ImGui_Checkbox(ctx, pin.label, pin.i_val)
                         if B_RV2 then pin.o_val = pin.i_val end
                     else
+                        --! new error check
+                        current_input = type(current_input) == "boolean" and current_input or false
                         _, pin.i_val = r.ImGui_Checkbox(ctx, pin.label, current_input)
                     end
                 elseif pin.type == "LIST" then
@@ -747,34 +755,37 @@ function DeferTest()
     if r.ImGui_Button(ctx, "RUN") then
         r.ImGui_SetKeyboardFocusHere(ctx)
         LEGO_MGS = {}
-        START_FLOW = true
+        --START_FLOW = true
         ClearNodesWarning()
         InitRunFlow()
         --Run_Flow(FLOW)
-        if not DEFER then
-            START_FLOW = false
-        end
+        -- if not DEFER then
+        --     --    START_FLOW = false
+        -- end
     end
     r.ImGui_SameLine(ctx)
     ----------------------------------------
-    if r.ImGui_Checkbox(ctx, "DEFER", DEFER) then
-        if not START_FLOW then
-            DEFER = not DEFER
-        end
-    end
-    r.ImGui_SameLine(ctx)
-    if START_FLOW and DEFER then
+    -- if r.ImGui_Checkbox(ctx, "DEFER", DEFER) then
+    --     if not START_FLOW then
+    --         DEFER = not DEFER
+    --     end
+    -- end
+    -- r.ImGui_SameLine(ctx)
+    --if START_FLOW and DEFER then
+    if DEFERED_NODE then
         r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Button(), 0x00FF00AA)
     end
     if r.ImGui_Button(ctx, "STOP") then
-        if START_FLOW and DEFER then
+        if DEFERED_NODE then
+            --if START_FLOW and DEFER then
             r.ImGui_PopStyleColor(ctx)
             DEFERED_NODE = nil
-            DEFER = false
-            START_FLOW = false
+            --DEFER = false
+            -- START_FLOW = false
         end
     end
-    if START_FLOW and DEFER then
+    --if START_FLOW and DEFER then
+    if DEFERED_NODE then
         r.ImGui_PopStyleColor(ctx)
     end
 end
@@ -784,7 +795,7 @@ function UI_Buttons()
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x000000EE)
 
     r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_WindowPadding(), 0, 0)
-    if r.ImGui_BeginChild(ctx, "TopButtons", 495, 25, 1) then
+    if r.ImGui_BeginChild(ctx, "TopButtons", 420, 25, 1) then
         r.ImGui_SetCursorPos(ctx, 4, 3)
         if r.ImGui_Checkbox(ctx, "GRID", GRID) then GRID = not GRID end
         r.ImGui_SameLine(ctx)
