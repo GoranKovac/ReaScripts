@@ -1,11 +1,11 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.28
+-- @version 0.29
 -- @changelog
---  Fixed bug with Setters not updating source in some scenarios
---  Included api_file to avoid issues with various configurations refusing to call curl command
---  Included Imgui Example
+--  Multi-IF-Else and SWITCH NodeInspector UI fix
+--  Unused Code Cleanup
+--  Imgui Item manipulation example
 -- @provides
 --   api_file.txt
 --   Modules/*.lua

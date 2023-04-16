@@ -339,12 +339,14 @@ local tbl_types = {
 
 local function InspectorFrame(node)
     if not node then return end
+    DEF_INC = nil
     local io_type = tbl_types[node.type] and "out" or "in"
     local current_io_tbl = tbl_types[node.type] and node.outputs or
         node.inputs --node.type == "m" and node.outputs or node.inputs
     if node.type == "tc" or node.fname == "CUSTOM_MultiIfElse" or node.fname == "CUSTOM_MultiIfElseifElse" then
         TableSpecial(node)
-        return
+        DEF_INC = true
+        if node.type == "tc" then return end
     end
     local w = r.ImGui_GetContentRegionAvail(ctx)
     for i = 1, #current_io_tbl do
@@ -382,8 +384,6 @@ local function InspectorFrame(node)
                             r.ImGui_SliderFlags_AlwaysClamp())
                         if I_RV2 then pin.o_val = pin.i_val end
                     else
-                        --! new error check
-                        current_input = type(current_input) == "number" and current_input or 0
                         _, pin.i_val = r.ImGui_DragInt(ctx, "##" .. pin.label, current_input, 1, 0, nil,
                             pin.label .. separator .. '%d%',
                             r.ImGui_SliderFlags_AlwaysClamp())
@@ -395,8 +395,6 @@ local function InspectorFrame(node)
                             pin.label .. separator .. '%.03f')
                         if F_RV2 then pin.o_val = pin.i_val end
                     else
-                        --! new error check
-                        current_input = type(current_input) == "number" and current_input or 0.0
                         _, pin.i_val = r.ImGui_DragDouble(ctx, "##" .. pin.label, current_input, 0.01, 0.0, 0.0,
                             pin.label .. separator .. '%.03f')
                     end
@@ -405,8 +403,6 @@ local function InspectorFrame(node)
                         S_RV2, pin.i_val = r.ImGui_InputTextWithHint(ctx, "##" .. pin.label, pin.label, pin.i_val)
                         if S_RV2 then pin.o_val = pin.i_val end
                     else
-                        --! new error check
-                        current_input = type(current_input) == "string" and current_input or ""
                         _, pin.i_val = r.ImGui_InputTextWithHint(ctx, "##" .. pin.label, pin.label, current_input)
                     end
                 elseif pin.type == "BOOLEAN" then
@@ -414,8 +410,6 @@ local function InspectorFrame(node)
                         B_RV2, pin.i_val = r.ImGui_Checkbox(ctx, pin.label, pin.i_val)
                         if B_RV2 then pin.o_val = pin.i_val end
                     else
-                        --! new error check
-                        current_input = type(current_input) == "boolean" and current_input or false
                         _, pin.i_val = r.ImGui_Checkbox(ctx, pin.label, current_input)
                     end
                 elseif pin.type == "LIST" then
@@ -628,7 +622,8 @@ local function NodeInspector()
     if cur_node then
         local current_io_tbl = tbl_types[cur_node.type] and cur_node.outputs or cur_node.inputs
         h_exp = def_h + 4 + (#current_io_tbl * (17 + pad_y * 2))
-        if cur_node.type == "tc" then
+        --if cur_node.type == "tc" then
+        if DEF_INC then
             h_exp = h_exp + 25
         end
     end

@@ -6,51 +6,6 @@ local random, huge, pi, abs, cos, acos, sin, asin, atan, ceil, floor, deg, exp, 
     math.floor, math.deg, math.exp, math.log, math.modf, math.rad, math.sqrt, math.randomseed, math.fmod, math.min,
     math.max, math.type
 
--- local Math2 = {
---     ['==']         = function(self) return self[1].i_val == self[3].i_val end,
---     ['~=']         = function(self) return self[1].i_val ~= self[3].i_val end,
---     ['>']          = function(self) return self[1].i_val > self[3].i_val end,
---     ['>=']         = function(self) return self[1].i_val >= self[3].i_val end,
---     ['<']          = function(self) return self[1].i_val < self[3].i_val end,
---     ['<=']         = function(self) return self[1].i_val <= self[3].i_val end,
---     ["+"]          = function(self) return self[1].i_val + self[3].i_val end,
---     ["-"]          = function(self) return self[1].i_val - self[3].i_val end,
---     ["*"]          = function(self) return self[1].i_val * self[3].i_val end,
---     ["/"]          = function(self)
---         if self[1].i_val == 0 or self[3].i_val == 0 then return 0 end
---         return self[1].i_val / self[3].i_val
---     end,
---     ["%"]          = function(self) return self[1].i_val % self[3].i_val end,
---     ["^"]          = function(self) return self[1].i_val ^ self[3].i_val end,
---     ["random"]     = function() return random() end,
---     ["huge"]       = function() return huge end,
---     ["pi"]         = function() return pi end,
---     ["abs"]        = function(self) return abs(self[1].i_val) end,
---     ["cos"]        = function(self) return cos(self[1].i_val) end,
---     ["acos"]       = function(self) return acos(self[1].i_val) end,
---     ["sin"]        = function(self) return sin(self[1].i_val) end,
---     ["asin"]       = function(self) return asin(self[1].i_val) end,
---     ["atan"]       = function(self) return atan(self[1].i_val) end,
---     ["ceil"]       = function(self) return ceil(self[1].i_val) end,
---     ["floor"]      = function(self) return floor(self[1].i_val) end,
---     ["deg"]        = function(self) return deg(self[1].i_val) end,
---     ["exp"]        = function(self) return exp(self[1].i_val) end,
---     ["log"]        = function(self) return log(self[1].i_val) end,
---     ["modf"]       = function(self) return modf(self[1].i_val) end,
---     ["rad"]        = function(self) return rad(self[1].i_val) end,
---     ["sqrt"]       = function(self) return sqrt(self[1].i_val) end,
---     ["randomseed"] = function(self) return randomseed(self[1].i_val) end,
---     ["randomS"]    = function(self) return random(self[1].i_val) end,
---     ["randomM"]    = function(self) return random(self[1].i_val, self[3].i_val) end,
---     ["fmod"]       = function(self) return fmod(self[1].i_val, self[3].i_val) end,
---     ["max"]        = function(self) return max(self[1].i_val, self[3].i_val) end,
---     ["min"]        = function(self) return min(self[1].i_val, self[3].i_val) end,
---     ["pow"]        = function(self) return self[1].i_val ^ self[3].i_val end,
---     ["mathtype"]   = function(self) return mtype(self[1].i_val) end,
---     ["IntToFloat"] = function(self) return self[1].i_val + .0 end,
---     ["FloatToInt"] = function(self) return floor(self[1].i_val) end,
--- }
-
 local Math = {
     ['==']         = function(x, y) return x == y end,
     ['~=']         = function(x, y) return x ~= y end,
@@ -100,16 +55,6 @@ local Math = {
 }
 
 local LuaStd = {
-    -- THESE TYPES ARE EXPENSIVE TO DO ON EVERY CALL SO THEY ARE INDEPENDAT FUNCTIONS WITH RUN PINS TO ONLY RUN WHEN CALLED
-    --['type']     = function(x) return type(x) end,
-    --['tonumber'] = function(x) return tonumber(x) end,
-    --['tostring'] = function(x) return tostring(x) end,
-    -- ["concat"]   = function(x, y)
-    --     x = x or ""
-    --     y = y or ""
-    --     return tostring(x) .. tostring(y)
-    -- end,
-
     -- LOGICAL OP
     ["and"]     = function(x, y)
         if x and y then
@@ -147,7 +92,6 @@ function CheckCurrentInput2(node_inp)
         else
             -- IN CASE VALUE IS NIL (CONNECTED TO API NODE) RETURN 0 SO LIVE CALCULATING WONT CRASH (API IS CALCULATED AFTER RUNNING)
             a = node_inp[1].o_val or 0
-            --a = type(a) == "number" and a or 0
         end
     end
     if node_inp[3] then
@@ -156,26 +100,11 @@ function CheckCurrentInput2(node_inp)
         else
             -- IN CASE VALUE IS NIL (CONNECTED TO API NODE) RETURN 0 SO LIVE CALCULATING WONT CRASH (API IS CALCULATED AFTER RUNNING)
             b = node_inp[3].o_val or 0
-            -- b = type(b) == "number" and b or 0
         end
         return a, b
     end
     return a
 end
-
--- function CheckCurrentInput(node_inp)
---     local a = node_inp[1] and node_inp[1].o_val or node_inp[1].i_val
---     if node_inp[3] then
---         local b = node_inp[3].o_val and node_inp[3].o_val or node_inp[3].i_val
---         return a, b
---     end
---     return a
--- end
-
--- function DoMath(op, node)
---     --local a, b = CheckCurrentInput(node.inputs)
---     return Math2[op](node.inputs)
--- end
 
 function DoMath(op, node)
     local a, b = CheckCurrentInput2(node.inputs)
@@ -249,9 +178,6 @@ function CUSTOM_IF_Else(called_node, func_node, cond_a, cond_b)
         b = called_node.inputs[2].o_val
     end
 
-    --local a = called_node.inputs[1].o_val ~= nil and called_node.inputs[1].o_val or called_node.inputs[1].i_val
-    --local b = called_node.inputs[2].o_val ~= nil and called_node.inputs[2].o_val or called_node.inputs[2].i_val
-
     if a == b then
         called_node.outputs[1].run = true
         GetChildFlow(called_node, func_node)
@@ -284,17 +210,11 @@ function CUSTOM_DBG_View(called_node, func_node)
 end
 
 function CUSTOM_TestDefer(called_node)
-    --if DEFER then
     DEFERED_NODE = called_node
-    --end
 end
 
 function CUSTOM_TestDeferEND(called_node, func_node)
-    --if DEFER then
-    --DEFER = false
-    --START_FLOW = false
     DEFERED_NODE = nil
-    --end
 end
 
 function CUSTOM_Set(called_node)
@@ -303,13 +223,7 @@ function CUSTOM_Set(called_node)
     else
         called_node.outputs[1].set = called_node.inputs[1].o_val
         local dummy_index_call = called_node.outputs[1].get
-        -- local target_node = GetNodeInfo(called_node.set.guid)
-        -- target_node.outputs[1].o_val = called_node.inputs[1].o_val
-
-        -- called_node.outputs[1].o_val = target_node.outputs[1].o_val
     end
-
-    -- called_node.outputs[1].o_val = target_node.outputs[1].o_val
 end
 
 function StdDo(a, op, b)
@@ -387,11 +301,11 @@ function CUSTOM_FunctionStartArgs(called_node, func_node)
 end
 
 function CUSTOM_GetScriptPath(called_node, func_node)
-    called_node.outputs[1].o_val = PATH --debug.getinfo(1).source:match("@?(.*[\\|/])")
+    called_node.outputs[1].o_val = PATH
 end
 
 function CUSTOM_GetOsNativeSeparator(called_node, func_node)
-    called_node.outputs[1].o_val = NATIVE_SEPARATOR --debug.getinfo(1).source:match("@?(.*[\\|/])")
+    called_node.outputs[1].o_val = NATIVE_SEPARATOR
 end
 
 function CUSTOM_MultiIfElse(called_node, func_node)

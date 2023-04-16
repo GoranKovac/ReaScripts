@@ -1,0 +1,4878 @@
+{
+ FUNCTIONS = {
+  [1] = {
+   in_values = {
+   },
+   CANVAS = {
+    zone_R = false,
+    scale = 0.525,
+    zone_L = true,
+    off_y = 328.46150293255,
+    w = 0,
+    view_x = 1122.0,
+    view_y = 595.0,
+    h = 0,
+    zone_B = false,
+    MouseIN = false,
+    MX = 117.80749573008,
+    MY = -661.83143415724,
+    off_x = -1.8489352582897,
+    zone_T = false,
+    ry = 673.0,
+    rx = 1198.0,
+   },
+   w = 0,
+   y = 0,
+   x = 0,
+   selected = false,
+   guid = "{7EF81DB7-AFE4-4244-9436-63B7AE152D76}",
+   type = "func",
+   h = 0,
+   outputs = {
+    [0] = {
+     type = "RUN",
+     y = 0,
+     x = 0,
+     label = "RUN",
+     connection = {
+     },
+    },
+   },
+   inputs = {
+    [0] = {
+     type = "RUN",
+     y = 0,
+     x = 0,
+     label = "RUN",
+     connection = {
+     },
+    },
+   },
+   label = "Init",
+   NODES = {
+    [1] = {
+     in_values = {
+     },
+     w = 160.0,
+     h = 30,
+     y = 0,
+     x = 0,
+     selected = false,
+     guid = "{C9052F7C-7E70-442C-B501-96E4E2BE3432}",
+     type = "m",
+     fname = "CUSTOM_FunctionStartArgs",
+     outputs = {
+      [0] = {
+       type = "RUN",
+       trace = false,
+       y = 931.33650293255,
+       x = 1204.1510647417,
+       label = "RUN",
+       connection = {
+        [1] = {
+         node = "{562B1F34-556E-4CC6-9906-0D8767731EED}",
+         link = "{C9052F7C-7E70-442C-B501-96E4E2BE3432}:RUN-{562B1F34-556E-4CC6-9906-0D8767731EED}:RUN",
+         pin = 0,
+        },
+       },
+      },
+     },
+     inputs = {
+     },
+     label = "START",
+     trace = false,
+    },
+    [2] = {
+     in_values = {
+      [2] = 0,
+      [1] = "MY SCRIPT",
+     },
+     w = 272.0,
+     h = 120,
+     y = -1.8095238095239,
+     x = 301.0,
+     selected = false,
+     guid = "{562B1F34-556E-4CC6-9906-0D8767731EED}",
+     type = "api",
+     fname = "ImGui_CreateContext",
+     outputs = {
+      [0] = {
+       type = "RUN",
+       trace = false,
+       y = 930.38650293255,
+       x = 1420.9760647417,
+       label = "RUN",
+       connection = {
+        [1] = {
+         node = "{EC2853A0-7648-43F8-B6C3-F2BC58773C2D}",
+         link = "{562B1F34-556E-4CC6-9906-0D8767731EED}:RUN-{EC2853A0-7648-43F8-B6C3-F2BC58773C2D}:RUN",
+         pin = 0,
+        },
+       },
+      },
+      [1] = {
+       trace = false,
+       y = 977.63650293255,
+       type = "IMGUI_CONTEXT",
+       pin = 1,
+       x = 1420.9760647417,
+       o_val = nil,
+       label = "IMGUI_CONTEXT",
+       connection = {
+        [1] = {
+         node = "{EC2853A0-7648-43F8-B6C3-F2BC58773C2D}",
+         link = "{562B1F34-556E-4CC6-9906-0D8767731EED}:IMGUI_CONTEXT-{EC2853A0-7648-43F8-B6C3-F2BC58773C2D}:IMGUI_CONTEXT",
+         pin = 1,
+        },
+       },
+      },
+     },
+     inputs = {
+      [0] = {
+       type = "RUN",
+       trace = false,
+       y = 930.38650293255,
+       x = 1278.1760647417,
+       label = "RUN",
+       connection = {
+        [1] = {
+         node = "{C9052F7C-7E70-442C-B501-96E4E2BE3432}",
+         link = "{C9052F7C-7E70-442C-B501-96E4E2BE3432}:RUN-{562B1F34-556E-4CC6-9906-0D8767731EED}:RUN",
+         pin = 0,
+        },
+       },
+      },
+      [1] = {
+       trace = false,
+       y = 946.13650293255,
+       type = "STRING",
+       i_val = "MY SCRIPT",
+       x = 1278.1760647417,
+       pin = 1,
+       label = "LABEL",
+       connection = {
+       },
+      },
+      [2] = {
+       trace = false,
+       y = 961.88650293255,
+       type = "INTEGER",
+       i_val = 0,
+       x = 1278.1760647417,
+       pin = 2,
+       label = "CONFIG",
+       connection = {
+       },
+      },
+     },
+     label = "ImGui_CreateContext",
+     trace = false,
+    },
+    [3] = {
+     in_values = {
+      [1] = nil,
+     },
+     selected = false,
+     w = 176.0,
+     set = {
+      api = true,
+      guid = "{562B1F34-556E-4CC6-9906-0D8767731EED}",
+      pin = 1,
+     },
+     y = 7.1904761904761,
+     x = 675.0,
+     guid = "{EC2853A0-7648-43F8-B6C3-F2BC58773C2D}",
+     h = 90,
+     type = "api_var",
+     fname = "CUSTOM_Set",
+     outputs = {
+      [0] = {
+       type = "RUN",
+       trace = false,
+       y = 935.11150293255,
+       x = 1566.9260647417,
+       label = "RUN",
+       connection = {
+        [1] = {
+         node = "{8050A85B-F278-4951-95C9-140E5EB05475}",
+         link = "{EC2853A0-7648-43F8-B6C3-F2BC58773C2D}:RUN-{8050A85B-F278-4951-95C9-140E5EB05475}:RUN",
+         pin = 0,
+        },
+       },
+      },
+      [1] = {
+       trace = false,
+       y = 966.61150293255,
+       type = "IMGUI_CONTEXT",
+       pin = 1,
+       x = 1566.9260647417,
+       o_val = nil,
+       label = "IMGUI_CONTEXT",
+       connection = {
+        [1] = {
+         node = "{941FADA5-8D6E-47E5-9124-33465A8C0326}",
+         link = "{EC2853A0-7648-43F8-B6C3-F2BC58773C2D}:IMGUI_CONTEXT-{941FADA5-8D6E-47E5-9124-33465A8C0326}:CTX",
+         pin = 1,
+        },
+       },
+      },
+     },
+     inputs = {
+      [0] = {
+       type = "RUN",
+       trace = false,
+       y = 935.11150293255,
+       x = 1474.5260647417,
+       label = "RUN",
+       connection = {
+        [1] = {
+         node = "{562B1F34-556E-4CC6-9906-0D8767731EED}",
+         link = "{562B1F34-556E-4CC6-9906-0D8767731EED}:RUN-{EC2853A0-7648-43F8-B6C3-F2BC58773C2D}:RUN",
+         pin = 0,
+        },
+       },
+      },
+      [1] = {
+       trace = false,
+       type = "IMGUI_CONTEXT",
+       pin = 1,
+       y = 950.86150293255,
+       x = 1474.5260647417,
+       label = "IMGUI_CONTEXT",
+       connection = {
+        [1] = {
+         node = "{562B1F34-556E-4CC6-9906-0D8767731EED}",
+         link = "{562B1F34-556E-4CC6-9906-0D8767731EED}:IMGUI_CONTEXT-{EC2853A0-7648-43F8-B6C3-F2BC58773C2D}:IMGUI_CONTEXT",
+         pin = 1,
+        },
+       },
+      },
+     },
+     label = "VAR CTX",
+     trace = false,
+    },
+    [4] = {
+     in_values = {
+     },
+     trace = false,
+     w = 464.0,
+     guid = "{8050A85B-F278-4951-95C9-140E5EB05475}",
+     y = -19.009523809524,
+     x = 975.6,
+     selected = false,
+     h = 60,
+     type = "api",
+     fname = "ImGui_ConfigVar_WindowsMoveFromTitleBarOnly",
+     outputs = {
+      [0] = {
+       type = "RUN",
+       trace = false,
+       y = 921.35650293255,
+       x = 1875.9410647417,
+       label = "RUN",
+       connection = {
+        [1] = {
+         node = "{941FADA5-8D6E-47E5-9124-33465A8C0326}",
+         link = "{8050A85B-F278-4951-95C9-140E5EB05475}:RUN-{941FADA5-8D6E-47E5-9124-33465A8C0326}:RUN",
+         pin = 0,
+        },
+       },
+      },
+      [1] = {
+       trace = false,
+       y = 937.10650293255,
+       type = "INTEGER",
+       pin = 1,
+       x = 1875.9410647417,
+       o_val = 18,
+       label = "INTEGER",
+       connection = {
+       },
+      },
+     },
+     inputs = {
+      [0] = {
+       type = "RUN",
+       trace = false,
+       y = 921.35650293255,
+       x = 1632.3410647417,
+       label = "RUN",
+       connection = {
+        [1] = {
+         node = "{EC2853A0-7648-43F8-B6C3-F2BC58773C2D}",
+         link = "{EC2853A0-7648-43F8-B6C3-F2BC58773C2D}:RUN-{8050A85B-F278-4951-95C9-140E5EB05475}:RUN",
+         pin = 0,
+        },
+       },
+      },
+     },
+     label = "ImGui_ConfigVar_WindowsMoveFromTitleBarOnly",
+     desc = "\9Enable allowing to move windows only when clicking on their title bar.\
+   Does not apply to windows without a title bar.",
+    },
+    [5] = {
+     in_values = {
+      [1] = nil,
+      [2] = 0,
+      [3] = 1.0,
+     },
+     trace = false,
+     w = 264.0,
+     guid = "{941FADA5-8D6E-47E5-9124-33465A8C0326}",
+     y = 34.47619047619,
+     x = 1539.6857142857,
+     selected = false,
+     h = 120,
+     type = "api",
+     fname = "ImGui_SetConfigVar",
+     outputs = {
+      [0] = {
+       type = "RUN",
+       trace = false,
+       y = 949.43650293255,
+       x = 2067.0860647417,
+       label = "RUN",
+       connection = {
+       },
+      },
+     },
+     inputs = {
+      [0] = {
+       type = "RUN",
+       trace = false,
+       y = 949.43650293255,
+       x = 1928.4860647417,
+       label = "RUN",
+       connection = {
+        [1] = {
+         node = "{8050A85B-F278-4951-95C9-140E5EB05475}",
+         link = "{8050A85B-F278-4951-95C9-140E5EB05475}:RUN-{941FADA5-8D6E-47E5-9124-33465A8C0326}:RUN",
+         pin = 0,
+        },
+       },
+      },
+      [1] = {
+       trace = false,
+       type = "IMGUI_CONTEXT",
+       pin = 1,
+       y = 965.18650293255,
+       x = 1928.4860647417,
+       label = "CTX",
+       connection = {
+        [1] = {
+         node = "{EC2853A0-7648-43F8-B6C3-F2BC58773C2D}",
+         link = "{EC2853A0-7648-43F8-B6C3-F2BC58773C2D}:IMGUI_CONTEXT-{941FADA5-8D6E-47E5-9124-33465A8C0326}:CTX",
+         pin = 1,
+        },
+       },
+      },
+      [2] = {
+       trace = false,
+       y = 980.93650293255,
+       type = "INTEGER",
+       i_val = 0,
+       x = 1928.4860647417,
+       pin = 2,
+       label = "VAR",
+       connection = {
+       },
+      },
+      [3] = {
+       trace = false,
+       y = 996.68650293255,
+       type = "NUMBER",
+       i_val = 1.0,
+       x = 1928.4860647417,
+       pin = 3,
+       label = "VALUE",
+       connection = {
+       },
+      },
+     },
+     label = "ImGui_SetConfigVar",
+     desc = "",
+    },
+    [6] = {
+     in_values = {
+     },
+     trace = false,
+     w = 743.22580645161,
+     childs = {
+      [1] = "{043D257A-8FDD-4A59-BA0A-674DB869C944}",
+      [2] = "{C9EFD2EC-505A-494B-8DC2-484A6361C2AD}",
+      [3] = "{2516D7B0-FDCC-4837-AA81-62C9B2A56697}",
+     },
+     y = -563.24639016897,
+     h = 365.8064516129,
+     selected = false,
+     guid = "{B1CBF1BB-7345-437C-B12A-2A049E68D0B8}",
+     type = "group",
+     x = 26.363133640553,
+     outputs = {
+     },
+     inputs = {
+     },
+     label = "GLOBALS",
+     can_resize = true,
+    },
+    [7] = {
+     in_values = {
+     },
+     w = 216.0,
+     x = 283.36537870731,
+     y = -504.62887864823,
+     h = 60,
+     selected = false,
+     outputs = {
+      [1] = {
+       i_val = 0,
+       o_val = 0,
+       y = 682.15634164223,
+       x = 1382.317888563,
+       type = "INTEGER",
+       pin = 1,
+       connection = {
+       },
+       label = "",
+       trace = false,
+      },
+     },
+     type = "i",
+     guid = "{043D257A-8FDD-4A59-BA0A-674DB869C944}",
+     has_parent = "{B1CBF1BB-7345-437C-B12A-2A049E68D0B8}",
+     inputs = {
+     },
+     label = "SLIDER_VALUE",
+     trace = false,
+    },
+    [8] = {
+     in_values = {
+     },
+     w = 200.0,
+     guid = "{C9EFD2EC-505A-494B-8DC2-484A6361C2AD}",
+     y = -397.53210445468,
+     h = 60,
+     selected = false,
+     outputs = {
+      [1] = {
+       i_val = false,
+       o_val = false,
+       y = 738.38214809384,
+       x = 1378.6598240469,
+       type = "BOOLEAN",
+       pin = 1,
+       connection = {
+       },
+       label = "",
+       trace = false,
+      },
+     },
+     type = "b",
+     x = 292.39763677183,
+     has_parent = "{B1CBF1BB-7345-437C-B12A-2A049E68D0B8}",
+     inputs = {
+     },
+     label = "CHECKBOX_V",
+     trace = false,
+    },
+    [9] = {
+     in_values = {
+     },
+     w = 248.0,
+     outputs = {
+      [1] = {
+       i_val = 0,
+       o_val = 0,
+       y = 789.18859970674,
+       x = 1397.0856304985,
+       type = "INTEGER",
+       pin = 1,
+       connection = {
+       },
+       label = "",
+       trace = false,
+      },
+     },
+     y = -300.7579109063,
+     x = 279.49441096538,
+     selected = false,
+     h = 60,
+     type = "i",
+     guid = "{2516D7B0-FDCC-4837-AA81-62C9B2A56697}",
+     has_parent = "{B1CBF1BB-7345-437C-B12A-2A049E68D0B8}",
+     inputs = {
+     },
+     label = "BUTTON CLICK CNT",
+     trace = false,
+    },
+   },
+  },
+  [2] = {
+   in_values = {
+   },
+   CANVAS = {
+    zone_R = false,
+    scale = 0.65,
+    zone_L = false,
+    off_y = 221.238982684,
+    w = 0,
+    view_x = 1122.0,
+    view_y = 595.0,
+    h = 0,
+    zone_B = false,
+    MouseIN = false,
+    MX = 291.7711954712,
+    MY = -355.7522810523,
+    off_x = -69.651277056277,
+    zone_T = false,
+    ry = 673.0,
+    rx = 1198.0,
+   },
+   w = 0,
+   y = 0,
+   x = 0,
+   selected = false,
+   guid = "{6C1977FC-121C-4554-B270-82D93A96372F}",
+   type = "func",
+   h = 0,
+   outputs = {
+    [0] = {
+     type = "RUN",
+     y = 0,
+     x = 0,
+     label = "RUN",
+     connection = {
+     },
+    },
+   },
+   inputs = {
+    [0] = {
+     type = "RUN",
+     y = 0,
+     x = 0,
+     label = "RUN",
+     connection = {
+     },
+    },
+   },
+   label = "Main",
+   NODES = {
+    [1] = {
+     in_values = {
+     },
+     w = 160.0,
+     h = 30,
+     y = -11.0,
+     x = -13.0,
+     selected = false,
+     guid = "{D71430E2-13A9-44AB-A8A6-D151455C763D}",
+     type = "m",
+     fname = "CUSTOM_FunctionStartArgs",
+     outputs = {
+      [0] = {
+       type = "RUN",
+       trace = false,
+       y = 818.838982684,
+       x = 1147.8987229437,
+       label = "RUN",
+       connection = {
+        [1] = {
+         node = "{03D17829-4174-4071-B6FE-C1A77C99AC72}",
+         link = "{D71430E2-13A9-44AB-A8A6-D151455C763D}:RUN-{03D17829-4174-4071-B6FE-C1A77C99AC72}:RUN",
+         pin = 0,
+        },
+       },
+      },
+     },
+     inputs = {
+     },
+     label = "START",
+     trace = false,
+    },
+    [2] = {
+     in_values = {
+      [4] = 0,
+      [1] = nil,
+      [2] = "SPAGHETTI IMGUI",
+      [3] = true,
+     },
+     w = 208.0,
+     h = 210,
+     y = -1.6666666666666,
+     x = 322.33333333333,
+     selected = false,
+     guid = "{03D17829-4174-4071-B6FE-C1A77C99AC72}",
+     type = "api",
+     fname = "ImGui_Begin",
+     outputs = {
+      [0] = {
+       type = "RUN",
+       trace = false,
+       y = 824.90564935066,
+       x = 1397.0653896104,
+       label = "RUN",
+       connection = {
+        [1] = {
+         node = "{233BB067-9730-41CC-8EE6-889EA74248E9}",
+         link = "{03D17829-4174-4071-B6FE-C1A77C99AC72}:RUN-{233BB067-9730-41CC-8EE6-889EA74248E9}:RUN",
+         pin = 0,
+        },
+       },
+      },
+      [1] = {
+       trace = false,
+       y = 922.40564935066,
+       type = "BOOLEAN",
+       pin = 1,
+       x = 1397.0653896104,
+       o_val = true,
+       label = "RETVAL",
+       connection = {
+        [1] = {
+         node = "{233BB067-9730-41CC-8EE6-889EA74248E9}",
+         link = "{03D17829-4174-4071-B6FE-C1A77C99AC72}:RETVAL-{233BB067-9730-41CC-8EE6-889EA74248E9}:INP",
+         pin = 1,
+        },
+       },
+      },
+      [2] = {
+       trace = false,
+       y = 941.90564935066,
+       type = "BOOLEAN",
+       pin = 2,
+       x = 1397.0653896104,
+       o_val = true,
+       label = "P",
+       connection = {
+        [1] = {
+         node = "{30499CC7-E73D-4857-B280-99AFE71453F4}",
+         link = "{03D17829-4174-4071-B6FE-C1A77C99AC72}:P-{30499CC7-E73D-4857-B280-99AFE71453F4}:INP",
+         pin = 1,
+        },
+       },
+      },
+     },
+     inputs = {
+      [0] = {
+       type = "RUN",
+       trace = false,
+       y = 824.90564935066,
+       x = 1261.8653896104,
+       label = "RUN",
+       connection = {
+        [1] = {
+         node = "{D71430E2-13A9-44AB-A8A6-D151455C763D}",
+         link = "{D71430E2-13A9-44AB-A8A6-D151455C763D}:RUN-{03D17829-4174-4071-B6FE-C1A77C99AC72}:RUN",
+         pin = 0,
+        },
+       },
+      },
+      [1] = {
+       trace = false,
+       type = "IMGUI_CONTEXT",
+       pin = 1,
+       y = 844.40564935066,
+       x = 1261.8653896104,
+       label = "CTX",
+       connection = {
+        [1] = {
+         node = "{5FB4EE01-7882-44BB-9678-C910F04C4A29}",
+         link = "{5FB4EE01-7882-44BB-9678-C910F04C4A29}:-{03D17829-4174-4071-B6FE-C1A77C99AC72}:CTX",
+         pin = 1,
+        },
+       },
+      },
+      [2] = {
+       trace = false,
+       y = 863.90564935066,
+       type = "STRING",
+       i_val = "SPAGHETTI IMGUI",
+       x = 1261.8653896104,
+       pin = 2,
+       label = "NAME",
+       connection = {
+       },
+      },
+      [3] = {
+       trace = false,
+       y = 883.40564935066,
+       type = "BOOLEAN",
+       i_val = true,
+       x = 1261.8653896104,
+       pin = 3,
+       label = "P",
+       connection = {
+       },
+      },
+      [4] = {
+       trace = false,
+       y = 902.90564935066,
+       type = "INTEGER",
+       i_val = 0,
+       x = 1261.8653896104,
+       pin = 4,
+       label = "FLAGSIN",
+       connection = {
+       },
+      },
+     },
+     label = "ImGui_Begin",
+     trace = false,
+    },
+    [3] = {
+     in_values = {
+     },
+     get = "{EC2853A0-7648-43F8-B6C3-F2BC58773C2D}",
+     w = 208.0,
+     y = 41.333333333333,
+     x = -25.666666666667,
+     selected = false,
+     guid = "{5FB4EE01-7882-44BB-9678-C910F04C4A29}",
+     type = "get",
+     h = 60,
+     outputs = {
+      [1] = {
+       trace = false,
+       type = "IMGUI_CONTEXT",
+       pin = 1,
+       y = 872.35564935066,
+       x = 1170.8653896104,
+       label = "",
+       connection = {
+        [1] = {
+         node = "{03D17829-4174-4071-B6FE-C1A77C99AC72}",
+         link = "{5FB4EE01-7882-44BB-9678-C910F04C4A29}:-{03D17829-4174-4071-B6FE-C1A77C99AC72}:CTX",
+         pin = 1,
+        },
+       },
+      },
+     },
+     inputs = {
+     },
+     label = "GET VAR CTX",
+     trace = false,
+    },
+    [4] = {
+     in_values = {
+      [2] = true,
+      [1] = true,
+     },
+     trace = false,
+     w = 176.0,
+     selected = false,
+     fname = "CUSTOM_IF_Else",
+     x = 799.33333333333,
+     guid = "{233BB067-9730-41CC-8EE6-889EA74248E9}",
+     y = -20.666666666667,
+     type = "api",
+     h = 150,
+     outputs = {
+      [0] = {
+       type = "RUN",
+       trace = false,
+       y = 812.55564935066,
+       x = 1686.3153896104,
+       label = "RUN",
+       connection = {
+        [1] = {
+         node = "{30499CC7-E73D-4857-B280-99AFE71453F4}",
+         link = "{233BB067-9730-41CC-8EE6-889EA74248E9}:RUN-{30499CC7-E73D-4857-B280-99AFE71453F4}:RUN",
+         pin = 0,
+        },
+       },
+      },
+      [1] = {
+       y = 871.05564935066,
+       x = 1686.3153896104,
+       run = true,
+       type = "RUN",
+       pin = 1,
+       connection = {
+        [1] = {
+         node = "{7D165C98-D5E7-45D5-B047-CE9CF3491CD8}",
+         link = "{233BB067-9730-41CC-8EE6-889EA74248E9}:TRUE-{7D165C98-D5E7-45D5-B047-CE9CF3491CD8}:RUN",
+         pin = 0,
+        },
+       },
+       label = "TRUE",
+       trace = false,
+      },
+      [2] = {
+       y = 890.55564935066,
+       x = 1686.3153896104,
+       run = false,
+       type = "RUN",
+       pin = 2,
+       connection = {
+       },
+       label = "FALSE",
+       trace = false,
+      },
+     },
+     inputs = {
+      [0] = {
+       type = "RUN",
+       trace = false,
+       y = 812.55564935066,
+       x = 1571.9153896104,
+       label = "RUN",
+       connection = {
+        [1] = {
+         node = "{03D17829-4174-4071-B6FE-C1A77C99AC72}",
+         link = "{03D17829-4174-4071-B6FE-C1A77C99AC72}:RUN-{233BB067-9730-41CC-8EE6-889EA74248E9}:RUN",
+         pin = 0,
+        },
+       },
+      },
+      [1] = {
+       trace = false,
+       y = 832.05564935066,
+       type = "BOOLEAN",
+       i_val = true,
+       x = 1571.9153896104,
+       pin = 1,
+       label = "INP",
+       connection = {
+        [1] = {
+         node = "{03D17829-4174-4071-B6FE-C1A77C99AC72}",
+         link = "{03D17829-4174-4071-B6FE-C1A77C99AC72}:RETVAL-{233BB067-9730-41CC-8EE6-889EA74248E9}:INP",
+         pin = 1,
+        },
+       },
+      },
+      [2] = {
+       trace = false,
+       y = 851.55564935066,
+       type = "BOOLEAN",
+       i_val = true,
+       x = 1571.9153896104,
+       pin = 2,
+       label = "CONDITION",
+       connection = {
+       },
+      },
+     },
+     label = "IF ELSE",
+     desc = "Condition A == B -> TRUE RUN | Else -> FALSE RUN",
+    },
+    [5] = {
+     in_values = {
+      [2] = true,
+      [1] = true,
+     },
+     trace = false,
+     w = 176.0,
+     guid = "{30499CC7-E73D-4857-B280-99AFE71453F4}",
+     fname = "CUSTOM_IF_Else",
+     x = 808.33333333333,
+     selected = false,
+     y = 234.33333333333,
+     type = "api",
+     h = 150,
+     outputs = {
+      [0] = {
+       type = "RUN",
+       trace = false,
+       y = 978.30564935066,
+       x = 1692.1653896104,
+       label = "RUN",
+       connection = {
+       },
+      },
+      [1] = {
+       y = 1036.8056493507,
+       x = 1692.1653896104,
+       run = true,
+       type = "RUN",
+       pin = 1,
+       connection = {
+        [1] = {
+         node = "{D3435600-FA9A-41A3-B8F8-775464423293}",
+         link = "{30499CC7-E73D-4857-B280-99AFE71453F4}:TRUE-{D3435600-FA9A-41A3-B8F8-775464423293}:RUN",
+         pin = 0,
+        },
+       },
+       label = "TRUE",
+       trace = false,
+      },
+      [2] = {
+       y = 1056.3056493507,
+       x = 1692.1653896104,
+       run = false,
+       type = "RUN",
+       pin = 2,
+       connection = {
+        [1] = {
+         node = "{01129DF0-3073-46A5-A6F3-9D9357F1F23B}",
+         link = "{30499CC7-E73D-4857-B280-99AFE71453F4}:FALSE-{01129DF0-3073-46A5-A6F3-9D9357F1F23B}:RUN",
+         pin = 0,
+        },
+       },
+       label = "FALSE",
+       trace = false,
+      },
+     },
+     inputs = {
+      [0] = {
+       type = "RUN",
+       trace = false,
+       y = 978.30564935066,
+       x = 1577.7653896104,
+       label = "RUN",
+       connection = {
+        [1] = {
+         node = "{233BB067-9730-41CC-8EE6-889EA74248E9}",
+         link = "{233BB067-9730-41CC-8EE6-889EA74248E9}:RUN-{30499CC7-E73D-4857-B280-99AFE71453F4}:RUN",
+         pin = 0,
+        },
+       },
+      },
+      [1] = {
+       trace = false,
+       y = 997.80564935066,
+       type = "BOOLEAN",
+       i_val = false,
+       x = 1577.7653896104,
+       pin = 1,
+       label = "INP",
+       connection = {
+        [1] = {
+         node = "{03D17829-4174-4071-B6FE-C1A77C99AC72}",
+         link = "{03D17829-4174-4071-B6FE-C1A77C99AC72}:P-{30499CC7-E73D-4857-B280-99AFE71453F4}:INP",
+         pin = 2,
+        },
+       },
+      },
+      [2] = {
+       trace = false,
+       y = 1017.3056493507,
+       type = "BOOLEAN",
+       i_val = true,
+       x = 1577.7653896104,
+       pin = 2,
+       label = "CONDITION",
+       connection = {
+       },
+      },
+     },
+     label = "IF ELSE",
+     desc = "Condition A == B -> TRUE RUN | Else -> FALSE RUN",
+    },
+    [6] = {
+     in_values = {
+     },
+     trace = false,
+     w = 240.0,
+     guid = "{D3435600-FA9A-41A3-B8F8-775464423293}",
+     y = 304.33333333333,
+     x = 1099.3333333333,
+     selected = false,
+     h = 30,
+     type = "api",
+     fname = "CUSTOM_TestDefer",
+     outputs = {
+      [0] = {
+       type = "RUN",
+       trace = false,
+       y = 1023.8056493507,
+       x = 1922.9153896104,
+       label = "RUN",
+       connection = {
+       },
+      },
+     },
+     inputs = {
+      [0] = {
+       type = "RUN",
+       trace = false,
+       y = 1023.8056493507,
+       x = 1766.9153896104,
+       label = "RUN",
+       connection = {
+        [1] = {
+         node = "{30499CC7-E73D-4857-B280-99AFE71453F4}",
+         link = "{30499CC7-E73D-4857-B280-99AFE71453F4}:TRUE-{D3435600-FA9A-41A3-B8F8-775464423293}:RUN",
+         pin = 1,
+        },
+       },
+      },
+     },
+     label = "Spaghetti Defer",
+     desc = "",
+    },
+    [7] = {
+     in_values = {
+     },
+     trace = false,
+     w = 272.0,
+     guid = "{01129DF0-3073-46A5-A6F3-9D9357F1F23B}",
+     y = 393.33333333333,
+     x = 1099.3333333333,
+     selected = false,
+     h = 30,
+     type = "api",
+     fname = "CUSTOM_TestDeferEND",
+     outputs = {
+      [0] = {
+       type = "RUN",
+       trace = false,
+       y = 1081.6556493507,
+       x = 1943.7153896104,
+       label = "RUN",
+       connection = {
+       },
+      },
+     },
+     inputs = {
+      [0] = {
+       type = "RUN",
+       trace = false,
+       y = 1081.6556493507,
+       x = 1766.9153896104,
+       label = "RUN",
+       connection = {
+        [1] = {
+         node = "{30499CC7-E73D-4857-B280-99AFE71453F4}",
+         link = "{30499CC7-E73D-4857-B280-99AFE71453F4}:FALSE-{01129DF0-3073-46A5-A6F3-9D9357F1F23B}:RUN",
+         pin = 2,
+        },
+       },
+      },
+     },
+     label = "Spaghetti Defer End",
+     desc = "",
+    },
+    [8] = {
+     in_values = {
+      [1] = nil,
+     },
+     trace = false,
+     w = 192.0,
+     guid = "{9B9C5379-37AA-45F0-B097-9EA428E09E7B}",
+     y = -5.6666666666666,
+     x = 1601.3333333333,
+     selected = false,
+     h = 60,
+     type = "api",
+     fname = "ImGui_End",
+     outputs = {
+      [0] = {
+       type = "RUN",
+       trace = false,
+       y = 822.30564935066,
+       x = 2218.0153896104,
+       label = "RUN",
+       connection = {
+       },
+      },
+     },
+     inputs = {
+      [0] = {
+       type = "RUN",
+       trace = false,
+       y = 822.30564935066,
+       x = 2093.2153896104,
+       label = "RUN",
+       connection = {
+        [1] = {
+         node = "{7D165C98-D5E7-45D5-B047-CE9CF3491CD8}",
+         link = "{7D165C98-D5E7-45D5-B047-CE9CF3491CD8}:RUN-{9B9C5379-37AA-45F0-B097-9EA428E09E7B}:RUN",
+         pin = 0,
+        },
+       },
+      },
+      [1] = {
+       trace = false,
+       type = "IMGUI_CONTEXT",
+       pin = 1,
+       y = 841.80564935066,
+       x = 2093.2153896104,
+       label = "CTX",
+       connection = {
+        [1] = {
+         node = "{0C4C37C8-E688-400E-A030-89226F804F5E}",
+         link = "{0C4C37C8-E688-400E-A030-89226F804F5E}:-{9B9C5379-37AA-45F0-B097-9EA428E09E7B}:CTX",
+         pin = 1,
+        },
+       },
+      },
+     },
+     label = "ImGui_End",
+     desc = "Pop window from the stack. See Begin.",
+    },
+    [9] = {
+     in_values = {
+     },
+     get = "{EC2853A0-7648-43F8-B6C3-F2BC58773C2D}",
+     w = 208.0,
+     y = 139.33333333333,
+     x = 1257.3333333333,
+     selected = false,
+     guid = "{0C4C37C8-E688-400E-A030-89226F804F5E}",
+     type = "get",
+     h = 60,
+     outputs = {
+      [1] = {
+       trace = false,
+       type = "IMGUI_CONTEXT",
+       pin = 1,
+       y = 936.05564935066,
+       x = 2004.8153896104,
+       label = "",
+       connection = {
+        [1] = {
+         node = "{9B9C5379-37AA-45F0-B097-9EA428E09E7B}",
+         link = "{0C4C37C8-E688-400E-A030-89226F804F5E}:-{9B9C5379-37AA-45F0-B097-9EA428E09E7B}:CTX",
+         pin = 1,
+        },
+       },
+      },
+     },
+     inputs = {
+     },
+     label = "GET VAR CTX",
+     trace = false,
+    },
+    [10] = {
+     in_values = {
+     },
+     NODES = {
+     },
+     CANVAS = {
+      scale = 1,
+      off_y = 351.0,
+      w = 0,
+      view_x = 0,
+      view_y = 0,
+      h = 0,
+      off_x = -18.0,
+      ry = 0,
+      rx = 0,
+     },
+     w = 200.0,
+     guid = "{7D165C98-D5E7-45D5-B047-CE9CF3491CD8}",
+     y = -9.6666666666666,
+     x = 1215.3333333333,
+     selected = false,
+     h = 30,
+     type = "func",
+     FID = 3,
+     outputs = {
+      [0] = {
+       type = "RUN",
+       trace = false,
+       y = 819.70564935066,
+       x = 1972.3153896104,
+       label = "RUN",
+       connection = {
+        [1] = {
+         node = "{9B9C5379-37AA-45F0-B097-9EA428E09E7B}",
+         link = "{7D165C98-D5E7-45D5-B047-CE9CF3491CD8}:RUN-{9B9C5379-37AA-45F0-B097-9EA428E09E7B}:RUN",
+         pin = 0,
+        },
+       },
+      },
+     },
+     inputs = {
+      [0] = {
+       type = "RUN",
+       trace = false,
+       y = 819.70564935066,
+       x = 1842.3153896104,
+       label = "RUN",
+       connection = {
+        [1] = {
+         node = "{233BB067-9730-41CC-8EE6-889EA74248E9}",
+         link = "{233BB067-9730-41CC-8EE6-889EA74248E9}:TRUE-{7D165C98-D5E7-45D5-B047-CE9CF3491CD8}:RUN",
+         pin = 1,
+        },
+       },
+      },
+     },
+     label = "IMGUI_MAIN",
+     trace = false,
+    },
+   },
+  },
+  [3] = {
+   in_values = {
+   },
+   CANVAS = {
+    zone_R = false,
+    scale = 0.65,
+    zone_L = false,
+    off_y = -537.38318833497,
+    w = 0,
+    view_x = 702.0,
+    view_y = 398.0,
+    h = 0,
+    zone_B = false,
+    MouseIN = true,
+    MX = 2880.0631433083,
+    MY = 1346.7433666692,
+    off_x = -1389.0410431504,
+    zone_T = false,
+    ry = 673.0,
+    rx = 1198.0,
+   },
+   w = 100,
+   guid = "{739751F9-F717-4469-A73F-F94F1F000975}",
+   y = 0,
+   x = 0,
+   selected = false,
+   tab_open = true,
+   type = "func",
+   h = 50,
+   outputs = {
+    [0] = {
+     type = "RUN",
+     y = 0,
+     x = 0,
+     label = "RUN",
+     connection = {
+     },
+    },
+   },
+   inputs = {
+    [0] = {
+     type = "RUN",
+     y = 0,
+     x = 0,
+     label = "RUN",
+     connection = {
+     },
+    },
+   },
+   label = "IMGUI_MAIN",
+   NODES = {
+    [1] = {
+     in_values = {
+     },
+     w = 160.0,
+     h = 30,
+     y = -676.93333333333,
+     x = -165.46666666667,
+     selected = false,
+     guid = "{4612C67A-86C3-4D57-844A-AB0CB1D2FECC}",
+     type = "m",
+     fname = "CUSTOM_FunctionStartArgs",
+     outputs = {
+      [0] = {
+       type = "RUN",
+       trace = false,
+       y = -569.63985500163,
+       x = -690.59437648373,
+       label = "RUN",
+       connection = {
+        [1] = {
+         node = "{BE2EC54E-C9BD-4C06-A7FA-0B60EA0A69C5}",
+         link = "{4612C67A-86C3-4D57-844A-AB0CB1D2FECC}:RUN-{BE2EC54E-C9BD-4C06-A7FA-0B60EA0A69C5}:RUN",
+         pin = 0,
+        },
+       },
+      },
+     },
+     inputs = {
+     },
+     label = "START",
+     trace = false,
+    },
+    [2] = {
+     in_values = {
+     },
+     w = 168.0,
+     h = 30,
+     y = -765.33333333333,
+     x = -116.66666666667,
+     selected = false,
+     guid = "{B72BDE93-9532-49AA-A41A-9A6D48F27AA6}",
+     type = "retnode",
+     fname = "CUSTOM_ReturnNode",
+     outputs = {
+     },
+     inputs = {
+      [0] = {
+       type = "RUN",
+       trace = false,
+       y = -627.09985500163,
+       x = -762.87437648373,
+       label = "RUN",
+       connection = {
+       },
+      },
+     },
+     label = "RETURN",
+     trace = false,
+    },
+    [3] = {
+     in_values = {
+      [2] = "MINI IMGUI SPAGHETTI",
+      [1] = nil,
+     },
+     trace = false,
+     text = "ADD TEXT AT TOP\
+",
+     selected = false,
+     w = 200.0,
+     toggle_comment = true,
+     y = -683.33333333333,
+     x = 156.33333333333,
+     guid = "{BE2EC54E-C9BD-4C06-A7FA-0B60EA0A69C5}",
+     fname = "ImGui_Text",
+     type = "api",
+     h = 90,
+     outputs = {
+      [0] = {
+       x = -455.42437648373,
+       type = "RUN",
+       trace = false,
+       y = -573.79985500163,
+       label = "RUN",
+       connection = {
+        [1] = {
+         node = "{138B3388-C2D4-42B4-944A-86D06172E173}",
+         link = "{BE2EC54E-C9BD-4C06-A7FA-0B60EA0A69C5}:RUN-{138B3388-C2D4-42B4-944A-86D06172E173}:RUN",
+         pin = 0,
+        },
+       },
+      },
+     },
+     inputs = {
+      [0] = {
+       type = "RUN",
+       trace = false,
+       y = -573.79985500163,
+       x = -585.42437648373,
+       label = "RUN",
+       connection = {
+        [1] = {
+         node = "{4612C67A-86C3-4D57-844A-AB0CB1D2FECC}",
+         link = "{4612C67A-86C3-4D57-844A-AB0CB1D2FECC}:RUN-{BE2EC54E-C9BD-4C06-A7FA-0B60EA0A69C5}:RUN",
+         pin = 0,
+        },
+       },
+      },
+      [1] = {
+       trace = false,
+       type = "IMGUI_CONTEXT",
+       pin = 1,
+       y = -554.29985500163,
+       x = -585.42437648373,
+       label = "CTX",
+       connection = {
+        [1] = {
+         node = "{D0ACF3B9-5963-470E-9AA5-FC205AA97677}",
+         link = "{D0ACF3B9-5963-470E-9AA5-FC205AA97677}:-{BE2EC54E-C9BD-4C06-A7FA-0B60EA0A69C5}:CTX",
+         pin = 1,
+        },
+       },
+      },
+      [2] = {
+       trace = false,
+       y = -534.79985500163,
+       type = "STRING",
+       i_val = "MINI IMGUI SPAGHETTI",
+       x = -585.42437648373,
+       pin = 2,
+       label = "TEXT",
+       connection = {
+       },
+      },
+     },
+     label = "ImGui_Text",
+     desc = "",
+    },
+    [4] = {
+     in_values = {
+     },
+     get = "{EC2853A0-7648-43F8-B6C3-F2BC58773C2D}",
+     w = 208.0,
+     y = -617.33333333333,
+     x = -187.66666666667,
+     selected = false,
+     guid = "{D0ACF3B9-5963-470E-9AA5-FC205AA97677}",
+     type = "get",
+     h = 60,
+     outputs = {
+      [1] = {
+       trace = false,
+       type = "IMGUI_CONTEXT",
+       pin = 1,
+       y = -511.39985500163,
+       x = -673.82437648373,
+       label = "",
+       connection = {
+        [1] = {
+         node = "{BE2EC54E-C9BD-4C06-A7FA-0B60EA0A69C5}",
+         link = "{D0ACF3B9-5963-470E-9AA5-FC205AA97677}:-{BE2EC54E-C9BD-4C06-A7FA-0B60EA0A69C5}:CTX",
+         pin = 1,
+        },
+       },
+      },
+     },
+     inputs = {
+     },
+     label = "GET VAR CTX",
+     trace = false,
+    },
+    [5] = {
+     in_values = {
+      [1] = nil,
+      [2] = "START",
+      [3] = 0,
+      [4] = -1,
+      [5] = 1,
+      [6] = "0",
+      [7] = 0,
+     },
+     trace = false,
+     outputs = {
+      [0] = {
+       x = 520.20142438207,
+       type = "RUN",
+       trace = false,
+       y = -583.2496169064,
+       label = "RUN",
+       connection = {
+        [1] = {
+         node = "{34468931-4C71-4036-BC90-420B9BAFAD52}",
+         link = "{48B865BC-CB6B-4482-9EEF-E4A623F34093}:RUN-{34468931-4C71-4036-BC90-420B9BAFAD52}:RUN",
+         pin = 0,
+        },
+       },
+      },
+      [1] = {
+       trace = false,
+       y = -427.2496169064,
+       type = "BOOLEAN",
+       pin = 1,
+       x = 520.20142438207,
+       o_val = false,
+       label = "RETVAL",
+       connection = {
+        [1] = {
+         node = "{34468931-4C71-4036-BC90-420B9BAFAD52}",
+         link = "{48B865BC-CB6B-4482-9EEF-E4A623F34093}:RETVAL-{34468931-4C71-4036-BC90-420B9BAFAD52}:BOOLEAN",
+         pin = 1,
+        },
+       },
+      },
+      [2] = {
+       trace = false,
+       y = -407.7496169064,
+       type = "INTEGER",
+       pin = 2,
+       x = 520.20142438207,
+       o_val = 0,
+       label = "V",
+       connection = {
+        [1] = {
+         node = "{3379D460-1287-42EE-8223-B4F743988510}",
+         link = "{48B865BC-CB6B-4482-9EEF-E4A623F34093}:V-{3379D460-1287-42EE-8223-B4F743988510}:INTEGER",
+         pin = 1,
+        },
+       },
+      },
+     },
+     w = 240.0,
+     guid = "{48B865BC-CB6B-4482-9EEF-E4A623F34093}",
+     y = -697.87142857143,
+     x = 1617.2961038961,
+     selected = false,
+     fname = "ImGui_SliderInt",
+     type = "api",
+     h = 300,
+     has_parent = "{2BF14DCA-D2BD-4A90-83DC-A55447C327A5}",
+     inputs = {
+      [0] = {
+       type = "RUN",
+       trace = false,
+       y = -583.2496169064,
+       x = 364.20142438207,
+       label = "RUN",
+       connection = {
+        [1] = {
+         node = "{9BF39011-1DA6-4CAD-8900-2BAB62B429BB}",
+         link = "{9BF39011-1DA6-4CAD-8900-2BAB62B429BB}:RUN-{48B865BC-CB6B-4482-9EEF-E4A623F34093}:RUN",
+         pin = 0,
+        },
+       },
+      },
+      [1] = {
+       trace = false,
+       type = "IMGUI_CONTEXT",
+       pin = 1,
+       y = -563.7496169064,
+       x = 364.20142438207,
+       label = "CTX",
+       connection = {
+        [1] = {
+         node = "{8BA24157-D365-41C5-9CE9-DB664444E13C}",
+         link = "{8BA24157-D365-41C5-9CE9-DB664444E13C}:-{48B865BC-CB6B-4482-9EEF-E4A623F34093}:CTX",
+         pin = 1,
+        },
+       },
+      },
+      [2] = {
+       trace = false,
+       y = -544.2496169064,
+       type = "STRING",
+       i_val = "START",
+       x = 364.20142438207,
+       pin = 2,
+       label = "LABEL",
+       connection = {
+       },
+      },
+      [3] = {
+       i_val = 0,
+       y = -524.7496169064,
+       connection = {
+       },
+       type = "INTEGER",
+       pin = 3,
+       x = 364.20142438207,
+       label = "V",
+       trace = false,
+      },
+      [4] = {
+       trace = false,
+       y = -505.2496169064,
+       type = "INTEGER",
+       i_val = -1,
+       x = 364.20142438207,
+       pin = 4,
+       label = "V",
+       connection = {
+       },
+      },
+      [5] = {
+       trace = false,
+       y = -485.7496169064,
+       type = "INTEGER",
+       i_val = 1,
+       x = 364.20142438207,
+       pin = 5,
+       label = "V",
+       connection = {
+       },
+      },
+      [6] = {
+       trace = false,
+       y = -466.2496169064,
+       type = "STRING",
+       i_val = "0",
+       x = 364.20142438207,
+       pin = 6,
+       label = "FORMATIN",
+       connection = {
+        [1] = {
+         node = "{9BF39011-1DA6-4CAD-8900-2BAB62B429BB}",
+         link = "{9BF39011-1DA6-4CAD-8900-2BAB62B429BB}:-{48B865BC-CB6B-4482-9EEF-E4A623F34093}:FORMATIN",
+         pin = 1,
+        },
+       },
+      },
+      [7] = {
+       trace = false,
+       y = -446.7496169064,
+       type = "INTEGER",
+       i_val = 0,
+       x = 364.20142438207,
+       pin = 7,
+       label = "FLAGSIN",
+       connection = {
+       },
+      },
+     },
+     label = "ImGui_SliderInt",
+     desc = "",
+    },
+    [6] = {
+     in_values = {
+     },
+     w = 208.0,
+     get = "{EC2853A0-7648-43F8-B6C3-F2BC58773C2D}",
+     outputs = {
+      [1] = {
+       trace = false,
+       type = "IMGUI_CONTEXT",
+       pin = 1,
+       y = -664.18390262069,
+       x = 283.82428152493,
+       label = "",
+       connection = {
+        [1] = {
+         node = "{48B865BC-CB6B-4482-9EEF-E4A623F34093}",
+         link = "{8BA24157-D365-41C5-9CE9-DB664444E13C}:-{48B865BC-CB6B-4482-9EEF-E4A623F34093}:CTX",
+         pin = 1,
+        },
+       },
+      },
+     },
+     y = -852.38571428572,
+     x = 1285.638961039,
+     selected = false,
+     h = 60,
+     type = "get",
+     guid = "{8BA24157-D365-41C5-9CE9-DB664444E13C}",
+     has_parent = "{2BF14DCA-D2BD-4A90-83DC-A55447C327A5}",
+     inputs = {
+     },
+     label = "GET VAR CTX",
+     trace = false,
+    },
+    [7] = {
+     in_values = {
+     },
+     w = 248.0,
+     get = "{043D257A-8FDD-4A59-BA0A-674DB869C944}",
+     outputs = {
+      [1] = {
+       trace = false,
+       type = "INTEGER",
+       pin = 1,
+       y = -472.95390262069,
+       x = 105.38999581064,
+       label = "",
+       connection = {
+        [1] = {
+         node = "{9BF39011-1DA6-4CAD-8900-2BAB62B429BB}",
+         link = "{733CF007-D8C5-49C0-A9D1-A0CF5161ED5B}:-{9BF39011-1DA6-4CAD-8900-2BAB62B429BB}:VAL",
+         pin = 1,
+        },
+       },
+      },
+     },
+     y = -558.18571428573,
+     x = 971.12467532468,
+     selected = false,
+     h = 60,
+     type = "get",
+     guid = "{733CF007-D8C5-49C0-A9D1-A0CF5161ED5B}",
+     has_parent = "{2BF14DCA-D2BD-4A90-83DC-A55447C327A5}",
+     inputs = {
+     },
+     label = "GET SLIDER_VALUE",
+     trace = false,
+    },
+    [8] = {
+     in_values = {
+      [1] = 0,
+     },
+     w = 184.0,
+     y = -700.72857142853,
+     x = 1291.8675324675,
+     selected = false,
+     has_parent = "{2BF14DCA-D2BD-4A90-83DC-A55447C327A5}",
+     inputs = {
+      [0] = {
+       x = 152.6728529535,
+       type = "RUN",
+       trace = false,
+       y = -585.10675976351,
+       label = "RUN",
+       connection = {
+        [1] = {
+         node = "{E71B00B0-DB39-4C6A-8E4B-FA450451C881}",
+         link = "{E71B00B0-DB39-4C6A-8E4B-FA450451C881}:RUN-{9BF39011-1DA6-4CAD-8900-2BAB62B429BB}:RUN",
+         pin = 0,
+        },
+       },
+      },
+      [1] = {
+       trace = false,
+       type = "ANY",
+       pin = 1,
+       y = -565.60675976351,
+       x = 152.6728529535,
+       label = "VAL",
+       connection = {
+        [1] = {
+         node = "{733CF007-D8C5-49C0-A9D1-A0CF5161ED5B}",
+         link = "{733CF007-D8C5-49C0-A9D1-A0CF5161ED5B}:-{9BF39011-1DA6-4CAD-8900-2BAB62B429BB}:VAL",
+         pin = 1,
+        },
+       },
+      },
+     },
+     desc = "CONVERTS TO STRING",
+     toggle_comment = true,
+     text = "USED TO SHOW VALUE\
+IN SLIDER\
+",
+     h = 90,
+     guid = "{9BF39011-1DA6-4CAD-8900-2BAB62B429BB}",
+     type = "api",
+     outputs = {
+      [0] = {
+       type = "RUN",
+       trace = false,
+       y = -585.10675976351,
+       x = 272.2728529535,
+       label = "RUN",
+       connection = {
+        [1] = {
+         node = "{48B865BC-CB6B-4482-9EEF-E4A623F34093}",
+         link = "{9BF39011-1DA6-4CAD-8900-2BAB62B429BB}:RUN-{48B865BC-CB6B-4482-9EEF-E4A623F34093}:RUN",
+         pin = 0,
+        },
+       },
+      },
+      [1] = {
+       trace = false,
+       y = -546.10675976351,
+       type = "STRING",
+       pin = 1,
+       x = 272.2728529535,
+       o_val = "0",
+       label = "",
+       connection = {
+        [1] = {
+         node = "{48B865BC-CB6B-4482-9EEF-E4A623F34093}",
+         link = "{9BF39011-1DA6-4CAD-8900-2BAB62B429BB}:-{48B865BC-CB6B-4482-9EEF-E4A623F34093}:FORMATIN",
+         pin = 6,
+        },
+       },
+      },
+     },
+     trace = false,
+     label = "ToString",
+     fname = "CUSTOM_ToString",
+    },
+    [9] = {
+     in_values = {
+     },
+     trace = false,
+     w = 2411.4285714286,
+     childs = {
+      [1] = "{48B865BC-CB6B-4482-9EEF-E4A623F34093}",
+      [2] = "{8BA24157-D365-41C5-9CE9-DB664444E13C}",
+      [3] = "{733CF007-D8C5-49C0-A9D1-A0CF5161ED5B}",
+      [4] = "{9BF39011-1DA6-4CAD-8900-2BAB62B429BB}",
+      [5] = "{E71B00B0-DB39-4C6A-8E4B-FA450451C881}",
+      [6] = "{DCEF0313-BFF4-43FC-9B38-4CDDB8CBC7A3}",
+      [7] = "{3379D460-1287-42EE-8223-B4F743988510}",
+      [8] = "{7A6FED43-F4A9-489A-9C38-C6C564E98128}",
+      [9] = "{04D66A48-90D0-4184-AEE7-5E2185B727A3}",
+      [10] = "{0C990550-E9C9-4EB6-ADD3-896C9F0BBDBE}",
+      [11] = "{34468931-4C71-4036-BC90-420B9BAFAD52}",
+      [12] = "{E516ECDD-AB38-4D4D-A655-D56E002A39C8}",
+     },
+     y = -961.30000000001,
+     h = 663.80952380952,
+     selected = false,
+     guid = "{2BF14DCA-D2BD-4A90-83DC-A55447C327A5}",
+     type = "group",
+     x = 821.59047619048,
+     outputs = {
+     },
+     inputs = {
+     },
+     label = "GROUP",
+     can_resize = true,
+    },
+    [10] = {
+     in_values = {
+     },
+     wireless_id = "{3161263A-9EA1-47D5-A356-F8132A0E90EC}",
+     w = 168.0,
+     y = -681.82315390702,
+     x = 439.33031950128,
+     selected = false,
+     inputs = {
+      [0] = {
+       y = -572.81823837453,
+       connection = {
+        [1] = {
+         node = "{BE2EC54E-C9BD-4C06-A7FA-0B60EA0A69C5}",
+         link = "{BE2EC54E-C9BD-4C06-A7FA-0B60EA0A69C5}:RUN-{138B3388-C2D4-42B4-944A-86D06172E173}:RUN",
+         pin = 0,
+        },
+       },
+       type = "RUN",
+       x = -401.47633547456,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     trace = false,
+     h = 30,
+     guid = "{138B3388-C2D4-42B4-944A-86D06172E173}",
+     type = "ws",
+     outputs = {
+     },
+     sender = "{E71B00B0-DB39-4C6A-8E4B-FA450451C881}",
+     label = "SENDER",
+    },
+    [11] = {
+     in_values = {
+     },
+     wireless_id = "{3161263A-9EA1-47D5-A356-F8132A0E90EC}",
+     w = 184.0,
+     y = -729.32315390702,
+     x = 1007.9017480727,
+     selected = false,
+     has_parent = "{2BF14DCA-D2BD-4A90-83DC-A55447C327A5}",
+     inputs = {
+     },
+     trace = false,
+     h = 30,
+     guid = "{E71B00B0-DB39-4C6A-8E4B-FA450451C881}",
+     type = "wr",
+     outputs = {
+      [0] = {
+       y = -603.69323837453,
+       connection = {
+        [1] = {
+         node = "{9BF39011-1DA6-4CAD-8900-2BAB62B429BB}",
+         link = "{E71B00B0-DB39-4C6A-8E4B-FA450451C881}:RUN-{9BF39011-1DA6-4CAD-8900-2BAB62B429BB}:RUN",
+         pin = 0,
+        },
+       },
+       type = "RUN",
+       x = 87.695093096864,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     label = "RECEIVER",
+    },
+    [12] = {
+     in_values = {
+      [1] = 0,
+     },
+     w = 304.0,
+     fname = "CountSelectedMediaItems",
+     x = 139.06391923488,
+     selected = false,
+     has_parent = "{5990B230-2DFB-4AB4-900D-F1BAE02FFDAB}",
+     inputs = {
+      [1] = {
+       i_val = 0,
+       y = 37.659034352739,
+       connection = {
+       },
+       type = "INTEGER",
+       pin = 1,
+       x = -596.64949564772,
+       label = "PROJ",
+       trace = false,
+      },
+      [0] = {
+       y = 18.159034352739,
+       connection = {
+        [1] = {
+         node = "{F0B2A4C5-1E0A-4819-A46D-FA7E04494145}",
+         link = "{F0B2A4C5-1E0A-4819-A46D-FA7E04494145}:RUN-{DBA1D2C9-F2AF-4313-9CA8-6052F76299D7}:RUN",
+         pin = 0,
+        },
+       },
+       type = "RUN",
+       x = -596.64949564772,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     desc = "count the number of selected items in the project (proj=0 for active project)",
+     trace = false,
+     h = 90,
+     guid = "{DBA1D2C9-F2AF-4313-9CA8-6052F76299D7}",
+     type = "api",
+     outputs = {
+      [1] = {
+       o_val = 0,
+       y = 57.159034352739,
+       connection = {
+        [1] = {
+         node = "{A3496BB3-0D30-409A-ADF6-907402CE447D}",
+         link = "{DBA1D2C9-F2AF-4313-9CA8-6052F76299D7}:INTEGER-{A3496BB3-0D30-409A-ADF6-907402CE447D}:END",
+         pin = 3,
+        },
+       },
+       type = "INTEGER",
+       pin = 1,
+       x = -399.04949564772,
+       label = "INTEGER",
+       trace = false,
+      },
+      [0] = {
+       y = 18.159034352739,
+       connection = {
+        [1] = {
+         node = "{A3496BB3-0D30-409A-ADF6-907402CE447D}",
+         link = "{DBA1D2C9-F2AF-4313-9CA8-6052F76299D7}:RUN-{A3496BB3-0D30-409A-ADF6-907402CE447D}:RUN",
+         pin = 0,
+        },
+       },
+       type = "RUN",
+       x = -399.04949564772,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     label = "CountSelectedMediaItems",
+     y = 227.37265028878,
+    },
+    [13] = {
+     in_values = {
+     },
+     wireless_id = "{3A591B43-820B-4607-A745-AA2DAD0A356C}",
+     w = 168.0,
+     y = -706.86155636478,
+     x = 3009.8602734183,
+     selected = false,
+     has_parent = "{2BF14DCA-D2BD-4A90-83DC-A55447C327A5}",
+     inputs = {
+      [0] = {
+       y = -589.09319997208,
+       connection = {
+        [1] = {
+         node = "{0C990550-E9C9-4EB6-ADD3-896C9F0BBDBE}",
+         link = "{0C990550-E9C9-4EB6-ADD3-896C9F0BBDBE}:RUN-{DCEF0313-BFF4-43FC-9B38-4CDDB8CBC7A3}:RUN",
+         pin = 0,
+        },
+       },
+       type = "RUN",
+       x = 1269.3681345715,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     trace = false,
+     h = 30,
+     guid = "{DCEF0313-BFF4-43FC-9B38-4CDDB8CBC7A3}",
+     type = "ws",
+     outputs = {
+     },
+     sender = "{F0B2A4C5-1E0A-4819-A46D-FA7E04494145}",
+     label = "SENDER",
+    },
+    [14] = {
+     in_values = {
+     },
+     wireless_id = "{3A591B43-820B-4607-A745-AA2DAD0A356C}",
+     w = 184.0,
+     y = 223.71880413493,
+     x = -182.47454230358,
+     selected = false,
+     has_parent = "{5990B230-2DFB-4AB4-900D-F1BAE02FFDAB}",
+     inputs = {
+     },
+     trace = false,
+     h = 30,
+     guid = "{F0B2A4C5-1E0A-4819-A46D-FA7E04494145}",
+     type = "wr",
+     outputs = {
+      [0] = {
+       y = 15.784034352739,
+       connection = {
+        [1] = {
+         node = "{DBA1D2C9-F2AF-4313-9CA8-6052F76299D7}",
+         link = "{F0B2A4C5-1E0A-4819-A46D-FA7E04494145}:RUN-{DBA1D2C9-F2AF-4313-9CA8-6052F76299D7}:RUN",
+         pin = 0,
+        },
+       },
+       type = "RUN",
+       x = -686.04949564773,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     label = "RECEIVER",
+    },
+    [15] = {
+     in_values = {
+      [1] = 1,
+      [2] = 1,
+      [3] = 0,
+      [4] = true,
+     },
+     w = 248.0,
+     fname = "CUSTOM_ForLoop",
+     x = 558.30118734312,
+     selected = false,
+     has_parent = "{5990B230-2DFB-4AB4-900D-F1BAE02FFDAB}",
+     inputs = {
+      [1] = {
+       i_val = 1,
+       y = 45.868711772094,
+       connection = {
+       },
+       type = "INTEGER",
+       pin = 1,
+       x = -324.14527137737,
+       label = "START",
+       trace = false,
+      },
+      [2] = {
+       i_val = 1,
+       y = 65.368711772094,
+       connection = {
+       },
+       type = "INTEGER",
+       pin = 2,
+       x = -324.14527137737,
+       label = "INCREMENT",
+       trace = false,
+      },
+      [3] = {
+       i_val = 0,
+       y = 84.868711772094,
+       connection = {
+        [1] = {
+         node = "{DBA1D2C9-F2AF-4313-9CA8-6052F76299D7}",
+         link = "{DBA1D2C9-F2AF-4313-9CA8-6052F76299D7}:INTEGER-{A3496BB3-0D30-409A-ADF6-907402CE447D}:END",
+         pin = 1,
+        },
+       },
+       type = "INTEGER",
+       pin = 3,
+       x = -324.14527137737,
+       label = "END",
+       trace = false,
+      },
+      [4] = {
+       i_val = true,
+       y = 104.36871177209,
+       connection = {
+       },
+       pin_disable = true,
+       type = "BOOLEAN",
+       pin = 4,
+       label = "OUT IDX -1",
+       x = -324.14527137737,
+      },
+      [0] = {
+       y = 26.368711772094,
+       connection = {
+        [1] = {
+         node = "{DBA1D2C9-F2AF-4313-9CA8-6052F76299D7}",
+         link = "{DBA1D2C9-F2AF-4313-9CA8-6052F76299D7}:RUN-{A3496BB3-0D30-409A-ADF6-907402CE447D}:RUN",
+         pin = 0,
+        },
+       },
+       type = "RUN",
+       x = -324.14527137737,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     desc = "Start index \
+ Increment \
+ End index \
+ Loop Run, Loop finish -> RUN",
+     toggle_comment = true,
+     text = "LOOP ALL SELECTED ITEMS\
+",
+     trace = false,
+     h = 210,
+     guid = "{A3496BB3-0D30-409A-ADF6-907402CE447D}",
+     type = "api",
+     outputs = {
+      [1] = {
+       y = 123.86871177209,
+       connection = {
+        [1] = {
+         node = "{FF46AF00-7DA3-4D17-9FCC-5F701FAA486C}",
+         link = "{A3496BB3-0D30-409A-ADF6-907402CE447D}:LOOP-{FF46AF00-7DA3-4D17-9FCC-5F701FAA486C}:RUN",
+         pin = 0,
+        },
+       },
+       run = true,
+       type = "RUN",
+       pin = 1,
+       x = -162.94527137737,
+       label = "LOOP",
+       trace = false,
+      },
+      [2] = {
+       y = 143.36871177209,
+       connection = {
+        [1] = {
+         node = "{FF46AF00-7DA3-4D17-9FCC-5F701FAA486C}",
+         link = "{A3496BB3-0D30-409A-ADF6-907402CE447D}:IDX-{FF46AF00-7DA3-4D17-9FCC-5F701FAA486C}:SELITEM",
+         pin = 2,
+        },
+       },
+       type = "INTEGER",
+       pin = 2,
+       x = -162.94527137737,
+       label = "IDX",
+       trace = false,
+      },
+      [0] = {
+       y = 26.368711772094,
+       connection = {
+        [1] = {
+         node = "{F24C6CB6-6E42-425A-A791-EBAD05F2C5D7}",
+         link = "{A3496BB3-0D30-409A-ADF6-907402CE447D}:RUN-{F24C6CB6-6E42-425A-A791-EBAD05F2C5D7}:RUN",
+         pin = 0,
+        },
+       },
+       type = "RUN",
+       x = -162.94527137737,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     label = "NUMERIC FOR LOOP",
+     y = 240.00292324163,
+    },
+    [16] = {
+     in_values = {
+      [1] = 0,
+      [2] = 3,
+     },
+     w = 280.0,
+     fname = "GetSelectedMediaItem",
+     x = 930.60887965081,
+     selected = false,
+     has_parent = "{5990B230-2DFB-4AB4-900D-F1BAE02FFDAB}",
+     inputs = {
+      [1] = {
+       i_val = 0,
+       y = 99.868711772094,
+       connection = {
+       },
+       type = "INTEGER",
+       pin = 1,
+       x = -82.145271377371,
+       label = "PROJ",
+       trace = false,
+      },
+      [2] = {
+       i_val = 0,
+       y = 119.36871177209,
+       connection = {
+        [1] = {
+         node = "{A3496BB3-0D30-409A-ADF6-907402CE447D}",
+         link = "{A3496BB3-0D30-409A-ADF6-907402CE447D}:IDX-{FF46AF00-7DA3-4D17-9FCC-5F701FAA486C}:SELITEM",
+         pin = 2,
+        },
+       },
+       type = "INTEGER",
+       pin = 2,
+       x = -82.145271377371,
+       label = "SELITEM",
+       trace = false,
+      },
+      [0] = {
+       y = 80.368711772094,
+       connection = {
+        [1] = {
+         node = "{A3496BB3-0D30-409A-ADF6-907402CE447D}",
+         link = "{A3496BB3-0D30-409A-ADF6-907402CE447D}:LOOP-{FF46AF00-7DA3-4D17-9FCC-5F701FAA486C}:RUN",
+         pin = 1,
+        },
+       },
+       type = "RUN",
+       x = -82.145271377371,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     desc = "get a selected item by selected item count (zero-based) (proj=0 for active project)",
+     toggle_comment = false,
+     text = "",
+     trace = false,
+     h = 120,
+     guid = "{FF46AF00-7DA3-4D17-9FCC-5F701FAA486C}",
+     type = "api",
+     outputs = {
+      [1] = {
+       o_val = nil,
+       y = 138.86871177209,
+       connection = {
+        [1] = {
+         node = "{8DA4EA3E-9AEC-4BF0-BFDC-E8AA8D45EDF7}",
+         link = "{FF46AF00-7DA3-4D17-9FCC-5F701FAA486C}:MEDIAITEM-{8DA4EA3E-9AEC-4BF0-BFDC-E8AA8D45EDF7}:MEDIAITEM",
+         pin = 1,
+        },
+       },
+       type = "MEDIAITEM",
+       pin = 1,
+       x = 99.854728622629,
+       label = "MEDIAITEM",
+       trace = false,
+      },
+      [0] = {
+       y = 80.368711772094,
+       connection = {
+        [1] = {
+         node = "{8DA4EA3E-9AEC-4BF0-BFDC-E8AA8D45EDF7}",
+         link = "{FF46AF00-7DA3-4D17-9FCC-5F701FAA486C}:RUN-{8DA4EA3E-9AEC-4BF0-BFDC-E8AA8D45EDF7}:RUN",
+         pin = 0,
+        },
+       },
+       type = "RUN",
+       x = 99.854728622629,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     label = "GetSelectedMediaItem",
+     y = 323.07984631856,
+    },
+    [17] = {
+     in_values = {
+      [1] = nil,
+      [2] = "D_POSITION",
+     },
+     w = 296.0,
+     fname = "GetMediaItemInfo_Value",
+     x = 1764.3524693944,
+     selected = false,
+     has_parent = "{5990B230-2DFB-4AB4-900D-F1BAE02FFDAB}",
+     inputs = {
+      [1] = {
+       y = 93.735378438761,
+       connection = {
+        [1] = {
+         node = "{8DA4EA3E-9AEC-4BF0-BFDC-E8AA8D45EDF7}",
+         link = "{AEE5C367-F756-4C57-A19E-258FFBAC8625}:ITEM-{8DA4EA3E-9AEC-4BF0-BFDC-E8AA8D45EDF7}:MEDIAITEM",
+         pin = 1,
+        },
+       },
+       type = "MEDIAITEM",
+       pin = 1,
+       x = 459.78806195596,
+       label = "ITEM",
+       trace = false,
+      },
+      [2] = {
+       i_val = "D_POSITION",
+       y = 113.23537843876,
+       connection = {
+       },
+       type = "STRING",
+       pin = 2,
+       x = 459.78806195596,
+       label = "PARMNAME",
+       trace = false,
+      },
+      [0] = {
+       y = 74.235378438761,
+       connection = {
+        [1] = {
+         node = "{8DA4EA3E-9AEC-4BF0-BFDC-E8AA8D45EDF7}",
+         link = "{8DA4EA3E-9AEC-4BF0-BFDC-E8AA8D45EDF7}:RUN-{AEE5C367-F756-4C57-A19E-258FFBAC8625}:RUN",
+         pin = 0,
+        },
+       },
+       type = "RUN",
+       x = 459.78806195596,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     desc = "\9Get media item numerical-value attributes.\
+B_MUTE : bool * : muted (item solo overrides). setting this value will clear C_MUTE_SOLO.\
+B_MUTE_ACTUAL : bool * : muted (ignores solo). setting this value will not affect C_MUTE_SOLO.\
+C_MUTE_SOLO : char * : solo override (-1=soloed, 0=no override, 1=unsoloed). note that this API does not automatically unsolo other items when soloing (nor clear the unsolos when clearing the last soloed item), it must be done by the caller via action or via this API.\
+B_LOOPSRC : bool * : loop source\
+B_ALLTAKESPLAY : bool * : all takes play\
+B_UISEL : bool * : selected in arrange view\
+C_BEATATTACHMODE : char * : item timebase, -1=track or project default, 1=beats (position, length, rate), 2=beats (position only). for auto-stretch timebase: C_BEATATTACHMODE=1, C_AUTOSTRETCH=1\
+C_AUTOSTRETCH: : char * : auto-stretch at project tempo changes, 1=enabled, requires C_BEATATTACHMODE=1\
+C_LOCK : char * : locked, &amp;1=locked\
+D_VOL : double * : item volume,  0=-inf, 0.5=-6dB, 1=+0dB, 2=+6dB, etc\
+D_POSITION : double * : item position in seconds\
+D_LENGTH : double * : item length in seconds\
+D_SNAPOFFSET : double * : item snap offset in seconds\
+D_FADEINLEN : double * : item manual fadein length in seconds\
+D_FADEOUTLEN : double * : item manual fadeout length in seconds\
+D_FADEINDIR : double * : item fadein curvature, -1..1\
+D_FADEOUTDIR : double * : item fadeout curvature, -1..1\
+D_FADEINLEN_AUTO : double * : item auto-fadein length in seconds, -1=no auto-fadein\
+D_FADEOUTLEN_AUTO : double * : item auto-fadeout length in seconds, -1=no auto-fadeout\
+C_FADEINSHAPE : int * : fadein shape, 0..6, 0=linear\
+C_FADEOUTSHAPE : int * : fadeout shape, 0..6, 0=linear\
+I_GROUPID : int * : group ID, 0=no group\
+I_LASTY : int * : Y-position (relative to top of track) in pixels (read-only)\
+I_LASTH : int * : height in pixels (read-only)\
+I_CUSTOMCOLOR : int * : custom color, OS dependent color|0x1000000 (i.e. ColorToNative(r,g,b)|0x1000000). If you do not |0x1000000, then it will not be used, but will store the color\
+I_CURTAKE : int * : active take number\
+IP_ITEMNUMBER : int : item number on this track (read-only, returns the item number directly)\
+F_FREEMODE_Y : float * : free item positioning Y-position, 0=top of track, 1=bottom of track (will never be 1)\
+F_FREEMODE_H : float * : free item positioning height, 0=no height, 1=full height of track (will never be 0)\
+P_TRACK : MediaTrack * : (read-only)\
+",
+     trace = false,
+     h = 120,
+     guid = "{AEE5C367-F756-4C57-A19E-258FFBAC8625}",
+     type = "api",
+     outputs = {
+      [1] = {
+       o_val = 978.30625,
+       y = 132.73537843876,
+       connection = {
+        [1] = {
+         node = "{AD915BA6-AF38-42D9-A947-ECADEDCB274C}",
+         link = "{AEE5C367-F756-4C57-A19E-258FFBAC8625}:NUMBER-{AD915BA6-AF38-42D9-A947-ECADEDCB274C}:NUMBER",
+         pin = 1,
+        },
+       },
+       type = "NUMBER",
+       pin = 1,
+       x = 652.18806195596,
+       label = "NUMBER",
+       trace = false,
+      },
+      [0] = {
+       y = 74.235378438761,
+       connection = {
+        [1] = {
+         node = "{AD915BA6-AF38-42D9-A947-ECADEDCB274C}",
+         link = "{AEE5C367-F756-4C57-A19E-258FFBAC8625}:RUN-{AD915BA6-AF38-42D9-A947-ECADEDCB274C}:RUN",
+         pin = 0,
+        },
+       },
+       type = "RUN",
+       x = 652.18806195596,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     label = "GetMediaItemInfo_Value",
+     y = 313.64394888266,
+    },
+    [18] = {
+     in_values = {
+      [1] = 978.30625,
+     },
+     w = 288.0,
+     fname = "CUSTOM_Set",
+     x = 2163.6601617021,
+     selected = false,
+     has_parent = "{5990B230-2DFB-4AB4-900D-F1BAE02FFDAB}",
+     inputs = {
+      [1] = {
+       y = 92.885378438761,
+       connection = {
+        [1] = {
+         node = "{AEE5C367-F756-4C57-A19E-258FFBAC8625}",
+         link = "{AEE5C367-F756-4C57-A19E-258FFBAC8625}:NUMBER-{AD915BA6-AF38-42D9-A947-ECADEDCB274C}:NUMBER",
+         pin = 1,
+        },
+       },
+       type = "NUMBER",
+       pin = 1,
+       x = 719.33806195596,
+       label = "NUMBER",
+       trace = false,
+      },
+      [0] = {
+       y = 73.385378438761,
+       connection = {
+        [1] = {
+         node = "{AEE5C367-F756-4C57-A19E-258FFBAC8625}",
+         link = "{AEE5C367-F756-4C57-A19E-258FFBAC8625}:RUN-{AD915BA6-AF38-42D9-A947-ECADEDCB274C}:RUN",
+         pin = 0,
+        },
+       },
+       type = "RUN",
+       x = 719.33806195596,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     trace = false,
+     toggle_comment = true,
+     text = "PROMOTE POSITION TO VARIABLE\
+SO WE CAN ACCESS IT LATER\
+",
+     h = 90,
+     guid = "{AD915BA6-AF38-42D9-A947-ECADEDCB274C}",
+     set = {
+      api = true,
+      guid = "{AEE5C367-F756-4C57-A19E-258FFBAC8625}",
+      pin = 1,
+     },
+     type = "api_var",
+     outputs = {
+      [1] = {
+       o_val = 978.30625,
+       y = 112.38537843876,
+       connection = {
+       },
+       type = "NUMBER",
+       pin = 1,
+       x = 906.53806195596,
+       label = "NUMBER",
+       trace = false,
+      },
+      [0] = {
+       y = 73.385378438761,
+       connection = {
+        [1] = {
+         node = "{9F412313-E359-43DD-88B8-67281E1EA561}",
+         link = "{AD915BA6-AF38-42D9-A947-ECADEDCB274C}:RUN-{9F412313-E359-43DD-88B8-67281E1EA561}:RUN",
+         pin = 0,
+        },
+       },
+       type = "RUN",
+       x = 906.53806195596,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     label = "VAR GetMedia POSITION",
+     y = 312.33625657497,
+    },
+    [19] = {
+     in_values = {
+      [1] = nil,
+     },
+     w = 312.0,
+     fname = "CUSTOM_Set",
+     x = 1323.6601617021,
+     selected = false,
+     has_parent = "{5990B230-2DFB-4AB4-900D-F1BAE02FFDAB}",
+     inputs = {
+      [1] = {
+       y = 98.085378438761,
+       connection = {
+        [1] = {
+         node = "{FF46AF00-7DA3-4D17-9FCC-5F701FAA486C}",
+         link = "{FF46AF00-7DA3-4D17-9FCC-5F701FAA486C}:MEDIAITEM-{8DA4EA3E-9AEC-4BF0-BFDC-E8AA8D45EDF7}:MEDIAITEM",
+         pin = 1,
+        },
+       },
+       type = "MEDIAITEM",
+       pin = 1,
+       x = 173.33806195596,
+       label = "MEDIAITEM",
+       trace = false,
+      },
+      [0] = {
+       y = 78.585378438761,
+       connection = {
+        [1] = {
+         node = "{FF46AF00-7DA3-4D17-9FCC-5F701FAA486C}",
+         link = "{FF46AF00-7DA3-4D17-9FCC-5F701FAA486C}:RUN-{8DA4EA3E-9AEC-4BF0-BFDC-E8AA8D45EDF7}:RUN",
+         pin = 0,
+        },
+       },
+       type = "RUN",
+       x = 173.33806195596,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     trace = false,
+     toggle_comment = true,
+     text = "PROMOTE ITEM TO VARIABLE \
+SO WE CAN ACCESS IT LATER",
+     h = 90,
+     guid = "{8DA4EA3E-9AEC-4BF0-BFDC-E8AA8D45EDF7}",
+     set = {
+      api = true,
+      guid = "{FF46AF00-7DA3-4D17-9FCC-5F701FAA486C}",
+      pin = 1,
+     },
+     type = "api_var",
+     outputs = {
+      [1] = {
+       o_val = nil,
+       y = 117.58537843876,
+       connection = {
+        [1] = {
+         node = "{AEE5C367-F756-4C57-A19E-258FFBAC8625}",
+         link = "{AEE5C367-F756-4C57-A19E-258FFBAC8625}:ITEM-{8DA4EA3E-9AEC-4BF0-BFDC-E8AA8D45EDF7}:MEDIAITEM",
+         pin = 1,
+        },
+       },
+       type = "MEDIAITEM",
+       pin = 1,
+       x = 376.13806195596,
+       label = "MEDIAITEM",
+       trace = false,
+      },
+      [0] = {
+       y = 78.585378438761,
+       connection = {
+        [1] = {
+         node = "{AEE5C367-F756-4C57-A19E-258FFBAC8625}",
+         link = "{8DA4EA3E-9AEC-4BF0-BFDC-E8AA8D45EDF7}:RUN-{AEE5C367-F756-4C57-A19E-258FFBAC8625}:RUN",
+         pin = 0,
+        },
+       },
+       type = "RUN",
+       x = 376.13806195596,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     label = "VAR GetSelectedMediaItem",
+     y = 320.33625657497,
+    },
+    [20] = {
+     in_values = {
+      [1] = nil,
+      [2] = "D_LENGTH",
+     },
+     has_parent = "{5990B230-2DFB-4AB4-900D-F1BAE02FFDAB}",
+     y = 307.00292324163,
+     w = 296.0,
+     trace = false,
+     fname = "GetMediaItemInfo_Value",
+     x = 2614.9934950354,
+     selected = false,
+     h = 120,
+     type = "api",
+     guid = "{9F412313-E359-43DD-88B8-67281E1EA561}",
+     outputs = {
+      [1] = {
+       x = 1205.1047286226,
+       trace = false,
+       type = "NUMBER",
+       pin = 1,
+       label = "NUMBER",
+       o_val = 126.67743055556,
+       y = 128.41871177209,
+       connection = {
+        [1] = {
+         node = "{CB6EEB06-0B6B-4202-905F-FFE6D1ABC4B9}",
+         link = "{9F412313-E359-43DD-88B8-67281E1EA561}:NUMBER-{CB6EEB06-0B6B-4202-905F-FFE6D1ABC4B9}:NUMBER",
+         pin = 1,
+        },
+       },
+      },
+      [0] = {
+       x = 1205.1047286226,
+       type = "RUN",
+       trace = false,
+       label = "RUN",
+       y = 69.918711772094,
+       connection = {
+        [1] = {
+         node = "{CB6EEB06-0B6B-4202-905F-FFE6D1ABC4B9}",
+         link = "{9F412313-E359-43DD-88B8-67281E1EA561}:RUN-{CB6EEB06-0B6B-4202-905F-FFE6D1ABC4B9}:RUN",
+         pin = 0,
+        },
+       },
+      },
+     },
+     inputs = {
+      [1] = {
+       x = 1012.7047286226,
+       trace = false,
+       type = "MEDIAITEM",
+       pin = 1,
+       label = "ITEM",
+       y = 89.418711772094,
+       connection = {
+        [1] = {
+         node = "{C0A49570-43BA-4BD9-8F0C-7142CC180071}",
+         link = "{C0A49570-43BA-4BD9-8F0C-7142CC180071}:-{9F412313-E359-43DD-88B8-67281E1EA561}:ITEM",
+         pin = 1,
+        },
+       },
+      },
+      [2] = {
+       trace = false,
+       label = "PARMNAME",
+       type = "STRING",
+       i_val = "D_LENGTH",
+       x = 1012.7047286226,
+       pin = 2,
+       y = 108.91871177209,
+       connection = {
+       },
+      },
+      [0] = {
+       x = 1012.7047286226,
+       type = "RUN",
+       trace = false,
+       label = "RUN",
+       y = 69.918711772094,
+       connection = {
+        [1] = {
+         node = "{AD915BA6-AF38-42D9-A947-ECADEDCB274C}",
+         link = "{AD915BA6-AF38-42D9-A947-ECADEDCB274C}:RUN-{9F412313-E359-43DD-88B8-67281E1EA561}:RUN",
+         pin = 0,
+        },
+       },
+      },
+     },
+     label = "GetMediaItemInfo_Value",
+     desc = "\9Get media item numerical-value attributes.\
+B_MUTE : bool * : muted (item solo overrides). setting this value will clear C_MUTE_SOLO.\
+B_MUTE_ACTUAL : bool * : muted (ignores solo). setting this value will not affect C_MUTE_SOLO.\
+C_MUTE_SOLO : char * : solo override (-1=soloed, 0=no override, 1=unsoloed). note that this API does not automatically unsolo other items when soloing (nor clear the unsolos when clearing the last soloed item), it must be done by the caller via action or via this API.\
+B_LOOPSRC : bool * : loop source\
+B_ALLTAKESPLAY : bool * : all takes play\
+B_UISEL : bool * : selected in arrange view\
+C_BEATATTACHMODE : char * : item timebase, -1=track or project default, 1=beats (position, length, rate), 2=beats (position only). for auto-stretch timebase: C_BEATATTACHMODE=1, C_AUTOSTRETCH=1\
+C_AUTOSTRETCH: : char * : auto-stretch at project tempo changes, 1=enabled, requires C_BEATATTACHMODE=1\
+C_LOCK : char * : locked, &amp;1=locked\
+D_VOL : double * : item volume,  0=-inf, 0.5=-6dB, 1=+0dB, 2=+6dB, etc\
+D_POSITION : double * : item position in seconds\
+D_LENGTH : double * : item length in seconds\
+D_SNAPOFFSET : double * : item snap offset in seconds\
+D_FADEINLEN : double * : item manual fadein length in seconds\
+D_FADEOUTLEN : double * : item manual fadeout length in seconds\
+D_FADEINDIR : double * : item fadein curvature, -1..1\
+D_FADEOUTDIR : double * : item fadeout curvature, -1..1\
+D_FADEINLEN_AUTO : double * : item auto-fadein length in seconds, -1=no auto-fadein\
+D_FADEOUTLEN_AUTO : double * : item auto-fadeout length in seconds, -1=no auto-fadeout\
+C_FADEINSHAPE : int * : fadein shape, 0..6, 0=linear\
+C_FADEOUTSHAPE : int * : fadeout shape, 0..6, 0=linear\
+I_GROUPID : int * : group ID, 0=no group\
+I_LASTY : int * : Y-position (relative to top of track) in pixels (read-only)\
+I_LASTH : int * : height in pixels (read-only)\
+I_CUSTOMCOLOR : int * : custom color, OS dependent color|0x1000000 (i.e. ColorToNative(r,g,b)|0x1000000). If you do not |0x1000000, then it will not be used, but will store the color\
+I_CURTAKE : int * : active take number\
+IP_ITEMNUMBER : int : item number on this track (read-only, returns the item number directly)\
+F_FREEMODE_Y : float * : free item positioning Y-position, 0=top of track, 1=bottom of track (will never be 1)\
+F_FREEMODE_H : float * : free item positioning height, 0=no height, 1=full height of track (will never be 0)\
+P_TRACK : MediaTrack * : (read-only)\
+",
+    },
+    [21] = {
+     in_values = {
+     },
+     w = 344.0,
+     y = 467.00292324163,
+     x = 2139.6601617021,
+     selected = false,
+     has_parent = "{5990B230-2DFB-4AB4-900D-F1BAE02FFDAB}",
+     inputs = {
+     },
+     trace = false,
+     h = 60,
+     guid = "{C0A49570-43BA-4BD9-8F0C-7142CC180071}",
+     type = "get",
+     outputs = {
+      [1] = {
+       y = 193.41871177209,
+       connection = {
+        [1] = {
+         node = "{9F412313-E359-43DD-88B8-67281E1EA561}",
+         link = "{C0A49570-43BA-4BD9-8F0C-7142CC180071}:-{9F412313-E359-43DD-88B8-67281E1EA561}:ITEM",
+         pin = 1,
+        },
+       },
+       type = "MEDIAITEM",
+       pin = 1,
+       x = 927.33806195596,
+       label = "",
+       trace = false,
+      },
+     },
+     label = "GET VAR GetSelectedMediaItem",
+     get = "{8DA4EA3E-9AEC-4BF0-BFDC-E8AA8D45EDF7}",
+    },
+    [22] = {
+     in_values = {
+      [1] = 126.67743055556,
+     },
+     w = 304.0,
+     fname = "CUSTOM_Set",
+     x = 3035.6601617021,
+     selected = false,
+     has_parent = "{5990B230-2DFB-4AB4-900D-F1BAE02FFDAB}",
+     inputs = {
+      [1] = {
+       y = 97.218711772094,
+       connection = {
+        [1] = {
+         node = "{9F412313-E359-43DD-88B8-67281E1EA561}",
+         link = "{9F412313-E359-43DD-88B8-67281E1EA561}:NUMBER-{CB6EEB06-0B6B-4202-905F-FFE6D1ABC4B9}:NUMBER",
+         pin = 1,
+        },
+       },
+       type = "NUMBER",
+       pin = 1,
+       x = 1286.138061956,
+       label = "NUMBER",
+       trace = false,
+      },
+      [0] = {
+       y = 77.718711772094,
+       connection = {
+        [1] = {
+         node = "{9F412313-E359-43DD-88B8-67281E1EA561}",
+         link = "{9F412313-E359-43DD-88B8-67281E1EA561}:RUN-{CB6EEB06-0B6B-4202-905F-FFE6D1ABC4B9}:RUN",
+         pin = 0,
+        },
+       },
+       type = "RUN",
+       x = 1286.138061956,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     trace = false,
+     toggle_comment = true,
+     text = "PROMOTE LENGHT TO VARIABLE\
+SO WE CAN ACCESS IT LATER\
+",
+     h = 90,
+     guid = "{CB6EEB06-0B6B-4202-905F-FFE6D1ABC4B9}",
+     set = {
+      api = true,
+      guid = "{9F412313-E359-43DD-88B8-67281E1EA561}",
+      pin = 1,
+     },
+     type = "api_var",
+     outputs = {
+      [1] = {
+       o_val = 126.67743055556,
+       y = 116.71871177209,
+       connection = {
+       },
+       type = "NUMBER",
+       pin = 1,
+       x = 1483.738061956,
+       label = "NUMBER",
+       trace = false,
+      },
+      [0] = {
+       y = 77.718711772094,
+       connection = {
+        [1] = {
+         node = "{CC58E8F0-C229-4CBC-B3C6-B613575372A7}",
+         link = "{CB6EEB06-0B6B-4202-905F-FFE6D1ABC4B9}:RUN-{CC58E8F0-C229-4CBC-B3C6-B613575372A7}:RUN",
+         pin = 0,
+        },
+       },
+       type = "RUN",
+       x = 1483.738061956,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     label = "VAR GetMediaItem LENGHT",
+     y = 319.00292324163,
+    },
+    [23] = {
+     in_values = {
+      [1] = 0,
+     },
+     w = 272.0,
+     fname = "CUSTOM_Set",
+     x = 1969.2968046291,
+     selected = false,
+     has_parent = "{2BF14DCA-D2BD-4A90-83DC-A55447C327A5}",
+     inputs = {
+      [1] = {
+       y = -559.01440790393,
+       connection = {
+        [1] = {
+         node = "{48B865BC-CB6B-4482-9EEF-E4A623F34093}",
+         link = "{48B865BC-CB6B-4482-9EEF-E4A623F34093}:V-{3379D460-1287-42EE-8223-B4F743988510}:INTEGER",
+         pin = 2,
+        },
+       },
+       type = "INTEGER",
+       pin = 1,
+       x = 593.00187985849,
+       label = "INTEGER",
+       trace = false,
+      },
+      [0] = {
+       y = -578.51440790393,
+       connection = {
+        [1] = {
+         node = "{34468931-4C71-4036-BC90-420B9BAFAD52}",
+         link = "{34468931-4C71-4036-BC90-420B9BAFAD52}:RUN-{3379D460-1287-42EE-8223-B4F743988510}:RUN",
+         pin = 0,
+        },
+       },
+       type = "RUN",
+       x = 593.00187985849,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     trace = false,
+     h = 90,
+     guid = "{3379D460-1287-42EE-8223-B4F743988510}",
+     set = {
+      api = true,
+      guid = "{48B865BC-CB6B-4482-9EEF-E4A623F34093}",
+      pin = 2,
+     },
+     type = "api_var",
+     outputs = {
+      [1] = {
+       o_val = 0,
+       y = -539.51440790393,
+       connection = {
+       },
+       type = "INTEGER",
+       pin = 1,
+       x = 769.80187985849,
+       label = "INTEGER",
+       trace = false,
+      },
+      [0] = {
+       y = -578.51440790393,
+       connection = {
+        [1] = {
+         node = "{7A6FED43-F4A9-489A-9C38-C6C564E98128}",
+         link = "{7A6FED43-F4A9-489A-9C38-C6C564E98128}:RUN-{3379D460-1287-42EE-8223-B4F743988510}:RUN",
+         pin = 0,
+        },
+       },
+       type = "RUN",
+       x = 769.80187985849,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     label = "VAR ImGui_SliderInt",
+     y = -690.58649164455,
+    },
+    [24] = {
+     in_values = {
+     },
+     w = 224.0,
+     fname = "UpdateArrange",
+     x = 944.35920423662,
+     selected = false,
+     has_parent = "{5990B230-2DFB-4AB4-900D-F1BAE02FFDAB}",
+     inputs = {
+      [0] = {
+       y = -45.511956663411,
+       connection = {
+        [1] = {
+         node = "{A3496BB3-0D30-409A-ADF6-907402CE447D}",
+         link = "{A3496BB3-0D30-409A-ADF6-907402CE447D}:RUN-{F24C6CB6-6E42-425A-A791-EBAD05F2C5D7}:RUN",
+         pin = 0,
+        },
+       },
+       type = "RUN",
+       x = -73.207560396595,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     desc = "Redraw the arrange view",
+     toggle_comment = true,
+     text = "UPDATE ARRANGE WHEN\
+WE ARE DONE SLIDING\
+",
+     trace = false,
+     h = 30,
+     guid = "{F24C6CB6-6E42-425A-A791-EBAD05F2C5D7}",
+     type = "api",
+     outputs = {
+      [0] = {
+       y = -45.511956663411,
+       connection = {
+       },
+       type = "RUN",
+       x = 72.392439603405,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     label = "UpdateArrange",
+     y = 129.4172794947,
+    },
+    [25] = {
+     in_values = {
+     },
+     wireless_id = "{41CCAE66-9031-4DF0-A505-26BB1A47E1E3}",
+     w = 168.0,
+     y = 322.91650428425,
+     x = 3401.7871794872,
+     selected = false,
+     has_parent = "{5990B230-2DFB-4AB4-900D-F1BAE02FFDAB}",
+     inputs = {
+      [0] = {
+       y = 80.262539449794,
+       connection = {
+        [1] = {
+         node = "{CB6EEB06-0B6B-4202-905F-FFE6D1ABC4B9}",
+         link = "{CB6EEB06-0B6B-4202-905F-FFE6D1ABC4B9}:RUN-{CC58E8F0-C229-4CBC-B3C6-B613575372A7}:RUN",
+         pin = 0,
+        },
+       },
+       type = "RUN",
+       x = 1524.1206235163,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     trace = false,
+     h = 30,
+     guid = "{CC58E8F0-C229-4CBC-B3C6-B613575372A7}",
+     type = "ws",
+     outputs = {
+     },
+     sender = "{2C39745D-599D-44CB-BBFB-190749179EB2}",
+     label = "SENDER",
+    },
+    [26] = {
+     in_values = {
+     },
+     wireless_id = "{41CCAE66-9031-4DF0-A505-26BB1A47E1E3}",
+     w = 184.0,
+     y = 1161.0350165963,
+     x = 170.6509322219,
+     selected = false,
+     has_parent = "{72630D81-C655-469F-89E0-A642E89D5331}",
+     inputs = {
+     },
+     trace = false,
+     h = 30,
+     guid = "{2C39745D-599D-44CB-BBFB-190749179EB2}",
+     type = "wr",
+     outputs = {
+      [0] = {
+       y = 625.03957245263,
+       connection = {
+        [1] = {
+         node = "{2E429344-F791-4EFE-8636-B605EA75E18E}",
+         link = "{2C39745D-599D-44CB-BBFB-190749179EB2}:RUN-{2E429344-F791-4EFE-8636-B605EA75E18E}:RUN",
+         pin = 0,
+        },
+       },
+       type = "RUN",
+       x = -456.51793720616,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     label = "RECEIVER",
+    },
+    [27] = {
+     in_values = {
+      [1] = nil,
+      [2] = "D_POSITION",
+      [3] = 978.30625,
+     },
+     w = 296.0,
+     fname = "SetMediaItemInfo_Value",
+     x = 721.45017777921,
+     selected = false,
+     has_parent = "{72630D81-C655-469F-89E0-A642E89D5331}",
+     inputs = {
+      [1] = {
+       y = 715.33936763953,
+       connection = {
+        [1] = {
+         node = "{A18EFFE2-BFFB-46DD-A2CB-BD884A21EC9A}",
+         link = "{A18EFFE2-BFFB-46DD-A2CB-BD884A21EC9A}:-{2E429344-F791-4EFE-8636-B605EA75E18E}:ITEM",
+         pin = 1,
+        },
+       },
+       type = "MEDIAITEM",
+       pin = 1,
+       x = -218.09842759391,
+       label = "ITEM",
+       trace = false,
+      },
+      [2] = {
+       i_val = "D_POSITION",
+       y = 734.83936763953,
+       connection = {
+       },
+       type = "STRING",
+       pin = 2,
+       x = -218.09842759391,
+       label = "PARMNAME",
+       trace = false,
+      },
+      [3] = {
+       i_val = 978.30625,
+       y = 754.33936763953,
+       connection = {
+        [1] = {
+         node = "{B886D3E2-2F71-437A-9822-925B201D879F}",
+         link = "{B886D3E2-2F71-437A-9822-925B201D879F}:RESULT-{2E429344-F791-4EFE-8636-B605EA75E18E}:NEWVALUE",
+         pin = 1,
+        },
+       },
+       type = "NUMBER",
+       pin = 3,
+       x = -218.09842759391,
+       label = "NEWVALUE",
+       trace = false,
+      },
+      [0] = {
+       y = 695.83936763953,
+       connection = {
+        [1] = {
+         node = "{2C39745D-599D-44CB-BBFB-190749179EB2}",
+         link = "{2C39745D-599D-44CB-BBFB-190749179EB2}:RUN-{2E429344-F791-4EFE-8636-B605EA75E18E}:RUN",
+         pin = 0,
+        },
+       },
+       type = "RUN",
+       x = -218.09842759391,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     desc = "\9Set media item numerical-value attributes.\
+B_MUTE : bool * : muted (item solo overrides). setting this value will clear C_MUTE_SOLO.\
+B_MUTE_ACTUAL : bool * : muted (ignores solo). setting this value will not affect C_MUTE_SOLO.\
+C_MUTE_SOLO : char * : solo override (-1=soloed, 0=no override, 1=unsoloed). note that this API does not automatically unsolo other items when soloing (nor clear the unsolos when clearing the last soloed item), it must be done by the caller via action or via this API.\
+B_LOOPSRC : bool * : loop source\
+B_ALLTAKESPLAY : bool * : all takes play\
+B_UISEL : bool * : selected in arrange view\
+C_BEATATTACHMODE : char * : item timebase, -1=track or project default, 1=beats (position, length, rate), 2=beats (position only). for auto-stretch timebase: C_BEATATTACHMODE=1, C_AUTOSTRETCH=1\
+C_AUTOSTRETCH: : char * : auto-stretch at project tempo changes, 1=enabled, requires C_BEATATTACHMODE=1\
+C_LOCK : char * : locked, &amp;1=locked\
+D_VOL : double * : item volume,  0=-inf, 0.5=-6dB, 1=+0dB, 2=+6dB, etc\
+D_POSITION : double * : item position in seconds\
+D_LENGTH : double * : item length in seconds\
+D_SNAPOFFSET : double * : item snap offset in seconds\
+D_FADEINLEN : double * : item manual fadein length in seconds\
+D_FADEOUTLEN : double * : item manual fadeout length in seconds\
+D_FADEINDIR : double * : item fadein curvature, -1..1\
+D_FADEOUTDIR : double * : item fadeout curvature, -1..1\
+D_FADEINLEN_AUTO : double * : item auto-fadein length in seconds, -1=no auto-fadein\
+D_FADEOUTLEN_AUTO : double * : item auto-fadeout length in seconds, -1=no auto-fadeout\
+C_FADEINSHAPE : int * : fadein shape, 0..6, 0=linear\
+C_FADEOUTSHAPE : int * : fadeout shape, 0..6, 0=linear\
+I_GROUPID : int * : group ID, 0=no group\
+I_LASTY : int * : Y-position (relative to top of track) in pixels (read-only)\
+I_LASTH : int * : height in pixels (read-only)\
+I_CUSTOMCOLOR : int * : custom color, OS dependent color|0x1000000 (i.e. ColorToNative(r,g,b)|0x1000000). If you do not |0x1000000, then it will not be used, but will store the color\
+I_CURTAKE : int * : active take number\
+IP_ITEMNUMBER : int : item number on this track (read-only, returns the item number directly)\
+F_FREEMODE_Y : float * : free item positioning Y-position, 0=top of track, 1=bottom of track (will never be 1)\
+F_FREEMODE_H : float * : free item positioning height, 0=no height, 1=full height of track (will never be 0)\
+",
+     toggle_comment = true,
+     text = "SET NEW POSITION VALUE\
+",
+     trace = false,
+     h = 150,
+     guid = "{2E429344-F791-4EFE-8636-B605EA75E18E}",
+     type = "api",
+     outputs = {
+      [1] = {
+       o_val = true,
+       y = 773.83936763953,
+       connection = {
+       },
+       type = "BOOLEAN",
+       pin = 1,
+       x = -25.698427593914,
+       label = "BOOLEAN",
+       trace = false,
+      },
+      [0] = {
+       y = 695.83936763953,
+       connection = {
+        [1] = {
+         node = "{4376911F-FF35-455B-9FB1-0C5A42E98CA1}",
+         link = "{4376911F-FF35-455B-9FB1-0C5A42E98CA1}:RUN-{2E429344-F791-4EFE-8636-B605EA75E18E}:RUN",
+         pin = 0,
+        },
+       },
+       type = "RUN",
+       x = -25.698427593914,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     label = "SetMediaItemInfo_Value",
+     y = 1269.9577784223,
+    },
+    [28] = {
+     in_values = {
+      [1] = nil,
+      [2] = "D_LENGTH",
+      [3] = 126.67743055556,
+     },
+     w = 296.0,
+     fname = "SetMediaItemInfo_Value",
+     x = 1199.7214763731,
+     selected = false,
+     has_parent = "{72630D81-C655-469F-89E0-A642E89D5331}",
+     inputs = {
+      [1] = {
+       trace = false,
+       type = "MEDIAITEM",
+       pin = 1,
+       label = "ITEM",
+       x = 92.777916492108,
+       y = 717.62047363031,
+       connection = {
+        [1] = {
+         node = "{FFA09637-ACBB-483E-8F2B-E65A3926AA70}",
+         link = "{FFA09637-ACBB-483E-8F2B-E65A3926AA70}:-{4376911F-FF35-455B-9FB1-0C5A42E98CA1}:ITEM",
+         pin = 1,
+        },
+       },
+      },
+      [2] = {
+       trace = false,
+       label = "PARMNAME",
+       type = "STRING",
+       i_val = "D_LENGTH",
+       x = 92.777916492108,
+       pin = 2,
+       y = 737.12047363031,
+       connection = {
+       },
+      },
+      [3] = {
+       i_val = 126.67743055556,
+       y = 756.62047363031,
+       connection = {
+        [1] = {
+         node = "{88F67102-1044-441B-A4D0-B4FF63A811D7}",
+         link = "{88F67102-1044-441B-A4D0-B4FF63A811D7}:RESULT-{4376911F-FF35-455B-9FB1-0C5A42E98CA1}:NEWVALUE",
+         pin = 1,
+        },
+       },
+       type = "NUMBER",
+       pin = 3,
+       x = 92.777916492108,
+       label = "NEWVALUE",
+       trace = false,
+      },
+      [0] = {
+       type = "RUN",
+       trace = false,
+       label = "RUN",
+       x = 92.777916492108,
+       y = 698.12047363031,
+       connection = {
+        [1] = {
+         node = "{2E429344-F791-4EFE-8636-B605EA75E18E}",
+         link = "{4376911F-FF35-455B-9FB1-0C5A42E98CA1}:RUN-{2E429344-F791-4EFE-8636-B605EA75E18E}:RUN",
+         pin = 0,
+        },
+       },
+      },
+     },
+     desc = "\9Set media item numerical-value attributes.\
+B_MUTE : bool * : muted (item solo overrides). setting this value will clear C_MUTE_SOLO.\
+B_MUTE_ACTUAL : bool * : muted (ignores solo). setting this value will not affect C_MUTE_SOLO.\
+C_MUTE_SOLO : char * : solo override (-1=soloed, 0=no override, 1=unsoloed). note that this API does not automatically unsolo other items when soloing (nor clear the unsolos when clearing the last soloed item), it must be done by the caller via action or via this API.\
+B_LOOPSRC : bool * : loop source\
+B_ALLTAKESPLAY : bool * : all takes play\
+B_UISEL : bool * : selected in arrange view\
+C_BEATATTACHMODE : char * : item timebase, -1=track or project default, 1=beats (position, length, rate), 2=beats (position only). for auto-stretch timebase: C_BEATATTACHMODE=1, C_AUTOSTRETCH=1\
+C_AUTOSTRETCH: : char * : auto-stretch at project tempo changes, 1=enabled, requires C_BEATATTACHMODE=1\
+C_LOCK : char * : locked, &amp;1=locked\
+D_VOL : double * : item volume,  0=-inf, 0.5=-6dB, 1=+0dB, 2=+6dB, etc\
+D_POSITION : double * : item position in seconds\
+D_LENGTH : double * : item length in seconds\
+D_SNAPOFFSET : double * : item snap offset in seconds\
+D_FADEINLEN : double * : item manual fadein length in seconds\
+D_FADEOUTLEN : double * : item manual fadeout length in seconds\
+D_FADEINDIR : double * : item fadein curvature, -1..1\
+D_FADEOUTDIR : double * : item fadeout curvature, -1..1\
+D_FADEINLEN_AUTO : double * : item auto-fadein length in seconds, -1=no auto-fadein\
+D_FADEOUTLEN_AUTO : double * : item auto-fadeout length in seconds, -1=no auto-fadeout\
+C_FADEINSHAPE : int * : fadein shape, 0..6, 0=linear\
+C_FADEOUTSHAPE : int * : fadeout shape, 0..6, 0=linear\
+I_GROUPID : int * : group ID, 0=no group\
+I_LASTY : int * : Y-position (relative to top of track) in pixels (read-only)\
+I_LASTH : int * : height in pixels (read-only)\
+I_CUSTOMCOLOR : int * : custom color, OS dependent color|0x1000000 (i.e. ColorToNative(r,g,b)|0x1000000). If you do not |0x1000000, then it will not be used, but will store the color\
+I_CURTAKE : int * : active take number\
+IP_ITEMNUMBER : int : item number on this track (read-only, returns the item number directly)\
+F_FREEMODE_Y : float * : free item positioning Y-position, 0=top of track, 1=bottom of track (will never be 1)\
+F_FREEMODE_H : float * : free item positioning height, 0=no height, 1=full height of track (will never be 0)\
+",
+     toggle_comment = true,
+     text = "SET NEW LENGHT VALUE",
+     h = 150,
+     guid = "{4376911F-FF35-455B-9FB1-0C5A42E98CA1}",
+     type = "api",
+     outputs = {
+      [1] = {
+       x = 285.17791649211,
+       trace = false,
+       type = "BOOLEAN",
+       pin = 1,
+       label = "BOOLEAN",
+       o_val = true,
+       y = 776.12047363031,
+       connection = {
+       },
+      },
+      [0] = {
+       x = 285.17791649211,
+       type = "RUN",
+       trace = false,
+       label = "RUN",
+       y = 698.12047363031,
+       connection = {
+        [1] = {
+         node = "{3DC30C13-3EF1-4D98-9EDC-782B7136FC3D}",
+         link = "{4376911F-FF35-455B-9FB1-0C5A42E98CA1}:RUN-{3DC30C13-3EF1-4D98-9EDC-782B7136FC3D}:RUN",
+         pin = 0,
+        },
+       },
+      },
+     },
+     y = 1273.4671722543,
+     label = "SetMediaItemInfo_Value",
+     trace = false,
+    },
+    [29] = {
+     in_values = {
+     },
+     w = 304.0,
+     y = 1636.0432091206,
+     x = -697.86761732891,
+     selected = false,
+     has_parent = "{72630D81-C655-469F-89E0-A642E89D5331}",
+     inputs = {
+     },
+     trace = false,
+     toggle_comment = true,
+     text = "GET CURRENT SLIDER VALUE\
+",
+     h = 60,
+     guid = "{E2940D33-9530-45D6-849A-71D4AA3008DA}",
+     type = "get",
+     outputs = {
+      [1] = {
+       y = 953.29489759344,
+       connection = {
+        [1] = {
+         node = "{485B29BC-0510-4F05-9BBC-0D1F69A249AA}",
+         link = "{E2940D33-9530-45D6-849A-71D4AA3008DA}:-{485B29BC-0510-4F05-9BBC-0D1F69A249AA}:INT",
+         pin = 1,
+        },
+       },
+       type = "INTEGER",
+       pin = 1,
+       x = -943.05499441419,
+       label = "",
+       trace = false,
+      },
+     },
+     label = "GET VAR ImGui_SliderInt",
+     get = "{3379D460-1287-42EE-8223-B4F743988510}",
+    },
+    [30] = {
+     in_values = {
+     },
+     w = 344.0,
+     y = 1256.3071108103,
+     x = 114.35680663423,
+     selected = false,
+     has_parent = "{72630D81-C655-469F-89E0-A642E89D5331}",
+     inputs = {
+     },
+     trace = false,
+     toggle_comment = true,
+     text = "GET CURRENT MEDIA ITEM\
+",
+     h = 60,
+     guid = "{A18EFFE2-BFFB-46DD-A2CB-BD884A21EC9A}",
+     type = "get",
+     outputs = {
+      [1] = {
+       y = 706.46643369175,
+       connection = {
+        [1] = {
+         node = "{2E429344-F791-4EFE-8636-B605EA75E18E}",
+         link = "{A18EFFE2-BFFB-46DD-A2CB-BD884A21EC9A}:-{2E429344-F791-4EFE-8636-B605EA75E18E}:ITEM",
+         pin = 1,
+        },
+       },
+       type = "MEDIAITEM",
+       pin = 1,
+       x = -389.10911883815,
+       label = "",
+       trace = false,
+      },
+     },
+     label = "GET VAR GetSelectedMediaItem",
+     get = "{8DA4EA3E-9AEC-4BF0-BFDC-E8AA8D45EDF7}",
+    },
+    [31] = {
+     in_values = {
+     },
+     w = 320.0,
+     y = 1395.7385181127,
+     x = -404.73240522918,
+     selected = false,
+     has_parent = "{72630D81-C655-469F-89E0-A642E89D5331}",
+     inputs = {
+     },
+     trace = false,
+     toggle_comment = true,
+     text = "GET CURRENT ITEM POSITION\
+",
+     h = 60,
+     guid = "{63AE847C-6208-449C-B8DE-AA564E0D467E}",
+     type = "get",
+     outputs = {
+      [1] = {
+       y = 797.0968484383,
+       connection = {
+        [1] = {
+         node = "{B886D3E2-2F71-437A-9822-925B201D879F}",
+         link = "{63AE847C-6208-449C-B8DE-AA564E0D467E}:-{B886D3E2-2F71-437A-9822-925B201D879F}:X",
+         pin = 1,
+        },
+       },
+       type = "NUMBER",
+       pin = 1,
+       x = -742.11710654937,
+       label = "",
+       trace = false,
+      },
+     },
+     label = "GET VAR GetMedia POSITION",
+     get = "{AD915BA6-AF38-42D9-A947-ECADEDCB274C}",
+    },
+    [32] = {
+     in_values = {
+     },
+     w = 336.0,
+     y = 1861.3002928971,
+     x = 304.63929511349,
+     selected = false,
+     has_parent = "{72630D81-C655-469F-89E0-A642E89D5331}",
+     inputs = {
+     },
+     trace = false,
+     h = 60,
+     guid = "{67DB61E2-DF3A-41AE-9458-C5A04F1F3491}",
+     type = "get",
+     outputs = {
+      [1] = {
+       y = 1099.7120020481,
+       connection = {
+        [1] = {
+         node = "{88F67102-1044-441B-A4D0-B4FF63A811D7}",
+         link = "{67DB61E2-DF3A-41AE-9458-C5A04F1F3491}:-{88F67102-1044-441B-A4D0-B4FF63A811D7}:Y",
+         pin = 3,
+        },
+       },
+       type = "NUMBER",
+       pin = 1,
+       x = -270.62550132663,
+       label = "",
+       trace = false,
+      },
+     },
+     label = "GET VAR GetMediaItem LENGHT",
+     get = "{CB6EEB06-0B6B-4202-905F-FFE6D1ABC4B9}",
+    },
+    [33] = {
+     in_values = {
+     },
+     w = 240.0,
+     fname = "MATH_FLOAT",
+     x = 168.2007390459,
+     selected = false,
+     has_parent = "{72630D81-C655-469F-89E0-A642E89D5331}",
+     inputs = {
+      [1] = {
+       i_val = 978.30625,
+       y = 803.20879928315,
+       connection = {
+        [1] = {
+         node = "{63AE847C-6208-449C-B8DE-AA564E0D467E}",
+         link = "{63AE847C-6208-449C-B8DE-AA564E0D467E}:-{B886D3E2-2F71-437A-9822-925B201D879F}:X",
+         pin = 1,
+        },
+       },
+       type = "NUMBER/INTEGER",
+       pin = 1,
+       x = -577.71056277056,
+       label = "X",
+       trace = false,
+      },
+      [2] = {
+       i_val = "+",
+       list = {
+        [1] = "+",
+        [2] = "-",
+        [3] = "*",
+        [4] = "/",
+        [5] = "%",
+        [6] = "^",
+       },
+       y = 822.70879928315,
+       connection = {
+       },
+       pin_disable = true,
+       type = "LIST",
+       pin = 2,
+       label = "",
+       x = -577.71056277056,
+      },
+      [3] = {
+       i_val = 0.0,
+       y = 842.20879928315,
+       connection = {
+        [1] = {
+         node = "{485B29BC-0510-4F05-9BBC-0D1F69A249AA}",
+         link = "{485B29BC-0510-4F05-9BBC-0D1F69A249AA}:FLOAT-{B886D3E2-2F71-437A-9822-925B201D879F}:Y",
+         pin = 1,
+        },
+       },
+       type = "NUMBER/INTEGER",
+       pin = 3,
+       x = -577.71056277056,
+       label = "Y",
+       trace = false,
+      },
+     },
+     desc = "Math FLOAT/NUMBER + - / * ^ %",
+     toggle_comment = true,
+     text = "ADD SLIDER VALUE TO\
+ITEM POSITION VALUE\
+",
+     h = 150,
+     guid = "{B886D3E2-2F71-437A-9822-925B201D879F}",
+     type = "api",
+     outputs = {
+      [1] = {
+       x = -421.71056277056,
+       trace = false,
+       type = "NUMBER",
+       pin = 1,
+       label = "RESULT",
+       y = 861.70879928315,
+       connection = {
+        [1] = {
+         node = "{2E429344-F791-4EFE-8636-B605EA75E18E}",
+         link = "{B886D3E2-2F71-437A-9822-925B201D879F}:RESULT-{2E429344-F791-4EFE-8636-B605EA75E18E}:NEWVALUE",
+         pin = 3,
+        },
+       },
+      },
+     },
+     y = 1405.1415194125,
+     label = "Math Operations",
+     trace = false,
+    },
+    [34] = {
+     in_values = {
+     },
+     w = 240.0,
+     y = 1751.5153702928,
+     x = 796.84204827431,
+     selected = false,
+     has_parent = "{72630D81-C655-469F-89E0-A642E89D5331}",
+     inputs = {
+      [1] = {
+       i_val = -0.0,
+       y = 1028.3518023553,
+       connection = {
+        [1] = {
+         node = "{B59EAD8D-E5C1-4187-AFAD-308043EFFBF4}",
+         link = "{B59EAD8D-E5C1-4187-AFAD-308043EFFBF4}:RESULT-{88F67102-1044-441B-A4D0-B4FF63A811D7}:X",
+         pin = 1,
+        },
+       },
+       type = "NUMBER/INTEGER",
+       pin = 1,
+       x = -169.0937117721,
+       label = "X",
+       trace = false,
+      },
+      [2] = {
+       i_val = "+",
+       list = {
+        [1] = "+",
+        [2] = "-",
+        [3] = "*",
+        [4] = "/",
+        [5] = "%",
+        [6] = "^",
+       },
+       y = 1047.8518023553,
+       connection = {
+       },
+       pin_disable = true,
+       type = "LIST",
+       pin = 2,
+       label = "",
+       x = -169.0937117721,
+      },
+      [3] = {
+       i_val = 126.67743055556,
+       y = 1067.3518023553,
+       x = -169.0937117721,
+       type = "NUMBER/INTEGER",
+       pin = 3,
+       connection = {
+        [1] = {
+         node = "{67DB61E2-DF3A-41AE-9458-C5A04F1F3491}",
+         link = "{67DB61E2-DF3A-41AE-9458-C5A04F1F3491}:-{88F67102-1044-441B-A4D0-B4FF63A811D7}:Y",
+         pin = 1,
+        },
+       },
+       label = "Y",
+       trace = false,
+      },
+     },
+     trace = false,
+     toggle_comment = true,
+     text = "ADD CURRENT SLIDER VALUE\
+TO CURRENT LENGTH VALUE",
+     h = 150,
+     guid = "{88F67102-1044-441B-A4D0-B4FF63A811D7}",
+     type = "api",
+     outputs = {
+      [1] = {
+       x = -13.093711772101,
+       connection = {
+        [1] = {
+         node = "{4376911F-FF35-455B-9FB1-0C5A42E98CA1}",
+         link = "{88F67102-1044-441B-A4D0-B4FF63A811D7}:RESULT-{4376911F-FF35-455B-9FB1-0C5A42E98CA1}:NEWVALUE",
+         pin = 3,
+        },
+       },
+       type = "NUMBER",
+       pin = 1,
+       y = 1086.8518023553,
+       label = "RESULT",
+       trace = false,
+      },
+     },
+     desc = "Math FLOAT/NUMBER + - / * ^ %",
+     label = "Math Operations",
+     fname = "MATH_FLOAT",
+    },
+    [35] = {
+     in_values = {
+     },
+     toggle_comment = true,
+     text = "GET CURRENT MEDIA ITEM",
+     has_parent = "{72630D81-C655-469F-89E0-A642E89D5331}",
+     w = 344.0,
+     get = "{8DA4EA3E-9AEC-4BF0-BFDC-E8AA8D45EDF7}",
+     y = 1494.1055392636,
+     x = 693.05953616276,
+     selected = false,
+     h = 60,
+     type = "get",
+     guid = "{FFA09637-ACBB-483E-8F2B-E65A3926AA70}",
+     outputs = {
+      [1] = {
+       x = -12.952344644605,
+       trace = false,
+       type = "MEDIAITEM",
+       pin = 1,
+       label = "",
+       y = 861.03541218638,
+       connection = {
+        [1] = {
+         node = "{4376911F-FF35-455B-9FB1-0C5A42E98CA1}",
+         link = "{FFA09637-ACBB-483E-8F2B-E65A3926AA70}:-{4376911F-FF35-455B-9FB1-0C5A42E98CA1}:ITEM",
+         pin = 1,
+        },
+       },
+      },
+     },
+     inputs = {
+     },
+     label = "GET VAR GetSelectedMediaItem",
+     trace = false,
+    },
+    [36] = {
+     in_values = {
+     },
+     w = 216.0,
+     fname = "MathIntToFloat",
+     x = -295.5894535572,
+     selected = false,
+     has_parent = "{72630D81-C655-469F-89E0-A642E89D5331}",
+     inputs = {
+      [1] = {
+       i_val = 0,
+       y = 951.35061187916,
+       connection = {
+        [1] = {
+         node = "{E2940D33-9530-45D6-849A-71D4AA3008DA}",
+         link = "{E2940D33-9530-45D6-849A-71D4AA3008DA}:-{485B29BC-0510-4F05-9BBC-0D1F69A249AA}:INT",
+         pin = 1,
+        },
+       },
+       type = "INTEGER",
+       pin = 1,
+       x = -879.17418796258,
+       label = "INT",
+       trace = false,
+      },
+      [2] = {
+       i_val = "IntToFloat",
+       no_draw = true,
+       y = 970.85061187916,
+       connection = {
+       },
+       pin_disable = true,
+       type = "STRING",
+       pin = 2,
+       label = "",
+       x = -879.17418796258,
+      },
+     },
+     desc = "Converte Integer to Float/Number",
+     toggle_comment = true,
+     text = "WE NEED TO CONVERT IT\
+TO FLOAT",
+     trace = false,
+     h = 90,
+     guid = "{485B29BC-0510-4F05-9BBC-0D1F69A249AA}",
+     type = "api",
+     outputs = {
+      [1] = {
+       y = 970.85061187916,
+       connection = {
+        [1] = {
+         node = "{B59EAD8D-E5C1-4187-AFAD-308043EFFBF4}",
+         link = "{485B29BC-0510-4F05-9BBC-0D1F69A249AA}:FLOAT-{B59EAD8D-E5C1-4187-AFAD-308043EFFBF4}:X",
+         pin = 1,
+        },
+        [2] = {
+         node = "{B886D3E2-2F71-437A-9822-925B201D879F}",
+         link = "{485B29BC-0510-4F05-9BBC-0D1F69A249AA}:FLOAT-{B886D3E2-2F71-437A-9822-925B201D879F}:Y",
+         pin = 3,
+        },
+       },
+       type = "NUMBER",
+       pin = 1,
+       x = -738.77418796258,
+       label = "FLOAT",
+       trace = false,
+      },
+     },
+     label = "INT TO FLOAT",
+     y = 1633.0520003294,
+    },
+    [37] = {
+     in_values = {
+      [1] = nil,
+      [2] = "END",
+      [3] = 0,
+      [4] = -1,
+      [5] = 1,
+      [6] = "0",
+      [7] = 0,
+     },
+     desc = "",
+     selected = false,
+     w = 240.0,
+     fname = "ImGui_SliderInt",
+     y = -684.14027406285,
+     x = 2358.9871032194,
+     guid = "{7A6FED43-F4A9-489A-9C38-C6C564E98128}",
+     has_parent = "{2BF14DCA-D2BD-4A90-83DC-A55447C327A5}",
+     type = "api",
+     h = 300,
+     outputs = {
+      [1] = {
+       connection = {
+        [1] = {
+         node = "{E516ECDD-AB38-4D4D-A655-D56E002A39C8}",
+         link = "{7A6FED43-F4A9-489A-9C38-C6C564E98128}:RETVAL-{E516ECDD-AB38-4D4D-A655-D56E002A39C8}:BOOLEAN",
+         pin = 1,
+        },
+       },
+       label = "RETVAL",
+       type = "BOOLEAN",
+       pin = 1,
+       x = 1002.3005739422,
+       o_val = false,
+       y = -418.32436647582,
+       trace = false,
+      },
+      [2] = {
+       connection = {
+        [1] = {
+         node = "{0C990550-E9C9-4EB6-ADD3-896C9F0BBDBE}",
+         link = "{7A6FED43-F4A9-489A-9C38-C6C564E98128}:V-{0C990550-E9C9-4EB6-ADD3-896C9F0BBDBE}:INTEGER",
+         pin = 1,
+        },
+       },
+       label = "V",
+       type = "INTEGER",
+       pin = 2,
+       x = 1002.3005739422,
+       o_val = 0,
+       y = -398.82436647582,
+       trace = false,
+      },
+      [0] = {
+       trace = false,
+       type = "RUN",
+       connection = {
+        [1] = {
+         node = "{E516ECDD-AB38-4D4D-A655-D56E002A39C8}",
+         link = "{7A6FED43-F4A9-489A-9C38-C6C564E98128}:RUN-{E516ECDD-AB38-4D4D-A655-D56E002A39C8}:RUN",
+         pin = 0,
+        },
+       },
+       label = "RUN",
+       y = -574.32436647582,
+       x = 1002.3005739422,
+      },
+     },
+     inputs = {
+      [1] = {
+       x = 846.30057394218,
+       connection = {
+        [1] = {
+         node = "{04D66A48-90D0-4184-AEE7-5E2185B727A3}",
+         link = "{04D66A48-90D0-4184-AEE7-5E2185B727A3}:-{7A6FED43-F4A9-489A-9C38-C6C564E98128}:CTX",
+         pin = 1,
+        },
+       },
+       type = "IMGUI_CONTEXT",
+       pin = 1,
+       label = "CTX",
+       y = -554.82436647582,
+       trace = false,
+      },
+      [2] = {
+       connection = {
+       },
+       label = "LABEL",
+       type = "STRING",
+       i_val = "END",
+       pin = 2,
+       x = 846.30057394218,
+       y = -535.32436647582,
+       trace = false,
+      },
+      [3] = {
+       trace = false,
+       label = "V",
+       type = "INTEGER",
+       i_val = 0,
+       x = 846.30057394218,
+       pin = 3,
+       y = -515.82436647582,
+       connection = {
+       },
+      },
+      [4] = {
+       connection = {
+       },
+       label = "V",
+       type = "INTEGER",
+       i_val = -1,
+       pin = 4,
+       x = 846.30057394218,
+       y = -496.32436647582,
+       trace = false,
+      },
+      [5] = {
+       connection = {
+       },
+       label = "V",
+       type = "INTEGER",
+       i_val = 1,
+       pin = 5,
+       x = 846.30057394218,
+       y = -476.82436647582,
+       trace = false,
+      },
+      [6] = {
+       i_val = "0",
+       y = -457.32436647582,
+       x = 846.30057394218,
+       type = "STRING",
+       pin = 6,
+       connection = {
+       },
+       label = "FORMATIN",
+       trace = false,
+      },
+      [7] = {
+       connection = {
+       },
+       label = "FLAGSIN",
+       type = "INTEGER",
+       i_val = 0,
+       pin = 7,
+       x = 846.30057394218,
+       y = -437.82436647582,
+       trace = false,
+      },
+      [0] = {
+       x = 846.30057394218,
+       type = "RUN",
+       connection = {
+        [1] = {
+         node = "{3379D460-1287-42EE-8223-B4F743988510}",
+         link = "{7A6FED43-F4A9-489A-9C38-C6C564E98128}:RUN-{3379D460-1287-42EE-8223-B4F743988510}:RUN",
+         pin = 0,
+        },
+       },
+       label = "RUN",
+       y = -574.32436647582,
+       trace = false,
+      },
+     },
+     label = "ImGui_SliderInt",
+     trace = false,
+    },
+    [38] = {
+     in_values = {
+     },
+     get = "{EC2853A0-7648-43F8-B6C3-F2BC58773C2D}",
+     w = 208.0,
+     h = 60,
+     y = -843.09572721185,
+     x = 2054.2866423899,
+     selected = false,
+     guid = "{04D66A48-90D0-4184-AEE7-5E2185B727A3}",
+     type = "get",
+     has_parent = "{2BF14DCA-D2BD-4A90-83DC-A55447C327A5}",
+     outputs = {
+      [1] = {
+       x = 783.44527440301,
+       connection = {
+        [1] = {
+         node = "{7A6FED43-F4A9-489A-9C38-C6C564E98128}",
+         link = "{04D66A48-90D0-4184-AEE7-5E2185B727A3}:-{7A6FED43-F4A9-489A-9C38-C6C564E98128}:CTX",
+         pin = 1,
+        },
+       },
+       type = "IMGUI_CONTEXT",
+       pin = 1,
+       label = "",
+       y = -658.14541102267,
+       trace = false,
+      },
+     },
+     inputs = {
+     },
+     label = "GET VAR CTX",
+     trace = false,
+    },
+    [39] = {
+     in_values = {
+      [1] = 0,
+     },
+     w = 280.0,
+     fname = "CUSTOM_Set",
+     x = 2665.9149065988,
+     selected = false,
+     has_parent = "{2BF14DCA-D2BD-4A90-83DC-A55447C327A5}",
+     inputs = {
+      [1] = {
+       y = -546.99640948657,
+       connection = {
+        [1] = {
+         node = "{7A6FED43-F4A9-489A-9C38-C6C564E98128}",
+         link = "{7A6FED43-F4A9-489A-9C38-C6C564E98128}:V-{0C990550-E9C9-4EB6-ADD3-896C9F0BBDBE}:INTEGER",
+         pin = 2,
+        },
+       },
+       type = "INTEGER",
+       pin = 1,
+       x = 1045.8036461388,
+       label = "INTEGER",
+       trace = false,
+      },
+      [0] = {
+       y = -566.49640948657,
+       connection = {
+        [1] = {
+         node = "{E516ECDD-AB38-4D4D-A655-D56E002A39C8}",
+         link = "{E516ECDD-AB38-4D4D-A655-D56E002A39C8}:RUN-{0C990550-E9C9-4EB6-ADD3-896C9F0BBDBE}:RUN",
+         pin = 0,
+        },
+       },
+       type = "RUN",
+       x = 1045.8036461388,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     trace = false,
+     h = 90,
+     guid = "{0C990550-E9C9-4EB6-ADD3-896C9F0BBDBE}",
+     set = {
+      api = true,
+      guid = "{7A6FED43-F4A9-489A-9C38-C6C564E98128}",
+      pin = 2,
+     },
+     type = "api_var",
+     outputs = {
+      [1] = {
+       o_val = 0,
+       y = -527.49640948657,
+       connection = {
+       },
+       type = "INTEGER",
+       pin = 1,
+       x = 1227.8036461388,
+       label = "INTEGER",
+       trace = false,
+      },
+      [0] = {
+       y = -566.49640948657,
+       connection = {
+        [1] = {
+         node = "{DCEF0313-BFF4-43FC-9B38-4CDDB8CBC7A3}",
+         link = "{0C990550-E9C9-4EB6-ADD3-896C9F0BBDBE}:RUN-{DCEF0313-BFF4-43FC-9B38-4CDDB8CBC7A3}:RUN",
+         pin = 0,
+        },
+       },
+       type = "RUN",
+       x = 1227.8036461388,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     label = "VAR ImGui_SliderInt2",
+     y = -672.09726331016,
+    },
+    [40] = {
+     in_values = {
+      [1] = nil,
+      [2] = "D_LENGTH",
+      [3] = 126.67743055556,
+     },
+     w = 296.0,
+     fname = "SetMediaItemInfo_Value",
+     x = 3527.4692565499,
+     selected = false,
+     has_parent = "{C4844CF0-AE2D-46E8-8B2B-33ECF9A48657}",
+     inputs = {
+      [1] = {
+       x = 1605.813973607,
+       trace = false,
+       type = "MEDIAITEM",
+       pin = 1,
+       label = "ITEM",
+       y = 694.44609225899,
+       connection = {
+        [1] = {
+         node = "{ED9D7E60-F5FB-4D59-855D-D19662B1ED30}",
+         link = "{ED9D7E60-F5FB-4D59-855D-D19662B1ED30}:-{11AF9060-35D0-42B8-B9F3-30F507BF3E5D}:ITEM",
+         pin = 1,
+        },
+       },
+      },
+      [2] = {
+       trace = false,
+       label = "PARMNAME",
+       type = "STRING",
+       i_val = "D_LENGTH",
+       x = 1605.813973607,
+       pin = 2,
+       y = 713.94609225899,
+       connection = {
+       },
+      },
+      [3] = {
+       i_val = 126.67743055556,
+       y = 733.44609225899,
+       connection = {
+        [1] = {
+         node = "{EB5B956B-5642-4497-9A53-0E2619D59501}",
+         link = "{EB5B956B-5642-4497-9A53-0E2619D59501}:RESULT-{11AF9060-35D0-42B8-B9F3-30F507BF3E5D}:NEWVALUE",
+         pin = 1,
+        },
+       },
+       type = "NUMBER",
+       pin = 3,
+       x = 1605.813973607,
+       label = "NEWVALUE",
+       trace = false,
+      },
+      [0] = {
+       x = 1605.813973607,
+       type = "RUN",
+       trace = false,
+       label = "RUN",
+       y = 674.94609225899,
+       connection = {
+        [1] = {
+         node = "{BD4A6620-64AD-4640-A511-CCEDB16283BA}",
+         link = "{BD4A6620-64AD-4640-A511-CCEDB16283BA}:TRUE-{11AF9060-35D0-42B8-B9F3-30F507BF3E5D}:RUN",
+         pin = 1,
+        },
+       },
+      },
+     },
+     desc = "\9Set media item numerical-value attributes.\
+B_MUTE : bool * : muted (item solo overrides). setting this value will clear C_MUTE_SOLO.\
+B_MUTE_ACTUAL : bool * : muted (ignores solo). setting this value will not affect C_MUTE_SOLO.\
+C_MUTE_SOLO : char * : solo override (-1=soloed, 0=no override, 1=unsoloed). note that this API does not automatically unsolo other items when soloing (nor clear the unsolos when clearing the last soloed item), it must be done by the caller via action or via this API.\
+B_LOOPSRC : bool * : loop source\
+B_ALLTAKESPLAY : bool * : all takes play\
+B_UISEL : bool * : selected in arrange view\
+C_BEATATTACHMODE : char * : item timebase, -1=track or project default, 1=beats (position, length, rate), 2=beats (position only). for auto-stretch timebase: C_BEATATTACHMODE=1, C_AUTOSTRETCH=1\
+C_AUTOSTRETCH: : char * : auto-stretch at project tempo changes, 1=enabled, requires C_BEATATTACHMODE=1\
+C_LOCK : char * : locked, &amp;1=locked\
+D_VOL : double * : item volume,  0=-inf, 0.5=-6dB, 1=+0dB, 2=+6dB, etc\
+D_POSITION : double * : item position in seconds\
+D_LENGTH : double * : item length in seconds\
+D_SNAPOFFSET : double * : item snap offset in seconds\
+D_FADEINLEN : double * : item manual fadein length in seconds\
+D_FADEOUTLEN : double * : item manual fadeout length in seconds\
+D_FADEINDIR : double * : item fadein curvature, -1..1\
+D_FADEOUTDIR : double * : item fadeout curvature, -1..1\
+D_FADEINLEN_AUTO : double * : item auto-fadein length in seconds, -1=no auto-fadein\
+D_FADEOUTLEN_AUTO : double * : item auto-fadeout length in seconds, -1=no auto-fadeout\
+C_FADEINSHAPE : int * : fadein shape, 0..6, 0=linear\
+C_FADEOUTSHAPE : int * : fadeout shape, 0..6, 0=linear\
+I_GROUPID : int * : group ID, 0=no group\
+I_LASTY : int * : Y-position (relative to top of track) in pixels (read-only)\
+I_LASTH : int * : height in pixels (read-only)\
+I_CUSTOMCOLOR : int * : custom color, OS dependent color|0x1000000 (i.e. ColorToNative(r,g,b)|0x1000000). If you do not |0x1000000, then it will not be used, but will store the color\
+I_CURTAKE : int * : active take number\
+IP_ITEMNUMBER : int : item number on this track (read-only, returns the item number directly)\
+F_FREEMODE_Y : float * : free item positioning Y-position, 0=top of track, 1=bottom of track (will never be 1)\
+F_FREEMODE_H : float * : free item positioning height, 0=no height, 1=full height of track (will never be 0)\
+",
+     toggle_comment = true,
+     text = "SET NEW LENGHT VALUE",
+     h = 150,
+     guid = "{11AF9060-35D0-42B8-B9F3-30F507BF3E5D}",
+     type = "api",
+     outputs = {
+      [1] = {
+       trace = false,
+       label = "BOOLEAN",
+       type = "BOOLEAN",
+       pin = 1,
+       x = 1798.213973607,
+       o_val = true,
+       y = 752.94609225899,
+       connection = {
+       },
+      },
+      [0] = {
+       x = 1798.213973607,
+       type = "RUN",
+       trace = false,
+       label = "RUN",
+       y = 674.94609225899,
+       connection = {
+       },
+      },
+     },
+     y = 1237.8142778369,
+     label = "SetMediaItemInfo_Value",
+     trace = false,
+    },
+    [41] = {
+     in_values = {
+     },
+     w = 216.0,
+     fname = "MathIntToFloat",
+     x = 2749.7724544273,
+     selected = false,
+     has_parent = "{C4844CF0-AE2D-46E8-8B2B-33ECF9A48657}",
+     inputs = {
+      [1] = {
+       i_val = 0,
+       y = 979.91334822883,
+       connection = {
+        [1] = {
+         node = "{69B7765B-84BB-41D5-94B3-5C6FBC4C8AFB}",
+         link = "{69B7765B-84BB-41D5-94B3-5C6FBC4C8AFB}:-{1EC594B6-0743-41F9-A7C4-11A6ECC62953}:INT",
+         pin = 1,
+        },
+       },
+       type = "INTEGER",
+       pin = 1,
+       x = 1100.3110522273,
+       label = "INT",
+       trace = false,
+      },
+      [2] = {
+       i_val = "IntToFloat",
+       no_draw = true,
+       y = 999.41334822883,
+       connection = {
+       },
+       pin_disable = true,
+       type = "STRING",
+       pin = 2,
+       label = "",
+       x = 1100.3110522273,
+      },
+     },
+     desc = "Converte Integer to Float/Number",
+     toggle_comment = true,
+     text = "WE NEED TO CONVERT IT\
+TO FLOAT\
+",
+     h = 90,
+     guid = "{1EC594B6-0743-41F9-A7C4-11A6ECC62953}",
+     type = "api",
+     outputs = {
+      [1] = {
+       x = 1240.7110522273,
+       trace = false,
+       type = "NUMBER",
+       pin = 1,
+       label = "FLOAT",
+       y = 999.41334822883,
+       connection = {
+        [1] = {
+         node = "{EB5B956B-5642-4497-9A53-0E2619D59501}",
+         link = "{1EC594B6-0743-41F9-A7C4-11A6ECC62953}:FLOAT-{EB5B956B-5642-4497-9A53-0E2619D59501}:Y",
+         pin = 3,
+        },
+       },
+      },
+     },
+     y = 1676.9946716366,
+     label = "INT TO FLOAT",
+     trace = false,
+    },
+    [42] = {
+     in_values = {
+     },
+     w = 312.0,
+     y = 1642.7753167979,
+     x = 2340.5982608789,
+     selected = false,
+     has_parent = "{C4844CF0-AE2D-46E8-8B2B-33ECF9A48657}",
+     inputs = {
+     },
+     trace = false,
+     toggle_comment = true,
+     text = "GET CURRENT VALUE OF SLIDER 2",
+     h = 60,
+     guid = "{69B7765B-84BB-41D5-94B3-5C6FBC4C8AFB}",
+     type = "get",
+     outputs = {
+      [1] = {
+       y = 957.67076758367,
+       connection = {
+        [1] = {
+         node = "{1EC594B6-0743-41F9-A7C4-11A6ECC62953}",
+         link = "{69B7765B-84BB-41D5-94B3-5C6FBC4C8AFB}:-{1EC594B6-0743-41F9-A7C4-11A6ECC62953}:INT",
+         pin = 1,
+        },
+       },
+       type = "INTEGER",
+       pin = 1,
+       x = 1037.1478264209,
+       label = "",
+       trace = false,
+      },
+     },
+     label = "GET VAR ImGui_SliderInt2",
+     get = "{0C990550-E9C9-4EB6-ADD3-896C9F0BBDBE}",
+    },
+    [43] = {
+     in_values = {
+     },
+     has_parent = "{C4844CF0-AE2D-46E8-8B2B-33ECF9A48657}",
+     w = 336.0,
+     get = "{CB6EEB06-0B6B-4202-905F-FFE6D1ABC4B9}",
+     y = 1539.503096545,
+     x = 2707.3982608789,
+     selected = false,
+     h = 60,
+     type = "get",
+     guid = "{B4B4FC17-972D-4736-A7A6-FDB15BFCD910}",
+     outputs = {
+      [1] = {
+       trace = false,
+       type = "NUMBER",
+       pin = 1,
+       label = "",
+       x = 1291.1678264209,
+       y = 890.54382441931,
+       connection = {
+        [1] = {
+         node = "{EB5B956B-5642-4497-9A53-0E2619D59501}",
+         link = "{B4B4FC17-972D-4736-A7A6-FDB15BFCD910}:-{EB5B956B-5642-4497-9A53-0E2619D59501}:X",
+         pin = 1,
+        },
+       },
+      },
+     },
+     inputs = {
+     },
+     label = "GET VAR GetMediaItem LENGHT",
+     trace = false,
+    },
+    [44] = {
+     in_values = {
+     },
+     w = 240.0,
+     fname = "MATH_FLOAT",
+     x = 3156.5105378492,
+     selected = false,
+     has_parent = "{C4844CF0-AE2D-46E8-8B2B-33ECF9A48657}",
+     inputs = {
+      [1] = {
+       trace = false,
+       label = "X",
+       type = "NUMBER/INTEGER",
+       i_val = 126.67743055556,
+       x = 1364.6908064516,
+       pin = 1,
+       y = 897.35076758367,
+       connection = {
+        [1] = {
+         node = "{B4B4FC17-972D-4736-A7A6-FDB15BFCD910}",
+         link = "{B4B4FC17-972D-4736-A7A6-FDB15BFCD910}:-{EB5B956B-5642-4497-9A53-0E2619D59501}:X",
+         pin = 1,
+        },
+       },
+      },
+      [2] = {
+       i_val = "+",
+       list = {
+        [1] = "+",
+        [2] = "-",
+        [3] = "*",
+        [4] = "/",
+        [5] = "%",
+        [6] = "^",
+       },
+       y = 916.85076758367,
+       connection = {
+       },
+       pin_disable = true,
+       type = "LIST",
+       pin = 2,
+       label = "",
+       x = 1364.6908064516,
+      },
+      [3] = {
+       i_val = 0.0,
+       y = 936.35076758367,
+       x = 1364.6908064516,
+       type = "NUMBER/INTEGER",
+       pin = 3,
+       connection = {
+        [1] = {
+         node = "{1EC594B6-0743-41F9-A7C4-11A6ECC62953}",
+         link = "{1EC594B6-0743-41F9-A7C4-11A6ECC62953}:FLOAT-{EB5B956B-5642-4497-9A53-0E2619D59501}:Y",
+         pin = 1,
+        },
+       },
+       label = "Y",
+       trace = false,
+      },
+     },
+     desc = "Math FLOAT/NUMBER + - / * ^ %",
+     toggle_comment = true,
+     text = "ADD CURRENT SLIDER 2 VALUE\
+TO CURRENT LENGHT VALUE",
+     h = 150,
+     guid = "{EB5B956B-5642-4497-9A53-0E2619D59501}",
+     type = "api",
+     outputs = {
+      [1] = {
+       trace = false,
+       type = "NUMBER",
+       pin = 1,
+       label = "RESULT",
+       connection = {
+        [1] = {
+         node = "{11AF9060-35D0-42B8-B9F3-30F507BF3E5D}",
+         link = "{EB5B956B-5642-4497-9A53-0E2619D59501}:RESULT-{11AF9060-35D0-42B8-B9F3-30F507BF3E5D}:NEWVALUE",
+         pin = 3,
+        },
+       },
+       y = 955.85076758367,
+       x = 1520.6908064516,
+      },
+     },
+     trace = false,
+     label = "Math Operations",
+     y = 1549.9753167979,
+    },
+    [45] = {
+     in_values = {
+     },
+     w = 240.0,
+     fname = "MATH_FLOAT",
+     x = 161.33116131181,
+     selected = false,
+     has_parent = "{72630D81-C655-469F-89E0-A642E89D5331}",
+     inputs = {
+      [1] = {
+       i_val = 0.0,
+       y = 968.65633035423,
+       connection = {
+        [1] = {
+         node = "{485B29BC-0510-4F05-9BBC-0D1F69A249AA}",
+         link = "{485B29BC-0510-4F05-9BBC-0D1F69A249AA}:FLOAT-{B59EAD8D-E5C1-4187-AFAD-308043EFFBF4}:X",
+         pin = 1,
+        },
+       },
+       type = "NUMBER/INTEGER",
+       pin = 1,
+       x = -582.17578829773,
+       label = "X",
+       trace = false,
+      },
+      [2] = {
+       i_val = "*",
+       list = {
+        [1] = "+",
+        [2] = "-",
+        [3] = "*",
+        [4] = "/",
+        [5] = "%",
+        [6] = "^",
+       },
+       y = 988.15633035423,
+       connection = {
+       },
+       pin_disable = true,
+       type = "LIST",
+       pin = 2,
+       label = "",
+       x = -582.17578829773,
+      },
+      [3] = {
+       i_val = -1.0,
+       y = 1007.6563303542,
+       connection = {
+       },
+       type = "NUMBER/INTEGER",
+       pin = 3,
+       x = -582.17578829773,
+       label = "Y",
+       trace = false,
+      },
+     },
+     desc = "Math FLOAT/NUMBER + - / * ^ %",
+     toggle_comment = true,
+     text = "MULTIPLY BY NEGATIVE\
+SO LENGHT IS INCREASING\
+WHILE WE ARE DECREASING",
+     trace = false,
+     h = 150,
+     guid = "{B59EAD8D-E5C1-4187-AFAD-308043EFFBF4}",
+     type = "api",
+     outputs = {
+      [1] = {
+       y = 1027.1563303542,
+       connection = {
+        [1] = {
+         node = "{88F67102-1044-441B-A4D0-B4FF63A811D7}",
+         link = "{B59EAD8D-E5C1-4187-AFAD-308043EFFBF4}:RESULT-{88F67102-1044-441B-A4D0-B4FF63A811D7}:X",
+         pin = 1,
+        },
+       },
+       type = "NUMBER",
+       pin = 1,
+       x = -426.17578829773,
+       label = "RESULT",
+       trace = false,
+      },
+     },
+     label = "Math Operations",
+     y = 1659.6761825988,
+    },
+    [46] = {
+     in_values = {
+     },
+     w = 184.0,
+     fname = "CUSTOM_Set",
+     x = 1962.5121136928,
+     selected = false,
+     has_parent = "{2BF14DCA-D2BD-4A90-83DC-A55447C327A5}",
+     inputs = {
+      [1] = {
+       y = -431.10863357073,
+       connection = {
+        [1] = {
+         node = "{48B865BC-CB6B-4482-9EEF-E4A623F34093}",
+         link = "{48B865BC-CB6B-4482-9EEF-E4A623F34093}:RETVAL-{34468931-4C71-4036-BC90-420B9BAFAD52}:BOOLEAN",
+         pin = 1,
+        },
+       },
+       type = "BOOLEAN",
+       pin = 1,
+       x = 588.59183074989,
+       label = "BOOLEAN",
+       trace = false,
+      },
+      [0] = {
+       y = -450.60863357073,
+       connection = {
+        [1] = {
+         node = "{48B865BC-CB6B-4482-9EEF-E4A623F34093}",
+         link = "{48B865BC-CB6B-4482-9EEF-E4A623F34093}:RUN-{34468931-4C71-4036-BC90-420B9BAFAD52}:RUN",
+         pin = 0,
+        },
+       },
+       type = "RUN",
+       x = 588.59183074989,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     trace = false,
+     h = 90,
+     guid = "{34468931-4C71-4036-BC90-420B9BAFAD52}",
+     set = {
+      api = true,
+      guid = "{48B865BC-CB6B-4482-9EEF-E4A623F34093}",
+      pin = 1,
+     },
+     type = "api_var",
+     outputs = {
+      [1] = {
+       o_val = false,
+       y = -411.60863357073,
+       connection = {
+       },
+       type = "BOOLEAN",
+       pin = 1,
+       x = 708.19183074989,
+       label = "BOOLEAN",
+       trace = false,
+      },
+      [0] = {
+       y = -450.60863357073,
+       connection = {
+        [1] = {
+         node = "{3379D460-1287-42EE-8223-B4F743988510}",
+         link = "{34468931-4C71-4036-BC90-420B9BAFAD52}:RUN-{3379D460-1287-42EE-8223-B4F743988510}:RUN",
+         pin = 0,
+        },
+       },
+       type = "RUN",
+       x = 708.19183074989,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     label = "VAR RV_1",
+     y = -493.80837728579,
+    },
+    [47] = {
+     in_values = {
+     },
+     w = 184.0,
+     fname = "CUSTOM_Set",
+     x = 2715.8454470261,
+     selected = false,
+     has_parent = "{2BF14DCA-D2BD-4A90-83DC-A55447C327A5}",
+     inputs = {
+      [1] = {
+       y = -403.66418912629,
+       connection = {
+        [1] = {
+         node = "{7A6FED43-F4A9-489A-9C38-C6C564E98128}",
+         link = "{7A6FED43-F4A9-489A-9C38-C6C564E98128}:RETVAL-{E516ECDD-AB38-4D4D-A655-D56E002A39C8}:BOOLEAN",
+         pin = 1,
+        },
+       },
+       type = "BOOLEAN",
+       pin = 1,
+       x = 1078.2584974166,
+       label = "BOOLEAN",
+       trace = false,
+      },
+      [0] = {
+       y = -423.16418912629,
+       connection = {
+        [1] = {
+         node = "{7A6FED43-F4A9-489A-9C38-C6C564E98128}",
+         link = "{7A6FED43-F4A9-489A-9C38-C6C564E98128}:RUN-{E516ECDD-AB38-4D4D-A655-D56E002A39C8}:RUN",
+         pin = 0,
+        },
+       },
+       type = "RUN",
+       x = 1078.2584974166,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     trace = false,
+     h = 90,
+     guid = "{E516ECDD-AB38-4D4D-A655-D56E002A39C8}",
+     set = {
+      api = true,
+      guid = "{7A6FED43-F4A9-489A-9C38-C6C564E98128}",
+      pin = 1,
+     },
+     type = "api_var",
+     outputs = {
+      [1] = {
+       o_val = false,
+       y = -384.16418912629,
+       connection = {
+       },
+       type = "BOOLEAN",
+       pin = 1,
+       x = 1197.8584974166,
+       label = "BOOLEAN",
+       trace = false,
+      },
+      [0] = {
+       y = -423.16418912629,
+       connection = {
+        [1] = {
+         node = "{0C990550-E9C9-4EB6-ADD3-896C9F0BBDBE}",
+         link = "{E516ECDD-AB38-4D4D-A655-D56E002A39C8}:RUN-{0C990550-E9C9-4EB6-ADD3-896C9F0BBDBE}:RUN",
+         pin = 0,
+        },
+       },
+       type = "RUN",
+       x = 1197.8584974166,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     label = "VAR RV_2",
+     y = -451.58615506357,
+    },
+    [48] = {
+     in_values = {
+      [1] = false,
+      [2] = true,
+     },
+     w = 176.0,
+     fname = "CUSTOM_IF_Else",
+     x = 2739.8414420705,
+     selected = false,
+     has_parent = "{C4844CF0-AE2D-46E8-8B2B-33ECF9A48657}",
+     inputs = {
+      [1] = {
+       i_val = false,
+       y = 640.94079504724,
+       connection = {
+        [1] = {
+         node = "{7A1020C5-D776-4B91-9202-EF5808BF0CEC}",
+         link = "{7A1020C5-D776-4B91-9202-EF5808BF0CEC}:-{BD4A6620-64AD-4640-A511-CCEDB16283BA}:INP",
+         pin = 1,
+        },
+       },
+       type = "BOOLEAN",
+       pin = 1,
+       x = 1093.8558941954,
+       label = "INP",
+       trace = false,
+      },
+      [2] = {
+       i_val = true,
+       y = 660.44079504724,
+       connection = {
+       },
+       type = "BOOLEAN",
+       pin = 2,
+       x = 1093.8558941954,
+       label = "CONDITION",
+       trace = false,
+      },
+      [0] = {
+       y = 621.44079504724,
+       connection = {
+        [1] = {
+         node = "{D3849731-9250-468B-B8CE-8BCA896CC25D}",
+         link = "{D3849731-9250-468B-B8CE-8BCA896CC25D}:RUN-{BD4A6620-64AD-4640-A511-CCEDB16283BA}:RUN",
+         pin = 0,
+        },
+       },
+       type = "RUN",
+       x = 1093.8558941954,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     desc = "Condition A == B -> TRUE RUN | Else -> FALSE RUN",
+     toggle_comment = true,
+     text = "IF SECOND SLIDER IS \
+MOVING??",
+     trace = false,
+     h = 150,
+     guid = "{BD4A6620-64AD-4640-A511-CCEDB16283BA}",
+     type = "api",
+     outputs = {
+      [1] = {
+       y = 679.94079504724,
+       connection = {
+        [1] = {
+         node = "{11AF9060-35D0-42B8-B9F3-30F507BF3E5D}",
+         link = "{BD4A6620-64AD-4640-A511-CCEDB16283BA}:TRUE-{11AF9060-35D0-42B8-B9F3-30F507BF3E5D}:RUN",
+         pin = 0,
+        },
+       },
+       run = false,
+       type = "RUN",
+       pin = 1,
+       x = 1208.2558941954,
+       label = "TRUE",
+       trace = false,
+      },
+      [2] = {
+       y = 699.44079504724,
+       connection = {
+       },
+       run = true,
+       type = "RUN",
+       pin = 2,
+       x = 1208.2558941954,
+       label = "FALSE",
+       trace = false,
+      },
+      [0] = {
+       y = 621.44079504724,
+       connection = {
+       },
+       type = "RUN",
+       x = 1208.2558941954,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     label = "IF ELSE",
+     y = 1155.4984359726,
+    },
+    [49] = {
+     in_values = {
+     },
+     w = 216.0,
+     y = 1331.8206621336,
+     x = 2412.0076360915,
+     selected = false,
+     has_parent = "{C4844CF0-AE2D-46E8-8B2B-33ECF9A48657}",
+     inputs = {
+     },
+     trace = false,
+     toggle_comment = true,
+     text = "SLIDER 2 RETURN VALUE",
+     h = 60,
+     guid = "{7A1020C5-D776-4B91-9202-EF5808BF0CEC}",
+     type = "get",
+     outputs = {
+      [1] = {
+       y = 755.55024205185,
+       connection = {
+        [1] = {
+         node = "{BD4A6620-64AD-4640-A511-CCEDB16283BA}",
+         link = "{7A1020C5-D776-4B91-9202-EF5808BF0CEC}:-{BD4A6620-64AD-4640-A511-CCEDB16283BA}:INP",
+         pin = 1,
+        },
+       },
+       type = "BOOLEAN",
+       pin = 1,
+       x = 1021.1639203091,
+       label = "",
+       trace = false,
+      },
+     },
+     label = "GET VAR RV_2",
+     get = "{E516ECDD-AB38-4D4D-A655-D56E002A39C8}",
+    },
+    [50] = {
+     in_values = {
+     },
+     toggle_comment = true,
+     text = "GET CURRENT MEDIA ITEM",
+     has_parent = "{C4844CF0-AE2D-46E8-8B2B-33ECF9A48657}",
+     w = 344.0,
+     get = "{8DA4EA3E-9AEC-4BF0-BFDC-E8AA8D45EDF7}",
+     y = 1323.5337340079,
+     x = 3044.9621546912,
+     selected = false,
+     h = 60,
+     type = "get",
+     guid = "{ED9D7E60-F5FB-4D59-855D-D19662B1ED30}",
+     outputs = {
+      [1] = {
+       trace = false,
+       connection = {
+        [1] = {
+         node = "{11AF9060-35D0-42B8-B9F3-30F507BF3E5D}",
+         link = "{ED9D7E60-F5FB-4D59-855D-D19662B1ED30}:-{11AF9060-35D0-42B8-B9F3-30F507BF3E5D}:ITEM",
+         pin = 1,
+        },
+       },
+       type = "MEDIAITEM",
+       pin = 1,
+       y = 750.16373877019,
+       label = "",
+       x = 1515.7843573989,
+      },
+     },
+     inputs = {
+     },
+     label = "GET VAR GetSelectedMediaItem",
+     trace = false,
+    },
+    [51] = {
+     in_values = {
+     },
+     w = 2659.9134199134,
+     childs = {
+      [1] = "{2C39745D-599D-44CB-BBFB-190749179EB2}",
+      [2] = "{2E429344-F791-4EFE-8636-B605EA75E18E}",
+      [3] = "{4376911F-FF35-455B-9FB1-0C5A42E98CA1}",
+      [4] = "{E2940D33-9530-45D6-849A-71D4AA3008DA}",
+      [5] = "{A18EFFE2-BFFB-46DD-A2CB-BD884A21EC9A}",
+      [6] = "{63AE847C-6208-449C-B8DE-AA564E0D467E}",
+      [7] = "{67DB61E2-DF3A-41AE-9458-C5A04F1F3491}",
+      [8] = "{B886D3E2-2F71-437A-9822-925B201D879F}",
+      [9] = "{88F67102-1044-441B-A4D0-B4FF63A811D7}",
+      [10] = "{FFA09637-ACBB-483E-8F2B-E65A3926AA70}",
+      [11] = "{485B29BC-0510-4F05-9BBC-0D1F69A249AA}",
+      [12] = "{B59EAD8D-E5C1-4187-AFAD-308043EFFBF4}",
+      [13] = "{3DC30C13-3EF1-4D98-9EDC-782B7136FC3D}",
+     },
+     y = 1005.2511832254,
+     x = -847.4146351856,
+     selected = false,
+     inputs = {
+     },
+     can_resize = true,
+     toggle_comment = true,
+     text = "SLIDER 1\
+",
+     h = 1101.9047619048,
+     guid = "{72630D81-C655-469F-89E0-A642E89D5331}",
+     type = "group",
+     trace = false,
+     outputs = {
+     },
+     label = "GROUP SLIDER 1",
+    },
+    [52] = {
+     in_values = {
+     },
+     w = 1670.0,
+     childs = {
+      [1] = "{11AF9060-35D0-42B8-B9F3-30F507BF3E5D}",
+      [2] = "{1EC594B6-0743-41F9-A7C4-11A6ECC62953}",
+      [3] = "{69B7765B-84BB-41D5-94B3-5C6FBC4C8AFB}",
+      [4] = "{B4B4FC17-972D-4736-A7A6-FDB15BFCD910}",
+      [5] = "{EB5B956B-5642-4497-9A53-0E2619D59501}",
+      [6] = "{BD4A6620-64AD-4640-A511-CCEDB16283BA}",
+      [7] = "{7A1020C5-D776-4B91-9202-EF5808BF0CEC}",
+      [8] = "{ED9D7E60-F5FB-4D59-855D-D19662B1ED30}",
+      [9] = "{D3849731-9250-468B-B8CE-8BCA896CC25D}",
+     },
+     y = 990.65277983666,
+     x = 2260.5652433588,
+     selected = false,
+     inputs = {
+     },
+     can_resize = true,
+     toggle_comment = true,
+     text = "SLIDER 2\
+",
+     h = 982.5,
+     guid = "{C4844CF0-AE2D-46E8-8B2B-33ECF9A48657}",
+     type = "group",
+     trace = false,
+     outputs = {
+     },
+     label = "GROUP SLIDER 2",
+    },
+    [53] = {
+     in_values = {
+     },
+     wireless_id = "{7076F998-1FB3-4B92-AB37-453BDE914558}",
+     w = 168.0,
+     y = 1277.1500567533,
+     x = 1579.4558205236,
+     selected = false,
+     has_parent = "{72630D81-C655-469F-89E0-A642E89D5331}",
+     inputs = {
+      [0] = {
+       y = 700.51434855467,
+       connection = {
+        [1] = {
+         node = "{4376911F-FF35-455B-9FB1-0C5A42E98CA1}",
+         link = "{4376911F-FF35-455B-9FB1-0C5A42E98CA1}:RUN-{3DC30C13-3EF1-4D98-9EDC-782B7136FC3D}:RUN",
+         pin = 0,
+        },
+       },
+       type = "RUN",
+       x = 339.60524018992,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     trace = false,
+     h = 30,
+     guid = "{3DC30C13-3EF1-4D98-9EDC-782B7136FC3D}",
+     type = "ws",
+     outputs = {
+     },
+     sender = "{D3849731-9250-468B-B8CE-8BCA896CC25D}",
+     label = "SENDER",
+    },
+    [54] = {
+     in_values = {
+     },
+     wireless_id = "{7076F998-1FB3-4B92-AB37-453BDE914558}",
+     w = 184.0,
+     y = 1153.7245575213,
+     x = 2356.9366192947,
+     selected = false,
+     has_parent = "{C4844CF0-AE2D-46E8-8B2B-33ECF9A48657}",
+     inputs = {
+     },
+     trace = false,
+     toggle_comment = true,
+     text = "WE DONT WANT THIS \
+CODE HERE TO TRIGGER\
+IF SLIDER 2 IS NOT\
+MOVING OR IT WILL \
+RESET VALUE WE SET \
+WITH SLIDER 1",
+     h = 30,
+     guid = "{D3849731-9250-468B-B8CE-8BCA896CC25D}",
+     type = "wr",
+     outputs = {
+      [0] = {
+       y = 620.2877740539,
+       connection = {
+        [1] = {
+         node = "{BD4A6620-64AD-4640-A511-CCEDB16283BA}",
+         link = "{D3849731-9250-468B-B8CE-8BCA896CC25D}:RUN-{BD4A6620-64AD-4640-A511-CCEDB16283BA}:RUN",
+         pin = 0,
+        },
+       },
+       type = "RUN",
+       x = 964.56775939115,
+       label = "RUN",
+       trace = false,
+      },
+     },
+     label = "RECEIVER",
+    },
+    [55] = {
+     in_values = {
+     },
+     w = 3953.2692307692,
+     childs = {
+      [1] = "{DBA1D2C9-F2AF-4313-9CA8-6052F76299D7}",
+      [2] = "{F0B2A4C5-1E0A-4819-A46D-FA7E04494145}",
+      [3] = "{A3496BB3-0D30-409A-ADF6-907402CE447D}",
+      [4] = "{FF46AF00-7DA3-4D17-9FCC-5F701FAA486C}",
+      [5] = "{AEE5C367-F756-4C57-A19E-258FFBAC8625}",
+      [6] = "{AD915BA6-AF38-42D9-A947-ECADEDCB274C}",
+      [7] = "{8DA4EA3E-9AEC-4BF0-BFDC-E8AA8D45EDF7}",
+      [8] = "{9F412313-E359-43DD-88B8-67281E1EA561}",
+      [9] = "{C0A49570-43BA-4BD9-8F0C-7142CC180071}",
+      [10] = "{CB6EEB06-0B6B-4202-905F-FFE6D1ABC4B9}",
+      [11] = "{F24C6CB6-6E42-425A-A791-EBAD05F2C5D7}",
+      [12] = "{CC58E8F0-C229-4CBC-B3C6-B613575372A7}",
+     },
+     y = 1.0569831602142,
+     x = -354.03319046545,
+     selected = false,
+     inputs = {
+     },
+     can_resize = true,
+     h = 610.38461538462,
+     guid = "{5990B230-2DFB-4AB4-900D-F1BAE02FFDAB}",
+     type = "group",
+     trace = false,
+     outputs = {
+     },
+     label = "GROUP",
+    },
+   },
+  },
+ },
+ CURRENT_FUNCTION = 3,
+}
