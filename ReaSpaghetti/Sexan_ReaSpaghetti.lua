@@ -1,10 +1,13 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.26
+-- @version 0.28
 -- @changelog
---  Added advance type error checking - Simplified code to only check Get Table Value node
+--  Fixed bug with Setters not updating source in some scenarios
+--  Included api_file to avoid issues with various configurations refusing to call curl command
+--  Included Imgui Example
 -- @provides
+--   api_file.txt
 --   Modules/*.lua
 --   Examples/*.reanodes
 --   ExportedActions/dummy.lua

@@ -428,9 +428,17 @@ local function SetterMetaFollower(node)
     node.inputs[1].type = source_node.outputs[1].type
 
     setmetatable(node.outputs[1], {
-        __index = source_node.outputs[1],
-        __newindex = source_node.outputs[1]
+        __index = function(t, k)
+            if k == "get" then rawset(node.outputs[1], "o_val", source_node.outputs[1].o_val) end
+        end,
+        __newindex = function(t, k, v) if k == "set" then source_node.outputs[1].o_val = v end end
     })
+
+    -- setmetatable(node.inputs[1], {
+    --     __index = function(t, k) if k == "i_val" then return source_node.outputs[1].o_val end end,
+    --     --__index = function(t, k) if k == "o_val" then return rawget(source_node.outputs[1], "o_val") end end,
+    --     --__newindex = source_node.outputs[1]
+    -- })
 
     node.set = { guid = source_node.guid, pin = 1 }
 end
@@ -1030,8 +1038,7 @@ local function Draw_input(node, io_type, pin, x, y, pin_n, h)
             local separator = node.type == "i" and "" or " : "
             if node.type == "i" then
                 I_RV, pin.i_val = r.ImGui_DragInt(ctx, "##" .. pin.label, pin.i_val, 1, 0, nil,
-                    pin.label .. separator .. '%d%',
-                    r.ImGui_SliderFlags_AlwaysClamp())
+                    pin.label .. separator .. '%d%', r.ImGui_SliderFlags_AlwaysClamp())
                 if I_RV then pin.o_val = pin.i_val end
                 --pin.o_val = pin.i_val
                 -- _, pin.o_val = r.ImGui_DragInt(ctx, "##" .. pin.label, pin.o_val, 1, 0, nil,
@@ -1039,10 +1046,9 @@ local function Draw_input(node, io_type, pin, x, y, pin_n, h)
                 --     r.ImGui_SliderFlags_AlwaysClamp())
             else
                 --! new error check
-                current_input = type(current_input) == "number" and current_input or 0
+                --current_input = type(current_input) == "number" and current_input or 0
                 _, pin.i_val = r.ImGui_DragInt(ctx, "##" .. pin.label, current_input, 1, 0, nil,
-                    pin.label .. separator .. '%d%',
-                    r.ImGui_SliderFlags_AlwaysClamp())
+                    pin.label .. separator .. '%d%', r.ImGui_SliderFlags_AlwaysClamp())
             end
         elseif pin.type == "NUMBER/INTEGER" or pin.type == "NUMBER" then
             local separator = node.type == "f" and "" or " : "
@@ -1056,7 +1062,7 @@ local function Draw_input(node, io_type, pin, x, y, pin_n, h)
                 --     pin.label .. separator .. '%.03f')
             else
                 --! new error check
-                current_input = type(current_input) == "number" and current_input or 0.0
+                --current_input = type(current_input) == "number" and current_input or 0.0
                 _, pin.i_val = r.ImGui_DragDouble(ctx, "##" .. pin.label, current_input, 0.01, 0.0, 0.0,
                     pin.label .. separator .. '%.03f')
             end
@@ -1068,7 +1074,7 @@ local function Draw_input(node, io_type, pin, x, y, pin_n, h)
                 if S_RV then pin.o_val = pin.i_val end
             else
                 --! new error check
-                current_input = type(current_input) == "string" and current_input or ""
+                --current_input = type(current_input) == "string" and current_input or ""
                 _, pin.i_val = r.ImGui_InputTextWithHint(ctx, "##" .. pin.label, pin.label, current_input)
             end
         elseif pin.type == "BOOLEAN" then
@@ -1078,7 +1084,7 @@ local function Draw_input(node, io_type, pin, x, y, pin_n, h)
                 if B_RV then pin.o_val = pin.i_val end
                 -- _, pin.o_val = pin.i_val
             else
-                current_input = type(current_input) == "boolean" and current_input or false
+                --current_input = type(current_input) == "boolean" and current_input or false
                 _, pin.i_val = r.ImGui_Checkbox(ctx, pin.label, current_input)
             end
         elseif pin.type == "LIST" then
@@ -1686,10 +1692,17 @@ function Copy()
                     })
                 else
                     local source_node = GetNodeInfo(node.set.guid)
-                    setmetatable(node.outputs[node.set.pin], {
-                        __index = source_node.outputs[node.set.pin],
-                        __newindex = source_node.outputs[node.set.pin]
+                    setmetatable(node.outputs[1], {
+                        __index = function(t, k)
+                            if k == "get" then rawset(node.outputs[1], "o_val", source_node.outputs[1].o_val) end
+                        end,
+                        __newindex = function(t, k, v) if k == "set" then source_node.outputs[1].o_val = v end end
                     })
+                    -- local source_node = GetNodeInfo(node.set.guid)
+                    -- setmetatable(node.outputs[node.set.pin], {
+                    --     __index = source_node.outputs[node.set.pin],
+                    --     __newindex = source_node.outputs[node.set.pin]
+                    -- })
                 end
             end
 
@@ -2004,10 +2017,17 @@ local function RelinkParrentFunctionNodes()
                 else
                     -- RELINK VARIABLE SETTER
                     local source_node = GetNodeInfo(node.set.guid)
-                    setmetatable(node.outputs[node.set.pin], {
-                        __index = source_node.outputs[node.set.pin],
-                        __newindex = source_node.outputs[node.set.pin]
+                    setmetatable(node.outputs[1], {
+                        __index = function(t, k)
+                            if k == "get" then rawset(node.outputs[1], "o_val", source_node.outputs[1].o_val) end
+                        end,
+                        __newindex = function(t, k, v) if k == "set" then source_node.outputs[1].o_val = v end end
                     })
+                    -- local source_node = GetNodeInfo(node.set.guid)
+                    -- setmetatable(node.outputs[node.set.pin], {
+                    --     __index = source_node.outputs[node.set.pin],
+                    --     __newindex = source_node.outputs[node.set.pin]
+                    -- })
                 end
             end
         end

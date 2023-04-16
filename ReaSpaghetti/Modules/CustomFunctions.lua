@@ -147,7 +147,7 @@ function CheckCurrentInput2(node_inp)
         else
             -- IN CASE VALUE IS NIL (CONNECTED TO API NODE) RETURN 0 SO LIVE CALCULATING WONT CRASH (API IS CALCULATED AFTER RUNNING)
             a = node_inp[1].o_val or 0
-            a = type(a) == "number" and a or 0
+            --a = type(a) == "number" and a or 0
         end
     end
     if node_inp[3] then
@@ -156,7 +156,7 @@ function CheckCurrentInput2(node_inp)
         else
             -- IN CASE VALUE IS NIL (CONNECTED TO API NODE) RETURN 0 SO LIVE CALCULATING WONT CRASH (API IS CALCULATED AFTER RUNNING)
             b = node_inp[3].o_val or 0
-            b = type(b) == "number" and b or 0
+            -- b = type(b) == "number" and b or 0
         end
         return a, b
     end
@@ -298,7 +298,18 @@ function CUSTOM_TestDeferEND(called_node, func_node)
 end
 
 function CUSTOM_Set(called_node)
-    called_node.outputs[1].o_val = called_node.inputs[1].o_val -- PASSTHRU VALUE TO OUTPUT
+    if called_node.set.api then
+        called_node.outputs[1].o_val = called_node.inputs[1].o_val
+    else
+        called_node.outputs[1].set = called_node.inputs[1].o_val
+        local dummy_index_call = called_node.outputs[1].get
+        -- local target_node = GetNodeInfo(called_node.set.guid)
+        -- target_node.outputs[1].o_val = called_node.inputs[1].o_val
+
+        -- called_node.outputs[1].o_val = target_node.outputs[1].o_val
+    end
+
+    -- called_node.outputs[1].o_val = target_node.outputs[1].o_val
 end
 
 function StdDo(a, op, b)
@@ -340,6 +351,16 @@ end
 function CUSTOM_TableGetVal(called_node, func_node, tbl, key)
     if not tbl then return "ERROR" end
     if not tbl[key] then return "ERROR" end
+
+    if CheckInputType(called_node, tbl[key], func_node.NODES) then
+        --if DEFERED_NODE then
+        --    DEFERED_NODE, DEFER, START_FLOW = nil, false, false
+        BREAK_RUN = true
+        --end
+        Deselect_all()
+        CHANGE_TAB = func_node.FID
+        return "ERROR"
+    end
     called_node.outputs[1].o_val = tbl[key]
 end
 
