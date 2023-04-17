@@ -382,3 +382,20 @@ function CUSTOM_MultiIfElseifElse(called_node, func_node)
     end
     called_node.LOOP_FLOW = nil
 end
+
+function CUSTOM_dBToVAL(called_node, func_node)
+    local LN10_OVER_TWENTY = 0.11512925464970228420089957273422
+    local x = #called_node.inputs[1].connection ~= 0 and called_node.inputs[1].o_val or called_node.inputs[1].i_val
+    --called_node.inputs[1].o_val = exp(db * LN10_OVER_TWENTY)
+    called_node.outputs[1].o_val = exp(x * LN10_OVER_TWENTY)
+    --return exp(db * LN10_OVER_TWENTY)
+end
+
+function CUSTOM_VALtodB(called_node, func_node)
+    local x = #called_node.inputs[1].connection ~= 0 and called_node.inputs[1].o_val or called_node.inputs[1].i_val
+    if x < 0.0000000298023223876953125 then
+        called_node.outputs[1].o_val = -150
+    else
+        called_node.outputs[1].o_val = max(-150, log(x) * 8.6858896380650365530225783783321)
+    end
+end

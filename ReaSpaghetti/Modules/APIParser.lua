@@ -1044,5 +1044,32 @@ function Fill_Api_list()
         run = "in/out"
     }
 
+    -- dB to Val
+    api[#api + 1] = {
+        fname = "CUSTOM_dBToVAL",
+        label = "dB to VAL",
+        desc = "CONVERTS dB TO VALUE FOR CONNECTING TO API (API DOES NOT EXPECT dB BUT VALUE)",
+        ins = {
+            { name = "dB", type = "NUMBER", def_val = 0 },
+        },
+        out = {
+            { name = "VALUE", type = "NUMBER", def_val = 0 },
+        },
+        run = "in/out"
+    }
+    -- Val to Db
+    api[#api + 1] = {
+        fname = "CUSTOM_VALtodB",
+        label = "VAL TO dB",
+        desc = "CONVERTS CURRENT VALUE TO dB",
+        ins = {
+            { name = "VALUE", type = "NUMBER", def_val = 0 },
+        },
+        out = {
+            { name = "dB", type = "NUMBER", def_val = 0 },
+        },
+        run = "in/out"
+    }
+
     return api
 end
