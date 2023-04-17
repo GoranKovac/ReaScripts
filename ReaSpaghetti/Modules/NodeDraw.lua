@@ -1490,8 +1490,10 @@ local function Draw_Node(node)
         --local distance = xe - (title_h * i) -- OFFSET FROM RIGHT
         if i == 1 then
             if (RENAME_NODE and RENAME_NODE.guid ~= node.guid) or not RENAME_NODE then
-                Draw_Toolbar_Button(button, node, i, distance, y, title_h, NodeCOLOR["bg"])
-                if r.ImGui_IsItemHovered(ctx) then DrawTooltip(node.desc) end
+                if node.type ~= "route" then
+                    Draw_Toolbar_Button(button, node, i, distance, y, title_h, NodeCOLOR["bg"])
+                    if r.ImGui_IsItemHovered(ctx) then DrawTooltip(node.desc) end
+                end
             end
         elseif i == 2 then
             -- r.ImGui_SetCursorScreenPos(ctx, distance + 10, y + title_h / 2 - 12)

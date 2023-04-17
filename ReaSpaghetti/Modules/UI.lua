@@ -511,10 +511,11 @@ local function FunctionIO2(func)
                     r.ImGui_PopID(ctx)
                     r.ImGui_SameLine(ctx)
                     r.ImGui_PushID(ctx, "args name" .. inp)
-                    RV_I_NAME, func.NODES[1].outputs[inp].label = r.ImGui_InputText(ctx, "##labeli" .. inp,
-                        func.NODES[1].outputs[inp].label)
+                    RV_I_NAME, func.inputs[inp].label = r.ImGui_InputText(ctx, "##labeli" .. inp,
+                        func.inputs[inp].label)
                     if RV_I_NAME then
-                        UpdateChildFunctionsIO(CURRENT_FUNCTION, "ARG", inp, func.NODES[1].outputs[inp].label)
+                        func.NODES[1].outputs[inp].label = func.inputs[inp].label
+                        UpdateChildFunctionsIO(CURRENT_FUNCTION, "ARG", inp, func.inputs[inp].label)
                     end
                     r.ImGui_PopID(ctx)
                 end
@@ -584,10 +585,11 @@ local function FunctionIO2(func)
                     r.ImGui_PopID(ctx)
                     r.ImGui_SameLine(ctx)
                     r.ImGui_PushID(ctx, "ret name" .. out)
-                    RV_O_NAME, func.NODES[2].inputs[out].label = r.ImGui_InputText(ctx, "##labelo" .. out,
-                        func.NODES[2].inputs[out].label)
+                    RV_O_NAME, func.outputs[out].label = r.ImGui_InputText(ctx, "##labelo" .. out,
+                        func.outputs[out].label)
                     if RV_O_NAME then
-                        UpdateChildFunctionsIO(CURRENT_FUNCTION, "RET", out, func.NODES[2].inputs[out].label)
+                        func.NODES[2].inputs[out].label = func.outputs[out].label
+                        UpdateChildFunctionsIO(CURRENT_FUNCTION, "RET", out, func.outputs[out].label)
                     end
                     r.ImGui_PopID(ctx)
                 end
@@ -655,110 +657,110 @@ local function NodeInspector()
     r.ImGui_PopStyleVar(ctx)
 end
 
-local function Inspector()
-    r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x000000EE)
-    r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_WindowPadding(), 5, 5)
-    local pad_x, pad_y = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_FramePadding())
-    local cur_node = #CntSelNodes() == 1 and CntSelNodes()[1] or nil
-    local def_h = (13 + (2 * pad_y)) + 5
+-- local function Inspector()
+--     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x000000EE)
+--     r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_WindowPadding(), 5, 5)
+--     local pad_x, pad_y = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_FramePadding())
+--     local cur_node = #CntSelNodes() == 1 and CntSelNodes()[1] or nil
+--     local def_h = (13 + (2 * pad_y)) + 5
 
-    if cur_node and cur_node.type ~= "func" then
-        local def_open_h = 0
-        if cur_node.type == "tc" or cur_node.type == "retnode" or cur_node.type == "m" then
-            if cur_node.type == "m" then
-                def_open_h = #cur_node.outputs == 0 and def_h * 2 or (#cur_node.outputs + 1) * def_h + (def_h)
-            elseif cur_node.type == "retnode" then
-                def_open_h = #cur_node.inputs == 0 and def_h * 2 or (#cur_node.inputs + 1) * def_h + (def_h)
-            elseif cur_node.type == "tc" then
-                def_open_h = #cur_node.inputs == 0 and def_h * 2 or (#cur_node.inputs + 1) * def_h + (def_h)
-            end
-        else
-            def_open_h = #cur_node.inputs * def_h + (def_h)
-        end
-        r.ImGui_SetCursorPos(ctx, 5, 35)
-        if r.ImGui_BeginChild(ctx, 'Inspector', 243, INSPECT_VISIBLE and def_open_h or def_h, true, r.ImGui_WindowFlags_NoScrollbar()) then
-            INSPECT_VISIBLE = r.ImGui_TreeNode(ctx, 'NODE INSPECTOR', r.ImGui_TreeNodeFlags_NoTreePushOnOpen())
-            if INSPECT_VISIBLE and r.ImGui_BeginChild(ctx, 'Inspect_view') then
-                --if cur_node.type == "tc" or cur_node.type == "retnode" or cur_node.type == "m" then
-                TableSpecial(cur_node)
-                --end
+--     if cur_node and cur_node.type ~= "func" then
+--         local def_open_h = 0
+--         if cur_node.type == "tc" or cur_node.type == "retnode" or cur_node.type == "m" then
+--             if cur_node.type == "m" then
+--                 def_open_h = #cur_node.outputs == 0 and def_h * 2 or (#cur_node.outputs + 1) * def_h + (def_h)
+--             elseif cur_node.type == "retnode" then
+--                 def_open_h = #cur_node.inputs == 0 and def_h * 2 or (#cur_node.inputs + 1) * def_h + (def_h)
+--             elseif cur_node.type == "tc" then
+--                 def_open_h = #cur_node.inputs == 0 and def_h * 2 or (#cur_node.inputs + 1) * def_h + (def_h)
+--             end
+--         else
+--             def_open_h = #cur_node.inputs * def_h + (def_h)
+--         end
+--         r.ImGui_SetCursorPos(ctx, 5, 35)
+--         if r.ImGui_BeginChild(ctx, 'Inspector', 243, INSPECT_VISIBLE and def_open_h or def_h, true, r.ImGui_WindowFlags_NoScrollbar()) then
+--             INSPECT_VISIBLE = r.ImGui_TreeNode(ctx, 'NODE INSPECTOR', r.ImGui_TreeNodeFlags_NoTreePushOnOpen())
+--             if INSPECT_VISIBLE and r.ImGui_BeginChild(ctx, 'Inspect_view') then
+--                 --if cur_node.type == "tc" or cur_node.type == "retnode" or cur_node.type == "m" then
+--                 TableSpecial(cur_node)
+--                 --end
 
-                local current_io_tbl = cur_node.type == "m" and cur_node.outputs or cur_node.inputs
+--                 local current_io_tbl = cur_node.type == "m" and cur_node.outputs or cur_node.inputs
 
-                for i = 1, #current_io_tbl do
-                    local missing
-                    local pin = current_io_tbl[i]
+--                 for i = 1, #current_io_tbl do
+--                     local missing
+--                     local pin = current_io_tbl[i]
 
-                    if cur_node.missing_arg then
-                        for w = 1, #cur_node.missing_arg do
-                            if cur_node.missing_arg[w] == pin.label then
-                                missing = true
-                            end
-                        end
-                    end
+--                     if cur_node.missing_arg then
+--                         for w = 1, #cur_node.missing_arg do
+--                             if cur_node.missing_arg[w] == pin.label then
+--                                 missing = true
+--                             end
+--                         end
+--                     end
 
-                    local current_input = not next(pin.connection) and pin.i_val or pin.o_val
+--                     local current_input = not next(pin.connection) and pin.i_val or pin.o_val
 
-                    if not pin.no_draw then
-                        local pin_val
-                        if type(pin.o_val) == "number" then
-                            if math.type(pin.o_val) == "float" then
-                                pin_val = string.format("%.3f", pin.o_val)
-                            end
-                        else
-                            pin_val = tostring(pin.o_val)
-                        end
+--                     if not pin.no_draw then
+--                         local pin_val
+--                         if type(pin.o_val) == "number" then
+--                             if math.type(pin.o_val) == "float" then
+--                                 pin_val = string.format("%.3f", pin.o_val)
+--                             end
+--                         else
+--                             pin_val = tostring(pin.o_val)
+--                         end
 
-                        local tw = r.ImGui_CalcTextSize(ctx, pin_val)
-                        local iw = r.ImGui_CalcItemWidth(ctx)
+--                         local tw = r.ImGui_CalcTextSize(ctx, pin_val)
+--                         local iw = r.ImGui_CalcItemWidth(ctx)
 
-                        if missing then r.ImGui_PushStyleColor(ctx, r.ImGui_Col_FrameBg(), 0xFF000099) end
+--                         if missing then r.ImGui_PushStyleColor(ctx, r.ImGui_Col_FrameBg(), 0xFF000099) end
 
-                        r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_FramePadding(), math.max(0, (iw - tw) / 2), pad_y)
-                        r.ImGui_SetNextItemWidth(ctx, 150)
-                        if cur_node.type ~= "tc" then
-                            if pin.type == "INTEGER" then
-                                _, pin.i_val = r.ImGui_InputInt(ctx, '##' .. pin.label, current_input, 0)
-                            elseif pin.type == "NUMBER" then
-                                _, pin.i_val = r.ImGui_InputDouble(ctx, '##' .. pin.label, current_input)
-                            elseif pin.type == "STRING" then
-                                _, pin.i_val = r.ImGui_InputText(ctx, '##' .. pin.label, current_input)
-                            elseif pin.type == "BOOLEAN" then
-                                _, pin.i_val = r.ImGui_Checkbox(ctx, '##' .. pin.label, current_input)
-                            elseif pin.type == "LIST" then
-                                -- _, pin.i_val = r.ImGui_Combo(ctx, pin.label, pin.i_val, pin.list)
-                                if r.ImGui_BeginCombo(ctx, '##', current_input) then
-                                    for v in ipairs(pin.list) do
-                                        if r.ImGui_Selectable(ctx, pin.list[v], current_input == pin.list[v]) then
-                                            pin.i_val = pin.list[v]
-                                        end
-                                    end
-                                    r.ImGui_EndCombo(ctx)
-                                end
-                            elseif pin.type == "TABLE_F" then
-                                _, pin.i_val = r.ImGui_InputText(ctx, '##' .. pin.label, current_input)
-                            else
-                                r.ImGui_SetCursorPos(ctx, 155, 0)
-                                r.ImGui_Text(ctx, pin.label)
-                            end
-                        end
+--                         r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_FramePadding(), math.max(0, (iw - tw) / 2), pad_y)
+--                         r.ImGui_SetNextItemWidth(ctx, 150)
+--                         if cur_node.type ~= "tc" then
+--                             if pin.type == "INTEGER" then
+--                                 _, pin.i_val = r.ImGui_InputInt(ctx, '##' .. pin.label, current_input, 0)
+--                             elseif pin.type == "NUMBER" then
+--                                 _, pin.i_val = r.ImGui_InputDouble(ctx, '##' .. pin.label, current_input)
+--                             elseif pin.type == "STRING" then
+--                                 _, pin.i_val = r.ImGui_InputText(ctx, '##' .. pin.label, current_input)
+--                             elseif pin.type == "BOOLEAN" then
+--                                 _, pin.i_val = r.ImGui_Checkbox(ctx, '##' .. pin.label, current_input)
+--                             elseif pin.type == "LIST" then
+--                                 -- _, pin.i_val = r.ImGui_Combo(ctx, pin.label, pin.i_val, pin.list)
+--                                 if r.ImGui_BeginCombo(ctx, '##', current_input) then
+--                                     for v in ipairs(pin.list) do
+--                                         if r.ImGui_Selectable(ctx, pin.list[v], current_input == pin.list[v]) then
+--                                             pin.i_val = pin.list[v]
+--                                         end
+--                                     end
+--                                     r.ImGui_EndCombo(ctx)
+--                                 end
+--                             elseif pin.type == "TABLE_F" then
+--                                 _, pin.i_val = r.ImGui_InputText(ctx, '##' .. pin.label, current_input)
+--                             else
+--                                 r.ImGui_SetCursorPos(ctx, 155, 0)
+--                                 r.ImGui_Text(ctx, pin.label)
+--                             end
+--                         end
 
-                        if not next(pin.connection) then pin.o_val = pin.i_val end
+--                         if not next(pin.connection) then pin.o_val = pin.i_val end
 
-                        if missing then r.ImGui_PopStyleColor(ctx) end
+--                         if missing then r.ImGui_PopStyleColor(ctx) end
 
-                        r.ImGui_PopStyleVar(ctx)
-                    end
-                end
-                r.ImGui_EndChild(ctx)
-            end
-            r.ImGui_EndChild(ctx)
-        end
-    end
-    --r.ImGui_PopFont(ctx)
-    r.ImGui_PopStyleVar(ctx)
-    r.ImGui_PopStyleColor(ctx)
-end
+--                         r.ImGui_PopStyleVar(ctx)
+--                     end
+--                 end
+--                 r.ImGui_EndChild(ctx)
+--             end
+--             r.ImGui_EndChild(ctx)
+--         end
+--     end
+--     --r.ImGui_PopFont(ctx)
+--     r.ImGui_PopStyleVar(ctx)
+--     r.ImGui_PopStyleColor(ctx)
+-- end
 
 function DeferTest()
     if r.ImGui_Button(ctx, "RUN") then
@@ -900,10 +902,16 @@ function Sidebar()
             list_tbl = GetApiTBL()
             r.ImGui_EndTabItem(ctx)
         end
+        -- if r.ImGui_BeginTabItem(ctx, "LIBRARY") then
+        --     CUR_TAB = "LIBRARY"
+        --     list_tbl = {}
+        --     r.ImGui_EndTabItem(ctx)
+        -- end
         r.ImGui_EndTabBar(ctx)
     end
     r.ImGui_Separator(ctx)
-    r.ImGui_SetNextItemWidth(ctx, CUR_TAB == "FUNC" and 150 or 185)
+    local aw = r.ImGui_GetContentRegionAvail(ctx)
+    r.ImGui_SetNextItemWidth(ctx, CUR_TAB == "FUNC" and aw - 15 or aw + 15)
     r.ImGui_SetCursorPosX(ctx, 0)
     _, SIDE_FILTER = r.ImGui_InputText(ctx, '##SIDEinput', SIDE_FILTER)
     if CUR_TAB == "FUNC" then

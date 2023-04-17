@@ -1,9 +1,9 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.33
+-- @version 0.34
 -- @changelog
---  Properly handle deleting leftovers (GETTERS/SETTERS/API_VAR/WIRELESS) after parent node is deleted
+--  Fix naming function I/O not renaming self inputs/outputs
 -- @provides
 --   api_file.txt
 --   Modules/*.lua
@@ -72,7 +72,7 @@ end
 
 local function frame()
     Top_Menu()
-    if r.ImGui_BeginChild(ctx, "SideListMain", 180, 0) then
+    if r.ImGui_BeginChild(ctx, "SideListMain", 240, 0) then
         if r.ImGui_BeginChild(ctx, "SideListChild", 0, -25, 1) then
             Sidebar()
             r.ImGui_EndChild(ctx)
