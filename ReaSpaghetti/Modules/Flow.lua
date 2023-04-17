@@ -41,12 +41,16 @@ local function UpdateReturnValues(node, out_values)
     end
 end
 local inp_types = {
-    --["NIL"] = true,
-    ["NUMBER"] = function(i_type) if i_type ~= "NUMBER" and i_type ~= "INTEGER" and i_type ~= "NUMBER/INTEGER" then return true end end,
-    ["STRING"] = function(i_type) if i_type ~= "STRING" then return true end end,
-    ["BOOLEAN"] = function(i_type) if i_type ~= "BOOLEAN" then return true end end,
-    ["TABLE"] = function(i_type) if i_type ~= "TABLE" then return true end end,
-    ["USERDATA"] = function(i_type) if i_type ~= "USERDATA" then return true end end,
+    ["NUMBER"] = function(i_type, org_val)
+        local sub_type = math.type(org_val):upper()
+        sub_type = sub_type == "FLOAT" and "NUMBER" or sub_type
+        if not i_type:match(sub_type) then return sub_type end
+        --if i_type ~= "NUMBER" and i_type ~= "INTEGER" and i_type ~= "NUMBER/INTEGER" then return true end
+    end,
+    ["STRING"] = function(i_type) if i_type ~= "STRING" then return "STRING" end end,
+    ["BOOLEAN"] = function(i_type) if i_type ~= "BOOLEAN" then return "BOOLEAN" end end,
+    ["TABLE"] = function(i_type) if i_type ~= "TABLE" then return "TABLE" end end,
+    ["USERDATA"] = function(i_type) if i_type ~= "USERDATA" then return "USERDATA" end end,
 }
 
 local IMGUI_PTRS = {
@@ -97,48 +101,70 @@ local function ValidateImgui(pointer)
     return false
 end
 
-function CheckInputType(node, val, NODES)
-    if #node.outputs[1].connection == 0 then return end
-
+-- CHECK TABLE GET SET COMPATIBLE WITH TARGET PINS (TABLE GET / SET TYPE IS ANY SO WE NEED TO CHECK VALUE TYPES)
+function CheckInputType(node, val, NODES, get_set)
+    if get_set == "GET" and #node.outputs[1].connection == 0 then return end
+    if get_set == "SET" and #node.inputs[1].connection == 0 then return end
     local missing = {}
 
-    local target_node = In_TBL(NODES, node.outputs[1].connection[1].node)
-    local target_pin = node.outputs[1].connection[1].pin
-    local target_type = target_node.inputs[target_pin].type
+    local target_node = get_set == "GET" and
+        In_TBL(NODES, node.outputs[1].connection[1].node) or
+        In_TBL(NODES, node.inputs[1].connection[1].node)
+
+    local target_pin = get_set == "GET" and node.outputs[1].connection[1].pin or nil
+    local target_type = get_set == "GET" and target_node.inputs[target_pin].type or nil
+
+    -- FIND KEY LABEL IF TABLE SET IS CALLED
+    if get_set == "SET" then
+        for k, v in ipairs(target_node.inputs) do
+            if val[2] == v.label then
+                -- TARGET PIN FOUND
+                target_type = v.type
+                target_pin = k
+            end
+        end
+    end
 
     if target_type ~= "ANY" then
-        local out_type = type(val):upper() --node.outputs[1].o_val)
+        local out_type = type(val[1]):upper()
         if out_type == "USERDATA" then
             if target_type:find("IMGUI") then
-                if not ValidateImgui(val) then
+                if not ValidateImgui(val[1]) then
                     missing[#missing + 1] = target_type ..
                         " TYPE NOT COMPATIBLE WITH : " .. out_type
                 end
             elseif RPR_TYPES[target_type] then
-                if not ValidateRpr(val) then
+                if not ValidateRpr(val[1]) then
                     missing[#missing + 1] = target_type ..
                         " TYPE NOT COMPATIBLE WITH : " .. out_type
                 end
             else
-                if ValidateImgui(val) then
+                if ValidateImgui(val[1]) then
                     missing[#missing + 1] = target_type ..
-                        " TYPE NOT COMPATIBLE WITH : " .. ValidateImgui(val)
-                elseif ValidateRpr(val) then
+                        " TYPE NOT COMPATIBLE WITH : " .. ValidateImgui(val[1])
+                elseif ValidateRpr(val[1]) then
                     missing[#missing + 1] = target_type ..
-                        " TYPE NOT COMPATIBLE WITH : " .. ValidateRpr(val)
+                        " TYPE NOT COMPATIBLE WITH : " .. ValidateRpr(val[1])
                 else
                     inp_types[out_type](target_type)
                     missing[#missing + 1] = target_type .. " TYPE NOT COMPATIBLE WITH : " .. out_type
                 end
             end
         else
-            if inp_types[out_type](target_type) then
-                missing[#missing + 1] = target_type .. " TYPE NOT COMPATIBLE WITH : " .. out_type
+            if val[1] ~= nil and target_type ~= nil then
+                local other_type = inp_types[out_type](target_type, val[1])
+                if other_type then
+                    missing[#missing + 1] = target_type .. " TYPE NOT COMPATIBLE WITH : " .. other_type
+                end
             end
         end
     end
     if #missing ~= 0 then
-        target_node.missing_arg = missing
+        if get_set == "GET" then
+            target_node.missing_arg = missing
+        else
+            node.missing_arg = missing
+        end
         return true
     end
 end
@@ -150,11 +176,14 @@ local function ArgumentsMissing(node)
     for i = 1, #node.inputs do
         if node.in_values[i] == nil then
             missing[#missing + 1] = node.inputs[i].label
+            -- break
         end
+
         -- DONT ALLOW EMPTY STRINGS (IMGUI CRASHES ON EMPTY STRINGS) - BUT ALLOW IN CONCAT DELIMITER
         if type(node.in_values[i]) == "string" and node.fname ~= "CUSTOM_TableConcat" then
             if #node.in_values[i] == 0 then
-                missing[#missing + 1] = node.inputs[i].label
+                missing[#missing + 1] = "EMPTY STRING " .. node.inputs[i].label
+                --break
             end
         end
 
@@ -163,6 +192,7 @@ local function ArgumentsMissing(node)
             if node.in_values[i] then
                 if type(node.in_values[i][1]) == "table" then
                     missing[#missing + 1] = "NESTED TABLE - CANOT CONCAT"
+                    --   break
                 end
             end
         end
@@ -172,6 +202,7 @@ local function ArgumentsMissing(node)
             if node.in_values[1] then
                 if not node.in_values[1][node.in_values[2]] then
                     missing[#missing + 1] = "INDEX OUT OF BOUNDS"
+                    --break
                 end
             end
         end
@@ -180,6 +211,21 @@ local function ArgumentsMissing(node)
             if node.in_values[1] then
                 if not node.in_values[1][node.in_values[2]] then
                     missing[#missing + 1] = "INDEX OUT OF BOUNDS"
+                    -- break
+                end
+            else
+
+            end
+        end
+        if node.fname == "CUSTOM_TableSetVal" then
+            if node.in_values[1] then
+                if not node.in_values[1][node.in_values[2]] then
+                    if type(node.in_values[2]) == "string" and #node.in_values[2] ~= 0 then
+                        missing[#missing + 1] = "NON EXISTING KEY"
+                    elseif type(node.in_values[2]) == "number" then
+                        missing[#missing + 1] = "NON EXISTING KEY"
+                    end
+                    -- break
                 end
             end
         end

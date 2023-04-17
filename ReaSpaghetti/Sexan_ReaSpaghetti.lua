@@ -1,11 +1,13 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.29
+-- @version 0.31
 -- @changelog
---  Multi-IF-Else and SWITCH NodeInspector UI fix
---  Unused Code Cleanup
---  Imgui Item manipulation example
+--  Handled few more cases in Error Cathing (tables)
+--  More improvements to new PIN TYPE Error catching when using Table GET/SET value
+--  Added table named key fields (Table Constructor - TO KEY - option)
+--  Added nodes Table Get NAMED Value - Table Set NAMED value
+
 -- @provides
 --   api_file.txt
 --   Modules/*.lua

@@ -151,8 +151,9 @@ end
 function CUSTOM_Pairs(called_node, func_node, tbl)
     if not tbl then return "ERROR" end
     if type(tbl) ~= "table" then return "ERROR" end
+
     GetChildFlow(called_node, func_node)
-    for k, v in ipairs(tbl) do
+    for k, v in pairs(tbl) do
         called_node.outputs[2].o_val = k
         called_node.outputs[3].o_val = v
         Run_Flow(called_node.LOOP_FLOW, func_node)
@@ -258,7 +259,11 @@ end
 function CUSTOM_TableConstructor(called_node, func_node)
     called_node.outputs[1].o_val = {}
     for i = 1, #called_node.inputs do
-        called_node.outputs[1].o_val[#called_node.outputs[1].o_val + 1] = called_node.inputs[i].o_val
+        if called_node.inputs[i].to_key then
+            called_node.outputs[1].o_val[called_node.inputs[i].label] = called_node.inputs[i].o_val
+        else
+            called_node.outputs[1].o_val[#called_node.outputs[1].o_val + 1] = called_node.inputs[i].o_val
+        end
     end
 end
 
@@ -266,11 +271,8 @@ function CUSTOM_TableGetVal(called_node, func_node, tbl, key)
     if not tbl then return "ERROR" end
     if not tbl[key] then return "ERROR" end
 
-    if CheckInputType(called_node, tbl[key], func_node.NODES) then
-        --if DEFERED_NODE then
-        --    DEFERED_NODE, DEFER, START_FLOW = nil, false, false
+    if CheckInputType(called_node, { tbl[key] }, func_node.NODES, "GET") then
         BREAK_RUN = true
-        --end
         Deselect_all()
         CHANGE_TAB = func_node.FID
         return "ERROR"
@@ -281,6 +283,14 @@ end
 function CUSTOM_TableSetVal(called_node, func_node, tbl, key, val)
     if not tbl then return "ERROR" end
     if not tbl[key] then return "ERROR" end
+    if val == nil then return "ERROR" end
+
+    if CheckInputType(called_node, { val, key }, func_node.NODES, "SET") then
+        BREAK_RUN = true
+        Deselect_all()
+        CHANGE_TAB = func_node.FID
+        return "ERROR"
+    end
     tbl[key] = val
 end
 

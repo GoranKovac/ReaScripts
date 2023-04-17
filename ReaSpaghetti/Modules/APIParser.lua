@@ -221,7 +221,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "CUSTOM_TestDefer",
         label = "Spaghetti Defer",
-        desc = "",
+        desc = "Defer script (Keep running in background)",
         ins = {},
         out = {},
         run = "in/out"
@@ -231,7 +231,7 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "CUSTOM_TestDeferEND",
         label = "Spaghetti Defer End",
-        desc = "",
+        desc = "Kill Defer (stop running in background)",
         ins = {},
         out = {},
         run = "in/out"
@@ -310,10 +310,25 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "CUSTOM_TableGetVal",
         label = "Table GET VALUE",
-        desc = "Returns VALUE T[KEY]",
+        desc = "Returns VALUE T[IDX]",
         ins = {
             { name = "TABLE", type = "TABLE" },
             { name = "KEY",   type = "INTEGER", def_val = 1 },
+        },
+        out = {
+            { name = "VAL", type = "ANY" }
+        },
+        run = "in/out"
+    }
+
+    --Table GetNamedValue
+    api[#api + 1] = {
+        fname = "CUSTOM_TableGetVal",
+        label = "Table GET NAMED VALUE",
+        desc = "Returns VALUE T.NAME",
+        ins = {
+            { name = "TABLE", type = "TABLE" },
+            { name = "KEY",   type = "STRING", def_val = "" },
         },
         out = {
             { name = "VAL", type = "ANY" }
@@ -325,10 +340,24 @@ function Fill_Api_list()
     api[#api + 1] = {
         fname = "CUSTOM_TableSetVal",
         label = "Table SET VALUE",
-        desc = "SETS VALUE T[KEY]",
+        desc = "SETS T[IDX] = VALUE",
         ins = {
             { name = "TABLE", type = "TABLE" },
             { name = "KEY",   type = "INTEGER", def_val = 1 },
+            { name = "VAL",   type = "ANY" },
+        },
+        out = {},
+        run = "in/out"
+    }
+
+    --Table SetNamedValue
+    api[#api + 1] = {
+        fname = "CUSTOM_TableSetVal",
+        label = "Table SET NAMED VALUE",
+        desc = "SETS T.NAME = VALUE",
+        ins = {
+            { name = "TABLE", type = "TABLE" },
+            { name = "KEY",   type = "STRING", def_val = "" },
             { name = "VAL",   type = "ANY" },
         },
         out = {},

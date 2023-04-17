@@ -314,9 +314,11 @@ local function TableSpecial(node)
         end
     end
     if node.type == "tc" then
+        local avail_w = r.ImGui_GetContentRegionAvail(ctx)
         for ins = 1, #node.inputs do
             local cur_type = node.inputs[ins].type
             r.ImGui_PushID(ctx, "tc_inp" .. ins)
+            r.ImGui_SetNextItemWidth(ctx, avail_w / 3)
             if r.ImGui_BeginCombo(ctx, ins, cur_type) then
                 for v in ipairs(types) do
                     if r.ImGui_Selectable(ctx, types[v]) then
@@ -329,6 +331,18 @@ local function TableSpecial(node)
                 end
                 r.ImGui_EndCombo(ctx)
             end
+            r.ImGui_PopID(ctx)
+            r.ImGui_SameLine(ctx)
+            r.ImGui_PushID(ctx, "##tc" .. node.guid .. ins)
+            r.ImGui_SetNextItemWidth(ctx, avail_w / 3)
+            RV_TC_I_NAME, node.inputs[ins].label = r.ImGui_InputText(ctx, "##labeli", node.inputs[ins].label)
+            r.ImGui_PopID(ctx)
+            r.ImGui_SameLine(ctx)
+            r.ImGui_PushID(ctx, "##tc_apply" .. node.guid .. ins)
+            _, node.inputs[ins].to_key = r.ImGui_Checkbox(ctx, "TO KEY", node.inputs[ins].to_key)
+            -- if r.ImGui_Button(ctx, "NAME TO KEY") then
+
+            -- end
             r.ImGui_PopID(ctx)
         end
     end
@@ -628,7 +642,7 @@ local function NodeInspector()
         end
     end
     r.ImGui_SetCursorPos(ctx, 5, 35)
-    if r.ImGui_BeginChild(ctx, 'Inspector', INSPECT_VISIBLE and 205 or (INSPECT_HOOVER and 130 or def_w), INSPECT_VISIBLE and h_exp or def_h, true, r.ImGui_WindowFlags_NoScrollbar()) then
+    if r.ImGui_BeginChild(ctx, 'Inspector', INSPECT_VISIBLE and 295 or (INSPECT_HOOVER and 130 or def_w), INSPECT_VISIBLE and h_exp or def_h, true, r.ImGui_WindowFlags_NoScrollbar()) then
         INSPECT_VISIBLE = r.ImGui_TreeNode(ctx, 'NODE INSPECTOR', r.ImGui_TreeNodeFlags_NoTreePushOnOpen())
         INSPECT_HOOVER = r.ImGui_IsItemHovered(ctx)
         if INSPECT_VISIBLE and r.ImGui_BeginChild(ctx, 'Inspect_view') then
