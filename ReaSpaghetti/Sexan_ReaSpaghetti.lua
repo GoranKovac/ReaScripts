@@ -1,13 +1,9 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.32
+-- @version 0.33
 -- @changelog
---  Handled few more cases in Error Cathing (tables)
---  More improvements to new PIN TYPE Error catching when using Table GET/SET value
---  Added table named key fields (Table Constructor - TO KEY - option)
---  Added nodes Table Get NAMED Value - Table Set NAMED value
---  Added DbToVAL and ValTodB nodes
+--  Properly handle deleting leftovers (GETTERS/SETTERS/API_VAR/WIRELESS) after parent node is deleted
 -- @provides
 --   api_file.txt
 --   Modules/*.lua

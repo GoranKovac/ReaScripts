@@ -639,7 +639,7 @@ end
 
 function Delete_Wire(del_tbl, func_nodes)
     DIRTY = true
-    local NODES = func_nodes and func_nodes or GetCurFunctionNodes()
+    local NODES = func_nodes or GetCurFunctionNodes()
     for i = #del_tbl, 1, -1 do
         local delete_link = del_tbl[i].link
         for n = 1, #NODES do
@@ -1362,7 +1362,7 @@ end
 local function DrawTooltip(dsc)
     if not TOOLTIP then return end
     if MOVE_NODE then return end
-    if not dsc then return end
+    if not dsc or #dsc == 0 then return end
     if r.ImGui_IsItemHovered(ctx) then
         if r.ImGui_BeginTooltip(ctx) then
             r.ImGui_PushFont(ctx, FONT_STATIC)
@@ -1484,12 +1484,15 @@ local function Draw_Node(node)
         Node_Label(DL, node, x, y, w, title_h)
     end
 
-    for i = 1, 2 do --#NODE_Buttons_LEFT do
+    for i = 1, 2 do                              --#NODE_Buttons_LEFT do
         local button = NODE_Buttons_LEFT[i]
-        --local distance = x + (title_h * (i - 1)) -- OFFSET FROM LEFT
-        local distance = xe - (title_h * i) -- OFFSET FROM RIGHT
+        local distance = x + (title_h * (i - 1)) -- OFFSET FROM LEFT
+        --local distance = xe - (title_h * i) -- OFFSET FROM RIGHT
         if i == 1 then
-            Draw_Toolbar_Button(button, node, i, distance, y, title_h, NodeCOLOR["bg"])
+            if (RENAME_NODE and RENAME_NODE.guid ~= node.guid) or not RENAME_NODE then
+                Draw_Toolbar_Button(button, node, i, distance, y, title_h, NodeCOLOR["bg"])
+                if r.ImGui_IsItemHovered(ctx) then DrawTooltip(node.desc) end
+            end
         elseif i == 2 then
             -- r.ImGui_SetCursorScreenPos(ctx, distance + 10, y + title_h / 2 - 12)
             -- RV_COL, node.rgba = r.ImGui_ColorEdit4(ctx, 'MyColor##3' .. node.guid,
@@ -1514,7 +1517,7 @@ local function Draw_Node(node)
         MOVE_NODE = r.ImGui_IsItemActive(ctx) and node.guid or nil
     end
 
-    DrawTooltip(node.desc)
+    --DrawTooltip(node.desc)
     MoveNode(node)
 
     if node.can_resize then
@@ -1804,87 +1807,163 @@ local function Node_Drawing()
     r.ImGui_DrawListSplitter_Merge(SPLITTER)
 end
 
-function Remove_Connections(tbl, i)
+function Remove_Connections(tbl, i, func_nodes)
     for j = 0, #tbl[i].inputs do
         if tbl[i].inputs[j] then
-            Delete_Wire(tbl[i].inputs[j].connection)
+            Delete_Wire(tbl[i].inputs[j].connection, func_nodes)
         end
     end
     for j = 0, #tbl[i].outputs do
         if tbl[i].outputs[j] then
-            Delete_Wire(tbl[i].outputs[j].connection)
+            Delete_Wire(tbl[i].outputs[j].connection, func_nodes)
         end
     end
 end
 
-local function FindWirelessPair(tbl, src_guid, wid)
+-- local function FindWirelessPair(tbl, src_guid, wid)
+--     for i = 1, #tbl do
+--         if tbl[i].guid ~= src_guid then
+--             if tbl[i].wireless_id == wid then
+--                 return true
+--             end
+--         end
+--     end
+-- end
+
+local function FindWirelessPair(tbl, wid)
     for i = 1, #tbl do
-        if tbl[i].guid ~= src_guid then
-            if tbl[i].wireless_id == wid then
-                return true
-            end
+        if tbl[i].wireless_id == wid then
+            return i
         end
     end
 end
 
-local function RemoveSourceGettersSetters(guid, delete_api_var_getter)
+-- local function RemoveSourceGettersSetters(guid, delete_api_var_getter)
+--     for i = 1, #FUNCTIONS do
+--         for n = #FUNCTIONS[i].NODES, 1, -1 do
+--             local node = FUNCTIONS[i].NODES[n]
+--             if node then
+--                 if node.type == "get" then
+--                     if node.get == guid then
+--                         Remove_Connections(FUNCTIONS[i].NODES, n)
+--                         table.remove(FUNCTIONS[i].NODES, n)
+--                     end
+--                 end
+--                 -- FLAG TO NOT CHECK IN RECURSION
+--                 if not delete_api_var_getter then
+--                     if node.type == "set" or node.type == "api_var" then
+--                         -- REMOVE API VAR GETTER FIRST
+--                         if node.type == "api_var" then
+--                             RemoveSourceGettersSetters(node.guid, true)
+--                         end
+--                         -- REMOVE SETTER
+--                         if node.set.guid == guid then
+--                             Remove_Connections(FUNCTIONS[i].NODES, n)
+--                             table.remove(FUNCTIONS[i].NODES, n)
+--                         end
+--                     end
+--                 end
+--             end
+--         end
+--     end
+-- end
+
+local function CleanLeftoverGetters(guid)
     for i = 1, #FUNCTIONS do
         for n = #FUNCTIONS[i].NODES, 1, -1 do
             local node = FUNCTIONS[i].NODES[n]
-            if node then
-                if node.type == "get" then
-                    if node.get == guid then
-                        Remove_Connections(FUNCTIONS[i].NODES, n)
-                        table.remove(FUNCTIONS[i].NODES, n)
-                    end
-                end
-                -- FLAG TO NOT CHECK IN RECURSION
-                if not delete_api_var_getter then
-                    if node.type == "set" or node.type == "api_var" then
-                        -- REMOVE API VAR GETTER FIRST
-                        if node.type == "api_var" then
-                            RemoveSourceGettersSetters(node.guid, true)
-                        end
-                        -- REMOVE SETTER
-                        if node.set.guid == guid then
-                            Remove_Connections(FUNCTIONS[i].NODES, n)
-                            table.remove(FUNCTIONS[i].NODES, n)
-                        end
-                    end
+            if node.type == "get" then
+                if node.get == guid then
+                    Remove_Connections(FUNCTIONS[i].NODES, n, FUNCTIONS[i].NODES)
+                    table.remove(FUNCTIONS[i].NODES, n)
                 end
             end
         end
+    end
+end
+
+local function CleanLeftoverSetters(guid)
+    for i = 1, #FUNCTIONS do
+        for n = #FUNCTIONS[i].NODES, 1, -1 do
+            local node = FUNCTIONS[i].NODES[n]
+            if node.type == "set" then
+                if node.set.guid == guid then
+                    Remove_Connections(FUNCTIONS[i].NODES, n, FUNCTIONS[i].NODES)
+                    table.remove(FUNCTIONS[i].NODES, n)
+                end
+            end
+        end
+    end
+end
+
+local function CleanLeftoverAPIVAR(guid)
+    local del_api = {}
+    for i = 1, #FUNCTIONS do
+        for n = #FUNCTIONS[i].NODES, 1, -1 do
+            local node = FUNCTIONS[i].NODES[n]
+            if node.type == "api_var" then
+                if node.set.guid == guid then
+                    Remove_Connections(FUNCTIONS[i].NODES, n, FUNCTIONS[i].NODES)
+                    del_api[#del_api + 1] = table.remove(FUNCTIONS[i].NODES, n)
+                end
+            end
+        end
+    end
+    if #del_api ~= 0 then return del_api end
+end
+
+local function CleanupLeftovers(del_tbl, NODES)
+    for i = 1, #del_tbl do
+        local del_node = del_tbl[i]
+        -- IS WIRELESS NODE
+        if del_node.wireless_id then
+            local node_idx = FindWirelessPair(NODES, del_node.wireless_id)
+            if node_idx then
+                Remove_Connections(NODES, node_idx)
+                table.remove(NODES, node_idx)
+            end
+        end
+
+        -- VARIABLE SETTERS
+        CleanLeftoverSetters(del_node.guid)
+        -- API SETTERS
+        local del_api_var_tbl = CleanLeftoverAPIVAR(del_node.guid)
+        -- API VAR HAS ITS OWN GETTERS SO DELETE THEM FIRST
+        if del_api_var_tbl then
+            for j = 1, #del_api_var_tbl do
+                -- DELETE API GETTERS
+                CleanLeftoverGetters(del_api_var_tbl[j].guid)
+            end
+        end
+        -- STANDARD VARIABLE GETTERS
+        CleanLeftoverGetters(del_node.guid)
     end
 end
 
 local function DeleteNodeTable(tbl)
     if not tbl then return end
+
+    local deleted_tbl = {}
     for i = #tbl, 1, -1 do
-        -- DONT DELETE START AND RETURN NODE
         if tbl[i] then
             if tbl[i].selected and tbl[i].type ~= "m" and tbl[i].type ~= "retnode" then
-                local src_guid = tbl[i].guid
                 DIRTY = true
-
                 Remove_Connections(tbl, i)
-                table.remove(tbl, i)
-                -- REMOVE ALL ASSOCIATED GETTERS/SETTERS
-                --if tbl[i].type ~= "func" then
-                --RemoveSourceGettersSetters(src_guid)
-                --end
+                deleted_tbl[#deleted_tbl + 1] = table.remove(tbl, i)
             end
         end
     end
 
+    CleanupLeftovers(deleted_tbl, tbl)
     -- DELETE REMAINING WIRELESS PAIR
-    for i = #tbl, 1, -1 do
-        if tbl[i].wireless_id then
-            if not FindWirelessPair(tbl, tbl[i].guid, tbl[i].wireless_id) then
-                Remove_Connections(tbl, i)
-                table.remove(tbl, i)
-            end
-        end
-    end
+    -- for i = #tbl, 1, -1 do
+    --     if tbl[i].wireless_id then
+    --         if not FindWirelessPair(tbl, tbl[i].guid, tbl[i].wireless_id) then
+    --             Remove_Connections(tbl, i)
+    --             table.remove(tbl, i)
+    --         end
+    --     end
+    -- end
 
     --ConnectNextPreviousFunctionNodes(prev_node, prev_pin, next_node, next_pin)
 end
