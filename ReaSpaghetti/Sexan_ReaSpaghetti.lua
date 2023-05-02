@@ -9,6 +9,9 @@
 --  Initial undo script
 --  Ultraschall API
 --  Ultraschall parser (to fix native slowdown)
+--  Optionals arguments checkbox
+--  Imgui default optionals values
+--  Initial Animated tooltips
 -- @provides
 --   api_file.txt
 --   Modules/*.lua
