@@ -30,7 +30,7 @@ local NODE_CFG = {
     PIN_SIZE = 6,
     PIN_MOVE_OUT = 10,
     EDGE_THICKNESS = 2,
-    PIN_BTN_W_EXTEND = 1, -- CANNOT BE 0 (EXTEND PIN HITBOX)
+    PIN_BTN_W_EXTEND = 1.5, -- CANNOT BE 0 (EXTEND PIN HITBOX)
     LABEL_COL = 0x000000FF,
     PIN_LABEL_COL = 0xFFFFFFFF,
     INPUT_OFFSET = 70
@@ -84,8 +84,8 @@ end
 
 function GetNodeInfo(guid)
     for i = 1, # FUNCTIONS do
-        local node = In_TBL(FUNCTIONS[i].NODES, guid)
-        if node then return node end
+        local node, n = In_TBL(FUNCTIONS[i].NODES, guid)
+        if node then return node, i, n end
     end
 end
 
@@ -166,6 +166,7 @@ local NodeCOLOR = {
     ["api_var"] = 0xac5cd9ff,
     ["group"]   = 0x00fffbff,
     ["groupbg"] = 0x00fffb11,
+    ["code"]    = 0x88ceffff,
 }
 
 local PinCOLOR = {
@@ -211,12 +212,13 @@ local NodeDLChannel = {
     ["wr"]      = 7,
     ["api_var"] = 7,
     ["group"]   = 5,
+    ["code"]    = 7,
 }
 
 function Create_constant_tbl(type)
     local tbl = {}
     if type == "s" then
-        tbl = { ins = {}, out = { { name = "", type = "STRING" } } }
+        tbl = { ins = {}, out = { { name = "", type = "STRING" } }, resizeable = true }
     elseif type == "i" then
         tbl = { ins = {}, out = { { name = "", type = "INTEGER" } } }
     elseif type == "f" then
@@ -280,6 +282,18 @@ function Create_constant_tbl(type)
             --fname = "CUSTOM_ReturnNode"
             resizeable = true
         }
+    elseif type == "code" then
+        tbl = {
+            ins = {
+                { name = "CODE", type = "STRING" },
+            },
+            out = {
+                --{ name = "", type = "NUMBER", def_val = 0.0 },
+            },
+            --resizeable = true,
+            fname = "CUSTOM_CodeNodeRun",
+            run = "in/out"
+        }
     end
     return tbl
 end
@@ -296,6 +310,7 @@ local function Socket(tbl, num, io_type)
         ---------------------------
         pin_disable = tbl.pin_disable,
         no_draw = tbl.no_draw,
+        opt = tbl.opt,
         --def_val = tbl.def_val and (type(tbl.def_val) == "table" and {} or tbl.def_val) or nil,
         o_val = io_type == "out" and tbl.def_val or nil,
         i_val = io_type == "in" and tbl.def_val or nil,
@@ -336,12 +351,13 @@ local function Get_Node(type, label, x, y, w, h, guid, tbl)
         sender      = tbl.sender,
         receiver    = tbl.receiver,
         wireless_id = tbl.wireless_id,
-        can_resize  = tbl.resizeable
+        can_resize  = tbl.resizeable,
+        sp_api      = tbl.sp_api
     }
 end
 
 function In_TBL(tbl, o_val)
-    for i = 1, #tbl do if o_val == tbl[i].guid then return tbl[i] end end
+    for i = 1, #tbl do if o_val == tbl[i].guid then return tbl[i], i end end
 end
 
 local function Lead_Trim_ws(s) return s:match '^%s*(.*)' end
@@ -452,9 +468,16 @@ local function GetterMetaFollower(node)
     -- GETTER ALWAYS HAS/READS 1 VALUE
     setmetatable(node.outputs[1], {
         __index = source_node.outputs[1],
+        __newindex = source_node.outputs[1],
     })
 
     node.get = source_node.guid
+end
+
+local function OldMetatable()
+    local results = {}
+    setmetatable(results, { __mode = "kv" }) -- make values weak
+    return results
 end
 
 function InsertNode(type, name, api_tbl)
@@ -470,6 +493,7 @@ function InsertNode(type, name, api_tbl)
     node.x, node.y =
         (MOUSE_POPUP_X - (CANVAS.view_x + CANVAS.off_x)) / CANVAS.scale - node.w / 2,
         (MOUSE_POPUP_Y - (CANVAS.view_y + CANVAS.off_y)) / CANVAS.scale - (type == "wr" and node.h or 0)
+
     if type ~= "func" then
         -- SET MATH METATABLE (AUTOMATIC IN NODE CALCULATION)
         if node.fname and node.fname:lower():find("math") then
@@ -502,8 +526,8 @@ function AddNode(type, name, api_tbl)
     local NODES = GetNodeTBL()
     local receiver_guid = type == "wr" and NODES[#NODES].sender or nil
     local wireless_id = type == "wr" and NODES[#NODES].wireless_id or nil
-    local w = type == "group" and NODE_CFG.MIN_W or 100
-    local h = type == "group" and NODE_CFG.MIN_H or 50
+    local w = (type == "group" or type == "s") and NODE_CFG.MIN_W or 100
+    local h = (type == "group" or type == "s") and NODE_CFG.MIN_H or 50
     local node = Get_Node(type, name, 0, 0, w, h, receiver_guid or r.genGuid(), api_tbl)
     if type == "wr" then node.wireless_id = wireless_id end
     return node
@@ -558,6 +582,10 @@ function FilterBox()
                 InsertNode("group", "GROUP")
                 DIRTY = true
             end
+            if r.ImGui_Selectable(ctx, "ADD CODE NODE", false) then
+                InsertNode("code", "CODE")
+                DIRTY = true
+            end
         end
     end
     if r.ImGui_BeginChild(ctx, "##popupp", MAX_FX_SIZE, filter_h) then
@@ -606,16 +634,35 @@ local function CalculateIOSize(node)
     return ins, outs
 end
 
+local function CalcMinCodeSize(node)
+    if node.type ~= "code" then return end
+    local ins, outs = CalculateIOSize(node)
+    local total_ins = ins + outs
+    local min_h = (total_ins * NODE_CFG.SEGMENT) + NODE_CFG.SEGMENT
+    return min_h
+    -- node.h = node.h < min_h and min_h or node.h
+end
+
 --! EXCLUDE NO DRAW PINS
 local function AutoAdjust_Node_WH(node)
-    if node.can_resize then return end
+    if node.can_resize then
+        --local min_h = CalcMinCodeSize(node)
+        --node.h = node.h < min_h and min_h or node.h
+        return
+    end
     local ins, outs = CalculateIOSize(node)
     local total_ins = ins + outs
     node.h = (total_ins * NODE_CFG.SEGMENT) + NODE_CFG.SEGMENT
+    --if node.type == "code" then
+    --    node.h = CalcMinCodeSize(node)
+    --end
     -- AUTO CALCULATE NODE W BY TEXT LENGHT
     local text_size = (ORG_FONT_SIZE / 2) * utf8.len(node.label)
     local w = node.type ~= "route" and text_size + (NODE_CFG.SEGMENT * 4) or NODE_CFG.SEGMENT
     node.w = w
+    --if node.type == "code" then
+    --     node.h = CalcMinCodeSize(node)
+    --end
 end
 
 local function Check_Overlap(A, B, full_in)
@@ -743,6 +790,9 @@ end
 local BB_OFFSET = 15
 local MIN_DST = 200
 local function MouseCloseToBez(xs, ys, p2_x, ys, p3_x, ye, xe, ye)
+    if MOVE_NODE then return end
+    if r.ImGui_IsAnyItemHovered(ctx) then return end
+
     local X, Y, W, H = BEZIER.bounding_box(xs, ys, p2_x, ys, p3_x, ye, xe, ye)
     X = X - BB_OFFSET * CANVAS.scale
     Y = Y - BB_OFFSET * CANVAS.scale
@@ -760,6 +810,12 @@ local function MouseCloseToBez(xs, ys, p2_x, ys, p3_x, ye, xe, ye)
         end
     end
 end
+
+-- local function MouseInNode(x, y, w, h)
+--     if MX > x and MX < x + w and MY > y and MY < y + h then
+--         return true
+--     end
+-- end
 
 local function Draw_Beziar(xs, ys, xe, ye, color, th, link, node_o, node_i, pin_label, pins_i, pins_o)
     xs = xs + (NODE_CFG.PIN_MOVE_OUT * CANVAS.scale)
@@ -784,7 +840,10 @@ local function Draw_Beziar(xs, ys, xe, ye, color, th, link, node_o, node_i, pin_
     if ALT_DOWN and mouse_on_baz then
         color = DELETE_COL
         -- DELETE ONLY THIS WIRE
-        if r.ImGui_IsMouseClicked(ctx, 0) then Delete_Wire({ { link = link } }) end
+        if r.ImGui_IsMouseClicked(ctx, 0) then
+            AddUndo(node_i, { op = "DELETE_WIRE", link = link })
+            Delete_Wire({ { link = link } })
+        end
     end
 
     r.ImGui_DrawList_AddBezierCubic(DL, xs, ys, p2_x, ys, p3_x, ye, xe, ye, color, th)
@@ -863,6 +922,8 @@ local function Draw_Pin_Button(dl, pin_tbl, name, node_id, pin_id, pin_type, x, 
 
     color = (is_active and ALT_DOWN) and DELETE_COL or color
 
+    color = (pin_tbl.opt and pin_tbl.opt.use == false) and (color & ~0x000000DD) or color
+
     if is_connected then
         r.ImGui_DrawList_AddCircleFilled(DL,
             x + (pin_type == "in" and -move_out or move_out), y,
@@ -920,9 +981,11 @@ local function Pin_Drag_Drop(pin, node, p_num, table_type)
                     if not pin.type:match(pin_type) and not pin_type:match(pin.type) then
                         return
                     end
-                elseif not pin.type:match(pin_type) or not pin_type:match(pin.type) then
-                    -- PIN TYPES MISSMATCH
-                    return
+                elseif not node.label:match("Math") or not node_label:match("Math") then
+                    if not pin.type:match(pin_type) and not pin_type:match(pin.type) then
+                        -- PIN TYPES MISSMATCH
+                        return
+                    end
                 end
             end
 
@@ -953,6 +1016,7 @@ local function Pin_Drag_Drop(pin, node, p_num, table_type)
             if table_type == "in" and pin.type ~= "RUN" then
                 setmetatable(node.inputs[p_num], {
                     __index = source.outputs[tonumber(pin_num)],
+                    __newindex = source.outputs[tonumber(pin_num)],
                 })
                 -- LISTEN VALUES FROM CURRENT NODE
             elseif table_type == "out" and pin.type ~= "RUN" then
@@ -989,9 +1053,31 @@ local function CenterTextPush(o_val, pin_type)
     r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_FramePadding(), pad_x, pad_y * CANVAS.scale)
 end
 
+local function DrawOptionalCheckbox(pin)
+    if pin.opt then
+        _, pin.opt.use = r.ImGui_Checkbox(ctx, "##OPT" .. pin.label, pin.opt.use)
+        if r.ImGui_IsItemHovered(ctx) then
+            if r.ImGui_BeginTooltip(ctx) then
+                r.ImGui_PushFont(ctx, FONT_STATIC)
+                r.ImGui_Text(ctx, "USE OPTIONAL")
+                r.ImGui_PopFont(ctx)
+                r.ImGui_EndTooltip(ctx)
+            end
+        end
+        r.ImGui_SameLine(ctx)
+    end
+end
+
+local function CheckOptional(pin)
+    if pin.opt and pin.opt.use == false then
+        return true
+    end
+end
+
 local function Draw_input(node, io_type, pin, x, y, pin_n, h)
     if node.type == "tc" or node.type == "t" then return end
     if node.type == "api" and io_type == "out" then return end
+    if node.type == "code" and io_type == "out" then return end
     --if node.type == "get" or node.type == "set" or node.type == "api_var" then return end
 
     -- OFFSET OUT X INSIDE THE NODE
@@ -1006,24 +1092,27 @@ local function Draw_input(node, io_type, pin, x, y, pin_n, h)
 
     if not pin.no_draw then
         r.ImGui_SetCursorScreenPos(ctx, x, y - h - (1 * CANVAS.scale))
-        r.ImGui_SetNextItemWidth(ctx, w)
+        --r.ImGui_SetNextItemWidth(ctx, pin.opt and w - 30 * CANVAS.scale or w)
 
         -- SHOW VALUES ON GETTERS SETTERS
         if (node.type == "get" or node.type == "set" or node.type == "api_var" or node.type == "func" or node.type == "m" or node.type == "retnode") and pin.type ~= "RUN" then
             r.ImGui_BeginDisabled(ctx)
-            --! FIX PREFORMANCE CALLING MATH NODE HERE
-            local txt = tostring(pin.o_val)
-            local tw = r.ImGui_CalcTextSize(ctx, txt)
-            local iw = r.ImGui_CalcItemWidth(ctx)
-            r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_FramePadding(), math.max(0, (iw - tw) / 2),
-                pad_y * CANVAS.scale)
-            r.ImGui_InputText(ctx, '##', txt)
-            r.ImGui_PopStyleVar(ctx)
+            -- --! FIX PREFORMANCE CALLING MATH NODE HERE
+            -- --! PERFORMANCE HOG
+            -- local txt = tostring(pin.o_val)
+            -- --local txt = "aaa"
+            -- local tw = r.ImGui_CalcTextSize(ctx, txt)
+            -- local iw = r.ImGui_CalcItemWidth(ctx)
+            -- r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_FramePadding(), math.max(0, (iw - tw) / 2),
+            --     pad_y * CANVAS.scale)
+            -- r.ImGui_InputText(ctx, '##', txt)
+            -- r.ImGui_PopStyleVar(ctx)
             r.ImGui_EndDisabled(ctx)
             return
         end
 
-        local current_input = #pin.connection == 0 and pin.i_val or pin.o_val -- UI_UPDATE and pin.o_val or pin.i_val
+        local current_input = #pin.connection == 0 and pin.i_val or pin.o_val
+
         local disable_input = (#pin.connection ~= 0 and io_type == "in") and true or false
 
         if disable_input then r.ImGui_BeginDisabled(ctx) end
@@ -1034,6 +1123,15 @@ local function Draw_input(node, io_type, pin, x, y, pin_n, h)
 
         r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_FrameRounding(), 5)
         r.ImGui_PushStyleColor(ctx, r.ImGui_Col_FrameBg(), 0x17181fff)
+
+        DrawOptionalCheckbox(pin)
+        if CheckOptional(pin) then
+            r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_DisabledAlpha(), 0.3)
+            r.ImGui_BeginDisabled(ctx)
+        end
+
+        r.ImGui_SetNextItemWidth(ctx, pin.opt and w - 30 * CANVAS.scale or w)
+
         if pin.type == "INTEGER" then
             local separator = node.type == "i" and "" or " : "
             if node.type == "i" then
@@ -1041,8 +1139,19 @@ local function Draw_input(node, io_type, pin, x, y, pin_n, h)
                     pin.label .. separator .. '%d%', r.ImGui_SliderFlags_AlwaysClamp())
                 if I_RV then pin.o_val = pin.i_val end
             else
+                -- if CheckOptional(pin) then
+                --     r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_DisabledAlpha(), 0.3)
+                --     r.ImGui_BeginDisabled(ctx)
+                -- end
+
                 _, pin.i_val = r.ImGui_DragInt(ctx, "##" .. pin.label, current_input, 1, 0, nil,
                     pin.label .. separator .. '%d%', r.ImGui_SliderFlags_AlwaysClamp())
+                -- if CheckOptional(pin) then
+                --     r.ImGui_PopStyleVar(ctx)
+                --     r.ImGui_EndDisabled(ctx)
+                -- end
+
+                -- DrawOptionalCheckbox(pin)
             end
         elseif pin.type == "NUMBER/INTEGER" or pin.type == "NUMBER" then
             local separator = node.type == "f" and "" or " : "
@@ -1051,22 +1160,57 @@ local function Draw_input(node, io_type, pin, x, y, pin_n, h)
                     pin.label .. separator .. '%.03f')
                 if F_RV then pin.o_val = pin.i_val end
             else
+                -- if CheckOptional(pin) then
+                --     r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_DisabledAlpha(), 0.3)
+                --     r.ImGui_BeginDisabled(ctx)
+                -- end
                 _, pin.i_val = r.ImGui_DragDouble(ctx, "##" .. pin.label, current_input, 0.01, 0.0, 0.0,
                     pin.label .. separator .. '%.03f')
+                -- if CheckOptional(pin) then
+                --     r.ImGui_PopStyleVar(ctx)
+                --     r.ImGui_EndDisabled(ctx)
+                -- end
+                --DrawOptionalCheckbox(pin)
             end
         elseif pin.type == "STRING" then
+            --local ins = CalculateIOSize(node)
             if node.type == "s" then
-                S_RV, pin.i_val = r.ImGui_InputTextWithHint(ctx, "##" .. pin.label, pin.label, pin.i_val)
+                if DEFERED_NODE then r.ImGui_BeginDisabled(ctx) end
+                r.ImGui_PushFont(ctx, FONT_CODE)
+                --S_RV, pin.i_val = r.ImGui_InputTextWithHint(ctx, "##" .. pin.label, pin.label, pin.i_val)
+                S_RV, pin.i_val = r.ImGui_InputTextMultiline(ctx, "##" .. pin.label, pin.i_val, nil,
+                    (node.h - NODE_CFG.SEGMENT - 8) * CANVAS.scale)
+                r.ImGui_PopFont(ctx)
                 if S_RV then pin.o_val = pin.i_val end
+                if DEFERED_NODE then r.ImGui_EndDisabled(ctx) end
             else
+                -- if CheckOptional(pin) then
+                --     r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_DisabledAlpha(), 0.3)
+                --     r.ImGui_BeginDisabled(ctx)
+                -- end
                 _, pin.i_val = r.ImGui_InputTextWithHint(ctx, "##" .. pin.label, pin.label, current_input)
+                -- if CheckOptional(pin) then
+                --     r.ImGui_PopStyleVar(ctx)
+                --     r.ImGui_EndDisabled(ctx)
+                -- end
+
+                --DrawOptionalCheckbox(pin)
             end
         elseif pin.type == "BOOLEAN" then
             if node.type == "b" then
                 B_RV, pin.i_val = r.ImGui_Checkbox(ctx, pin.label, pin.i_val)
                 if B_RV then pin.o_val = pin.i_val end
             else
+                -- if CheckOptional(pin) then
+                --     r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_DisabledAlpha(), 0.3)
+                --     r.ImGui_BeginDisabled(ctx)
+                -- end
+
                 _, pin.i_val = r.ImGui_Checkbox(ctx, pin.label, current_input)
+                -- if CheckOptional(pin) then
+                --     r.ImGui_PopStyleVar(ctx)
+                --     r.ImGui_EndDisabled(ctx)
+                -- end
             end
         elseif pin.type == "LIST" then
             if r.ImGui_BeginCombo(ctx, '##', pin.i_val) then
@@ -1077,6 +1221,14 @@ local function Draw_input(node, io_type, pin, x, y, pin_n, h)
                 end
                 r.ImGui_EndCombo(ctx)
             end
+            -- elseif pin.type == "CODE" then
+            --     local ins = CalculateIOSize(node)
+            --     r.ImGui_PushFont(ctx, FONT_CODE)
+            --     --local total_io = ins + outs
+            --     _, pin.i_val = r.ImGui_InputTextMultiline(ctx, '##text' .. node.guid, pin.i_val,
+            --         (node.w - NODE_CFG.EDGE_THICKNESS * 6) * CANVAS.scale,
+            --         (node.h - ins * NODE_CFG.SEGMENT - 10) * CANVAS.scale)
+            --     r.ImGui_PopFont(ctx)
         end
 
         r.ImGui_PopStyleColor(ctx)
@@ -1084,7 +1236,13 @@ local function Draw_input(node, io_type, pin, x, y, pin_n, h)
         r.ImGui_PopStyleVar(ctx) -- Y PADDING FOR INPUT WIDGETS ZOOM
         r.ImGui_PopStyleVar(ctx) -- ROUNDING
 
+        --
+        if CheckOptional(pin) then
+            r.ImGui_PopStyleVar(ctx)
+            r.ImGui_EndDisabled(ctx)
+        end
         if disable_input then r.ImGui_EndDisabled(ctx) end
+        --DrawOptionalCheckbox(pin)
         --r.ImGui_PopStyleVar(ctx) -- FRAME BOARDER
         --r.ImGui_PopStyleVar(ctx) -- FRAME BOARDER
     end
@@ -1100,15 +1258,14 @@ local function Draw_IO(active_ch, node, pins, x, y, pin_type)
 
     --local pin_io_offset = pin_type == "in" and outs * CANVAS.scale or 0
     local pin_io_offset = pin_type == "out" and ins * CANVAS.scale or 0
+    r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, active_ch)
 
     y = y - pin_button_h + (pin_io_offset * NODE_CFG.SEGMENT)
-
     for i = 0, #pins do
         if pins[i] then
             local pin = pins[i]
 
             local py = i == 0 and y - (pin_io_offset * NODE_CFG.SEGMENT) or y
-            r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, active_ch)
             local label = pin.label
             pin.x, pin.y = x, py
 
@@ -1127,8 +1284,8 @@ local function Draw_IO(active_ch, node, pins, x, y, pin_type)
                 if INSERT_NODE_DATA then
                     pin_drag =
                         (INSERT_NODE_DATA.node_guid == node.guid and
-                        INSERT_NODE_DATA.tbl_type == pin_type and
-                        INSERT_NODE_DATA.pin_num == i) and
+                            INSERT_NODE_DATA.tbl_type == pin_type and
+                            INSERT_NODE_DATA.pin_num == i) and
                         true
                 end
 
@@ -1220,14 +1377,13 @@ local function MoveNode(node)
     --if DRAG_COPY then return end
     if not MOVE_NODE then return end
     if r.ImGui_IsMouseDown(ctx, 0) then
-        r.ImGui_SetMouseCursor(ctx, r.ImGui_MouseCursor_ResizeAll())
+        --r.ImGui_SetMouseCursor(ctx, r.ImGui_MouseCursor_ResizeAll())
         --if r.ImGui_IsMouseDragging(ctx, 0) then
         local off_x, off_y = 0, 0
         if EDGE_SCROLLING then
             off_x = EDGE_SCROLLING.x / CANVAS.scale
             off_y = EDGE_SCROLLING.y / CANVAS.scale
         end
-        --local drag_x, drag_y = r.ImGui_GetMouseDelta(ctx)
         if node.selected then
             node.x = node.x + DX / CANVAS.scale - off_x
             node.y = node.y + DY / CANVAS.scale - off_y
@@ -1394,7 +1550,6 @@ local function GetGroupChildNodes(node, NODES)
         node.childs = tmp_childs
     elseif MOVE_NODE and MOVE_NODE == node.guid then
         if node.childs and #node.childs ~= 0 then
-            --local drag_x, drag_y = r.ImGui_GetMouseDelta(ctx)
             local off_x, off_y = 0, 0
             if EDGE_SCROLLING then
                 off_x = EDGE_SCROLLING.x / CANVAS.scale
@@ -1414,12 +1569,14 @@ local function GetGroupChildNodes(node, NODES)
 end
 
 local function CalculateNewSize(node)
-    -- local drag_x, drag_y = r.ImGui_GetMouseDelta(ctx)
     local off_x, off_y = 0, 0
     if EDGE_SCROLLING then
         off_x = EDGE_SCROLLING.x / CANVAS.scale
         off_y = EDGE_SCROLLING.y / CANVAS.scale
     end
+
+    --local min_h = NODE_CFG.MIN_H --node.type == "group" and NODE_CFG.MIN_H or CalcMinCodeSize(node)
+
     local new_w = node.w + DX > NODE_CFG.MIN_W and node.w - off_x + DX / CANVAS.scale or NODE_CFG.MIN_W
     local new_h = node.h + DY > NODE_CFG.MIN_H and node.h - off_y + DY / CANVAS.scale or NODE_CFG.MIN_H
     node.w = new_w
@@ -1438,9 +1595,20 @@ local function Draw_Toolbar_Button(btn, node, btn_n, x, y, s, c)
         0xFFFFFFFF, btn.name)
 end
 
+local function NodeDoubleClick(node)
+    if node.type == "func" then
+        CHANGE_FTAB = node.FID
+        GetFUNCTIONS()[CHANGE_FTAB].tab_open = true
+        CHANGE_MTAB = "FUNC"
+    end
+end
+
 local function Draw_Node(node)
     AutoAdjust_Node_WH(node)
     local x, y, xe, ye, w, h = Get_Node_Screen_position(node)
+    --if not MOUSE_IN_NODE then
+    --MOUSE_IN_NODE = MouseInNode(x, y, w, h)
+    --end
     local title_h = NODE_CFG.SEGMENT * CANVAS.scale
     local edge_thickness = NODE_CFG.EDGE_THICKNESS * CANVAS.scale
     local edge_offset = edge_thickness / 2
@@ -1509,6 +1677,9 @@ local function Draw_Node(node)
     -- NODE BUTTON
     r.ImGui_SetCursorScreenPos(ctx, x, y)
     r.ImGui_InvisibleButton(ctx, "##" .. node.guid, w - edge_offset, title_h - edge_offset)
+    if r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseDoubleClicked(ctx, 0) then
+        NodeDoubleClick(node)
+    end
 
     ---- DRAW NODE
     node.trace = TraceNode()
@@ -1520,6 +1691,39 @@ local function Draw_Node(node)
     end
 
     --DrawTooltip(node.desc)
+    --MoveNode(node)
+
+    -- if node.can_resize then
+    --     r.ImGui_SetCursorScreenPos(ctx, x + w - (10 * CANVAS.scale), h + y - (10 * CANVAS.scale))
+    --     r.ImGui_Button(ctx, '##RS' .. node.guid, (10 * CANVAS.scale), (10 * CANVAS.scale))
+    --     if r.ImGui_IsItemHovered(ctx) or r.ImGui_IsItemActive(ctx) then
+    --         r.ImGui_SetMouseCursor(ctx, r.ImGui_MouseCursor_ResizeNWSE())
+    --     end
+    --     if r.ImGui_IsItemActive(ctx) then
+    --         CalculateNewSize(node)
+    --         --CalcMinCodeSize(node)
+    --     end
+    -- end
+
+
+    if node.toggle_comment then
+        --local pad_y = select(2, r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_FramePadding()))
+        local _, th = r.ImGui_CalcTextSize(ctx, tostring(node.text) .. '\x20')
+        th = th + (pad_y * 2)
+        r.ImGui_PushStyleColor(ctx, r.ImGui_Col_FrameBg(), 0x00000088)
+        r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_FrameBorderSize(), 1)
+        r.ImGui_SetCursorScreenPos(ctx, x, y - th - (10 * CANVAS.scale))
+        _, node.text = r.ImGui_InputTextMultiline(ctx, '##text' .. node.guid, node.text, w, th)
+        r.ImGui_PopStyleColor(ctx)
+        r.ImGui_PopStyleVar(ctx)
+    end
+
+    x, y = x - edge_offset, y - edge_offset
+
+    local io_y = y + title_h
+    Draw_IO(active_ch, node, node.inputs, x, io_y, "in")    -- INPUTS
+    Draw_IO(active_ch, node, node.outputs, xe, io_y, "out") -- OUTPUTS
+
     MoveNode(node)
 
     if node.can_resize then
@@ -1533,36 +1737,9 @@ local function Draw_Node(node)
         end
     end
 
-    if node.toggle_comment then
-        local tw, th = r.ImGui_CalcTextSize(ctx, node.text)
-        r.ImGui_SetNextWindowPos(ctx, x, y - title_h / 1.5 - th) -- 10 * CANVAS.scale)
-        r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x00000088)
-        if r.ImGui_BeginChild(ctx, "##comment" .. node.guid, w, th + 10 * CANVAS.scale, 10, r.ImGui_WindowFlags_NoInputs()
-                | r.ImGui_WindowFlags_NoDecoration()
-                | r.ImGui_WindowFlags_NoMove()
-                | r.ImGui_WindowFlags_NoSavedSettings()
-                | r.ImGui_WindowFlags_AlwaysAutoResize()
-                | r.ImGui_WindowFlags_NoDocking()
-                | r.ImGui_WindowFlags_NoFocusOnAppearing()
-            --| r.ImGui_WindowFlags_TopMost()
-            ) then
-            r.ImGui_PushStyleColor(ctx, r.ImGui_Col_FrameBg(), 0x00000000)
-            r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_FramePadding(), pad_x, 0)
-            r.ImGui_SetCursorPos(ctx, 2 * CANVAS.scale, title_h / 4)
-            _, node.text = r.ImGui_InputTextMultiline(ctx, '##text' .. node.guid, node.text, w, title_h + th)
-            r.ImGui_PopStyleColor(ctx)
-            r.ImGui_PopStyleVar(ctx)
-            r.ImGui_EndChild(ctx)
-        end
-        --r.ImGui_PopStyleVar(ctx)
-        r.ImGui_PopStyleColor(ctx)
-    end
-
-    x, y = x - edge_offset, y - edge_offset
-
-    local io_y = y + title_h
-    Draw_IO(active_ch, node, node.inputs, x, io_y, "in")    -- INPUTS
-    Draw_IO(active_ch, node, node.outputs, xe, io_y, "out") -- OUTPUTS
+    -- DUMMY BODY BUTTON (FOR DETECTING HOOVER OVER NODE)
+    r.ImGui_SetCursorScreenPos(ctx, x, y)
+    r.ImGui_InvisibleButton(ctx, "##BODY" .. node.guid, w - edge_offset, h)
 end
 
 function SelectAll()
@@ -1793,6 +1970,9 @@ local function Node_Drawing()
     r.ImGui_DrawListSplitter_Split(SPLITTER, 10)
     FUNCTIONS[CURRENT_FUNCTION].CANVAS = CANVAS
     local NODES = GetCurFunctionNodes()
+    -- for i = 1, #NODES do
+    --     Draw_Wire(NODES[i], NODES[i].outputs)
+    -- end
     for i = 1, #NODES do
         local node = NODES[i]
         Draw_Node(node)
@@ -2017,6 +2197,85 @@ function PropagateParentFunctionNodes(id)
     return FOLLOWER
 end
 
+function RelinkFunction(func_tbl)
+    for n = 1, #func_tbl.NODES do
+        local node = func_tbl.NODES[n]
+        if node.type == "func" then
+            -- NODE HAS PARRENT FUNCTION
+            if node.FID then
+                -- RELINK FUNCTION NODES METATABLE
+                node.NODES = {}
+                setmetatable(node.NODES,
+                    {
+                        __index = FUNCTIONS[node.FID].NODES,
+                        __len = function() return #FUNCTIONS[node.FID].NODES end
+                    }
+                )
+            end
+        end
+
+        -- RELINK INPUT METATABLE
+        for o = 1, #node.inputs do
+            if next(node.inputs[o].connection) then
+                local connected_node = GetNodeInfo(node.inputs[o].connection[1].node)
+                setmetatable(node.inputs[o], {
+                    __index = connected_node.outputs[node.inputs[o].connection[1].pin],
+                    __newindex = connected_node.outputs[node.inputs[o].connection[1].pin]
+                })
+            end
+        end
+
+        -- RELINK MATH METATABLE
+        if node.fname and node.fname:lower():find("math") then
+            setmetatable(node.outputs[1], {
+                __index = function(t, k)
+                    if k == "o_val" then return DoMath(node.inputs[2].i_val, node) end
+                end,
+            })
+        elseif node.fname and node.fname:lower():find("std_") then
+            setmetatable(node.outputs[1], {
+                __index = function(t, k)
+                    if k == "o_val" then return DoStd(node.inputs[2].i_val, node) end
+                end,
+            })
+        end
+
+        -- RELINK GETTERS METATABLE
+        if node.get then
+            local source_node = GetNodeInfo(node.get)
+            setmetatable(node.outputs[1], {
+                __index = source_node.outputs[1],
+                __newindex = source_node.outputs[1],
+            })
+        end
+
+
+        if node.set then
+            -- RELINK API SETTER
+            if node.set.api then
+                local source_node = GetNodeInfo(node.set.guid)
+                setmetatable(node.inputs[1], {
+                    __index = source_node.outputs[node.set.pin],
+                })
+            else
+                -- RELINK VARIABLE SETTER
+                local source_node = GetNodeInfo(node.set.guid)
+                setmetatable(node.outputs[1], {
+                    __index = function(t, k)
+                        if k == "get" then rawset(node.outputs[1], "o_val", source_node.outputs[1].o_val) end
+                    end,
+                    __newindex = function(t, k, v) if k == "set" then source_node.outputs[1].o_val = v end end
+                })
+                -- local source_node = GetNodeInfo(node.set.guid)
+                -- setmetatable(node.outputs[node.set.pin], {
+                --     __index = source_node.outputs[node.set.pin],
+                --     __newindex = source_node.outputs[node.set.pin]
+                -- })
+            end
+        end
+    end
+end
+
 local function RelinkParrentFunctionNodes()
     for i = 1, #FUNCTIONS do
         for n = 1, #FUNCTIONS[i].NODES do
@@ -2040,7 +2299,8 @@ local function RelinkParrentFunctionNodes()
                 if next(node.inputs[o].connection) then
                     local connected_node = GetNodeInfo(node.inputs[o].connection[1].node)
                     setmetatable(node.inputs[o], {
-                        __index = connected_node.outputs[node.inputs[o].connection[1].pin]
+                        __index = connected_node.outputs[node.inputs[o].connection[1].pin],
+                        __newindex = connected_node.outputs[node.inputs[o].connection[1].pin]
                     })
                 end
             end
@@ -2049,7 +2309,9 @@ local function RelinkParrentFunctionNodes()
             if node.fname and node.fname:lower():find("math") then
                 setmetatable(node.outputs[1], {
                     __index = function(t, k)
-                        if k == "o_val" then return DoMath(node.inputs[2].i_val, node) end
+                        if k == "o_val" then
+                            return DoMath(node.inputs[2].i_val, node)
+                        end
                     end,
                 })
             elseif node.fname and node.fname:lower():find("std_") then
@@ -2065,6 +2327,7 @@ local function RelinkParrentFunctionNodes()
                 local source_node = GetNodeInfo(node.get)
                 setmetatable(node.outputs[1], {
                     __index = source_node.outputs[1],
+                    __newindex = source_node.outputs[1],
                 })
             end
 
@@ -2192,10 +2455,6 @@ function ClearProject()
     TMP_COPY = {}
     FUNCTIONS = {}
     InitStartFunction()
-    -- RESET CANVAS
-    CANVAS.off_x = CANVAS.rx / 2 - 100 * CANVAS.scale
-    CANVAS.off_y = CANVAS.ry / 2
-    CANVAS.scale = 1
 end
 
 function InitStartNodes(is_init)
@@ -2215,7 +2474,7 @@ function InitStartFunction()
     FUNCTIONS[#FUNCTIONS].NODES = InitStartNodes(true)
     FUNCTIONS[#FUNCTIONS].CANVAS = InitCanvas()
     CURRENT_FUNCTION = 2
-    CHANGE_TAB = 2
+    CHANGE_FTAB = 2
 end
 
 function ClearNodesWarning()
@@ -2254,4 +2513,27 @@ function ConnectNextPreviousFunctionNodes(prev_node, prev_pin, next_node, next_p
             pin = prev_pin
         }
     end
+end
+
+function AnimateSpriteSheet(img_obj, frames, cols, rows, speed, x, y, time)
+    --local now_time = time - r.time_precise()
+    local w, h = r.ImGui_Image_GetSize(img_obj)
+
+    --local xs, ys = WIN_X + x, WIN_Y + y
+    local xe, ye = w / cols, h / rows
+
+    local uv_step_x, uv_step_y = 1 / cols, 1 / rows
+
+    local frame = math.floor((r.time_precise() * speed) % frames)
+
+    local col_frame = frame % cols
+    local row_frame = math.floor(frame / cols)
+
+    local uv_xs = col_frame * uv_step_x
+    local uv_ys = row_frame * uv_step_y
+    local uv_xe = uv_xs + uv_step_x
+    local uv_ye = uv_ys + uv_step_y
+
+    --r.ImGui_DrawList_AddImage(DL, img_obj, xs, ys, xe, ye, uv_xs, uv_ys, uv_xe, uv_ye)
+    r.ImGui_Image(ctx, img_obj, xe, ye, uv_xs, uv_ys, uv_xe, uv_ye)
 end

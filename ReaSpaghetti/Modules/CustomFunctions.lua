@@ -1,8 +1,9 @@
 --@noindex
 --NoIndex: true
+local r = reaper
 
-local random, huge, pi, abs, cos, acos, sin, asin, atan, ceil, floor, deg, exp, log, modf, rad, sqrt, randomseed, fmod, min, max, mtype =
-    math.random, math.huge, math.pi, math.abs, math.cos, math.acos, math.sin, math.asin, math.atan, math.ceil,
+local random, huge, pi, abs, cos, acos, sin, asin, atan, tan, ceil, floor, deg, exp, log, modf, rad, sqrt, randomseed, fmod, min, max, mtype =
+    math.random, math.huge, math.pi, math.abs, math.cos, math.acos, math.sin, math.asin, math.atan, math.tan, math.ceil,
     math.floor, math.deg, math.exp, math.log, math.modf, math.rad, math.sqrt, math.randomseed, math.fmod, math.min,
     math.max, math.type
 
@@ -34,6 +35,7 @@ local Math = {
     ["sin"]        = function(x) return sin(x) end,
     ["asin"]       = function(x) return asin(x) end,
     ["atan"]       = function(x) return atan(x) end,
+    ["tan"]        = function(x) return tan(x) end,
     ["ceil"]       = function(x) return ceil(x) end,
     ["floor"]      = function(x) return floor(x) end,
     ["deg"]        = function(x) return deg(x) end,
@@ -84,22 +86,22 @@ local LuaStd = {
 }
 
 -- LITTLE BIGGER TAN ORIGINAL NOT TO TRIGGER __index WHEN CALLING .o_val
-function CheckCurrentInput2(node_inp)
+function CheckCurrentInput(node_inp)
     local a, b = 0, 0
     if node_inp[1] then
         if #node_inp[1].connection == 0 then
             a = node_inp[1].i_val
         else
-            -- IN CASE VALUE IS NIL (CONNECTED TO API NODE) RETURN 0 SO LIVE CALCULATING WONT CRASH (API IS CALCULATED AFTER RUNNING)
-            a = node_inp[1].o_val or 0
+            local v = node_inp[1].o_val
+            a = v == nil and a or v
         end
     end
     if node_inp[3] then
         if #node_inp[3].connection == 0 then
             b = node_inp[3].i_val
         else
-            -- IN CASE VALUE IS NIL (CONNECTED TO API NODE) RETURN 0 SO LIVE CALCULATING WONT CRASH (API IS CALCULATED AFTER RUNNING)
-            b = node_inp[3].o_val or 0
+            local v = node_inp[3].o_val
+            b = v == nil and b or v
         end
         return a, b
     end
@@ -107,12 +109,12 @@ function CheckCurrentInput2(node_inp)
 end
 
 function DoMath(op, node)
-    local a, b = CheckCurrentInput2(node.inputs)
+    local a, b = CheckCurrentInput(node.inputs)
     return Math[op](a, b)
 end
 
 function DoStd(op, node)
-    local a, b = CheckCurrentInput2(node.inputs)
+    local a, b = CheckCurrentInput(node.inputs)
     return LuaStd[op](a, b)
 end
 
@@ -274,7 +276,7 @@ function CUSTOM_TableGetVal(called_node, func_node, tbl, key)
     if CheckInputType(called_node, { tbl[key] }, func_node.NODES, "GET") then
         BREAK_RUN = true
         Deselect_all()
-        CHANGE_TAB = func_node.FID
+        CHANGE_FTAB = func_node.FID
         return "ERROR"
     end
     called_node.outputs[1].o_val = tbl[key]
@@ -288,7 +290,7 @@ function CUSTOM_TableSetVal(called_node, func_node, tbl, key, val)
     if CheckInputType(called_node, { val, key }, func_node.NODES, "SET") then
         BREAK_RUN = true
         Deselect_all()
-        CHANGE_TAB = func_node.FID
+        CHANGE_FTAB = func_node.FID
         return "ERROR"
     end
     tbl[key] = val
@@ -386,9 +388,7 @@ end
 function CUSTOM_dBToVAL(called_node, func_node)
     local LN10_OVER_TWENTY = 0.11512925464970228420089957273422
     local x = #called_node.inputs[1].connection ~= 0 and called_node.inputs[1].o_val or called_node.inputs[1].i_val
-    --called_node.inputs[1].o_val = exp(db * LN10_OVER_TWENTY)
     called_node.outputs[1].o_val = exp(x * LN10_OVER_TWENTY)
-    --return exp(db * LN10_OVER_TWENTY)
 end
 
 function CUSTOM_VALtodB(called_node, func_node)
@@ -397,5 +397,190 @@ function CUSTOM_VALtodB(called_node, func_node)
         called_node.outputs[1].o_val = -150
     else
         called_node.outputs[1].o_val = max(-150, log(x) * 8.6858896380650365530225783783321)
+    end
+end
+
+function CUSTOM_NilCheck(called_node, func_node)
+    if called_node.inputs[1].o_val == nil then
+        called_node.outputs[1].o_val = true
+    else
+        called_node.outputs[1].o_val = false
+    end
+end
+
+function CUSTOM_ValToBool(called_node, func_node)
+    local x = #called_node.inputs[1].connection ~= 0 and called_node.inputs[1].o_val or called_node.inputs[1].i_val
+    called_node.outputs[1].o_val = x <= 0 and true or false
+end
+
+function CUSTOM_SwitchValue(called_node, func_node)
+    local x = #called_node.inputs[1].connection ~= 0 and called_node.inputs[1].o_val or called_node.inputs[1].i_val
+    called_node.outputs[1].o_val = x == 0 and 1 or 0
+end
+
+function CUSTOM_DoWhile(called_node, func_node)
+    GetChildFlow(called_node, func_node)
+
+    while called_node.inputs[1].o_val do
+        GetChildFlow(called_node, func_node)
+        Run_Flow(called_node.LOOP_FLOW, func_node)
+    end
+    called_node.LOOP_FLOW = nil
+end
+
+function CUSTOM_ClearTable(called_node, func_node, tbl)
+    if not called_node.inputs[1].o_val then return "ERROR" end
+
+    -- tbl = {}
+    local target_guid = called_node.inputs[1].connection[1].node
+    local target = GetNodeInfo(target_guid)
+
+    ----if target.type == "get" then
+    --     target = GetNodeInfo(target.get)
+    --end
+
+    --reaper.ShowConsoleMsg(tostring(target.outputs[1].o_val) .. "\n")
+    --reaper.ShowConsoleMsg(target.guid)
+    target.outputs[1].o_val = {}
+
+    --reaper.ShowConsoleMsg(tostring(target.outputs[1].o_val) .. "\n")
+    --target.outputs[1].i_val = {}
+    --called_node.inputs[1].o_val = {}
+end
+
+function CUSTOM_CheckTableKV(called_node, func_node, tbl, key)
+    if not tbl then return "ERROR" end
+    if tbl[key] then
+        called_node.outputs[1].o_val = true
+    else
+        called_node.outputs[1].o_val = false
+    end
+end
+
+-- CODE NODE
+-- PREPARE METATABLE FOR READING INPUTS (CODE NODE)
+local inputAccessor = {}
+setmetatable(inputAccessor, {
+    __index    = function(t, k)
+        if k == 0 then return "ERROR" end
+
+        --if k == #t.node.inputs then return "ERROR" end
+        if type(k) ~= "number" then return "ERROR" end
+
+        --if k == "code" then return t.node.inputs[1].o_val end
+        -- CODE INPUT IS 1
+        local key = k + 1
+        local value = #t.node.inputs[key].connection ~= 0 and t.node.inputs[key].o_val or t.node.inputs[key].i_val
+        -- DONT ALLOW NON INDEXED KEYS
+        --if type(key) ~= "number" then return "ERROR" end
+        -- DONT ALLOW USING INPUTS 0 (RUN) AND LAST INPUT (STRING CODE)
+        --if k == 0 or k == #t.node.inputs then return "ERROR" end
+        return value
+    end,
+    __newindex = function(t, k, v)
+        -- DONT ALLOW WRITING INPUTS
+        return "ERROR"
+    end,
+})
+
+-- PREPARE METATABLE FOR READING/WRITING OUTPUTS (CODE NODE)
+local outputAccessor = {}
+setmetatable(outputAccessor, {
+    __index = function(t, k)
+        -- DONT ALLOW NON INDEXED KEYS
+        if type(k) ~= "number" then return "ERROR" end
+        -- DONT ALLOW READING PIN 0 (RUN)
+        if k == 0 then return "ERROR" end
+        return t.node.outputs[k].o_val
+    end,
+    __newindex = function(t, k, v)
+        -- DONT ALLOW WRITING PIN 0 (RUN)
+        if k == 0 then return "ERROR" end
+        t.node.outputs[k].o_val = v
+    end,
+})
+
+local code_vars = {
+    input = inputAccessor,
+    output = outputAccessor,
+    math = math,
+    utf8 = utf8,
+    string = string,
+    table = table,
+    os = os,
+    pairs = pairs,
+    ipairs = ipairs,
+    tostring = tostring,
+    tonumber = tonumber,
+    type = type,
+    next = next,
+    select = select,
+    print = r.ShowConsoleMsg,
+    io = io,
+    debug = debug,
+    rawget = rawget,
+    rawset = rawset,
+    getmetatable = getmetatable,
+    setmetatable = setmetatable,
+}
+
+local TMP_FUNC = {}
+
+function ResetTmpFunctionsTBL()
+    TMP_FUNC = {}
+end
+
+function CUSTOM_CodeNodeRun(called_node, func_node)
+    local func, err = TMP_FUNC[called_node.guid], nil
+    local code_string
+    if not func then
+        code_string = #called_node.inputs[1].connection ~= 0 and called_node.inputs[1].o_val or
+            called_node.inputs[1].i_val
+    end
+
+    rawset(inputAccessor, 'node', called_node)
+    rawset(outputAccessor, 'node', called_node)
+
+    if not func then
+        func, err = load(code_string, called_node.guid, "t", code_vars)
+        if func then
+            local pass, err_msg = pcall(func)
+            if not pass then
+                called_node.missing_arg = { err_msg:gsub("%[(.-)%]", "LINE") }
+                return "ERROR2"
+            end
+            TMP_FUNC[called_node.guid] = func
+        else
+            called_node.missing_arg = { err }
+            return "ERROR2"
+        end
+    else
+        local pass, err_msg = pcall(func)
+        if not pass then
+            called_node.missing_arg = { err_msg:gsub("%[(.-)%]", "LINE") }
+            return "ERROR2"
+        end
+    end
+    -- local func, err = load(code_string, called_node.guid, "t", code_vars)
+    -- if func then
+    --     local pass, err_msg = pcall(func)
+    --     if not pass then
+    --         called_node.missing_arg = { err_msg:gsub("%[(.-)%]", "LINE") }
+    --         return "ERROR2"
+    --     end
+    -- else
+    --     called_node.missing_arg = { err }
+
+    --     return "ERROR2"
+    -- end
+end
+
+function CUSTOM_StringCompare(called_node, func_node, str1, str2)
+    if not str1 then return "ERROR" end
+    if not str2 then return "ERROR" end
+    if str1 == str2 then
+        called_node.outputs[1].o_val = true
+    else
+        called_node.outputs[1].o_val = false
     end
 end

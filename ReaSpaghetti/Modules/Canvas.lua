@@ -11,8 +11,8 @@ function InitCanvas()
         view_y = 0,
         w = 0,
         h = 0,
-        off_x = r.ImGui_GetContentRegionAvail(ctx) / 2 - 100,
-        off_y = ({ r.ImGui_GetContentRegionAvail(ctx) })[2] / 2,
+        off_x = 100,
+        off_y = 200,
         scale = 1,
         rx = 0,
         ry = 0
@@ -55,6 +55,7 @@ end
 
 local function Update()
     local FUNCTIONS              = GetFUNCTIONS()
+    WIN_X, WIN_Y                 = r.ImGui_GetWindowPos(ctx)
     CANVAS                       = FUNCTIONS[CURRENT_FUNCTION].CANVAS
     MX, MY                       = r.ImGui_GetMousePos(ctx)
     CANVAS.view_x, CANVAS.view_y = r.ImGui_GetCursorScreenPos(ctx)
@@ -147,9 +148,14 @@ function UpdateZoomFont()
     local new_font_size = math.floor(ORG_FONT_SIZE * CANVAS.scale)
     if FONT_SIZE ~= new_font_size then
         if NEXT_FRAME then
-            if FONT then r.ImGui_Detach(ctx, FONT) end
+            if FONT then
+                r.ImGui_Detach(ctx, FONT)
+                r.ImGui_Detach(ctx, FONT_CODE)
+            end
             FONT = r.ImGui_CreateFont('sans-serif', new_font_size, r.ImGui_FontFlags_Bold())
+            FONT_CODE = r.ImGui_CreateFont('monospace', new_font_size, r.ImGui_FontFlags_Bold())
             r.ImGui_Attach(ctx, FONT)
+            r.ImGui_Attach(ctx, FONT_CODE)
             FONT_SIZE = new_font_size
             NEXT_FRAME = nil
         end
@@ -202,6 +208,7 @@ local function CheckShortcuts()
     local F2 = r.ImGui_IsKeyPressed(ctx, r.ImGui_Key_F2())
     local HOME = r.ImGui_IsKeyPressed(ctx, r.ImGui_Key_Home())
     local KEY_R = r.ImGui_IsKeyPressed(ctx, r.ImGui_Key_R())
+    local KEY_Z = r.ImGui_IsKeyPressed(ctx, r.ImGui_Key_Z())
 
     ALT_DOWN = r.ImGui_IsKeyDown(ctx, r.ImGui_Key_LeftAlt())
     SHIFT_DOWN = r.ImGui_IsKeyDown(ctx, r.ImGui_Key_LeftShift())
@@ -216,6 +223,10 @@ local function CheckShortcuts()
         BREAK_RUN = nil
         ClearNodesWarning()
         InitRunFlow()
+    end
+
+    if CTRL_DOWN and KEY_Z then
+        DoUndo()
     end
 
     if COPY then

@@ -1,9 +1,14 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.34
+-- @version 0.36
 -- @changelog
---  Fix naming function I/O not renaming self inputs/outputs
+--  Code node
+--  File manager modal change
+--  Fix wires can be hoovered while over node
+--  Initial undo script
+--  Ultraschall API
+--  Ultraschall parser (to fix native slowdown)
 -- @provides
 --   api_file.txt
 --   Modules/*.lua
@@ -30,8 +35,11 @@ require("Modules/Defaults")
 
 FONT = r.ImGui_CreateFont('sans-serif', FONT_SIZE, r.ImGui_FontFlags_Bold())
 FONT_STATIC = r.ImGui_CreateFont('sans-serif', FONT_SIZE_STATIC)
+FONT_CODE = r.ImGui_CreateFont('monospace', FONT_SIZE, r.ImGui_FontFlags_Bold())
+
 r.ImGui_Attach(ctx, FONT)
 r.ImGui_Attach(ctx, FONT_STATIC)
+r.ImGui_Attach(ctx, FONT_CODE)
 
 r.ImGui_SetConfigVar(ctx, r.ImGui_ConfigVar_WindowsMoveFromTitleBarOnly(), 1)
 local WND_FLAGS = r.ImGui_WindowFlags_NoScrollbar()
@@ -45,6 +53,11 @@ local profiler2 = require("Modules/profiler")
 INSPECT = require("Modules/inspect")
 --local profiler = require("Modules/ProFi")
 
+if r.file_exists(r.GetResourcePath() .. "/UserPlugins/ultraschall_api.lua") then
+    dofile(r.GetResourcePath() .. "/UserPlugins/ultraschall_api.lua")
+    ULTRA_API = true
+end
+
 FLUX = require("Modules/flux")
 BEZIER = require("Modules/path2d_bezier3")
 BEZIER_HIT = require("Modules/path2d_bezier3_hit")
@@ -57,10 +70,10 @@ require("Modules/NodeDraw")
 require("Modules/Flow")
 require("Modules/CustomFunctions")
 require("Modules/ExportToAction")
+require("Modules/Library")
+require("Modules/Undo")
 
-if STANDALONE_RUN then
-    return
-end
+if STANDALONE_RUN then return end
 
 local old_time = r.time_precise()
 local function UpdateDeltaTime()
@@ -82,31 +95,36 @@ local function frame()
         r.ImGui_EndChild(ctx)
     end
     r.ImGui_SameLine(ctx)
+    r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_WindowPadding(), 0, 0)
     local visible = r.ImGui_BeginChild(ctx, "Canvas", 0, 0, 1,
         r.ImGui_WindowFlags_NoScrollbar() | r.ImGui_WindowFlags_NoScrollWithMouse())
+    r.ImGui_PopStyleVar(ctx)
     if visible then
+        --r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_FramePadding(), 0, 0)
         FunctionTabs()
-        r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_WindowPadding(), 0, 0)
         if r.ImGui_BeginChild(ctx, "Canvas2", 0, 0, 1, r.ImGui_WindowFlags_NoScrollbar() | r.ImGui_WindowFlags_NoScrollWithMouse()) then
-            r.ImGui_PopStyleVar(ctx)
             -- WE NEED TO CENTER CANVAS IN ITS WINDOW (IN ORDER TO NODE TO BE IN CENTER)
-            if not CANVAS then CANVAS = InitCanvas() end
+            if not CANVAS then
+                CANVAS = InitCanvas()
+            end
             Popups()
             CanvasLoop()
             UI_Buttons()
-            r.ImGui_EndChild(ctx)
+
+            r.ImGui_EndChild(ctx) -- END CANVAS2
             CheckWindowPayload()
-            r.ImGui_EndChild(ctx)
         end
+        r.ImGui_EndChild(ctx) -- END CANVAS1
     end
 end
 
-local FRAME_CNT = 0
 DIRTY = nil
 local function loop()
-    --UI_UPDATE = FRAME_CNT % WIDGETS_LIVE_UPDATE_SPEED == 0 and true or false
-    --profiler:start()
-    --profiler2.start()
+    if PROFILE_DEBUG then
+        PROFILE_STARTED = true
+        profiler2.start()
+    end
+
     UpdateDeltaTime()
     UpdateZoomFont()
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_WindowBg(), 0x111111FF)
@@ -134,14 +152,14 @@ local function loop()
         end
     end
     NEXT_FRAME = true
-    --profiler:stop()
-    --profiler:writeReport(PATH .. 'MyProfilingReport.txt')
-    ------------------------------------------------
-    -- profiler2.stop()
-    --profiler2.report(PATH .. "profiler.log")
-    --FRAME_CNT = FRAME_CNT + 1
+    if PROFILE_DEBUG and PROFILE_STARTED then
+        profiler2.stop()
+        profiler2.report(PATH .. "profiler.log")
+        PROFILE_DEBUG, PROFILE_STARTED = false, nil
+        OpenFile(PATH .. "profiler.log")
+    end
 end
-
 InitApi()
+InitLibrary()
 InitStartFunction()
 r.defer(function() xpcall(loop, crash) end)

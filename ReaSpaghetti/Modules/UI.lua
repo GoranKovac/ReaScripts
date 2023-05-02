@@ -41,6 +41,7 @@ function Top_Menu()
                 if AreFunctionsDirty() then
                     NEW_WARNIGN = true
                 else
+                    RESET_CANVAS = true
                     ClearProject()
                 end
             end
@@ -63,6 +64,12 @@ function Top_Menu()
             end
             if r.ImGui_MenuItem(ctx, 'Update API') then
                 CurlToFile()
+            end
+
+            if ULTRA_API then
+                if r.ImGui_MenuItem(ctx, 'Update ULTRASCHALL API') then
+                    WriteUltraApi()
+                end
             end
             r.ImGui_EndMenu(ctx)
         end
@@ -137,133 +144,8 @@ local types = {
     "ANY"
 }
 
--- function FunctionIO()
---     local pad_x, pad_y = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_FramePadding())
---     if CURRENT_FUNCTION < 3 then return end
---     local FUNCTIONS = GetFUNCTIONS()
---     local def_h = (19 + (2 * pad_y))
---     r.ImGui_SameLine(ctx)
---     if r.ImGui_BeginChild(ctx, 'FUNCTION ARG', 125, def_h + (#FUNCTIONS[CURRENT_FUNCTION].inputs * 23), true, r.ImGui_WindowFlags_NoScrollbar()) then
---         r.ImGui_SetCursorPos(ctx, 5, 3)
---         r.ImGui_Text(ctx, "ARGUMENTS")
---         r.ImGui_SameLine(ctx)
---         if r.ImGui_Button(ctx, "+", 19, 19) then
---             local ins = { { name = "ARG " .. #FUNCTIONS[CURRENT_FUNCTION].inputs + 1, type = "INTEGER" } }
---             --local inputs = CreateInputs("in", ins)
---             -- FUNCTION INPUT
---             FUNCTIONS[CURRENT_FUNCTION].inputs[#FUNCTIONS[CURRENT_FUNCTION].inputs + 1] = CreateInputs("in", ins)[1]
-
---             -- FUNCTION START
-
---             FUNCTIONS[CURRENT_FUNCTION].NODES[1].outputs[#FUNCTIONS[CURRENT_FUNCTION].NODES[1].outputs + 1] =
---                 CreateInputs("out", ins)[1]
-
---             -- UPDATE ALL INSERTED NODE FUNCTIONS
---             UpdateChildFunctions(CURRENT_FUNCTION, "ARG", "add", CreateInputs("in", ins)[1])
---         end
---         r.ImGui_SameLine(ctx)
---         if r.ImGui_Button(ctx, "-", 19, 19) then
---             if #FUNCTIONS[CURRENT_FUNCTION].inputs > 0 then
---                 -- ALWAYS REMOVE ALL CONNECTIONS FIRST
---                 -- FUNCTION INPUT
---                 Delete_Wire(FUNCTIONS[CURRENT_FUNCTION].inputs[#FUNCTIONS[CURRENT_FUNCTION].inputs].connection)
-
---                 Delete_Wire(FUNCTIONS[CURRENT_FUNCTION].NODES[1].outputs[#FUNCTIONS[CURRENT_FUNCTION].NODES[1].outputs]
---                     .connection)
-
---                 table.remove(FUNCTIONS[CURRENT_FUNCTION].inputs, #FUNCTIONS[CURRENT_FUNCTION].inputs)
---                 -- FUNCTION START OUTPUT
---                 table.remove(FUNCTIONS[CURRENT_FUNCTION].NODES[1].outputs, #FUNCTIONS[CURRENT_FUNCTION].NODES[1].outputs)
---                 -- UPDATE ALL INSERTED NODE FUNCTIONS
---                 UpdateChildFunctions(CURRENT_FUNCTION, "ARG", "remove")
---             end
---         end
---         for inp = 1, #FUNCTIONS[CURRENT_FUNCTION].inputs do
---             local cur_type = FUNCTIONS[CURRENT_FUNCTION].inputs[inp].type
---             r.ImGui_PushID(ctx, "args" .. inp)
---             r.ImGui_SetCursorPosX(ctx, 22)
---             if r.ImGui_BeginCombo(ctx, inp, cur_type) then
---                 for v in ipairs(types) do
---                     if r.ImGui_Selectable(ctx, types[v]) then
---                         -- DO NOT ALLOW CHANGE IF PIN IS CONNECTED
---                         if not next(FUNCTIONS[CURRENT_FUNCTION].inputs[inp].connection) then
---                             -- UPDATE FUNCTION INPUT TYPE
---                             FUNCTIONS[CURRENT_FUNCTION].inputs[inp].type = types[v]
---                             -- UPDATE FUNCTION START NODE TYPE
---                             FUNCTIONS[CURRENT_FUNCTION].NODES[1].outputs[inp].type = types[v]
---                             -- UPDATE CHILD FUNCTIONS ARGUMENT TYPE
---                             UpdateChildFunctions(CURRENT_FUNCTION, "ARG", "update", nil, inp, types[v])
---                         end
---                     end
---                 end
---                 r.ImGui_EndCombo(ctx)
---             end
---             r.ImGui_PopID(ctx)
---         end
---         r.ImGui_EndChild(ctx)
---     end
-
---     r.ImGui_SameLine(ctx)
---     if r.ImGui_BeginChild(ctx, 'FUNCTION RET', 115, def_h + (#FUNCTIONS[CURRENT_FUNCTION].outputs * 23), true, r.ImGui_WindowFlags_NoScrollbar()) then
---         r.ImGui_SetCursorPos(ctx, 5, 3)
---         r.ImGui_Text(ctx, "RETURNS")
---         r.ImGui_SameLine(ctx)
---         if r.ImGui_Button(ctx, "+", 19, 19) then
---             local out = { { name = "RET " .. #FUNCTIONS[CURRENT_FUNCTION].outputs + 1, type = "INTEGER" } }
---             --local outputs = CreateInputs("out", out)
---             -- FUNCTION OUTPUT
---             FUNCTIONS[CURRENT_FUNCTION].outputs[#FUNCTIONS[CURRENT_FUNCTION].outputs + 1] = CreateInputs("out", out)[1]
---             -- FUNCTION RETURN NODE INPUT
---             FUNCTIONS[CURRENT_FUNCTION].NODES[2].inputs[#FUNCTIONS[CURRENT_FUNCTION].NODES[2].inputs + 1] =
---                 CreateInputs("in", out)[1]
---             -- UPDATE ALL INSERTED NODE FUNCTIONS
---             UpdateChildFunctions(CURRENT_FUNCTION, "RET", "add", CreateInputs("out", out)[1])
---         end
---         r.ImGui_SameLine(ctx)
---         if r.ImGui_Button(ctx, "-", 19, 19) then
---             if #FUNCTIONS[CURRENT_FUNCTION].outputs > 0 then
---                 Delete_Wire(FUNCTIONS[CURRENT_FUNCTION].outputs[#FUNCTIONS[CURRENT_FUNCTION].outputs].connection)
-
---                 Delete_Wire(FUNCTIONS[CURRENT_FUNCTION].NODES[2].inputs[#FUNCTIONS[CURRENT_FUNCTION].NODES[2].inputs]
---                     .connection)
---                 -- FUNCTION OUTPUT
---                 table.remove(FUNCTIONS[CURRENT_FUNCTION].outputs, #FUNCTIONS[CURRENT_FUNCTION].outputs)
---                 -- FUNCTION RETURN NODE INPUT
---                 table.remove(FUNCTIONS[CURRENT_FUNCTION].NODES[2].inputs, #FUNCTIONS[CURRENT_FUNCTION].NODES[2].inputs)
---                 -- UPDATE ALL INSERTED NODE FUNCTIONS
---                 UpdateChildFunctions(CURRENT_FUNCTION, "RET", "remove")
---             end
---         end
---         for out = 1, #FUNCTIONS[CURRENT_FUNCTION].outputs do
---             local cur_type = FUNCTIONS[CURRENT_FUNCTION].outputs[out].type
---             r.ImGui_PushID(ctx, "rets" .. out)
---             r.ImGui_SetCursorPosX(ctx, 22)
---             if r.ImGui_BeginCombo(ctx, out, cur_type) then
---                 for v in ipairs(types) do
---                     if r.ImGui_Selectable(ctx, types[v]) then
---                         -- DO NOT ALLOW CHANGE IF PIN IS CONNECNTED
---                         if not next(FUNCTIONS[CURRENT_FUNCTION].outputs[out].connection) then
---                             -- UPDATE FUNCTION INPUT TYPE
---                             FUNCTIONS[CURRENT_FUNCTION].outputs[out].type = types[v]
---                             -- UPDATE FUNCTION RETURN NODE TYPE
---                             FUNCTIONS[CURRENT_FUNCTION].NODES[2].inputs[out].type = types[v]
---                             -- UPDATE CHILD FUNCTIONS RETURN TYPE
---                             UpdateChildFunctions(CURRENT_FUNCTION, "RET", "update", nil, out, types[v])
---                         end
---                     end
---                 end
---                 r.ImGui_EndCombo(ctx)
---             end
---             r.ImGui_PopID(ctx)
---         end
---         r.ImGui_SameLine(ctx)
---         r.ImGui_EndChild(ctx)
---     end
--- end
-
 local function TableSpecial(node)
     --if node.type ~= "tc" then return end
-
     if r.ImGui_Button(ctx, "+", 19, 19) then
         if node.type == "tc" then
             local ins = { { name = "VAL " .. #node.inputs + 1, type = "INTEGER" } }
@@ -279,6 +161,18 @@ local function TableSpecial(node)
                 local inputs = CreateInputs("in", ins)
                 node.inputs[#node.inputs + 1] = inputs[1]
                 local out = { { name = "OUT " .. #node.outputs, type = "RUN" } }
+                local outputs = CreateInputs("out", out)
+                node.outputs[#node.outputs + 1] = outputs[1]
+            elseif node.fname == "CUSTOM_CodeNodeRun" then
+                local ins = { { name = "INPUT " .. #node.inputs, type = "INTEGER" } }
+                local inputs = CreateInputs("in", ins)
+                --table.insert(node.inputs, 1, inputs[1])
+                node.inputs[#node.inputs + 1] = inputs[1]
+                --for i = 1, #node.inputs - 1 do
+                --    node.inputs[i].label = node.inputs[i].label:gsub("%d+", i)
+                --end
+
+                local out = { { name = "OUTPUT " .. #node.outputs + 1, type = "INTEGER" } }
                 local outputs = CreateInputs("out", out)
                 node.outputs[#node.outputs + 1] = outputs[1]
             end
@@ -310,46 +204,90 @@ local function TableSpecial(node)
                     table.remove(node.inputs, #node.inputs)
                     table.remove(node.outputs, #node.outputs)
                 end
+            elseif node.fname == "CUSTOM_CodeNodeRun" then
+                if #node.inputs > 1 then
+                    --Delete_Wire(node.inputs[1].connection)
+                    --Delete_Wire(node.outputs[1].connection)
+                    Delete_Wire(node.inputs[#node.inputs].connection)
+                    Delete_Wire(node.outputs[#node.outputs].connection)
+                    if #node.in_values ~= 0 then
+                        table.remove(node.in_values, #node.in_values)
+                    end
+                    table.remove(node.inputs, #node.inputs)
+                    table.remove(node.outputs, #node.outputs)
+                end
             end
         end
     end
-    if node.type == "tc" then
+    if node.type == "tc" or node.type == "code" then
         local avail_w = r.ImGui_GetContentRegionAvail(ctx)
-        for ins = 1, #node.inputs do
-            local cur_type = node.inputs[ins].type
-            r.ImGui_PushID(ctx, "tc_inp" .. ins)
-            r.ImGui_SetNextItemWidth(ctx, avail_w / 3)
-            if r.ImGui_BeginCombo(ctx, ins, cur_type) then
-                for v in ipairs(types) do
-                    if r.ImGui_Selectable(ctx, types[v]) then
-                        -- DO NOT ALLOW CHANGING IF PIN IS CONNECTED
-                        if not next(node.inputs[ins].connection) then
-                            -- UPDATE FUNCTION INPUT TYPE
-                            node.inputs[ins].type = types[v]
+        if r.ImGui_BeginChild(ctx, "code_inputs") then
+            for ins = 1, #node.inputs do
+                if node.inputs[ins].type ~= "CODE" then
+                    if ins > 1 then
+                        local cur_type = node.inputs[ins].type
+                        r.ImGui_PushID(ctx, "tc_inp" .. ins)
+                        r.ImGui_SetNextItemWidth(ctx, avail_w / 3)
+                        if r.ImGui_BeginCombo(ctx, ins, cur_type) then
+                            for v in ipairs(types) do
+                                if r.ImGui_Selectable(ctx, types[v]) then
+                                    -- DO NOT ALLOW CHANGING IF PIN IS CONNECTED
+                                    if not next(node.inputs[ins].connection) then
+                                        -- UPDATE FUNCTION INPUT TYPE
+                                        node.inputs[ins].type = types[v]
+                                    end
+                                end
+                            end
+                            r.ImGui_EndCombo(ctx)
                         end
+                        r.ImGui_PopID(ctx)
                     end
                 end
-                r.ImGui_EndCombo(ctx)
+                if node.type == "tc" then
+                    r.ImGui_SameLine(ctx)
+                    r.ImGui_PushID(ctx, "##tc" .. node.guid .. ins)
+                    r.ImGui_SetNextItemWidth(ctx, avail_w / 3)
+                    RV_TC_I_NAME, node.inputs[ins].label = r.ImGui_InputText(ctx, "##labeli", node.inputs[ins].label)
+                    r.ImGui_PopID(ctx)
+                    r.ImGui_SameLine(ctx)
+                    r.ImGui_PushID(ctx, "##tc_apply" .. node.guid .. ins)
+                    _, node.inputs[ins].to_key = r.ImGui_Checkbox(ctx, "TO KEY", node.inputs[ins].to_key)
+                    r.ImGui_PopID(ctx)
+                end
             end
-            r.ImGui_PopID(ctx)
-            r.ImGui_SameLine(ctx)
-            r.ImGui_PushID(ctx, "##tc" .. node.guid .. ins)
-            r.ImGui_SetNextItemWidth(ctx, avail_w / 3)
-            RV_TC_I_NAME, node.inputs[ins].label = r.ImGui_InputText(ctx, "##labeli", node.inputs[ins].label)
-            r.ImGui_PopID(ctx)
-            r.ImGui_SameLine(ctx)
-            r.ImGui_PushID(ctx, "##tc_apply" .. node.guid .. ins)
-            _, node.inputs[ins].to_key = r.ImGui_Checkbox(ctx, "TO KEY", node.inputs[ins].to_key)
-            -- if r.ImGui_Button(ctx, "NAME TO KEY") then
-
-            -- end
-            r.ImGui_PopID(ctx)
+            r.ImGui_EndChild(ctx)
+        end
+        if node.type == "code" then
+            local avail_w = r.ImGui_GetContentRegionAvail(ctx)
+            r.ImGui_SameLine(ctx, 150)
+            if r.ImGui_BeginChild(ctx, "code_outputs") then
+                for outs = 1, #node.outputs do
+                    --if node.outputs[outs].type ~= "CODE" then
+                    local cur_type = node.outputs[outs].type
+                    r.ImGui_PushID(ctx, "code_outp" .. outs)
+                    r.ImGui_SetNextItemWidth(ctx, avail_w / 3)
+                    if r.ImGui_BeginCombo(ctx, outs, cur_type) then
+                        for v in ipairs(types) do
+                            if r.ImGui_Selectable(ctx, types[v]) then
+                                -- DO NOT ALLOW CHANGING IF PIN IS CONNECTED
+                                if not next(node.outputs[outs].connection) then
+                                    -- UPDATE FUNCTION INPUT TYPE
+                                    node.outputs[outs].type = types[v]
+                                end
+                            end
+                        end
+                        r.ImGui_EndCombo(ctx)
+                    end
+                    r.ImGui_PopID(ctx)
+                end
+                r.ImGui_EndChild(ctx)
+            end
         end
     end
 end
 
 local tbl_types = {
-    ["m"] = true,["i"] = true,["f"] = true,["s"] = true,["b"] = true }
+    ["m"] = true, ["i"] = true, ["f"] = true, ["s"] = true, ["b"] = true }
 
 local function InspectorFrame(node)
     if not node then return end
@@ -357,10 +295,10 @@ local function InspectorFrame(node)
     local io_type = tbl_types[node.type] and "out" or "in"
     local current_io_tbl = tbl_types[node.type] and node.outputs or
         node.inputs --node.type == "m" and node.outputs or node.inputs
-    if node.type == "tc" or node.fname == "CUSTOM_MultiIfElse" or node.fname == "CUSTOM_MultiIfElseifElse" then
+    if node.type == "tc" or node.fname == "CUSTOM_MultiIfElse" or node.fname == "CUSTOM_MultiIfElseifElse" or node.fname == "CUSTOM_CodeNodeRun" then
         TableSpecial(node)
         DEF_INC = true
-        if node.type == "tc" then return end
+        if node.type == "tc" or node.type == "code" then return end
     end
     local w = r.ImGui_GetContentRegionAvail(ctx)
     for i = 1, #current_io_tbl do
@@ -657,133 +595,15 @@ local function NodeInspector()
     r.ImGui_PopStyleVar(ctx)
 end
 
--- local function Inspector()
---     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x000000EE)
---     r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_WindowPadding(), 5, 5)
---     local pad_x, pad_y = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_FramePadding())
---     local cur_node = #CntSelNodes() == 1 and CntSelNodes()[1] or nil
---     local def_h = (13 + (2 * pad_y)) + 5
-
---     if cur_node and cur_node.type ~= "func" then
---         local def_open_h = 0
---         if cur_node.type == "tc" or cur_node.type == "retnode" or cur_node.type == "m" then
---             if cur_node.type == "m" then
---                 def_open_h = #cur_node.outputs == 0 and def_h * 2 or (#cur_node.outputs + 1) * def_h + (def_h)
---             elseif cur_node.type == "retnode" then
---                 def_open_h = #cur_node.inputs == 0 and def_h * 2 or (#cur_node.inputs + 1) * def_h + (def_h)
---             elseif cur_node.type == "tc" then
---                 def_open_h = #cur_node.inputs == 0 and def_h * 2 or (#cur_node.inputs + 1) * def_h + (def_h)
---             end
---         else
---             def_open_h = #cur_node.inputs * def_h + (def_h)
---         end
---         r.ImGui_SetCursorPos(ctx, 5, 35)
---         if r.ImGui_BeginChild(ctx, 'Inspector', 243, INSPECT_VISIBLE and def_open_h or def_h, true, r.ImGui_WindowFlags_NoScrollbar()) then
---             INSPECT_VISIBLE = r.ImGui_TreeNode(ctx, 'NODE INSPECTOR', r.ImGui_TreeNodeFlags_NoTreePushOnOpen())
---             if INSPECT_VISIBLE and r.ImGui_BeginChild(ctx, 'Inspect_view') then
---                 --if cur_node.type == "tc" or cur_node.type == "retnode" or cur_node.type == "m" then
---                 TableSpecial(cur_node)
---                 --end
-
---                 local current_io_tbl = cur_node.type == "m" and cur_node.outputs or cur_node.inputs
-
---                 for i = 1, #current_io_tbl do
---                     local missing
---                     local pin = current_io_tbl[i]
-
---                     if cur_node.missing_arg then
---                         for w = 1, #cur_node.missing_arg do
---                             if cur_node.missing_arg[w] == pin.label then
---                                 missing = true
---                             end
---                         end
---                     end
-
---                     local current_input = not next(pin.connection) and pin.i_val or pin.o_val
-
---                     if not pin.no_draw then
---                         local pin_val
---                         if type(pin.o_val) == "number" then
---                             if math.type(pin.o_val) == "float" then
---                                 pin_val = string.format("%.3f", pin.o_val)
---                             end
---                         else
---                             pin_val = tostring(pin.o_val)
---                         end
-
---                         local tw = r.ImGui_CalcTextSize(ctx, pin_val)
---                         local iw = r.ImGui_CalcItemWidth(ctx)
-
---                         if missing then r.ImGui_PushStyleColor(ctx, r.ImGui_Col_FrameBg(), 0xFF000099) end
-
---                         r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_FramePadding(), math.max(0, (iw - tw) / 2), pad_y)
---                         r.ImGui_SetNextItemWidth(ctx, 150)
---                         if cur_node.type ~= "tc" then
---                             if pin.type == "INTEGER" then
---                                 _, pin.i_val = r.ImGui_InputInt(ctx, '##' .. pin.label, current_input, 0)
---                             elseif pin.type == "NUMBER" then
---                                 _, pin.i_val = r.ImGui_InputDouble(ctx, '##' .. pin.label, current_input)
---                             elseif pin.type == "STRING" then
---                                 _, pin.i_val = r.ImGui_InputText(ctx, '##' .. pin.label, current_input)
---                             elseif pin.type == "BOOLEAN" then
---                                 _, pin.i_val = r.ImGui_Checkbox(ctx, '##' .. pin.label, current_input)
---                             elseif pin.type == "LIST" then
---                                 -- _, pin.i_val = r.ImGui_Combo(ctx, pin.label, pin.i_val, pin.list)
---                                 if r.ImGui_BeginCombo(ctx, '##', current_input) then
---                                     for v in ipairs(pin.list) do
---                                         if r.ImGui_Selectable(ctx, pin.list[v], current_input == pin.list[v]) then
---                                             pin.i_val = pin.list[v]
---                                         end
---                                     end
---                                     r.ImGui_EndCombo(ctx)
---                                 end
---                             elseif pin.type == "TABLE_F" then
---                                 _, pin.i_val = r.ImGui_InputText(ctx, '##' .. pin.label, current_input)
---                             else
---                                 r.ImGui_SetCursorPos(ctx, 155, 0)
---                                 r.ImGui_Text(ctx, pin.label)
---                             end
---                         end
-
---                         if not next(pin.connection) then pin.o_val = pin.i_val end
-
---                         if missing then r.ImGui_PopStyleColor(ctx) end
-
---                         r.ImGui_PopStyleVar(ctx)
---                     end
---                 end
---                 r.ImGui_EndChild(ctx)
---             end
---             r.ImGui_EndChild(ctx)
---         end
---     end
---     --r.ImGui_PopFont(ctx)
---     r.ImGui_PopStyleVar(ctx)
---     r.ImGui_PopStyleColor(ctx)
--- end
-
 function DeferTest()
     if r.ImGui_Button(ctx, "RUN") then
         BREAK_RUN = nil
         r.ImGui_SetKeyboardFocusHere(ctx)
         LEGO_MGS = {}
-        --START_FLOW = true
         ClearNodesWarning()
         InitRunFlow()
-        --Run_Flow(FLOW)
-        -- if not DEFER then
-        --     --    START_FLOW = false
-        -- end
     end
     r.ImGui_SameLine(ctx)
-    ----------------------------------------
-    -- if r.ImGui_Checkbox(ctx, "DEFER", DEFER) then
-    --     if not START_FLOW then
-    --         DEFER = not DEFER
-    --     end
-    -- end
-    -- r.ImGui_SameLine(ctx)
-    --if START_FLOW and DEFER then
     if DEFERED_NODE then
         r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Button(), 0x00FF00AA)
     end
@@ -804,6 +624,8 @@ end
 
 function UI_Buttons()
     r.ImGui_SetCursorPos(ctx, 5, 5)
+    -- NIFTY HACK FOR COMMENT BOX NOT OVERLAP UI BUTTONS
+    if not r.ImGui_BeginChild(ctx, 'toolbars', -FLT_MIN, -FLT_MIN, false, r.ImGui_WindowFlags_NoInputs()) then return end
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x000000EE)
 
     r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_WindowPadding(), 0, 0)
@@ -818,15 +640,11 @@ function UI_Buttons()
         end
         r.ImGui_SameLine(ctx)
         r.ImGui_Text(ctx, "ZOOM : " .. string.format("%.3f", CANVAS.scale))
-        --r.ImGui_SameLine(ctx)
-        --if r.ImGui_Button(ctx, "RUN") then
-        --    Run_Flow(FLOW)
-        -- end
+
         r.ImGui_SameLine(ctx)
         ------------------
         DeferTest()
         r.ImGui_SameLine(ctx)
-        -- _, WIDGETS_LIVE_UPDATE_SPEED = r.ImGui_InputInt(ctx, "UPDATE:", WIDGETS_LIVE_UPDATE_SPEED, 0, 0)
         ------------------
         r.ImGui_EndChild(ctx)
     end
@@ -841,6 +659,7 @@ function UI_Buttons()
     FunctionIspector()
     r.ImGui_PopStyleVar(ctx)
     r.ImGui_PopStyleColor(ctx)
+    r.ImGui_EndChild(ctx)
 end
 
 FUNCTION_NAME = "Main"
@@ -848,32 +667,32 @@ function FunctionTabs()
     local FUNCTIONS = GetFUNCTIONS()
     r.ImGui_SetCursorPosX(ctx, 5)
     if r.ImGui_BeginTabBar(ctx, "F_TABS") then
-        if r.ImGui_BeginTabItem(ctx, "Init", false, CHANGE_TAB == 1 and r.ImGui_TabItemFlags_SetSelected() or 0) then
+        if r.ImGui_BeginTabItem(ctx, "Init", false, CHANGE_FTAB == 1 and r.ImGui_TabItemFlags_SetSelected() or 0) then
             if CURRENT_FUNCTION ~= 1 then Deselect_all() end
             CURRENT_FUNCTION = 1
             r.ImGui_EndTabItem(ctx)
         end
-        if r.ImGui_BeginTabItem(ctx, "Main", false, CHANGE_TAB == 2 and r.ImGui_TabItemFlags_SetSelected() or 0) then
+        if r.ImGui_BeginTabItem(ctx, "Main", false, CHANGE_FTAB == 2 and r.ImGui_TabItemFlags_SetSelected() or 0) then
             if CURRENT_FUNCTION ~= 2 then Deselect_all() end
             CURRENT_FUNCTION = 2
             r.ImGui_EndTabItem(ctx)
         end
         for i = 3, #FUNCTIONS do
+            r.ImGui_PushID(ctx, FUNCTIONS[i].label .. i .. "blabla")
             if FUNCTIONS[i].tab_open then
-                r.ImGui_PushID(ctx, FUNCTIONS[i].label .. i)
                 RTV, FUNCTIONS[i].tab_open = r.ImGui_BeginTabItem(ctx, FUNCTIONS[i].label, true,
-                    CHANGE_TAB == i and r.ImGui_TabItemFlags_SetSelected() or 0)
+                    CHANGE_FTAB == i and r.ImGui_TabItemFlags_SetSelected() or 0)
                 if RTV then
                     if CURRENT_FUNCTION ~= i then Deselect_all() end
                     CURRENT_FUNCTION = i
                     -- CANVAS = FUNCTIONS[CURRENT_FUNCTION].CANVAS
                     r.ImGui_EndTabItem(ctx)
                 end
-                r.ImGui_PopID(ctx)
             end
+            r.ImGui_PopID(ctx)
         end
         r.ImGui_EndTabBar(ctx)
-        CHANGE_TAB = nil
+        CHANGE_FTAB = nil
     end
 end
 
@@ -882,7 +701,7 @@ CUR_TAB = "NODES"
 function Sidebar()
     local list_tbl --= GetNodeTBL()
     if r.ImGui_BeginTabBar(ctx, "TABS") then
-        if r.ImGui_BeginTabItem(ctx, "FUNC") then
+        if r.ImGui_BeginTabItem(ctx, "FUNC", false, CHANGE_MTAB == "FUNC" and r.ImGui_TabItemFlags_SetSelected() or 0) then
             CUR_TAB = "FUNC"
             list_tbl = GetFUNCTIONS()
             r.ImGui_EndTabItem(ctx)
@@ -902,21 +721,22 @@ function Sidebar()
             list_tbl = GetApiTBL()
             r.ImGui_EndTabItem(ctx)
         end
-        -- if r.ImGui_BeginTabItem(ctx, "LIBRARY") then
-        --     CUR_TAB = "LIBRARY"
-        --     list_tbl = {}
-        --     r.ImGui_EndTabItem(ctx)
-        -- end
+        if r.ImGui_BeginTabItem(ctx, "LIBRARY") then
+            CUR_TAB = "LIBRARY"
+            list_tbl = GetLibrary()
+            r.ImGui_EndTabItem(ctx)
+        end
         r.ImGui_EndTabBar(ctx)
+        CHANGE_MTAB = nil
     end
     r.ImGui_Separator(ctx)
     local aw = r.ImGui_GetContentRegionAvail(ctx)
-    r.ImGui_SetNextItemWidth(ctx, CUR_TAB == "FUNC" and aw - 15 or aw + 15)
-    r.ImGui_SetCursorPosX(ctx, 0)
+    r.ImGui_SetNextItemWidth(ctx, CUR_TAB == "FUNC" and -25 or -FLT_MIN)
+    --r.ImGui_SetCursorPosX(ctx, 0)
     _, SIDE_FILTER = r.ImGui_InputText(ctx, '##SIDEinput', SIDE_FILTER)
     if CUR_TAB == "FUNC" then
-        r.ImGui_SameLine(ctx)
-        if r.ImGui_Button(ctx, "+", 20, 19) then
+        r.ImGui_SameLine(ctx, nil, 4)
+        if r.ImGui_Button(ctx, "+", -FLT_MIN, 19) then
             local node = AddNode("func", "NEW FUNCTION")
             --SetMetaReturnFollower(node)
             local FUNCTIONS = GetFUNCTIONS()
@@ -931,7 +751,7 @@ function Sidebar()
     r.ImGui_SetNextWindowBgAlpha(ctx, 0)
     if r.ImGui_BeginListBox(ctx, "SIDEBAR", -FLT_MIN, -FLT_MIN) then
         for i = 1, #final_tbl do
-            r.ImGui_PushID(ctx, i)
+            --r.ImGui_PushID(ctx, i .. CUR_TAB)
 
             local col
             if final_tbl[i].type == "get" then
@@ -954,7 +774,7 @@ function Sidebar()
             end
 
             if RENAME_FUNC and RENAME_FUNC == i then
-                r.ImGui_SetNextItemWidth(ctx, 160)
+                r.ImGui_SetNextItemWidth(ctx, 220)
                 r.ImGui_SetKeyboardFocusHere(ctx)
                 _, final_tbl[i].label = r.ImGui_InputText(ctx, '##t', final_tbl[i].label)
                 if ENTER or (not r.ImGui_IsItemActive(ctx) and r.ImGui_IsMouseClicked(ctx, 0)) then
@@ -962,6 +782,7 @@ function Sidebar()
                     RENAME_FUNC, CUR_SIDEBAR_ID = nil, nil
                 end
             else
+                r.ImGui_PushID(ctx, '##' .. i .. final_tbl[i].label .. CUR_TAB)
                 if r.ImGui_Selectable(ctx, final_tbl[i].label, DRAG_LIST_NODE_ID == i or selected, r.ImGui_SelectableFlags_AllowDoubleClick()) then
                     if CUR_TAB == "NODES" or CUR_TAB == "VARS" then
                         if not SHIFT_DOWN then Deselect_all() end
@@ -973,23 +794,27 @@ function Sidebar()
                         elseif CUR_TAB == "NODES" or CUR_TAB == "VARS" then
                             CenterNodeToScreen(final_tbl[i])
                         elseif CUR_TAB == "FUNC" then
-                            if CHANGE_TAB ~= i then Deselect_all() end
+                            if CHANGE_FTAB ~= i then Deselect_all() end
 
-                            CHANGE_TAB = i
+                            CHANGE_FTAB = i
                             CURRENT_FUNCTION = i
                             final_tbl[i].tab_open = true
                         end
                     end
                 end
+                r.ImGui_PopID(ctx)
             end
             if CUR_TAB == "VARS" then r.ImGui_PopStyleColor(ctx) end
-            r.ImGui_PopID(ctx)
 
             if CUR_TAB ~= "API" then
                 if r.ImGui_IsItemClicked(ctx, 1) then
                     CUR_SIDEBAR_ID = i
                     r.ImGui_OpenPopup(ctx, "Func_CTX")
                 end
+            end
+
+            if r.ImGui_IsItemHovered(ctx) then
+                Tooltip_Tutorial()
             end
 
             if r.ImGui_IsItemActive(ctx) and r.ImGui_IsMouseDragging(ctx, 0) then
@@ -1028,8 +853,25 @@ function Sidebar()
                         end
                     end
                 end
+
+                if CUR_TAB == "LIBRARY" then
+                    if not DRAG_LIST_NODE then
+                        local FUNCTIONS = GetFUNCTIONS()
+                        local new = Deepcopy(final_tbl[i])
+                        ReplaceGUIDS(final_tbl[i].guid, { new })
+                        FUNCTIONS[#FUNCTIONS + 1] = new
+                        --FUNCTIONS[#FUNCTIONS].CANVAS = InitCanvas()
+                        RelinkFunction(FUNCTIONS[#FUNCTIONS])
+                        DRAG_LIST_NODE_ID = #FUNCTIONS
+
+                        local FLOLLOWER = PropagateParentFunctionNodes(DRAG_LIST_NODE_ID)
+                        FLOLLOWER.FID = DRAG_LIST_NODE_ID
+                        DRAG_LIST_NODE = FLOLLOWER
+                    end
+                end
             end
         end
+
         if r.ImGui_BeginPopup(ctx, "Func_CTX") then
             if r.ImGui_MenuItem(ctx, 'Rename') then
                 RENAME_FUNC = CUR_SIDEBAR_ID
@@ -1063,9 +905,9 @@ function Sidebar()
                         -- DELETE FUNCTION
                         table.remove(FUNCTIONS, CUR_SIDEBAR_ID)
                         if CUR_SIDEBAR_ID == CURRENT_FUNCTION then
-                            CHANGE_TAB = CUR_SIDEBAR_ID - 1
-                            CURRENT_FUNCTION = CHANGE_TAB
-                            final_tbl[CHANGE_TAB].tab_open = true
+                            CHANGE_FTAB = CUR_SIDEBAR_ID - 1
+                            --CURRENT_FUNCTION = CHANGE_FTAB
+                            final_tbl[CHANGE_FTAB].tab_open = true
                         end
                     end
                     --! REMOVE ALL FUNCTIONS
@@ -1074,6 +916,11 @@ function Sidebar()
                     if NODES[CUR_SIDEBAR_ID].label ~= "START" then
                         table.remove(NODES, CUR_SIDEBAR_ID)
                     end
+                end
+            end
+            if CUR_SIDEBAR_ID > 2 then
+                if r.ImGui_MenuItem(ctx, 'EXPORT') then
+                    ExportFunction(CUR_SIDEBAR_ID)
                 end
             end
             r.ImGui_EndPopup(ctx)
@@ -1109,6 +956,13 @@ function Popups()
     if NEW_WARNIGN then
         if not r.ImGui_IsPopupOpen(ctx, 'Warning') then r.ImGui_OpenPopup(ctx, 'Warning') end
         Modal_POPUP("Save project before closing?", ClearProject)
+    end
+
+    if OPEN_FM then
+        OPEN_FM = nil
+        if not r.ImGui_IsPopupOpen(ctx, "File Dialog") then
+            r.ImGui_OpenPopup(ctx, 'File Dialog')
+        end
     end
 
     -- RENAME
@@ -1215,22 +1069,28 @@ function Popups()
     r.ImGui_SetNextWindowPos(ctx, center[1], center[2], r.ImGui_Cond_Appearing(), 0.5, 0.5)
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_PopupBg(), 0x000000FF)
     if r.ImGui_BeginPopup(ctx, "PREFERENCES") then
-        _, DEBUG = r.ImGui_Checkbox(ctx, "DEBUG", DEBUG)
         _, TOOLTIP = r.ImGui_Checkbox(ctx, "Tooltips", TOOLTIP)
+        _, DEBUG = r.ImGui_Checkbox(ctx, "DEBUG", DEBUG)
+        CH_RV, PROFILE_DEBUG = r.ImGui_Checkbox(ctx, "PROFILE SCRIPT", PROFILE_DEBUG)
+        if CH_RV then
+            r.ImGui_CloseCurrentPopup(ctx)
+        end
         r.ImGui_EndPopup(ctx)
     end
     r.ImGui_PopStyleColor(ctx)
 
     -- FILE MANAGER
-    if OPEN_FM then
-        r.ImGui_SetNextWindowPos(ctx, center[1], center[2], r.ImGui_Cond_Appearing(), 0.5, 0.5)
-        r.ImGui_SetNextWindowSizeConstraints(ctx, 500, 500, 500, 500)
-        FM_RV, OPEN_FM = r.ImGui_Begin(ctx, 'File Dialog', true, r.ImGui_WindowFlags_TopMost())
-        if FM_RV then
-            File_dialog()
-            FM_Modal_POPUP()
-            r.ImGui_End(ctx)
-        end
+    --if OPEN_FM then
+    r.ImGui_SetNextWindowPos(ctx, center[1], center[2], r.ImGui_Cond_Appearing(), 0.5, 0.5)
+    r.ImGui_SetNextWindowSizeConstraints(ctx, 500, 500, 500, 500)
+    if r.ImGui_BeginPopupModal(ctx, 'File Dialog', true, r.ImGui_WindowFlags_TopMost() |  r.ImGui_WindowFlags_NoResize()) then
+        --if FM_RV then
+        --    r.ShowConsoleMsg("here")
+        File_dialog()
+        FM_Modal_POPUP()
+        r.ImGui_EndPopup(ctx)
+        --r.ImGui_End(ctx)
+        --end
     end
 
     if not r.ImGui_IsPopupOpen(ctx, 'FILTER LIST') and not r.ImGui_IsPopupOpen(ctx, 'PIN_PROMOTE_SET') and not r.ImGui_IsPopupOpen(ctx, 'GET-SET') then
@@ -1326,5 +1186,17 @@ function CheckWindowPayload()
                 end
             end
         end
+    end
+end
+
+local dsc_img = PATH .. "Examples/SCHWA/" .. "TutorialRS.png"
+
+function Tooltip_Tutorial(img)
+    if r.ImGui_BeginTooltip(ctx) then
+        if not r.ImGui_ValidatePtr(img_obj, 'ImGui_Image*') then
+            img_obj = r.ImGui_CreateImage(dsc_img)
+        end
+        AnimateSpriteSheet(img_obj, 58, 5, 12, 10, 0, 0)
+        r.ImGui_EndTooltip(ctx)
     end
 end

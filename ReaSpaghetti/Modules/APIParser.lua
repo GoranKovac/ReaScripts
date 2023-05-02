@@ -3,6 +3,37 @@
 
 local r = reaper
 local API_PATH = PATH .. "api_file.txt"
+local ULTRA_API_PATH = PATH .. "ultra_api.txt"
+local IMGUI_DOCS_STR
+
+function ReadApiFile(load_path)
+    local file = io.open(load_path, "r")
+    if file then
+        local string = file:read("*all")
+        file:close()
+        return string
+    end
+end
+
+local IMGUI_DEF_VALS = {}
+local function GetImguiDefaults2(str)
+    for line in str:gmatch('[^\r\n]+') do
+        local f_name = line:match('reaper.(%S+)%(')
+        if f_name and line:match('Optional =') then
+            IMGUI_DEF_VALS[f_name] = {}
+            for val_name, def_val in line:gmatch('</span> (%S+) = <span class="sn">(.-)</span>') do
+                if val_name and def_val then
+                    IMGUI_DEF_VALS[f_name][val_name] = def_val
+                end
+            end
+        end
+    end
+end
+
+if r.APIExists("ImGui_GetVersion") then
+    IMGUI_DOCS_STR = ReadApiFile(r.GetResourcePath() .. "/Data/reaper_imgui_doc.html")
+    GetImguiDefaults2(IMGUI_DOCS_STR)
+end
 
 function CurlToFile()
     local curl_cmd
@@ -11,6 +42,7 @@ function CurlToFile()
     else
         curl_cmd = '/usr/bin/curl'
     end
+
     r.ExecProcess(
         ([[%s -so "%s" https://www.extremraym.com/cloud/reascript-doc/ --ssl-no-revoke]]):format(curl_cmd, API_PATH), 0)
     UPDATE = true
@@ -25,15 +57,6 @@ function CreateApiFile()
     end
 end
 
-function ReadApiFile(load_path)
-    local file = io.open(load_path, "r")
-    if file then
-        local string = file:read("*all")
-        file:close()
-        return string
-    end
-end
-
 function FindApi(name)
     local Api_TBL = GetApiTBL()
     for i = 1, #Api_TBL do
@@ -45,7 +68,7 @@ end
 
 local convert = {
     ["REAPROJECT"] = "INTEGER",
-    -- PROPERLY HANDLE THIS TYPE ONLY FOR IMGUI FUNCTIONS (EXCLUDE integer,float,table,string ...)
+    -- PROPERLY HANDLE THIS TYPE ONLY FOR IMGUI FUNCTIONS
     ["IMGUI_RESOURCE"] = "IMGUI_OBJ",
 }
 
@@ -53,11 +76,113 @@ local exclude_api = {
     ["defer"] = true
 }
 
-
 local Math_FLOAT = { "+", "-", "*", "/", "%", "^" }
 
 local Compare = { '==', '~=', '>', '>=', '<', '<=' }
 
+local function Parse_Ultraschall()
+    if not ULTRA_API then return end
+
+    local ul_tmp_tbl = {}
+    local prefix = "US_"
+
+    local functionnames_table = ultraschall.Docs_GetAllUltraschallApiFunctionnames()
+    for i = 1, #functionnames_table do
+        ul_tmp_tbl[#ul_tmp_tbl + 1] = {
+            fname = functionnames_table[i],
+            label = table.concat({ prefix, functionnames_table[i] }),
+            out = {},
+            ins = {},
+            desc = ultraschall.Docs_GetUltraschallApiFunction_Description(functionnames_table[i], i),
+            run = "in/out",
+            sp_api = "ultraschall"
+        }
+
+        local _, params_table = ultraschall.Docs_GetUltraschallApiFunction_Params(functionnames_table[i], i)
+        for j = 1, #params_table do
+            local opt = params_table[j].datatype:find("optional") and { use = false } or nil
+            ul_tmp_tbl[#ul_tmp_tbl].ins[#ul_tmp_tbl[#ul_tmp_tbl].ins + 1] = {
+                type = params_table[j].datatype:gsub("optional ", ""):upper(),
+                opt = opt,
+                name = params_table[j].name:upper(),
+                desc = params_table[j].description
+            }
+        end
+
+        local _, retvals_table = ultraschall.Docs_GetUltraschallApiFunction_Retvals(functionnames_table[i], i)
+        for j = 1, #retvals_table do
+            --local opt = retvals_table[j].datatype:find("optional") and { use = false } or nil
+            ul_tmp_tbl[#ul_tmp_tbl].out[#ul_tmp_tbl[#ul_tmp_tbl].out + 1] = {
+                type = retvals_table[j].datatype:gsub("optional ", ""):upper(),
+                -- opt = opt,
+                name = retvals_table[j].name:upper(),
+                desc = retvals_table[j].description
+            }
+        end
+    end
+    return ul_tmp_tbl
+end
+
+function WriteUltraApi(ret)
+    local ultra_api_tbl = Parse_Ultraschall()
+    local serialized = TableToString(ultra_api_tbl)
+    local file_w = io.open(ULTRA_API_PATH, "w")
+    if file_w then
+        file_w:write(serialized) --- HERES
+        file_w:close()
+    end
+    if ret then
+        return ultra_api_tbl
+    end
+end
+
+local function CheckUltraApiFile(ret)
+    local file = io.open(ULTRA_API_PATH, "r")
+    if file ~= nil then
+        local string = file:read("*all")
+        local ultra_api_tbl = StringToTable(string)
+        io.close(file)
+        if ultra_api_tbl ~= nil then
+            if ret then
+                return ultra_api_tbl
+            end
+        end
+    else
+        return WriteUltraApi(ret)
+        -- local ultra_api_tbl = Parse_Ultraschall()
+        -- local serialized = TableToString(ultra_api_tbl)
+        -- local file_w = io.open(ULTRA_API_PATH, "w")
+        -- if file_w then
+        --     file_w:write(serialized) --- HERES
+        --     file_w:close()
+        -- end
+        -- return ultra_api_tbl
+    end
+end
+
+local function GetImguiDefaults(name, parm)
+    --if parm:find("In") then
+    --    parm = parm:sub(1, -3)
+    --elseif parm:find("Out") then
+    --    parm = parm:sub(1, -4)
+    --end
+    --uv_min_x = <span class="sn">0.0</span>
+    --local imgui_str = ReadApiFile(IMGUI_DOC_PATH)
+    IMGUI_DEF_VALS = {}
+    for line in IMGUI_DOCS_STR:gmatch('[^\r\n]+') do
+        if line:match(name .. '%(') then
+            -- if name == "ImGui_DrawList_AddImage" then
+            --     reaper.ShowConsoleMsg(line .. "\n")
+            -- end
+            if line:match(parm) then
+                local def_val = line:match(parm .. "Optional" .. ' = <span class="sn">(.-)</span>')
+                if def_val then
+                    return def_val
+                end
+            end
+        end
+    end
+end
 
 function Fill_Api_list()
     local start, found
@@ -88,9 +213,9 @@ function Fill_Api_list()
             local filter_line = line:match("<code>(.+)</code>")
             if filter_line:match('reaper.') and not filter_line:match('{reaper.') then
                 --! FIX {reaper.array} functions
-                local name = filter_line:match('reaper.(.+%))'):gsub("%((.-)%)", "")
+                --local name = filter_line:match('reaper.(.+%))'):gsub("%((.-)%)", "")
+                local name = filter_line:match('reaper.(%S+)%(')
                 if r.APIExists(name) and not exclude_api[name] then
-                    --if r[name] then
                     found = true
                     api[#api + 1] = { fname = name, label = name, out = {}, ins = {}, desc = "", run = "in/out" }
 
@@ -98,46 +223,105 @@ function Fill_Api_list()
                     local return_vals = filter_line:match('(.+)reaper')
 
                     if return_vals then
-                        -- STRIP , AND WHITESPACES
-                        return_vals = return_vals:gsub(",", ""):gsub("optional", ""):gsub("%s+", "")
-
-                        for a_type, a_name in return_vals:gmatch('<em>([^<]-)</em>(%a* ?)') do
-                            -- IMGUI SPECIFIC TYPE OBJECT
-                            if name:match("ImGui_Create") then
-                                if not name:match("_CreateContext") then
-                                    a_type = a_type .. "/IMGUI_OBJ"
+                        if return_vals:find(",") then
+                            for ret in return_vals:gmatch('[^,]+') do
+                                --local opt = ret:find("optional") and { use = false } or nil
+                                for r_type, r_name in ret:gsub("optional", ""):gsub("%s+", ""):gmatch('<em>(%S+)</em>(%S+ ?)') do
+                                    api[#api].out[#api[#api].out + 1] = {
+                                        type = r_type:upper(),
+                                        name = r_name:upper(),
+                                        -- opt = opt
+                                    }
                                 end
                             end
+                        else
+                            for r_type in return_vals:gmatch('<em>([^<]-)</em>') do
+                                if name:match("ImGui_Create") then
+                                    if not name:match("_CreateContext") then
+                                        r_type = r_type .. "/IMGUI_OBJ"
+                                    end
+                                end
 
-                            api[#api].out[#api[#api].out + 1] = {
-                                type = a_type:upper(),
-                                name = a_name ~= "" and a_name:upper() or a_type:upper(),
-                            }
+                                api[#api].out[#api[#api].out + 1] = {
+                                    type = r_type:upper(),
+                                    name = r_type:upper(),
+                                }
+                            end
                         end
+                        -- STRIP , AND WHITESPACES
+                        -- for ret in return_vals:gmatch('[^,]+') do
+                        --     --reaper.ShowConsoleMsg(arg .. "\n\n")
+                        --     for a_type, a_name in ret:gsub("optional", ""):gsub("%s+", ""):gmatch('<em>(%S+)</em>(%S+ ?)') do
+                        --         -- IMGUI SPECIFIC TYPE OBJECT
+                        --         if name:match("ImGui_Create") then
+                        --             if not name:match("_CreateContext") then
+                        --                 a_type = a_type .. "/IMGUI_OBJ"
+                        --             end
+                        --         end
+
+                        --         api[#api].out[#api[#api].out + 1] = {
+                        --             type = a_type:upper(),
+                        --             name = a_name ~= "" and a_name:upper() or a_type:upper(),
+                        --         }
+                        --     end
+                        -- end
+                        -- return_vals = return_vals:gsub(",", ""):gsub("optional", ""):gsub("%s+", "")
+                        -- for r_type, r_name in return_vals:gmatch('<em>([^<]-)</em>(%a* ?)') do
+                        --     -- IMGUI SPECIFIC TYPE OBJECT
+                        --     if name:match("ImGui_Create") then
+                        --         if not name:match("_CreateContext") then
+                        --             r_type = r_type .. "/IMGUI_OBJ"
+                        --         end
+                        --     end
+
+                        --     api[#api].out[#api[#api].out + 1] = {
+                        --         type = r_type:upper(),
+                        --         name = r_name ~= "" and r_name:upper() or r_type:upper(),
+                        --     }
+                        -- end
                     end
 
                     -- MATCH AFTER REAPER FUNCTION NAME "("
                     local argument_vals = filter_line:match("%((.+)%)")
 
                     if argument_vals then
-                        -- STRIP STUFF , OPTIONAL AND WHITESPACES
-                        argument_vals = argument_vals:gsub(",", ""):gsub("optional", ""):gsub("%s+", "")
-                        for a_type, a_name in argument_vals:gmatch('<em>([^<]-)</em>(%a+)') do
-                            a_type = a_type:upper()
-                            if convert[a_type] then a_type = convert[a_type] end
-                            --if name:lower():find("showconsolemsg") then
-                            --     a_type = "ANY"
-                            --end
-                            api[#api].ins[#api[#api].ins + 1] = {
-                                type = a_type,
-                                name = a_name:upper(),
-                            }
+                        for arg in argument_vals:gmatch('[^,]+') do
+                            local opt = arg:find("optional") and { use = false } or nil
+                            for a_type, a_name in arg:gsub("optional", ""):gsub("%s+", ""):gmatch('<em>(%S+)</em>(%S+ ?)') do
+                                local def_val
+                                if opt then
+                                    if name:find("ImGui_") then
+                                        --def_val = GetImguiDefaults(name, a_name)
+                                        def_val = IMGUI_DEF_VALS[name][a_name .. 'Optional']
+                                    end
+                                end
+                                --end
+                                a_type = a_type:upper()
+                                if convert[a_type] then a_type = convert[a_type] end
+                                api[#api].ins[#api[#api].ins + 1] = {
+                                    type = a_type,
+                                    name = a_name:upper(),
+                                    opt = opt,
+                                    def_val = def_val
+                                }
+                            end
                         end
                     end
                 end
             end
         end
     end
+
+    if ULTRA_API then
+        local ultra_tbl = CheckUltraApiFile(true)
+        if ultra_tbl then
+            for i = 1, #ultra_tbl do
+                api[#api + 1] = ultra_tbl[i]
+            end
+        end
+    end
+
+    --table.sort(api, function(a, b) return a.label:lower() < b.label:lower() end)
 
     -- NUMERIC FOR LOOP
     api[#api + 1] = {
@@ -486,6 +670,20 @@ function Fill_Api_list()
         },
         out = {
             { name = "ATAN", type = "NUMBER" }
+        },
+    }
+
+    -- MATH ATAN
+    api[#api + 1] = {
+        fname = "MathTan",
+        label = "MathTan",
+        --desc = "",
+        ins = {
+            { name = "X", type = "NUMBER/INTEGER", def_val = 0 },
+            { name = "",  type = "STRING",         def_val = "tan", pin_disable = true, no_draw = true },
+        },
+        out = {
+            { name = "TAN", type = "NUMBER" }
         },
     }
 
@@ -1057,6 +1255,7 @@ function Fill_Api_list()
         },
         run = "in/out"
     }
+
     -- Val to Db
     api[#api + 1] = {
         fname = "CUSTOM_VALtodB",
@@ -1067,6 +1266,104 @@ function Fill_Api_list()
         },
         out = {
             { name = "dB", type = "NUMBER", def_val = 0 },
+        },
+        run = "in/out"
+    }
+
+    -- Nil Check
+    api[#api + 1] = {
+        fname = "CUSTOM_NilCheck",
+        label = "IS NIL",
+        desc = "CHECKS IF INCOMING VARIABLE IS NIL",
+        ins = {
+            { name = "VALUE", type = "ANY" },
+        },
+        out = {
+            { name = "NIL", type = "BOOLEAN", def_val = true },
+        },
+        run = "in/out"
+    }
+
+    -- VAL TO BOOL
+    api[#api + 1] = {
+        fname = "CUSTOM_ValToBool",
+        label = "CONVERTS 0 to FALSE and > 0 to TRUE",
+        desc = "CHECKS IF INCOMING VARIABLE IS NIL",
+        ins = {
+            { name = "VALUE", type = "NUMBER" },
+        },
+        out = {
+            { name = "BOOL", type = "BOOLEAN", def_val = true },
+        },
+        run = "in/out"
+    }
+
+    -- VAL TO BOOL
+    api[#api + 1] = {
+        fname = "CUSTOM_SwitchValue",
+        label = "TOGGLE VALUE 0-1",
+        desc = "TOGGLES VALUE TO 0 IS VALUE IS 1 OR 1 IF VALUE IS 0",
+        ins = {
+            { name = "VALUE", type = "NUMBER" },
+        },
+        out = {
+            { name = "NEW VAL", type = "NUMBER", def_val = 0 },
+        },
+        run = "in/out"
+    }
+
+    -- VAL TO BOOL
+    api[#api + 1] = {
+        fname = "CUSTOM_DoWhile",
+        label = "DO WHILE",
+        desc = "DO UNTIL CONDITION IS MET",
+        ins = {
+            { name = "VALUE", type = "BOOLEAN" },
+        },
+        out = {
+            { name = "LOOP", type = "RUN", run = true },
+        },
+        run = "in/out"
+    }
+
+    -- VAL TO BOOL
+    api[#api + 1] = {
+        fname = "CUSTOM_ClearTable",
+        label = "Clear/Renew Table",
+        desc = "Clears Table with new table",
+        ins = {
+            { name = "TABLE", type = "TABLE" },
+        },
+        out = {},
+        run = "in/out"
+    }
+
+    -- VAL TO BOOL
+    api[#api + 1] = {
+        fname = "CUSTOM_CheckTableKV",
+        label = "Table HAS K",
+        desc = "Checs if K exists",
+        ins = {
+            { name = "TABLE", type = "TABLE" },
+            { name = "K",     type = "INTEGER", def_val = 1 },
+        },
+        out = {
+            { name = "HAS K", type = "BOOLEAN" },
+        },
+        run = "in/out"
+    }
+
+    -- VAL TO BOOL
+    api[#api + 1] = {
+        fname = "CUSTOM_StringCompare",
+        label = "Compare ==",
+        desc = "Checks if two strings are equal",
+        ins = {
+            { name = "VAL 1", type = "ANY" },
+            { name = "VAL 2", type = "ANY" },
+        },
+        out = {
+            { name = "SAME", type = "BOOLEAN" },
         },
         run = "in/out"
     }

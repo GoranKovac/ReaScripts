@@ -22,5 +22,6 @@ FONT_SIZE_STATIC = 15
 
 TOOLTIP = true
 DEBUG = false
+PROFILE_DEBUG = false
 
 PROJECT_NAME = 'Untitled Spaghetti'

@@ -174,59 +174,66 @@ local function ArgumentsMissing(node)
 
     -- CHECK IF NUMBER OF INPUT_VALS MATCH NUMBER OF INPUTS (function arguments)
     for i = 1, #node.inputs do
-        if node.in_values[i] == nil then
-            missing[#missing + 1] = node.inputs[i].label
-            -- break
-        end
-
-        -- DONT ALLOW EMPTY STRINGS (IMGUI CRASHES ON EMPTY STRINGS) - BUT ALLOW IN CONCAT DELIMITER
-        if type(node.in_values[i]) == "string" and node.fname ~= "CUSTOM_TableConcat" then
-            if #node.in_values[i] == 0 then
-                missing[#missing + 1] = "EMPTY STRING " .. node.inputs[i].label
-                --break
+        --  SKIP OPTIONAL IF NON OR NOT USED
+        if not node.inputs[i].opt or (node.inputs[i].opt and node.inputs[i].opt.use) then
+            if node.in_values[i] == nil then
+                missing[#missing + 1] = node.inputs[i].label
+                -- break
             end
-        end
 
-        -- AVOID CONCATING NESTED TABLES
-        if node.fname == "CUSTOM_TableConcat" then
-            if node.in_values[i] then
-                if type(node.in_values[i][1]) == "table" then
-                    missing[#missing + 1] = "NESTED TABLE - CANOT CONCAT"
-                    --   break
-                end
-            end
-        end
-
-        -- AVOID CRASH ON OUT OF BOUNDS
-        if node.fname == "TableRemove" then
-            if node.in_values[1] then
-                if not node.in_values[1][node.in_values[2]] then
-                    missing[#missing + 1] = "INDEX OUT OF BOUNDS"
+            -- DONT ALLOW EMPTY STRINGS (IMGUI CRASHES ON EMPTY STRINGS) - BUT ALLOW IN CONCAT DELIMITER
+            if type(node.in_values[i]) == "string" and node.fname ~= "CUSTOM_TableConcat" then
+                if #node.in_values[i] == 0 then
+                    missing[#missing + 1] = "EMPTY STRING " .. node.inputs[i].label
                     --break
                 end
             end
-        end
 
-        if node.fname == "CUSTOM_TableGetVal" then
-            if node.in_values[1] then
-                if not node.in_values[1][node.in_values[2]] then
-                    missing[#missing + 1] = "INDEX OUT OF BOUNDS"
-                    -- break
-                end
-            else
-
-            end
-        end
-        if node.fname == "CUSTOM_TableSetVal" then
-            if node.in_values[1] then
-                if not node.in_values[1][node.in_values[2]] then
-                    if type(node.in_values[2]) == "string" and #node.in_values[2] ~= 0 then
-                        missing[#missing + 1] = "NON EXISTING KEY"
-                    elseif type(node.in_values[2]) == "number" then
-                        missing[#missing + 1] = "NON EXISTING KEY"
+            -- AVOID CONCATING NESTED TABLES
+            if node.fname == "CUSTOM_TableConcat" then
+                if node.in_values[i] then
+                    if type(node.in_values[i][1]) == "table" then
+                        missing[#missing + 1] = "NESTED TABLE - CANOT CONCAT"
+                        --   break
                     end
-                    -- break
                 end
+            end
+
+            -- AVOID CRASH ON OUT OF BOUNDS
+            if node.fname == "TableRemove" then
+                if node.in_values[1] then
+                    if not node.in_values[1][node.in_values[2]] then
+                        missing[#missing + 1] = "INDEX OUT OF BOUNDS"
+                        --break
+                    end
+                end
+            end
+
+            if node.fname == "CUSTOM_TableGetVal" then
+                if node.in_values[1] then
+                    if not node.in_values[1][node.in_values[2]] then
+                        missing[#missing + 1] = "INDEX OUT OF BOUNDS"
+                        -- break
+                    end
+                else
+
+                end
+            end
+            if node.fname == "CUSTOM_TableSetVal" then
+                if node.in_values[1] then
+                    if not node.in_values[1][node.in_values[2]] then
+                        if type(node.in_values[2]) == "string" and #node.in_values[2] ~= 0 then
+                            missing[#missing + 1] = "NON EXISTING KEY"
+                        elseif type(node.in_values[2]) == "number" then
+                            missing[#missing + 1] = "NON EXISTING KEY"
+                        end
+                        -- break
+                    end
+                end
+            end
+
+            if node.fname == "CUSTOM_CodeRun" then
+                missing[#missing + 1] = "CODE ERROR"
             end
         end
     end
@@ -292,9 +299,13 @@ local function ResetVars(tbl)
     end
 end
 
-local function CollectArguments(node)
+local function CollectArguments(NODES, node)
     for i = 1, #node.inputs do
-        node.in_values[i] = #node.inputs[i].connection ~= 0 and node.inputs[i].o_val or node.inputs[i].i_val
+        if not node.inputs[i].opt or (node.inputs[i].opt and node.inputs[i].opt.use) then
+            node.in_values[i] = #node.inputs[i].connection ~= 0 and node.inputs[i].o_val or node.inputs[i].i_val
+        else
+            node.in_values[i] = nil
+        end
     end
 end
 
@@ -310,40 +321,33 @@ function Run_Flow(tbl, func_node)
             Run_Flow(FLOW, node)
         else
             ClearReturnValues(node)
-            CollectArguments(node)
+            CollectArguments(func_node.NODES, node)
             if node.fname then
                 if node.fname:find("CUSTOM_") then
                     out_values = { _G[node.fname](node, func_node, table.unpack(node.in_values)) }
+                    if out_values[1] and out_values[1]:find("ERROR") then
+                        if out_values[1] == "ERROR" then
+                            ArgumentsMissing(node)
+                        end
 
-                    if out_values[1] == "ERROR" then
-                        ArgumentsMissing(node)
-                        --if ArgumentsMissing(node) then
-                        --if DEFERED_NODE then
-                        -- DEFERED_NODE, DEFER, START_FLOW = nil, false, false
-                        -- BREAK_RUN = true
-                        -- --end
-                        -- Deselect_all()
-                        -- CHANGE_TAB = func_node.FID
-                        -- break
-                        --end
                         BREAK_RUN = true
-                        --end
                         Deselect_all()
-                        CHANGE_TAB = func_node.FID
+                        CHANGE_FTAB = func_node.FID
                         break
                     end
                 else
                     -- BREAK ONLY ON API CALL
                     if ArgumentsMissing(node) then
-                        --if DEFERED_NODE then
-                        -- DEFERED_NODE, DEFER, START_FLOW = nil, false, false
                         BREAK_RUN = true
-                        --end
                         Deselect_all()
-                        CHANGE_TAB = func_node.FID
+                        CHANGE_FTAB = func_node.FID
                         break
                     end
-                    out_values = { _G[node.fname](table.unpack(node.in_values)) }
+                    if node.sp_api then
+                        out_values = { ultraschall[node.fname](table.unpack(node.in_values)) }
+                    else
+                        out_values = { _G[node.fname](table.unpack(node.in_values)) }
+                    end
                 end
                 UpdateReturnValues(node, out_values)
             end
@@ -392,8 +396,10 @@ function InitRunFlow()
     local start_func = DEFERED_NODE and 2 or 1
     local FUNCTIONS = GetFUNCTIONS()
     for i = start_func, 2 do
+        if i == 1 then ResetTmpFunctionsTBL() end
+
         local NODES = FUNCTIONS[i].NODES
-        --ResetTableVars(NODES)
+        ResetTableVars(NODES)
         ResetVars(NODES)
         local FLOW = TraceFlow(NODES)
         Run_Flow(FLOW, FUNCTIONS[i])
