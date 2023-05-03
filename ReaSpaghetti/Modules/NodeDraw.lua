@@ -1053,9 +1053,9 @@ local function CenterTextPush(o_val, pin_type)
     r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_FramePadding(), pad_x, pad_y * CANVAS.scale)
 end
 
-local function DrawOptionalCheckbox(pin)
+local function DrawOptionalCheckbox(pin, node)
     if pin.opt then
-        _, pin.opt.use = r.ImGui_Checkbox(ctx, "##OPT" .. pin.label, pin.opt.use)
+        _, pin.opt.use = r.ImGui_Checkbox(ctx, "##OPT" .. pin.label .. node.guid, pin.opt.use)
         if r.ImGui_IsItemHovered(ctx) then
             if r.ImGui_BeginTooltip(ctx) then
                 r.ImGui_PushFont(ctx, FONT_STATIC)
@@ -1124,7 +1124,7 @@ local function Draw_input(node, io_type, pin, x, y, pin_n, h)
         r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_FrameRounding(), 5)
         r.ImGui_PushStyleColor(ctx, r.ImGui_Col_FrameBg(), 0x17181fff)
 
-        DrawOptionalCheckbox(pin)
+        DrawOptionalCheckbox(pin, node)
         if CheckOptional(pin) then
             r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_DisabledAlpha(), 0.3)
             r.ImGui_BeginDisabled(ctx)
@@ -1738,8 +1738,8 @@ local function Draw_Node(node)
     end
 
     -- DUMMY BODY BUTTON (FOR DETECTING HOOVER OVER NODE)
-    r.ImGui_SetCursorScreenPos(ctx, x, y)
-    r.ImGui_InvisibleButton(ctx, "##BODY" .. node.guid, w - edge_offset, h)
+    -- r.ImGui_SetCursorScreenPos(ctx, x, y)
+    --r.ImGui_InvisibleButton(ctx, "##BODY" .. node.guid, w - edge_offset, h)
 end
 
 function SelectAll()
