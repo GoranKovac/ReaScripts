@@ -228,7 +228,7 @@ local function TableSpecial(node)
                         local cur_type = node.inputs[ins].type
                         r.ImGui_PushID(ctx, "tc_inp" .. ins)
                         r.ImGui_SetNextItemWidth(ctx, avail_w / 3)
-                        if r.ImGui_BeginCombo(ctx, ins, cur_type) then
+                        if r.ImGui_BeginCombo(ctx, ins - 1, cur_type) then
                             for v in ipairs(types) do
                                 if r.ImGui_Selectable(ctx, types[v]) then
                                     -- DO NOT ALLOW CHANGING IF PIN IS CONNECTED
@@ -616,6 +616,10 @@ function DeferTest()
             -- START_FLOW = false
         end
     end
+    r.ImGui_SameLine(ctx)
+    if r.ImGui_Button(ctx, "PARSE") then
+        GenerateCode()
+    end
     --if START_FLOW and DEFER then
     if DEFERED_NODE then
         r.ImGui_PopStyleColor(ctx)
@@ -629,7 +633,7 @@ function UI_Buttons()
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x000000EE)
 
     r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_WindowPadding(), 0, 0)
-    if r.ImGui_BeginChild(ctx, "TopButtons", 420, 25, 1) then
+    if r.ImGui_BeginChild(ctx, "TopButtons", 480, 25, 1) then
         r.ImGui_SetCursorPos(ctx, 4, 3)
         if r.ImGui_Checkbox(ctx, "GRID", GRID) then GRID = not GRID end
         r.ImGui_SameLine(ctx)

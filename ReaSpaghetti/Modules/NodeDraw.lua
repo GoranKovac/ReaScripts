@@ -218,15 +218,15 @@ local NodeDLChannel = {
 function Create_constant_tbl(type)
     local tbl = {}
     if type == "s" then
-        tbl = { ins = {}, out = { { name = "", type = "STRING" } }, resizeable = true }
+        tbl = { ins = {}, out = { { name = "", type = "STRING" } }, resizeable = true, compiler = "NT_VAR" }
     elseif type == "i" then
-        tbl = { ins = {}, out = { { name = "", type = "INTEGER" } } }
+        tbl = { ins = {}, out = { { name = "", type = "INTEGER" } }, compiler = "NT_VAR" }
     elseif type == "f" then
-        tbl = { ins = {}, out = { { name = "", type = "NUMBER" } } }
+        tbl = { ins = {}, out = { { name = "", type = "NUMBER" } }, compiler = "NT_VAR" }
     elseif type == "b" then
-        tbl = { ins = {}, out = { { name = "", type = "BOOLEAN" } } }
+        tbl = { ins = {}, out = { { name = "", type = "BOOLEAN" } }, compiler = "NT_VAR" }
     elseif type == "t" then
-        tbl = { ins = {}, out = { { name = "", type = "TABLE", def_val = {} } } }
+        tbl = { ins = {}, out = { { name = "", type = "TABLE", def_val = {} } }, compiler = "NT_VAR" }
     elseif type == "route" then
         tbl = { ins = {}, out = {}, run = "in/out" }
     elseif type == "ws" then
@@ -265,7 +265,8 @@ function Create_constant_tbl(type)
             tab_open = false,
             FID = #FUNCTIONS + 1,
             NODES = InitStartNodes(),
-            run = "in/out"
+            run = "in/out",
+            compiler = "NT_FUNC",
         }
     elseif type == "retnode" then
         tbl = {
@@ -273,7 +274,8 @@ function Create_constant_tbl(type)
             ins = {},
             out = {},
             run = "in",
-            fname = "CUSTOM_ReturnNode"
+            fname = "CUSTOM_ReturnNode",
+            compiler = "NT_FUNC_RET",
         }
     elseif type == "group" then
         tbl = {
@@ -352,7 +354,8 @@ local function Get_Node(type, label, x, y, w, h, guid, tbl)
         receiver    = tbl.receiver,
         wireless_id = tbl.wireless_id,
         can_resize  = tbl.resizeable,
-        sp_api      = tbl.sp_api
+        sp_api      = tbl.sp_api,
+        compiler    = tbl.compiler
     }
 end
 
@@ -1738,8 +1741,10 @@ local function Draw_Node(node)
     end
 
     -- DUMMY BODY BUTTON (FOR DETECTING HOOVER OVER NODE)
-    -- r.ImGui_SetCursorScreenPos(ctx, x, y)
-    --r.ImGui_InvisibleButton(ctx, "##BODY" .. node.guid, w - edge_offset, h)
+    if node.type ~= "group" then
+        r.ImGui_SetCursorScreenPos(ctx, x, y)
+        r.ImGui_InvisibleButton(ctx, "##BODY" .. node.guid, w - edge_offset, h)
+    end
 end
 
 function SelectAll()
@@ -2300,6 +2305,26 @@ local function RelinkParrentFunctionNodes()
                     local connected_node = GetNodeInfo(node.inputs[o].connection[1].node)
                     setmetatable(node.inputs[o], {
                         __index = connected_node.outputs[node.inputs[o].connection[1].pin],
+                        -- function(t, k)
+                        --     if k == "src" then
+                        --         if connected_node.type == "get" then
+                        --             local api_var_node = GetNodeInfo(connected_node.get)
+                        --             local src_node = GetNodeInfo(api_var_node.set.guid)
+                        --             return { src_node, src_node.outputs[api_var_node.set.pin] }
+                        --             --return { connected_node, connected_node.outputs[node.inputs[o].connection[1].pin] }
+                        --         elseif connected_node.type == "set" then
+                        --             local src_node = GetNodeInfo(connected_node.set.guid)
+                        --             return { src_node, src_node.outputs[connected_node.set.pin] }
+                        --         elseif connected_node.type == "api_var" then
+                        --             local src_node = GetNodeInfo(connected_node.set.guid)
+                        --             return { src_node, src_node.outputs[connected_node.set.pin] }
+                        --         else
+                        --             return { connected_node, connected_node.outputs[node.inputs[o].connection[1].pin] }
+                        --         end
+                        --     else
+                        --         return connected_node.outputs[node.inputs[o].connection[1].pin]
+                        --     end
+                        -- end,
                         __newindex = connected_node.outputs[node.inputs[o].connection[1].pin]
                     })
                 end

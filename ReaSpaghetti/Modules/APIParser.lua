@@ -217,7 +217,15 @@ function Fill_Api_list()
                 local name = filter_line:match('reaper.(%S+)%(')
                 if r.APIExists(name) and not exclude_api[name] then
                     found = true
-                    api[#api + 1] = { fname = name, label = name, out = {}, ins = {}, desc = "", run = "in/out" }
+                    api[#api + 1] = {
+                        fname = name,
+                        label = name,
+                        out = {},
+                        ins = {},
+                        desc = "",
+                        run = "in/out",
+                        compiler = "NT_CALL"
+                    }
 
                     -- MATCH BEFORE REAPER.
                     local return_vals = filter_line:match('(.+)reaper')
@@ -338,7 +346,8 @@ function Fill_Api_list()
             { name = "LOOP", type = "RUN",     run = true },
             { name = "IDX",  type = "INTEGER", def_val = 0 },
         },
-        run = "in/out"
+        run = "in/out",
+        compiler = "NT_FORLOOP",
     }
 
     -- IPAIRS FOR LOOP
@@ -354,7 +363,8 @@ function Fill_Api_list()
             { name = "KEY",   type = "INTEGER" },
             { name = "VALUE", type = "ANY" },
         },
-        run = "in/out"
+        run = "in/out",
+        compiler = "NT_FORLOOP",
     }
 
     -- PAIRS FOR LOOP
@@ -370,7 +380,8 @@ function Fill_Api_list()
             { name = "KEY",   type = "ANY" },
             { name = "VALUE", type = "ANY" },
         },
-        run = "in/out"
+        run = "in/out",
+        compiler = "NT_FORLOOP",
     }
 
     --IF ELSE

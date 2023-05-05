@@ -5,6 +5,35 @@ for key in pairs(r) do _G[key] = r[key] end
 
 local _G = _G
 
+function GetChildFlowNATIVE(called_node, NODES)
+    --local NODES = func_node.NODES
+    local LOOP_FLOW = {}
+    for i = 1, #called_node.outputs do
+        if called_node.outputs[i] then
+            local loop_run = called_node.outputs[i].run == true and called_node.outputs[i].connection
+            if loop_run then
+                if next(loop_run) then
+                    local next_node_guid = loop_run[1].node
+                    while next_node_guid do
+                        LOOP_FLOW[#LOOP_FLOW + 1] = In_TBL(NODES, next_node_guid)
+                        local next_node = LOOP_FLOW[#LOOP_FLOW]
+                        local next_output = next_node.outputs[0]
+                        -- FLOW IS CHECKED ONLY IF OUT PIN 0 (RUN) IS CONNECTED
+                        if next_output and next_output.connection and next(next_output.connection) then
+                            next_node_guid = next_output.connection[1].node
+                        elseif next_node.type == "ws" then
+                            next_node_guid = next_node.sender
+                        else
+                            next_node_guid = nil
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return LOOP_FLOW
+end
+
 function GetChildFlow(called_node, func_node)
     local NODES = func_node.NODES
     called_node.LOOP_FLOW = {}
