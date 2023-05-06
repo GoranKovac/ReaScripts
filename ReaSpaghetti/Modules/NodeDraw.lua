@@ -300,7 +300,7 @@ function Create_constant_tbl(type)
     return tbl
 end
 
-local function Socket(tbl, num, io_type)
+function Socket(tbl, num, io_type)
     return {
         connection = {},
         type = tbl.type,

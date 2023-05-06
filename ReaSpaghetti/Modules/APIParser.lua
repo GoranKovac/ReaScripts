@@ -48,6 +48,41 @@ function CurlToFile()
     UPDATE = true
 end
 
+local function UpdateNode(node, api)
+    if not node.fname then return end
+    if node.fname ~= api.fname then return end
+    for k, v in pairs(api) do
+        if k ~= "ins" and k ~= "out" then
+            if not node[k] then node[k] = v end
+        elseif k == "ins" then
+            for i, in_data in ipairs(v) do
+                if not node.inputs[i] then
+                    node.inputs[i] = Socket(in_data, i, "in")
+                end
+            end
+        elseif k == "out" then
+            for o, out_data in ipairs(v) do
+                if not node.outputs[o] then
+                    node.outputs[o] = Socket(out_data, o, "out")
+                end
+            end
+        end
+    end
+end
+
+function UpdateProjectAPI()
+    InitApi()
+    local API_LIST = GetApiTBL()
+    local FUNCTIONS = GetFUNCTIONS()
+    for i = 1, #API_LIST do
+        for j = 1, #FUNCTIONS do
+            for k = 1, #FUNCTIONS[j].NODES do
+                UpdateNode(FUNCTIONS[j].NODES[k], API_LIST[i])
+            end
+        end
+    end
+end
+
 function CreateApiFile()
     local file = io.open(API_PATH, "r")
     if file ~= nil then
@@ -95,7 +130,8 @@ local function Parse_Ultraschall()
             ins = {},
             desc = ultraschall.Docs_GetUltraschallApiFunction_Description(functionnames_table[i], i),
             run = "in/out",
-            sp_api = "ultraschall"
+            sp_api = "ultraschall",
+            compiler = "NT_CALL"
         }
 
         local _, params_table = ultraschall.Docs_GetUltraschallApiFunction_Params(functionnames_table[i], i)
@@ -397,7 +433,8 @@ function Fill_Api_list()
             { name = "TRUE",  type = "RUN", run = false },
             { name = "FALSE", type = "RUN", run = false },
         },
-        run = "in/out"
+        run = "in/out",
+        compiler = "NT_IFELSE"
     }
 
     -- INTERNAL DBG VIEW MSG

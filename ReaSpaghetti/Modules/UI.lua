@@ -64,6 +64,7 @@ function Top_Menu()
             end
             if r.ImGui_MenuItem(ctx, 'Update API') then
                 CurlToFile()
+                UpdateProjectAPI()
             end
 
             if ULTRA_API then
@@ -597,11 +598,15 @@ end
 
 function DeferTest()
     if r.ImGui_Button(ctx, "RUN") then
+        local start_time = r.time_precise()
         BREAK_RUN = nil
         r.ImGui_SetKeyboardFocusHere(ctx)
         LEGO_MGS = {}
         ClearNodesWarning()
         InitRunFlow()
+        --r.ShowConsoleMsg("\nORIGINAL RUN :" .. r.time_precise() - SCRIPT_START_TIME)
+        local end_time = r.time_precise()
+        r.ShowConsoleMsg("\nORIGINAL RUN :" .. ('%.4f ms\n'):format((end_time - start_time) * 1000))
     end
     r.ImGui_SameLine(ctx)
     if DEFERED_NODE then
@@ -618,7 +623,10 @@ function DeferTest()
     end
     r.ImGui_SameLine(ctx)
     if r.ImGui_Button(ctx, "PARSE") then
+        --local start_time = r.time_precise()
         GenerateCode()
+        --local end_time = r.time_precise()
+        --r.ShowConsoleMsg("\nNATIVE PARSE + RUN:" .. ('%.4f ms\n'):format((end_time - start_time) * 1000))
     end
     --if START_FLOW and DEFER then
     if DEFERED_NODE then

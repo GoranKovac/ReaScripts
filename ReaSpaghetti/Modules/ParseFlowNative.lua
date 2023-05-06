@@ -13,105 +13,89 @@ local function IdenLVL(n)
     return n and string.rep('\x20', n * 4) or ""
 end
 
-local function GetNodeType(node)
-    if node.type == "get" then
-        return GetNodeInfo(node.get)
-    elseif node.type == "set" or node.type == "api_var" then
-        return GetNodeInfo(node.set.guid)
-    else
-        return node
+local function IsLoop(node, pin)
+    if node.fname == "CUSTOM_ForLoop" or node.fname == "CUSTOM_Ipairs" or node.fname == "CUSTOM_Pairs" or node.fname == "CUSTOM_Fastpairs" then
+        return true
     end
 end
 
+-- TRACE SOURCE NODE FROM PIN CONNECTION
 local function GetSourceNode(node, inputs)
-    local prev_node = GetNodeInfo(node.guid)
+    local prev_node, p_f_id, p_n_id = GetNodeInfo(inputs.connection[1].node)
+
     local connection_pin = inputs.connection[1].pin
+    local prev_node_idx = ("_F%dN%d"):format(p_f_id, p_n_id)
 
     if prev_node.type == "get" then
+        -- GET NODE RETURNS SETTERS OUTPUT SO WE NEED TO TRACE SOURCE OF SETTER
         local api_var_node = GetNodeInfo(prev_node.get)
         local src_node, f_id, n_id = GetNodeInfo(api_var_node.set.guid)
-        return { src_node, src_node.outputs[api_var_node.set.pin] }
-        --return { connected_node, connected_node.outputs[node.inputs[o].connection[1].pin] }
+        local src_node_idx = ("_F%dN%d"):format(f_id, n_id)
+        if IsLoop(src_node, api_var_node.set.pin) then
+            -- IF CONNECTED TO LOOP OUTPUT RETURN LOOP PIN LABEL NAME
+            return src_node.outputs[api_var_node.set.pin].label:gsub("%s+", "") .. src_node_idx, true
+        else
+            -- RETURN REFERENCED NODE NAME
+            return src_node.label:gsub("%s+", "") .. src_node_idx
+        end
     elseif prev_node.type == "set" then
         local src_node, f_id, n_id = GetNodeInfo(prev_node.set.guid)
-        return { src_node, src_node.outputs[prev_node.set.pin] }
+        local src_node_idx = ("_F%dN%d"):format(f_id, n_id)
+        if IsLoop(src_node, prev_node.set.pin) then
+            -- IF CONNECTED TO LOOP OUTPUT RETURN LOOP PIN LABEL NAME
+            return src_node.outputs[prev_node.set.pin].label:gsub("%s+", "") .. src_node_idx, true
+        else
+            -- RETURN REFERENCED NODE NAME
+            return src_node.label:gsub("%s+", "") .. src_node_idx
+        end
     elseif prev_node.type == "api_var" then
         local src_node, f_id, n_id = GetNodeInfo(prev_node.set.guid)
-        return { src_node, src_node.outputs[prev_node.set.pin] }
+        local src_node_idx = ("_F%dN%d"):format(f_id, n_id)
+        if IsLoop(src_node, prev_node.set.pin) then
+            -- IF CONNECTED TO LOOP OUTPUT RETURN LOOP PIN LABEL NAME
+            return src_node.outputs[prev_node.set.pin].label:gsub("%s+", "") .. src_node_idx, true
+        else
+            -- RETURN REFERENCED NODE NAME
+            return src_node.label:gsub("%s+", "") .. src_node_idx
+        end
     else
-        return { prev_node, prev_node.outputs[connection_pin] }
+        if IsLoop(prev_node, connection_pin) then
+            -- IF CONNECTED TO LOOP OUTPUT RETURN LOOP PIN LABEL NAME
+            return prev_node.outputs[connection_pin].label:gsub("%s+", "") .. prev_node_idx, true
+        else
+            if prev_node.type == "m" then
+                -- CONNECTED TO FUNCTION START NODE, RETURN START PIN NAME (FUNCTION ARGUMENT)
+                return prev_node.outputs[connection_pin].label:gsub("%s+", "")
+            elseif prev_node.type == "func" then
+                -- CONNECTED TO FUNCTION OUTPUT, RETURN OUTPUT PIN NAME (FUNCTION RETURN)
+                return prev_node.outputs[connection_pin].label:gsub("%s+", "") .. prev_node_idx
+            else
+                -- RETURN REFERENCED NODE NAME
+                return prev_node.label:gsub("%s+", "") .. prev_node_idx
+            end
+        end
     end
 end
 
-local function ValueReferences(node, inputs)
+local function ValueReferences(node, inputs, idx_sub_1)
     for i = 1, #inputs do
         if i > 1 then AddCode(', ') end
 
         local arg_val
-
+        -- NOT CONNECTED TO ANY NODE, GET RAW VALUE
         if #inputs[i].connection == 0 then
             arg_val = type(inputs[i].i_val) == "string" and '"' .. inputs[i].i_val .. '"' or inputs[i].i_val
+            if idx_sub_1 then
+                -- SUBTRACT START, END AND SKIP INCREMENT
+                if i < 3 then arg_val = arg_val - 1 end
+            end
         else
-            local src_node_pin = inputs[i].src
-            local src_n, f_idx, n_idx = GetSourceNode(node, inputs[i])
-            --local _, f_idx, n_idx = GetNodeInfo(src_node_pin[1].guid)
-            local src_node_idx = '_f_' .. f_idx .. 'n_' .. n_idx
-
-            -- FOR LOOP NEEDS OUT LABELS
-            --arg_val = src_node_pin[1].label:gsub("%s+", "") .. src_node_idx
-
-            arg_val = (src_node_pin[1].label:gsub("%s+", "") .. src_node_idx .. '_out%d%s'):format(
-                inputs[i].connection[1].pin, "")
-        end
-
-        AddCode(tostring(arg_val))
-    end
-end
-
-local function ValueReferences2(node, inputs)
-    local cur_node, cf_idx, cn_idx = GetNodeInfo(node.guid)
-    local c_node_idx = cf_idx .. cn_idx
-
-    local end_offset = 0
-
-    -- BOOL IDX-1 = inputs[4] -- WE NEED TO EXCLUDE IT FROM LOOP ARGUMENTS
-    if cur_node.fname == "CUSTOM_ForLoop" then
-        end_offset = 1
-    end
-
-    for i = 1, #inputs - end_offset do
-        if i > 1 then AddCode(', ') end
-
-        local arg_val
-
-        if #inputs[i].connection == 0 then
-            arg_val = type(inputs[i].i_val) == "string" and '"' .. inputs[i].i_val .. '"' or inputs[i].i_val
-        else
-            local prev_node, f_idx, n_idx = GetNodeInfo(inputs[i].connection[1].node)
-            local prev_node_idx = 'f_' .. f_idx .. 'n_' .. n_idx
-
-            local is_global = f_idx == 1 and "_G" or ""
-            local src_node = GetNodeType(prev_node)
-
-            local src_pin = inputs[i].connection[1].pin
-            -- IF WE ARE IN FUNCTION THIS IS START NODE WE NEED NAME OF ARGUMENTS
-            if src_node.type == "m" then
-                arg_val = src_node.outputs[src_pin].label:gsub("%s+", "")
-            elseif src_node.fname == "CUSTOM_ForLoop" then
-                local idx_minus_one = ""
-                if src_pin == 2 then
-                    if src_node.inputs[4].i_val == true then
-                        idx_minus_one = " -1"
-                    end
-                end
-                arg_val = src_node.outputs[src_pin].label:gsub("%s+", ""):lower() .. prev_node_idx .. idx_minus_one
-            elseif src_node.fname == "CUSTOM_Ipairs" or src_node.fname == "CUSTOM_Pairs" then
-                arg_val = src_node.outputs[src_pin].label:gsub("%s+", ""):lower() .. prev_node_idx
-
-                -- REFERENCE NODE
-            else
-                arg_val = (src_node.label:gsub("%s+", "") .. prev_node_idx .. '_out%d%s'):format(
-                    inputs[i].connection[1].pin, is_global)
+            -- CONNECTED TO OTHER NODE, GET REFERENCE NODE
+            local out_v, loop = GetSourceNode(node, inputs[i])
+            arg_val = (out_v .. (loop and "" or '_out%d')):format(inputs[i].connection[1].pin)
+            if idx_sub_1 then
+                -- SUBTRACT START, END AND SKIP INCREMENT
+                if i < 3 then arg_val = arg_val .. " - 1" end
             end
         end
 
@@ -137,46 +121,51 @@ end
 
 -- Node Types
 function NT_VAR(node, func_idx, ident)
-    local is_global = func_idx == 1 and "_G" or ""
-
-    AddCode(IdenLVL(ident) .. 'local ' .. node.label:gsub("%s+", "") .. is_global .. ' = ' .. node.outputs[1].i_val)
+    AddCode(IdenLVL(ident) .. 'local ' .. node.label:gsub("%s+", "") .. ' = ' .. node.outputs[1].i_val)
 end
 
 function NT_CALL(node, func_idx, ident)
-    local is_global = func_idx == 1 and "_G" or ""
-    AddCode(IdenLVL(ident) .. 'local ')
+    AddCode(IdenLVL(ident))
+    -- IF API DOES NOT RETURN ANY VALUE DO NOT ADD LOCAL
+    if #node.outputs > 0 then AddCode('local ') end
 
     local _, f_idx, n_idx = GetNodeInfo(node.guid)
-    local node_idx = '_f_' .. f_idx .. 'n_' .. n_idx
+    --local node_idx = '_f_' .. f_idx .. 'n_' .. n_idx
+    local node_idx = ("_F%dN%d"):format(f_idx, n_idx)
 
     for out_i = 1, #node.outputs do
         if out_i > 1 then AddCode(', ') end
-        AddCode((node.label:gsub("%s+", "") .. node_idx .. '_out%d%s'):format(out_i, is_global))
+        AddCode((node.label:gsub("%s+", "") .. node_idx .. '_out%d'):format(out_i))
     end
 
     if #node.outputs > 0 then AddCode(' = ') end
 
-    AddCode('r.' .. node.fname .. '(')
+    if node.sp_api then
+        AddCode(node.sp_api .. '.' .. node.fname .. '(')
+    else
+        AddCode('r.' .. node.fname .. '(')
+    end
     ValueReferences(node, node.inputs)
     AddCode(')\n')
 end
 
 function NT_FORLOOP(node, func_idx, ident)
     local _, f_idx, n_idx = GetNodeInfo(node.guid)
-    local node_idx = '_f_' .. f_idx .. 'n_' .. n_idx
+    local node_idx = ("_F%dN%d"):format(f_idx, n_idx)
 
+    local inputs = node.inputs
+    local idx_sub_1
     if node.fname == "CUSTOM_ForLoop" then
-        AddCode(IdenLVL(ident) .. 'for idx' .. node_idx .. ' = ')
-        --local start_idx, inc, end_idx, idx_sub_one = node.inputs[1], node.inputs[2], node.inputs[3],
-        --   node.inputs[4] == true and " -1" or ""
+        AddCode(IdenLVL(ident) .. 'for IDX' .. node_idx .. ' = ')
+        inputs = { node.inputs[1], node.inputs[3], node.inputs[2] }
+        idx_sub_1 = node.inputs[4].i_val == true
     elseif node.fname == "CUSTOM_Ipairs" then
-        AddCode(IdenLVL(ident) .. 'for key' .. node_idx .. ', value' .. node_idx .. ' in ipairs(')
+        AddCode(IdenLVL(ident) .. 'for KEY' .. node_idx .. ', VALUE' .. node_idx .. ' in ipairs(')
     elseif node.fname == "CUSTOM_Pairs" then
-        AddCode(IdenLVL(ident) .. 'for key' .. node_idx .. ', value' .. node_idx .. ' in pairs(')
+        AddCode(IdenLVL(ident) .. 'for KEY' .. node_idx .. ', VALUE' .. node_idx .. ' in pairs(')
     end
 
-
-    ValueReferences(node, node.inputs)
+    ValueReferences(node, inputs, idx_sub_1)
 
     if node.fname == "CUSTOM_Ipairs" or node.fname == "CUSTOM_Pairs" then AddCode(')') end
     AddCode(' do\n')
@@ -186,37 +175,87 @@ function NT_FORLOOP(node, func_idx, ident)
     AddCode(IdenLVL(ident) .. 'end\n\n')
 end
 
+local function TraceMath(node, node_idx, tbl, ident)
+    if node.fname:find("MATH_") then
+        if node.inputs[1].connection[1] and node.inputs[3].connection[1] then
+            -- TRACE NODE REFERENCES
+
+            local inp1, f1_idx, n1_idx = GetNodeInfo(node.inputs[1].connection[1].node)
+            local inp2, f2_idx, n2_idx = GetNodeInfo(node.inputs[3].connection[1].node)
+            local inp1_idx = ("_F%dN%d"):format(f1_idx, n1_idx)
+            local inp2_idx = ("_F%dN%d"):format(f2_idx, n2_idx)
+
+            table.insert(tbl, 1,
+                IdenLVL(ident) .. node.label:gsub("%s+", "") .. node_idx .. '_out1' ..
+                " = " ..
+                inp1.label:gsub("%s+", "") .. inp1_idx .. '_out1' ..
+                ' ' ..
+                node.inputs[2].i_val ..
+                ' ' ..
+                inp2.label:gsub("%s+", "") .. inp2_idx .. '_out1' .. "\n")
+
+            -- TRACE FIRST INPUT
+            TraceMath(inp1, inp1_idx, tbl, ident)
+
+            -- TRACE SECOND INPUT
+            TraceMath(inp2, inp2_idx, tbl, ident)
+        else
+            -- WRITE VALUES
+            table.insert(tbl, 1,
+                IdenLVL(ident) .. node.label:gsub("%s+", "") .. node_idx .. '_out1' ..
+                " = " ..
+                node.inputs[1].i_val ..
+                ' ' .. node.inputs[2].i_val ..
+                ' ' .. node.inputs[3].i_val .. "\n")
+        end
+    end
+end
+
+local function MakeMathFlow(node, ident)
+    local math_code = {}
+
+    local prev_node, f_idx, n_idx = GetNodeInfo(node.inputs[1].connection[1].node)
+    local prev_node_idx = ("_F%dN%d"):format(f_idx, n_idx)
+
+    TraceMath(prev_node, prev_node_idx, math_code, ident)
+    AddCode(table.concat(math_code))
+end
+
 function NT_IFELSE(node, func_idx, ident)
+    MakeMathFlow(node, ident)
+
     -- IF
-    AddCode('if TMP_VAL ')
-    ValueReferences(node, node.inputs)
-    AddCode('then ')
+    AddCode(IdenLVL(ident) .. 'if ')
+    ValueReferences(node, { node.inputs[1] })
+    AddCode(' == ' .. tostring(node.inputs[2].i_val) .. ' then\n')
     -- TURN ON LOOP OUT 1 FOR CHILD FLOW
-    node.output[1].run = true
-    local child_flow = GetChildFlowNATIVE(node, GetFunctionNodes(node.guid))
-    --GetChildFlowNATIVE(node, GetFunctionNodes(node.guid))
-    CodeGen(node.LOOP_FLOW, func_idx)
+    node.outputs[1].run = true
+    local child_flow_t = GetChildFlowNATIVE(node, GetFunctionNodes(node.guid))
+    CodeGen(child_flow_t, func_idx, ident + 1)
+
     ---ELSE
-    AddCode('else ')
+    AddCode(IdenLVL(ident) .. 'else\n')
     -- TURN ON LOOP OUT 2 FOR CHILD FLOW
-    node.output[1].run = false
-    node.output[2].run = true
-    local child_flow = GetChildFlowNATIVE(node, GetFunctionNodes(node.guid))
-    --GetChildFlowNATIVE(node, GetFunctionNodes(node.guid))
-    CodeGen(node.LOOP_FLOW, func_idx)
-    AddCode('end\n')
+    node.outputs[1].run = false
+    node.outputs[2].run = true
+    local child_flow_f = GetChildFlowNATIVE(node, GetFunctionNodes(node.guid))
+    CodeGen(child_flow_f, func_idx, ident + 1)
+    AddCode(IdenLVL(ident) .. 'end\n')
 
     -- TURN OFF BOTH LOOP RUNS
-    node.output[2].run = false
-    node.output[1].run = false
-    node.LOOP_FLOW = nil
+    node.outputs[2].run = false
+    node.outputs[1].run = false
 end
 
 function NT_FUNC(node, func_idx, ident)
-    AddCode(IdenLVL(ident) .. 'local ')
+    local _, f_idx, n_idx = GetNodeInfo(node.guid)
+    local node_idx = ("_F%dN%d"):format(f_idx, n_idx)
+    AddCode(IdenLVL(ident))
+    -- IF FUNCTION DOES NOT RETURN ANY VALUE DO NOT ADD LOCAL
+    if #node.outputs > 0 then AddCode('local ') end
     for out_i = 1, #node.outputs do
         if out_i > 1 then AddCode(', ') end
-        AddCode((node.outputs[out_i].label:gsub("%s+", "")):format(out_i))
+        AddCode((node.outputs[out_i].label:gsub("%s+", "") .. node_idx .. "_out%d"):format(out_i))
     end
     if #node.outputs > 0 then AddCode(' = ') end
     AddCode(node.label:gsub("%s+", "") .. '(')
@@ -251,21 +290,28 @@ local code_vars = {
     rawset = rawset,
     getmetatable = getmetatable,
     setmetatable = setmetatable,
+    load = load,
+    dofile = dofile,
     r = reaper,
     reaper = reaper,
+    ultraschall = ULTRA_API and ultraschall
 
 }
 
 function MakeMemoryFunc(str)
     local func, err = load(str, "ScriptRun", "t", code_vars)
     if func then
+        local start_time = reaper.time_precise()
+
         local pass, err_msg = pcall(func)
         if not pass then
-            reaper.ShowConsoleMsg("LOAD SCRIPT ERROR\n" .. err_msg)
+            reaper.ShowConsoleMsg("\nLOAD SCRIPT ERROR\n" .. err_msg)
             return
         end
+        local end_time = reaper.time_precise()
+        reaper.ShowConsoleMsg("\nNATIVE RUN :" .. ('%.4f ms\n'):format((end_time - start_time) * 1000))
     else
-        reaper.ShowConsoleMsg("LOAD FUNCTION COULD NOT BE CREATED:\n" .. err)
+        reaper.ShowConsoleMsg("\nLOAD FUNCTION COULD NOT BE CREATED:\n" .. err)
         return
     end
 end
@@ -273,8 +319,11 @@ end
 function NativeExport(tbl, name)
     local path = PATH .. "ExportedActions/ReaSpaghetti_StandAlone_" .. name:gsub(".reanodes", "") .. ".lua"
     local gen_code = "-- CODE GENERATED BY ReaSpaghetti\n\n"
+    local gen_desc =
+    "-- SUFIX : FxNx \n -- F = FUNCTION ID (FUNCTION WHERE NODE LIVES) \n -- N = NODE ID (NUMBER OF THE NODE IN FUNCTION) \n\n"
 
     table.insert(tbl, 1, gen_code)
+    table.insert(tbl, 1, gen_desc)
 
     local file = io.open(path, "w")
     if file then
@@ -310,7 +359,11 @@ function GenerateCode()
 
     local FUNCTIONS = GetFUNCTIONS()
 
-    AddCode('local r = reaper\n\n')
+    AddCode('local r = reaper\n')
+    if ULTRA_API then
+        AddCode(
+            'if not ultraschall then ultraschall = dofile(r.GetResourcePath() .. "/UserPlugins/ultraschall_api.lua") end\n')
+    end
     -- CREATE GLOBAL SCOPE FIRST (INIT FUNCTION (1))
     CodeGen(TraceFlow(FUNCTIONS[1].NODES), 1)
     -- SKIP INIT AND CREATE IN REVERSE ORDER TO HAVE LOCAL FUNCTIONS IN ORDER
@@ -322,10 +375,10 @@ function GenerateCode()
         CloseFunc(i)
     end
 
-    AddCode(DEFERED_NODE and '\nr.defer(Main)' or '\nMain()')
+    AddCode(DEFERED_NODE and '\nr.defer(Main)\n\n' or '\nMain()\n\n')
 
-    --reaper.ClearConsole()
-    print(table.concat(CODE_STR))
-    --MakeMemoryFunc(table.concat(CODE_STR))
-    --NativeExport(CODE_STR, "NATIVE_EXPORT")
+
+    --print(table.concat(CODE_STR))
+    MakeMemoryFunc(table.concat(CODE_STR))
+    NativeExport(CODE_STR, "NATIVE_EXPORT")
 end
