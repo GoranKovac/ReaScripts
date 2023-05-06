@@ -21,6 +21,10 @@ local Math = {
         if x == 0 or y == 0 then return 0 end
         return x / y
     end,
+    ["//"]         = function(x, y)
+        if x == 0 or y == 0 then return 0 end
+        return x // y
+    end,
     ["%"]          = function(x, y)
         if x == 0 or y == 0 then return 0 end
         return x % y

@@ -111,7 +111,7 @@ local exclude_api = {
     ["defer"] = true
 }
 
-local Math_FLOAT = { "+", "-", "*", "/", "%", "^" }
+local Math_FLOAT = { "+", "-", "*", "/", "%", "^", "//" }
 
 local Compare = { '==', '~=', '>', '>=', '<', '<=' }
 

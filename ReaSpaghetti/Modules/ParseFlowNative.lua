@@ -1,7 +1,48 @@
 --@noindex
 --NoIndex: true
+local r = reaper
 
-function print(x) reaper.ShowConsoleMsg(x) end
+local math_code_str = {
+    ['==']         = '%s == %s\n',
+    ['~=']         = '%s ~= %s\n',
+    ['>']          = '%s > %s\n',
+    ['>=']         = '%s >= %s\n',
+    ['<']          = '%s < %s\n',
+    ['<=']         = '%s <= %s\n',
+    ["+"]          = '%s + %s\n',
+    ["-"]          = '%s - %s\n',
+    ["*"]          = '%s * %s\n',
+    ["%"]          = '%s % %s\n',
+    ["/"]          = '%s / %s\n',
+    ["//"]         = '%s // %s\n',
+    ["random"]     = 'math.random()\n',
+    ["randomS"]    = 'math.random(abs(%s))\n',
+    ["randomM"]    = 'math.random(abs(%s), abs(%s))\n',
+    ["huge"]       = 'math.huge()\n',
+    ["pi"]         = 'math.pi()\n',
+    ["abs"]        = 'math.abs(%s)\n',
+    ["cos"]        = 'math.cos(%s)\n',
+    ["acos"]       = 'math.acos(%s)\n',
+    ["sin"]        = 'math.sin(%s)\n',
+    ["asin"]       = 'math.asin(%s)\n',
+    ["atan"]       = 'math.atan(%s)\n',
+    ["tan"]        = 'math.tan(%s)\n',
+    ["ceil"]       = 'math.ceil(%s)\n',
+    ["floor"]      = 'math.floor(%s)\n',
+    ["deg"]        = 'math.deg(%s)\n',
+    ["exp"]        = 'math.exp(%s)\n',
+    ["log"]        = 'math.log(%s)\n',
+    ["modf"]       = 'math.modf(%s)\n',
+    ["rad"]        = 'math.rad(%s)\n',
+    ["sqrt"]       = 'math.sqrt(%s)\n',
+    ["randomseed"] = 'math.randomseed(%s)\n',
+    ["fmod"]       = 'math.fmod(%s, %s)\n',
+    ["max"]        = 'math.max(%s, %s)\n',
+    ["min"]        = 'math.min(%s, %s)\n',
+    ["pow"]        = '%s ^ %s\n',
+    ["IntToFloat"] = '%s + .0\n',
+    ["FloatToInt"] = 'floor(%s)\n',
+}
 
 local CODE_STR = {}
 
@@ -176,6 +217,104 @@ function NT_FORLOOP(node, func_idx, ident)
 end
 
 local function TraceMath(node, node_idx, tbl, ident)
+    if node.fname:lower():find("math") then
+        local tmp_str = {}
+        local val_1, val_2
+        local trace_1, trace_2
+        if node.inputs[1] then
+            if #node.inputs[1].connection == 0 then
+                val_1 = node.inputs[1].i_val
+            else
+                local inp1, f1_idx, n1_idx = GetNodeInfo(node.inputs[1].connection[1].node)
+                local inp1_idx = ("_F%dN%d"):format(f1_idx, n1_idx)
+                trace_1 = { inp1, inp1_idx, inp1.label:gsub("%s+", "") .. inp1_idx .. '_out1' }
+            end
+        end
+        if node.inputs[3] then
+            if #node.inputs[3].connection == 0 then
+                val_2 = node.inputs[3].i_val
+            else
+                local inp2, f2_idx, n2_idx = GetNodeInfo(node.inputs[3].connection[1].node)
+                local inp2_idx = ("_F%dN%d"):format(f2_idx, n2_idx)
+                trace_2 = { inp2, inp2_idx, inp2.label:gsub("%s+", "") .. inp2_idx .. '_out1' }
+            end
+        end
+
+        tmp_str[1] =
+            math_code_str[node.inputs[2].i_val]:format(
+                val_1 and tostring(val_1) or (trace_1 and trace_1[3] or ""),
+                val_2 and tostring(val_2) or (trace_2 and trace_2[3] or "")
+            )
+
+        table.insert(tbl, 1, IdenLVL(ident) .. node.label:gsub("%s+", "") .. node_idx .. '_out1' .. " = " .. tmp_str[1])
+        if trace_1 then
+            TraceMath(trace_1[1], trace_1[2], tbl, ident)
+        end
+        if trace_2 then
+            TraceMath(trace_2[1], trace_2[2], tbl, ident)
+        end
+    end
+end
+
+local function TraceMath_WORKING(node, node_idx, tbl, ident)
+    if node.fname:lower():find("math") then
+        local tmp_str = {}
+
+        local trace_1, trace_2
+        if node.inputs[1] then
+            if #node.inputs[1].connection == 0 then
+                --local val_1 = node.inputs[1].i_val
+                if not node.inputs[3] then
+                    table.insert(tmp_str,
+                        IdenLVL(ident) .. node.label:gsub("%s+", "") .. node_idx .. '_out1' ..
+                        " = " .. node.inputs[2].i_val .. '(' .. node.inputs[1].i_val .. ')\n')
+                else
+                    table.insert(tmp_str,
+                        IdenLVL(ident) .. node.label:gsub("%s+", "") .. node_idx .. '_out1' ..
+                        " = " ..
+                        node.inputs[1].i_val ..
+                        ' ' .. node.inputs[2].i_val ..
+                        ' ')
+                end
+            else
+                local inp1, f1_idx, n1_idx = GetNodeInfo(node.inputs[1].connection[1].node)
+                local inp1_idx = ("_F%dN%d"):format(f1_idx, n1_idx)
+                trace_1 = { inp1, inp1_idx }
+
+                table.insert(tmp_str,
+                    IdenLVL(ident) .. node.label:gsub("%s+", "") .. node_idx .. '_out1' ..
+                    " = " ..
+                    inp1.label:gsub("%s+", "") .. inp1_idx .. '_out1' ..
+                    ' ' ..
+                    node.inputs[2].i_val .. ' ')
+            end --
+        end
+        if node.inputs[3] then
+            if #node.inputs[3].connection == 0 then
+                --local val_2 = node.inputs[3].i_val
+                table.insert(tmp_str, node.inputs[3].i_val .. "\n")
+                -- ADD CODE
+            else
+                local inp2, f2_idx, n2_idx = GetNodeInfo(node.inputs[3].connection[1].node)
+                local inp2_idx = ("_F%dN%d"):format(f2_idx, n2_idx)
+                trace_2 = { inp2, inp2_idx }
+
+                table.insert(tmp_str, inp2.label:gsub("%s+", "") .. inp2_idx .. '_out1' .. "\n")
+                -- ADD CODE
+            end
+        end
+
+        table.insert(tbl, 1, table.concat(tmp_str))
+        if trace_1 then
+            TraceMath(trace_1[1], trace_1[2], tbl, ident)
+        end
+        if trace_2 then
+            TraceMath(trace_2[1], trace_2[2], tbl, ident)
+        end
+    end
+end
+
+local function TraceMath2(node, node_idx, tbl, ident)
     if node.fname:find("MATH_") then
         if node.inputs[1].connection[1] and node.inputs[3].connection[1] then
             -- TRACE NODE REFERENCES
@@ -211,6 +350,22 @@ local function TraceMath(node, node_idx, tbl, ident)
     end
 end
 
+local function RemoveDuplicates(tbl)
+    local seen = {}
+    local rem = {}
+    for index, item in ipairs(tbl) do
+        if seen[item] then
+            rem[#rem + 1] = index
+        else
+            seen[item] = true
+        end
+    end
+    for i = #rem, 1, -1 do
+        table.remove(tbl, rem[i])
+    end
+end
+
+
 local function MakeMathFlow(node, ident)
     local math_code = {}
 
@@ -218,6 +373,9 @@ local function MakeMathFlow(node, ident)
     local prev_node_idx = ("_F%dN%d"):format(f_idx, n_idx)
 
     TraceMath(prev_node, prev_node_idx, math_code, ident)
+
+    RemoveDuplicates(math_code)
+
     AddCode(table.concat(math_code))
 end
 
@@ -225,7 +383,7 @@ function NT_IFELSE(node, func_idx, ident)
     MakeMathFlow(node, ident)
 
     -- IF
-    AddCode(IdenLVL(ident) .. 'if ')
+    AddCode('\n' .. IdenLVL(ident) .. 'if ')
     ValueReferences(node, { node.inputs[1] })
     AddCode(' == ' .. tostring(node.inputs[2].i_val) .. ' then\n')
     -- TURN ON LOOP OUT 1 FOR CHILD FLOW
@@ -301,17 +459,17 @@ local code_vars = {
 function MakeMemoryFunc(str)
     local func, err = load(str, "ScriptRun", "t", code_vars)
     if func then
-        local start_time = reaper.time_precise()
+        local start_time = r.time_precise()
 
         local pass, err_msg = pcall(func)
         if not pass then
-            reaper.ShowConsoleMsg("\nLOAD SCRIPT ERROR\n" .. err_msg)
+            r.ShowConsoleMsg("\nLOAD SCRIPT ERROR\n" .. err_msg)
             return
         end
-        local end_time = reaper.time_precise()
-        reaper.ShowConsoleMsg("\nNATIVE RUN :" .. ('%.4f ms\n'):format((end_time - start_time) * 1000))
+        local end_time = r.time_precise()
+        r.ShowConsoleMsg("\nNATIVE RUN :" .. ('%.4f ms\n'):format((end_time - start_time) * 1000))
     else
-        reaper.ShowConsoleMsg("\nLOAD FUNCTION COULD NOT BE CREATED:\n" .. err)
+        r.ShowConsoleMsg("\nLOAD FUNCTION COULD NOT BE CREATED:\n" .. err)
         return
     end
 end
@@ -329,7 +487,7 @@ function NativeExport(tbl, name)
     if file then
         file:write(table.concat(CODE_STR))
         file:close()
-        local ret = reaper.AddRemoveReaScript(true, 0, path, 1)
+        local ret = r.AddRemoveReaScript(true, 0, path, 1)
         if ret then
             ADDED_TO_ACTIONS = true
         end
@@ -360,6 +518,7 @@ function GenerateCode()
     local FUNCTIONS = GetFUNCTIONS()
 
     AddCode('local r = reaper\n')
+    AddCode('local math = math\n')
     if ULTRA_API then
         AddCode(
             'if not ultraschall then ultraschall = dofile(r.GetResourcePath() .. "/UserPlugins/ultraschall_api.lua") end\n')
@@ -377,8 +536,7 @@ function GenerateCode()
 
     AddCode(DEFERED_NODE and '\nr.defer(Main)\n\n' or '\nMain()\n\n')
 
-
-    --print(table.concat(CODE_STR))
+    r.ShowConsoleMsg(table.concat(CODE_STR))
     MakeMemoryFunc(table.concat(CODE_STR))
-    NativeExport(CODE_STR, "NATIVE_EXPORT")
+    --NativeExport(CODE_STR, "NATIVE_EXPORT")
 end
