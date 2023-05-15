@@ -59,7 +59,10 @@ function Top_Menu()
                 if not PROJECT_PATH then
                     EXPORT_ACTION_WARNING = true
                 else
-                    EXPORT_ACTION_POPUP = true
+                    GenerateCode2(true)
+                    NativeExport2()
+                    RUNNING = nil
+                    --EXPORT_ACTION_POPUP = true
                 end
             end
             if r.ImGui_MenuItem(ctx, 'Update API') then
@@ -223,27 +226,28 @@ local function TableSpecial(node)
     if node.type == "tc" or node.type == "code" then
         local avail_w = r.ImGui_GetContentRegionAvail(ctx)
         if r.ImGui_BeginChild(ctx, "code_inputs") then
-            for ins = 1, #node.inputs do
-                if node.inputs[ins].type ~= "CODE" then
-                    if ins > 1 then
-                        local cur_type = node.inputs[ins].type
-                        r.ImGui_PushID(ctx, "tc_inp" .. ins)
-                        r.ImGui_SetNextItemWidth(ctx, avail_w / 3)
-                        if r.ImGui_BeginCombo(ctx, ins - 1, cur_type) then
-                            for v in ipairs(types) do
-                                if r.ImGui_Selectable(ctx, types[v]) then
-                                    -- DO NOT ALLOW CHANGING IF PIN IS CONNECTED
-                                    if not next(node.inputs[ins].connection) then
-                                        -- UPDATE FUNCTION INPUT TYPE
-                                        node.inputs[ins].type = types[v]
-                                    end
-                                end
+            local inp_start = node.type == "code" and 2 or 1
+            for ins = inp_start, #node.inputs do
+                --if node.inputs[ins].type ~= "CODE" then
+                --if ins > 1 then
+                local cur_type = node.inputs[ins].type
+                r.ImGui_PushID(ctx, "tc_inp" .. ins)
+                r.ImGui_SetNextItemWidth(ctx, avail_w / 3)
+                if r.ImGui_BeginCombo(ctx, node.type == "code" and ins - 1 or ins, cur_type) then
+                    for v in ipairs(types) do
+                        if r.ImGui_Selectable(ctx, types[v]) then
+                            -- DO NOT ALLOW CHANGING IF PIN IS CONNECTED
+                            if not next(node.inputs[ins].connection) then
+                                -- UPDATE FUNCTION INPUT TYPE
+                                node.inputs[ins].type = types[v]
                             end
-                            r.ImGui_EndCombo(ctx)
                         end
-                        r.ImGui_PopID(ctx)
                     end
+                    r.ImGui_EndCombo(ctx)
                 end
+                r.ImGui_PopID(ctx)
+                --end
+                --end
                 if node.type == "tc" then
                     r.ImGui_SameLine(ctx)
                     r.ImGui_PushID(ctx, "##tc" .. node.guid .. ins)
@@ -604,33 +608,28 @@ function DeferTest()
         LEGO_MGS = {}
         ClearNodesWarning()
         InitRunFlow()
-        --r.ShowConsoleMsg("\nORIGINAL RUN :" .. r.time_precise() - SCRIPT_START_TIME)
         local end_time = r.time_precise()
         r.ShowConsoleMsg("\nORIGINAL RUN :" .. ('%.4f ms\n'):format((end_time - start_time) * 1000))
     end
     r.ImGui_SameLine(ctx)
-    if DEFERED_NODE then
+    if DEFERED_NODE or RUNNING then
         r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Button(), 0x00FF00AA)
     end
     if r.ImGui_Button(ctx, "STOP") then
-        if DEFERED_NODE then
-            --if START_FLOW and DEFER then
+        if DEFERED_NODE or RUNNING then
+            DEFERED_NODE, RUNNING = nil, nil
             r.ImGui_PopStyleColor(ctx)
-            DEFERED_NODE = nil
-            --DEFER = false
-            -- START_FLOW = false
         end
+    end
+    if DEFERED_NODE or RUNNING then
+        r.ImGui_PopStyleColor(ctx)
     end
     r.ImGui_SameLine(ctx)
     if r.ImGui_Button(ctx, "PARSE") then
-        --local start_time = r.time_precise()
-        GenerateCode()
-        --local end_time = r.time_precise()
-        --r.ShowConsoleMsg("\nNATIVE PARSE + RUN:" .. ('%.4f ms\n'):format((end_time - start_time) * 1000))
-    end
-    --if START_FLOW and DEFER then
-    if DEFERED_NODE then
-        r.ImGui_PopStyleColor(ctx)
+        ClearNodesWarning()
+        if not RUNNING then
+            GenerateCode2()
+        end
     end
 end
 
@@ -1015,10 +1014,10 @@ function Popups()
         ADDED_TO_ACTIONS = nil
     end
     r.ImGui_SetNextWindowPos(ctx, center[1], center[2], r.ImGui_Cond_Appearing(), 0.5, 0.5)
-    if EXPORT_ACTION_POPUP then
-        EXPORT_ACTION_POPUP = nil
-        r.ImGui_OpenPopup(ctx, "EXPORT_ACTION_POPUP")
-    end
+    -- if EXPORT_ACTION_POPUP then
+    --     EXPORT_ACTION_POPUP = nil
+    --     r.ImGui_OpenPopup(ctx, "EXPORT_ACTION_POPUP")
+    -- end
 
     if EXPORT_ACTION_WARNING then
         EXPORT_ACTION_WARNING = nil
@@ -1030,24 +1029,24 @@ function Popups()
         r.ImGui_EndPopup(ctx)
     end
 
-    if r.ImGui_BeginPopupModal(ctx, 'EXPORT_ACTION_POPUP', nil, r.ImGui_WindowFlags_AlwaysAutoResize()) then
-        r.ImGui_Text(ctx, 'DEFERED SCRIPT?\n\n')
-        r.ImGui_Separator(ctx)
-        if r.ImGui_Button(ctx, 'YES', 120, 0) then
-            ExportTest(PROJECT_NAME, PROJECT_PATH, true)
-            r.ImGui_CloseCurrentPopup(ctx)
-        end
-        r.ImGui_SameLine(ctx)
-        if r.ImGui_Button(ctx, 'NO', 120, 0) then
-            ExportTest(PROJECT_NAME, PROJECT_PATH)
-            r.ImGui_CloseCurrentPopup(ctx)
-        end
-        r.ImGui_SameLine(ctx)
-        if r.ImGui_Button(ctx, 'CANCEL', 120, 0) then
-            r.ImGui_CloseCurrentPopup(ctx)
-        end
-        r.ImGui_EndPopup(ctx)
-    end
+    -- if r.ImGui_BeginPopupModal(ctx, 'EXPORT_ACTION_POPUP', nil, r.ImGui_WindowFlags_AlwaysAutoResize()) then
+    --     r.ImGui_Text(ctx, 'DEFERED SCRIPT?\n\n')
+    --     r.ImGui_Separator(ctx)
+    --     if r.ImGui_Button(ctx, 'YES', 120, 0) then
+    --         ExportTest(PROJECT_NAME, PROJECT_PATH, true)
+    --         r.ImGui_CloseCurrentPopup(ctx)
+    --     end
+    --     r.ImGui_SameLine(ctx)
+    --     if r.ImGui_Button(ctx, 'NO', 120, 0) then
+    --         ExportTest(PROJECT_NAME, PROJECT_PATH)
+    --         r.ImGui_CloseCurrentPopup(ctx)
+    --     end
+    --     r.ImGui_SameLine(ctx)
+    --     if r.ImGui_Button(ctx, 'CANCEL', 120, 0) then
+    --         r.ImGui_CloseCurrentPopup(ctx)
+    --     end
+    --     r.ImGui_EndPopup(ctx)
+    -- end
 
     r.ImGui_SetNextWindowPos(ctx, center[1], center[2], r.ImGui_Cond_Appearing(), 0.5, 0.5)
     if r.ImGui_BeginPopup(ctx, "UPDATE") then

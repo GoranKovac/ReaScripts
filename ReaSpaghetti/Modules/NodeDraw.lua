@@ -218,15 +218,15 @@ local NodeDLChannel = {
 function Create_constant_tbl(type)
     local tbl = {}
     if type == "s" then
-        tbl = { ins = {}, out = { { name = "", type = "STRING" } }, resizeable = true, compiler = "NT_VAR" }
+        tbl = { ins = {}, out = { { name = "", type = "STRING" } }, resizeable = true }
     elseif type == "i" then
-        tbl = { ins = {}, out = { { name = "", type = "INTEGER" } }, compiler = "NT_VAR" }
+        tbl = { ins = {}, out = { { name = "", type = "INTEGER" } } }
     elseif type == "f" then
-        tbl = { ins = {}, out = { { name = "", type = "NUMBER" } }, compiler = "NT_VAR" }
+        tbl = { ins = {}, out = { { name = "", type = "NUMBER" } } }
     elseif type == "b" then
-        tbl = { ins = {}, out = { { name = "", type = "BOOLEAN" } }, compiler = "NT_VAR" }
+        tbl = { ins = {}, out = { { name = "", type = "BOOLEAN" } } }
     elseif type == "t" then
-        tbl = { ins = {}, out = { { name = "", type = "TABLE", def_val = {} } }, compiler = "NT_VAR" }
+        tbl = { ins = {}, out = { { name = "", type = "TABLE", def_val = {} } } }
     elseif type == "route" then
         tbl = { ins = {}, out = {}, run = "in/out" }
     elseif type == "ws" then
@@ -242,7 +242,8 @@ function Create_constant_tbl(type)
             ins = {}, --ins = { { name = "TABLE", type = "TABLE" } },
             out = { { name = "TABLE", type = "TABLE" } },
             run = "in/out",
-            fname = "CUSTOM_TableConstructor"
+            fname = "CUSTOM_TableConstructor",
+            compiler = "NT_TABLE_C"
         }
     elseif type == "m" then
         tbl = { ins = {}, out = {}, run = "out", fname = "CUSTOM_FunctionStartArgs" }
@@ -251,7 +252,8 @@ function Create_constant_tbl(type)
             ins = { { name = "", type = "" } },
             out = { { name = "", type = "" } },
             run = "in/out",
-            fname = "CUSTOM_Set"
+            fname = "CUSTOM_Set",
+            compiler = type == "set" and "NT_SET"
         }
     elseif type == "get" then
         tbl = {
@@ -294,7 +296,8 @@ function Create_constant_tbl(type)
             },
             --resizeable = true,
             fname = "CUSTOM_CodeNodeRun",
-            run = "in/out"
+            run = "in/out",
+            compiler = "NT_CODE"
         }
     end
     return tbl
@@ -553,7 +556,7 @@ function FilterBox()
                 DIRTY = true
             end
             if r.ImGui_Selectable(ctx, "ADD NUMBER(FLOAT)", false) then
-                InsertNode("f", "NUMBER(FLOAT)")
+                InsertNode("f", "NUMBER")
                 DIRTY = true
             end
             if r.ImGui_Selectable(ctx, "ADD STRING", false) then
@@ -2173,6 +2176,9 @@ function DrawLoop()
     --if START_FLOW and DEFER then
     if DEFERED_NODE then
         InitRunFlow()
+    end
+    if RUNNING then
+        LoopNativeCode()
     end
 end
 

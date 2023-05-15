@@ -49,23 +49,41 @@ function CurlToFile()
 end
 
 local function UpdateNode(node, api)
+    if node.type == "set" then
+        node.compiler = "NT_SET"
+    elseif node.type == "retnode" then
+        node.compiler = "NT_FUNC_RET"
+    elseif node.type == "func" then
+        node.compiler = "NT_FUNC"
+    elseif node.type == "tc" then
+        node.compiler = "NT_TABLE_C"
+    elseif node.type == "code" then
+        node.compiler = "NT_CODE"
+    end
+
+    node.label = node.label:gsub("%((FLOAT)%)", "")
     if not node.fname then return end
-    if node.fname ~= api.fname then return end
+    if node.fname ~= api.fname then
+        return
+    end
     for k, v in pairs(api) do
+        if k == "compiler" then
+            node[k] = v
+        end
         if k ~= "ins" and k ~= "out" then
-            if not node[k] then node[k] = v end
+            --if not node[k] then node[k] = v end
         elseif k == "ins" then
-            for i, in_data in ipairs(v) do
-                if not node.inputs[i] then
-                    node.inputs[i] = Socket(in_data, i, "in")
-                end
-            end
+            -- for i, in_data in ipairs(v) do
+            --     if not node.inputs[i] then
+            --         node.inputs[i] = Socket(in_data, i, "in")
+            --     end
+            -- end
         elseif k == "out" then
-            for o, out_data in ipairs(v) do
-                if not node.outputs[o] then
-                    node.outputs[o] = Socket(out_data, o, "out")
-                end
-            end
+            -- for o, out_data in ipairs(v) do
+            --     if not node.outputs[o] then
+            --         node.outputs[o] = Socket(out_data, o, "out")
+            --     end
+            -- end
         end
     end
 end
@@ -456,7 +474,8 @@ function Fill_Api_list()
         desc = "Defer script (Keep running in background)",
         ins = {},
         out = {},
-        run = "in/out"
+        run = "in/out",
+        compiler = "NT_DEFER"
     }
 
     -- TEST DEFER END (HACK)
@@ -466,9 +485,8 @@ function Fill_Api_list()
         desc = "Kill Defer (stop running in background)",
         ins = {},
         out = {},
-        run = "in/out"
+        run = "in/out",
     }
-
 
     --Table INSERT
     api[#api + 1] = {
@@ -480,7 +498,8 @@ function Fill_Api_list()
             { name = "VALUE", type = "ANY" }
         },
         out = {},
-        run = "in/out"
+        run = "in/out",
+        compiler = "NT_TABLE"
     }
 
     --Table INSERT FAST
@@ -493,7 +512,8 @@ function Fill_Api_list()
             { name = "VALUE", type = "ANY" }
         },
         out = {},
-        run = "in/out"
+        run = "in/out",
+        compiler = "NT_TABLE"
     }
 
     --Table REMOVE
@@ -506,7 +526,8 @@ function Fill_Api_list()
             { name = "IDX",   type = "INTEGER", def_val = 1 }
         },
         out = {},
-        run = "in/out"
+        run = "in/out",
+        compiler = "NT_TABLE"
     }
 
     --Table CONCAT
@@ -521,7 +542,8 @@ function Fill_Api_list()
         out = {
             { name = "RESULT", type = "STRING" }
         },
-        run = "in/out"
+        run = "in/out",
+        compiler = "NT_TABLE"
     }
 
     --Table LENGHT
@@ -535,7 +557,8 @@ function Fill_Api_list()
         out = {
             { name = "#", type = "INTEGER" }
         },
-        run = "in/out"
+        run = "in/out",
+        compiler = "NT_TABLE"
     }
 
     --Table GetValue
@@ -550,7 +573,8 @@ function Fill_Api_list()
         out = {
             { name = "VAL", type = "ANY" }
         },
-        run = "in/out"
+        run = "in/out",
+        compiler = "NT_TABLE"
     }
 
     --Table GetNamedValue
@@ -565,7 +589,8 @@ function Fill_Api_list()
         out = {
             { name = "VAL", type = "ANY" }
         },
-        run = "in/out"
+        run = "in/out",
+        compiler = "NT_TABLE"
     }
 
     --Table SetValue
@@ -579,7 +604,8 @@ function Fill_Api_list()
             { name = "VAL",   type = "ANY" },
         },
         out = {},
-        run = "in/out"
+        run = "in/out",
+        compiler = "NT_TABLE"
     }
 
     --Table SetNamedValue
@@ -593,7 +619,8 @@ function Fill_Api_list()
             { name = "VAL",   type = "ANY" },
         },
         out = {},
-        run = "in/out"
+        run = "in/out",
+        compiler = "NT_TABLE"
     }
 
     --RETURN NODE
@@ -1135,7 +1162,8 @@ function Fill_Api_list()
         out = {
             { name = "", type = "STRING" }
         },
-        run = "in/out"
+        run = "in/out",
+        compiler = "NT_STD"
     }
 
     api[#api + 1] = {
@@ -1150,7 +1178,8 @@ function Fill_Api_list()
         out = {
             { name = "", type = "STRING" }
         },
-        run = "in/out"
+        run = "in/out",
+        compiler = "NT_STD"
     }
 
     api[#api + 1] = {
@@ -1165,7 +1194,8 @@ function Fill_Api_list()
         out = {
             { name = "", type = "STRING" }
         },
-        run = "in/out"
+        run = "in/out",
+        compiler = "NT_STD"
     }
 
     -- LOGICAL OP
@@ -1247,7 +1277,8 @@ function Fill_Api_list()
         out = {
             { name = "PATH", type = "STRING" }
         },
-        run = "in/out"
+        run = "in/out",
+        compiler = "NT_PATH"
     }
 
     api[#api + 1] = {
@@ -1258,7 +1289,8 @@ function Fill_Api_list()
         out = {
             { name = "PATH", type = "STRING" }
         },
-        run = "in/out"
+        run = "in/out",
+        compiler = "NT_PATH"
     }
 
     api[#api + 1] = {
@@ -1273,7 +1305,8 @@ function Fill_Api_list()
             { name = "TRUE",  type = "RUN", run = false },
             { name = "FALSE", type = "RUN", run = false },
         },
-        run = "in/out"
+        run = "in/out",
+        compiler = "NT_IFELSE_M"
     }
 
     api[#api + 1] = {
@@ -1287,7 +1320,8 @@ function Fill_Api_list()
             { name = "ELSE OUT", type = "RUN", run = false },
             { name = "OUT 1",    type = "RUN", run = false },
         },
-        run = "in/out"
+        run = "in/out",
+        compiler = "NT_SWITCH"
     }
 
     -- dB to Val

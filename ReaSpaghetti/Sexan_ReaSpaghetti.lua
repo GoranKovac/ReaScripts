@@ -76,6 +76,7 @@ require("Modules/CustomFunctions")
 require("Modules/ExportToAction")
 require("Modules/Library")
 require("Modules/Undo")
+require("Modules/NativeParser")
 
 if STANDALONE_RUN then return end
 
@@ -123,7 +124,14 @@ local function frame()
 end
 
 DIRTY = nil
+FRAME_CNT = 0
+CAN_UPDATE = false
 local function loop()
+    FRAME_CNT = FRAME_CNT + 1
+    if FRAME_CNT % 33 == 0 then
+        CAN_UPDATE = true
+        FRAME_CNT = 0
+    end
     if PROFILE_DEBUG then
         PROFILE_STARTED = true
         profiler2.start()
@@ -162,6 +170,13 @@ local function loop()
         PROFILE_DEBUG, PROFILE_STARTED = false, nil
         OpenFile(PATH .. "profiler.log")
     end
+
+    if not DEFERING then
+        RUNNING = nil
+    end
+
+    CAN_UPDATE = false
+    DEFERING = nil
 end
 InitApi()
 InitLibrary()
