@@ -625,10 +625,14 @@ function DeferTest()
         r.ImGui_PopStyleColor(ctx)
     end
     r.ImGui_SameLine(ctx)
-    if r.ImGui_Button(ctx, "PARSE") then
-        ClearNodesWarning()
-        if not RUNNING then
-            GenerateCode2()
+    --if RUNNING then r.ImGui_BeginDisabled(ctx) end
+    if not RUNNING then
+        if r.ImGui_Button(ctx, "PARSE") then
+            INIT_SCRIPT_CODE = true
+            ClearNodesWarning()
+            if not RUNNING then
+                GenerateCode2()
+            end
         end
     end
 end

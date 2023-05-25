@@ -94,7 +94,7 @@ local Imgui_BeginEnd = {
     ["ImGui_BeginTabltem"]            = "ImGui_EndTabltem",
     ["ImGui_BeginTable"]              = "ImGui_EndTable",
     ["ImGui_BeginTooltip"]            = "ImGui_EndTooltip",
-    -- PUSH -> POP
+    ---- PUSH -> POP
     ["ImGui_PushButtonRepeat"]        = "ImGui_PopButtonRepeat",
     ["ImGui_PushClipRect"]            = "ImGui_PopClipRect",
     ["ImGui_PushFont"]                = "ImGui_PopFont",
@@ -106,8 +106,11 @@ local Imgui_BeginEnd = {
     ["ImGui_PushTextWrapPos"]         = "ImGui_PopTextWrapPos",
 }
 
-
 local CODE_STR = {}
+
+local function LiveCode(f, n, i, io)
+    return ('FUNCTIONS[%s].NODES[%s].' .. (io == 'in' and 'inputs' or 'outputs') .. '[%s].i_val'):format(f, n, i)
+end
 
 local function IsLocal(n)
     if EXPORT then
@@ -115,7 +118,6 @@ local function IsLocal(n)
     else
         return ''
     end
-    -- return (n == 0 or n == 1) and 'local ' or ''
 end
 
 local function IdenLVL(n)
@@ -126,15 +128,8 @@ local function AddCode(c_str)
     CODE_STR[#CODE_STR + 1] = c_str
 end
 
-local function Simulate(node)
-    AddCode('local p, e = pcall(')
-    AddCode('r.' .. node.fname .. ', ')
-    ValueReferences(node.inputs)
-    AddCode(')\nif not p then --SIMULATE\n')
-    AddCode('r.ShowConsoleMsg(e) --SIMULATE\n')
-    --AddCode('coroutine.yield()')
-    --AddCode("BREAK = true\nerror('done',3)\nreturn--SIMULATE\n")
-    AddCode('end --SIMULATE\n')
+local function AddCodeLine(tbl, str)
+    tbl[#tbl + 1] = str
 end
 
 local function Comment(ident, node_tbl)
@@ -188,28 +183,12 @@ end
 
 local function HasVal(tbl, val)
     for i = 1, #tbl do
-        if tbl[i] == val then
-            --reaper.ShowConsoleMsg("found\n")
-            return true
-        end
+        if tbl[i] == val then return true end
     end
 end
 
 local function RemoveDuplicates(tbl)
-    -- local seen = {}
-    -- local rem = {}
-    -- for index, item in ipairs(tbl) do
-    --     if seen[item] then
-    --         rem[#rem + 1] = index
-    --     else
-    --         seen[item] = true
-    --     end
-    -- end
-    -- for i = #rem, 1, -1 do
-    --     table.remove(tbl, rem[i])
-    -- end
     local math_filter = {}
-
     for i = 1, #tbl do
         if not HasVal(math_filter, tbl[i]) then
             math_filter[#math_filter + 1] = tbl[i]
@@ -220,12 +199,14 @@ end
 
 local function TraceMath(node, node_idx, tbl, ident)
     if node.fname and node.fname:lower():find("math") then
+        local src_node, f_id, n_id = GetNodeInfo(node.guid)
         local tmp_str = {}
         local val_1, val_2
         local trace_1, trace_2
         if node.inputs[1] then
             if #node.inputs[1].connection == 0 then
-                val_1 = node.inputs[1].i_val
+                val_1 = EXPORT and tostring(node.inputs[1].i_val) or
+                    LiveCode(f_id, n_id, 1, "in") --node.inputs[1].i_val
             else
                 local inp1, inp1_idx, out_name = TraceSrcNode(node.inputs[1].connection[1])
                 trace_1 = { inp1, inp1_idx, out_name }
@@ -233,7 +214,8 @@ local function TraceMath(node, node_idx, tbl, ident)
         end
         if node.inputs[3] then
             if #node.inputs[3].connection == 0 then
-                val_2 = node.inputs[3].i_val
+                val_2 = EXPORT and tostring(node.inputs[3].i_val) or
+                    LiveCode(f_id, n_id, 3, "in") --node.inputs[3].i_val
             else
                 local inp2, inp2_idx, out_name = TraceSrcNode(node.inputs[3].connection[1])
                 trace_2 = { inp2, inp2_idx, out_name }
@@ -242,8 +224,8 @@ local function TraceMath(node, node_idx, tbl, ident)
 
         tmp_str[1] =
             math_code_str[node.inputs[2].i_val]:format(
-                val_1 and tostring(val_1) or (trace_1 and trace_1[3]:gsub("[()]", "") or ""),
-                val_2 and tostring(val_2) or (trace_2 and trace_2[3]:gsub("[()]", "") or "")
+                val_1 and val_1 or (trace_1 and trace_1[3]:gsub("[()]", "") or ""),
+                val_2 and val_2 or (trace_2 and trace_2[3]:gsub("[()]", "") or "")
             )
 
         table.insert(tbl, 1,
@@ -265,93 +247,95 @@ local function MakeMathFlow(node, ident)
             local prev_node_idx = ("_F%dN%d"):format(f_idx, n_idx)
 
             TraceMath(prev_node, prev_node_idx, math_code, ident)
-
-            --RemoveDuplicates(math_code)
-            --AddCode(table.concat(math_code))
         end
     end
 
     if #math_code ~= 0 then
         local math_filter = RemoveDuplicates(math_code)
-        --reaper.ShowConsoleMsg(table.concat(math_filter))
-        --reaper.ShowConsoleMsg('\n CLEAR \n')
         AddCode(table.concat(math_filter))
     end
 end
 
-function ValueReferences(inputs, return_val)
+function ValueReferences(guid, exclude)
+    local idx_start = exclude and 1 + exclude or 1
+    local node, f_idx, n_idx = GetNodeInfo(guid)
     local vars = {}
     local arg_val = {}
-    for i = 1, #inputs do
-        if not return_val then
-            if i > 1 then AddCode(', ') end
-        end
-
-        -- CHECK IF OPTIONAL PARAMETER IS USED
-        if not inputs[i].opt or (inputs[i].opt and inputs[i].opt.use) then
-            if #inputs[i].connection == 0 then
-                -- NOT CONNECTED TO ANY NODE, GET RAW VALUE
-                arg_val[1] = type(inputs[i].i_val) == "string" and ('%q'):format(inputs[i].i_val) or inputs[i].i_val
+    local code_lines = {}
+    for i = idx_start, #node.inputs do
+        if i > idx_start then AddCodeLine(code_lines, ', ') end
+        -- NOT CONNECTED TO ANY NODE, GET RAW VALUE
+        if #node.inputs[i].connection == 0 then
+            if EXPORT then
+                arg_val[1] = type(node.inputs[i].i_val) == "string"
+                    and ('%q'):format(node.inputs[i].i_val)
+                    or node.inputs[i].i_val
             else
-                -- CONNECTED TO OTHER NODE, GET REFERENCE NODE
-                local src_node, idx, out_v = TraceSrcNode(inputs[i].connection[1])
-                arg_val[1]                 = out_v
+                arg_val[1] = LiveCode(f_idx, n_idx, i, "in")
             end
         else
-            -- IF OPTIONAL IS NOT USED ADD NIL AS PARAMETER
-            arg_val[1] = "nil"
+            -- CONNECTED TO OTHER NODE, GET REFERENCE NODE
+            local src_node, idx, out_v = TraceSrcNode(node.inputs[i].connection[1])
+            arg_val[1]                 = out_v
         end
 
         vars[#vars + 1] = arg_val[1]
-        if not return_val then AddCode(tostring(arg_val[1])) end
+        AddCodeLine(code_lines, tostring(arg_val[1]))
     end
-    return return_val and vars
+    return code_lines, vars
 end
 
 function AddVars(nodes, func_idx, ident)
+    local code_lines = {}
     for n = 1, #nodes do
         local node = nodes[n]
         local node_idx = ("_F%dN%d"):format(func_idx, n)
         local label = { IdenLVL(ident) .. IsLocal(ident) .. node.label:gsub("%s+", "") .. node_idx .. '_out1' .. ' = ' }
+
+        local value = EXPORT and node.outputs[1].i_val or LiveCode(func_idx, n, 1, "out")
         --local label = { IdenLVL(ident) .. node.label:gsub("%s+", "") .. node_idx .. '_out1' .. ' = ' }
 
+        --Comment(ident, node)
         if node.type == "s" then
             if node.outputs[1].connection ~= 0 then
                 local next_node = GetNodeInfo(node.outputs[1].connection[1].node)
                 if next_node.type ~= "code" then
-                    Comment(ident, node)
-                    AddCode(label[1] .. ('%q'):format(node.outputs[1].i_val) .. "\n")
+                    AddCodeLine(code_lines,
+                        label[1] .. (EXPORT and ('%q'):format(node.outputs[1].i_val) or value) .. "\n")
+                    --AddCode(label[1] .. ('%q'):format(node.outputs[1].i_val) .. "\n")
                 end
             else
-                Comment(ident, node)
-                AddCode(label[1] .. ('%q'):format(node.outputs[1].i_val) .. "\n")
+                AddCodeLine(code_lines, label[1] .. (EXPORT and ('%q'):format(node.outputs[1].i_val) or value) .. "\n")
+                --AddCode(label[1] .. ('%q'):format(node.outputs[1].i_val) .. "\n")
             end
         elseif node.type == "i" then
-            Comment(ident, node)
-            AddCode(label[1] .. node.outputs[1].i_val .. "\n")
+            AddCodeLine(code_lines, label[1] .. value .. "\n")
+            --AddCode(label[1] .. node.outputs[1].i_val .. "\n")
         elseif node.type == "f" then
-            Comment(ident, node)
-            AddCode(label[1] .. node.outputs[1].i_val .. "\n")
+            AddCodeLine(code_lines, label[1] .. value .. "\n")
+            --AddCode(label[1] .. node.outputs[1].i_val .. "\n")
         elseif node.type == "b" then
-            Comment(ident, node)
-            AddCode(label[1] .. tostring(node.outputs[1].i_val) .. "\n")
+            AddCodeLine(code_lines, label[1] .. value .. "\n")
+            --AddCode(label[1] .. tostring(node.outputs[1].i_val) .. "\n")
         elseif node.type == "t" then
-            Comment(ident, node)
-            AddCode(label[1] .. tostring('{}') .. "\n")
+            AddCodeLine(code_lines, label[1] .. tostring('{}') .. "\n")
+            --AddCode(label[1] .. tostring('{}') .. "\n")
         end
     end
+    AddCode(table.concat(code_lines))
 end
 
 local function AddFunc(node, index)
     -- SKIP INIT FUNCTION
     if index < 2 then return end
-    local func_code = {}
-    AddCode('\nfunction ' .. node.label:gsub("%s+", "") .. '(')
+    local code_line = {}
+    AddCodeLine(code_line, '\nfunction ' .. node.label:gsub("%s+", "") .. '(')
     for i = 1, #node.inputs do
-        if i > 1 then AddCode(', ') end
-        AddCode(node.inputs[i].label:gsub("%s+", ""))
+        if i > 1 then AddCodeLine(code_line, ', ') end
+        AddCodeLine(code_line, node.inputs[i].label:gsub("%s+", ""))
     end
-    AddCode(')\n')
+    AddCodeLine(code_line, ')\n')
+    AddCode(table.concat(code_line))
 end
 
 local function CloseFunc(index)
@@ -359,33 +343,47 @@ local function CloseFunc(index)
     AddCode('end\n')
 end
 
+local function ImguiCompiler(node_tbl, name)
+    if Imgui_BeginEnd[node_tbl.fname] then
+        AddCode('if ' .. node_tbl.fname .. ' then\n')
+        TraceFlow(node_tbl)
+        AddCode(Imgui_BeginEnd[node_tbl.fname] .. '\nend\n')
+    end
+end
+
+
 function NT_CALL(node_tbl, func_idx, ident)
+    local code_line = {}
     MakeMathFlow(node_tbl, ident)
     Comment(ident, node_tbl)
 
     local node, node_idx, var_name = NodeIDX(node_tbl.guid)
-    AddCode(IdenLVL(ident))
 
-    -- Simulate(node_tbl)
+    AddCodeLine(code_line, IdenLVL(ident))
 
     local is_local = IsLocal(ident)
     -- IF API DOES NOT RETURN ANY VALUE DO NOT ADD LOCAL
-    if #node_tbl.outputs > 0 then AddCode(is_local) end
+    if #node_tbl.outputs > 0 then
+        AddCodeLine(code_line, is_local)
+    end
 
     for out_i = 1, #node.outputs do
-        if out_i > 1 then AddCode(', ') end
-        AddCode(var_name:format(out_i))
+        if out_i > 1 then AddCodeLine(code_line, ', ') end
+        AddCodeLine(code_line, var_name:format(out_i))
     end
 
-    if #node.outputs > 0 then AddCode(' = ') end
+    if #node.outputs > 0 then AddCodeLine(code_line, ' = ') end
 
     if node.sp_api then
-        AddCode(node.sp_api .. '.' .. node.fname .. '(')
+        AddCodeLine(code_line, node.sp_api .. '.' .. node.fname .. '(')
     else
-        AddCode('r.' .. node.fname .. '(')
+        AddCodeLine(code_line, 'r.' .. node.fname .. '(')
     end
-    ValueReferences(node_tbl.inputs)
-    AddCode(')\n')
+    local vals_code, vals = ValueReferences(node_tbl.guid)
+    AddCodeLine(code_line, table.concat(vals_code))
+    AddCodeLine(code_line, ')\n')
+
+    AddCode(table.concat(code_line))
 end
 
 function NT_TABLE(node_tbl, func_idx, ident)
@@ -397,7 +395,7 @@ function NT_TABLE(node_tbl, func_idx, ident)
 
     --local is_local = IsLocal(ident)
 
-    local vals = ValueReferences(node_tbl.inputs, true)
+    local code, vals = ValueReferences(node_tbl.guid)
     AddCode(IdenLVL(ident) .. lua_type[node_tbl.fname](var_name, table.unpack(vals)))
 end
 
@@ -418,7 +416,8 @@ function NT_TABLE_C(node_tbl, func_idx, ident)
             local label = node.inputs[i].label:gsub("%s+", "") .. ' = '
             AddCode(label)
         end
-        ValueReferences({ node.inputs[i] })
+        local code, vals = ValueReferences(node_tbl.guid)
+        AddCode(vals[i])
     end
 
     AddCode('}\n')
@@ -429,10 +428,12 @@ function NT_FORLOOP(node_tbl, func_idx, ident)
 
     local node, node_idx = NodeIDX(node_tbl.guid)
 
+    local code, vals = ValueReferences(node_tbl.guid)
+
     local start_or_key, inc_or_value, end_or_table, sub1 =
-        ValueReferences({ node_tbl.inputs[1] }, true)[1],
-        ValueReferences({ node_tbl.inputs[2] }, true)[1],
-        ValueReferences({ node_tbl.inputs[3] }, true)[1],
+        vals[1],                                                               --ValueReferences({ node_tbl.inputs[1] }, true)[1],
+        vals[2],                                                               --ValueReferences({ node_tbl.inputs[2] }, true)[1],
+        vals[3],                                                               --ValueReferences({ node_tbl.inputs[3] }, true)[1],
         node_tbl.inputs[4] and (node_tbl.inputs[4].i_val == true and 1 or nil) -- ONLY PRESENT IN NORMAL FOR LOOP
 
     if sub1 then
@@ -459,8 +460,10 @@ function NT_IFELSE(node_tbl, func_idx, ident)
     node.outputs[1].run = false
     node.outputs[2].run = false
 
-    local cond_1 = ValueReferences({ node.inputs[1] }, true)[1]
-    local cond_2 = ValueReferences({ node.inputs[2] }, true)[1]
+    local code, vals = ValueReferences(node_tbl.guid)
+
+    local cond_1 = vals[1] --ValueReferences({ node.inputs[1] }, true)[1]
+    local cond_2 = vals[2] --ValueReferences({ node.inputs[2] }, true)[1]
 
     AddCode(IdenLVL(ident) .. lua_type[node.fname](cond_1, cond_2))
     -- TURN ON LOOP OUT 1 FOR CHILD FLOW
@@ -490,7 +493,7 @@ function NT_IFELSE_M(node_tbl, func_idx, ident)
 
     AddCode(IdenLVL(ident) .. 'if ')
 
-    local vals = ValueReferences(node_tbl.inputs, true)
+    local code, vals = ValueReferences(node_tbl.guid)
 
     -- i == 1 IS CONDITION FLAG
     for i = 2, #vals do
@@ -533,7 +536,7 @@ function NT_STD(node_tbl, func_idx, ident)
 
     var_name = var_name:format(1)
 
-    local vals = ValueReferences(node_tbl.inputs, true)
+    local code, vals = ValueReferences(node_tbl.guid)
 
     AddCode(IdenLVL(ident) .. is_local .. lua_type[node.fname](var_name, table.unpack(vals)))
 end
@@ -547,7 +550,8 @@ function NT_SET(node_tbl, func_idx, ident)
     var_name = var_name:format(1)
 
     AddCode(IdenLVL(ident) .. var_name .. ' = ')
-    ValueReferences(node_tbl.inputs)
+    local code, vals = ValueReferences(node_tbl.guid)
+    AddCode(table.concat(code))
     AddCode('\n')
 end
 
@@ -579,7 +583,7 @@ function NT_FUNC(node_tbl, func_idx, ident)
     func_code[#func_code + 1] = node.label:gsub("%s+", "") .. '('
     --AddCode(node.label:gsub("%s+", "") .. '(')
     --ValueReferences(node_tbl.inputs)
-    local vals = ValueReferences(node_tbl.inputs, true)
+    local code, vals = ValueReferences(node_tbl.guid)
 
     for i = 1, #vals do
         if i > 1 then func_code[#func_code + 1] = ', ' end
@@ -602,33 +606,34 @@ function NT_FUNC_RET(node_tbl, func_idx, ident)
     Comment(ident, node_tbl)
 
     AddCode(IdenLVL(ident) .. 'return ')
-    ValueReferences(node_tbl.inputs)
+    local code, vals = ValueReferences(node_tbl.guid)
+    AddCode(table.concat(code))
     AddCode('\n')
 end
 
--- local code_vars = [[
---     input = {},
---     output = {},
---     math = math,
---     utf8 = utf8,
---     string = string,
---     table = table,
---     os = os,
---     pairs = pairs,
---     ipairs = ipairs,
---     tostring = tostring,
---     tonumber = tonumber,
---     type = type,
---     next = next,
---     select = select,
---     print = r.ShowConsoleMsg,
---     io = io,
---     debug = debug,
---     rawget = rawget,
---     rawset = rawset,
---     getmetatable = getmetatable,
---     setmetatable = setmetatable,
---     ]]
+-- -- local code_vars = [[
+-- --     input = {},
+-- --     output = {},
+-- --     math = math,
+-- --     utf8 = utf8,
+-- --     string = string,
+-- --     table = table,
+-- --     os = os,
+-- --     pairs = pairs,
+-- --     ipairs = ipairs,
+-- --     tostring = tostring,
+-- --     tonumber = tonumber,
+-- --     type = type,
+-- --     next = next,
+-- --     select = select,
+-- --     print = r.ShowConsoleMsg,
+-- --     io = io,
+-- --     debug = debug,
+-- --     rawget = rawget,
+-- --     rawset = rawset,
+-- --     getmetatable = getmetatable,
+-- --     setmetatable = setmetatable,
+-- --     ]]
 
 function NT_CODE(node_tbl, func_idx, ident)
     MakeMathFlow(node_tbl, ident)
@@ -641,7 +646,7 @@ function NT_CODE(node_tbl, func_idx, ident)
     local c_string = str_src.outputs[1].i_val
     local load_code = {}
 
-    load_code[#load_code + 1] = '\nlocal function ' .. func_name .. '('
+    load_code[#load_code + 1] = '\nfunction ' .. func_name .. '('
     for i = 2, #node_tbl.inputs do
         if i > 2 then load_code[#load_code + 1] = ', ' end
         load_code[#load_code + 1] = 'input' .. i - 1
@@ -663,9 +668,7 @@ function NT_CODE(node_tbl, func_idx, ident)
         if i == #node_tbl.outputs then load_code[#load_code + 1] = '\nend\n' end
     end
 
-    --table.insert(CODE_STR, 3, table.concat(load_code))
-    table.insert(CODE_STR, 1, table.concat(load_code))
-
+    table.insert(CODE_STR, 3, table.concat(load_code))
     AddCode(IdenLVL(ident) .. 'local ')
     for out_i = 1, #node.outputs do
         local label = (func_name:gsub("%s+", "") .. "_out%d"):format(out_i)
@@ -675,63 +678,64 @@ function NT_CODE(node_tbl, func_idx, ident)
     if #node.outputs > 0 then AddCode(' = ') end
 
     AddCode(func_name:gsub("%s+", "") .. '(')
-    local inputs = Deepcopy(node_tbl.inputs)
-    table.remove(inputs, 1)
-    ValueReferences(inputs)
+    --local inputs = Deepcopy(node_tbl.inputs)
+    --table.remove(inputs, 1)
+    local code, vals = ValueReferences(node_tbl.guid, 1)
+    AddCode(table.concat(code))
     AddCode(')\n')
 end
 
--- function NT_CODE2(node_tbl, func_idx, ident)
---     MakeMathFlow(node_tbl, ident)
---     Comment(ident, node_tbl)
+-- -- function NT_CODE2(node_tbl, func_idx, ident)
+-- --     MakeMathFlow(node_tbl, ident)
+-- --     Comment(ident, node_tbl)
 
---     local node, node_idx, var_name = NodeIDX(node_tbl.guid)
---     local func_name = node.label .. node_idx
---     local code_string = ValueReferences({ node_tbl.inputs[1] }, true)[1]
---     local load_code = {}
+-- --     local node, node_idx, var_name = NodeIDX(node_tbl.guid)
+-- --     local func_name = node.label .. node_idx
+-- --     local code_string = ValueReferences({ node_tbl.inputs[1] }, true)[1]
+-- --     local load_code = {}
 
---     -- VARS
---     load_code[#load_code + 1] = '\n' .. 'local ' .. func_name .. '_vars = {\n' .. code_vars .. '}\n'
+-- --     -- VARS
+-- --     load_code[#load_code + 1] = '\n' .. 'local ' .. func_name .. '_vars = {\n' .. code_vars .. '}\n'
 
---     -- AddCode('\n' .. IdenLVL(ident) .. func_name .. '_vars = {\n')
---     -- AddCode(code_vars)
---     -- AddCode('}\n')
+-- --     -- AddCode('\n' .. IdenLVL(ident) .. func_name .. '_vars = {\n')
+-- --     -- AddCode(code_vars)
+-- --     -- AddCode('}\n')
 
---     -- PREPARE INPUTS
---     local vals = ValueReferences(node_tbl.inputs, true)
---     table.remove(vals, 1) -- REMOVE CODE INPUT
+-- --     -- PREPARE INPUTS
+-- --     local vals = ValueReferences(node_tbl.inputs, true)
+-- --     table.remove(vals, 1) -- REMOVE CODE INPUT
 
---     for i = 1, #vals do
---         AddCode(IdenLVL(ident) .. func_name .. '_vars.input[' .. i .. '] = ' .. vals[i] .. '\n')
---     end
+-- --     for i = 1, #vals do
+-- --         AddCode(IdenLVL(ident) .. func_name .. '_vars.input[' .. i .. '] = ' .. vals[i] .. '\n')
+-- --     end
 
---     local str_src = TraceSrcNode(node_tbl.inputs[1].connection[1])
---     local c_string = str_src.outputs[1].i_val
+-- --     local str_src = TraceSrcNode(node_tbl.inputs[1].connection[1])
+-- --     local c_string = str_src.outputs[1].i_val
 
---     load_code[#load_code + 1] = 'local ' .. code_string .. ' = ' .. ('%q'):format(c_string)
+-- --     load_code[#load_code + 1] = 'local ' .. code_string .. ' = ' .. ('%q'):format(c_string)
 
---     load_code[#load_code + 1] =
---         '\n' .. 'local ' ..
---         func_name .. '_func = ' ..
---         'load(' ..
---         code_string .. ', ' .. ('%q'):format('node' .. node_idx) ..
---         ', ' .. '"t"' .. ', ' .. func_name .. '_vars' .. ')\n'
---     -- LOAD
+-- --     load_code[#load_code + 1] =
+-- --         '\n' .. 'local ' ..
+-- --         func_name .. '_func = ' ..
+-- --         'load(' ..
+-- --         code_string .. ', ' .. ('%q'):format('node' .. node_idx) ..
+-- --         ', ' .. '"t"' .. ', ' .. func_name .. '_vars' .. ')\n'
+-- --     -- LOAD
 
---     -- AddCode('\n' .. IdenLVL(ident) ..
---     --     func_name .. '_func = ' ..
---     --     'load(' ..
---     --     code_string .. ', ' .. ('%q'):format('node' .. node_idx) ..
---     --     ', ' .. '"t"' .. ', ' .. func_name .. '_vars' .. ')\n')
+-- --     -- AddCode('\n' .. IdenLVL(ident) ..
+-- --     --     func_name .. '_func = ' ..
+-- --     --     'load(' ..
+-- --     --     code_string .. ', ' .. ('%q'):format('node' .. node_idx) ..
+-- --     --     ', ' .. '"t"' .. ', ' .. func_name .. '_vars' .. ')\n')
 
---     table.insert(CODE_STR, 2, table.concat(load_code))
+-- --     table.insert(CODE_STR, 2, table.concat(load_code))
 
---     AddCode('\n' .. IdenLVL(ident) .. func_name .. '_func()\n')
+-- --     AddCode('\n' .. IdenLVL(ident) .. func_name .. '_func()\n')
 
---     for i = 1, #node_tbl.outputs do
---         AddCode(IdenLVL(ident) .. var_name:format(i) .. ' = ' .. func_name .. '_vars.output[' .. i .. ']\n')
---     end
--- end
+-- --     for i = 1, #node_tbl.outputs do
+-- --         AddCode(IdenLVL(ident) .. var_name:format(i) .. ' = ' .. func_name .. '_vars.output[' .. i .. ']\n')
+-- --     end
+-- -- end
 function NT_SWITCH(node_tbl, func_idx, ident)
     MakeMathFlow(node_tbl, ident)
     Comment(ident, node_tbl)
@@ -746,10 +750,13 @@ function NT_SWITCH(node_tbl, func_idx, ident)
         node_tbl.outputs[i].run = false
     end
 
+    local code, vals = ValueReferences(node_tbl.guid)
+
     for i = 1, #node_tbl.inputs do
         AddCode(IdenLVL(ident))
         --if i > 1 then AddCode('else') end
-        local inp_condition = ValueReferences({ node_tbl.inputs[i] }, true)[1] or tostring(true)
+
+        local inp_condition = vals[i] or tostring(true)
         AddCode('if ' .. inp_condition .. ' then\n')
 
         node_tbl.outputs[i + 1].run = true
@@ -780,10 +787,12 @@ function NT_SWITCH_ELSEIF(node_tbl, func_idx, ident)
         node_tbl.outputs[i].run = false
     end
 
+    local code, vals = ValueReferences(node_tbl.guid)
+
     for i = 1, #node_tbl.inputs do
         AddCode(IdenLVL(ident))
         if i > 1 then AddCode('else') end
-        local inp_condition = ValueReferences({ node_tbl.inputs[i] }, true)[1] or tostring(true)
+        local inp_condition = vals[i] or tostring(true)
         AddCode('if ' .. inp_condition .. ' then\n')
 
         node_tbl.outputs[i + 1].run = true
@@ -800,9 +809,11 @@ function NT_SWITCH_ELSEIF(node_tbl, func_idx, ident)
 end
 
 function NT_DEFER(node, func_idx, ident)
-    AddCode(IdenLVL(ident) .. 'r.defer(Main)\n')
-    RUNNING = node
-    DEFERING = true
+    if EXPORT then AddCode(IdenLVL(ident) .. 'r.defer(Main)\n') end
+    RUNNING = true --node
+    RUN2 = true
+    --DEFERING = true
+    --RUN2 = true
 end
 
 function NT_PATH(node_tbl, func_idx, ident)
@@ -820,13 +831,15 @@ function CodeGen(nodes, func_idx, ident_lvl)
     for i = 1, #nodes do
         local node = nodes[i]
         if node.compiler then
-            _G[node.compiler](node, func_idx, ident_lvl)
-            if node.last_node then
-                blocks[#blocks + 1] = node.last_node
-            end
-            if i == blocks[#blocks] then
-                AddCode('end')
-                table[#blocks] = nil
+            if _G[node.compiler] then
+                _G[node.compiler](node, func_idx, ident_lvl)
+                if node.last_node then
+                    blocks[#blocks + 1] = node.last_node
+                end
+                if i == blocks[#blocks] then
+                    AddCode('end')
+                    table[#blocks] = nil
+                end
             end
         end
     end
@@ -834,13 +847,6 @@ end
 
 function NativeExport2()
     local path = PATH .. "ExportedActions/ReaSpaghetti_StandAlone_" .. PROJECT_NAME:gsub(".reanodes", "") .. ".lua"
-    local gen_code = "-- CODE GENERATED BY ReaSpaghetti\n\n"
-    local gen_desc =
-    "-- SUFIX : FxNx \n-- F = FUNCTION ID (FUNCTION WHERE NODE LIVES) \n-- N = NODE ID (NUMBER OF THE NODE IN FUNCTION) \n\n"
-
-    table.insert(CODE_STR, 1, gen_desc)
-    table.insert(CODE_STR, 1, gen_code)
-    table.insert(CODE_STR, 1, 'NATIVE_SEPARATOR = package.config:sub(1, 1)')
 
     local file = io.open(path, "w")
     if file then
@@ -853,8 +859,6 @@ function NativeExport2()
     end
 end
 
-MEMORY_FUNC = nil
-
 local fake_reaper = {}
 for k, v in pairs(r) do
     fake_reaper[k] = v
@@ -862,12 +866,13 @@ end
 
 fake_reaper.defer = function(callback)
     DEFERING = true
-    --if RUNNING and not CAN_UPDATE then
-    --    r.defer(callback)
-    --end
+    if RUNNING and not CAN_UPDATE then
+        r.defer(callback)
+    end
 end
 
 local script_vars = {
+    FUNCTIONS = {},
     INIT = false,
     math = math,
     utf8 = utf8,
@@ -892,70 +897,51 @@ local script_vars = {
     r = fake_reaper,
     reaper = fake_reaper,
     ultraschall = ULTRA_API and ultraschall,
+    package = package
 
 }
 
-local function ParseError(er)
-    --local f_idx, n_idx = er:gmatch("_F(%d+)N(%d+)_")
-end
+-- local function ParseError(er)
+--     --local f_idx, n_idx = er:gmatch("_F(%d+)N(%d+)_")
+-- end
 
-
-function string:split(delimiter, line)
-    local result               = {}
-    local from                 = 1
-    local delim_from, delim_to = string.find(self, delimiter, from)
-    while delim_from do
-        table.insert(result, string.sub(self, from, delim_from - 1))
-        from                 = delim_to + 1
-        delim_from, delim_to = string.find(self, delimiter, from)
-    end
-    table.insert(result, string.sub(self, from))
-    return result[line]
-end
-
-function MakeMemoryFunc()
+function MakeFunc()
     local str = table.concat(CODE_STR)
-    func, err = load(str, "ScriptRun", "t", script_vars)
-    if err then
-        r.ShowConsoleMsg("\nERROR LOADING SCRIPT : " .. err)
+    FUNC, ERR = load(str, "ScriptRun", "t", script_vars)
+    if ERR then
+        r.ShowConsoleMsg("\nLOAD CANNOT CREATE FUNCTION : \n" .. ERR)
+        RUNNING, RUN2 = nil, nil
     end
-    -- if func then
-    --     local CO = coroutine.create(func)
-    --     local running, result = coroutine.resume(CO)
-    --     if not running then
-    --         local err_line = result:match(":(%d+):")
-    --         --r.ShowConsoleMsg(str:split('\n', tonumber(err_line)))
-    --         ParseError(str:split('\n', tonumber(err_line)))
-    --     end
-    -- end
 end
 
 function GenerateCode2(export)
-    func, err = nil, nil
-    EXPORT = export or nil
+    FUNC, ERR = nil, nil
+    --EXPORT = export or nil
     CODE_STR, blocks, InitFuncCalls = {}, {}, {}
-    script_vars.INIT = INIT_SCRIPT_CODE
 
     local FUNCTIONS = GetFUNCTIONS()
 
-    -- AddCode('local r = reaper\n')
-    -- AddCode(math_string .. '\n')
+    script_vars.INIT = true
+    script_vars.FUNCTIONS = FUNCTIONS
 
-    -- -- if ULTRA_API then
-    -- --     AddCode(
-    -- --         'if not ultraschall then ultraschall = dofile(r.GetResourcePath() .. "/UserPlugins/ultraschall_api.lua") end\n')
-    -- -- end
 
-    if not export then AddCode('\nif INIT then\n') end
+    --AddCode('local r = reaper\n')
+    --AddCode(math_string .. '\n')
+
+    -- if ULTRA_API then
+    --     AddCode(
+    --         'if not ultraschall then ultraschall = dofile(r.GetResourcePath() .. "/UserPlugins/ultraschall_api.lua") end\n')
+    -- end
+
+    if not EXPORT then AddCode('\nif INIT then \n') end
     AddVars(FUNCTIONS[1].NODES, 1, 0)
+    AddCode('\nend \n')
     CodeGen(TraceFlow(FUNCTIONS[1].NODES), 1, 0)
-    if not export then AddCode('\nend\n') end
     -- SKIP INIT AND CREATE IN REVERSE ORDER TO HAVE LOCAL FUNCTIONS IN ORDER
-
     for i = #FUNCTIONS, 2, -1 do
         AddFunc(FUNCTIONS[i], i)
         local NODES = FUNCTIONS[i].NODES
-        AddVars(NODES, i, 1)
+        --AddVars(NODES, i, 1)
         local FLOW = TraceFlow(NODES)
         CodeGen(FLOW, i, 1)
         CloseFunc(i)
@@ -967,14 +953,15 @@ function GenerateCode2(export)
         end
     end
 
-    if export then
+    --if not EXPORT then AddCode('\n::runmain::\n') end
+    if EXPORT then
         if RUNNING then
-            AddCode('\nr.defer(Main)\n\n')
+            AddCode('\nr.defer(Main)')
         else
-            AddCode('\nMain()\n\n')
+            AddCode('\nMain()')
         end
     else
-        AddCode('\nMain()\n\n')
+        AddCode('\nMain()')
     end
 
     if ULTRA_API then
@@ -993,29 +980,27 @@ function GenerateCode2(export)
     -- table.insert(CODE_STR, 1, gen_code)
     -- table.insert(CODE_STR, 1, gen_desc)
 
-
     --if export then r.ShowConsoleMsg(table.concat(CODE_STR)) end
     --r.ShowConsoleMsg(table.concat(CODE_STR))
-    if not export then MakeMemoryFunc() end
+    if not export then
+        MakeFunc()
+    else
+        RUNNING, RUN2 = nil, nil
+    end
 end
 
 function LoopNativeCode()
-    if func then
-        local status, err2 = pcall(func)
-        if err2 then
-            RUNNING = nil
-            r.ShowConsoleMsg("SCRIPT STOPED RUNNING BECAUSE OF ERROR : \n" .. err2)
+    if FUNC then
+        script_vars.FUNCTIONS = GetFUNCTIONS()
+        --local CO = coroutine.create(func)
+        local status, err = pcall(FUNC)
+        --local running, err = coroutine.resume(CO)
+        if err then
+            RUNNING, RUN2 = nil, nil
+            r.ShowConsoleMsg('\n' .. err)
         end
-    end
-    if INIT_SCRIPT_CODE then
-        INIT_SCRIPT_CODE = false
-        script_vars.INIT = INIT_SCRIPT_CODE
-    end
-    if CODE_MODIFIED then
-        if CAN_UPDATE then
-            GenerateCode2()
-            CODE_MODIFIED = nil
-            CAN_UPDATE = nil
+        if script_vars.INIT then
+            script_vars.INIT = false
         end
     end
 end

@@ -1061,7 +1061,10 @@ end
 
 local function DrawOptionalCheckbox(pin, node)
     if pin.opt then
-        _, pin.opt.use = r.ImGui_Checkbox(ctx, "##OPT" .. pin.label .. node.guid, pin.opt.use)
+        OPT_RV, pin.opt.use = r.ImGui_Checkbox(ctx, "##OPT" .. pin.label .. node.guid, pin.opt.use)
+        if OPT_RV then
+            CODE_MODIFIED = true
+        end
         if r.ImGui_IsItemHovered(ctx) then
             if r.ImGui_BeginTooltip(ctx) then
                 r.ImGui_PushFont(ctx, FONT_STATIC)
@@ -1119,6 +1122,8 @@ local function Draw_input(node, io_type, pin, x, y, pin_n, h)
 
         local current_input = #pin.connection == 0 and pin.i_val or pin.o_val
 
+        current_input = type(current_input) == "string" and 0 or current_input
+
         local disable_input = (#pin.connection ~= 0 and io_type == "in") and true or false
 
         if disable_input then r.ImGui_BeginDisabled(ctx) end
@@ -1143,98 +1148,76 @@ local function Draw_input(node, io_type, pin, x, y, pin_n, h)
             if node.type == "i" then
                 I_RV, pin.i_val = r.ImGui_DragInt(ctx, "##" .. pin.label, pin.i_val, 1, 0, nil,
                     pin.label .. separator .. '%d%', r.ImGui_SliderFlags_AlwaysClamp())
-                if I_RV then pin.o_val = pin.i_val end
+                if I_RV then
+                    CODE_MODIFIED = true
+                    pin.o_val = pin.i_val
+                end
             else
-                -- if CheckOptional(pin) then
-                --     r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_DisabledAlpha(), 0.3)
-                --     r.ImGui_BeginDisabled(ctx)
-                -- end
-
-                _, pin.i_val = r.ImGui_DragInt(ctx, "##" .. pin.label, current_input, 1, 0, nil,
+                I_OTHER_RV, pin.i_val = r.ImGui_DragInt(ctx, "##" .. pin.label, current_input, 1, 0, nil,
                     pin.label .. separator .. '%d%', r.ImGui_SliderFlags_AlwaysClamp())
-                -- if CheckOptional(pin) then
-                --     r.ImGui_PopStyleVar(ctx)
-                --     r.ImGui_EndDisabled(ctx)
-                -- end
-
-                -- DrawOptionalCheckbox(pin)
+                if I_OTHER_RV then
+                    CODE_MODIFIED = true
+                end
             end
         elseif pin.type == "NUMBER/INTEGER" or pin.type == "NUMBER" then
             local separator = node.type == "f" and "" or " : "
             if node.type == "f" then
                 F_RV, pin.i_val = r.ImGui_DragDouble(ctx, "##" .. pin.label, pin.i_val, 0.01, 0.0, 0.0,
                     pin.label .. separator .. '%.03f')
-                if F_RV then pin.o_val = pin.i_val end
+                if F_RV then
+                    CODE_MODIFIED = true
+                    pin.o_val = pin.i_val
+                end
             else
-                -- if CheckOptional(pin) then
-                --     r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_DisabledAlpha(), 0.3)
-                --     r.ImGui_BeginDisabled(ctx)
-                -- end
-                _, pin.i_val = r.ImGui_DragDouble(ctx, "##" .. pin.label, current_input, 0.01, 0.0, 0.0,
+                F_OTHER_RV, pin.i_val = r.ImGui_DragDouble(ctx, "##" .. pin.label, current_input, 0.01, 0.0, 0.0,
                     pin.label .. separator .. '%.03f')
-                -- if CheckOptional(pin) then
-                --     r.ImGui_PopStyleVar(ctx)
-                --     r.ImGui_EndDisabled(ctx)
-                -- end
-                --DrawOptionalCheckbox(pin)
+                if F_OTHER_RV then
+                    CODE_MODIFIED = true
+                end
             end
         elseif pin.type == "STRING" then
-            --local ins = CalculateIOSize(node)
             if node.type == "s" then
                 if DEFERED_NODE then r.ImGui_BeginDisabled(ctx) end
                 r.ImGui_PushFont(ctx, FONT_CODE)
-                --S_RV, pin.i_val = r.ImGui_InputTextWithHint(ctx, "##" .. pin.label, pin.label, pin.i_val)
                 S_RV, pin.i_val = r.ImGui_InputTextMultiline(ctx, "##" .. pin.label, pin.i_val, nil,
                     (node.h - NODE_CFG.SEGMENT - 8) * CANVAS.scale)
                 r.ImGui_PopFont(ctx)
-                if S_RV then pin.o_val = pin.i_val end
+                if S_RV then
+                    CODE_MODIFIED = true
+                    pin.o_val = pin.i_val
+                end
                 if DEFERED_NODE then r.ImGui_EndDisabled(ctx) end
             else
-                -- if CheckOptional(pin) then
-                --     r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_DisabledAlpha(), 0.3)
-                --     r.ImGui_BeginDisabled(ctx)
-                -- end
-                _, pin.i_val = r.ImGui_InputTextWithHint(ctx, "##" .. pin.label, pin.label, current_input)
-                -- if CheckOptional(pin) then
-                --     r.ImGui_PopStyleVar(ctx)
-                --     r.ImGui_EndDisabled(ctx)
-                -- end
-
-                --DrawOptionalCheckbox(pin)
+                S_OTHER_RV, pin.i_val = r.ImGui_InputTextWithHint(ctx, "##" .. pin.label, pin.label, current_input)
+                if S_OTHER_RV then
+                    CODE_MODIFIED = true
+                end
             end
         elseif pin.type == "BOOLEAN" then
             if node.type == "b" then
                 B_RV, pin.i_val = r.ImGui_Checkbox(ctx, pin.label, pin.i_val)
-                if B_RV then pin.o_val = pin.i_val end
-            else
-                -- if CheckOptional(pin) then
-                --     r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_DisabledAlpha(), 0.3)
-                --     r.ImGui_BeginDisabled(ctx)
-                -- end
+                if B_RV then
+                    CODE_MODIFIED = true
 
-                _, pin.i_val = r.ImGui_Checkbox(ctx, pin.label, current_input)
-                -- if CheckOptional(pin) then
-                --     r.ImGui_PopStyleVar(ctx)
-                --     r.ImGui_EndDisabled(ctx)
-                -- end
+                    pin.o_val = pin.i_val
+                end
+            else
+                B_OTHER_RV, pin.i_val = r.ImGui_Checkbox(ctx, pin.label, current_input)
+                if B_OTHER_RV then
+                    CODE_MODIFIED = true
+                end
             end
         elseif pin.type == "LIST" then
             if r.ImGui_BeginCombo(ctx, '##', pin.i_val) then
                 for v in ipairs(pin.list) do
                     if r.ImGui_Selectable(ctx, pin.list[v], pin.i_val == pin.list[v]) then
+                        CODE_MODIFIED = true
+
                         pin.i_val = pin.list[v]
                     end
                 end
                 r.ImGui_EndCombo(ctx)
             end
-            -- elseif pin.type == "CODE" then
-            --     local ins = CalculateIOSize(node)
-            --     r.ImGui_PushFont(ctx, FONT_CODE)
-            --     --local total_io = ins + outs
-            --     _, pin.i_val = r.ImGui_InputTextMultiline(ctx, '##text' .. node.guid, pin.i_val,
-            --         (node.w - NODE_CFG.EDGE_THICKNESS * 6) * CANVAS.scale,
-            --         (node.h - ins * NODE_CFG.SEGMENT - 10) * CANVAS.scale)
-            --     r.ImGui_PopFont(ctx)
         end
 
         r.ImGui_PopStyleColor(ctx)
@@ -1248,9 +1231,6 @@ local function Draw_input(node, io_type, pin, x, y, pin_n, h)
             r.ImGui_EndDisabled(ctx)
         end
         if disable_input then r.ImGui_EndDisabled(ctx) end
-        --DrawOptionalCheckbox(pin)
-        --r.ImGui_PopStyleVar(ctx) -- FRAME BOARDER
-        --r.ImGui_PopStyleVar(ctx) -- FRAME BOARDER
     end
 end
 
@@ -2173,10 +2153,7 @@ function DrawLoop()
     r.ImGui_PushFont(ctx, FONT)
     Node_Drawing()
     r.ImGui_PopFont(ctx)
-    --if START_FLOW and DEFER then
-    if DEFERED_NODE then
-        InitRunFlow()
-    end
+
     if RUNNING then
         LoopNativeCode()
     end

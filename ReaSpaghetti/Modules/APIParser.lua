@@ -133,7 +133,26 @@ local Math_FLOAT = { "+", "-", "*", "/", "%", "^", "//" }
 
 local Compare = { '==', '~=', '>', '>=', '<', '<=' }
 
+local function has_val(tbl, val)
+    for k, v in pairs(tbl) do
+        if k == val then return true end
+    end
+end
+
 local function Parse_Ultraschall()
+    AAA = {}
+    cnt = 0
+    for k, v in pairs(r) do
+        --r.ShowConsoleMsg(v)
+        local cnt, cat = ultraschall.Docs_GetReaperApiFunction_Categories(k)
+        if cat then
+            AAA[cat] = tostring(k)
+        end
+    end
+
+    for k, v in pairs(AAA) do
+        --    r.ShowConsoleMsg(k .. '\n')
+    end
     if not ULTRA_API then return end
 
     local ul_tmp_tbl = {}
@@ -214,30 +233,6 @@ local function CheckUltraApiFile(ret)
     end
 end
 
-local function GetImguiDefaults(name, parm)
-    --if parm:find("In") then
-    --    parm = parm:sub(1, -3)
-    --elseif parm:find("Out") then
-    --    parm = parm:sub(1, -4)
-    --end
-    --uv_min_x = <span class="sn">0.0</span>
-    --local imgui_str = ReadApiFile(IMGUI_DOC_PATH)
-    IMGUI_DEF_VALS = {}
-    for line in IMGUI_DOCS_STR:gmatch('[^\r\n]+') do
-        if line:match(name .. '%(') then
-            -- if name == "ImGui_DrawList_AddImage" then
-            --     reaper.ShowConsoleMsg(line .. "\n")
-            -- end
-            if line:match(parm) then
-                local def_val = line:match(parm .. "Optional" .. ' = <span class="sn">(.-)</span>')
-                if def_val then
-                    return def_val
-                end
-            end
-        end
-    end
-end
-
 function Fill_Api_list()
     local start, found
     local api = {}
@@ -288,7 +283,7 @@ function Fill_Api_list()
                         if return_vals:find(",") then
                             for ret in return_vals:gmatch('[^,]+') do
                                 --local opt = ret:find("optional") and { use = false } or nil
-                                for r_type, r_name in ret:gsub("optional", ""):gsub("%s+", ""):gmatch('<em>(%S+)</em>(%S+ ?)') do
+                                for r_type, r_name in ret:gsub("=", ""):gsub("optional", ""):gsub("%s+", ""):gmatch('<em>(%S+)</em>(%S+ ?)') do
                                     api[#api].out[#api[#api].out + 1] = {
                                         type = r_type:upper(),
                                         name = r_name:upper(),

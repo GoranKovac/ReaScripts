@@ -65,7 +65,7 @@ FLUX = require("Modules/flux")
 BEZIER = require("Modules/path2d_bezier3")
 BEZIER_HIT = require("Modules/path2d_bezier3_hit")
 require("Modules/APIParser")
-require("Modules/ParseFlowNative")
+--require("Modules/ParseFlowNative")
 require("Modules/UI")
 require("Modules/Utils")
 require("Modules/FileManager")
@@ -77,6 +77,7 @@ require("Modules/ExportToAction")
 require("Modules/Library")
 require("Modules/Undo")
 require("Modules/NativeParser")
+--require("Modules/NativeRunParser")
 
 if STANDALONE_RUN then return end
 
@@ -127,10 +128,12 @@ DIRTY = nil
 FRAME_CNT = 0
 CAN_UPDATE = false
 local function loop()
-    FRAME_CNT = FRAME_CNT + 1
-    if FRAME_CNT % 33 == 0 then
-        CAN_UPDATE = true
-        FRAME_CNT = 0
+    if CODE_MODIFIED then
+        FRAME_CNT = FRAME_CNT + 1
+        if FRAME_CNT % 33 == 0 then
+            CAN_UPDATE = true
+            FRAME_CNT = 0
+        end
     end
     if PROFILE_DEBUG then
         PROFILE_STARTED = true
@@ -175,7 +178,6 @@ local function loop()
         RUNNING = nil
     end
 
-    CAN_UPDATE = false
     DEFERING = nil
 end
 InitApi()
