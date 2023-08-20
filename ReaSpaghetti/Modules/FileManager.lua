@@ -130,23 +130,6 @@ local function PathButtons()
     return #path_buttons
 end
 
-local function PathButtons2()
-    local path_buttons = Split_by_line(path)
-    for i = 1, #path_buttons do
-        if i > 1 then r.ImGui_SameLine(ctx) end
-        if r.ImGui_Button(ctx, path_buttons[i] .. os_separator) and i ~= #path_buttons then
-            path = ''
-            for j = 1, i do
-                if j > 1 then path = path .. os_separator end
-                path = path .. path_buttons[j]
-            end
-            if path:len() == 0 then path = os_separator end -- Unix root
-            filelist = GetFileList()
-        end
-    end
-    return #path_buttons
-end
-
 function Init_FM_database()
     path = debug.getinfo(1, "S").source:sub(2)
     filelist = {}

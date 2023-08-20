@@ -480,10 +480,14 @@ local function GetterMetaFollower(node)
     node.get = source_node.guid
 end
 
-local function OldMetatable()
-    local results = {}
-    setmetatable(results, { __mode = "kv" }) -- make values weak
-    return results
+function InsertNewFunction(node)
+    FUNCTIONS[#FUNCTIONS + 1] = node
+end
+
+function InsertNewNode(node)
+    local NODES = GetNodeTBL()
+    NODES[#NODES + 1] = node
+    CreateNodeInsertLink(NODES[#NODES])
 end
 
 function InsertNode(type, name, api_tbl)
@@ -517,10 +521,26 @@ function InsertNode(type, name, api_tbl)
         end
 
         local NODES = GetNodeTBL()
-        NODES[#NODES + 1] = node
-        CreateNodeInsertLink(NODES[#NODES])
-    else
-        FUNCTIONS[#FUNCTIONS + 1] = node
+
+        ApplyCommand({
+            type = "insert node",
+            node_a = node,
+            data = { NODES = NODES, n = #NODES + 1 },
+            apply = InsertNewNode, --CreateConnection(node, data),
+            undo = DeleteNode,     --Delete_Wire({ { link = data.link_guid } }),
+        })
+
+        --NODES[#NODES + 1] = node
+        --CreateNodeInsertLink(NODES[#NODES])
+        --else
+        --FUNCTIONS[#FUNCTIONS + 1] = node
+        -- ApplyCommand({
+        --     type = "insert function",
+        --     node_a = node,
+        --     data = {},
+        --     apply = InsertNewFunction, --CreateConnection(node, data),
+        --     undo = SidebarDelete,      --Delete_Wire({ { link = data.link_guid } }),
+        -- })
     end
     INSERT_NODE_DATA = nil
 end
@@ -541,21 +561,56 @@ end
 
 local MAX_FX_SIZE = 300
 FILTER = ''
+
+local CAT = GetCAT()
+
+local max_per_row = 60
+local function Multirow(items_tbl, name)
+    if r.ImGui_BeginTable(ctx, "col", name == "IMGUI" and 2 or math.ceil(#items_tbl / max_per_row), r.ImGui_TableFlags_BordersInnerV()) then
+        for i, v in ipairs(items_tbl) do
+            if (i - 1) % max_per_row == 0 then
+                r.ImGui_TableNextColumn(ctx)
+            end
+            if r.ImGui_Selectable(ctx, v) then
+                for a = 1, #API_LIST do
+                    if API_LIST[a].fname == v then
+                        InsertNode("api", API_LIST[a].label, API_LIST[a])
+                        break
+                    end
+                end
+            end
+        end
+        r.ImGui_EndTable(ctx)
+    end
+end
+
+local function MakeCategoriesMenu()
+    for i = 1, #CAT do
+        if r.ImGui_BeginMenu(ctx, CAT[i].name) then
+            Multirow(CAT[i].list, CAT[i].name)
+            r.ImGui_EndMenu(ctx)
+        end
+    end
+    r.ImGui_Separator(ctx)
+end
+
 function FilterBox()
     MOUSE_POPUP_X, MOUSE_POPUP_Y = r.ImGui_GetMousePosOnOpeningCurrentPopup(ctx)
     r.ImGui_PushItemWidth(ctx, MAX_FX_SIZE)
     if r.ImGui_IsWindowAppearing(ctx) then r.ImGui_SetKeyboardFocusHere(ctx) end
-    _, FILTER = r.ImGui_InputText(ctx, '##input', FILTER)
+    _, FILTER = r.ImGui_InputTextWithHint(ctx, '##input', "SEARCH", FILTER)
+    --_, FILTER = r.ImGui_InputText(ctx, '##input', FILTER)
     local filtered_fx = Filter_actions(FILTER, API_LIST)
     r.ImGui_SetNextWindowPos(ctx, r.ImGui_GetItemRectMin(ctx), ({ r.ImGui_GetItemRectMax(ctx) })[2])
     local filter_h = #filtered_fx == 0 and 2 or (#filtered_fx > 40 and 20 * 17 or (17 * #filtered_fx))
     if not SETTER_INFO and not INSERT_NODE_DATA then
         if #FILTER == 0 then
+            MakeCategoriesMenu()
             if r.ImGui_Selectable(ctx, "ADD INTEGER", false) then
                 InsertNode("i", "INTEGER")
                 DIRTY = true
             end
-            if r.ImGui_Selectable(ctx, "ADD NUMBER(FLOAT)", false) then
+            if r.ImGui_Selectable(ctx, "ADD NUMBER", false) then
                 InsertNode("f", "NUMBER")
                 DIRTY = true
             end
@@ -603,13 +658,6 @@ function FilterBox()
                 r.ImGui_CloseCurrentPopup(ctx)
             end
             r.ImGui_PopID(ctx)
-            -- DISABLE DRAG AND DROP FOR NOW
-            -- if r.ImGui_IsItemActive(ctx) and r.ImGui_IsMouseDragging(ctx, 0) then
-            --     if not DRAG_LIST_NODE then
-            --         DRAG_LIST_NODE_ID = i
-            --         DRAG_LIST_NODE = AddNode("api", filtered_fx[i].label, filtered_fx[i])
-            --     end
-            -- end
         end
         r.ImGui_EndChild(ctx)
     end
@@ -640,35 +688,18 @@ local function CalculateIOSize(node)
     return ins, outs
 end
 
-local function CalcMinCodeSize(node)
-    if node.type ~= "code" then return end
-    local ins, outs = CalculateIOSize(node)
-    local total_ins = ins + outs
-    local min_h = (total_ins * NODE_CFG.SEGMENT) + NODE_CFG.SEGMENT
-    return min_h
-    -- node.h = node.h < min_h and min_h or node.h
-end
-
 --! EXCLUDE NO DRAW PINS
 local function AutoAdjust_Node_WH(node)
     if node.can_resize then
-        --local min_h = CalcMinCodeSize(node)
-        --node.h = node.h < min_h and min_h or node.h
         return
     end
     local ins, outs = CalculateIOSize(node)
     local total_ins = ins + outs
     node.h = (total_ins * NODE_CFG.SEGMENT) + NODE_CFG.SEGMENT
-    --if node.type == "code" then
-    --    node.h = CalcMinCodeSize(node)
-    --end
     -- AUTO CALCULATE NODE W BY TEXT LENGHT
     local text_size = (ORG_FONT_SIZE / 2) * utf8.len(node.label)
     local w = node.type ~= "route" and text_size + (NODE_CFG.SEGMENT * 4) or NODE_CFG.SEGMENT
     node.w = w
-    --if node.type == "code" then
-    --     node.h = CalcMinCodeSize(node)
-    --end
 end
 
 local function Check_Overlap(A, B, full_in)
@@ -750,32 +781,6 @@ local function Calculate_Bezier_p2_p3_simple(xs, xe)
     return p2_x, p3_x
 end
 
--- local bb_offset = 10
--- local min_dist  = (10 * 10)
--- local function IsMouseOnBaz(x1, y1, x2, y2, p2_x, p3_x)
---     -- POPUP IS OPENED
---     if not r.ImGui_IsWindowFocused(ctx) then return end
---     if r.ImGui_IsAnyItemActive(ctx) then return end
-
---     local xs, xe = min(x1, x2), max(x1, x2)
---     local ys, ye = min(y1, y2), max(y1, y2)
-
---     if abs(ys - ye) < 5 then ys, ye = ys - bb_offset, ye + bb_offset end
-
---     -- IF MOUSE IS IN BEZIER BOUNDING BOX
---     if MX > xs and MX < xe and MY > ys and MY < ye then
---         local num_segments = 50
---         for i = 1, num_segments do
---             local point_x = CubicBezier(x1, p2_x, p3_x, x2, i / num_segments)
---             local point_y = CubicBezier(y1, y1, y2, y2, i / num_segments)
---             local dst_x, dst_y = MX - point_x, MY - point_y
---             local dst_sqrd = (dst_x * dst_x + dst_y * dst_y) / CANVAS.scale
---             -- IF MOUSE IS IN CLOSE DISTANCE OF THE CURVE RETURN TRUE
---             if dst_sqrd < min_dist then return true end
---         end
---     end
--- end
-
 local START_TIME = r.time_precise()
 local function Animate_On_Cordinates(begin_val, end_val, b2, b3, duration_in_sec, START_time, delay)
     local time = max(r.time_precise() - START_TIME, 0.01)
@@ -799,7 +804,7 @@ local function MouseCloseToBez(xs, ys, p2_x, ys, p3_x, ye, xe, ye)
     if MOVE_NODE then return end
     if r.ImGui_IsAnyItemHovered(ctx) then return end
 
-    local X, Y, W, H = BEZIER.bounding_box(xs, ys, p2_x, ys, p3_x, ye, xe, ye)
+    local X, Y, W, H = BOUNDING_BOX(xs, ys, p2_x, ys, p3_x, ye, xe, ye)
     X = X - BB_OFFSET * CANVAS.scale
     Y = Y - BB_OFFSET * CANVAS.scale
     W = W + (BB_OFFSET * 2) * CANVAS.scale
@@ -810,7 +815,7 @@ local function MouseCloseToBez(xs, ys, p2_x, ys, p3_x, ye, xe, ye)
 
     -- MOUSE IS IN BOUNDARY BOX
     if MX > X and MX < X + W and MY > Y and MY < Y + H then
-        local d2, x, y, t = BEZIER.hit(MX, MY, xs, ys, p2_x, ys, p3_x, ye, xe, ye)
+        local d2, x, y, t = HIT(MX, MY, xs, ys, p2_x, ys, p3_x, ye, xe, ye)
         if d2 < MIN_DST * CANVAS.scale then
             return true
         end
@@ -847,7 +852,7 @@ local function Draw_Beziar(xs, ys, xe, ye, color, th, link, node_o, node_i, pin_
         color = DELETE_COL
         -- DELETE ONLY THIS WIRE
         if r.ImGui_IsMouseClicked(ctx, 0) then
-            AddUndo(node_i, { op = "DELETE_WIRE", link = link })
+            --AddUndo(node_i, { op = "DELETE_WIRE", link = link })
             Delete_Wire({ { link = link } })
         end
     end
@@ -948,6 +953,32 @@ local function Draw_Pin_Button(dl, pin_tbl, name, node_id, pin_id, pin_type, x, 
     end
 end
 
+local function CreateConnection(node, data)
+    local link_guid = data.link_guid
+    local node_guid = data.node_guid
+    local pin = data.pin
+    local p_num = data.p_num
+    local pin_num = data.pin_num
+    local tbl_type = data.tbl_type
+
+    local NODES = GetNodeTBL()
+    local source = In_TBL(NODES, node_guid)
+
+    pin.connection[#pin.connection + 1] = {
+        link = link_guid,
+        node = node_guid,
+        pin = tonumber(pin_num),
+    }
+
+    local src_pin_tbl = tbl_type == "in" and source.inputs or source.outputs
+
+    src_pin_tbl[tonumber(pin_num)].connection[#src_pin_tbl[tonumber(pin_num)].connection + 1] = {
+        link = link_guid,
+        node = node.guid,
+        pin = p_num
+    }
+end
+
 local function Pin_Drag_Drop(pin, node, p_num, table_type)
     -- DO NOT ALLOW BRANCHING RUN OR RUN PINS IF ALREADY CONNECTED
     if pin.type == "RUN" and next(pin.connection) then return end
@@ -1005,39 +1036,60 @@ local function Pin_Drag_Drop(pin, node, p_num, table_type)
             local reverse_link_guid = node.guid .. ":" .. pin.label .. "-" .. con_guid
             local link_guid = con_guid .. "-" .. node.guid .. ":" .. pin.label
 
+            local data = {
+                link_guid = link_guid,
+                node_guid = node_guid,
+                pin = pin,
+                p_num = p_num,
+                pin_num = pin_num,
+                tbl_type = tbl_type,
+                table_type = table_type
+            }
+
             -- CHECK IF CONNECTION EXIST IN BOTH DIRECTIONS (DO NOT ADD IF ALREADY HAS CONNECTION FROM ONE SIDE)
             if HasConnection(pin.connection, reverse_link_guid) then return end
             if HasConnection(pin.connection, link_guid) then return end
 
-            local NODES = GetNodeTBL()
-            local source = In_TBL(NODES, node_guid)
+            ApplyCommand({
+                type = "connection",
+                node_a = node,
+                node_b = nil,
+                data = data,
+                apply = CreateConnection, --CreateConnection(node, data),
+                undo = Delete_Wire,       --Delete_Wire({ { link = data.link_guid } }),
+            })
 
-            pin.connection[#pin.connection + 1] = {
-                link = link_guid,
-                node = node_guid,
-                pin = tonumber(pin_num),
-            }
+            --CreateConnection(node, data)
 
-            -- LISTEN VALUES FROM SOURCE NODE (exclude run pin)
-            if table_type == "in" and pin.type ~= "RUN" then
-                setmetatable(node.inputs[p_num], {
-                    __index = source.outputs[tonumber(pin_num)],
-                    __newindex = source.outputs[tonumber(pin_num)],
-                })
-                -- LISTEN VALUES FROM CURRENT NODE
-            elseif table_type == "out" and pin.type ~= "RUN" then
-                setmetatable(source.inputs[tonumber(pin_num)], {
-                    __index = node.outputs[p_num],
-                })
-            end
+            -- local NODES = GetNodeTBL()
+            -- local source = In_TBL(NODES, node_guid)
 
-            local src_pin_tbl = tbl_type == "in" and source.inputs or source.outputs
+            -- pin.connection[#pin.connection + 1] = {
+            --     link = link_guid,
+            --     node = node_guid,
+            --     pin = tonumber(pin_num),
+            -- }
 
-            src_pin_tbl[tonumber(pin_num)].connection[#src_pin_tbl[tonumber(pin_num)].connection + 1] = {
-                link = link_guid,
-                node = node.guid,
-                pin = p_num
-            }
+            -- -- LISTEN VALUES FROM SOURCE NODE (exclude run pin)
+            -- if table_type == "in" and pin.type ~= "RUN" then
+            --     setmetatable(node.inputs[p_num], {
+            --         __index = source.outputs[tonumber(pin_num)],
+            --         __newindex = source.outputs[tonumber(pin_num)],
+            --     })
+            --     -- LISTEN VALUES FROM CURRENT NODE
+            -- elseif table_type == "out" and pin.type ~= "RUN" then
+            --     setmetatable(source.inputs[tonumber(pin_num)], {
+            --         __index = node.outputs[p_num],
+            --     })
+            -- end
+
+            -- local src_pin_tbl = tbl_type == "in" and source.inputs or source.outputs
+
+            -- src_pin_tbl[tonumber(pin_num)].connection[#src_pin_tbl[tonumber(pin_num)].connection + 1] = {
+            --     link = link_guid,
+            --     node = node.guid,
+            --     pin = p_num
+            -- }
         end
     end
 end
@@ -1122,7 +1174,7 @@ local function Draw_input(node, io_type, pin, x, y, pin_n, h)
 
         local current_input = #pin.connection == 0 and pin.i_val or pin.o_val
 
-        current_input = type(current_input) == "string" and 0 or current_input
+        --current_input = type(current_input) == "string" and 0 or current_input
 
         local disable_input = (#pin.connection ~= 0 and io_type == "in") and true or false
 
@@ -1153,6 +1205,7 @@ local function Draw_input(node, io_type, pin, x, y, pin_n, h)
                     pin.o_val = pin.i_val
                 end
             else
+                current_input = type(current_input) == "string" and 0 or current_input
                 I_OTHER_RV, pin.i_val = r.ImGui_DragInt(ctx, "##" .. pin.label, current_input, 1, 0, nil,
                     pin.label .. separator .. '%d%', r.ImGui_SliderFlags_AlwaysClamp())
                 if I_OTHER_RV then
@@ -1169,6 +1222,7 @@ local function Draw_input(node, io_type, pin, x, y, pin_n, h)
                     pin.o_val = pin.i_val
                 end
             else
+                current_input = type(current_input) == "string" and 0 or current_input
                 F_OTHER_RV, pin.i_val = r.ImGui_DragDouble(ctx, "##" .. pin.label, current_input, 0.01, 0.0, 0.0,
                     pin.label .. separator .. '%.03f')
                 if F_OTHER_RV then
@@ -1177,7 +1231,7 @@ local function Draw_input(node, io_type, pin, x, y, pin_n, h)
             end
         elseif pin.type == "STRING" then
             if node.type == "s" then
-                if DEFERED_NODE then r.ImGui_BeginDisabled(ctx) end
+                -- if RUNNING then r.ImGui_BeginDisabled(ctx) end
                 r.ImGui_PushFont(ctx, FONT_CODE)
                 S_RV, pin.i_val = r.ImGui_InputTextMultiline(ctx, "##" .. pin.label, pin.i_val, nil,
                     (node.h - NODE_CFG.SEGMENT - 8) * CANVAS.scale)
@@ -1186,7 +1240,7 @@ local function Draw_input(node, io_type, pin, x, y, pin_n, h)
                     CODE_MODIFIED = true
                     pin.o_val = pin.i_val
                 end
-                if DEFERED_NODE then r.ImGui_EndDisabled(ctx) end
+                --  if RUNNING then r.ImGui_EndDisabled(ctx) end
             else
                 S_OTHER_RV, pin.i_val = r.ImGui_InputTextWithHint(ctx, "##" .. pin.label, pin.label, current_input)
                 if S_OTHER_RV then
@@ -1198,10 +1252,10 @@ local function Draw_input(node, io_type, pin, x, y, pin_n, h)
                 B_RV, pin.i_val = r.ImGui_Checkbox(ctx, pin.label, pin.i_val)
                 if B_RV then
                     CODE_MODIFIED = true
-
                     pin.o_val = pin.i_val
                 end
             else
+                current_input = type(current_input) ~= "string" and current_input or false
                 B_OTHER_RV, pin.i_val = r.ImGui_Checkbox(ctx, pin.label, current_input)
                 if B_OTHER_RV then
                     CODE_MODIFIED = true
@@ -1212,7 +1266,6 @@ local function Draw_input(node, io_type, pin, x, y, pin_n, h)
                 for v in ipairs(pin.list) do
                     if r.ImGui_Selectable(ctx, pin.list[v], pin.i_val == pin.list[v]) then
                         CODE_MODIFIED = true
-
                         pin.i_val = pin.list[v]
                     end
                 end
@@ -1224,7 +1277,6 @@ local function Draw_input(node, io_type, pin, x, y, pin_n, h)
         r.ImGui_PopID(ctx)
         r.ImGui_PopStyleVar(ctx) -- Y PADDING FOR INPUT WIDGETS ZOOM
         r.ImGui_PopStyleVar(ctx) -- ROUNDING
-
         --
         if CheckOptional(pin) then
             r.ImGui_PopStyleVar(ctx)
@@ -1276,6 +1328,9 @@ local function Draw_IO(active_ch, node, pins, x, y, pin_type)
                 end
 
                 if pin_drag then
+                    if not WIRE_DRAG then
+                        WIRE_DRAG = true
+                    end
                     local new_MX = MOUSE_POPUP_X and MOUSE_POPUP_X or MX
                     local new_MY = MOUSE_POPUP_Y and MOUSE_POPUP_Y or MY
                     Draw_Beziar(
@@ -1292,6 +1347,10 @@ local function Draw_IO(active_ch, node, pins, x, y, pin_type)
                 end
 
                 Pin_Drag_Drop(pin, node, i, pin_type)
+
+                if r.ImGui_IsMouseReleased(ctx, 0) and WIRE_DRAG then
+                    WIRE_DRAG = nil
+                end
             end
         end
         --! DONT INCREMENT Y IF PIN IS SET NOT TO DRAW
@@ -1936,7 +1995,15 @@ local function DrawDragNode(node)
                 if CUR_TAB == "VARS" then
                     r.ImGui_OpenPopup(ctx, "GET-SET")
                 else
-                    NODES[#NODES + 1] = DRAG_LIST_NODE
+                    --NODES[#NODES + 1] = DRAG_LIST_NODE
+                    ApplyCommand({
+                        type = "insert node",
+                        node_a = DRAG_LIST_NODE,
+                        data = { NODES = NODES, n = #NODES + 1 },
+                        apply = InsertNewNode, --CreateConnection(node, data),
+                        undo = DeleteNode,     --Delete_Wire({ { link = data.link_guid } }),
+                    })
+
                     DIRTY = true
 
                     --DRAG_LIST_NODE, DRAG_LIST_NODE_ID, GETTER_INFO = nil, nil, nil
@@ -2154,9 +2221,7 @@ function DrawLoop()
     Node_Drawing()
     r.ImGui_PopFont(ctx)
 
-    if RUNNING then
-        LoopNativeCode()
-    end
+    LoopNativeCode()
 end
 
 function CenterNodeToScreen(node)
@@ -2403,7 +2468,7 @@ function RestoreNodes(string)
 end
 
 function InitApi()
-    CreateApiFile()
+    --CreateApiFile()
     API_LIST = Fill_Api_list()
 end
 
@@ -2523,7 +2588,7 @@ function ConnectNextPreviousFunctionNodes(prev_node, prev_pin, next_node, next_p
     end
 end
 
-function AnimateSpriteSheet(img_obj, frames, cols, rows, speed, x, y, time)
+function AnimateSpriteSheet(img_obj, start_time, frames, cols, rows, speed, x, y, time)
     --local now_time = time - r.time_precise()
     local w, h = r.ImGui_Image_GetSize(img_obj)
 
@@ -2532,7 +2597,7 @@ function AnimateSpriteSheet(img_obj, frames, cols, rows, speed, x, y, time)
 
     local uv_step_x, uv_step_y = 1 / cols, 1 / rows
 
-    local frame = math.floor((r.time_precise() * speed) % frames)
+    local frame = math.floor(((r.time_precise() - start_time) * speed) % frames)
 
     local col_frame = frame % cols
     local row_frame = math.floor(frame / cols)

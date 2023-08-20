@@ -3,6 +3,7 @@
 
 local r = reaper
 local API_PATH = PATH .. "api_file.txt"
+local API_PATH2 = r.GetResourcePath() .. "\\Docs\\reascripthelp.html"
 local ULTRA_API_PATH = PATH .. "ultra_api.txt"
 local IMGUI_DOCS_STR
 
@@ -16,7 +17,7 @@ function ReadApiFile(load_path)
 end
 
 local IMGUI_DEF_VALS = {}
-local function GetImguiDefaults2(str)
+local function GetImguiDefaults(str)
     for line in str:gmatch('[^\r\n]+') do
         local f_name = line:match('reaper.(%S+)%(')
         if f_name and line:match('Optional =') then
@@ -32,7 +33,7 @@ end
 
 if r.APIExists("ImGui_GetVersion") then
     IMGUI_DOCS_STR = ReadApiFile(r.GetResourcePath() .. "/Data/reaper_imgui_doc.html")
-    GetImguiDefaults2(IMGUI_DOCS_STR)
+    GetImguiDefaults(IMGUI_DOCS_STR)
 end
 
 function CurlToFile()
@@ -133,26 +134,7 @@ local Math_FLOAT = { "+", "-", "*", "/", "%", "^", "//" }
 
 local Compare = { '==', '~=', '>', '>=', '<', '<=' }
 
-local function has_val(tbl, val)
-    for k, v in pairs(tbl) do
-        if k == val then return true end
-    end
-end
-
 local function Parse_Ultraschall()
-    AAA = {}
-    cnt = 0
-    for k, v in pairs(r) do
-        --r.ShowConsoleMsg(v)
-        local cnt, cat = ultraschall.Docs_GetReaperApiFunction_Categories(k)
-        if cat then
-            AAA[cat] = tostring(k)
-        end
-    end
-
-    for k, v in pairs(AAA) do
-        --    r.ShowConsoleMsg(k .. '\n')
-    end
     if not ULTRA_API then return end
 
     local ul_tmp_tbl = {}
@@ -184,10 +166,8 @@ local function Parse_Ultraschall()
 
         local _, retvals_table = ultraschall.Docs_GetUltraschallApiFunction_Retvals(functionnames_table[i], i)
         for j = 1, #retvals_table do
-            --local opt = retvals_table[j].datatype:find("optional") and { use = false } or nil
             ul_tmp_tbl[#ul_tmp_tbl].out[#ul_tmp_tbl[#ul_tmp_tbl].out + 1] = {
                 type = retvals_table[j].datatype:gsub("optional ", ""):upper(),
-                -- opt = opt,
                 name = retvals_table[j].name:upper(),
                 desc = retvals_table[j].description
             }
@@ -222,20 +202,10 @@ local function CheckUltraApiFile(ret)
         end
     else
         return WriteUltraApi(ret)
-        -- local ultra_api_tbl = Parse_Ultraschall()
-        -- local serialized = TableToString(ultra_api_tbl)
-        -- local file_w = io.open(ULTRA_API_PATH, "w")
-        -- if file_w then
-        --     file_w:write(serialized) --- HERES
-        --     file_w:close()
-        -- end
-        -- return ultra_api_tbl
     end
 end
 
-function Fill_Api_list()
-    local start, found
-    local api = {}
+local function ParseHTML(api)
     local api_str = ReadApiFile(API_PATH)
     for line in api_str:gmatch('[^\r\n]+') do
         -- GET DESCRIPTION
@@ -273,8 +243,14 @@ function Fill_Api_list()
                         ins = {},
                         desc = "",
                         run = "in/out",
-                        compiler = "NT_CALL"
+                        compiler = name:match("ImGui_") and "NT_IMGUI" or "NT_CALL"
                     }
+
+                    -- if name:match("ImGui_Begin") then
+                    --     api[#api].out = {
+                    --         { name = "BODY", type = "RUN", run = true }
+                    --     }
+                    -- end
 
                     -- MATCH BEFORE REAPER.
                     local return_vals = filter_line:match('(.+)reaper')
@@ -282,12 +258,10 @@ function Fill_Api_list()
                     if return_vals then
                         if return_vals:find(",") then
                             for ret in return_vals:gmatch('[^,]+') do
-                                --local opt = ret:find("optional") and { use = false } or nil
-                                for r_type, r_name in ret:gsub("=", ""):gsub("optional", ""):gsub("%s+", ""):gmatch('<em>(%S+)</em>(%S+ ?)') do
+                                for r_type, r_name in ret:gsub("=", ""):gsub("optional </em><em>", ""):gsub("%s+", ""):gsub("optional", ""):gmatch('<em>(%S+)</em>(%S+ ?)') do
                                     api[#api].out[#api[#api].out + 1] = {
                                         type = r_type:upper(),
                                         name = r_name:upper(),
-                                        -- opt = opt
                                     }
                                 end
                             end
@@ -305,37 +279,6 @@ function Fill_Api_list()
                                 }
                             end
                         end
-                        -- STRIP , AND WHITESPACES
-                        -- for ret in return_vals:gmatch('[^,]+') do
-                        --     --reaper.ShowConsoleMsg(arg .. "\n\n")
-                        --     for a_type, a_name in ret:gsub("optional", ""):gsub("%s+", ""):gmatch('<em>(%S+)</em>(%S+ ?)') do
-                        --         -- IMGUI SPECIFIC TYPE OBJECT
-                        --         if name:match("ImGui_Create") then
-                        --             if not name:match("_CreateContext") then
-                        --                 a_type = a_type .. "/IMGUI_OBJ"
-                        --             end
-                        --         end
-
-                        --         api[#api].out[#api[#api].out + 1] = {
-                        --             type = a_type:upper(),
-                        --             name = a_name ~= "" and a_name:upper() or a_type:upper(),
-                        --         }
-                        --     end
-                        -- end
-                        -- return_vals = return_vals:gsub(",", ""):gsub("optional", ""):gsub("%s+", "")
-                        -- for r_type, r_name in return_vals:gmatch('<em>([^<]-)</em>(%a* ?)') do
-                        --     -- IMGUI SPECIFIC TYPE OBJECT
-                        --     if name:match("ImGui_Create") then
-                        --         if not name:match("_CreateContext") then
-                        --             r_type = r_type .. "/IMGUI_OBJ"
-                        --         end
-                        --     end
-
-                        --     api[#api].out[#api[#api].out + 1] = {
-                        --         type = r_type:upper(),
-                        --         name = r_name ~= "" and r_name:upper() or r_type:upper(),
-                        --     }
-                        -- end
                     end
 
                     -- MATCH AFTER REAPER FUNCTION NAME "("
@@ -344,7 +287,7 @@ function Fill_Api_list()
                     if argument_vals then
                         for arg in argument_vals:gmatch('[^,]+') do
                             local opt = arg:find("optional") and { use = false } or nil
-                            for a_type, a_name in arg:gsub("optional", ""):gsub("%s+", ""):gmatch('<em>(%S+)</em>(%S+ ?)') do
+                            for a_type, a_name in arg:gsub("optional </em><em>", ""):gsub("%s+", ""):gsub("optional", ""):gmatch('<em>(%S+)</em>(%S+ ?)') do
                                 local def_val
                                 if opt then
                                     if name:find("ImGui_") then
@@ -368,7 +311,109 @@ function Fill_Api_list()
             end
         end
     end
+end
 
+local function ParseHTML2(api)
+    local api_str = ReadApiFile(API_PATH2)
+    local tmp_desc_str = {}
+    local get_desc
+    for line in api_str:gmatch('[^\r\n]+') do
+        if get_desc then
+            if line:match("^[^<]") then
+                if line:match("<a href=") then
+                    line = line:gsub('<a href(.-)">', ''):gsub("</a>", "")
+                end
+                tmp_desc_str[#tmp_desc_str + 1] = line:gsub("<br>", "\n")
+            elseif line:match("<a name=") then
+                api[#api].desc = table.concat(tmp_desc_str)
+                get_desc = false
+            end
+        end
+
+        if line:match("l_func") then
+            local filter_line = line:match("<code>(.+)</code>")
+            if filter_line then
+                local name = filter_line:match('reaper.(%S+)%(')
+                if name then
+                    get_desc = true
+                    tmp_desc_str = {}
+
+                    --api[#api + 1] = { name = name, out = {}, ins = {} }
+                    api[#api + 1] = {
+                        fname = name,
+                        label = name,
+                        out = {},
+                        ins = {},
+                        run = "in/out",
+                        compiler = name:match("ImGui_") and "NT_IMGUI" or "NT_CALL"
+                    }
+
+                    -- MATCH OUTS BEFORE REAPER
+                    local return_vals = filter_line:match('(.+)reaper')
+
+                    if return_vals then
+                        if return_vals:find(",") then
+                            for ret in return_vals:gmatch('[^,]+') do
+                                for r_type, r_name in ret:gsub("=", ""):gsub("optional </i><i>", ""):gsub("%s+", ""):gsub("optional", ""):gmatch('<i>(%S+)</i>(%S+ ?)') do
+                                    api[#api].out[#api[#api].out + 1] = {
+                                        type = r_type:upper(),
+                                        name = r_name:upper(),
+                                    }
+                                end
+                            end
+                        else
+                            for r_type in return_vals:gmatch('<i>([^<]-)</i>') do
+                                if name:match("ImGui_Create") then
+                                    if not name:match("_CreateContext") then
+                                        r_type = r_type .. "/IMGUI_OBJ"
+                                    end
+                                end
+
+                                api[#api].out[#api[#api].out + 1] = {
+                                    type = r_type:upper(),
+                                    name = r_type:upper(),
+                                }
+                            end
+                        end
+                    end
+
+                    local argument_vals = filter_line:match("%((.+)%)")
+                    -- MATCH INS AFTER REAPER "("
+
+                    if argument_vals then
+                        for arg in argument_vals:gmatch('[^,]+') do
+                            local opt = arg:find("optional") and { use = false } or nil
+                            for a_type, a_name in arg:gsub("optional </i><i>", ""):gsub("%s+", ""):gsub("optional", ""):gmatch('<i>(%S+)</i>(%S+ ?)') do
+                                --for a_type, a_name in arg:gsub("optional", ""):gsub("%s+", ""):gmatch('<i>(%S+)</i>(%S+ ?)') do
+                                local def_val
+                                if opt then
+                                    if name:find("ImGui_") then
+                                        --def_val = GetImguiDefaults(name, a_name)
+                                        def_val = IMGUI_DEF_VALS[name][a_name .. 'Optional']
+                                    end
+                                end
+                                a_type = a_type:upper()
+                                if convert[a_type] then a_type = convert[a_type] end
+                                api[#api].ins[#api[#api].ins + 1] = {
+                                    type = a_type,
+                                    name = a_name:upper(),
+                                    opt = opt,
+                                    def_val = def_val
+                                }
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+function Fill_Api_list()
+    local start, found
+    local api = {}
+
+    ParseHTML2(api)
     if ULTRA_API then
         local ultra_tbl = CheckUltraApiFile(true)
         if ultra_tbl then

@@ -20,6 +20,7 @@
 --   Docs/*.pdf
 --   Examples/SCHWA/*.png
 --   [main] Sexan_ReaSpaghetti.lua
+collectgarbage("generational")
 
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 PATH = debug.getinfo(1).source:match("@?(.*[\\|/])")
@@ -32,7 +33,7 @@ local crash = function(e)
 end
 
 -- IMGUI SETUP
-ctx = r.ImGui_CreateContext('My script')
+ctx = r.ImGui_CreateContext('ReaSpaghetti')
 
 require("Modules/Defaults")
 
@@ -62,24 +63,28 @@ if r.file_exists(r.GetResourcePath() .. "/UserPlugins/ultraschall_api.lua") then
 end
 
 FLUX = require("Modules/flux")
-BEZIER = require("Modules/path2d_bezier3")
-BEZIER_HIT = require("Modules/path2d_bezier3_hit")
+--BEZIER = require("Modules/path2d_bezier3")
+--BEZIER_HIT = require("Modules/path2d_bezier3_hit")
+
+
+require("Modules/Bezier")
+require("Modules/Categories")
 require("Modules/APIParser")
---require("Modules/ParseFlowNative")
 require("Modules/UI")
 require("Modules/Utils")
 require("Modules/FileManager")
 require("Modules/Canvas")
 require("Modules/NodeDraw")
-require("Modules/Flow")
-require("Modules/CustomFunctions")
-require("Modules/ExportToAction")
 require("Modules/Library")
+require("Modules/LuaCompiler")
 require("Modules/Undo")
-require("Modules/NativeParser")
---require("Modules/NativeRunParser")
+--require("Modules/ParseFlowNative")
+--require("Modules/Flow")
+--require("Modules/CustomFunctions")
+--require("Modules/ExportToAction")
+--require("Modules/NativeParser")
 
-if STANDALONE_RUN then return end
+--if STANDALONE_RUN then return end
 
 local old_time = r.time_precise()
 local function UpdateDeltaTime()
@@ -126,12 +131,12 @@ end
 
 DIRTY = nil
 FRAME_CNT = 0
-CAN_UPDATE = false
+CODE_UPDATE = false
 local function loop()
     if CODE_MODIFIED then
         FRAME_CNT = FRAME_CNT + 1
         if FRAME_CNT % 33 == 0 then
-            CAN_UPDATE = true
+            CODE_UPDATE = true
             FRAME_CNT = 0
         end
     end

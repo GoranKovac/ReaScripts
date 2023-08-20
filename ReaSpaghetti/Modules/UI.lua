@@ -36,8 +36,6 @@ function Top_Menu()
     if r.ImGui_BeginMenuBar(ctx) then
         if r.ImGui_BeginMenu(ctx, 'File') then
             if r.ImGui_MenuItem(ctx, 'New') then
-                --local FUNCTIONS = GetFUNCTIONS()
-                --if #FUNCTIONS > 2 or #FUNCTIONS[1].NODES > 1 or #FUNCTIONS[2].NODES > 1 then
                 if AreFunctionsDirty() then
                     NEW_WARNIGN = true
                 else
@@ -170,12 +168,7 @@ local function TableSpecial(node)
             elseif node.fname == "CUSTOM_CodeNodeRun" then
                 local ins = { { name = "INPUT " .. #node.inputs, type = "INTEGER" } }
                 local inputs = CreateInputs("in", ins)
-                --table.insert(node.inputs, 1, inputs[1])
                 node.inputs[#node.inputs + 1] = inputs[1]
-                --for i = 1, #node.inputs - 1 do
-                --    node.inputs[i].label = node.inputs[i].label:gsub("%d+", i)
-                --end
-
                 local out = { { name = "OUTPUT " .. #node.outputs + 1, type = "INTEGER" } }
                 local outputs = CreateInputs("out", out)
                 node.outputs[#node.outputs + 1] = outputs[1]
@@ -210,8 +203,6 @@ local function TableSpecial(node)
                 end
             elseif node.fname == "CUSTOM_CodeNodeRun" then
                 if #node.inputs > 1 then
-                    --Delete_Wire(node.inputs[1].connection)
-                    --Delete_Wire(node.outputs[1].connection)
                     Delete_Wire(node.inputs[#node.inputs].connection)
                     Delete_Wire(node.outputs[#node.outputs].connection)
                     if #node.in_values ~= 0 then
@@ -228,8 +219,6 @@ local function TableSpecial(node)
         if r.ImGui_BeginChild(ctx, "code_inputs") then
             local inp_start = node.type == "code" and 2 or 1
             for ins = inp_start, #node.inputs do
-                --if node.inputs[ins].type ~= "CODE" then
-                --if ins > 1 then
                 local cur_type = node.inputs[ins].type
                 r.ImGui_PushID(ctx, "tc_inp" .. ins)
                 r.ImGui_SetNextItemWidth(ctx, avail_w / 3)
@@ -246,8 +235,6 @@ local function TableSpecial(node)
                     r.ImGui_EndCombo(ctx)
                 end
                 r.ImGui_PopID(ctx)
-                --end
-                --end
                 if node.type == "tc" then
                     r.ImGui_SameLine(ctx)
                     r.ImGui_PushID(ctx, "##tc" .. node.guid .. ins)
@@ -601,17 +588,17 @@ local function NodeInspector()
 end
 
 function DeferTest()
-    if r.ImGui_Button(ctx, "RUN") then
-        local start_time = r.time_precise()
-        BREAK_RUN = nil
-        r.ImGui_SetKeyboardFocusHere(ctx)
-        LEGO_MGS = {}
-        ClearNodesWarning()
-        InitRunFlow()
-        local end_time = r.time_precise()
-        r.ShowConsoleMsg("\nORIGINAL RUN :" .. ('%.4f ms\n'):format((end_time - start_time) * 1000))
-    end
-    r.ImGui_SameLine(ctx)
+    -- if r.ImGui_Button(ctx, "RUN") then
+    --     local start_time = r.time_precise()
+    --     BREAK_RUN = nil
+    --     r.ImGui_SetKeyboardFocusHere(ctx)
+    --     LEGO_MGS = {}
+    --     ClearNodesWarning()
+    --     InitRunFlow()
+    --     local end_time = r.time_precise()
+    --     r.ShowConsoleMsg("\nORIGINAL RUN :" .. ('%.4f ms\n'):format((end_time - start_time) * 1000))
+    -- end
+    -- r.ImGui_SameLine(ctx)
     if DEFERED_NODE or RUNNING then
         r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Button(), 0x00FF00AA)
     end
@@ -627,7 +614,7 @@ function DeferTest()
     r.ImGui_SameLine(ctx)
     --if RUNNING then r.ImGui_BeginDisabled(ctx) end
     if not RUNNING then
-        if r.ImGui_Button(ctx, "PARSE") then
+        if r.ImGui_Button(ctx, "RUN") then
             INIT_SCRIPT_CODE = true
             ClearNodesWarning()
             if not RUNNING then
@@ -712,6 +699,50 @@ function FunctionTabs()
 end
 
 CUR_TAB = "NODES"
+
+function SidebarDelete(final_tbl)
+    if CUR_TAB == "FUNC" then
+        local FUNCTIONS = GetFUNCTIONS()
+        if FUNCTIONS[CUR_SIDEBAR_ID].label ~= "Main" and FUNCTIONS[CUR_SIDEBAR_ID].label ~= "Init" then
+            -- DELETE ALL SAME NODE FUNCTIONS
+            for i = 1, #FUNCTIONS do
+                for n = #FUNCTIONS[i].NODES, 1, -1 do
+                    local node = FUNCTIONS[i].NODES[n]
+                    if node.FID and node.FID == CUR_SIDEBAR_ID then
+                        local next_node = FUNCTIONS[i].NODES[n].outputs[0].connection[1] and
+                            GetNodeInfo(FUNCTIONS[i].NODES[n].outputs[0].connection[1].node)
+                        local next_pin = FUNCTIONS[i].NODES[n].outputs[0].connection[1] and
+                            FUNCTIONS[i].NODES[n].outputs[0].connection[1].pin
+                        local prev_node = FUNCTIONS[i].NODES[n].inputs[0].connection[1] and
+                            GetNodeInfo(FUNCTIONS[i].NODES[n].inputs[0].connection[1].node)
+                        local prev_pin = FUNCTIONS[i].NODES[n].inputs[0].connection[1] and
+                            FUNCTIONS[i].NODES[n].inputs[0].connection[1].pin
+                        DeleteNode(FUNCTIONS[i].NODES, n)
+                        -- AUTOCONNECT PREVIOUS/NEXT NODES IF THIS NODE WAS IN MIDDLE
+                        ConnectNextPreviousFunctionNodes(prev_node, prev_pin, next_node, next_pin)
+                    end
+                    -- UPDATE NODE FIDS IF GREATER THAN DELETED ONE
+                    if node.FID and node.FID > CUR_SIDEBAR_ID then
+                        node.FID = node.FID - 1
+                    end
+                end
+            end
+            -- DELETE FUNCTION
+            table.remove(FUNCTIONS, CUR_SIDEBAR_ID)
+            if CUR_SIDEBAR_ID == CURRENT_FUNCTION then
+                CHANGE_FTAB = CUR_SIDEBAR_ID - 1
+                --CURRENT_FUNCTION = CHANGE_FTAB
+                final_tbl[CHANGE_FTAB].tab_open = true
+            end
+        end
+        --! REMOVE ALL FUNCTIONS
+    elseif CUR_TAB == "NODES" then
+        local NODES = GetNodeTBL()
+        if NODES[CUR_SIDEBAR_ID].label ~= "START" then
+            table.remove(NODES, CUR_SIDEBAR_ID)
+        end
+    end
+end
 
 function Sidebar()
     local list_tbl --= GetNodeTBL()
@@ -842,12 +873,6 @@ function Sidebar()
 
                 if CUR_TAB == "VARS" then
                     GET_SET_NODE = final_tbl[i]
-                    -- if final_tbl[i].type == "set" then
-                    --     if not DRAG_LIST_NODE then
-                    --         DRAG_LIST_NODE_ID = i
-                    --         --GETTER_INFO = final_tbl[i]
-                    --         DRAG_LIST_NODE = AddNode("get", "GET " .. final_tbl[i].label)
-                    --     end
                     if final_tbl[i].type == "i" or final_tbl[i].type == "f" or final_tbl[i].type == "s" or final_tbl[i].type == "b" or final_tbl[i].type == "t" or final_tbl[i].type == "tc" or final_tbl[i].type == "api_var" then
                         if not DRAG_LIST_NODE then
                             DRAG_LIST_NODE_ID = i
@@ -891,47 +916,48 @@ function Sidebar()
             if r.ImGui_MenuItem(ctx, 'Rename') then
                 RENAME_FUNC = CUR_SIDEBAR_ID
             elseif r.ImGui_MenuItem(ctx, 'Delete') then
-                if CUR_TAB == "FUNC" then
-                    local FUNCTIONS = GetFUNCTIONS()
-                    if FUNCTIONS[CUR_SIDEBAR_ID].label ~= "Main" and FUNCTIONS[CUR_SIDEBAR_ID].label ~= "Init" then
-                        -- DELETE ALL SAME NODE FUNCTIONS
-                        for i = 1, #FUNCTIONS do
-                            for n = #FUNCTIONS[i].NODES, 1, -1 do
-                                local node = FUNCTIONS[i].NODES[n]
-                                if node.FID and node.FID == CUR_SIDEBAR_ID then
-                                    local next_node = FUNCTIONS[i].NODES[n].outputs[0].connection[1] and
-                                        GetNodeInfo(FUNCTIONS[i].NODES[n].outputs[0].connection[1].node)
-                                    local next_pin = FUNCTIONS[i].NODES[n].outputs[0].connection[1] and
-                                        FUNCTIONS[i].NODES[n].outputs[0].connection[1].pin
-                                    local prev_node = FUNCTIONS[i].NODES[n].inputs[0].connection[1] and
-                                        GetNodeInfo(FUNCTIONS[i].NODES[n].inputs[0].connection[1].node)
-                                    local prev_pin = FUNCTIONS[i].NODES[n].inputs[0].connection[1] and
-                                        FUNCTIONS[i].NODES[n].inputs[0].connection[1].pin
-                                    DeleteNode(FUNCTIONS[i].NODES, n)
-                                    -- AUTOCONNECT PREVIOUS/NEXT NODES IF THIS NODE WAS IN MIDDLE
-                                    ConnectNextPreviousFunctionNodes(prev_node, prev_pin, next_node, next_pin)
-                                end
-                                -- UPDATE NODE FIDS IF GREATER THAN DELETED ONE
-                                if node.FID and node.FID > CUR_SIDEBAR_ID then
-                                    node.FID = node.FID - 1
-                                end
-                            end
-                        end
-                        -- DELETE FUNCTION
-                        table.remove(FUNCTIONS, CUR_SIDEBAR_ID)
-                        if CUR_SIDEBAR_ID == CURRENT_FUNCTION then
-                            CHANGE_FTAB = CUR_SIDEBAR_ID - 1
-                            --CURRENT_FUNCTION = CHANGE_FTAB
-                            final_tbl[CHANGE_FTAB].tab_open = true
-                        end
-                    end
-                    --! REMOVE ALL FUNCTIONS
-                elseif CUR_TAB == "NODES" then
-                    local NODES = GetNodeTBL()
-                    if NODES[CUR_SIDEBAR_ID].label ~= "START" then
-                        table.remove(NODES, CUR_SIDEBAR_ID)
-                    end
-                end
+                SidebarDelete(final_tbl)
+                --     if CUR_TAB == "FUNC" then
+                --         local FUNCTIONS = GetFUNCTIONS()
+                --         if FUNCTIONS[CUR_SIDEBAR_ID].label ~= "Main" and FUNCTIONS[CUR_SIDEBAR_ID].label ~= "Init" then
+                --             -- DELETE ALL SAME NODE FUNCTIONS
+                --             for i = 1, #FUNCTIONS do
+                --                 for n = #FUNCTIONS[i].NODES, 1, -1 do
+                --                     local node = FUNCTIONS[i].NODES[n]
+                --                     if node.FID and node.FID == CUR_SIDEBAR_ID then
+                --                         local next_node = FUNCTIONS[i].NODES[n].outputs[0].connection[1] and
+                --                             GetNodeInfo(FUNCTIONS[i].NODES[n].outputs[0].connection[1].node)
+                --                         local next_pin = FUNCTIONS[i].NODES[n].outputs[0].connection[1] and
+                --                             FUNCTIONS[i].NODES[n].outputs[0].connection[1].pin
+                --                         local prev_node = FUNCTIONS[i].NODES[n].inputs[0].connection[1] and
+                --                             GetNodeInfo(FUNCTIONS[i].NODES[n].inputs[0].connection[1].node)
+                --                         local prev_pin = FUNCTIONS[i].NODES[n].inputs[0].connection[1] and
+                --                             FUNCTIONS[i].NODES[n].inputs[0].connection[1].pin
+                --                         DeleteNode(FUNCTIONS[i].NODES, n)
+                --                         -- AUTOCONNECT PREVIOUS/NEXT NODES IF THIS NODE WAS IN MIDDLE
+                --                         ConnectNextPreviousFunctionNodes(prev_node, prev_pin, next_node, next_pin)
+                --                     end
+                --                     -- UPDATE NODE FIDS IF GREATER THAN DELETED ONE
+                --                     if node.FID and node.FID > CUR_SIDEBAR_ID then
+                --                         node.FID = node.FID - 1
+                --                     end
+                --                 end
+                --             end
+                --             -- DELETE FUNCTION
+                --             table.remove(FUNCTIONS, CUR_SIDEBAR_ID)
+                --             if CUR_SIDEBAR_ID == CURRENT_FUNCTION then
+                --                 CHANGE_FTAB = CUR_SIDEBAR_ID - 1
+                --                 --CURRENT_FUNCTION = CHANGE_FTAB
+                --                 final_tbl[CHANGE_FTAB].tab_open = true
+                --             end
+                --         end
+                --         --! REMOVE ALL FUNCTIONS
+                --     elseif CUR_TAB == "NODES" then
+                --         local NODES = GetNodeTBL()
+                --         if NODES[CUR_SIDEBAR_ID].label ~= "START" then
+                --             table.remove(NODES, CUR_SIDEBAR_ID)
+                --         end
+                --     end
             end
             if CUR_SIDEBAR_ID > 2 then
                 if r.ImGui_MenuItem(ctx, 'EXPORT') then
@@ -1099,13 +1125,9 @@ function Popups()
     r.ImGui_SetNextWindowPos(ctx, center[1], center[2], r.ImGui_Cond_Appearing(), 0.5, 0.5)
     r.ImGui_SetNextWindowSizeConstraints(ctx, 500, 500, 500, 500)
     if r.ImGui_BeginPopupModal(ctx, 'File Dialog', true, r.ImGui_WindowFlags_TopMost() |  r.ImGui_WindowFlags_NoResize()) then
-        --if FM_RV then
-        --    r.ShowConsoleMsg("here")
         File_dialog()
         FM_Modal_POPUP()
         r.ImGui_EndPopup(ctx)
-        --r.ImGui_End(ctx)
-        --end
     end
 
     if not r.ImGui_IsPopupOpen(ctx, 'FILTER LIST') and not r.ImGui_IsPopupOpen(ctx, 'PIN_PROMOTE_SET') and not r.ImGui_IsPopupOpen(ctx, 'GET-SET') then
@@ -1205,13 +1227,14 @@ function CheckWindowPayload()
 end
 
 local dsc_img = PATH .. "Examples/SCHWA/" .. "TutorialRS.png"
-
+local img_obj, tooltip_start_time
 function Tooltip_Tutorial(img)
     if r.ImGui_BeginTooltip(ctx) then
         if not r.ImGui_ValidatePtr(img_obj, 'ImGui_Image*') then
+            tooltip_start_time = r.time_precise()
             img_obj = r.ImGui_CreateImage(dsc_img)
         end
-        AnimateSpriteSheet(img_obj, 58, 5, 12, 10, 0, 0)
+        AnimateSpriteSheet(img_obj, tooltip_start_time, 58, 5, 12, 10, 0, 0)
         r.ImGui_EndTooltip(ctx)
     end
 end

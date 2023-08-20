@@ -21,7 +21,8 @@ function InitCanvas()
 end
 
 function CanvasEdgeScrolling()
-    if r.ImGui_IsMouseDragging(ctx, 0) and r.ImGui_IsWindowFocused(ctx) and not MARQUEE then
+    if not WIRE_DRAG and not MOVE_NODE then return end
+    if r.ImGui_IsMouseDragging(ctx, 0) and r.ImGui_IsWindowFocused(ctx) then -- and not MARQUEE then
         EDGE_SCROLLING = { x = 0, y = 0 }
         if CANVAS.zone_L then
             CANVAS.off_x = CANVAS.off_x + EDGE_SCROLLING_SPEED
@@ -226,7 +227,11 @@ local function CheckShortcuts()
     end
 
     if CTRL_DOWN and KEY_Z then
-        DoUndo()
+        if r.ImGui_IsWindowFocused(ctx) and not r.ImGui_IsAnyItemActive(ctx) then UndoCommand() end
+    end
+
+    if CTRL_DOWN and SHIFT_DOWN and KEY_Z then
+        if r.ImGui_IsWindowFocused(ctx) and not r.ImGui_IsAnyItemActive(ctx) then RedoCommand() end
     end
 
     if COPY then
@@ -249,9 +254,6 @@ local function CheckShortcuts()
         local sel_nodes = CntSelNodes()
         if #sel_nodes == 1 and sel_nodes[1].type ~= "func" then
             RENAME_NODE = sel_nodes[1]
-            --if not r.ImGui_IsPopupOpen(ctx, "Rename") then
-            --    r.ImGui_OpenPopup(ctx, "Rename")
-            --end
         end
     end
 end
