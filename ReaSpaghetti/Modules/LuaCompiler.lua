@@ -263,6 +263,7 @@ local lua_type = {
     ["CUSTOM_Concat"]               = function(name, a, b) return ('%s = %s .. %s\n'):format(name, a, b) end,
     ["CUSTOM_ToString"]             = function(name, a) return ('%s = tostring(%s)\n'):format(name, a) end,
     ["CUSTOM_GetScriptPath"]        = function() return ('%q'):format(PATH) .. '\n' end,
+    --["CUSTOM_GetScriptPath"]        = function() return [[debug.getinfo(1).source:match("@?(.*[\\|/])")]] .. "\n" end,
     ["CUSTOM_GetOsNativeSeparator"] = function() return ('%q'):format(NATIVE_SEPARATOR) .. '\n' end
 }
 
