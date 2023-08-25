@@ -20,7 +20,9 @@
 --   Docs/*.pdf
 --   Examples/SCHWA/*.png
 --   [main] Sexan_ReaSpaghetti.lua
-collectgarbage("generational")
+
+
+MODE = 1
 
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 PATH = debug.getinfo(1).source:match("@?(.*[\\|/])")
@@ -78,6 +80,7 @@ require("Modules/NodeDraw")
 require("Modules/Library")
 require("Modules/LuaCompiler")
 require("Modules/Undo")
+require("Modules/FXRouter")
 --require("Modules/ParseFlowNative")
 --require("Modules/Flow")
 --require("Modules/CustomFunctions")
