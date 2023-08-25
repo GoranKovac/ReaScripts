@@ -1194,9 +1194,9 @@ local dsc_img = PATH .. "Examples/SCHWA/" .. "TutorialRS.png"
 function Tooltip_Tutorial(img)
     if r.ImGui_BeginTooltip(ctx) then
         if not r.ImGui_ValidatePtr(img_obj, 'ImGui_Image*') then
-            img_obj = r.ImGui_CreateImage(dsc_img)
+            -- img_obj = r.ImGui_CreateImage(dsc_img)
         end
-        AnimateSpriteSheet(img_obj, 58, 5, 12, 10, 0, 0)
+        -- AnimateSpriteSheet(img_obj, 58, 5, 12, 10, 0, 0)
         r.ImGui_EndTooltip(ctx)
     end
 end
