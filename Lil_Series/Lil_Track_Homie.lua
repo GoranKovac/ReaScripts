@@ -1,7 +1,7 @@
 -- @description Lil Track Homie
 -- @author Sexan
 -- @license GPL v3
--- @version 1.13
+-- @version 1.14
 -- @changelog
 --   + use mouse under track unless multiple tracks are selected
 
@@ -18,7 +18,9 @@ function Round(num) return floor(num + 0.5) end
 local start_time = reaper.time_precise()
 local key_state, KEY = reaper.JS_VKeys_GetState(start_time - 2), nil
 for i = 1, 255 do
-    if key_state:byte(i) ~= 0 then KEY = i; reaper.JS_VKeys_Intercept(KEY, 1) end
+    if key_state:byte(i) ~= 0 then
+        KEY = i; reaper.JS_VKeys_Intercept(KEY, 1)
+    end
 end
 if not KEY then return end
 local cur_pref = reaper.SNM_GetIntConfigVar("alwaysallowkb", 1)
@@ -29,7 +31,10 @@ function Key_held()
     return key_state:byte(KEY) == 1
 end
 
-function Release() reaper.JS_VKeys_Intercept(KEY, -1) reaper.SNM_SetIntConfigVar("alwaysallowkb", cur_pref) end
+function Release()
+    reaper.JS_VKeys_Intercept(KEY, -1)
+    reaper.SNM_SetIntConfigVar("alwaysallowkb", cur_pref)
+end
 
 function Handle_errors(err)
     reaper.ShowConsoleMsg(err .. '\n' .. debug.traceback())
@@ -39,7 +44,7 @@ end
 local ctx = reaper.ImGui_CreateContext('My script', reaper.ImGui_ConfigFlags_NoSavedSettings())
 local size = reaper.GetAppVersion():match('OSX') and 12 or 14
 local font = reaper.ImGui_CreateFont('sans-serif', size)
-reaper.ImGui_AttachFont(ctx, font)
+reaper.ImGui_Attach(ctx, font)
 
 local dB_step = 0.2
 
@@ -84,12 +89,18 @@ function Fader(val, vertical)
         local dB_val = VAL2DB(abs(vol))
         --local vertical, horizontal = reaper.ImGui_GetMouseWheel(ctx)
 
-        if dB_val < -90 then dB_step = 5 -- < -90 dB
-        elseif dB_val < -60 then dB_step = 3 -- from -90 to -60 dB
-        elseif dB_val < -45 then dB_step = 2 -- from -60 to -45 dB
-        elseif dB_val < -30 then dB_step = 1.5 -- from -45 to -30 dB
-        elseif dB_val < -18 then dB_step = 1 -- from -30 to -18 dB
-        elseif dB_val < 24 then dB_step = 0.5 -- from -18 to 24 dB
+        if dB_val < -90 then
+            dB_step = 5   -- < -90 dB
+        elseif dB_val < -60 then
+            dB_step = 3   -- from -90 to -60 dB
+        elseif dB_val < -45 then
+            dB_step = 2   -- from -60 to -45 dB
+        elseif dB_val < -30 then
+            dB_step = 1.5 -- from -45 to -30 dB
+        elseif dB_val < -18 then
+            dB_step = 1   -- from -30 to -18 dB
+        elseif dB_val < 24 then
+            dB_step = 0.5 -- from -18 to 24 dB
         end
 
         if vertical and vertical ~= 0 then
@@ -153,14 +164,22 @@ local function MyKnob(label, p_value, v_min, v_max)
     local angle = ANGLE_MIN + (ANGLE_MAX - ANGLE_MIN) * t
     local angle_cos, angle_sin = math.cos(angle), math.sin(angle)
     local radius_inner = radius_outer * 0.40
-    reaper.ImGui_DrawList_AddCircleFilled(draw_list, center[1], center[2], radius_outer, reaper.ImGui_GetColor(ctx, reaper.ImGui_Col_FrameBg()), 16)
-    reaper.ImGui_DrawList_AddLine(draw_list, center[1] + angle_cos * radius_inner, center[2] + angle_sin * radius_inner, center[1] + angle_cos * (radius_outer - 2), center[2] + angle_sin * (radius_outer - 2), reaper.ImGui_GetColor(ctx, reaper.ImGui_Col_SliderGrabActive()), 2.0)
-    reaper.ImGui_DrawList_AddCircleFilled(draw_list, center[1], center[2], radius_inner, reaper.ImGui_GetColor(ctx, is_active and reaper.ImGui_Col_FrameBgActive() or is_hovered and reaper.ImGui_Col_FrameBgHovered() or reaper.ImGui_Col_FrameBg()), 16)
-    reaper.ImGui_DrawList_AddText(draw_list, pos[1], pos[2] + radius_outer * 2 + item_inner_spacing[2], reaper.ImGui_GetColor(ctx, reaper.ImGui_Col_Text()), label)
+    reaper.ImGui_DrawList_AddCircleFilled(draw_list, center[1], center[2], radius_outer,
+        reaper.ImGui_GetColor(ctx, reaper.ImGui_Col_FrameBg()), 16)
+    reaper.ImGui_DrawList_AddLine(draw_list, center[1] + angle_cos * radius_inner, center[2] + angle_sin * radius_inner,
+        center[1] + angle_cos * (radius_outer - 2), center[2] + angle_sin * (radius_outer - 2),
+        reaper.ImGui_GetColor(ctx, reaper.ImGui_Col_SliderGrabActive()), 2.0)
+    reaper.ImGui_DrawList_AddCircleFilled(draw_list, center[1], center[2], radius_inner,
+        reaper.ImGui_GetColor(ctx,
+            is_active and reaper.ImGui_Col_FrameBgActive() or is_hovered and reaper.ImGui_Col_FrameBgHovered() or
+            reaper.ImGui_Col_FrameBg()), 16)
+    reaper.ImGui_DrawList_AddText(draw_list, pos[1], pos[2] + radius_outer * 2 + item_inner_spacing[2],
+        reaper.ImGui_GetColor(ctx, reaper.ImGui_Col_Text()), label)
 
     if is_active or is_hovered then
         local window_padding = { reaper.ImGui_GetStyleVar(ctx, reaper.ImGui_StyleVar_WindowPadding()) }
-        reaper.ImGui_SetNextWindowPos(ctx, pos[1] - window_padding[1] + 3, pos[2] - line_height - item_inner_spacing[2] - window_padding[2] + 82)
+        reaper.ImGui_SetNextWindowPos(ctx, pos[1] - window_padding[1] + 3,
+            pos[2] - line_height - item_inner_spacing[2] - window_padding[2] + 82)
         reaper.ImGui_BeginTooltip(ctx)
         reaper.ImGui_Text(ctx, ('%.2f' .. "dB"):format(p_value))
         reaper.ImGui_EndTooltip(ctx)
@@ -187,8 +206,13 @@ end
 local img_x, img_y = reaper.ImGui_PointConvertNative(ctx, reaper.GetMousePosition())
 reaper.ImGui_SetNextWindowPos(ctx, img_x - 25, img_y - 65)
 function GUI()
-    if not Key_held() then reaper.ImGui_DestroyContext(ctx) return end
-    if next(tracks) == nil then reaper.ImGui_DestroyContext(ctx) terminateScript = true return end
+    if not Key_held() then
+        return
+    end
+    if next(tracks) == nil then
+        terminateScript = true
+        return
+    end
     local vol = reaper.GetMediaTrackInfo_Value(tracks[1], 'D_VOL')
     local rv, buf = reaper.GetTrackName(tracks[1])
     local pan_mode = reaper.GetMediaTrackInfo_Value(tracks[1], "I_PANMODE")
@@ -317,8 +341,10 @@ function GUI()
             local toggle_fx_open = fx == (-1 or 0) and 1 or 0
             reaper.TrackFX_Show(tracks[1], 0, toggle_fx_open)
         end
-        if reaper.TrackFX_GetCount(tracks[1]) ~= 0 and fx_enable == 1 then Draw_Color_Rect("green")
-        elseif fx_enable == 0 then Draw_Color_Rect("red")
+        if reaper.TrackFX_GetCount(tracks[1]) ~= 0 and fx_enable == 1 then
+            Draw_Color_Rect("green")
+        elseif fx_enable == 0 then
+            Draw_Color_Rect("red")
         end
         reaper.ImGui_SetCursorPosY(ctx, reaper.ImGui_GetCursorPosY(ctx) - 3)
         if reaper.ImGui_Button(ctx, "ON", 25, 20) then
