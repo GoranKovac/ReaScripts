@@ -1,17 +1,9 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.36
+-- @version 0.37
 -- @changelog
---  Code node
---  File manager modal change
---  Fix wires can be hoovered while over node
---  Initial undo script
---  Ultraschall API
---  Ultraschall parser (to fix native slowdown)
---  Optionals arguments checkbox
---  Imgui default optionals values
---  Initial Animated tooltips
+--  removed animated tooltip
 -- @provides
 --   api_file.txt
 --   Modules/*.lua
