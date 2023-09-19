@@ -1,9 +1,9 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.37
+-- @version 0.38
 -- @changelog
---  removed animated tooltip
+--  fixed optional string argument in number field
 -- @provides
 --   api_file.txt
 --   Modules/*.lua
