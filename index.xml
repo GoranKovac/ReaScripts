@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="c05d3996fdd75dac91b9374e79bc0d05b221fd00" name="Sexan_Scripts">
+<index version="1" commit="d59611ccf63a29855353b4c7ad765ea21285fde3" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -502,6 +502,14 @@
         <changelog><![CDATA[+ Added mouse class]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/af365b786165d79d9a736ffed17ddb20963c3f0c/Edit_Groups/Edit_groups.lua</source>
         <source file="Utils/Mouse.lua">https://github.com/GoranKovac/ReaScripts/raw/af365b786165d79d9a736ffed17ddb20963c3f0c/Edit_Groups/Utils/Mouse.lua</source>
+      </version>
+    </reapack>
+  </category>
+  <category name="FX">
+    <reapack name="Sexan_FX_Browser_Parser.lua" type="script" desc="Sexan FX Browser parser">
+      <version name="1.0" author="Sexan" time="2023-09-20T08:35:59Z">
+        <changelog><![CDATA[initial release]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/d59611ccf63a29855353b4c7ad765ea21285fde3/FX/Sexan_FX_Browser_Parser.lua</source>
       </version>
     </reapack>
   </category>
