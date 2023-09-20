@@ -1,7 +1,7 @@
 -- @description Sexan FX Browser parser
 -- @author Sexan
 -- @license GPL v3
--- @version 0.1
+-- @version 1.0
 -- @changelog
 --  initial release
 
@@ -22,18 +22,18 @@ function GetFileContext(fp)
     return str
 end
 
-local function GetDirFilesRecursive(dir, tbl)
+local function GetDirFilesRecursive(dir, tbl, filter)
     for index = 0, math.huge do
         local path = r.EnumerateSubdirectories(dir, index)
         if not path then break end
         tbl[#tbl + 1] = { dir = path, {} }
-        GetDirFilesRecursive(dir .. os_separator .. path, tbl[#tbl])
+        GetDirFilesRecursive(dir .. os_separator .. path, tbl[#tbl], filter)
     end
 
     for index = 0, math.huge do
         local file = r.EnumerateFiles(dir, index)
         if not file then break end
-        tbl[#tbl + 1] = file
+        tbl[#tbl + 1] = file:gsub(filter, "")
     end
 end
 
@@ -218,7 +218,7 @@ local function ParseCLAP(plugin_list, INSTRUMENTS)
         clap_path = r.GetResourcePath() .. "/reaper-clap-macos-x86_64.ini"
     elseif os == "macOS-arm64" then
         clap_path = r.GetResourcePath() .. "/reaper-clap-macos-arm64.ini"
-    else
+    elseif os == "Other" then
         -- LINUX
         clap_path = r.GetResourcePath() .. "/reaper-clap-linux-x86_64.ini"
     end
@@ -232,7 +232,7 @@ local function ParseCLAP(plugin_list, INSTRUMENTS)
         clap_rename_path = r.GetResourcePath() .. "/reaper-clap-rename-macos-x86_64.ini"
     elseif os == "macOS-arm64" then
         clap_rename_path = r.GetResourcePath() .. "/reaper-clap-rename-macos-arm64.ini"
-    else
+    elseif os == "Other" then
         -- LINUX
         clap_rename_path = r.GetResourcePath() .. "reaper-clap-rename-linux-x86_64.ini"
     end
@@ -397,7 +397,6 @@ local function ParseFavorites(VST_INFO, JS_INFO, AU_INFO, CLAP_INFO)
 
     CAT[#CAT + 1]  = { name = "FOLDERS", list = {} }
     local current_folder
-    local folder_lvl
     for line in fav_str:gmatch('[^\r\n]+') do
         local folder = line:match("%[(Folder%d+)%]")
 
@@ -470,7 +469,7 @@ end
 local function ParseFXChains()
     local fxChainsFolder = r.GetResourcePath() .. "/FXChains"
     local FX_CHAINS = {}
-    GetDirFilesRecursive(fxChainsFolder, FX_CHAINS)
+    GetDirFilesRecursive(fxChainsFolder, FX_CHAINS, ".RfxChain")
     if #FX_CHAINS ~= 0 then
         --table.sort(FX_CHAINS, function(a, b) if a and b then return a:lower() < b:lower() end end)
         CAT[#CAT + 1] = { name = "FX CHAINS", list = FX_CHAINS }
@@ -480,7 +479,7 @@ end
 local function ParseTrackTemplates()
     local trackTemplatesFolder = r.GetResourcePath() .. "/TrackTemplates"
     local TRACK_TEMPLATES = {}
-    GetDirFilesRecursive(trackTemplatesFolder, TRACK_TEMPLATES)
+    GetDirFilesRecursive(trackTemplatesFolder, TRACK_TEMPLATES, ".RTrackTemplate")
     if #TRACK_TEMPLATES ~= 0 then
         --table.sort(FX_CHAINS, function(a, b) if a and b then return a:lower() < b:lower() end end)
         CAT[#CAT + 1] = { name = "TRACK TEMPLATES", list = TRACK_TEMPLATES }
@@ -542,9 +541,18 @@ function GetFXTbl()
     return GenerateFxList(), CAT
 end
 
--- EXAMPLE DRAW FOR IMPLEMENTING IN YOUR SCRIPTS
--- YOUR SCRIPT SHOULD LOOK LIKE THIS EXAMPLE BELOW, COPY PASTE IT INTO NEW SCRIPT
--- MAKE SURE THAT THIS SCRIPT "Sexan_FX_Browser" IS IN SAME FOLDER AS YOUR MAIN SCRIPT
+
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+-- EXAMPLE FOR IMPLEMENTING IN YOUR SCRIPTS
+-- COPY PASTE CODE BELLOW INTO NEW SCRIPT
+-- MAKE SURE THIS SCRIPT "Sexan_FX_Browser" IS IN SAME FOLDER AS YOUR MAIN SCRIPT
+-- DO NOT UNCOMMENT CODE BELLOW (ONLY FOR STANDALONE TESTING PURPOSES)
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+
 
 -- local os_separator = package.config:sub(1, 1)
 -- package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
@@ -627,6 +635,7 @@ end
 -- end
 
 -- local function DrawFxChains(tbl, path)
+--     local extension = ".RfxChain"
 --     path = path or ""
 --     for i = 1, #tbl do
 --         if tbl[i].dir then
@@ -638,7 +647,7 @@ end
 --         if type(tbl[i]) ~= "table" then
 --             if r.ImGui_Selectable(ctx, tbl[i]) then
 --                 if TRACK then
---                     r.TrackFX_AddByName(TRACK, table.concat({ path, os_separator, tbl[i] }), false,
+--                     r.TrackFX_AddByName(TRACK, table.concat({ path, os_separator, tbl[i], extension }), false,
 --                         -1000 - r.TrackFX_GetCount(TRACK))
 --                 end
 --             end
@@ -646,25 +655,33 @@ end
 --     end
 -- end
 
--- local function LoadTemplate(template)
---     local template_path = r.GetResourcePath() .. "/TrackTemplates" .. template
---     local chunk = GetFileContext(template_path)
---     r.SetTrackStateChunk( TRACK, chunk, true )
+-- local function LoadTemplate(template, replace)
+--     local track_template_path = r.GetResourcePath() .. "/TrackTemplates" .. template
+--     if replace then
+--         local chunk = GetFileContext(track_template_path)
+--         r.SetTrackStateChunk( TRACK, chunk, true )
+--     else
+--         r.Main_openProject( track_template_path )
+--     end
 -- end
 
 -- local function DrawTrackTemplates(tbl, path)
+--     local extension = ".RTrackTemplate"
 --     path = path or ""
 --     for i = 1, #tbl do
 --         if tbl[i].dir then
 --             if r.ImGui_BeginMenu(ctx, tbl[i].dir) then
---                 DrawTrackTemplates(tbl[i], table.concat({ path, os_separator, tbl[i].dir }))
+--                 local cur_path = table.concat({ path, os_separator, tbl[i].dir })
+--                 DrawTrackTemplates(tbl[i], cur_path)
 --                 r.ImGui_EndMenu(ctx)
 --             end
 --         end
 --         if type(tbl[i]) ~= "table" then
 --             if r.ImGui_Selectable(ctx, tbl[i]) then
 --                 if TRACK then
---                     LoadTemplate(table.concat({ path, os_separator, tbl[i] }))
+--                     local template_str = table.concat({ path, os_separator, tbl[i], extension })
+--                     LoadTemplate(template_str) -- ADD NEW TRACK FROM TEMPLATE
+--                     LoadTemplate(template_str, true) -- REPLACE CURRENT TRACK WITH TEMPLATE
 --                 end
 --             end
 --         end
