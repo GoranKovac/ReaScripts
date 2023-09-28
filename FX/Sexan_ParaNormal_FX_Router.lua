@@ -1,9 +1,9 @@
 -- @description Sexan Para-Normal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.0
+-- @version 1.1
 -- @changelog
---  initial release
+--  fix initial release
 -- @provides
 --   Icons.ttf
 
@@ -14,7 +14,7 @@ local script_path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]];
 
 local fx_browser_script_path = r.GetResourcePath() .. "/Scripts/Sexan_Scripts/FX/Sexan_FX_Browser_Parser.lua"
 if r.file_exists(fx_browser_script_path) then
-    require(fx_browser_script_path:gsub(".lua", ""))
+    require("Sexan_FX_Browser_Parser")
 else
     return r.ReaPack_BrowsePackages('sexan fx browser parser')
 end
