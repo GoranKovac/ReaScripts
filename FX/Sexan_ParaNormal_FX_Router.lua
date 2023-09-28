@@ -1,9 +1,9 @@
 -- @description Sexan Para-Normal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.12
+-- @version 1.14
 -- @changelog
---  Add Imgui Check fix
+--  Add Imgui Check fix 3
 -- @provides
 --   Icons.ttf
 
