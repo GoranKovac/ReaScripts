@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="ddd572a7e796f9fc341ccf847008adc3d1083b58" name="Sexan_Scripts">
+<index version="1" commit="dd628a7c13797f6ee0ed16b946784c1d4e3e0438" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -552,6 +552,11 @@ fix tooltips]]></changelog>
 Tweak volume dry/wet offset to be exactly on top]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/ddd572a7e796f9fc341ccf847008adc3d1083b58/FX/Sexan_ParaNormal_FX_Router.lua</source>
         <source file="Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/ddd572a7e796f9fc341ccf847008adc3d1083b58/FX/Icons.ttf</source>
+      </version>
+      <version name="1.10" author="Sexan" time="2023-09-28T19:08:27Z">
+        <changelog><![CDATA[Add Shift drag for fine tuning knobs]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/dd628a7c13797f6ee0ed16b946784c1d4e3e0438/FX/Sexan_ParaNormal_FX_Router.lua</source>
+        <source file="Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/dd628a7c13797f6ee0ed16b946784c1d4e3e0438/FX/Icons.ttf</source>
       </version>
     </reapack>
   </category>
