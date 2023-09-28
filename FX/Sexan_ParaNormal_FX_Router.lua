@@ -1,9 +1,10 @@
 -- @description Sexan Para-Normal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.1
+-- @version 1.2
 -- @changelog
---  fix initial release
+--  Added Master track support
+--  Remove all track fx
 -- @provides
 --   Icons.ttf
 
@@ -41,6 +42,8 @@ local COLOR = {
     ["enabled"]   = 0x49cc85FF,
     ["wire"]      = 0xB0B0B9FF,
 }
+
+local LINE_POINTS, FX_DATA, PLUGINS
 
 local CANVAS = { view_x = 0, view_y = 0, off_x = 0, off_y = 50, scale = 1 }
 
@@ -630,10 +633,24 @@ local function CheckNextItemParallel(i, parrent_container)
     if para == "1" then SwapParallelInfo(src, dst) end
 end
 
+local function RemoveAllFX()
+    r.PreventUIRefresh(1)
+    r.Undo_BeginBlock()
+    for i = r.TrackFX_GetCount(TRACK), 1, -1 do
+        r.TrackFX_Delete(TRACK, i - 1)
+    end
+    r.PreventUIRefresh(-1)
+    EndUndoBlock("REMOVE ALL TRACK FX")
+end
+
 local function ButtonAction(tbl, i)
     local parrent_container = GetParentContainerByGuid(tbl[i])
     local item_id = CalcFxID(parrent_container, i)
     if ALT then
+        if tbl[i].type == "ROOT" then
+            RemoveAllFX()
+            return
+        end
         CheckNextItemParallel(i, parrent_container)
         r.TrackFX_Delete(TRACK, item_id)
     else
@@ -1282,6 +1299,10 @@ end
 
 local function Main()
     TRACK = r.GetSelectedTrack(0, 0)
+    local master = r.GetMasterTrack(0)
+    if r.GetMediaTrackInfo_Value(master, "I_SELECTED") == 1 then
+        TRACK = master
+    end
     UpdateFxData()
     LINE_POINTS = {}
     PLUGINS = {}
