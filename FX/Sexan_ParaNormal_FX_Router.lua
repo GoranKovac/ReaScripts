@@ -1,9 +1,9 @@
 -- @description Sexan Para-Normal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.11
+-- @version 1.12
 -- @changelog
---  Add Imgui Check
+--  Add Imgui Check fix
 -- @provides
 --   Icons.ttf
 
@@ -14,7 +14,7 @@ local script_path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]];
 
 local fx_browser_script_path = r.GetResourcePath() .. "/Scripts/Sexan_Scripts/FX/Sexan_FX_Browser_Parser.lua"
 
-if not r.APIExists(reaper.ImGui_GetVersion()) then
+if not r.APIExists("reaper.ImGui_GetVersion") then
     r.ShowConsoleMsg("ReaImGui is required.\nPlease Install it in next window")
     return r.ReaPack_BrowsePackages('dear imgui')
 end
