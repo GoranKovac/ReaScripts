@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="5e448c01c82943c366a9f23b25da5aebd9ed1b22" name="Sexan_Scripts">
+<index version="1" commit="6f28c077df837f0647ce37cfa59cb15189d9249f" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -522,6 +522,12 @@
         <changelog><![CDATA[fix initial release]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/5e448c01c82943c366a9f23b25da5aebd9ed1b22/FX/Sexan_ParaNormal_FX_Router.lua</source>
         <source file="Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/5e448c01c82943c366a9f23b25da5aebd9ed1b22/FX/Icons.ttf</source>
+      </version>
+      <version name="1.2" author="Sexan" time="2023-09-28T15:44:24Z">
+        <changelog><![CDATA[Added Master track support
+Remove all track fx]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/6f28c077df837f0647ce37cfa59cb15189d9249f/FX/Sexan_ParaNormal_FX_Router.lua</source>
+        <source file="Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/6f28c077df837f0647ce37cfa59cb15189d9249f/FX/Icons.ttf</source>
       </version>
     </reapack>
   </category>
