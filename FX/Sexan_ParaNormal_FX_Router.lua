@@ -1,10 +1,9 @@
 -- @description Sexan Para-Normal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.2
+-- @version 1.4
 -- @changelog
---  Added Master track support
---  Remove all track fx
+--  Store-Restore CANVAS per track
 -- @provides
 --   Icons.ttf
 
@@ -43,9 +42,14 @@ local COLOR = {
     ["wire"]      = 0xB0B0B9FF,
 }
 
-local LINE_POINTS, FX_DATA, PLUGINS
+local LINE_POINTS, FX_DATA, PLUGINS, CANVAS
 
-local CANVAS = { view_x = 0, view_y = 0, off_x = 0, off_y = 50, scale = 1 }
+local function InitCanvas()
+    local view_x, view_y, off_x, off_y, scale = 0, 0, 0, 50, 1
+    return { view_x = view_x, view_y = view_y, off_x = off_x, off_y = off_y, scale = scale }
+end
+
+CANVAS = InitCanvas()
 
 local FX_LIST, CAT = GetFXTbl()
 
@@ -72,6 +76,73 @@ local s_frame_x, s_frame_y = def_s_frame_x, def_s_frame_y
 local s_spacing_x, s_spacing_y = def_s_spacing_x, item_spacing_vertical and item_spacing_vertical or def_s_spacing_y
 local s_window_x, s_window_y = def_s_window_x, def_s_window_y
 
+local function serializeTable(val, name, skipnewlines, depth)
+    skipnewlines = skipnewlines or false
+    depth = depth or 0
+    local tmp = string.rep(" ", depth)
+    if name then
+        if type(name) == "number" and math.floor(name) == name then
+            name = "[" .. name .. "]"
+        elseif not string.match(name, '^[a-zA-z_][a-zA-Z0-9_]*$') then
+            name = string.gsub(name, "'", "\\'")
+            name = "['" .. name .. "']"
+        end
+        tmp = tmp .. name .. " = "
+    end
+    if type(val) == "table" then
+        tmp = tmp .. "{" .. (not skipnewlines and "\n" or "")
+        for k, v in pairs(val) do
+            tmp = tmp .. serializeTable(v, k, skipnewlines, depth + 1) .. "," .. (not skipnewlines and "\n" or "")
+        end
+        tmp = tmp .. string.rep(" ", depth) .. "}"
+    elseif type(val) == "number" then
+        tmp = tmp .. tostring(val)
+    elseif type(val) == "string" then
+        tmp = tmp .. string.format("%q", val)
+    elseif type(val) == "boolean" then
+        tmp = tmp .. (val and "true" or "false")
+    else
+        tmp = tmp .. "\"[inserializeable datatype:" .. type(val) .. "]\""
+    end
+    return tmp
+end
+
+local function tableToString(table)
+    return serializeTable(table)
+end
+
+local function stringToTable(str)
+    local f, err = load("return " .. str)
+    return f ~= nil and f() or nil
+end
+
+local function Store_To_PEXT(last_track)
+    if not last_track then return end
+    local storedTable = {}
+    if r.ValidatePtr(last_track, "MediaTrack*") then
+        storedTable.CANVAS = CANVAS
+    end
+    local serialized = tableToString(storedTable)
+    if r.ValidatePtr(last_track, "MediaTrack*") then
+        r.GetSetMediaTrackInfo_String(last_track, "P_EXT:PARANORMAL_FX", serialized, true)
+    end
+end
+
+local function Restore_From_PEXT()
+    local rv, stored
+    if r.ValidatePtr(TRACK, "MediaTrack*") then
+        rv, stored = r.GetSetMediaTrackInfo_String(TRACK, "P_EXT:PARANORMAL_FX", "", false)
+    end
+    if rv == true and stored ~= nil then
+        local storedTable = stringToTable(stored)
+        if storedTable ~= nil then
+            if r.ValidatePtr(TRACK, "MediaTrack*") then
+                CANVAS = storedTable.CANVAS
+            end
+            return true
+        end
+    end
+end
 local crash = function(errObject)
     local byLine = "([^\r\n]*)\r?\n?"
     local trimPath = "[\\/]([^\\/]-:%d+:.+)$"
@@ -98,7 +169,11 @@ local crash = function(errObject)
         )
     end
 end
-
+local function Tooltip(str)
+    r.ImGui_BeginTooltip(ctx)
+    r.ImGui_Text(ctx, "str")
+    r.ImGui_EndTooltip(ctx)
+end
 function GetCrash() return crash end
 
 local function adjustBrightness(channel, delta)
@@ -815,7 +890,7 @@ local function ParallelRowWidth(tbl, i, item_width)
     return total_w + item_width - para_btn_size
 end
 
-ROUND_FLAG = {
+local ROUND_FLAG = {
     ["L"] = r.ImGui_DrawFlags_RoundCornersTopLeft()|r.ImGui_DrawFlags_RoundCornersBottomLeft(),
     ["R"] = r.ImGui_DrawFlags_RoundCornersTopRight()|r.ImGui_DrawFlags_RoundCornersBottomRight()
 }
@@ -827,9 +902,10 @@ local function DrawListButton(name, color, round_side, icon)
     local w = xe - xs
     local h = ye - ys
 
-    local round_flag = ROUND_FLAG[round_side] or nil
+    local round_flag = round_side and ROUND_FLAG[round_side] or nil
+    local round_amt = round_flag and ROUND_CORNER or 0
 
-    r.ImGui_DrawList_AddRectFilled(draw_list, xs, ys, xe, ye, r.ImGui_GetColorEx(ctx, multi_color), ROUND_CORNER,
+    r.ImGui_DrawList_AddRectFilled(draw_list, xs, ys, xe, ye, r.ImGui_GetColorEx(ctx, multi_color), round_amt,
         round_flag)
     if r.ImGui_IsItemActive(ctx) then
         r.ImGui_DrawList_AddRect(draw_list, xs - 2, ys - 2, xe + 2, ye + 2, 0x22FF44FF, 3, nil, 2)
@@ -934,7 +1010,8 @@ local function DrawButton(tbl, i, name, width, fade)
     r.ImGui_SameLine(ctx, nil, 0)
     if r.ImGui_InvisibleButton(ctx, name, width, def_btn_h) then ButtonAction(tbl, i) end
     r.ImGui_PopID(ctx)
-    DrawListButton(name, (ALT and r.ImGui_IsItemHovered(ctx)) and COLOR["del"] or TypToColor(tbl[i]), "R")
+    DrawListButton(name, (ALT and r.ImGui_IsItemHovered(ctx)) and COLOR["del"] or TypToColor(tbl[i]),
+        tbl[i].type ~= "ROOT" and "R" or nil)
     DragAndDropMove(tbl, i)
     --! DRAW VOLUME
     if tbl[i].wet_val then
@@ -952,6 +1029,28 @@ local function DrawButton(tbl, i, name, width, fade)
         end
         r.ImGui_PopID(ctx)
     end
+    if tbl[i].name == "FX CHAIN" then
+        r.ImGui_SameLine(ctx, nil, 0)
+        r.ImGui_PushID(ctx, tbl[i].guid .. "enclose")
+
+        if r.ImGui_InvisibleButton(ctx, "e", para_btn_size, def_btn_h) then
+            r.PreventUIRefresh(1)
+            r.Undo_BeginBlock()
+            r.TrackFX_AddByName(TRACK, "Container", false, -1000)
+            for j = r.TrackFX_GetCount(TRACK), 1, -1 do
+                local id = 0x2000000 + 1 + (r.TrackFX_GetCount(TRACK) + 1)
+                r.TrackFX_CopyToTrack(TRACK, j, TRACK, id, true)
+            end
+            EndUndoBlock("ENCLOSE ALL INTO CONTAINER")
+            r.PreventUIRefresh(-1)
+        end
+        if r.ImGui_IsItemHovered(ctx) then
+            Tooltip("ENCLOSE ALL INTO CONTAINER")
+        end
+        r.ImGui_PopID(ctx)
+
+        DrawListButton("K", color, "R", true)
+    end
     r.ImGui_EndGroup(ctx)
     r.ImGui_PopStyleVar(ctx)
 end
@@ -962,7 +1061,7 @@ local function SetItemPos(tbl, i, x, item_w)
     else
         if tbl[i].type == "ROOT" then
             -- START ONLY HAS MUTE
-            item_w = item_w + mute
+            item_w = item_w + mute + volume
         else
             -- NORMAL FX HAS BYPASS AND VOLUME
             if tbl[i].type ~= "Container" then
@@ -1297,11 +1396,20 @@ function UpdateFxData()
     end
 end
 
+LAST_TRACK = r.GetSelectedTrack(0, 0)
 local function Main()
     TRACK = r.GetSelectedTrack(0, 0)
     local master = r.GetMasterTrack(0)
     if r.GetMediaTrackInfo_Value(master, "I_SELECTED") == 1 then
         TRACK = master
+    end
+
+    if LAST_TRACK ~= TRACK then
+        Store_To_PEXT(LAST_TRACK)
+        LAST_TRACK = TRACK
+        if not Restore_From_PEXT() then
+            CANVAS = InitCanvas()
+        end
     end
     UpdateFxData()
     LINE_POINTS = {}
