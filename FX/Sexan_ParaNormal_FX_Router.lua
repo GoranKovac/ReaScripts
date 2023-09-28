@@ -1,9 +1,9 @@
 -- @description Sexan Para-Normal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.10
+-- @version 1.11
 -- @changelog
---  Add Shift drag for fine tuning knobs
+--  Add Imgui Check
 -- @provides
 --   Icons.ttf
 
@@ -13,9 +13,15 @@ package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.l
 local script_path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]];
 
 local fx_browser_script_path = r.GetResourcePath() .. "/Scripts/Sexan_Scripts/FX/Sexan_FX_Browser_Parser.lua"
+
+if not r.APIExists(reaper.ImGui_GetVersion()) then
+    r.ShowConsoleMsg("ReaImGui is required.\nPlease Install it in next window")
+    return r.ReaPack_BrowsePackages('dear imgui')
+end
 if r.file_exists(fx_browser_script_path) then
     require("Sexan_FX_Browser_Parser")
 else
+    r.ShowConsoleMsg("Sexan FX BROWSER is needed.\nPlease Install it in next window")
     return r.ReaPack_BrowsePackages('sexan fx browser parser')
 end
 
