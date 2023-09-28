@@ -1,12 +1,9 @@
 -- @description Sexan Para-Normal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.7
+-- @version 1.8
 -- @changelog
---  Defined Wire Thickness
---  Store PerTrack Canvas on exit
---  Make Insertpoint visible on click
---  fix tooltips
+--  Add Play/Stop shortcut
 -- @provides
 --   Icons.ttf
 
@@ -1045,15 +1042,17 @@ local function DrawButton(tbl, i, name, width, fade)
         r.ImGui_PushID(ctx, tbl[i].guid .. "enclose")
 
         if r.ImGui_InvisibleButton(ctx, "e", para_btn_size, def_btn_h) then
-            r.PreventUIRefresh(1)
-            r.Undo_BeginBlock()
-            r.TrackFX_AddByName(TRACK, "Container", false, -1000)
-            for j = r.TrackFX_GetCount(TRACK), 1, -1 do
-                local id = 0x2000000 + 1 + (r.TrackFX_GetCount(TRACK) + 1)
-                r.TrackFX_CopyToTrack(TRACK, j, TRACK, id, true)
+            if r.TrackFX_GetCount(TRACK) ~= 0 then
+                r.PreventUIRefresh(1)
+                r.Undo_BeginBlock()
+                r.TrackFX_AddByName(TRACK, "Container", false, -1000)
+                for j = r.TrackFX_GetCount(TRACK), 1, -1 do
+                    local id = 0x2000000 + 1 + (r.TrackFX_GetCount(TRACK) + 1)
+                    r.TrackFX_CopyToTrack(TRACK, j, TRACK, id, true)
+                end
+                EndUndoBlock("ENCLOSE ALL INTO CONTAINER")
+                r.PreventUIRefresh(-1)
             end
-            EndUndoBlock("ENCLOSE ALL INTO CONTAINER")
-            r.PreventUIRefresh(-1)
         end
         Tooltip("ENCLOSE ALL INTO CONTAINER")
         r.ImGui_PopID(ctx)
@@ -1298,6 +1297,7 @@ local function CheckKeys()
     CTRL = r.ImGui_IsKeyDown(ctx, r.ImGui_Key_LeftCtrl())
     SHIFT = r.ImGui_IsKeyDown(ctx, r.ImGui_Key_LeftShift())
     HOME = r.ImGui_IsKeyPressed(ctx, r.ImGui_Key_Home())
+    SPACE = r.ImGui_IsKeyPressed(ctx, r.ImGui_Key_Space())
     Z = r.ImGui_IsKeyPressed(ctx, r.ImGui_Key_Z())
 
     if HOME then
@@ -1305,6 +1305,8 @@ local function CheckKeys()
     end
     if CTRL and Z then r.Main_OnCommand(40029, 0) end           -- UNDO
     if CTRL and SHIFT and Z then r.Main_OnCommand(40030, 0) end -- REDO
+
+    if SPACE then r.Main_OnCommand(40044, 0) end                -- PLAY STOP
 
     -- ACTIVATE CTRL ONLY IF NOT PREVIOUSLY DRAGGING
     if not CTRL_DRAG then
