@@ -1,9 +1,12 @@
 -- @description Sexan Para-Normal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.4
+-- @version 1.7
 -- @changelog
---  Store-Restore CANVAS per track
+--  Defined Wire Thickness
+--  Store PerTrack Canvas on exit
+--  Make Insertpoint visible on click
+--  fix tooltips
 -- @provides
 --   Icons.ttf
 
@@ -24,7 +27,7 @@ local item_spacing_vertical = 10 -- VERTICAL SPACING BETEWEEN ITEMS
 local add_bnt_size = 55
 local custom_btn_h = 22
 local ROUND_CORNER = 2
-local WireThickness = 2
+local WireThickness = 1
 local Knob_Radius = custom_btn_h // 2
 -- SETTINGS
 
@@ -49,7 +52,7 @@ local function InitCanvas()
     return { view_x = view_x, view_y = view_y, off_x = off_x, off_y = off_y, scale = scale }
 end
 
-CANVAS = InitCanvas()
+--CANVAS = InitCanvas()
 
 local FX_LIST, CAT = GetFXTbl()
 
@@ -170,10 +173,13 @@ local crash = function(errObject)
     end
 end
 local function Tooltip(str)
-    r.ImGui_BeginTooltip(ctx)
-    r.ImGui_Text(ctx, "str")
-    r.ImGui_EndTooltip(ctx)
+    if r.ImGui_IsItemHovered(ctx) then
+        r.ImGui_BeginTooltip(ctx)
+        r.ImGui_Text(ctx, str)
+        r.ImGui_EndTooltip(ctx)
+    end
 end
+
 function GetCrash() return crash end
 
 local function adjustBrightness(channel, delta)
@@ -461,6 +467,7 @@ function DrawFXList()
 end
 
 local function UpdateScroll()
+    if not TRACK then return end
     local btn = r.ImGui_MouseButton_Right()
     if r.ImGui_IsMouseDragging(ctx, btn) then
         r.ImGui_SetMouseCursor(ctx, r.ImGui_MouseCursor_ResizeAll())
@@ -931,6 +938,7 @@ local function AddFX_P(tbl, i)
         FX_ID = { item_add_id, "parallel" }
         OPEN_FX_LIST = true
     end
+    Tooltip("ADD NEW PARALLEL FX")
     r.ImGui_PopID(ctx)
     DrawListButton("||", (DRAG_ADD_FX or DRAG_MOVE) and HexTest(COLOR["n"], 10) or COLOR["parallel"])
     DragAddDDTarget(tbl, i, "parallel")
@@ -940,7 +948,7 @@ end
 local function DrawLines()
     for i = 1, #LINE_POINTS do
         local p_tbl = LINE_POINTS[i]
-        r.ImGui_DrawList_AddLine(draw_list, p_tbl[1], p_tbl[2], p_tbl[3], p_tbl[4], COLOR["wire"])
+        r.ImGui_DrawList_AddLine(draw_list, p_tbl[1], p_tbl[2], p_tbl[3], p_tbl[4], COLOR["wire"], WireThickness)
     end
 end
 
@@ -948,14 +956,16 @@ local function InsertPointButton(tbl, i, x)
     r.ImGui_SetCursorPosX(ctx, x - (add_bnt_size // 2))
     r.ImGui_PushID(ctx, tbl[i].guid .. "insert_point")
     if r.ImGui_InvisibleButton(ctx, "+", add_bnt_size, def_btn_h) then
+        CLICKED = tbl[i].guid
         local parrent_container = GetParentContainerByGuid(tbl[i])
         local item_add_id = CalcFxID(parrent_container, i + 1)
         FX_ID = { item_add_id }
         OPEN_FX_LIST = true
     end
     r.ImGui_PopID(ctx)
+    Tooltip("ADD NEW SERIAL FX")
     DragAddDDTarget(tbl, i)
-    if i == #tbl or r.ImGui_IsItemHovered(ctx) or DRAG_MOVE or DRAG_ADD_FX then
+    if i == #tbl or r.ImGui_IsItemHovered(ctx) or DRAG_MOVE or DRAG_ADD_FX or CLICKED == tbl[i].guid then
         DrawListButton("+", (DRAG_ADD_FX or DRAG_MOVE) and HexTest(COLOR["n"], 10) or COLOR["parallel"])
     end
     MoveDDTarget(tbl[i], i, "serial", tbl[i].INSERT_POINT)
@@ -1003,6 +1013,7 @@ local function DrawButton(tbl, i, name, width, fade)
         end
     end
     r.ImGui_PopID(ctx)
+    Tooltip("BYPASS")
     local color = tbl[i].bypass and COLOR["enabled"] or COLOR["bypass"]
     DrawListButton("A", color, "L", true)
     r.ImGui_PushID(ctx, tbl[i].guid .. "button")
@@ -1044,9 +1055,7 @@ local function DrawButton(tbl, i, name, width, fade)
             EndUndoBlock("ENCLOSE ALL INTO CONTAINER")
             r.PreventUIRefresh(-1)
         end
-        if r.ImGui_IsItemHovered(ctx) then
-            Tooltip("ENCLOSE ALL INTO CONTAINER")
-        end
+        Tooltip("ENCLOSE ALL INTO CONTAINER")
         r.ImGui_PopID(ctx)
 
         DrawListButton("K", color, "R", true)
@@ -1278,7 +1287,10 @@ local function Popups()
     --     r.ImGui_EndPopup(ctx)
     -- end
     if not r.ImGui_IsPopupOpen(ctx, "FX LIST") and #FILTER ~= 0 then FILTER = '' end
-    if not r.ImGui_IsPopupOpen(ctx, "FX LIST") then if FX_ID then FX_ID = nil end end
+    if not r.ImGui_IsPopupOpen(ctx, "FX LIST") then
+        if FX_ID then FX_ID = nil end
+        if CLICKED then CLICKED = nil end
+    end
 end
 
 local function CheckKeys()
@@ -1396,7 +1408,7 @@ function UpdateFxData()
     end
 end
 
-LAST_TRACK = r.GetSelectedTrack(0, 0)
+--LAST_TRACK = r.GetSelectedTrack(0, 0)
 local function Main()
     TRACK = r.GetSelectedTrack(0, 0)
     local master = r.GetMasterTrack(0)
@@ -1437,7 +1449,7 @@ local function Main()
     end
 end
 
-function Exit() end
+function Exit() Store_To_PEXT(LAST_TRACK) end
 
 r.atexit(Exit)
 r.defer(Main)
