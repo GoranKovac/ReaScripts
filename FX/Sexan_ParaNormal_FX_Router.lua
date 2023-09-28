@@ -1,9 +1,10 @@
 -- @description Sexan Para-Normal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.8
+-- @version 1.9
 -- @changelog
---  Add Play/Stop shortcut
+--  Dont do Higlights,tooltips etc while canvas dragings
+--  Tweak volume dry/wet offset to be exactly on top
 -- @provides
 --   Icons.ttf
 
@@ -45,8 +46,7 @@ local COLOR = {
 local LINE_POINTS, FX_DATA, PLUGINS, CANVAS
 
 local function InitCanvas()
-    local view_x, view_y, off_x, off_y, scale = 0, 0, 0, 50, 1
-    return { view_x = view_x, view_y = view_y, off_x = off_x, off_y = off_y, scale = scale }
+    return { view_x = 0, view_y = 0, off_x = 0, off_y = 50, scale = 1 }
 end
 
 --CANVAS = InitCanvas()
@@ -170,6 +170,7 @@ local crash = function(errObject)
     end
 end
 local function Tooltip(str)
+    if IS_DRAGGING_RIGHT_CANVAS then return end
     if r.ImGui_IsItemHovered(ctx) then
         r.ImGui_BeginTooltip(ctx)
         r.ImGui_Text(ctx, str)
@@ -267,7 +268,7 @@ local function MyKnob(label, style, p_value, v_min, v_max, is_vol)
     if is_active or is_hovered then
         local window_padding = { r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_WindowPadding()) }
         r.ImGui_SetNextWindowPos(ctx, pos[1] - window_padding[1],
-            pos[2] - line_height - item_inner_spacing[2] - window_padding[2])
+            pos[2] - line_height - (item_inner_spacing[2] * 2) - window_padding[2])
         r.ImGui_BeginTooltip(ctx)
         if is_vol then
             r.ImGui_Text(ctx, "VOL :" .. ('%.0f'):format(p_value))
@@ -900,7 +901,7 @@ local ROUND_FLAG = {
 }
 
 local function DrawListButton(name, color, round_side, icon)
-    local multi_color = HexTest(color, r.ImGui_IsItemHovered(ctx) and 50 or 0)
+    local multi_color = IS_DRAGGING_RIGHT_CANVAS and color or HexTest(color, r.ImGui_IsItemHovered(ctx) and 50 or 0)
     local xs, ys = r.ImGui_GetItemRectMin(ctx)
     local xe, ye = r.ImGui_GetItemRectMax(ctx)
     local w = xe - xs
@@ -962,7 +963,7 @@ local function InsertPointButton(tbl, i, x)
     r.ImGui_PopID(ctx)
     Tooltip("ADD NEW SERIAL FX")
     DragAddDDTarget(tbl, i)
-    if i == #tbl or r.ImGui_IsItemHovered(ctx) or DRAG_MOVE or DRAG_ADD_FX or CLICKED == tbl[i].guid then
+    if i == #tbl or (r.ImGui_IsItemHovered(ctx) and not IS_DRAGGING_RIGHT_CANVAS) or DRAG_MOVE or DRAG_ADD_FX or CLICKED == tbl[i].guid then
         DrawListButton("+", (DRAG_ADD_FX or DRAG_MOVE) and HexTest(COLOR["n"], 10) or COLOR["parallel"])
     end
     MoveDDTarget(tbl[i], i, "serial", tbl[i].INSERT_POINT)
