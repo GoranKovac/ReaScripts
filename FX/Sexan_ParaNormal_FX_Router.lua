@@ -1,10 +1,9 @@
 -- @description Sexan Para-Normal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.9
+-- @version 1.10
 -- @changelog
---  Dont do Higlights,tooltips etc while canvas dragings
---  Tweak volume dry/wet offset to be exactly on top
+--  Add Shift drag for fine tuning knobs
 -- @provides
 --   Icons.ttf
 
@@ -227,7 +226,7 @@ local function MyKnob(label, style, p_value, v_min, v_max, is_vol)
     local is_active = r.ImGui_IsItemActive(ctx)
     local is_hovered = r.ImGui_IsItemHovered(ctx)
     if is_active and mouse_delta[2] ~= 0.0 then
-        local step = (v_max - v_min) / 200.0
+        local step = (v_max - v_min) / (SHIFT and 1000 or 200.0)
         p_value = p_value + (-mouse_delta[2] * step)
         if p_value < v_min then p_value = v_min end
         if p_value > v_max then p_value = v_max end
