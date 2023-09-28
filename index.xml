@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="6f28c077df837f0647ce37cfa59cb15189d9249f" name="Sexan_Scripts">
+<index version="1" commit="63dc94aea4d11382119f9dd15f2ccd3cbee3e732" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -528,6 +528,11 @@
 Remove all track fx]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/6f28c077df837f0647ce37cfa59cb15189d9249f/FX/Sexan_ParaNormal_FX_Router.lua</source>
         <source file="Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/6f28c077df837f0647ce37cfa59cb15189d9249f/FX/Icons.ttf</source>
+      </version>
+      <version name="1.4" author="Sexan" time="2023-09-28T17:30:13Z">
+        <changelog><![CDATA[Store-Restore CANVAS per track]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/63dc94aea4d11382119f9dd15f2ccd3cbee3e732/FX/Sexan_ParaNormal_FX_Router.lua</source>
+        <source file="Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/63dc94aea4d11382119f9dd15f2ccd3cbee3e732/FX/Icons.ttf</source>
       </version>
     </reapack>
   </category>
