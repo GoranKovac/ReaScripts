@@ -1,10 +1,9 @@
 -- @description Sexan Para-Normal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.16
+-- @version 1.17
 -- @changelog
---  Added gui for JS:VOLUME/PAN SMOOTHER
---  SHIFT with CTRL for fine tuning knobs
+--  Fixed highlight for VolumePan Utility not to hower whole button
 -- @provides
 --   Icons.ttf
 
@@ -919,9 +918,9 @@ local ROUND_FLAG = {
     ["R"] = r.ImGui_DrawFlags_RoundCornersTopRight()|r.ImGui_DrawFlags_RoundCornersBottomRight()
 }
 
-local function DrawListButton(name, color, round_side, icon)
+local function DrawListButton(name, color, round_side, icon, hover)
     --r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 0)
-    local multi_color = IS_DRAGGING_RIGHT_CANVAS and color or HexTest(color, r.ImGui_IsItemHovered(ctx) and 50 or 0)
+    local multi_color = IS_DRAGGING_RIGHT_CANVAS and color or HexTest(color, hover and 50 or 0)
     local xs, ys = r.ImGui_GetItemRectMin(ctx)
     local xe, ye = r.ImGui_GetItemRectMax(ctx)
     local w = xe - xs
@@ -1083,6 +1082,8 @@ local function DrawVolumePanHelper(tbl, i, w)
         if rvh_v then
             r.TrackFX_SetParam(TRACK, item_id, 0, v)
         end
+        local vol_hover = r.ImGui_IsItemHovered(ctx)
+
         r.ImGui_PopID(ctx)
         r.ImGui_SameLine(ctx, nil, w - (mute * 4))
         local pan_val = r.TrackFX_GetParam(TRACK, item_id, 1) -- 1 IS PAN IDENTIFIER
@@ -1091,8 +1092,10 @@ local function DrawVolumePanHelper(tbl, i, w)
         if rvh_p then
             r.TrackFX_SetParam(TRACK, item_id, 1, p)
         end
+        local pan_hover = r.ImGui_IsItemHovered(ctx)
+
         r.ImGui_PopID(ctx)
-        return mute
+        return mute, vol_hover, pan_hover
     end
 end
 
@@ -1122,9 +1125,11 @@ local function DrawButton(tbl, i, name, width, fade)
 
     DrawListButton("A", color, "L", true)
 
-    local helper = DrawVolumePanHelper(tbl, i, width)
+    --! DRAW VOL/PAN PLUGIN
+    local helper, vol_hover, pan_hover = DrawVolumePanHelper(tbl, i, width)
     --local helper_hover = r.ImGui_IsItemHovered(ctx)
     name = helper and "VOL - PAN" or name
+
 
     r.ImGui_PushID(ctx, tbl[i].guid .. "button")
     --! DRAW BUTTON
@@ -1135,9 +1140,9 @@ local function DrawButton(tbl, i, name, width, fade)
         AutoCreateContainer(tbl, i)
     end
     r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 0)
-
+    local btn_hover = r.ImGui_IsItemHovered(ctx) and not vol_hover and not pan_hover
     DrawListButton(name, (ALT and r.ImGui_IsItemHovered(ctx)) and COLOR["del"] or TypToColor(tbl[i]),
-        tbl[i].type ~= "ROOT" and "R" or nil)
+        tbl[i].type ~= "ROOT" and "R" or nil, nil, btn_hover)
     DragAndDropMove(tbl, i)
 
 
@@ -1465,8 +1470,10 @@ local function CheckKeys()
     if HOME then
         CANVAS.off_x, CANVAS.off_y = 0, 50
     end
-    if CTRL and Z then r.Main_OnCommand(40029, 0) end                                        -- UNDO
-    if CTRL and SHIFT and Z then r.Main_OnCommand(40030, 0) end                              -- REDO
+    if CTRL and Z then r.Main_OnCommand(40029, 0) end -- UNDO
+    if CTRL and SHIFT and Z then
+        r.Main_OnCommand(40030, 0)
+    end                                                                                      -- REDO
 
     if SPACE and not r.ImGui_IsPopupOpen(ctx, "FX LIST") then r.Main_OnCommand(40044, 0) end -- PLAY STOP
 
