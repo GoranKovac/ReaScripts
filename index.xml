@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="fc5e5029c56e08bfddcc3c85fd5be6326536edfb" name="Sexan_Scripts">
+<index version="1" commit="c6efdaafb5d1fd8d35c17522dd4db5ba3a491929" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -592,6 +592,11 @@ SHIFT with CTRL for fine tuning knobs]]></changelog>
         <changelog><![CDATA[Fixed highlight for VolumePan Utility not to hower whole button]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/fc5e5029c56e08bfddcc3c85fd5be6326536edfb/FX/Sexan_ParaNormal_FX_Router.lua</source>
         <source file="Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/fc5e5029c56e08bfddcc3c85fd5be6326536edfb/FX/Icons.ttf</source>
+      </version>
+      <version name="1.18" author="Sexan" time="2023-09-29T14:06:48Z">
+        <changelog><![CDATA[Added double click on knobs to reset value to default]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/c6efdaafb5d1fd8d35c17522dd4db5ba3a491929/FX/Sexan_ParaNormal_FX_Router.lua</source>
+        <source file="Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/c6efdaafb5d1fd8d35c17522dd4db5ba3a491929/FX/Icons.ttf</source>
       </version>
     </reapack>
   </category>
