@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="c6efdaafb5d1fd8d35c17522dd4db5ba3a491929" name="Sexan_Scripts">
+<index version="1" commit="c694800c0f2e73620de70ff1025f0701e8c67ef9" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -597,6 +597,14 @@ SHIFT with CTRL for fine tuning knobs]]></changelog>
         <changelog><![CDATA[Added double click on knobs to reset value to default]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/c6efdaafb5d1fd8d35c17522dd4db5ba3a491929/FX/Sexan_ParaNormal_FX_Router.lua</source>
         <source file="Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/c6efdaafb5d1fd8d35c17522dd4db5ba3a491929/FX/Icons.ttf</source>
+      </version>
+      <version name="1.19" author="Sexan" time="2023-09-29T18:41:05Z">
+        <changelog><![CDATA[Fixed alt hover when over VOLUME PAN UTILITY NOT TO CHANGE COLOR OF MAIN BUTTON
+Fixed redo not working
+Added CheckMods instead of getkeyctrl to use appropriate keys on other platforms
+Added Insert Replace holding CTRL to replace with new FX]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/c694800c0f2e73620de70ff1025f0701e8c67ef9/FX/Sexan_ParaNormal_FX_Router.lua</source>
+        <source file="Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/c694800c0f2e73620de70ff1025f0701e8c67ef9/FX/Icons.ttf</source>
       </version>
     </reapack>
   </category>
