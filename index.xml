@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="8ab5a20c537a924747194b802d76bb273132fbeb" name="Sexan_Scripts">
+<index version="1" commit="9a97d565057bee15010d0e9505d5d959cba27c33" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -581,6 +581,12 @@ Added right click option to reset lane volume to default (parallel lanes only)
 Removed Video Processor]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/8ab5a20c537a924747194b802d76bb273132fbeb/FX/Sexan_ParaNormal_FX_Router.lua</source>
         <source file="Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/8ab5a20c537a924747194b802d76bb273132fbeb/FX/Icons.ttf</source>
+      </version>
+      <version name="1.16" author="Sexan" time="2023-09-29T13:34:33Z">
+        <changelog><![CDATA[Added gui for JS:VOLUME/PAN SMOOTHER
+SHIFT with CTRL for fine tuning knobs]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/9a97d565057bee15010d0e9505d5d959cba27c33/FX/Sexan_ParaNormal_FX_Router.lua</source>
+        <source file="Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/9a97d565057bee15010d0e9505d5d959cba27c33/FX/Icons.ttf</source>
       </version>
     </reapack>
   </category>
