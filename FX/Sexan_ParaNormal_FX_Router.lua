@@ -1,12 +1,9 @@
 -- @description Sexan Para-Normal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.19
+-- @version 1.20
 -- @changelog
---  Fixed alt hover when over VOLUME PAN UTILITY NOT TO CHANGE COLOR OF MAIN BUTTON
---  Fixed redo not working
---  Added CheckMods instead of getkeyctrl to use appropriate keys on other platforms
---  Added Insert Replace holding CTRL to replace with new FX
+--  When hooverin item with ALT highlight all childs also to indicate what will be deleted
 -- @provides
 --   Icons.ttf
 
@@ -1118,7 +1115,7 @@ local function DrawVolumePanHelper(tbl, i, w)
     end
 end
 
-local function DrawButton(tbl, i, name, width, fade)
+local function DrawButton(tbl, i, name, width, fade, del_color)
     if tbl[i].type == "INSERT_POINT" then return end
     --! LOWER BUTTON ALPHA SO INSERT POINTS STANDOUT
     local SPLITTER = r.ImGui_CreateDrawListSplitter(draw_list)
@@ -1140,13 +1137,13 @@ local function DrawButton(tbl, i, name, width, fade)
     r.ImGui_PopID(ctx)
     Tooltip("BYPASS")
     local color = tbl[i].bypass and COLOR["enabled"] or COLOR["bypass"]
+    --color = bypass_color and bypass_color or color
     r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 1)
 
     DrawListButton("A", color, "L", true)
 
     --! DRAW VOL/PAN PLUGIN
     local helper, vol_hover, pan_hover = DrawVolumePanHelper(tbl, i, width)
-    --local helper_hover = r.ImGui_IsItemHovered(ctx)
     name = helper and "VOL - PAN" or name
 
 
@@ -1159,8 +1156,9 @@ local function DrawButton(tbl, i, name, width, fade)
         -- AutoCreateContainer(tbl, i)
     end
     r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 0)
-    local btn_hover = r.ImGui_IsItemHovered(ctx) and not vol_hover and not pan_hover
-    DrawListButton(name, (ALT and btn_hover) and COLOR["del"] or TypToColor(tbl[i]),
+    local btn_hover = r.ImGui_IsItemHovered(ctx) and (not vol_hover or not pan_hover)
+    local is_del_color = del_color and del_color or (ALT and btn_hover) and COLOR["del"] or TypToColor(tbl[i])
+    DrawListButton(name, is_del_color, --  (ALT and btn_hover) and COLOR["del"] or TypToColor(tbl[i])
         tbl[i].type ~= "ROOT" and "R" or nil, nil, btn_hover)
     DragAndDropMove(tbl, i)
 
@@ -1223,6 +1221,7 @@ local function DrawButton(tbl, i, name, width, fade)
     r.ImGui_EndGroup(ctx)
     r.ImGui_PopStyleVar(ctx)
     r.ImGui_DrawListSplitter_Merge(SPLITTER)
+    return btn_hover
 end
 
 local function SetItemPos(tbl, i, x, item_w)
@@ -1325,9 +1324,8 @@ local function AddRowSeparatorLine(A, B, bot)
     LINE_POINTS[#LINE_POINTS + 1] = { x1, y1, x2, y2 }
 end
 
-local function DrawPlugins(center, tbl, fade)
+local function DrawPlugins(center, tbl, fade, color_del)
     r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_Alpha(), fade)
-    --if not SPLITTER then
     local last
     for i = 0, #tbl do
         local name = tbl[i].name:gsub("(%S+: )", "")
@@ -1336,18 +1334,22 @@ local function DrawPlugins(center, tbl, fade)
         height = tbl[i].H and tbl[i].H or height
         SetItemPos(tbl, i, center, width)
         if tbl[i].type ~= "Container" then
-            DrawButton(tbl, i, name, width, fade)
+            local button_hovered = DrawButton(tbl, i, name, width, fade, color_del)
+            color_del = tbl[i].type == "ROOT" and button_hovered and ALT and COLOR["bypass"] or color_del
         end
         if tbl[i].type == "Container" then
             r.ImGui_BeginGroup(ctx)
             r.ImGui_PushID(ctx, tbl[i].guid .. "container")
             if r.ImGui_BeginChild(ctx, "##", width, height, true, WND_FLAGS) then
-                DrawButton(tbl, i, name, -volume, fade)
+                local button_hovered = DrawButton(tbl, i, name, -volume, fade, color_del)
                 GenerateCoordinates(tbl, i)
+
+                -- HIGLIGHT EVERYCHILD WITH DELETE COLOR IF PARRENT IS GOING TO BE DELETED
+                local del_color = color_del and color_del or button_hovered and ALT and COLOR["bypass"]
 
                 r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_Alpha(), tbl[i].bypass and 0.5 or fade)
                 local fade_alpha = not tbl[i].bypass and 0.5 or fade
-                DrawPlugins(r.ImGui_GetCursorPosX(ctx) + (width // 2) - s_window_x, tbl[i].sub, fade_alpha)
+                DrawPlugins(r.ImGui_GetCursorPosX(ctx) + (width // 2) - s_window_x, tbl[i].sub, fade_alpha, del_color)
                 r.ImGui_PopStyleVar(ctx)
                 r.ImGui_EndChild(ctx)
             end
@@ -1361,7 +1363,7 @@ local function DrawPlugins(center, tbl, fade)
         end
     end
     r.ImGui_PopStyleVar(ctx)
-    --r.ImGui_DrawListSplitter_Merge(SPLITTER)
+
     local last_row, first_in_row
     for i = 0, #tbl do
         if last_row ~= tbl[i].ROW then
