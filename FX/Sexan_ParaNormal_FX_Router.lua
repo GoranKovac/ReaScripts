@@ -1,9 +1,13 @@
 -- @description Sexan Para-Normal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.14
+-- @version 1.15
 -- @changelog
---  Add Imgui Check fix 3
+--  Fix SPACE key triggering while browser is open
+--  Add constrains to imgui window min size
+--  Added right click option to set lane volume to unity (parallel lanes only)
+--  Added right click option to reset lane volume to default (parallel lanes only)
+--  Removed Video Processor
 -- @provides
 --   Icons.ttf
 
@@ -56,7 +60,7 @@ end
 
 --CANVAS = InitCanvas()
 
-local FX_LIST, CAT = GetFXTbl()
+FX_LIST, CAT = GetFXTbl()
 
 local ctx = r.ImGui_CreateContext('CONTAINERS_NO_ZOOM')
 
@@ -64,6 +68,8 @@ ICONS_FONT = r.ImGui_CreateFont(script_path .. 'Icons.ttf', 13)
 r.ImGui_Attach(ctx, ICONS_FONT)
 
 local draw_list = r.ImGui_GetWindowDrawList(ctx)
+
+local FLT_MIN, FLT_MAX = r.ImGui_NumericLimits_Float()
 
 r.ImGui_SetConfigVar(ctx, r.ImGui_ConfigVar_WindowsMoveFromTitleBarOnly(), 1)
 local WND_FLAGS = r.ImGui_WindowFlags_NoScrollbar() | r.ImGui_WindowFlags_NoScrollWithMouse()
@@ -148,6 +154,7 @@ local function Restore_From_PEXT()
         end
     end
 end
+
 local crash = function(errObject)
     local byLine = "([^\r\n]*)\r?\n?"
     local trimPath = "[\\/]([^\\/]-:%d+:.+)$"
@@ -174,6 +181,9 @@ local crash = function(errObject)
         )
     end
 end
+
+function GetCrash() return crash end
+
 local function Tooltip(str)
     if IS_DRAGGING_RIGHT_CANVAS then return end
     if r.ImGui_IsItemHovered(ctx) then
@@ -182,8 +192,6 @@ local function Tooltip(str)
         r.ImGui_EndTooltip(ctx)
     end
 end
-
-function GetCrash() return crash end
 
 local function adjustBrightness(channel, delta)
     return math.min(255, math.max(0, channel + delta))
@@ -461,8 +469,8 @@ function DrawFXList()
     end
     if r.ImGui_Selectable(ctx, "CONTAINER") then AddFX("Container") end
     DragAddDDSource("Container")
-    if r.ImGui_Selectable(ctx, "VIDEO PROCESSOR") then AddFX("Video processor") end
-    DragAddDDSource("Video processor")
+    --if r.ImGui_Selectable(ctx, "VIDEO PROCESSOR") then AddFX("Video processor") end
+    --DragAddDDSource("Video processor")
     if LAST_USED_FX then
         if r.ImGui_Selectable(ctx, "RECENT: " .. LAST_USED_FX) then AddFX(LAST_USED_FX) end
         DragAddDDSource(LAST_USED_FX)
@@ -943,6 +951,14 @@ local function AddFX_P(tbl, i)
     end
     Tooltip("ADD NEW PARALLEL FX")
     r.ImGui_PopID(ctx)
+
+    if r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseReleased(ctx, 1) then
+        if tbl[i].p > 0 then
+            OPEN_RIGHT_C_CTX_PARALLEL = true
+            PARA_DATA = { tbl, i }
+        end
+    end
+
     DrawListButton("||", (DRAG_ADD_FX or DRAG_MOVE) and HexTest(COLOR["n"], 10) or COLOR["parallel"])
     DragAddDDTarget(tbl, i, "parallel")
     MoveDDTarget(tbl[i], i, "parallel", tbl[i].INSERT_POINT)
@@ -1097,6 +1113,8 @@ local function FindNextPrevRow(tbl, i, next, highest)
     local target
     local idx = i + next
     local row = tbl[i].ROW
+    local last_in_row = i
+    local number_of_parallels = 1
     while not target do
         if not tbl[idx] then break end
         if row ~= tbl[idx].ROW then
@@ -1112,12 +1130,14 @@ local function FindNextPrevRow(tbl, i, next, highest)
                 end
             else
                 target = tbl[idx]
+                last_in_row = idx + (-next)
             end
         else
             idx = idx + next
+            number_of_parallels = number_of_parallels + 1
         end
     end
-    return target
+    return target, last_in_row, number_of_parallels
 end
 
 local function GenerateCoordinates(tbl, i, last)
@@ -1247,6 +1267,27 @@ end
 --     end
 -- end
 
+local function RCCTXMenuParallel()
+    if r.ImGui_MenuItem(ctx, 'ADJUST VOLUME OF LANE TO UNITY') then
+        local parrent_container = GetParentContainerByGuid(PARA_DATA[1][PARA_DATA[2]])
+        local _, first_idx_in_row, p_cnt = FindNextPrevRow(PARA_DATA[1], PARA_DATA[2], -1)
+
+        for i = first_idx_in_row, PARA_DATA[2] do
+            local item_id = CalcFxID(parrent_container, i)
+            r.TrackFX_SetParam(TRACK, item_id, PARA_DATA[1][i].wetparam, 1 / p_cnt)
+        end
+    end
+    if r.ImGui_MenuItem(ctx, 'RESET LANE VOLUME') then
+        local parrent_container = GetParentContainerByGuid(PARA_DATA[1][PARA_DATA[2]])
+        local _, first_idx_in_row = FindNextPrevRow(PARA_DATA[1], PARA_DATA[2], -1)
+
+        for i = first_idx_in_row, PARA_DATA[2] do
+            local item_id = CalcFxID(parrent_container, i)
+            r.TrackFX_SetParam(TRACK, item_id, PARA_DATA[1][i].wetparam, 1)
+        end
+    end
+end
+
 function RCCTXMenu()
     -- if r.ImGui_MenuItem(ctx, 'Rename') then
     --     OPEN_RENAME = true
@@ -1264,6 +1305,18 @@ local function Popups()
 
     if r.ImGui_BeginPopup(ctx, "RIGHT_C_CTX") then
         RCCTXMenu()
+        r.ImGui_EndPopup(ctx)
+    end
+
+    if OPEN_RIGHT_C_CTX_PARALLEL then
+        OPEN_RIGHT_C_CTX_PARALLEL = nil
+        if not r.ImGui_IsPopupOpen(ctx, "RIGHT_C_CTX_PARALLEL") then
+            r.ImGui_OpenPopup(ctx, "RIGHT_C_CTX_PARALLEL")
+        end
+    end
+
+    if r.ImGui_BeginPopup(ctx, "RIGHT_C_CTX_PARALLEL") then
+        RCCTXMenuParallel()
         r.ImGui_EndPopup(ctx)
     end
 
@@ -1296,6 +1349,9 @@ local function Popups()
         if FX_ID then FX_ID = nil end
         if CLICKED then CLICKED = nil end
     end
+    if not r.ImGui_IsPopupOpen(ctx, "RIGHT_C_CTX_PARALLEL") then
+        if PARA_DATA then PARA_DATA = nil end
+    end
 end
 
 local function CheckKeys()
@@ -1309,10 +1365,10 @@ local function CheckKeys()
     if HOME then
         CANVAS.off_x, CANVAS.off_y = 0, 50
     end
-    if CTRL and Z then r.Main_OnCommand(40029, 0) end           -- UNDO
-    if CTRL and SHIFT and Z then r.Main_OnCommand(40030, 0) end -- REDO
+    if CTRL and Z then r.Main_OnCommand(40029, 0) end                                        -- UNDO
+    if CTRL and SHIFT and Z then r.Main_OnCommand(40030, 0) end                              -- REDO
 
-    if SPACE then r.Main_OnCommand(40044, 0) end                -- PLAY STOP
+    if SPACE and not r.ImGui_IsPopupOpen(ctx, "FX LIST") then r.Main_OnCommand(40044, 0) end -- PLAY STOP
 
     -- ACTIVATE CTRL ONLY IF NOT PREVIOUSLY DRAGGING
     if not CTRL_DRAG then
@@ -1435,6 +1491,8 @@ local function Main()
     LINE_POINTS = {}
     PLUGINS = {}
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_WindowBg(), 0x111111FF)
+    r.ImGui_SetNextWindowSizeConstraints(ctx, 500, 500, FLT_MAX, FLT_MAX)
+    r.ImGui_SetNextWindowSize(ctx, 500, 500, r.ImGui_Cond_FirstUseEver())
     local visible, open = r.ImGui_Begin(ctx, 'PARANORMAL FX ROUTER', true, WND_FLAGS)
     r.ImGui_PopStyleColor(ctx)
     if visible then
