@@ -1,9 +1,12 @@
 -- @description Sexan Para-Normal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.18
+-- @version 1.19
 -- @changelog
---  Added double click on knobs to reset value to default
+--  Fixed alt hover when over VOLUME PAN UTILITY NOT TO CHANGE COLOR OF MAIN BUTTON
+--  Fixed redo not working
+--  Added CheckMods instead of getkeyctrl to use appropriate keys on other platforms
+--  Added Insert Replace holding CTRL to replace with new FX
 -- @provides
 --   Icons.ttf
 
@@ -314,6 +317,8 @@ local function DragAddDDSource(fx)
     if r.ImGui_BeginDragDropSource(ctx) then
         DRAG_ADD_FX = true
         r.ImGui_SetDragDropPayload(ctx, 'DRAG ADD FX', fx)
+        r.ImGui_Text(ctx, CTRL and "REPLACE" or "ADD")
+        r.ImGui_SameLine(ctx)
         r.ImGui_Button(ctx, fx)
         r.ImGui_EndDragDropSource(ctx)
     end
@@ -711,6 +716,7 @@ local function DragAddDDTarget(tbl, i, parallel)
             local parrent_container = GetParentContainerByGuid(tbl[i])
             local item_add_id = CalcFxID(parrent_container, i + 1)
             FX_ID = { item_add_id, parallel }
+            --AddFX(payload)
             return AddFX(payload)
         end
     end
@@ -919,7 +925,6 @@ local ROUND_FLAG = {
 }
 
 local function DrawListButton(name, color, round_side, icon, hover)
-    --r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 0)
     local multi_color = IS_DRAGGING_RIGHT_CANVAS and color or HexTest(color, hover and 50 or 0)
     local xs, ys = r.ImGui_GetItemRectMin(ctx)
     local xe, ye = r.ImGui_GetItemRectMax(ctx)
@@ -949,6 +954,8 @@ end
 local function AddFX_P(tbl, i)
     r.ImGui_SameLine(ctx)
     r.ImGui_PushID(ctx, tbl[i].guid .. "parallel")
+    r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_Alpha(), (DRAG_ADD_FX and (DRAG_ADD_FX and not CTRL and 1 or 0.3)) or 1) -- alpha
+
     if r.ImGui_InvisibleButton(ctx, "||", para_btn_size, def_btn_h) then
         local parrent_container = GetParentContainerByGuid(tbl[i])
         local item_add_id = CalcFxID(parrent_container, i + 1)
@@ -966,8 +973,11 @@ local function AddFX_P(tbl, i)
     end
 
     DrawListButton("||", (DRAG_ADD_FX or DRAG_MOVE) and HexTest(COLOR["n"], 10) or COLOR["parallel"])
-    DragAddDDTarget(tbl, i, "parallel")
+    if not CTRL then
+        DragAddDDTarget(tbl, i, "parallel")
+    end
     MoveDDTarget(tbl[i], i, "parallel", tbl[i].INSERT_POINT)
+    r.ImGui_PopStyleVar(ctx)
 end
 
 local function DrawLines()
@@ -980,6 +990,7 @@ end
 local function InsertPointButton(tbl, i, x)
     r.ImGui_SetCursorPosX(ctx, x - (add_bnt_size // 2))
     r.ImGui_PushID(ctx, tbl[i].guid .. "insert_point")
+    r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_Alpha(), DRAG_ADD_FX and (DRAG_ADD_FX and not CTRL and 1 or 0.3) or 1) -- alpha
     if r.ImGui_InvisibleButton(ctx, "+", add_bnt_size, def_btn_h) then
         CLICKED = tbl[i].guid
         local parrent_container = GetParentContainerByGuid(tbl[i])
@@ -989,10 +1000,13 @@ local function InsertPointButton(tbl, i, x)
     end
     r.ImGui_PopID(ctx)
     Tooltip("ADD NEW SERIAL FX")
-    DragAddDDTarget(tbl, i)
+    if not CTRL then
+        DragAddDDTarget(tbl, i)
+    end
     if i == #tbl or (r.ImGui_IsItemHovered(ctx) and not IS_DRAGGING_RIGHT_CANVAS) or DRAG_MOVE or DRAG_ADD_FX or CLICKED == tbl[i].guid then
         DrawListButton("+", (DRAG_ADD_FX or DRAG_MOVE) and HexTest(COLOR["n"], 10) or COLOR["parallel"])
     end
+    r.ImGui_PopStyleVar(ctx)
     MoveDDTarget(tbl[i], i, "serial", tbl[i].INSERT_POINT)
 end
 
@@ -1071,7 +1085,6 @@ local function AutoCreateContainer(tbl, i)
 end
 
 local function DrawVolumePanHelper(tbl, i, w)
-    --r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 1)
     if tbl[i].name:match(VOL_PAN_HELPER) then
         local parrent_container = GetParentContainerByGuid(tbl[i])
         local item_id = CalcFxID(parrent_container, i)
@@ -1110,8 +1123,8 @@ local function DrawButton(tbl, i, name, width, fade)
     --! LOWER BUTTON ALPHA SO INSERT POINTS STANDOUT
     local SPLITTER = r.ImGui_CreateDrawListSplitter(draw_list)
     r.ImGui_DrawListSplitter_Split(SPLITTER, 2)
-    --local alpha = (DRAG_ADD_FX and (tbl[i].type == "Container" or tbl[i].type == "ROOT")) and 0.4 or fade
-    r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_Alpha(), DRAG_ADD_FX and 0.4 or fade) -- alpha
+    local alpha = (DRAG_ADD_FX and not CTRL) and 0.4 or fade
+    r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_Alpha(), alpha) -- alpha
     r.ImGui_BeginGroup(ctx)
     --! DRAW BYPASS
     r.ImGui_PushID(ctx, tbl[i].guid .. "bypass")
@@ -1143,13 +1156,25 @@ local function DrawButton(tbl, i, name, width, fade)
     if r.ImGui_InvisibleButton(ctx, name, width, def_btn_h) then ButtonAction(tbl, i) end
     r.ImGui_PopID(ctx)
     if (tbl[i].type ~= "Container" and tbl[i].type ~= "ROOT") then
-        AutoCreateContainer(tbl, i)
+        -- AutoCreateContainer(tbl, i)
     end
     r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 0)
     local btn_hover = r.ImGui_IsItemHovered(ctx) and not vol_hover and not pan_hover
-    DrawListButton(name, (ALT and r.ImGui_IsItemHovered(ctx)) and COLOR["del"] or TypToColor(tbl[i]),
+    DrawListButton(name, (ALT and btn_hover) and COLOR["del"] or TypToColor(tbl[i]),
         tbl[i].type ~= "ROOT" and "R" or nil, nil, btn_hover)
     DragAndDropMove(tbl, i)
+
+    if CTRL then
+        if tbl[i].type ~= "Container" and tbl[i].type ~= "ROOT" then
+            local added_fx_idx = DragAddDDTarget(tbl, i, tbl[i].p == 1)
+            -- SWAP WITH INSERTED PLUGIN
+            if added_fx_idx then
+                local parrent_container = GetParentContainerByGuid(tbl[i])
+                local item_id = CalcFxID(parrent_container, i)
+                r.TrackFX_Delete(TRACK, item_id)
+            end
+        end
+    end
 
 
     --! DRAW VOLUME
@@ -1471,20 +1496,19 @@ local function Popups()
 end
 
 local function CheckKeys()
-    ALT = r.ImGui_IsKeyDown(ctx, r.ImGui_Key_LeftAlt())
-    CTRL = r.ImGui_IsKeyDown(ctx, r.ImGui_Key_LeftCtrl())
-    SHIFT = r.ImGui_IsKeyDown(ctx, r.ImGui_Key_LeftShift())
+    ALT = r.ImGui_GetKeyMods(ctx) == r.ImGui_Mod_Alt()
+    CTRL = r.ImGui_GetKeyMods(ctx) == r.ImGui_Mod_Shortcut()
+    SHIFT = r.ImGui_GetKeyMods(ctx) == r.ImGui_Mod_Shift()
     HOME = r.ImGui_IsKeyPressed(ctx, r.ImGui_Key_Home())
     SPACE = r.ImGui_IsKeyPressed(ctx, r.ImGui_Key_Space())
     Z = r.ImGui_IsKeyPressed(ctx, r.ImGui_Key_Z())
 
-    if HOME then
-        CANVAS.off_x, CANVAS.off_y = 0, 50
-    end
+    if HOME then CANVAS.off_x, CANVAS.off_y = 0, 50 end
+
     if CTRL and Z then r.Main_OnCommand(40029, 0) end -- UNDO
-    if CTRL and SHIFT and Z then
-        r.Main_OnCommand(40030, 0)
-    end                                                                                      -- REDO
+    if r.ImGui_GetKeyMods(ctx) == r.ImGui_Mod_Shortcut() | r.ImGui_Mod_Shift() and Z then
+        r.Main_OnCommand(40030, 0)                    -- REDO
+    end
 
     if SPACE and not r.ImGui_IsPopupOpen(ctx, "FX LIST") then r.Main_OnCommand(40044, 0) end -- PLAY STOP
 
@@ -1501,7 +1525,7 @@ local function Frame()
     GetOrUpdateFX()
     local center
     r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing(), s_spacing_x, s_spacing_y)
-    if r.ImGui_BeginChild(ctx, "##MAIN", nil, nil, nil, WND_FLAGS) then
+    if r.ImGui_BeginChild(ctx, "##MAIN", nil, nil, nil, WND_FLAGS) then --(ctx, "##MAIN", nil, nil, nil,  r.ImGui_WindowFlags_AlwaysHorizontalScrollbar())
         center = (r.ImGui_GetContentRegionMax(ctx) + s_window_x) // 2
         r.ImGui_SetCursorPosY(ctx, CANVAS.off_y)
         center = center + CANVAS.off_x
