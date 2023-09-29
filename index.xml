@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="aed2eb218f05485ed60aec05b59b3b9d288737ad" name="Sexan_Scripts">
+<index version="1" commit="8ab5a20c537a924747194b802d76bb273132fbeb" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -572,6 +572,15 @@ Tweak volume dry/wet offset to be exactly on top]]></changelog>
         <changelog><![CDATA[Add Imgui Check fix 3]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/aed2eb218f05485ed60aec05b59b3b9d288737ad/FX/Sexan_ParaNormal_FX_Router.lua</source>
         <source file="Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/aed2eb218f05485ed60aec05b59b3b9d288737ad/FX/Icons.ttf</source>
+      </version>
+      <version name="1.15" author="Sexan" time="2023-09-29T09:31:07Z">
+        <changelog><![CDATA[Fix SPACE key triggering while browser is open
+Add constrains to imgui window min size
+Added right click option to set lane volume to unity (parallel lanes only)
+Added right click option to reset lane volume to default (parallel lanes only)
+Removed Video Processor]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/8ab5a20c537a924747194b802d76bb273132fbeb/FX/Sexan_ParaNormal_FX_Router.lua</source>
+        <source file="Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/8ab5a20c537a924747194b802d76bb273132fbeb/FX/Icons.ttf</source>
       </version>
     </reapack>
   </category>
