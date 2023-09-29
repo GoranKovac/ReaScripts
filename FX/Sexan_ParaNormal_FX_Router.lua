@@ -1,9 +1,9 @@
 -- @description Sexan Para-Normal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.17
+-- @version 1.18
 -- @changelog
---  Fixed highlight for VolumePan Utility not to hower whole button
+--  Added double click on knobs to reset value to default
 -- @provides
 --   Icons.ttf
 
@@ -1083,6 +1083,9 @@ local function DrawVolumePanHelper(tbl, i, w)
             r.TrackFX_SetParam(TRACK, item_id, 0, v)
         end
         local vol_hover = r.ImGui_IsItemHovered(ctx)
+        if vol_hover and r.ImGui_IsMouseDoubleClicked(ctx, 0) then
+            r.TrackFX_SetParam(TRACK, item_id, 0, 0)
+        end
 
         r.ImGui_PopID(ctx)
         r.ImGui_SameLine(ctx, nil, w - (mute * 4))
@@ -1093,6 +1096,9 @@ local function DrawVolumePanHelper(tbl, i, w)
             r.TrackFX_SetParam(TRACK, item_id, 1, p)
         end
         local pan_hover = r.ImGui_IsItemHovered(ctx)
+        if pan_hover and r.ImGui_IsMouseDoubleClicked(ctx, 0) then
+            r.TrackFX_SetParam(TRACK, item_id, 1, 0)
+        end
 
         r.ImGui_PopID(ctx)
         return mute, vol_hover, pan_hover
@@ -1159,6 +1165,11 @@ local function DrawButton(tbl, i, name, width, fade)
             local parrent_container = GetParentContainerByGuid(tbl[i])
             local item_id = CalcFxID(parrent_container, i)
             r.TrackFX_SetParam(TRACK, item_id, tbl[i].wetparam, v / 100)
+        end
+        if r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseDoubleClicked(ctx, 0) then
+            local parrent_container = GetParentContainerByGuid(tbl[i])
+            local item_id = CalcFxID(parrent_container, i)
+            r.TrackFX_SetParam(TRACK, item_id, tbl[i].wetparam, 1)
         end
         r.ImGui_PopID(ctx)
     end
