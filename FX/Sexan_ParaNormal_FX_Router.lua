@@ -1,9 +1,9 @@
 -- @description Sexan Para-Normal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.21
+-- @version 1.22
 -- @changelog
---  Move CheckKeys function at start of script. Fixes crash on undo/redo since table would be old data
+--  Remove WIP Settings
 -- @provides
 --   Icons.ttf
 
@@ -1084,12 +1084,6 @@ end
 local function DrawVolumePanHelper(tbl, i, w)
     if tbl[i].name:match(VOL_PAN_HELPER) then
         local parrent_container = GetParentContainerByGuid(tbl[i])
-
-        if CTRL and Z then
-            AAA = tbl
-            BBB = parrent_container
-        end
-
         local item_id = CalcFxID(parrent_container, i)
         local vol_val = r.TrackFX_GetParam(TRACK, item_id, 0) -- 0 IS VOL IDENTIFIER
         r.ImGui_SameLine(ctx, nil, mute)
@@ -1528,7 +1522,7 @@ local function CheckKeys()
 end
 
 local function UI()
-    r.ImGui_SetCursorPos(ctx, 5, 5)
+    r.ImGui_SetCursorPos(ctx, 5, 25)
     -- NIFTY HACK FOR COMMENT BOX NOT OVERLAP UI BUTTONS
     --if not r.ImGui_BeginChild(ctx, 'toolbars', -FLT_MIN, -FLT_MIN, false, r.ImGui_WindowFlags_NoInputs()) then return end
     if not r.ImGui_BeginChild(ctx, 'toolbars', -FLT_MIN, -FLT_MIN, false, r.ImGui_WindowFlags_NoInputs()) then return end
@@ -1554,14 +1548,13 @@ local function Frame()
     GetOrUpdateFX()
     local center
     r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing(), s_spacing_x, s_spacing_y)
+    r.ImGui_SetNextWindowScroll(ctx, CANVAS.off_x, CANVAS.off_y)
     if r.ImGui_BeginChild(ctx, "##MAIN", nil, nil, nil, WND_FLAGS) then --(ctx, "##MAIN", nil, nil, nil,  r.ImGui_WindowFlags_AlwaysHorizontalScrollbar())
         center = (r.ImGui_GetContentRegionMax(ctx) + s_window_x) // 2
         r.ImGui_SetCursorPosY(ctx, CANVAS.off_y)
         center = center + CANVAS.off_x
         local bypass = PLUGINS[0].bypass and 1 or 0.5
         DrawPlugins(center, PLUGINS, bypass)
-
-        UI()
         r.ImGui_EndChild(ctx)
     end
     r.ImGui_PopStyleVar(ctx)
@@ -1670,7 +1663,10 @@ local function Main()
     local visible, open = r.ImGui_Begin(ctx, 'PARANORMAL FX ROUTER', true, WND_FLAGS)
     r.ImGui_PopStyleColor(ctx)
     if visible then
-        if TRACK then Frame() end
+        if TRACK then
+            Frame()
+            --UI()
+        end
         if not IS_DRAGGING_RIGHT_CANVAS and r.ImGui_IsMouseReleased(ctx, 1) and not r.ImGui_IsAnyItemHovered(ctx) then
             r.ImGui_OpenPopup(ctx, 'FX LIST')
         end
