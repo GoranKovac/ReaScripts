@@ -1,9 +1,9 @@
 -- @description Sexan Para-Normal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.20
+-- @version 1.21
 -- @changelog
---  When hooverin item with ALT highlight all childs also to indicate what will be deleted
+--  Move CheckKeys function at start of script. Fixes crash on undo/redo since table would be old data
 -- @provides
 --   Icons.ttf
 
@@ -58,7 +58,7 @@ end
 
 --CANVAS = InitCanvas()
 
-FX_LIST, CAT = GetFXTbl()
+local FX_LIST, CAT = GetFXTbl()
 
 local ctx = r.ImGui_CreateContext('CONTAINERS_NO_ZOOM')
 
@@ -1084,6 +1084,12 @@ end
 local function DrawVolumePanHelper(tbl, i, w)
     if tbl[i].name:match(VOL_PAN_HELPER) then
         local parrent_container = GetParentContainerByGuid(tbl[i])
+
+        if CTRL and Z then
+            AAA = tbl
+            BBB = parrent_container
+        end
+
         local item_id = CalcFxID(parrent_container, i)
         local vol_val = r.TrackFX_GetParam(TRACK, item_id, 0) -- 0 IS VOL IDENTIFIER
         r.ImGui_SameLine(ctx, nil, mute)
@@ -1521,9 +1527,30 @@ local function CheckKeys()
     MOUSE_DRAG = r.ImGui_IsMouseDragging(ctx, 0)
 end
 
+local function UI()
+    r.ImGui_SetCursorPos(ctx, 5, 5)
+    -- NIFTY HACK FOR COMMENT BOX NOT OVERLAP UI BUTTONS
+    --if not r.ImGui_BeginChild(ctx, 'toolbars', -FLT_MIN, -FLT_MIN, false, r.ImGui_WindowFlags_NoInputs()) then return end
+    if not r.ImGui_BeginChild(ctx, 'toolbars', -FLT_MIN, -FLT_MIN, false, r.ImGui_WindowFlags_NoInputs()) then return end
+    r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x000000EE)
+
+    --r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_WindowPadding(), 0, 2)
+    if r.ImGui_BeginChild(ctx, "TopButtons", 250, def_btn_h + (s_window_y * 2), 1) then
+        local retval, tr_ID = r.GetTrackName(TRACK)
+        local _, track_name = r.GetSetMediaTrackInfo_String(TRACK, "P_NAME", "", false)
+        --r.ImGui_SetCursorPos(ctx, 0, 0)
+        r.ImGui_Button(ctx, "SETTINGS")
+        r.ImGui_SameLine(ctx)
+        r.ImGui_Text(ctx, "TRACK: " .. tr_ID .. track_name:upper())
+        r.ImGui_EndChild(ctx)
+    end
+    -- r.ImGui_PopStyleVar(ctx)
+    r.ImGui_PopStyleColor(ctx)
+    r.ImGui_EndChild(ctx)
+end
+
 local function Frame()
     Popups()
-    CheckKeys()
     GetOrUpdateFX()
     local center
     r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing(), s_spacing_x, s_spacing_y)
@@ -1533,6 +1560,8 @@ local function Frame()
         center = center + CANVAS.off_x
         local bypass = PLUGINS[0].bypass and 1 or 0.5
         DrawPlugins(center, PLUGINS, bypass)
+
+        UI()
         r.ImGui_EndChild(ctx)
     end
     r.ImGui_PopStyleVar(ctx)
@@ -1618,6 +1647,7 @@ end
 
 --LAST_TRACK = r.GetSelectedTrack(0, 0)
 local function Main()
+    CheckKeys()
     TRACK = r.GetSelectedTrack(0, 0)
     local master = r.GetMasterTrack(0)
     if r.GetMediaTrackInfo_Value(master, "I_SELECTED") == 1 then
