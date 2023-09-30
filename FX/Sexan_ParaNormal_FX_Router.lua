@@ -1,10 +1,9 @@
 -- @description Sexan Para-Normal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.23
+-- @version 1.24
 -- @changelog
---  remove set scroll api set by accident
---  reduce knob size by 1 pixel
+--  Strip names from developer and plugin type
 -- @provides
 --   Icons.ttf
 
@@ -322,6 +321,19 @@ local function DragAddDDSource(fx)
     end
 end
 
+local function FindDeveloper(name)
+    for i = 1, #CAT do
+        if CAT[i].name == "DEVELOPER" then
+            for j = 1, #CAT[i].list do
+                if name:match(CAT[i].list[j].name) then
+                    return name:gsub('(' .. CAT[i].list[j].name .. ')', "")
+                end
+            end
+        end
+    end
+    return name
+end
+
 local function Lead_Trim_ws(s) return s:match '^%s*(.*)' end
 
 local function Filter_actions(filter_text)
@@ -591,6 +603,8 @@ local function IterateContainer(depth, track, container_id, parent_fx_count, pre
         local fx_id = container_id + (diff * i)
         local fx_guid = TrackFX_GetFXGUID(TRACK, 0x2000000 + fx_id)
         local _, fx_name = r.TrackFX_GetFXName(track, 0x2000000 + fx_id)
+        fx_name = Stripname(fx_name, nil, true)
+
         local _, fx_type = TrackFX_GetNamedConfigParm(track, 0x2000000 + fx_id, "fx_type")
         local _, para = r.TrackFX_GetNamedConfigParm(track, 0x2000000 + fx_id, "parallel")
         local wetparam = r.TrackFX_GetParamFromIdent(track, 0x2000000 + fx_id, ":wet")
@@ -665,6 +679,7 @@ local function GetOrUpdateFX(target)
         local fx_guid = TrackFX_GetFXGUID(TRACK, i - 1)
         local _, fx_type = TrackFX_GetNamedConfigParm(track, i - 1, "fx_type")
         local _, fx_name = r.TrackFX_GetFXName(track, i - 1)
+        fx_name = Stripname(fx_name, nil, true)
         local _, para = r.TrackFX_GetNamedConfigParm(track, i - 1, "parallel")
         local wetparam = r.TrackFX_GetParamFromIdent(track, i - 1, ":wet")
         local wet_val = r.TrackFX_GetParam(track, i - 1, wetparam)
@@ -1329,6 +1344,8 @@ local function DrawPlugins(center, tbl, fade, color_del)
     r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_Alpha(), fade)
     local last
     for i = 0, #tbl do
+        --local name = tbl[i].name:gsub("(%S+: )", "")
+        --local name = Stripname(tbl[i].name, true, true)
         local name = tbl[i].name:gsub("(%S+: )", "")
         local width, height = CalculateItemWH(tbl[i])
         width = tbl[i].W and tbl[i].W or width
