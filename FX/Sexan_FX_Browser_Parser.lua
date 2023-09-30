@@ -1,14 +1,15 @@
 -- @description Sexan FX Browser parser
 -- @author Sexan
 -- @license GPL v3
--- @version 1.0
+-- @version 1.1
 -- @changelog
---  initial release
+--  Added Developer names table to use with name stripping
 
 local r = reaper
 local os = r.GetOS()
 local os_separator = package.config:sub(1, 1)
 local CAT = {}
+local DEVELOPER_LIST = { "Waves" }
 
 function GetFileContext(fp)
     local str = "\n"
@@ -58,6 +59,13 @@ function InTbl(tbl, val)
     for i = 1, #tbl do
         if tbl[i].name == val then return tbl[i].fx end
     end
+end
+
+function AddDevList(val)
+    for i = 1, #DEVELOPER_LIST do
+        if DEVELOPER_LIST[i] == val then return end
+    end
+    DEVELOPER_LIST[#DEVELOPER_LIST + 1] = val
 end
 
 local function ParseVST(plugin_list, INSTRUMENTS)
@@ -304,9 +312,12 @@ local function ParseFXTags(VST_INFO, JS_INFO, AU_INFO, CLAP_INFO)
     -- PARSE CATEGORIES
     local tags_path = r.GetResourcePath() .. "/reaper-fxtags.ini"
     local tags_str  = GetFileContext(tags_path)
-
+    local DEV       = true
     for line in tags_str:gmatch('[^\r\n]+') do
         local category = line:match("%[(.+)%]")
+        if line:match("%[(category)%]") then
+            DEV = false
+        end
         -- CATEGORY FOUND
         if category then
             CAT[#CAT + 1] = { name = category:upper(), list = {} }
@@ -314,6 +325,7 @@ local function ParseFXTags(VST_INFO, JS_INFO, AU_INFO, CLAP_INFO)
         -- PLUGIN FOUND
         local FX, dev_category = line:match("(.+)=(.+)")
         if dev_category then
+            if DEV then AddDevList(dev_category) end
             local fx_name = FindFXIDName(VST_INFO, FX)
             fx_name = fx_name and fx_name or FindFXIDName(AU_INFO, FX)
             fx_name = fx_name and fx_name or FindFXIDName(CLAP_INFO, FX)
@@ -353,7 +365,6 @@ local function ParseCustomCategories(VST_INFO, JS_INFO, AU_INFO, CLAP_INFO)
     local fav_path = r.GetResourcePath() .. "/reaper-fxfolders.ini"
     local fav_str  = GetFileContext(fav_path)
     local cur_cat_tbl
-
     for line in fav_str:gmatch('[^\r\n]+') do
         local category = line:match("%[(.-)%]")
         if category then
@@ -537,10 +548,23 @@ function GenerateFxList()
     return plugin_list
 end
 
+function Stripname(name, prefix, suffix)
+    -- REMOVE DEVELOPER
+    if suffix then
+        for i = 1, #DEVELOPER_LIST do
+            if name:match(DEVELOPER_LIST[i]) then
+                name = name:gsub('%(' .. DEVELOPER_LIST[i] .. '%)', "")
+            end
+        end
+    end
+    -- REMOVE VST: JS: AU: CLAP:
+    name = prefix and name:gsub("(%S+: )", "") or name
+    return name
+end
+
 function GetFXTbl()
     return GenerateFxList(), CAT
 end
-
 
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
