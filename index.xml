@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="d268276eca65b5cbff2937637a65e103e2dac50a" name="Sexan_Scripts">
+<index version="1" commit="0048936f4e498ae9c92cf9943318b0460f6a07d1" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -615,6 +615,11 @@ Added Insert Replace holding CTRL to replace with new FX]]></changelog>
         <changelog><![CDATA[Move CheckKeys function at start of script. Fixes crash on undo/redo since table would be old data]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/d268276eca65b5cbff2937637a65e103e2dac50a/FX/Sexan_ParaNormal_FX_Router.lua</source>
         <source file="Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/d268276eca65b5cbff2937637a65e103e2dac50a/FX/Icons.ttf</source>
+      </version>
+      <version name="1.22" author="Sexan" time="2023-09-30T08:29:53Z">
+        <changelog><![CDATA[Remove WIP Settings]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/0048936f4e498ae9c92cf9943318b0460f6a07d1/FX/Sexan_ParaNormal_FX_Router.lua</source>
+        <source file="Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/0048936f4e498ae9c92cf9943318b0460f6a07d1/FX/Icons.ttf</source>
       </version>
     </reapack>
   </category>
