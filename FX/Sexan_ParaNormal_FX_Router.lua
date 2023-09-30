@@ -1,9 +1,10 @@
 -- @description Sexan Para-Normal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.22
+-- @version 1.23
 -- @changelog
---  Remove WIP Settings
+--  remove set scroll api set by accident
+--  reduce knob size by 1 pixel
 -- @provides
 --   Icons.ttf
 
@@ -249,7 +250,7 @@ local function MyKnob(label, style, p_value, v_min, v_max, is_vol, is_pan)
     local angle = ANGLE_MIN + (ANGLE_MAX - ANGLE_MIN) * t
     local angle_cos, angle_sin = math.cos(angle), math.sin(angle)
     local radius_inner = radius_outer / 2.5
-    r.ImGui_DrawList_AddCircleFilled(draw_list, center[1], center[2], radius_outer, COLOR["parallel"])
+    r.ImGui_DrawList_AddCircleFilled(draw_list, center[1], center[2], radius_outer - 1, COLOR["parallel"])
     if style == "knob" then
         r.ImGui_DrawList_AddLine(draw_list, center[1] + angle_cos * radius_inner, center[2] + angle_sin * radius_inner,
             center[1] + angle_cos * (radius_outer - 2), center[2] + angle_sin * (radius_outer - 2),
@@ -1548,7 +1549,6 @@ local function Frame()
     GetOrUpdateFX()
     local center
     r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing(), s_spacing_x, s_spacing_y)
-    r.ImGui_SetNextWindowScroll(ctx, CANVAS.off_x, CANVAS.off_y)
     if r.ImGui_BeginChild(ctx, "##MAIN", nil, nil, nil, WND_FLAGS) then --(ctx, "##MAIN", nil, nil, nil,  r.ImGui_WindowFlags_AlwaysHorizontalScrollbar())
         center = (r.ImGui_GetContentRegionMax(ctx) + s_window_x) // 2
         r.ImGui_SetCursorPosY(ctx, CANVAS.off_y)
