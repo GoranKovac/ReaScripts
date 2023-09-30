@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="cc903f1dc3d25da182ab247c93b89112142e8282" name="Sexan_Scripts">
+<index version="1" commit="42b6a5773acdbd0e470f7aeb41d16ccd8f08dc2b" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -510,6 +510,10 @@
       <version name="1.0" author="Sexan" time="2023-09-20T08:35:59Z">
         <changelog><![CDATA[initial release]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/d59611ccf63a29855353b4c7ad765ea21285fde3/FX/Sexan_FX_Browser_Parser.lua</source>
+      </version>
+      <version name="1.1" author="Sexan" time="2023-09-30T10:31:48Z">
+        <changelog><![CDATA[Added Developer names table to use with name stripping]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/42b6a5773acdbd0e470f7aeb41d16ccd8f08dc2b/FX/Sexan_FX_Browser_Parser.lua</source>
       </version>
     </reapack>
     <reapack name="Sexan_ParaNormal_FX_Router.lua" type="script" desc="Sexan Para-Normal FX Router">
