@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="0f75993db32931a08b76ecfe15f4cf9346a7925a" name="Sexan_Scripts">
+<index version="1" commit="e3efd855cd4f9e4cd644e70d2c8e18db03dd89e1" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -635,6 +635,11 @@ reduce knob size by 1 pixel]]></changelog>
         <changelog><![CDATA[Strip names from developer and plugin type]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/0f75993db32931a08b76ecfe15f4cf9346a7925a/FX/Sexan_ParaNormal_FX_Router.lua</source>
         <source file="Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/0f75993db32931a08b76ecfe15f4cf9346a7925a/FX/Icons.ttf</source>
+      </version>
+      <version name="1.26" author="Sexan" time="2023-10-01T07:42:37Z">
+        <changelog><![CDATA[AutoContainers]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/e3efd855cd4f9e4cd644e70d2c8e18db03dd89e1/FX/Sexan_ParaNormal_FX_Router.lua</source>
+        <source file="Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/e3efd855cd4f9e4cd644e70d2c8e18db03dd89e1/FX/Icons.ttf</source>
       </version>
     </reapack>
   </category>
