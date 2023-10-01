@@ -1,9 +1,9 @@
 -- @description Sexan Para-Normal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.24
+-- @version 1.26
 -- @changelog
---  Strip names from developer and plugin type
+--  AutoContainers
 -- @provides
 --   Icons.ttf
 
@@ -282,10 +282,10 @@ local function MyKnob(label, style, p_value, v_min, v_max, is_vol, is_pan)
             pos[2] - line_height - (item_inner_spacing[2] * 2) - window_padding[2])
         r.ImGui_BeginTooltip(ctx)
         if is_vol then
-            r.ImGui_Text(ctx, "VOL :" .. ('%.0f'):format(p_value))
+            r.ImGui_Text(ctx, "VOL " .. ('%.0f'):format(p_value))
         else
             if is_pan then
-                r.ImGui_Text(ctx, "PAN :" .. ('%.0f'):format(p_value))
+                r.ImGui_Text(ctx, "PAN " .. ('%.0f'):format(p_value))
             else
                 r.ImGui_Text(ctx, ('%.0f'):format(100 - p_value) .. " DRY / WET " .. ('%.0f'):format(p_value))
             end
@@ -319,19 +319,6 @@ local function DragAddDDSource(fx)
         r.ImGui_Button(ctx, fx)
         r.ImGui_EndDragDropSource(ctx)
     end
-end
-
-local function FindDeveloper(name)
-    for i = 1, #CAT do
-        if CAT[i].name == "DEVELOPER" then
-            for j = 1, #CAT[i].list do
-                if name:match(CAT[i].list[j].name) then
-                    return name:gsub('(' .. CAT[i].list[j].name .. ')', "")
-                end
-            end
-        end
-    end
-    return name
 end
 
 local function Lead_Trim_ws(s) return s:match '^%s*(.*)' end
@@ -469,7 +456,6 @@ local function DrawItems(tbl)
         end
     end
 end
-
 function DrawFXList()
     local search = FilterBox()
     if search then return end
@@ -879,7 +865,7 @@ local function MoveDDTarget(tbl, i, is_move, insert_point)
                     r.TrackFX_SetNamedConfigParm(TRACK, dst_item_id, "parallel", para_info)
                 end
                 EndUndoBlock("Move Plugins")
-                return
+                return dst_item_id
             end
             -- SWAP SOURCE AND DESTINATION
             r.TrackFX_CopyToTrack(TRACK, src_item_id, TRACK, dst_item_id, true)
@@ -901,9 +887,80 @@ local function MoveDDSource(tbl, i)
     end
 end
 
+local function CreateAutoContainer(tbl, i, target)
+    UpdateFxData()
+    r.Undo_BeginBlock()
+    local parrent_container = GetFx(tbl[i].pid)
+
+    -- GET INSERTED FX GUID
+    local inserted_fx_id = CalcFxID(parrent_container, target)
+    local inserted_guid = r.TrackFX_GetFXGUID(TRACK, inserted_fx_id)
+
+    -- INSERT CONTAINER AT BEGINNING
+    r.TrackFX_AddByName(TRACK, "Container", false, -1000)
+
+    -- UPDATE AFTER INSERTING CONTAINER
+    UpdateFxData()
+    parrent_container = GetFx(parrent_container.guid)
+    local inserted_fx_tbl = GetFx(inserted_guid)
+    local inserted_id = CalcFxID(parrent_container, inserted_fx_tbl.IDX)
+    -- SET CONTAINER PARALLEL INFO AS TARGET FX
+    r.TrackFX_SetNamedConfigParm(TRACK, 0x2000000 + 1, "parallel", tbl[i].p)
+    local id = 0x2000000 + 1 + (r.TrackFX_GetCount(TRACK) + 1)
+    -- SET TARGET PLUGIN IN SERIAL IN CONTAINER
+    r.TrackFX_SetNamedConfigParm(TRACK, inserted_id, "parallel", "0")
+    -- MOVE FIRST PLUGIN
+    r.TrackFX_CopyToTrack(TRACK, inserted_id, TRACK, id, true)
+
+    -- MOVE UPDATE AND MOVE SECOND PLUGIN
+    UpdateFxData()
+    parrent_container = GetFx(parrent_container.guid)
+    local original_fx2 = GetFx(tbl[i].guid)
+    local original_fx_id = CalcFxID(parrent_container, original_fx2.IDX)
+    -- SET PLUGIN AS SERIAL IN CONTAINER
+    id = 0x2000000 + 1 + (r.TrackFX_GetCount(TRACK) + 1)
+    r.TrackFX_CopyToTrack(TRACK, original_fx_id, TRACK, id, true)
+
+    -- MOVE CONTAINER IN ORIGINAL POSITION
+    UpdateFxData()
+    parrent_container = GetFx(parrent_container.guid)
+    local original_pos = CalcFxID(parrent_container, i)
+    r.TrackFX_CopyToTrack(TRACK, 0x2000000 + 1, TRACK, original_pos, true)
+
+    EndUndoBlock("AUTOCONTAINER")
+end
+
 local function DragAndDropMove(tbl, i)
     MoveDDSource(tbl[i], i)
-    MoveDDTarget(tbl[i], i)
+    if not CTRL_DRAG then
+        MoveDDTarget(tbl[i], i)
+    else
+        local xs, ys = r.ImGui_GetItemRectMin(ctx)
+        local xe, ye = r.ImGui_GetItemRectMax(ctx)
+        if r.ImGui_IsMouseHoveringRect(ctx, xs, ys, xe, ye, false) then
+            --r.ShowConsoleMsg()
+            r.ImGui_DrawList_AddRectFilled(draw_list, xs - (s_spacing_x) - mute - 0.5, ys - (s_spacing_y // 0.8),
+                xe + (s_spacing_x) + (mute // 1.2) + 0.5,
+                ys - (s_spacing_y // 2) + 2, r.ImGui_GetColorEx(ctx, COLOR["enabled"]), 2,
+                r.ImGui_DrawFlags_RoundCornersTopLeft()|r.ImGui_DrawFlags_RoundCornersTopRight())
+            r.ImGui_DrawList_AddRect(draw_list, xs - (s_spacing_x) - mute, ys - (s_spacing_y // 2),
+                xe + (s_spacing_x) + (mute // 1.2),
+                ye + (s_spacing_y // 2),
+                r.ImGui_GetColorEx(ctx, COLOR["enabled"]), 2, nil, 2)
+        end
+        --local parrent_container = GetParentContainerByGuid(tbl[i])
+
+        -- DISABEL DRAG AND DROP YELLOW RECTANGLE HERE SINCE WE ARE DRAWING OUR OWN
+        r.ImGui_PushStyleColor(ctx, r.ImGui_Col_DragDropTarget(), 0)
+        local inserted_fx_id = MoveDDTarget(tbl[i], i, "serial", tbl[i].INSERT_POINT)
+        r.ImGui_PopStyleColor(ctx)
+        -- DO AUTO CONTAINER MAGIC
+        if inserted_fx_id then
+            r.PreventUIRefresh(1)
+            CreateAutoContainer(tbl, i, i + 1)
+            r.PreventUIRefresh(-1)
+        end
+    end
 end
 
 local function ParallelRowWidth(tbl, i, item_width)
@@ -1048,52 +1105,78 @@ local function TypToColor(tbl)
     return tbl.bypass and color or HexTest(COLOR["bypass"], -40)
 end
 
-local function AutoCreateContainer(tbl, i)
+local function AutoContainer(tbl, i)
     if not DRAG_ADD_FX then return end
     local xs, ys = r.ImGui_GetItemRectMin(ctx)
     local xe, ye = r.ImGui_GetItemRectMax(ctx)
 
     --local w, h = (xe - xs), (ye - ys)
 
+    -- DRAW "CONTAINER" RECTANGLE
     if r.ImGui_IsMouseHoveringRect(ctx, xs, ys, xe, ye, false) then
         --r.ShowConsoleMsg()
-        r.ImGui_DrawList_AddRect(draw_list, xs - mute, ys - mute // 2, xe + mute, ye + mute // 2,
-            r.ImGui_GetColorEx(ctx, COLOR["enabled"]), 2)
+        r.ImGui_DrawList_AddRectFilled(draw_list, xs - (s_spacing_x) - mute - 0.5, ys - (s_spacing_y // 0.8),
+            xe + (s_spacing_x) + (mute // 1.2) + 0.5,
+            ys - (s_spacing_y // 2) + 2, r.ImGui_GetColorEx(ctx, COLOR["enabled"]), 2,
+            r.ImGui_DrawFlags_RoundCornersTopLeft()|r.ImGui_DrawFlags_RoundCornersTopRight())
+        r.ImGui_DrawList_AddRect(draw_list, xs - (s_spacing_x) - mute, ys - (s_spacing_y // 2),
+            xe + (s_spacing_x) + (mute // 1.2),
+            ye + (s_spacing_y // 2),
+            r.ImGui_GetColorEx(ctx, COLOR["enabled"]), 2, nil, 2)
     end
+    --local parrent_container = GetParentContainerByGuid(tbl[i])
+
+    -- DISABEL DRAG AND DROP YELLOW RECTANGLE HERE SINCE WE ARE DRAWING OUR OWN
+    r.ImGui_PushStyleColor(ctx, r.ImGui_Col_DragDropTarget(), 0)
     local inserted_fx_id = DragAddDDTarget(tbl, i)
+    r.ImGui_PopStyleColor(ctx)
+
+    -- DO AUTO CONTAINER MAGIC
     if inserted_fx_id then
-        local parrent_container = GetParentContainerByGuid(tbl[i])
-        local target_fx_guid = tbl[i].guid
-        local inserted_fx_guid = r.TrackFX_GetFXGUID(TRACK, inserted_fx_id)
-        local c_idx = r.TrackFX_AddByName(TRACK, "Container", false,
-            inserted_fx_id < 0x2000000 and (-1000 - inserted_fx_id - 1) or inserted_fx_id)
-        local C_guid = r.TrackFX_GetFXGUID(TRACK, c_idx)
-        --CalcFxID(parrent_container, i + 1)
-        --r.ShowConsoleMsg(C_guid)
-        for j = 1, 2 do
-            UpdateFxData()
+        r.PreventUIRefresh(1)
+        CreateAutoContainer(tbl, i, inserted_fx_id + 1)
+        r.PreventUIRefresh(-1)
+        -- UPDATE AFTER ADDING FX
+        -- UpdateFxData()
+        -- r.Undo_BeginBlock()
+        -- local parrent_container = GetFx(tbl[i].pid)
 
-            --local src_parrent = GetParentContainerByGuid(target_fx_guid)
-            local cont = GetFx(C_guid)
+        -- -- GET INSERTED FX GUID
+        -- inserted_fx_id = CalcFxID(parrent_container, inserted_fx_id + 1)
+        -- local inserted_guid = r.TrackFX_GetFXGUID(TRACK, inserted_fx_id)
 
-            local src_fx = j == 1 and GetFx(target_fx_guid) or GetFx(inserted_fx_guid)
-            -- r.ShowConsoleMsg(src_fx.ID)
+        -- -- INSERT CONTAINER AT BEGINNING
+        -- r.TrackFX_AddByName(TRACK, "Container", false, -1000)
 
-            --local dst_parrent = GetParentContainerByGuid(dst_fx)
-            -- local src_fx
-            --local container = GetFx(C_guid)
-            --local c_id = CalcFxID(container, 1)
-            --if i == 1 then
-            --    src_fx = CalcFxID(parrent_container, GetFx(target_fx_guid).IDX)
-            --else
-            --    src_fx = CalcFxID(parrent_container, GetFx(target_fx_guid).IDX)
-            --end
-            local id = 0x2000000 + cont.ID + cont.DIFF
+        -- -- UPDATE AFTER INSERTING CONTAINER
+        -- UpdateFxData()
+        -- parrent_container = GetFx(parrent_container.guid)
+        -- local inserted_fx_tbl = GetFx(inserted_guid)
+        -- local inserted_id = CalcFxID(parrent_container, inserted_fx_tbl.IDX)
+        -- -- SET CONTAINER PARALLEL INFO AS TARGET FX
+        -- r.TrackFX_SetNamedConfigParm(TRACK, 0x2000000 + 1, "parallel", tbl[i].p)
+        -- local id = 0x2000000 + 1 + (r.TrackFX_GetCount(TRACK) + 1)
+        -- -- SET TARGET PLUGIN IN SERIAL IN CONTAINER
+        -- r.TrackFX_SetNamedConfigParm(TRACK, inserted_id, "parallel", "0")
+        -- -- MOVE FIRST PLUGIN
+        -- r.TrackFX_CopyToTrack(TRACK, inserted_id, TRACK, id, true)
 
-            r.TrackFX_CopyToTrack(TRACK, src_fx.IDX, TRACK, id, true)
-        end
+        -- -- MOVE UPDATE AND MOVE SECOND PLUGIN
+        -- UpdateFxData()
+        -- parrent_container = GetFx(parrent_container.guid)
+        -- local original_fx2 = GetFx(tbl[i].guid)
+        -- local original_fx_id = CalcFxID(parrent_container, original_fx2.IDX)
+        -- -- SET PLUGIN AS SERIAL IN CONTAINER
+        -- id = 0x2000000 + 1 + (r.TrackFX_GetCount(TRACK) + 1)
+        -- r.TrackFX_CopyToTrack(TRACK, original_fx_id, TRACK, id, true)
 
-        --local c_guid = r.TrackFX_GetFXGUID(TRACK, c_idx)
+        -- -- MOVE CONTAINER IN ORIGINAL POSITION
+        -- UpdateFxData()
+        -- parrent_container = GetFx(parrent_container.guid)
+        -- local original_pos = CalcFxID(parrent_container, i)
+        -- r.TrackFX_CopyToTrack(TRACK, 0x2000000 + 1, TRACK, original_pos, true)
+
+        -- EndUndoBlock("AUTOCONTAINER")
     end
 end
 
@@ -1137,7 +1220,7 @@ local function DrawButton(tbl, i, name, width, fade, del_color)
     local SPLITTER = r.ImGui_CreateDrawListSplitter(draw_list)
     r.ImGui_DrawListSplitter_Split(SPLITTER, 2)
     local alpha = (DRAG_ADD_FX and not CTRL) and 0.4 or fade
-    r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_Alpha(), alpha) -- alpha
+    r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_Alpha(), fade) -- alpha
     r.ImGui_BeginGroup(ctx)
     --! DRAW BYPASS
     r.ImGui_PushID(ctx, tbl[i].guid .. "bypass")
@@ -1169,23 +1252,25 @@ local function DrawButton(tbl, i, name, width, fade, del_color)
     if r.ImGui_InvisibleButton(ctx, name, width, def_btn_h) then ButtonAction(tbl, i) end
     r.ImGui_PopID(ctx)
     if (tbl[i].type ~= "Container" and tbl[i].type ~= "ROOT") then
-        -- AutoCreateContainer(tbl, i)
+        AutoContainer(tbl, i)
     end
     r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 0)
     local btn_hover = r.ImGui_IsItemHovered(ctx) and (not vol_hover or not pan_hover)
     local is_del_color = del_color and del_color or (ALT and btn_hover) and COLOR["del"] or TypToColor(tbl[i])
     DrawListButton(name, is_del_color, --  (ALT and btn_hover) and COLOR["del"] or TypToColor(tbl[i])
         tbl[i].type ~= "ROOT" and "R" or nil, nil, btn_hover)
-    DragAndDropMove(tbl, i)
 
+    DragAndDropMove(tbl, i)
     if CTRL then
-        if tbl[i].type ~= "Container" and tbl[i].type ~= "ROOT" then
-            local added_fx_idx = DragAddDDTarget(tbl, i, tbl[i].p == 1)
-            -- SWAP WITH INSERTED PLUGIN
-            if added_fx_idx then
-                local parrent_container = GetParentContainerByGuid(tbl[i])
-                local item_id = CalcFxID(parrent_container, i)
-                r.TrackFX_Delete(TRACK, item_id)
+        if DRAG_ADD_FX then
+            if tbl[i].type ~= "Container" and tbl[i].type ~= "ROOT" then
+                local added_fx_idx = DragAddDDTarget(tbl, i, tbl[i].p == 1)
+                -- SWAP WITH INSERTED PLUGIN
+                if added_fx_idx then
+                    local parrent_container = GetParentContainerByGuid(tbl[i])
+                    local item_id = CalcFxID(parrent_container, i)
+                    r.TrackFX_Delete(TRACK, item_id)
+                end
             end
         end
     end
@@ -1530,7 +1615,7 @@ local function CheckKeys()
         r.Main_OnCommand(40030, 0)                    -- REDO
     end
 
-    if SPACE and not r.ImGui_IsPopupOpen(ctx, "FX LIST") then r.Main_OnCommand(40044, 0) end -- PLAY STOP
+    if SPACE and not FX_OPENED then r.Main_OnCommand(40044, 0) end -- PLAY STOP
 
     -- ACTIVATE CTRL ONLY IF NOT PREVIOUSLY DRAGGING
     if not CTRL_DRAG then
@@ -1688,6 +1773,7 @@ local function Main()
             r.ImGui_OpenPopup(ctx, 'FX LIST')
         end
         IS_DRAGGING_RIGHT_CANVAS = r.ImGui_IsMouseDragging(ctx, 1, 2)
+        FX_OPENED = r.ImGui_IsPopupOpen(ctx, "FX LIST")
         r.ImGui_End(ctx)
     end
     UpdateScroll()
