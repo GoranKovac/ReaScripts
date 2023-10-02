@@ -1,15 +1,21 @@
 -- @description Sexan FX Browser parser
 -- @author Sexan
 -- @license GPL v3
--- @version 1.1
+-- @version 1.2
 -- @changelog
---  Added Developer names table to use with name stripping
+--  Remove Prefixes in ALL PLUGINS category
+--  Remove Developer suffix in DEVELOPER category
+--  Literize developer name from magic characters
 
 local r = reaper
 local os = r.GetOS()
 local os_separator = package.config:sub(1, 1)
 local CAT = {}
 local DEVELOPER_LIST = { "Waves" }
+
+function Literalize(str)
+    return str:gsub("[%(%)%.%%%+%-%*%?%[%]%^%$]", function(c) return "%" .. c end)
+end
 
 function GetFileContext(fp)
     local str = "\n"
@@ -553,7 +559,7 @@ function Stripname(name, prefix, suffix)
     if suffix then
         for i = 1, #DEVELOPER_LIST do
             if name:match(DEVELOPER_LIST[i]) then
-                name = name:gsub('%(' .. DEVELOPER_LIST[i] .. '%)', "")
+                name = name:gsub('%(' .. Literalize(DEVELOPER_LIST[i]) .. '%)', "")
             end
         end
     end
@@ -712,11 +718,19 @@ end
 --     end
 -- end
 
--- local function DrawItems(tbl)
+-- local function DrawItems(tbl, main_cat_name)
 --     for i = 1, #tbl do
 --         if r.ImGui_BeginMenu(ctx, tbl[i].name) then
 --             for j = 1, #tbl[i].fx do
 --                 if tbl[i].fx[j] then
+--                     local name = tbl[i].fx[j]
+--                     if main_cat_name == "ALL PLUGINS" and tbl[i].name ~= "INSTRUMENTS" then
+--                         -- STRIP PREFIX IN "ALL PLUGINS" CATEGORIES EXCEPT INSTRUMENT WHERE THERE CAN BE MIXED ONES
+--                         name = name:gsub("^(%S+:)", "")
+--                     elseif main_cat_name == "DEVELOPER" then
+--                         -- STRIP SUFFIX (DEVELOPER) FROM THESE CATEGORIES
+--                         name = name:gsub(' %(' .. Literalize(tbl[i].name) .. '%)', "")
+--                     end
 --                     if r.ImGui_Selectable(ctx, tbl[i].fx[j]) then
 --                         if TRACK then
 --                             r.TrackFX_AddByName(TRACK, tbl[i].fx[j], false,
@@ -741,7 +755,7 @@ end
 --             elseif CAT[i].name == "TRACK TEMPLATES" then
 --                 DrawTrackTemplates(CAT[i].list)
 --             else
---                 DrawItems(CAT[i].list)
+--                 DrawItems(CAT[i].list, CAT[i].name)
 --             end
 --             r.ImGui_EndMenu(ctx)
 --         end
