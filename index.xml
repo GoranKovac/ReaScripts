@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="d54121cfc19ab86713b88dedae0033bd7d734718" name="Sexan_Scripts">
+<index version="1" commit="25d0072c3c657146c3f6fbe86a453e13cfa6e5af" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -664,6 +664,11 @@ PIN follows reaper track selection (allowing multiple instances of script when u
 AutoColoring]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/d54121cfc19ab86713b88dedae0033bd7d734718/FX/Sexan_ParaNormal_FX_Router.lua</source>
         <source file="Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/d54121cfc19ab86713b88dedae0033bd7d734718/FX/Icons.ttf</source>
+      </version>
+      <version name="1.28" author="Sexan" time="2023-10-03T17:54:21Z">
+        <changelog><![CDATA[Fix PIN behavior]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/25d0072c3c657146c3f6fbe86a453e13cfa6e5af/FX/Sexan_ParaNormal_FX_Router.lua</source>
+        <source file="Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/25d0072c3c657146c3f6fbe86a453e13cfa6e5af/FX/Icons.ttf</source>
       </version>
     </reapack>
   </category>
