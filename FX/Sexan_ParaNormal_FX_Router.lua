@@ -1,16 +1,9 @@
 -- @description Sexan Para-Normal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.27
+-- @version 1.28
 -- @changelog
---  Fix hovering over vol pan helper knobs hovering button behind
---  Add move/copy visual feedback
---  Made script little more compact with sizes (insert point has its own size now)
---  Fixed crash when draging over FX CHAIN button
---  UserSettings
---  TopBar
---  PIN follows reaper track selection (allowing multiple instances of script when unpin)
---  AutoColoring
+--  Fix PIN behavior
 -- @provides
 --   Icons.ttf
 
@@ -52,7 +45,7 @@ local add_bnt_w = 55
 local add_btn_h = 14
 -- SETTINGS
 
-local SYNC = true
+local SYNC = false
 local AUTO_COLORING = false
 
 local COLOR = {
@@ -2005,7 +1998,7 @@ local function UI()
             SYNC = not SYNC
         end
         Tooltip(
-            "PIN - LOCKS TO SELECTED TRACK \n UNPIN ALLOWS MULTIPLE SCRIPTS TO HAVE DIFFERENT SELECTIONS")
+            "PIN - LOCKS TO SELECTED TRACK ALOWING MULTIPLE SCRIPTS TO HAVE DIFFERENT SELECTIONS\n UNPIN FOLLOWS REAPER TRACK SELECTION")
 
         r.ImGui_SameLine(ctx)
         --Tooltip("RESET VIEW")
@@ -2015,9 +2008,9 @@ local function UI()
                 local _, track_id = r.GetTrackName(track)
                 if r.ImGui_Selectable(ctx, track_id) then
                     if SYNC then
-                        r.SetOnlyTrackSelected(track)
-                    else
                         SEL_LIST_TRACK = track
+                    else
+                        r.SetOnlyTrackSelected(track)
                     end
                 end
             end
@@ -2157,7 +2150,7 @@ local function Main()
     local master = r.GetMasterTrack(0)
     if r.GetMediaTrackInfo_Value(master, "I_SELECTED") == 1 then TRACK = master end
 
-    TRACK = SYNC and TRACK or SEL_LIST_TRACK
+    TRACK = SYNC and SEL_LIST_TRACK or TRACK
 
     if LAST_TRACK ~= TRACK then
         Store_To_PEXT(LAST_TRACK)
