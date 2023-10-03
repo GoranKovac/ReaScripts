@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="f646c372285b8dcb4f6f0fd4416a20ec73d9460c" name="Sexan_Scripts">
+<index version="1" commit="d54121cfc19ab86713b88dedae0033bd7d734718" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -652,6 +652,18 @@ reduce knob size by 1 pixel]]></changelog>
         <changelog><![CDATA[AutoContainers]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/e3efd855cd4f9e4cd644e70d2c8e18db03dd89e1/FX/Sexan_ParaNormal_FX_Router.lua</source>
         <source file="Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/e3efd855cd4f9e4cd644e70d2c8e18db03dd89e1/FX/Icons.ttf</source>
+      </version>
+      <version name="1.27" author="Sexan" time="2023-10-03T17:44:27Z">
+        <changelog><![CDATA[Fix hovering over vol pan helper knobs hovering button behind
+Add move/copy visual feedback
+Made script little more compact with sizes (insert point has its own size now)
+Fixed crash when draging over FX CHAIN button
+UserSettings
+TopBar
+PIN follows reaper track selection (allowing multiple instances of script when unpin)
+AutoColoring]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/d54121cfc19ab86713b88dedae0033bd7d734718/FX/Sexan_ParaNormal_FX_Router.lua</source>
+        <source file="Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/d54121cfc19ab86713b88dedae0033bd7d734718/FX/Icons.ttf</source>
       </version>
     </reapack>
   </category>
