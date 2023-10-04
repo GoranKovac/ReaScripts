@@ -1,7 +1,7 @@
 -- @description Sexan Para-Normal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.35
+-- @version 1.36
 -- @changelog
 --  fix looking for new broser path
 -- @provides
@@ -26,7 +26,7 @@ if r.file_exists(fx_browser_script_path) then
     require("Sexan_FX_Browser_ParserV7")
 else
     r.ShowConsoleMsg("Sexan FX BROWSER is needed.\nPlease Install it in next window")
-    return r.ReaPack_BrowsePackages('sexan fx browser parserV7')
+    return r.ReaPack_BrowsePackages('sexan fx browser parser V7')
 end
 
 --local profiler2 = require("profiler")
