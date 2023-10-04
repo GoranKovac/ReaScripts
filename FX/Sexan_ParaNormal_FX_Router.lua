@@ -1,9 +1,9 @@
 -- @description Sexan Para-Normal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.33
+-- @version 1.35
 -- @changelog
---  Move to new FX BROWSER for V7
+--  fix looking for new broser path
 -- @provides
 --   Icons.ttf
 --   ProggyClean.ttf
