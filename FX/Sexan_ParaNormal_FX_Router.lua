@@ -1,18 +1,9 @@
 -- @description Sexan Para-Normal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.30
+-- @version 1.31
 -- @changelog
---  Added userfont (system)
---  Added default imgui font file
---  Toolbar buttons tweak
---  Added track MUTE/SOLO
---  UserSettings system font
---  Fixed user spacing not restoring
---  Added Custom JSFX for traditional band splitting
---  Added phase helper
---  Added container Solo toggle (SHIFT CLICK) parallel lane only
---  Added right click option to unbypass whole parallel lane
+--  Added global name margin
 -- @provides
 --   Icons.ttf
 --   ProggyClean.ttf
@@ -61,6 +52,7 @@ local SYNC = false
 local AUTO_COLORING = false
 local CUSTOM_FONT = nil
 
+local name_margin = 25
 local COLOR = {
     ["n"]           = 0x315e94ff,
     ["Container"]   = 0x49cc85FF,
@@ -776,14 +768,14 @@ local function IterateContainer(depth, track, container_id, parent_fx_count, pre
         local color = r.ImGui_ColorConvertDouble4ToU32(rr, gg, bb, 1)
         if i > 1 then row = para == "0" and row + 1 or row end
 
-        local name_w = CalculateItemWH({ name = fx_name })
+        local name_w = CalculateItemWH({ name = fx_name:gsub("(%S+: )", "") })
 
         if name_w > total_w then total_w = name_w end
 
         child_fx[#child_fx + 1] = {
             FX_ID = fx_id,
             type = fx_type,
-            name = fx_name,
+            name = fx_name:gsub("(%S+: )", ""),
             IDX = i,
             pid = container_guid,
             guid = fx_guid,
@@ -855,7 +847,7 @@ local function GetOrUpdateFX(target)
         PLUGINS[#PLUGINS + 1] = {
             FX_ID = i,
             type = fx_type,
-            name = fx_name,
+            name = fx_name:gsub("(%S+: )", ""),
             IDX = i,
             guid = fx_guid,
             pid = "ROOT",
@@ -1704,9 +1696,9 @@ function DrawPlugins(center, tbl, fade, color_del)
     for i = 0, #tbl do
         --local name = tbl[i].name:gsub("(%S+: )", "")
         --local name = Stripname(tbl[i].name, true, true)
-        local name = tbl[i].name:gsub("(%S+: )", "")
+        local name = tbl[i].name --:gsub("(%S+: )", "")
         local width, height = CalculateItemWH(tbl[i])
-        width = tbl[i].W and tbl[i].W or width
+        width = tbl[i].W and tbl[i].W or width + name_margin
         height = tbl[i].H and tbl[i].H or height
         SetItemPos(tbl, i, center, width)
         if tbl[i].type ~= "Container" then
