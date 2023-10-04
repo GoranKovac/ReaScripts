@@ -1,9 +1,9 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.0
+-- @version 1.1
 -- @changelog
---  FX parser for reaper V7
+--  Fixed filtering actions
 
 local r = reaper
 local os = r.GetOS()
@@ -369,13 +369,11 @@ local function AllPluginsCategory()
             table.sort(CAT[i].list,
                 function(a, b) if a.name and b.name then return a.name:lower() < b.name:lower() end end)
         end
-        -- if CAT[i].name ~= "FOLDERS" then
-        --     for j = 1, #CAT[i].list do
-        --         if CAT[i].list[j].fx then
-        --             table.sort(CAT[i].list[j].fx, function(a, b) if a and b then return a:lower() < b:lower() end end)
-        --         end
-        --     end
-        -- end
+        for j = 1, #CAT[i].list do
+            if CAT[i].list[j].fx then
+                table.sort(CAT[i].list[j].fx, function(a, b) if a and b then return a:lower() < b:lower() end end)
+            end
+        end
     end
 
     table.sort(CAT, function(a, b) if a.name and b.name then return a.name:lower() < b.name:lower() end end)
@@ -444,14 +442,31 @@ end
 
 -- local FX_LIST, CAT = GetFXTbl()
 -- local function Lead_Trim_ws(s) return s:match '^%s*(.*)' end
+-- local tsort = table.sort
+-- function SortTable(tab, val1, val2)
+--     tsort(tab, function(a, b)
+--         if (a[val1] < b[val1]) then
+--             -- primary sort on position -> a before b
+--             return true
+--         elseif (a[val1] > b[val1]) then
+--             -- primary sort on position -> b before a
+--             return false
+--         else
+--             -- primary sort tied, resolve w secondary sort on rank
+--             return a[val2] < b[val2]
+--         end
+--     end)
+-- end
 
+-- local old_t = {}
+-- local old_filter = ""
 -- local function Filter_actions(filter_text)
+--     if old_filter == filter_text then return old_t end
 --     filter_text = Lead_Trim_ws(filter_text)
 --     local t = {}
 --     if filter_text == "" or not filter_text then return t end
 --     for i = 1, #FX_LIST do
---         local action = FX_LIST[i]
---         local name = action:lower()
+--         local name = FX_LIST[i]:lower() --:gsub("(%S+:)", "")
 --         local found = true
 --         for word in filter_text:gmatch("%S+") do
 --             if not name:find(word:lower(), 1, true) then
@@ -459,9 +474,13 @@ end
 --                 break
 --             end
 --         end
-
---         if found then t[#t + 1] = action end
+--         if found then t[#t + 1] = { score = FX_LIST[i]:len() - filter_text:len(), name = FX_LIST[i] } end
 --     end
+--     if #t >= 2 then
+--         SortTable(t, "score", "name") -- Sort by key priority
+--     end
+--     old_t = t
+--     old_filter = filter_text
 --     return t
 -- end
 
@@ -488,17 +507,17 @@ end
 --     if #filtered_fx ~= 0 then
 --         if r.ImGui_BeginChild(ctx, "##popupp", MAX_FX_SIZE, filter_h) then
 --             for i = 1, #filtered_fx do
---                 if r.ImGui_Selectable(ctx, filtered_fx[i], i == ADDFX_Sel_Entry) then
---                     r.TrackFX_AddByName(TRACK, filtered_fx[i], false, -1000 - r.TrackFX_GetCount(TRACK))
+--                 if r.ImGui_Selectable(ctx, filtered_fx[i].name, i == ADDFX_Sel_Entry) then
+--                     r.TrackFX_AddByName(TRACK, filtered_fx[i].name, false, -1000 - r.TrackFX_GetCount(TRACK))
 --                     r.ImGui_CloseCurrentPopup(ctx)
---                     LAST_USED_FX = filtered_fx[i]
+--                     LAST_USED_FX = filtered_fx[i].name
 --                 end
 --             end
 --             r.ImGui_EndChild(ctx)
 --         end
 --         if r.ImGui_IsKeyPressed(ctx, r.ImGui_Key_Enter()) then
---             r.TrackFX_AddByName(TRACK, filtered_fx[ADDFX_Sel_Entry], false, -1000 - r.TrackFX_GetCount(TRACK))
---             LAST_USED_FX = filtered_fx[filtered_fx[ADDFX_Sel_Entry]]
+--             r.TrackFX_AddByName(TRACK, filtered_fx[ADDFX_Sel_Entry].name, false, -1000 - r.TrackFX_GetCount(TRACK))
+--             LAST_USED_FX = filtered_fx[filtered_fx[ADDFX_Sel_Entry].name]
 --             ADDFX_Sel_Entry = nil
 --             FILTER = ''
 --             r.ImGui_CloseCurrentPopup(ctx)

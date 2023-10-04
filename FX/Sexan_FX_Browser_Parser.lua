@@ -1,11 +1,9 @@
 -- @description Sexan FX Browser parser
 -- @author Sexan
 -- @license GPL v3
--- @version 1.2
+-- @version 1.3
 -- @changelog
---  Remove Prefixes in ALL PLUGINS category
---  Remove Developer suffix in DEVELOPER category
---  Literize developer name from magic characters
+--  Fixed filtering actions
 
 local r = reaper
 local os = r.GetOS()
@@ -594,13 +592,31 @@ end
 -- local FX_LIST, CAT = GetFXTbl()
 -- local function Lead_Trim_ws(s) return s:match '^%s*(.*)' end
 
+-- local tsort = table.sort
+-- function SortTable(tab, val1, val2)
+--     tsort(tab, function(a, b)
+--         if (a[val1] < b[val1]) then
+--             -- primary sort on position -> a before b
+--             return true
+--         elseif (a[val1] > b[val1]) then
+--             -- primary sort on position -> b before a
+--             return false
+--         else
+--             -- primary sort tied, resolve w secondary sort on rank
+--             return a[val2] < b[val2]
+--         end
+--     end)
+-- end
+
+-- local old_t = {}
+-- local old_filter = ""
 -- local function Filter_actions(filter_text)
+--     if old_filter == filter_text then return old_t end
 --     filter_text = Lead_Trim_ws(filter_text)
 --     local t = {}
 --     if filter_text == "" or not filter_text then return t end
 --     for i = 1, #FX_LIST do
---         local action = FX_LIST[i]
---         local name = action:lower()
+--         local name = FX_LIST[i]:lower() --:gsub("(%S+:)", "")
 --         local found = true
 --         for word in filter_text:gmatch("%S+") do
 --             if not name:find(word:lower(), 1, true) then
@@ -608,9 +624,13 @@ end
 --                 break
 --             end
 --         end
-
---         if found then t[#t + 1] = action end
+--         if found then t[#t + 1] = { score = FX_LIST[i]:len() - filter_text:len(), name = FX_LIST[i] } end
 --     end
+--     if #t >= 2 then
+--         SortTable(t, "score", "name") -- Sort by key priority
+--     end
+--     old_t = t
+--     old_filter = filter_text
 --     return t
 -- end
 
@@ -637,17 +657,17 @@ end
 --     if #filtered_fx ~= 0 then
 --         if r.ImGui_BeginChild(ctx, "##popupp", MAX_FX_SIZE, filter_h) then
 --             for i = 1, #filtered_fx do
---                 if r.ImGui_Selectable(ctx, filtered_fx[i], i == ADDFX_Sel_Entry) then
---                     r.TrackFX_AddByName(TRACK, filtered_fx[i], false, -1000 - r.TrackFX_GetCount(TRACK))
+--                 if r.ImGui_Selectable(ctx, filtered_fx[i].name, i == ADDFX_Sel_Entry) then
+--                     r.TrackFX_AddByName(TRACK, filtered_fx[i].name, false, -1000 - r.TrackFX_GetCount(TRACK))
 --                     r.ImGui_CloseCurrentPopup(ctx)
---                     LAST_USED_FX = filtered_fx[i]
+--                     LAST_USED_FX = filtered_fx[i].name
 --                 end
 --             end
 --             r.ImGui_EndChild(ctx)
 --         end
 --         if r.ImGui_IsKeyPressed(ctx, r.ImGui_Key_Enter()) then
---             r.TrackFX_AddByName(TRACK, filtered_fx[ADDFX_Sel_Entry], false, -1000 - r.TrackFX_GetCount(TRACK))
---             LAST_USED_FX = filtered_fx[filtered_fx[ADDFX_Sel_Entry]]
+--             r.TrackFX_AddByName(TRACK, filtered_fx[ADDFX_Sel_Entry].name, false, -1000 - r.TrackFX_GetCount(TRACK))
+--             LAST_USED_FX = filtered_fx[filtered_fx[ADDFX_Sel_Entry].name]
 --             ADDFX_Sel_Entry = nil
 --             FILTER = ''
 --             r.ImGui_CloseCurrentPopup(ctx)
@@ -689,9 +709,9 @@ end
 --     local track_template_path = r.GetResourcePath() .. "/TrackTemplates" .. template
 --     if replace then
 --         local chunk = GetFileContext(track_template_path)
---         r.SetTrackStateChunk( TRACK, chunk, true )
+--         r.SetTrackStateChunk(TRACK, chunk, true)
 --     else
---         r.Main_openProject( track_template_path )
+--         r.Main_openProject(track_template_path)
 --     end
 -- end
 
@@ -710,7 +730,7 @@ end
 --             if r.ImGui_Selectable(ctx, tbl[i]) then
 --                 if TRACK then
 --                     local template_str = table.concat({ path, os_separator, tbl[i], extension })
---                     LoadTemplate(template_str) -- ADD NEW TRACK FROM TEMPLATE
+--                     LoadTemplate(template_str)       -- ADD NEW TRACK FROM TEMPLATE
 --                     LoadTemplate(template_str, true) -- REPLACE CURRENT TRACK WITH TEMPLATE
 --                 end
 --             end
@@ -785,7 +805,7 @@ end
 --         if TRACK then
 --             Frame()
 --         else
---             reaper.ImGui_Text( ctx, "SELECT TRACK" )
+--             reaper.ImGui_Text(ctx, "SELECT TRACK")
 --         end
 --         r.ImGui_End(ctx)
 --     end
