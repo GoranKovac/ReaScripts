@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="7ca8a9194960e164315238d65ca6841db828e690" name="Sexan_Scripts">
+<index version="1" commit="c94c96160042b60c966b54587ab21aa9952673dc" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -727,6 +727,14 @@ Added right click option to unbypass whole parallel lane]]></changelog>
         <source file="ProggyClean.ttf">https://github.com/GoranKovac/ReaScripts/raw/f835467241d47a3e466a149112d3050df9a9edb6/FX/ProggyClean.ttf</source>
         <source type="effect" file="3BandSplitterFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/f835467241d47a3e466a149112d3050df9a9edb6/FX/3BandSplitterFX.jsfx</source>
         <source type="effect" file="BandSelectFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/f835467241d47a3e466a149112d3050df9a9edb6/FX/BandSelectFX.jsfx</source>
+      </version>
+      <version name="1.33" author="Sexan" time="2023-10-04T19:08:24Z">
+        <changelog><![CDATA[Move to new FX BROWSER for V7]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/c94c96160042b60c966b54587ab21aa9952673dc/FX/Sexan_ParaNormal_FX_Router.lua</source>
+        <source file="Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/c94c96160042b60c966b54587ab21aa9952673dc/FX/Icons.ttf</source>
+        <source file="ProggyClean.ttf">https://github.com/GoranKovac/ReaScripts/raw/c94c96160042b60c966b54587ab21aa9952673dc/FX/ProggyClean.ttf</source>
+        <source type="effect" file="3BandSplitterFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/c94c96160042b60c966b54587ab21aa9952673dc/FX/3BandSplitterFX.jsfx</source>
+        <source type="effect" file="BandSelectFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/c94c96160042b60c966b54587ab21aa9952673dc/FX/BandSelectFX.jsfx</source>
       </version>
     </reapack>
   </category>
