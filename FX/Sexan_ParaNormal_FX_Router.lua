@@ -1,18 +1,29 @@
 -- @description Sexan Para-Normal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.28
+-- @version 1.29
 -- @changelog
---  Fix PIN behavior
+--  Added userfont (system)
+--  Added default imgui font file
+--  Toolbar buttons tweak
+--  Added track MUTE/SOLO
+--  UserSettings system font
+--  Fixed user spacing not restoring
+--  Added Custom JSFX for traditional band splitting
+--  Added phase helper
+--  Added container Solo toggle (SHIFT CLICK) parallel lane only
+--  Added right click option to unbypass whole parallel lane
 -- @provides
 --   Icons.ttf
+--   ProggyClean.ttf
+--   3BandSplitterFX.jsfx
+--   BandSelectFX.jsfx
 
 local r = reaper
 local os_separator = package.config:sub(1, 1)
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 local script_path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]];
 local PATH = debug.getinfo(1).source:match("@?(.*[\\|/])")
-
 
 local fx_browser_script_path = r.GetResourcePath() .. "/Scripts/Sexan_Scripts/FX/Sexan_FX_Browser_Parser.lua"
 
@@ -30,6 +41,7 @@ end
 --local profiler2 = require("profiler")
 
 local VOL_PAN_HELPER = "Volume/Pan Smoother"
+local PHASE_HELPER = "Channel Polarity Control"
 
 -- SETTINGS
 local item_spacing_vertical = 7 -- VERTICAL SPACING BETEWEEN ITEMS
@@ -47,6 +59,7 @@ local add_btn_h = 14
 
 local SYNC = false
 local AUTO_COLORING = false
+local CUSTOM_FONT = nil
 
 local COLOR = {
     ["n"]           = 0x315e94ff,
@@ -112,8 +125,9 @@ if r.HasExtState("PARANORMALFX", "SETTINGS") then
         local storedTable = stringToTable(stored)
         if storedTable ~= nil then
             -- SETTINGS
+            CUSTOM_FONT = storedTable.custom_font
             AUTO_COLORING = storedTable.auto_color
-            item_spacing_vertical = storedTable.s_spacing_y
+            item_spacing_vertical = storedTable.spacing
             add_btn_h = storedTable.add_btn_h
             add_bnt_w = storedTable.add_bnt_w
             WireThickness = storedTable.wirethickness
@@ -141,6 +155,13 @@ ICONS_FONT = r.ImGui_CreateFont(script_path .. 'Icons.ttf', 13)
 r.ImGui_Attach(ctx, ICONS_FONT)
 ICONS_FONT2 = r.ImGui_CreateFont(script_path .. 'Icons.ttf', 16)
 r.ImGui_Attach(ctx, ICONS_FONT2)
+
+SYSTEM_FONT = r.ImGui_CreateFont('sans-serif', 13, r.ImGui_FontFlags_Bold())
+r.ImGui_Attach(ctx, SYSTEM_FONT)
+DEFAULT_FONT = r.ImGui_CreateFont(script_path .. 'ProggyClean.ttf', 13)
+r.ImGui_Attach(ctx, DEFAULT_FONT)
+
+local SELECTED_FONT = CUSTOM_FONT and SYSTEM_FONT or DEFAULT_FONT
 
 local draw_list = r.ImGui_GetWindowDrawList(ctx)
 
@@ -624,12 +645,23 @@ function DrawFXList()
             r.ImGui_EndMenu(ctx)
         end
     end
-    if r.ImGui_Selectable(ctx, "CONTAINER") then AddFX("Container") end
-    DragAddDDSource("Container")
+
     --if r.ImGui_Selectable(ctx, "VIDEO PROCESSOR") then AddFX("Video processor") end
     --DragAddDDSource("Video processor")
-    if r.ImGui_Selectable(ctx, "VOLUME-PAN UTILITY") then AddFX("JS:Volume/Pan Smoother") end
-    DragAddDDSource("JS:Volume/Pan Smoother")
+    if r.ImGui_BeginMenu(ctx, "UTILITY") then
+        if r.ImGui_Selectable(ctx, "VOLUME-PAN") then AddFX("JS:Volume/Pan Smoother") end
+        DragAddDDSource("JS:Volume/Pan Smoother")
+        if r.ImGui_Selectable(ctx, "POLARITY") then AddFX("JS:Channel Polarity Control") end
+        DragAddDDSource("JS:Channel Polarity Control")
+        if r.ImGui_Selectable(ctx, "3 BAND SPLITTER FX") then AddFX("JS:3-Band Splitter FX") end
+        DragAddDDSource("JS:3-Band Splitter FX")
+        if r.ImGui_Selectable(ctx, "BAND SELECT FX") then AddFX("JS:Band Select FX") end
+        DragAddDDSource("JS:Band Select FX")
+        r.ImGui_EndMenu(ctx)
+    end
+    if r.ImGui_Selectable(ctx, "CONTAINER") then AddFX("Container") end
+    DragAddDDSource("Container")
+    r.ImGui_Separator(ctx)
     if LAST_USED_FX then
         if r.ImGui_Selectable(ctx, "RECENT: " .. LAST_USED_FX) then AddFX(LAST_USED_FX) end
         DragAddDDSource(LAST_USED_FX)
@@ -1389,8 +1421,84 @@ local function DrawVolumePanHelper(tbl, i, w)
         end
 
         r.ImGui_PopID(ctx)
-        return mute, vol_hover, pan_hover
+        return "VOL - PAN", mute, vol_hover, pan_hover
+    elseif tbl[i].name:match(PHASE_HELPER) then
+        --if DRAG_MOVE and DRAG_MOVE.move_guid == tbl[i].guid and not CTRL_DRAG then return end
+
+        local parrent_container = GetParentContainerByGuid(tbl[i])
+        local item_id = CalcFxID(parrent_container, i)
+        r.ImGui_SameLine(ctx, nil, mute // 4)
+        r.ImGui_PushID(ctx, tbl[i].guid .. "helper_phase")
+        local phase_val = r.TrackFX_GetParam(TRACK, item_id, 0) -- 1 IS PAN IDENTIFIER
+        local pos = { r.ImGui_GetCursorScreenPos(ctx) }
+        if r.ImGui_InvisibleButton(ctx, "PHASE", mute, mute) then
+            r.TrackFX_SetParam(TRACK, item_id, 0, phase_val == 0 and 3 or 0)
+        end
+        local phase_hover = r.ImGui_IsItemHovered(ctx)
+        local center = { pos[1] + Knob_Radius, pos[2] + Knob_Radius }
+        r.ImGui_DrawList_AddCircleFilled(draw_list, center[1], center[2], Knob_Radius - 2,
+            phase_val == 0 and COLOR["knob_bg"] or 0x3a57ffff)
+        DrawListButton("P", 0)
+        r.ImGui_PopID(ctx)
+        return "PHASE " .. (phase_val == 0 and "NORMAL" or "INVERTED"), mute, phase_hover
     end
+end
+
+local function FindNextPrevRow(tbl, i, next, highest)
+    local target
+    local idx = i + next
+    local row = tbl[i].ROW
+    local last_in_row = i
+    local number_of_parallels = 1
+    while not target do
+        if not tbl[idx] then
+            last_in_row = idx + (-next)
+            target = tbl[idx]
+            break
+        end
+        if row ~= tbl[idx].ROW then
+            if highest then
+                if tbl[idx].biggest then
+                    target = tbl[idx]
+                else
+                    if tbl[idx].p == 0 then
+                        target = tbl[idx]
+                        break
+                    end
+                    idx = idx + next
+                end
+            else
+                target = tbl[idx]
+                last_in_row = idx + (-next)
+            end
+        else
+            idx = idx + next
+            number_of_parallels = number_of_parallels + 1
+        end
+    end
+    return target, last_in_row, number_of_parallels
+end
+
+local function SoloAllBeforePoint(parrent, cur_fx_id, cur_tbl, cur_i)
+    local _, first = FindNextPrevRow(cur_tbl, cur_i, -1)
+    local _, last = FindNextPrevRow(cur_tbl, cur_i, 1)
+    --if parrent.type == "ROOT" and cur_tbl[cur_i].type ~= "ROOT" then
+    --local _, first = FindNextPrevRow(cur_tbl, cur_i, -1)
+    --local _, last = FindNextPrevRow(cur_tbl, cur_i, 1)
+
+    for i = first, last do
+        local id = CalcFxID(parrent, i)
+        r.TrackFX_SetEnabled(TRACK, id, false)
+    end
+    --r.TrackFX_SetEnabled(TRACK, cur_fx_id, true)
+    -- else
+    --     local _, c_fx_count = r.TrackFX_GetNamedConfigParm(TRACK, 0x2000000 + parrent.ID, "container_count")
+    --     for i = 1, r.TrackFX_GetCount(TRACK) do
+    --     end
+    --     --     -- r.TrackFX_SetEnabled(TRACK, i - 1, true)
+    --     -- end
+    -- end
+    r.TrackFX_SetEnabled(TRACK, cur_fx_id, true)
 end
 
 function DrawButton(tbl, i, name, width, fade, del_color)
@@ -1406,14 +1514,18 @@ function DrawButton(tbl, i, name, width, fade, del_color)
     if r.ImGui_InvisibleButton(ctx, "B", para_btn_size, def_btn_h) then
         local parrent_container = GetParentContainerByGuid(tbl[i])
         local item_id = CalcFxID(parrent_container, i)
-        if tbl[i].type == "ROOT" then
-            r.SetMediaTrackInfo_Value(TRACK, "I_FXEN", tbl[i].bypass and 0 or 1)
+        if not SHIFT then
+            if tbl[i].type == "ROOT" then
+                r.SetMediaTrackInfo_Value(TRACK, "I_FXEN", tbl[i].bypass and 0 or 1)
+            else
+                r.TrackFX_SetEnabled(TRACK, item_id, not tbl[i].bypass)
+            end
         else
-            r.TrackFX_SetEnabled(TRACK, item_id, not tbl[i].bypass)
+            SoloAllBeforePoint(parrent_container, item_id, tbl, i)
         end
     end
+    Tooltip(SHIFT and "SOLO IN LANE" or "BYPASS")
     r.ImGui_PopID(ctx)
-    Tooltip("BYPASS")
     local color = tbl[i].bypass and COLOR["enabled"] or COLOR["bypass"]
     --color = bypass_color and bypass_color or color
     r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 1)
@@ -1424,8 +1536,8 @@ function DrawButton(tbl, i, name, width, fade, del_color)
     end
 
     --! DRAW VOL/PAN PLUGIN
-    local helper, vol_hover, pan_hover = DrawVolumePanHelper(tbl, i, width)
-    name = helper and "VOL - PAN" or name
+    local helper_name, helper, vol_hover, pan_hover = DrawVolumePanHelper(tbl, i, width)
+    name = helper_name or name
 
     r.ImGui_PushID(ctx, tbl[i].guid .. "button")
     --! DRAW BUTTON
@@ -1539,37 +1651,6 @@ local function SetItemPos(tbl, i, x, item_w)
             r.ImGui_SetCursorPosX(ctx, x - text_size)
         end
     end
-end
-
-local function FindNextPrevRow(tbl, i, next, highest)
-    local target
-    local idx = i + next
-    local row = tbl[i].ROW
-    local last_in_row = i
-    local number_of_parallels = 1
-    while not target do
-        if not tbl[idx] then break end
-        if row ~= tbl[idx].ROW then
-            if highest then
-                if tbl[idx].biggest then
-                    target = tbl[idx]
-                else
-                    if tbl[idx].p == 0 then
-                        target = tbl[idx]
-                        break
-                    end
-                    idx = idx + next
-                end
-            else
-                target = tbl[idx]
-                last_in_row = idx + (-next)
-            end
-        else
-            idx = idx + next
-            number_of_parallels = number_of_parallels + 1
-        end
-    end
-    return target, last_in_row, number_of_parallels
 end
 
 local function GenerateCoordinates(tbl, i, last)
@@ -1736,6 +1817,16 @@ local function RCCTXMenuParallel()
             r.TrackFX_SetParam(TRACK, item_id, PARA_DATA[1][i].wetparam, 1)
         end
     end
+    if r.ImGui_MenuItem(ctx, 'UNBYPASS ALL') then
+        local parrent_container = GetParentContainerByGuid(PARA_DATA[1][PARA_DATA[2]])
+        local _, first_idx_in_row = FindNextPrevRow(PARA_DATA[1], PARA_DATA[2], -1)
+        local _, last_idx_in_row = FindNextPrevRow(PARA_DATA[1], PARA_DATA[2], 1)
+
+        for i = first_idx_in_row, last_idx_in_row do
+            local item_id = CalcFxID(parrent_container, i)
+            r.TrackFX_SetEnabled(TRACK, item_id, true)
+        end
+    end
 end
 
 function RCCTXMenu()
@@ -1764,6 +1855,7 @@ end
 local function StoreSettings()
     local data = tableToString(
         {
+            custom_font = CUSTOM_FONT,
             auto_color = AUTO_COLORING,
             spacing = s_spacing_y,
             add_btn_h = add_btn_h,
@@ -1787,7 +1879,18 @@ local function DrawUserSettings()
     r.ImGui_SetNextWindowPos(ctx, WX + 5, WY + 70)
     -- if not r.ImGui_BeginChild(ctx, 'hackUSERSETTIGS', -FLT_MIN, -FLT_MIN, false, r.ImGui_WindowFlags_NoInputs()) then return end
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x000000EE)
-    if r.ImGui_BeginChild(ctx, "USERSETTIGS", 180, 296, 1) then
+    if r.ImGui_BeginChild(ctx, "USERSETTIGS", 182, 338, 1) then
+        if r.ImGui_BeginListBox(ctx, "FONT", nil, 38) then
+            if r.ImGui_Selectable(ctx, "DEFAULT", CUSTOM_FONT == nil) then
+                SELECTED_FONT = DEFAULT_FONT
+                CUSTOM_FONT = nil
+            end
+            if r.ImGui_Selectable(ctx, "SYSTEM", CUSTOM_FONT ~= nil) then
+                SELECTED_FONT = SYSTEM_FONT
+                CUSTOM_FONT = true
+            end
+            r.ImGui_EndListBox(ctx)
+        end
         r.ImGui_SetNextItemWidth(ctx, 100)
         retval, s_spacing_y = r.ImGui_SliderInt(ctx, "SPACING", s_spacing_y, 0, 20)
         r.ImGui_SetNextItemWidth(ctx, 100)
@@ -1799,7 +1902,7 @@ local function DrawUserSettings()
         r.ImGui_SetNextItemWidth(ctx, 50)
         retval, WireThickness = r.ImGui_SliderInt(ctx, "WIRE THICKNESS", WireThickness, 1, 5)
         --retval, COLOR["wire"] = r.ImGui_ColorPicker4(ctx, "WIRE COLOR", COLOR["wire"], nil, COLOR["wire"])
-        rv_ac, AUTO_COLORING = r.ImGui_Checkbox(ctx, "AUTO_COLORING", AUTO_COLORING)
+        rv_ac, AUTO_COLORING = r.ImGui_Checkbox(ctx, "AUTO COLORING", AUTO_COLORING)
         r.ImGui_Separator(ctx)
         RV_COL, COLOR["wire"] = r.ImGui_ColorEdit4(ctx, "WIRE COLOR", COLOR["wire"], r.ImGui_ColorEditFlags_NoInputs())
         if AUTO_COLORING then r.ImGui_BeginDisabled(ctx, true) end
@@ -1827,6 +1930,8 @@ local function DrawUserSettings()
         --end
         --r.ImGui_SameLine(ctx)
         if r.ImGui_Button(ctx, "DEFAULT") then
+            CUSTOM_FONT = nil
+            SELECTED_FONT = DEFAULT_FONT
             s_spacing_y = 7
             custom_btn_h = 22
             Knob_Radius = custom_btn_h // 2
@@ -1978,30 +2083,59 @@ local function UI()
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x000000EE)
 
     --r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_WindowPadding(), 0, 2)
-    if r.ImGui_BeginChild(ctx, "TopButtons", 220, def_btn_h + (s_window_y * 2), 1) then
+    if r.ImGui_BeginChild(ctx, "TopButtons", 280, def_btn_h + (s_window_y * 2), 1) then
         local retval, tr_ID = r.GetTrackName(TRACK)
         r.ImGui_PushFont(ctx, ICONS_FONT2)
-        if r.ImGui_Button(ctx, "D") then
+        if r.ImGui_InvisibleButton(ctx, "D", CalculateItemWH({ name = "D" }), def_btn_h) then
             if OPEN_SETTINGS then
                 StoreSettings()
             end
             OPEN_SETTINGS = not OPEN_SETTINGS
         end
+        DrawListButton("D", 0xff, nil, nil, r.ImGui_IsItemHovered(ctx))
         r.ImGui_SameLine(ctx)
-        if r.ImGui_Button(ctx, "L") then
+        if r.ImGui_InvisibleButton(ctx, "L", CalculateItemWH({ name = "D" }), def_btn_h) then
             CANVAS.off_x, CANVAS.off_y = 0, 50
         end
+        DrawListButton("L", 0xff, nil, nil, r.ImGui_IsItemHovered(ctx))
         r.ImGui_PopFont(ctx)
         r.ImGui_SameLine(ctx)
-        if r.ImGui_Checkbox(ctx, "PIN", SYNC) then
+        local pin_color = SYNC and 0x49cc85FF or 0xff --0x1b3d65ff
+        if r.ImGui_InvisibleButton(ctx, "PIN", CalculateItemWH({ name = "PIN" }), def_btn_h) then
+            --if r.ImGui_Checkbox(ctx, "PIN", SYNC) then
             SEL_LIST_TRACK = TRACK
             SYNC = not SYNC
         end
+        DrawListButton("PIN", pin_color, nil, nil, r.ImGui_IsItemHovered(ctx))
         Tooltip(
             "PIN - LOCKS TO SELECTED TRACK ALOWING MULTIPLE SCRIPTS TO HAVE DIFFERENT SELECTIONS\n UNPIN FOLLOWS REAPER TRACK SELECTION")
 
         r.ImGui_SameLine(ctx)
+        if r.ImGui_InvisibleButton(ctx, "M", CalculateItemWH({ name = "PIN" }), def_btn_h) then
+            if SYNC then
+                r.SetTrackUIMute(SEL_LIST_TRACK, -1, 0)
+            else
+                r.SetTrackUIMute(TRACK, -1, 0)
+            end
+        end
+        local mute_color = r.GetMediaTrackInfo_Value(SYNC and SEL_LIST_TRACK or TRACK, "B_MUTE")
+        DrawListButton("M", mute_color == 0 and 0xff or 0xff2222ff, nil, nil, r.ImGui_IsItemHovered(ctx))
+
+        r.ImGui_SameLine(ctx)
+
+        if r.ImGui_InvisibleButton(ctx, "S", CalculateItemWH({ name = "PIN" }), def_btn_h) then
+            if SYNC then
+                r.SetTrackUISolo(SEL_LIST_TRACK, -1, 0)
+            else
+                r.SetTrackUISolo(TRACK, -1, 0)
+            end
+        end
+        local solo_color = r.GetMediaTrackInfo_Value(SYNC and SEL_LIST_TRACK or TRACK, "I_SOLO")
+        DrawListButton("S", solo_color == 0 and 0xff or 0xf1c524ff, nil, nil, r.ImGui_IsItemHovered(ctx))
+        r.ImGui_SameLine(ctx)
+
         --Tooltip("RESET VIEW")
+        r.ImGui_SetCursorPosY(ctx, r.ImGui_GetCursorPosY(ctx) + s_window_y // 2)
         if r.ImGui_BeginMenu(ctx, tr_ID .. "##main") then
             for i = 0, r.CountTracks(0) do
                 local track = i == 0 and r.GetMasterTrack(0) or r.GetTrack(0, i - 1)
@@ -2166,8 +2300,10 @@ local function Main()
     r.ImGui_SetNextWindowSizeConstraints(ctx, 500, 500, FLT_MAX, FLT_MAX)
     r.ImGui_SetNextWindowSize(ctx, 500, 500, r.ImGui_Cond_FirstUseEver())
     local visible, open = r.ImGui_Begin(ctx, 'PARANORMAL FX ROUTER', true, WND_FLAGS)
-    r.ImGui_PopStyleColor(ctx)
+    r.ImGui_PushFont(ctx, SELECTED_FONT)
+
     if visible then
+        r.ImGui_PopStyleColor(ctx)
         if TRACK then
             Frame()
             UI()
@@ -2180,6 +2316,9 @@ local function Main()
         end
         IS_DRAGGING_RIGHT_CANVAS = r.ImGui_IsMouseDragging(ctx, 1, 2)
         FX_OPENED = r.ImGui_IsPopupOpen(ctx, "FX LIST")
+        --if CUSTOM_FONT and not FONT_UPDATE then
+        r.ImGui_PopFont(ctx)
+        --end
         r.ImGui_End(ctx)
     end
     UpdateScroll()
@@ -2199,6 +2338,7 @@ local function Main()
     --     PROFILE_DEBUG, PROFILE_STARTED = false, nil
     --     OpenFile(PATH .. "profiler.log")
     -- end
+    if FONT_UPDATE then FONT_UPDATE = nil end
 end
 
 function Exit() Store_To_PEXT(LAST_TRACK) end
