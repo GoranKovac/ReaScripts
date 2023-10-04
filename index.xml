@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="25d0072c3c657146c3f6fbe86a453e13cfa6e5af" name="Sexan_Scripts">
+<index version="1" commit="ab3d883b4fbe0fe4fb21be3f1eeef4699f004a74" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -669,6 +669,23 @@ AutoColoring]]></changelog>
         <changelog><![CDATA[Fix PIN behavior]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/25d0072c3c657146c3f6fbe86a453e13cfa6e5af/FX/Sexan_ParaNormal_FX_Router.lua</source>
         <source file="Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/25d0072c3c657146c3f6fbe86a453e13cfa6e5af/FX/Icons.ttf</source>
+      </version>
+      <version name="1.29" author="Sexan" time="2023-10-04T16:56:47Z">
+        <changelog><![CDATA[Added userfont (system)
+Added default imgui font file
+Toolbar buttons tweak
+Added track MUTE/SOLO
+UserSettings system font
+Fixed user spacing not restoring
+Added Custom JSFX for traditional band splitting
+Added phase helper
+Added container Solo toggle (SHIFT CLICK) parallel lane only
+Added right click option to unbypass whole parallel lane]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/ab3d883b4fbe0fe4fb21be3f1eeef4699f004a74/FX/Sexan_ParaNormal_FX_Router.lua</source>
+        <source file="Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/ab3d883b4fbe0fe4fb21be3f1eeef4699f004a74/FX/Icons.ttf</source>
+        <source file="ProggyClean.ttf">https://github.com/GoranKovac/ReaScripts/raw/ab3d883b4fbe0fe4fb21be3f1eeef4699f004a74/FX/ProggyClean.ttf</source>
+        <source file="3BandSplitterFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/ab3d883b4fbe0fe4fb21be3f1eeef4699f004a74/FX/3BandSplitterFX.jsfx</source>
+        <source file="BandSelectFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/ab3d883b4fbe0fe4fb21be3f1eeef4699f004a74/FX/BandSelectFX.jsfx</source>
       </version>
     </reapack>
   </category>
