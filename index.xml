@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="854c2660700d67afcab0572d81127a596dc4c2ae" name="Sexan_Scripts">
+<index version="1" commit="b7fdede98936a8581e95c2c29c2a9820372174f1" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -525,6 +525,10 @@ Literize developer name from magic characters]]></changelog>
         <changelog><![CDATA[Fixed filtering actions]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/7ca8a9194960e164315238d65ca6841db828e690/FX/Sexan_FX_Browser_Parser.lua</source>
       </version>
+      <version name="1.4" author="Sexan" time="2023-10-04T20:46:46Z">
+        <changelog><![CDATA[Fixed sorting FX CHAINS and TRACK TEMPLATES]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/b7fdede98936a8581e95c2c29c2a9820372174f1/FX/Sexan_FX_Browser_Parser.lua</source>
+      </version>
     </reapack>
     <reapack name="Sexan_FX_Browser_ParserV7.lua" type="script" desc="Sexan FX Browser parser V7">
       <version name="1.0" author="Sexan" time="2023-10-02T18:28:39Z">
@@ -534,6 +538,10 @@ Literize developer name from magic characters]]></changelog>
       <version name="1.1" author="Sexan" time="2023-10-04T19:02:29Z">
         <changelog><![CDATA[Fixed filtering actions]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/7ca8a9194960e164315238d65ca6841db828e690/FX/Sexan_FX_Browser_ParserV7.lua</source>
+      </version>
+      <version name="1.2" author="Sexan" time="2023-10-04T20:46:46Z">
+        <changelog><![CDATA[Fixed sorting FX CHAINS and TRACK TEMPLATES]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/b7fdede98936a8581e95c2c29c2a9820372174f1/FX/Sexan_FX_Browser_ParserV7.lua</source>
       </version>
     </reapack>
     <reapack name="Sexan_ParaNormal_FX_Router.lua" type="script" desc="Sexan Para-Normal FX Router">
