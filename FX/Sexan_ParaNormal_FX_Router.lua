@@ -1,9 +1,9 @@
 -- @description Sexan Para-Normal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.31
+-- @version 1.32
 -- @changelog
---  Added global name margin
+--  Fix space passthrough when rename is opened
 -- @provides
 --   Icons.ttf
 --   ProggyClean.ttf
@@ -2058,8 +2058,8 @@ local function CheckKeys()
     if r.ImGui_GetKeyMods(ctx) == r.ImGui_Mod_Shortcut() | r.ImGui_Mod_Shift() and Z then
         r.Main_OnCommand(40030, 0)                    -- REDO
     end
-
-    if SPACE and not FX_OPENED then r.Main_OnCommand(40044, 0) end -- PLAY STOP
+    --r.show
+    if SPACE and (not FX_OPENED and not RENAME_OPENED) then r.Main_OnCommand(40044, 0) end -- PLAY STOP
 
     -- ACTIVATE CTRL ONLY IF NOT PREVIOUSLY DRAGGING
     if not CTRL_DRAG then
@@ -2308,6 +2308,7 @@ local function Main()
         end
         IS_DRAGGING_RIGHT_CANVAS = r.ImGui_IsMouseDragging(ctx, 1, 2)
         FX_OPENED = r.ImGui_IsPopupOpen(ctx, "FX LIST")
+        RENAME_OPENED = r.ImGui_IsPopupOpen(ctx, "RENAME")
         --if CUSTOM_FONT and not FONT_UPDATE then
         r.ImGui_PopFont(ctx)
         --end
