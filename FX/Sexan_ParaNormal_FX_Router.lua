@@ -1,7 +1,7 @@
 -- @description Sexan Para-Normal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.29
+-- @version 1.30
 -- @changelog
 --  Added userfont (system)
 --  Added default imgui font file
@@ -16,8 +16,8 @@
 -- @provides
 --   Icons.ttf
 --   ProggyClean.ttf
---   3BandSplitterFX.jsfx
---   BandSelectFX.jsfx
+--   [effect] 3BandSplitterFX.jsfx
+--   [effect] BandSelectFX.jsfx
 
 local r = reaper
 local os_separator = package.config:sub(1, 1)
