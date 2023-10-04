@@ -1,9 +1,9 @@
 -- @description Sexan Para-Normal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.32
+-- @version 1.33
 -- @changelog
---  Fix space passthrough when rename is opened
+--  Move to new FX BROWSER for V7
 -- @provides
 --   Icons.ttf
 --   ProggyClean.ttf
@@ -23,7 +23,7 @@ if not r.APIExists("ImGui_GetVersion") then
     return r.ReaPack_BrowsePackages('dear imgui')
 end
 if r.file_exists(fx_browser_script_path) then
-    require("Sexan_FX_Browser_Parser")
+    require("Sexan_FX_Browser_ParserV7")
 else
     r.ShowConsoleMsg("Sexan FX BROWSER is needed.\nPlease Install it in next window")
     return r.ReaPack_BrowsePackages('sexan fx browser parserV7')
@@ -413,7 +413,6 @@ end
 local function EndUndoBlock(str)
     r.Undo_EndBlock("PARANORMAL: " .. str, 0)
 end
-
 
 local function AddFX(name)
     if not TRACK or not FX_ID then return end
