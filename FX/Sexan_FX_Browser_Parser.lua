@@ -1,9 +1,9 @@
 -- @description Sexan FX Browser parser
 -- @author Sexan
 -- @license GPL v3
--- @version 1.3
+-- @version 1.4
 -- @changelog
---  Fixed filtering actions
+--  Fixed sorting FX CHAINS and TRACK TEMPLATES
 
 local r = reaper
 local os = r.GetOS()
@@ -519,7 +519,10 @@ local function AllPluginsCategory(JS, AU, AUi, CLAP, CLAPi, VST, VSTi, VST3, VST
 
     -- SORT EVERYTHING ALPHABETICALLY
     for i = 1, #CAT do
-        table.sort(CAT[i].list, function(a, b) if a.name and b.name then return a.name:lower() < b.name:lower() end end)
+        if CAT[i].name ~= "FOLDER" and CAT[i].name ~= "FX CHAINS" and CAT[i].name ~= "TRACK TEMPLATES" then
+            table.sort(CAT[i].list,
+                function(a, b) if a.name and b.name then return a.name:lower() < b.name:lower() end end)
+        end
         for j = 1, #CAT[i].list do
             if CAT[i].list[j].fx then
                 table.sort(CAT[i].list[j].fx, function(a, b) if a and b then return a:lower() < b:lower() end end)
