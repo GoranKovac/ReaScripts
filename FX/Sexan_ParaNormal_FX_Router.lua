@@ -1,9 +1,9 @@
--- @description Sexan Para-Normal FX Router
+-- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.36
+-- @version 1.38
 -- @changelog
---  fix looking for new broser path
+--  Fix container solo feature and tooltip to only work on containers
 -- @provides
 --   Icons.ttf
 --   ProggyClean.ttf
@@ -1241,7 +1241,9 @@ local function AddFX_P(tbl, i)
         end
     end
 
-    DrawListButton("||", (DRAG_ADD_FX or DRAG_MOVE) and ColorToHex(COLOR["n"], 10) or COLOR["parallel"])
+    DrawListButton("||",
+        (DRAG_ADD_FX or DRAG_MOVE) and ColorToHex(COLOR["n"], 10) or
+        r.ImGui_IsItemHovered(ctx) and ColorToHex(COLOR["n"], 10) or COLOR["parallel"])
     if not CTRL then
         DragAddDDTarget(tbl, i, "parallel")
     end
@@ -1505,17 +1507,25 @@ function DrawButton(tbl, i, name, width, fade, del_color)
     if r.ImGui_InvisibleButton(ctx, "B", para_btn_size, def_btn_h) then
         local parrent_container = GetParentContainerByGuid(tbl[i])
         local item_id = CalcFxID(parrent_container, i)
-        if not SHIFT then
-            if tbl[i].type == "ROOT" then
-                r.SetMediaTrackInfo_Value(TRACK, "I_FXEN", tbl[i].bypass and 0 or 1)
+        --if not SHIFT then
+        if tbl[i].type == "ROOT" then
+            r.SetMediaTrackInfo_Value(TRACK, "I_FXEN", tbl[i].bypass and 0 or 1)
+        else
+            if tbl[i].type == "Container" then
+                if SHIFT then
+                    SoloAllBeforePoint(parrent_container, item_id, tbl, i)
+                else
+                    r.TrackFX_SetEnabled(TRACK, item_id, not tbl[i].bypass)
+                end
             else
                 r.TrackFX_SetEnabled(TRACK, item_id, not tbl[i].bypass)
             end
-        else
-            SoloAllBeforePoint(parrent_container, item_id, tbl, i)
         end
+        --else
+        --SoloAllBeforePoint(parrent_container, item_id, tbl, i)
+        --end
     end
-    Tooltip(SHIFT and "SOLO IN LANE" or "BYPASS")
+    Tooltip((SHIFT and tbl[i].type == "Container") and "SOLO IN LANE" or "BYPASS")
     r.ImGui_PopID(ctx)
     local color = tbl[i].bypass and COLOR["enabled"] or COLOR["bypass"]
     --color = bypass_color and bypass_color or color
@@ -1523,7 +1533,7 @@ function DrawButton(tbl, i, name, width, fade, del_color)
 
     if DRAG_MOVE and DRAG_MOVE.move_guid == tbl[i].guid and not CTRL_DRAG then
     else
-        DrawListButton("A", color, "L", true)
+        DrawListButton("A", color, "L", true, r.ImGui_IsItemHovered(ctx))
     end
 
     --! DRAW VOL/PAN PLUGIN
@@ -1612,7 +1622,7 @@ function DrawButton(tbl, i, name, width, fade, del_color)
         Tooltip("ENCLOSE ALL INTO CONTAINER")
         r.ImGui_PopID(ctx)
 
-        DrawListButton("K", color, "R", true)
+        DrawListButton("K", color, "R", true, r.ImGui_IsItemHovered(ctx))
     end
     r.ImGui_EndGroup(ctx)
     r.ImGui_PopStyleVar(ctx)
@@ -2090,6 +2100,7 @@ local function UI()
         end
         DrawListButton("L", 0xff, nil, nil, r.ImGui_IsItemHovered(ctx))
         r.ImGui_PopFont(ctx)
+        Tooltip("RESET VIEW")
         r.ImGui_SameLine(ctx)
         local pin_color = SYNC and 0x49cc85FF or 0xff --0x1b3d65ff
         if r.ImGui_InvisibleButton(ctx, "PIN", CalculateItemWH({ name = "PIN" }), def_btn_h) then
