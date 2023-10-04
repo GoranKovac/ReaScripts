@@ -16,7 +16,7 @@ package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.l
 local script_path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]];
 local PATH = debug.getinfo(1).source:match("@?(.*[\\|/])")
 
-local fx_browser_script_path = r.GetResourcePath() .. "/Scripts/Sexan_Scripts/FX/Sexan_FX_Browser_Parser.lua"
+local fx_browser_script_path = r.GetResourcePath() .. "/Scripts/Sexan_Scripts/FX/Sexan_FX_Browser_ParserV7.lua"
 
 if not r.APIExists("ImGui_GetVersion") then
     r.ShowConsoleMsg("ReaImGui is required.\nPlease Install it in next window")
