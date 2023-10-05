@@ -1,7 +1,7 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.4
+-- @version 1.41
 -- @changelog
 --  Add name margin to container calculation (fixes parallels in container go off)
 --  Copy paste across instances
