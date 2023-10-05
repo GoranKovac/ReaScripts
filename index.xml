@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="9797fc767e8bc2db2be66388e097c4a1c183cbf7" name="Sexan_Scripts">
+<index version="1" commit="019fe20b50a832f1cde635fd7b218185834b591f" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -767,6 +767,15 @@ Added right click option to unbypass whole parallel lane]]></changelog>
         <source file="ProggyClean.ttf">https://github.com/GoranKovac/ReaScripts/raw/9797fc767e8bc2db2be66388e097c4a1c183cbf7/FX/ProggyClean.ttf</source>
         <source type="effect" file="3BandSplitterFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/9797fc767e8bc2db2be66388e097c4a1c183cbf7/FX/3BandSplitterFX.jsfx</source>
         <source type="effect" file="BandSelectFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/9797fc767e8bc2db2be66388e097c4a1c183cbf7/FX/BandSelectFX.jsfx</source>
+      </version>
+      <version name="1.39" author="Sexan" time="2023-10-05T07:56:30Z">
+        <changelog><![CDATA[Fix crash when minimizing window
+Add Reaper version check]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/019fe20b50a832f1cde635fd7b218185834b591f/FX/Sexan_ParaNormal_FX_Router.lua</source>
+        <source file="Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/019fe20b50a832f1cde635fd7b218185834b591f/FX/Icons.ttf</source>
+        <source file="ProggyClean.ttf">https://github.com/GoranKovac/ReaScripts/raw/019fe20b50a832f1cde635fd7b218185834b591f/FX/ProggyClean.ttf</source>
+        <source type="effect" file="3BandSplitterFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/019fe20b50a832f1cde635fd7b218185834b591f/FX/3BandSplitterFX.jsfx</source>
+        <source type="effect" file="BandSelectFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/019fe20b50a832f1cde635fd7b218185834b591f/FX/BandSelectFX.jsfx</source>
       </version>
     </reapack>
   </category>
