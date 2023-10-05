@@ -1,14 +1,18 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.43
+-- @version 1.44
 -- @changelog
---  Collect fx data after all potential insertations
+--  Move Mute and Solo buttons closer to each other
+--  Added ErrorHandler for detailed crash report
+--  Animated Tutorials
+--  Added bypass color in user setting
 -- @provides
 --   Icons.ttf
 --   ProggyClean.ttf
 --   [effect] 3BandSplitterFX.jsfx
 --   [effect] BandSelectFX.jsfx
+--   Tutorials/*.png
 
 local r = reaper
 local os_separator = package.config:sub(1, 1)
@@ -78,6 +82,61 @@ local COLOR = {
     ["wire"]        = 0xB0B0B9FF,
 }
 
+local TUTORIALS = {
+    [1] = { name = "SCROLL", img = PATH .. "Tutorials/" .. "SCROLL.png", frames = 80, cols = 7, rows = 12,
+        desc = "RIGHT DRAG TO HANDSCROLL AND PRESS HOME TO RECENTER THE VIEW"
+    },
+    [2] = { name = "ADD", img = PATH .. "Tutorials/" .. "ADD.png", frames = 80, cols = 7, rows = 12,
+        desc = "LEFT CLICK ON + || OR DRAG FROM BROWSER TO + || TO INSERT NEW FX\nDRAG TO FX TO CREATE AUTOCONTAINER"
+    },
+    [3] = { name = "MOVE", img = PATH .. "Tutorials/" .. "MOVE.png", frames = 80, cols = 7, rows = 12,
+        desc = "DRAG MOVE FX TO + || TO MOVE TO THAT POSITION\nMOVE FX TO FX TO EXCHANGE/SWAP THEM"
+    },
+    [4] = { name = "MOVE CONTAINERS", img = PATH .. "Tutorials/" .. "MOVE_CONTAINER.png", frames = 80, cols = 7, rows = 12,
+        desc = "DRAG MOVE FX TO + || TO MOVE TO THAT POSITION\nMOVE FX TO FX TO EXCHANGE/SWAP THEM"
+    },
+    [5] = { name = "SWAP", img = PATH .. "Tutorials/" .. "SWAP_EXCHANGE.png", frames = 80, cols = 7, rows = 12,
+        desc = "DRAG MOVE FX TO FX TO MAKE EXCHANGE/SWAP THEM"
+    },
+    [6] = { name = "DRAG COPY", img = PATH .. "Tutorials/" .. "DRAG_COPY.png", frames = 80, cols = 7, rows = 12,
+        desc = "CTRL DRAG TO + || TO COPY TO TARGET LOCATION\n DRAG TO FX TO MAKE AUTOCONTAINER"
+    },
+    [7] = { name = "DELETE", img = PATH .. "Tutorials/" .. "DELETE.png", frames = 80, cols = 7, rows = 12,
+        desc = "ALT CLICK ON TARGET TO DELETE IT\n DELETING CONTAINER WILL DELETE CONTENT"
+    },
+    [8] = { name = "REPLACE", img = PATH .. "Tutorials/" .. "REPLACE.png", frames = 80, cols = 7, rows = 12,
+        desc = "RIGHT CLICK CONTEXT MENU OVER TARGET FX TO REPLACE IT WITH NEW FROM BROWSER"
+    },
+    [9] = { name = "BYPASS", img = PATH .. "Tutorials/" .. "BYPASS.png", frames = 80, cols = 7, rows = 12,
+        desc = "BYPASSING CONTAINER DOES NOT MUTE ITS CONTENT BUT JUST ITSELF"
+    },
+    [10] = { name = "HELPERS", img = PATH .. "Tutorials/" .. "HELPERS.png", frames = 80, cols = 7, rows = 12,
+        desc = "HELPER FX WITH GUI FOR VOLUME, POLARITY"
+    },
+    [11] = { name = "SPLITTER", img = PATH .. "Tutorials/" .. "SPLITTER.png", frames = 80, cols = 7, rows = 12,
+        desc = "TRADITIONAL 3-BAND SPLITTING WITH FOLLOWING CONFIGURATION"
+    },
+    [12] = { name = "PIN", img = PATH .. "Tutorials/" .. "PIN_MULTI_INSTANCE.png", frames = 80, cols = 7, rows = 12,
+        desc =
+        "PIN TRACK TO LOCK IT TO SELECTED TRACK\n OPEN NEW INSTANCE OF THE SCRIPT AND DO THE SAME\n WHEN PINNED TRACK CAN BE CHANGED VIA DROP DOWN LIST"
+    },
+    [13] = { name = "COPY TO INSTANCE", img = PATH .. "Tutorials/" .. "COPY_PASTE_INSTANCE.png", frames = 80, cols = 7, rows = 12,
+        desc =
+        "RIGHT CLICK CONTEXT MENU COPY\n CAN BE USED IN CURRENT INSTANCE OR OTHER INSTANCES OF THE SCRIPT TO PASTE FX TO OTHER TRACK"
+    },
+    [14] = { name = "SOLO CONTAINER", img = PATH .. "Tutorials/" .. "SOLO_CONTAINER.png", frames = 80, cols = 7, rows = 12,
+        desc =
+        'SHIFT CLICKING ON BYPASS BUTTON ON CONTAINERS TOGGLES "SOLO"\n RIGHT CLICK CONTEXT MENU ON || BUTTON TO UNBYPASS THE LANE AGAIN'
+    },
+    [15] = { name = "AUTOCONTAINERS", img = PATH .. "Tutorials/" .. "AUTO_CONTAINERS.png", frames = 80, cols = 7, rows = 12,
+        desc =
+        "DRAGGING FX FROM BROWSER TO TARGET FX AUTOMATICALLY ENCLOSES THEM INTO NEW CONTAINER\n CTRL DRAG COPY ONTO TARGET FX DOES THE SAME"
+    },
+    [16] = { name = "VOL DRY/WET", img = PATH .. "Tutorials/" .. "VOL_DRY_WET.png", frames = 80, cols = 7, rows = 12,
+        desc = "WHEN FX IS IN PARALLEL THEN IT HAS VOLUME CONTROL\n WHEN FX IS IN SERIAL LANE THEN HAD DRY/WET CONTROL"
+    },
+}
+
 local pearson_table = {
     9, 159, 180, 252, 71, 6, 13, 164, 232, 35, 226, 155, 98, 120, 154, 69,
     157, 24, 137, 29, 147, 78, 121, 85, 112, 8, 248, 130, 55, 117, 190, 160,
@@ -135,6 +194,7 @@ if r.HasExtState("PARANORMALFX", "SETTINGS") then
             WireThickness = storedTable.wirethickness
             COLOR["wire"] = storedTable.wire_color
             COLOR["n"] = storedTable.fx_color
+            COLOR["bypass"] = storedTable.bypass_color
             COLOR["Container"] = storedTable.container_color
             COLOR["parallel"] = storedTable.parallel_color
             COLOR["knob_vol"] = storedTable.knobvol_color
@@ -184,6 +244,66 @@ local def_s_window_x, def_s_window_y = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar
 local s_frame_x, s_frame_y = def_s_frame_x, def_s_frame_y
 local s_spacing_x, s_spacing_y = def_s_spacing_x, item_spacing_vertical and item_spacing_vertical or def_s_spacing_y
 local s_window_x, s_window_y = def_s_window_x, def_s_window_y
+
+local function AnimateSpriteSheet(img_obj, frames, cols, rows, speed, start_time)
+    local w, h = r.ImGui_Image_GetSize(img_obj)
+
+    local xe, ye = w / cols, h / rows
+
+    local uv_step_x, uv_step_y = 1 / cols, 1 / rows
+
+    local frame = math.floor(((r.time_precise() - start_time) * speed) % frames)
+
+    local col_frame = frame % cols
+    local row_frame = math.floor(frame / cols)
+
+    local uv_xs = col_frame * uv_step_x
+    local uv_ys = row_frame * uv_step_y
+    local uv_xe = uv_xs + uv_step_x
+    local uv_ye = uv_ys + uv_step_y
+
+    r.ImGui_Image(ctx, img_obj, xe, ye, uv_xs, uv_ys, uv_xe, uv_ye)
+end
+
+local IMG_OBJ
+local function Tooltip_Tutorial(tut)
+    local x, y = r.ImGui_GetMousePos(ctx)
+    r.ImGui_SetNextWindowPos(ctx, x - 400, y + 40)
+    if r.ImGui_BeginTooltip(ctx) then
+        r.ImGui_Text(ctx, tut.desc)
+        if not r.ImGui_ValidatePtr(IMG_OBJ, 'ImGui_Image*') then
+            IMG_OBJ = r.ImGui_CreateImage(tut.img)
+            start_time = r.time_precise()
+        end
+        AnimateSpriteSheet(IMG_OBJ, tut.frames, tut.cols, tut.rows, 10, start_time)
+        r.ImGui_Separator(ctx)
+        r.ImGui_EndTooltip(ctx)
+    end
+end
+
+local function pdefer(func)
+    r.defer(function()
+        local status, err = xpcall(func, debug.traceback)
+        if not status then
+            local byLine = "([^\r\n]*)\r?\n?"
+            local trimPath = "[\\/]([^\\/]-:%d+:.+)$"
+            local stack = {}
+            for line in string.gmatch(err, byLine) do
+                local str = string.match(line, trimPath) or line
+                stack[#stack + 1] = str
+            end
+            r.ShowConsoleMsg(
+                "Error: " .. stack[1] .. "\n\n" ..
+                "Stack traceback:\n\t" .. table.concat(stack, "\n\t", 3) .. "\n\n" ..
+                "Reaper:       \t" .. r.GetAppVersion() .. "\n" ..
+                "Platform:     \t" .. r.GetOS()
+            )
+            r.DeleteExtState("PARANORMALFX", "COPY_BUFFER")
+            r.DeleteExtState("PARANORMALFX", "COPY_BUFFER_ID")
+        end
+    end)
+end
+
 
 local function serializeTable(val, name, skipnewlines, depth)
     skipnewlines = skipnewlines or false
@@ -248,35 +368,6 @@ local function Restore_From_PEXT()
         end
     end
 end
-
-local crash = function(errObject)
-    local byLine = "([^\r\n]*)\r?\n?"
-    local trimPath = "[\\/]([^\\/]-:%d+:.+)$"
-    local err = errObject and string.match(errObject, trimPath) or "Couldn't get error message."
-    local trace = debug.traceback()
-    local stack = {}
-    for line in string.gmatch(trace, byLine) do
-        local str = string.match(line, trimPath) or line
-        stack[#stack + 1] = str
-    end
-    local name = ({ r.get_action_context() })[2]:match("([^/\\_]+)$")
-    local ret =
-        r.ShowMessageBox(
-            name .. " has crashed!\n\n" .. "Would you like to have a crash report printed " .. "to the Reaper console?",
-            "Oops",
-            4
-        )
-    if ret == 6 then
-        r.ShowConsoleMsg(
-            "Error: " .. err .. "\n\n" ..
-            "Stack traceback:\n\t" .. r.concat(stack, "\n\t", 2) .. "\n\n" ..
-            "Reaper:       \t" .. r.GetAppVersion() .. "\n" ..
-            "Platform:     \t" .. r.GetOS()
-        )
-    end
-end
-
-function GetCrash() return crash end
 
 local para_btn_size = r.ImGui_CalcTextSize(ctx, "||") + (s_frame_x * 2)
 local function CalculateItemWH(tbl)
@@ -666,8 +757,8 @@ function DrawFXList()
     end
     if r.ImGui_Selectable(ctx, "CONTAINER") then AddFX("Container") end
     DragAddDDSource("Container")
-    r.ImGui_Separator(ctx)
     if LAST_USED_FX then
+        r.ImGui_Separator(ctx)
         if r.ImGui_Selectable(ctx, "RECENT: " .. LAST_USED_FX) then AddFX(LAST_USED_FX) end
         DragAddDDSource(LAST_USED_FX)
     end
@@ -1787,14 +1878,14 @@ function DrawPlugins(center, tbl, fade, color_del)
     end
 end
 
-local function Paste(replace, para, insert)
+local function Paste(replace, para, insert, move)
     if not CLIPBOARD.tbl then return end
     if CLIPBOARD.guid == R_CLICK_DATA[1][R_CLICK_DATA[2]].guid then return end
     local parrent_container = GetParentContainerByGuid(R_CLICK_DATA[1][R_CLICK_DATA[2]])
     local item_id = CalcFxID(parrent_container, (para or insert) and R_CLICK_DATA[2] + 1 or R_CLICK_DATA[2])
 
     r.Undo_BeginBlock()
-    r.TrackFX_CopyToTrack(CLIPBOARD.track, CLIPBOARD.id, TRACK, item_id, false)
+    r.TrackFX_CopyToTrack(CLIPBOARD.track, CLIPBOARD.id, TRACK, item_id, move and true or false)
     r.TrackFX_SetNamedConfigParm(TRACK, item_id, "parallel", (insert and "0" or R_CLICK_DATA[1][R_CLICK_DATA[2]].p))
     if replace then
         local del_id = CalcFxID(parrent_container, R_CLICK_DATA[2] + 1)
@@ -1940,6 +2031,9 @@ function RCCTXMenu()
         if r.ImGui_MenuItem(ctx, 'PASTE-REPLACE') then
             Paste(true)
         end
+        if r.ImGui_MenuItem(ctx, 'MOVE-CUT') then
+            Paste(nil, nil, nil, true)
+        end
     end
     -- r.ImGui_Separator(ctx)
     -- if r.ImGui_MenuItem(ctx, 'SHOW LAST TOUCHED PARAMETER') then
@@ -1966,6 +2060,7 @@ local function StoreSettings()
             parallel_color = COLOR["parallel"],
             knobvol_color = COLOR["knob_vol"],
             drywet_color = COLOR["knob_drywet"],
+            bypass_color = COLOR["bypass"],
 
         }
     )
@@ -1978,7 +2073,7 @@ local function DrawUserSettings()
     r.ImGui_SetNextWindowPos(ctx, WX + 5, WY + 70)
     -- if not r.ImGui_BeginChild(ctx, 'hackUSERSETTIGS', -FLT_MIN, -FLT_MIN, false, r.ImGui_WindowFlags_NoInputs()) then return end
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x000000EE)
-    if r.ImGui_BeginChild(ctx, "USERSETTIGS", 182, 362, 1) then
+    if r.ImGui_BeginChild(ctx, "USERSETTIGS", 182, 384, 1) then
         if r.ImGui_BeginListBox(ctx, "FONT", nil, 38) then
             if r.ImGui_Selectable(ctx, "DEFAULT", CUSTOM_FONT == nil) then
                 SELECTED_FONT = DEFAULT_FONT
@@ -2007,6 +2102,8 @@ local function DrawUserSettings()
         if AUTO_COLORING then r.ImGui_BeginDisabled(ctx, true) end
         RV_COL, COLOR["n"] = r.ImGui_ColorEdit4(ctx, "FX COLOR", COLOR["n"], r.ImGui_ColorEditFlags_NoInputs())
         RV_COL, COLOR["Container"] = r.ImGui_ColorEdit4(ctx, "CONTAINER COLOR", COLOR["Container"],
+            r.ImGui_ColorEditFlags_NoInputs())
+        RV_COL, COLOR["bypass"] = r.ImGui_ColorEdit4(ctx, "BYPASS COLOR", COLOR["bypass"],
             r.ImGui_ColorEditFlags_NoInputs())
         if AUTO_COLORING then r.ImGui_EndDisabled(ctx) end
 
@@ -2217,7 +2314,7 @@ local function UI()
         local mute_color = r.GetMediaTrackInfo_Value(SYNC and SEL_LIST_TRACK or TRACK, "B_MUTE")
         DrawListButton("M", mute_color == 0 and 0xff or 0xff2222ff, nil, nil, r.ImGui_IsItemHovered(ctx))
 
-        r.ImGui_SameLine(ctx)
+        r.ImGui_SameLine(ctx, 0, 0)
 
         if r.ImGui_InvisibleButton(ctx, "S", CalculateItemWH({ name = "PIN" }), def_btn_h) then
             if SYNC then
@@ -2435,6 +2532,35 @@ local function ClipBoard()
     r.ImGui_EndChild(ctx)
 end
 
+local function Tutorial()
+    local avail_w = r.ImGui_GetContentRegionAvail(ctx)
+    r.ImGui_SameLine(ctx, avail_w - 120)
+
+    r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x000000EE)
+    r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_WindowPadding(), 5, 5)
+    if r.ImGui_BeginChild(ctx, 'right_side_tutorial', -5, TUTORIAL_VISIBLE and 296 or 23, true, r.ImGui_WindowFlags_NoScrollbar()) then
+        TUTORIAL_VISIBLE = r.ImGui_TreeNode(ctx, 'TUTORIALS', r.ImGui_TreeNodeFlags_NoTreePushOnOpen())
+        if TUTORIAL_VISIBLE and r.ImGui_BeginChild(ctx, 'tutorial_view') then
+            for i = 1, #TUTORIALS do
+                r.ImGui_Selectable(ctx, TUTORIALS[i].name .. "##12345")
+                if r.ImGui_IsItemHovered(ctx) then
+                    if prev_tut ~= i then
+                        IMG_OBJ = nil
+                        prev_tut = i
+                    end
+                    Tooltip_Tutorial(TUTORIALS[i])
+                end
+            end
+            r.ImGui_EndChild(ctx)
+        end
+        r.ImGui_EndChild(ctx)
+    end
+    r.ImGui_PopStyleVar(ctx)
+    r.ImGui_PopStyleColor(ctx)
+    --r.ImGui_PopStyleColor(ctx)
+    --r.ImGui_EndChild(ctx)
+end
+
 --LAST_TRACK = r.GetSelectedTrack(0, 0)
 local function Main()
     -- if PROFILE_DEBUG then
@@ -2470,6 +2596,7 @@ local function Main()
         if TRACK then
             Frame()
             UI()
+            Tutorial()
             ClipBoard()
         end
         if OPEN_SETTINGS then
@@ -2489,8 +2616,7 @@ local function Main()
     UpdateScroll()
     if ESC and ESC_CLOSE then open = nil end
     if open then
-        r.defer(Main)
-        --r.defer(function() xpcall(Main, crash) end)
+        pdefer(Main)
     end
 
     if r.ImGui_IsMouseReleased(ctx, 0) then
@@ -2517,4 +2643,4 @@ function Exit()
 end
 
 r.atexit(Exit)
-r.defer(Main)
+pdefer(Main)
