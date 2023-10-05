@@ -1,7 +1,7 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.44
+-- @version 1.45
 -- @changelog
 --  Move Mute and Solo buttons closer to each other
 --  Added ErrorHandler for detailed crash report
