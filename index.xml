@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="7f06dcfaa1a4fedbd5c81cf37f3dc9b890be454e" name="Sexan_Scripts">
+<index version="1" commit="a06e642f5a2ed8086715b189479abbecc3dcb9d2" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -786,6 +786,14 @@ Added user option to close the instance on ESC]]></changelog>
         <source file="ProggyClean.ttf">https://github.com/GoranKovac/ReaScripts/raw/7f06dcfaa1a4fedbd5c81cf37f3dc9b890be454e/FX/ProggyClean.ttf</source>
         <source type="effect" file="3BandSplitterFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/7f06dcfaa1a4fedbd5c81cf37f3dc9b890be454e/FX/3BandSplitterFX.jsfx</source>
         <source type="effect" file="BandSelectFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/7f06dcfaa1a4fedbd5c81cf37f3dc9b890be454e/FX/BandSelectFX.jsfx</source>
+      </version>
+      <version name="1.42" author="Sexan" time="2023-10-05T12:40:23Z">
+        <changelog><![CDATA[Fix right context menu on parallel lane]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/a06e642f5a2ed8086715b189479abbecc3dcb9d2/FX/Sexan_ParaNormal_FX_Router.lua</source>
+        <source file="Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/a06e642f5a2ed8086715b189479abbecc3dcb9d2/FX/Icons.ttf</source>
+        <source file="ProggyClean.ttf">https://github.com/GoranKovac/ReaScripts/raw/a06e642f5a2ed8086715b189479abbecc3dcb9d2/FX/ProggyClean.ttf</source>
+        <source type="effect" file="3BandSplitterFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/a06e642f5a2ed8086715b189479abbecc3dcb9d2/FX/3BandSplitterFX.jsfx</source>
+        <source type="effect" file="BandSelectFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/a06e642f5a2ed8086715b189479abbecc3dcb9d2/FX/BandSelectFX.jsfx</source>
       </version>
     </reapack>
   </category>
