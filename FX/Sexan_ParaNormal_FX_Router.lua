@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.42
+-- @version 1.43
 -- @changelog
---  Fix right context menu on parallel lane
+--  Collect fx data after all potential insertations
 -- @provides
 --   Icons.ttf
 --   ProggyClean.ttf
@@ -1402,6 +1402,7 @@ local function AutoContainer(tbl, i)
 end
 
 local function DrawVolumePanHelper(tbl, i, w)
+    -- if not B then return end
     if tbl[i].name:match(VOL_PAN_HELPER) then
         if DRAG_MOVE and DRAG_MOVE.move_guid == tbl[i].guid and not CTRL_DRAG then return end
 
@@ -1804,6 +1805,7 @@ local function Paste(replace, para, insert)
     end
     EndUndoBlock("COPY FX")
     UpdateClipboardInfo()
+    AAA = true
 end
 
 local function Rename()
@@ -2252,6 +2254,7 @@ end
 
 local function Frame()
     Popups()
+    UpdateFxData()
     GetOrUpdateFX()
     local center
     r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing(), s_spacing_x, s_spacing_y)
@@ -2374,9 +2377,7 @@ function UpdateClipboardInfo()
     local updated = GetFx(CLIPBOARD.tbl[CLIPBOARD.i].guid)
     local parrent = GetFx(updated.pid)
 
-    --local parrent_container = GetParentContainerByGuid(updated)
     local item_id = CalcFxID(parrent, updated.IDX)
-    --     -- parrent_container = GetFx(parrent_container.guid)
     CLIPBOARD.id = item_id
 end
 
@@ -2465,7 +2466,7 @@ local function Main()
     if visible then
         r.ImGui_PushFont(ctx, SELECTED_FONT)
         CheckKeys()
-        UpdateFxData()
+        --UpdateFxData()
         if TRACK then
             Frame()
             UI()
@@ -2489,6 +2490,7 @@ local function Main()
     if ESC and ESC_CLOSE then open = nil end
     if open then
         r.defer(Main)
+        --r.defer(function() xpcall(Main, crash) end)
     end
 
     if r.ImGui_IsMouseReleased(ctx, 0) then
