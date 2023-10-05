@@ -1,11 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.41
+-- @version 1.42
 -- @changelog
---  Add name margin to container calculation (fixes parallels in container go off)
---  Copy paste across instances
---  Added user option to close the instance on ESC
+--  Fix right context menu on parallel lane
 -- @provides
 --   Icons.ttf
 --   ProggyClean.ttf
@@ -1880,13 +1878,19 @@ local function RCCTXMenuParallel()
                 r.TrackFX_SetEnabled(TRACK, item_id, true)
             end
         end
-    end
-    if CLIPBOARD.tbl then
-        if r.ImGui_MenuItem(ctx, 'PASTE') then
-            Paste(false, true)
+        if CLIPBOARD.tbl then
+            if r.ImGui_MenuItem(ctx, 'PASTE') then
+                Paste(false, true)
+            end
         end
     else
-        r.ImGui_CloseCurrentPopup(ctx)
+        if CLIPBOARD.tbl then
+            if r.ImGui_MenuItem(ctx, 'PASTE') then
+                Paste(false, true)
+            end
+        else
+            r.ImGui_CloseCurrentPopup(ctx)
+        end
     end
 end
 
