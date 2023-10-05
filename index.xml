@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="1cbf44a027bd85470f671d4fd6acbc74a8251032" name="Sexan_Scripts">
+<index version="1" commit="339c6d02265d73981b51cf8f5c6fd4627f45ae62" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -802,6 +802,33 @@ Added user option to close the instance on ESC]]></changelog>
         <source file="ProggyClean.ttf">https://github.com/GoranKovac/ReaScripts/raw/1cbf44a027bd85470f671d4fd6acbc74a8251032/FX/ProggyClean.ttf</source>
         <source type="effect" file="3BandSplitterFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/1cbf44a027bd85470f671d4fd6acbc74a8251032/FX/3BandSplitterFX.jsfx</source>
         <source type="effect" file="BandSelectFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/1cbf44a027bd85470f671d4fd6acbc74a8251032/FX/BandSelectFX.jsfx</source>
+      </version>
+      <version name="1.45" author="Sexan" time="2023-10-05T20:17:14Z">
+        <changelog><![CDATA[Move Mute and Solo buttons closer to each other
+Added ErrorHandler for detailed crash report
+Animated Tutorials
+Added bypass color in user setting]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/339c6d02265d73981b51cf8f5c6fd4627f45ae62/FX/Sexan_ParaNormal_FX_Router.lua</source>
+        <source file="Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/339c6d02265d73981b51cf8f5c6fd4627f45ae62/FX/Icons.ttf</source>
+        <source file="ProggyClean.ttf">https://github.com/GoranKovac/ReaScripts/raw/339c6d02265d73981b51cf8f5c6fd4627f45ae62/FX/ProggyClean.ttf</source>
+        <source type="effect" file="3BandSplitterFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/339c6d02265d73981b51cf8f5c6fd4627f45ae62/FX/3BandSplitterFX.jsfx</source>
+        <source type="effect" file="BandSelectFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/339c6d02265d73981b51cf8f5c6fd4627f45ae62/FX/BandSelectFX.jsfx</source>
+        <source file="Tutorials/ADD.png">https://github.com/GoranKovac/ReaScripts/raw/339c6d02265d73981b51cf8f5c6fd4627f45ae62/FX/Tutorials/ADD.png</source>
+        <source file="Tutorials/AUTO_CONTAINERS.png">https://github.com/GoranKovac/ReaScripts/raw/339c6d02265d73981b51cf8f5c6fd4627f45ae62/FX/Tutorials/AUTO_CONTAINERS.png</source>
+        <source file="Tutorials/BYPASS.png">https://github.com/GoranKovac/ReaScripts/raw/339c6d02265d73981b51cf8f5c6fd4627f45ae62/FX/Tutorials/BYPASS.png</source>
+        <source file="Tutorials/COPY_PASTE_INSTANCE.png">https://github.com/GoranKovac/ReaScripts/raw/339c6d02265d73981b51cf8f5c6fd4627f45ae62/FX/Tutorials/COPY_PASTE_INSTANCE.png</source>
+        <source file="Tutorials/DELETE.png">https://github.com/GoranKovac/ReaScripts/raw/339c6d02265d73981b51cf8f5c6fd4627f45ae62/FX/Tutorials/DELETE.png</source>
+        <source file="Tutorials/DRAG_COPY.png">https://github.com/GoranKovac/ReaScripts/raw/339c6d02265d73981b51cf8f5c6fd4627f45ae62/FX/Tutorials/DRAG_COPY.png</source>
+        <source file="Tutorials/HELPERS.png">https://github.com/GoranKovac/ReaScripts/raw/339c6d02265d73981b51cf8f5c6fd4627f45ae62/FX/Tutorials/HELPERS.png</source>
+        <source file="Tutorials/MOVE.png">https://github.com/GoranKovac/ReaScripts/raw/339c6d02265d73981b51cf8f5c6fd4627f45ae62/FX/Tutorials/MOVE.png</source>
+        <source file="Tutorials/MOVE_CONTAINER.png">https://github.com/GoranKovac/ReaScripts/raw/339c6d02265d73981b51cf8f5c6fd4627f45ae62/FX/Tutorials/MOVE_CONTAINER.png</source>
+        <source file="Tutorials/PIN_MULTI_INSTANCE.png">https://github.com/GoranKovac/ReaScripts/raw/339c6d02265d73981b51cf8f5c6fd4627f45ae62/FX/Tutorials/PIN_MULTI_INSTANCE.png</source>
+        <source file="Tutorials/REPLACE.png">https://github.com/GoranKovac/ReaScripts/raw/339c6d02265d73981b51cf8f5c6fd4627f45ae62/FX/Tutorials/REPLACE.png</source>
+        <source file="Tutorials/SCROLL.png">https://github.com/GoranKovac/ReaScripts/raw/339c6d02265d73981b51cf8f5c6fd4627f45ae62/FX/Tutorials/SCROLL.png</source>
+        <source file="Tutorials/SOLO_CONTAINER.png">https://github.com/GoranKovac/ReaScripts/raw/339c6d02265d73981b51cf8f5c6fd4627f45ae62/FX/Tutorials/SOLO_CONTAINER.png</source>
+        <source file="Tutorials/SPLITTER.png">https://github.com/GoranKovac/ReaScripts/raw/339c6d02265d73981b51cf8f5c6fd4627f45ae62/FX/Tutorials/SPLITTER.png</source>
+        <source file="Tutorials/SWAP_EXCHANGE.png">https://github.com/GoranKovac/ReaScripts/raw/339c6d02265d73981b51cf8f5c6fd4627f45ae62/FX/Tutorials/SWAP_EXCHANGE.png</source>
+        <source file="Tutorials/VOL_DRY_WET.png">https://github.com/GoranKovac/ReaScripts/raw/339c6d02265d73981b51cf8f5c6fd4627f45ae62/FX/Tutorials/VOL_DRY_WET.png</source>
       </version>
     </reapack>
   </category>
