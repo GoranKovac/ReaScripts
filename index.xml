@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="a06e642f5a2ed8086715b189479abbecc3dcb9d2" name="Sexan_Scripts">
+<index version="1" commit="1cbf44a027bd85470f671d4fd6acbc74a8251032" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -794,6 +794,14 @@ Added user option to close the instance on ESC]]></changelog>
         <source file="ProggyClean.ttf">https://github.com/GoranKovac/ReaScripts/raw/a06e642f5a2ed8086715b189479abbecc3dcb9d2/FX/ProggyClean.ttf</source>
         <source type="effect" file="3BandSplitterFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/a06e642f5a2ed8086715b189479abbecc3dcb9d2/FX/3BandSplitterFX.jsfx</source>
         <source type="effect" file="BandSelectFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/a06e642f5a2ed8086715b189479abbecc3dcb9d2/FX/BandSelectFX.jsfx</source>
+      </version>
+      <version name="1.43" author="Sexan" time="2023-10-05T14:09:17Z">
+        <changelog><![CDATA[Collect fx data after all potential insertations]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/1cbf44a027bd85470f671d4fd6acbc74a8251032/FX/Sexan_ParaNormal_FX_Router.lua</source>
+        <source file="Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/1cbf44a027bd85470f671d4fd6acbc74a8251032/FX/Icons.ttf</source>
+        <source file="ProggyClean.ttf">https://github.com/GoranKovac/ReaScripts/raw/1cbf44a027bd85470f671d4fd6acbc74a8251032/FX/ProggyClean.ttf</source>
+        <source type="effect" file="3BandSplitterFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/1cbf44a027bd85470f671d4fd6acbc74a8251032/FX/3BandSplitterFX.jsfx</source>
+        <source type="effect" file="BandSelectFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/1cbf44a027bd85470f671d4fd6acbc74a8251032/FX/BandSelectFX.jsfx</source>
       </version>
     </reapack>
   </category>
