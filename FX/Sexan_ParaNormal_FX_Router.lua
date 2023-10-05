@@ -1,9 +1,10 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.38
+-- @version 1.39
 -- @changelog
---  Fix container solo feature and tooltip to only work on containers
+--  Fix crash when minimizing window
+--  Add Reaper version check
 -- @provides
 --   Icons.ttf
 --   ProggyClean.ttf
@@ -16,19 +17,26 @@ package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.l
 local script_path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]];
 local PATH = debug.getinfo(1).source:match("@?(.*[\\|/])")
 
+local ver = r.GetAppVersion():match("(.+)/")
+if ver ~= "7.0rc7" then
+    r.ShowMessageBox("This script requires Reaper V7.0rc7", "WRONG REAPER VERSION", 0)
+    return
+end
+
 local fx_browser_script_path = r.GetResourcePath() .. "/Scripts/Sexan_Scripts/FX/Sexan_FX_Browser_ParserV7.lua"
 
-if not r.APIExists("ImGui_GetVersion") then
-    r.ShowConsoleMsg("ReaImGui is required.\nPlease Install it in next window")
+if not r.ImGui_GetVersion then
+    r.ShowMessageBox("ReaImGui is required.\nPlease Install it in next window", "MISSING DEPENDENCIES", 0)
     return r.ReaPack_BrowsePackages('dear imgui')
 end
 if r.file_exists(fx_browser_script_path) then
     require("Sexan_FX_Browser_ParserV7")
 else
-    r.ShowConsoleMsg("Sexan FX BROWSER is needed.\nPlease Install it in next window")
+    r.ShowMessageBox("Sexan FX BROWSER is needed.\nPlease Install it in next window", "MISSING DEPENDENCIES", 0)
     return r.ReaPack_BrowsePackages('sexan fx browser parser V7')
 end
 
+r.gmem_attach("PARANORMALFX")
 --local profiler2 = require("profiler")
 
 local VOL_PAN_HELPER = "Volume/Pan Smoother"
@@ -2281,7 +2289,8 @@ local function Main()
     --     PROFILE_STARTED = true
     --     profiler2.start()
     -- end
-    CheckKeys()
+    LINE_POINTS = {}
+    PLUGINS = {}
     TRACK = r.GetSelectedTrack(0, 0)
     local master = r.GetMasterTrack(0)
     if r.GetMediaTrackInfo_Value(master, "I_SELECTED") == 1 then TRACK = master end
@@ -2295,17 +2304,17 @@ local function Main()
             CANVAS = InitCanvas()
         end
     end
-    UpdateFxData()
-    LINE_POINTS = {}
-    PLUGINS = {}
+
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_WindowBg(), 0x111111FF)
     r.ImGui_SetNextWindowSizeConstraints(ctx, 500, 500, FLT_MAX, FLT_MAX)
     r.ImGui_SetNextWindowSize(ctx, 500, 500, r.ImGui_Cond_FirstUseEver())
     local visible, open = r.ImGui_Begin(ctx, 'PARANORMAL FX ROUTER', true, WND_FLAGS)
-    r.ImGui_PushFont(ctx, SELECTED_FONT)
+    r.ImGui_PopStyleColor(ctx)
 
     if visible then
-        r.ImGui_PopStyleColor(ctx)
+        r.ImGui_PushFont(ctx, SELECTED_FONT)
+        CheckKeys()
+        UpdateFxData()
         if TRACK then
             Frame()
             UI()
