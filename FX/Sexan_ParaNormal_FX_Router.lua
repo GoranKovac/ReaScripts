@@ -1,12 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.45
+-- @version 1.46
 -- @changelog
---  Move Mute and Solo buttons closer to each other
---  Added ErrorHandler for detailed crash report
---  Animated Tutorials
---  Added bypass color in user setting
+--  Fix missing Bypass color from already set extstate
 -- @provides
 --   Icons.ttf
 --   ProggyClean.ttf
@@ -194,7 +191,7 @@ if r.HasExtState("PARANORMALFX", "SETTINGS") then
             WireThickness = storedTable.wirethickness
             COLOR["wire"] = storedTable.wire_color
             COLOR["n"] = storedTable.fx_color
-            COLOR["bypass"] = storedTable.bypass_color
+            COLOR["bypass"] = storedTable.bypass_color and storedTable.bypass_color or 0xdc5454ff
             COLOR["Container"] = storedTable.container_color
             COLOR["parallel"] = storedTable.parallel_color
             COLOR["knob_vol"] = storedTable.knobvol_color
