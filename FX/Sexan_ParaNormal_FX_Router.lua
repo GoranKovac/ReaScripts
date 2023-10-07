@@ -1,9 +1,11 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.47
+-- @version 1.48
 -- @changelog
---  Initial FX CHAINS Storing
+--  FileManager
+--  Storing Chain for whole track
+--  Storing Chain for Container
 -- @provides
 --   Icons.ttf
 --   ProggyClean.ttf
@@ -14,6 +16,7 @@
 local r = reaper
 local os_separator = package.config:sub(1, 1)
 package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
+package.path  = package.path  .. debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "../ImGui_Tools/?.lua;"
 local script_path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]];
 local PATH = debug.getinfo(1).source:match("@?(.*[\\|/])")
 
@@ -24,6 +27,7 @@ if ver ~= "7.0rc8" then
 end
 
 local fx_browser_script_path = r.GetResourcePath() .. "/Scripts/Sexan_Scripts/FX/Sexan_FX_Browser_ParserV7.lua"
+local fm_script_path = r.GetResourcePath() .. "/Scripts/Sexan_Scripts/ImGui_Tools/FileManager.lua"
 
 if not r.ImGui_GetVersion then
     r.ShowMessageBox("ReaImGui is required.\nPlease Install it in next window", "MISSING DEPENDENCIES", 0)
@@ -220,7 +224,13 @@ r.ImGui_Attach(ctx, SYSTEM_FONT)
 DEFAULT_FONT = r.ImGui_CreateFont(script_path .. 'ProggyClean.ttf', 13)
 r.ImGui_Attach(ctx, DEFAULT_FONT)
 
-require("FileManager")
+if r.file_exists(fm_script_path) then
+    require("FileManager")
+else
+    r.ShowMessageBox("Sexan FileManager is needed.\nPlease Install it in next window", "MISSING DEPENDENCIES", 0)
+    return r.ReaPack_BrowsePackages('sexan ImGui FileManager')
+end
+
 local SELECTED_FONT = CUSTOM_FONT and SYSTEM_FONT or DEFAULT_FONT
 
 local draw_list = r.ImGui_GetWindowDrawList(ctx)
@@ -246,11 +256,12 @@ local s_window_x, s_window_y = def_s_window_x, def_s_window_y
 -- lb0 FUNCTION
 local find = string.find
 local function Chunk_GetFXChainSection(chunk)
-    -- If FXChain - return section
-    -- If none - return char after MAIN SEND \n
-
+    -- MAKE SURE WE FOUND FXCHAIN (CAN BE WITHOUT THIS ALSO)
     local s1 = find(chunk, '<FXCHAIN.-\n')
+    -- CHAIN STARTS WITH BYPASS
+    s1 = find(chunk, 'BYPASS ', s1)
     if s1 then
+        if not s1 then return end
         local s = s1
         local indent, op, cl = 1, nil, nil
         while indent > 0 do
@@ -272,14 +283,13 @@ local function Chunk_GetFXChainSection(chunk)
             end
         end
 
-        local retch = string.sub(chunk, s1, cl)
-        return retch, s1, cl
-    else
-        local s1, e1 = find(chunk, 'MAINSEND.-\n')
-        return nil, s1, e1
+        local chain_chunk = string.sub(chunk, s1, cl)
+        return chain_chunk
     end
 end
 
+-- EXTRACT
+-- REVERSE EVERYTHING WE ARE LOOKIG FROM END TO START (WE FIND GUID THEN WE FIND ITS PARENT)
 local function ExtractContainer(chunk, guid)
     local r_chunk = chunk:reverse()
     local r_guid = guid:reverse()
@@ -293,7 +303,6 @@ local function ExtractContainer(chunk, guid)
             cl = find(r_chunk, ('\n<'):reverse(), s + 1, true)
             op = find(r_chunk, ('\n>\n'):reverse(), s + 1, true) + 1
             if op == nil and cl == nil then break end
-            --if not indent then if op then indent = 0 end end
             if op ~= nil then
                 op = op + 1
                 if op <= cl then
@@ -308,111 +317,9 @@ local function ExtractContainer(chunk, guid)
                 s = cl
             end
         end
-        local retch = string.sub(r_chunk, s1, cl):reverse()
-        --local cont_start = find(retch, 'BYPASS ')
-        local cont_fx_chunk = "BYPASS 0 0 0\n" .. retch .. "\nWAK 0 0"
+        local chain_chunk = string.sub(r_chunk, s1, cl):reverse()
+        local cont_fx_chunk = "BYPASS 0 0 0\n" .. chain_chunk .. "\nWAK 0 0"
         return cont_fx_chunk
-    end
-end
-
-local function Chunk_GetTargetContainerFXSection(chunk, guid)
-    -- If FXChain - return section
-    -- If none - return char after MAIN SEND \n
-
-    local s1 = find(chunk, '<FXCHAIN.-\n')
-    AAA = {}
-    BBB = {}
-    local ge, cont_found, last_cc
-    if s1 then
-        local s = s1
-        local indent, op, cl = 1, nil, nil
-        while indent > 0 do
-            op = find(chunk, '\n<', s + 1, true)
-            cl = find(chunk, '\n>\n', s + 1, true) + 1
-
-            -- if cont_found and op then
-            --     BBB[op] = indent
-            --     CONT_END = op - 1
-            --     CONT_INDENT = indent
-            --     --break
-            -- end
-
-            -- local cc = find(chunk, '<CONTAINER', op, true)
-            -- if cc then
-            --     -- if not AAA[#AAA].pos == cc then
-            --     AAA[#AAA + 1] = { indent = indent, pos = cc }
-            --     --end
-            -- end
-
-            -- if cont_found then
-            --     local bs,be = find(chunk, 'BYPASS ', ge+1, true)
-            --     if be then
-            --         BBB[be] = indent
-            --         CONT_END = be
-            --         CONT_INDENT = indent
-            --         break
-            --     end
-            -- end
-            if op == nil and cl == nil then break end
-            if op ~= nil then
-                op = op + 1
-                if op <= cl then
-                    indent = indent + 1
-                    s = op
-                else
-                    indent = indent - 1
-                    s = cl
-                end
-            else
-                indent = indent - 1
-                s = cl
-            end
-            local cc = find(chunk, '<CONTAINER', op, true)
-            if cc then
-                -- if not AAA[#AAA].pos == cc then
-                AAA[#AAA + 1] = { indent = indent, pos = cc }
-                -- last_cc = cc
-            end
-            if not cont_found then
-                _, ge = find(chunk, guid, s + 1, true)
-                if ge then
-                    cont_found = true
-                    BBB[ge] = indent
-                    CONT_END = ge
-                    CONT_INDENT = indent
-                end
-            end
-        end
-        -- for k, v in next, AAA do
-        --     if v == CONT_INDENT then
-        --         --r.ShowConsoleMsg("LASJKHFASOLIHGFHPIOA")
-        --         CONT_START = k
-        --         break
-        --     end
-        -- end
-
-        for i = #AAA, 1, -1 do
-            if AAA[i].indent == CONT_INDENT then
-                CONT_START = AAA[i].pos
-                break
-            end
-        end
-
-        -- for k, v in pairs(AAA) do
-        --     if v == CONT_INDENT then
-        --         --r.ShowConsoleMsg("LASJKHFASOLIHGFHPIOA")
-        --         --CONT_START = k
-        --     end
-        -- end
-        if CONT_START then
-            local retch = string.sub(chunk, CONT_START, CONT_END)
-            local cont_chain = "BYPASS 0 0 0\n" .. retch .. "\nWAK 0 0\n"
-            return cont_chain, CONT_START, CONT_END
-        end
-        --return retch, s1, cl
-    else
-        -- local s1, e1 = find(chunk, 'MAINSEND.-\n')
-        --return nil, s1, e1
     end
 end
 
@@ -454,71 +361,6 @@ local function GetFXChainChunk(chunk)
     end
     return table.concat(t, "\n")
 end
-
-
-
--- -- ALAGAMLA MODIFIED FUNCTION
--- local function GetFXChainChunk(chunk)
---     local number_of_spaces = 2
---     local t = {}
---     local indent = 0
---     local add = false
---     local l = 0
-
---     local CONT_START, CONT_END
---     for line in chunk:gmatch("[^\n]+") do
---         if add then
---             indent = indent + 1
---             add = false
---         end
---         if line:find("^<") then
---             add = true
---         elseif line == ">" then
---             indent = indent - 1
---         end
-
---         -- CONTAINER ENDED
---         if CONT_START and CONT_START == indent then
---             CONT_END = indent
---             CONT_START = nil
---         end
---         -- ENVELOPE PARAMETER SECTION ENDED
---         if PARAM_START and PARAM_START == indent then
---             PARAM_START = nil
---             PARAM_END = true
---         end
-
---         local fx_chunk_name = line:match('<(%S+) ')
---         if fx_chunk_name then
---             -- CONTAINER STARTED
---             if fx_chunk_name == "CONTAINER" then
---                 CONT_END = nil
---                 CONT_START = indent
---             elseif fx_chunk_name == 'PARMENV' then
---                 PARAM_START = indent
---             else
---                 -- CONTAINER ENDED BUT NEXT FX IS NOT CONTAINER
---                 if CONT_END and indent == CONT_END then
---                     CONT_END = nil
---                 end
---             end
---         end
-
---         -- SKIP ADDING IF ENVELOPE PARAMETER SECTION
---         -- ADD LINES NORMALLY IF NOT CONTAINER
---         -- IF CONTAINER AND ENDED THEN EXCLUDE FXID AND FLOATPOS FROM IT
---         if not PARAM_START and not PARAM_END then
---             if not CONT_END or (CONT_END and not line:match('FXID') and not line:match('FLOATPOS')) then
---                 --if not line:match("FXID") then
---                     t[#t + 1] = (string.rep(string.rep(" ", number_of_spaces), indent) or "") .. line
---                 --end
---             end
---         end
-
---         if PARAM_END then PARAM_END = nil end
---     end
---     return table.concat(t, "\n")
--- end
 
 local function AnimateSpriteSheet(img_obj, frames, cols, rows, speed, start_time)
     local w, h = r.ImGui_Image_GetSize(img_obj)
@@ -2266,6 +2108,27 @@ local function RCCTXMenuParallel()
     end
 end
 
+local function CreateFxChain(guid)
+    local _, chunk = r.GetTrackStateChunk(TRACK, "")
+
+    local chain_chunk,  s1, cl
+    if not guid then
+        chain_chunk, s1, cl = Chunk_GetFXChainSection(chunk)
+        --if chain_chunk then
+        --    local bs, be = string.find(chain_chunk, 'BYPASS ')
+        --    chain_chunk = bs and string.sub(chain_chunk, bs, -2) or nil
+        --end
+    else
+        chain_chunk, s1, cl = ExtractContainer(chunk,guid)
+    end
+    -- TRIM INNER CHAIN TO MAKE SAME STRUCTURE AS .RfxChain
+    if chain_chunk then
+        -- FIND FIRST BYPASS
+        local fx_chain_chunk = GetFXChainChunk(chain_chunk)
+        SAVED_DATA = fx_chain_chunk
+    end
+end
+
 function RCCTXMenu()
     if r.ImGui_MenuItem(ctx, 'RENAME') then
         OPEN_RENAME = true
@@ -2320,6 +2183,7 @@ function RCCTXMenu()
             OPEN_FM = true
             FM_TYPE = "SAVE"
             Init_FM_database()
+            CreateFxChain(R_CLICK_DATA[1][R_CLICK_DATA[2]].guid)
         end
     end
 
@@ -2463,24 +2327,11 @@ local function FXChainMenu()
         OPEN_FM = true
         FM_TYPE = "SAVE"
         Init_FM_database()
-        local _, chunk = r.GetTrackStateChunk(TRACK, "")
-        local retch, s1, cl = Chunk_GetFXChainSection(chunk)
-
-        -- TRIM INNER CHAIN TO MAKE SAME STRUCTURE AS .RfxChain
-        if retch then
-            -- FIND FIRST BYPASS
-            local bs, be = string.find(retch, 'BYPASS ')
-            -- REMOVE LAST >
-            local inner_chain = string.sub(retch, bs, -2)
-            local fx_chain_chunk = GetFXChainChunk(inner_chain)
-            SAVED_DATA = fx_chain_chunk
-        end
+        CreateFxChain()
     end
-    -- if r.ImGui_MenuItem(ctx, "LOAD CHAIN") then
-    --     OPEN_FM = true
-    --     FM_TYPE = "LOAD"
-    --     Init_FM_database()
-    -- end
+    if r.ImGui_MenuItem(ctx, "DELETE CHAIN") then
+        RemoveAllFX()
+    end
 end
 
 local function Popups()
@@ -2556,8 +2407,8 @@ local function Popups()
         end
     end
     r.ImGui_SetNextWindowPos(ctx, center[1], center[2], r.ImGui_Cond_Appearing(), 0.5, 0.5)
-    r.ImGui_SetNextWindowSizeConstraints(ctx, 400, 300, 400, 300)
-    if r.ImGui_BeginPopupModal(ctx, 'File Dialog', true, r.ImGui_WindowFlags_TopMost() |  r.ImGui_WindowFlags_NoResize()) then
+    r.ImGui_SetNextWindowSizeConstraints(ctx, 400, 300, FLT_MAX, FLT_MAX)
+    if r.ImGui_BeginPopupModal(ctx, 'File Dialog', true, r.ImGui_WindowFlags_TopMost() | r.ImGui_WindowFlags_NoScrollbar()) then
         File_dialog()
         FM_Modal_POPUP()
         r.ImGui_EndPopup(ctx)
