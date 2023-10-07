@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.46
+-- @version 1.47
 -- @changelog
---  Fix missing Bypass color from already set extstate
+--  Initial FX CHAINS Storing
 -- @provides
 --   Icons.ttf
 --   ProggyClean.ttf
@@ -191,7 +191,7 @@ if r.HasExtState("PARANORMALFX", "SETTINGS") then
             WireThickness = storedTable.wirethickness
             COLOR["wire"] = storedTable.wire_color
             COLOR["n"] = storedTable.fx_color
-            COLOR["bypass"] = storedTable.bypass_color and storedTable.bypass_color or 0xdc5454ff
+            COLOR["bypass"] = storedTable.bypass_color and storedTable.bypass_color or COLOR["bypass"]
             COLOR["Container"] = storedTable.container_color
             COLOR["parallel"] = storedTable.parallel_color
             COLOR["knob_vol"] = storedTable.knobvol_color
@@ -208,7 +208,7 @@ end
 
 local FX_LIST, CAT = GetFXTbl()
 
-local ctx = r.ImGui_CreateContext('CONTAINERS_NO_ZOOM')
+ctx = r.ImGui_CreateContext('CONTAINERS_NO_ZOOM')
 
 ICONS_FONT = r.ImGui_CreateFont(script_path .. 'Icons.ttf', 13)
 r.ImGui_Attach(ctx, ICONS_FONT)
@@ -220,6 +220,7 @@ r.ImGui_Attach(ctx, SYSTEM_FONT)
 DEFAULT_FONT = r.ImGui_CreateFont(script_path .. 'ProggyClean.ttf', 13)
 r.ImGui_Attach(ctx, DEFAULT_FONT)
 
+require("FileManager")
 local SELECTED_FONT = CUSTOM_FONT and SYSTEM_FONT or DEFAULT_FONT
 
 local draw_list = r.ImGui_GetWindowDrawList(ctx)
@@ -241,6 +242,232 @@ local def_s_window_x, def_s_window_y = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar
 local s_frame_x, s_frame_y = def_s_frame_x, def_s_frame_y
 local s_spacing_x, s_spacing_y = def_s_spacing_x, item_spacing_vertical and item_spacing_vertical or def_s_spacing_y
 local s_window_x, s_window_y = def_s_window_x, def_s_window_y
+
+-- lb0 FUNCTION
+local find = string.find
+local function Chunk_GetFXChainSection(chunk)
+    -- If FXChain - return section
+    -- If none - return char after MAIN SEND \n
+
+    local s1 = find(chunk, '<FXCHAIN.-\n')
+    if s1 then
+        local s = s1
+        local indent, op, cl = 1, nil, nil
+        while indent > 0 do
+            op = find(chunk, '\n<', s + 1, true)
+            cl = find(chunk, '\n>\n', s + 1, true) + 1
+            if op == nil and cl == nil then break end
+            if op ~= nil then
+                op = op + 1
+                if op <= cl then
+                    indent = indent + 1
+                    s = op
+                else
+                    indent = indent - 1
+                    s = cl
+                end
+            else
+                indent = indent - 1
+                s = cl
+            end
+        end
+
+        local retch = string.sub(chunk, s1, cl)
+        return retch, s1, cl
+    else
+        local s1, e1 = find(chunk, 'MAINSEND.-\n')
+        return nil, s1, e1
+    end
+end
+
+local function Chunk_GetTargetContainerFXSection(chunk, guid)
+    -- If FXChain - return section
+    -- If none - return char after MAIN SEND \n
+    
+    local s1 = find(chunk, '<FXCHAIN.-\n')
+    AAA = {}
+    BBB = {}
+    local ge, cont_found
+    if s1 then
+        local s = s1
+        local indent, op, cl = 1, nil, nil
+        while indent > 0 do
+            op = ge and find(chunk, '\n<', ge + 1, true) or find(chunk, '\n<', s + 1, true)
+            cl = find(chunk, '\n>\n', s + 1, true) + 1
+
+            if cont_found and op then
+                BBB[op] = indent
+                    CONT_END = op-1
+                    CONT_INDENT = indent
+                    --break
+            end
+
+            local cc = find(chunk, '<CONTAINER', op, true)
+            if cc then
+                AAA[cc] = indent
+            end
+
+            if not cont_found then
+            _, ge = find(chunk, guid, s + 1, true)
+                if ge then
+                    --r.ShowConsoleMsg(ge)
+                    cont_found = true
+                end
+            end
+
+            -- if cont_found then
+            --     local bs,be = find(chunk, 'BYPASS ', ge+1, true)
+            --     if be then
+            --         BBB[be] = indent
+            --         CONT_END = be
+            --         CONT_INDENT = indent
+            --         break
+            --     end
+            -- end
+            if op == nil and cl == nil then break end
+            if op ~= nil then
+                op = op + 1
+                if op <= cl then
+                    indent = indent + 1
+                    s = op
+                else
+                    indent = indent - 1
+                    s = cl
+                end
+            else
+                indent = indent - 1
+                s = cl
+            end
+        end
+        --table.sort(AAA, function(a, b) return a:lower() > b:lower() end)
+        for k, v in next, AAA do
+            if v == CONT_INDENT then
+                --r.ShowConsoleMsg("LASJKHFASOLIHGFHPIOA")
+                CONT_START = k
+                break
+            end
+        end
+
+        for k, v in pairs(AAA) do
+            if v == CONT_INDENT then
+                --r.ShowConsoleMsg("LASJKHFASOLIHGFHPIOA")
+                --CONT_START = k
+            end
+        end
+        if CONT_START then
+        local retch = string.sub(chunk, CONT_START, CONT_END)
+        return retch, CONT_START, CONT_END
+       end
+        --return retch, s1, cl
+    else
+       -- local s1, e1 = find(chunk, 'MAINSEND.-\n')
+        --return nil, s1, e1
+    end
+end
+
+local function GetFXChainChunk(chunk)
+    local number_of_spaces = 2
+    local t = {}
+    local indent = 0
+    local add = false
+    for line in chunk:gmatch("[^\n]+") do
+        if add then
+            indent = indent + 1
+            add = false
+        end
+        if line:find("^<") then
+            add = true
+        elseif line == ">" then
+            indent = indent - 1
+        end
+
+        -- ENVELOPE PARAMETER SECTION ENDED > IS FOUND IN SAME INDENTETION
+        if PARAM_START and PARAM_START == indent then
+            PARAM_START = nil
+            PARAM_END = true
+        end
+
+        local fx_chunk_name = line:match('<(%S+) ')
+        if fx_chunk_name == 'PARMENV' then
+            PARAM_START = indent
+        end
+
+        -- SKIP ADDING IF ENVELOPE PARAMETER SECTION
+        if not PARAM_START and not PARAM_END then
+            if not line:match('FXID') and not line:match('FLOATPOS') then
+                t[#t + 1] = (string.rep(string.rep(" ", number_of_spaces), indent) or "") .. line
+            end
+        end
+        -- SET IT NIL HERE SO IT DOES NOT ADD ITS LAST > INTO TABLE
+        if PARAM_END then PARAM_END = nil end
+    end
+    return table.concat(t, "\n")
+end
+
+
+
+-- -- ALAGAMLA MODIFIED FUNCTION
+-- local function GetFXChainChunk(chunk)
+--     local number_of_spaces = 2
+--     local t = {}
+--     local indent = 0
+--     local add = false
+--     local l = 0
+
+--     local CONT_START, CONT_END
+--     for line in chunk:gmatch("[^\n]+") do
+--         if add then
+--             indent = indent + 1
+--             add = false
+--         end
+--         if line:find("^<") then
+--             add = true
+--         elseif line == ">" then
+--             indent = indent - 1
+--         end
+
+--         -- CONTAINER ENDED
+--         if CONT_START and CONT_START == indent then
+--             CONT_END = indent
+--             CONT_START = nil
+--         end
+--         -- ENVELOPE PARAMETER SECTION ENDED
+--         if PARAM_START and PARAM_START == indent then
+--             PARAM_START = nil
+--             PARAM_END = true
+--         end
+
+--         local fx_chunk_name = line:match('<(%S+) ')
+--         if fx_chunk_name then
+--             -- CONTAINER STARTED
+--             if fx_chunk_name == "CONTAINER" then
+--                 CONT_END = nil
+--                 CONT_START = indent
+--             elseif fx_chunk_name == 'PARMENV' then
+--                 PARAM_START = indent
+--             else
+--                 -- CONTAINER ENDED BUT NEXT FX IS NOT CONTAINER
+--                 if CONT_END and indent == CONT_END then
+--                     CONT_END = nil
+--                 end
+--             end
+--         end
+
+--         -- SKIP ADDING IF ENVELOPE PARAMETER SECTION
+--         -- ADD LINES NORMALLY IF NOT CONTAINER
+--         -- IF CONTAINER AND ENDED THEN EXCLUDE FXID AND FLOATPOS FROM IT
+--         if not PARAM_START and not PARAM_END then
+--             if not CONT_END or (CONT_END and not line:match('FXID') and not line:match('FLOATPOS')) then
+--                 --if not line:match("FXID") then
+--                     t[#t + 1] = (string.rep(string.rep(" ", number_of_spaces), indent) or "") .. line
+--                 --end
+--             end
+--         end
+
+--         if PARAM_END then PARAM_END = nil end
+--     end
+--     return table.concat(t, "\n")
+-- end
 
 local function AnimateSpriteSheet(img_obj, frames, cols, rows, speed, start_time)
     local w, h = r.ImGui_Image_GetSize(img_obj)
@@ -295,8 +522,8 @@ local function pdefer(func)
                 "Reaper:       \t" .. r.GetAppVersion() .. "\n" ..
                 "Platform:     \t" .. r.GetOS()
             )
-            r.DeleteExtState("PARANORMALFX", "COPY_BUFFER")
-            r.DeleteExtState("PARANORMALFX", "COPY_BUFFER_ID")
+            r.DeleteExtState("PARANORMALFX", "COPY_BUFFER", false)
+            r.DeleteExtState("PARANORMALFX", "COPY_BUFFER_ID", false)
         end
     end)
 end
@@ -1653,9 +1880,13 @@ function DrawButton(tbl, i, name, width, fade, del_color)
     r.ImGui_SameLine(ctx, helper and helper, 0)
     if r.ImGui_InvisibleButton(ctx, name, width, def_btn_h) then ButtonAction(tbl, i) end
     r.ImGui_PopID(ctx)
-    if r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseReleased(ctx, 1) and tbl[i].type ~= "ROOT" then
-        OPEN_RIGHT_C_CTX = true
-        R_CLICK_DATA = { tbl, i }
+    if r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseReleased(ctx, 1) then
+        if tbl[i].type ~= "ROOT" then
+            OPEN_RIGHT_C_CTX = true
+            R_CLICK_DATA = { tbl, i }
+        else
+            OPEN_RIGHT_C_CTX_FX_CHAIN = true
+        end
     end
     local btn_hover = r.ImGui_IsItemHovered(ctx) and (not vol_hover and not pan_hover)
     if (tbl[i].type ~= "Container" and tbl[i].type ~= "ROOT") then
@@ -1893,7 +2124,7 @@ local function Paste(replace, para, insert, move)
     end
     EndUndoBlock("COPY FX")
     UpdateClipboardInfo()
-    AAA = true
+    --AAA = true
 end
 
 local function Rename()
@@ -2032,6 +2263,27 @@ function RCCTXMenu()
             Paste(nil, nil, nil, true)
         end
     end
+
+    if R_CLICK_DATA[1][R_CLICK_DATA[2]].type == "Container" then
+        if r.ImGui_MenuItem(ctx, 'SAVE AS CHAIN') then
+        local _, chunk = r.GetTrackStateChunk(TRACK, "")
+        local retch, s1, cl = Chunk_GetTargetContainerFXSection(chunk,R_CLICK_DATA[1][R_CLICK_DATA[2]].guid)
+
+        -- TRIM INNER CHAIN TO MAKE SAME STRUCTURE AS .RfxChain
+        if retch then
+            --r.ShowConsoleMsg(retch)
+            -- FIND FIRST BYPASS
+            --local bs, be = string.find(retch, 'BYPASS ')
+            -- REMOVE LAST >
+            --local inner_chain = string.sub(retch, bs, -2)
+            --local fx_chain_chunk = GetFXChainChunk(retch)
+            r.ShowConsoleMsg(retch)
+            --SAVED_DATA = fx_chain_chunk
+         end
+        end
+    end
+
+
     -- r.ImGui_Separator(ctx)
     -- if r.ImGui_MenuItem(ctx, 'SHOW LAST TOUCHED PARAMETER') then
     --     local retval, trackidx, itemidx, takeidx, fxidx, parm = r.GetTouchedOrFocusedFX(0)
@@ -2161,7 +2413,26 @@ local function DrawUserSettings()
     -- r.ImGui_EndChild(ctx)
 end
 
+-- FOR FILE MANAGER NOT TO CRASH SINCE IT EXPECTS THIS FUNCTION
+function CustomLoad(string, path)
+    --AddFX(path)
+end
+
+local function FXChainMenu()
+    if r.ImGui_MenuItem(ctx, "SAVE CHAIN") then
+        OPEN_FM = true
+        FM_TYPE = "SAVE"
+        Init_FM_database()
+    end
+    -- if r.ImGui_MenuItem(ctx, "LOAD CHAIN") then
+    --     OPEN_FM = true
+    --     FM_TYPE = "LOAD"
+    --     Init_FM_database()
+    -- end
+end
+
 local function Popups()
+    local center = { r.ImGui_Viewport_GetCenter(r.ImGui_GetWindowViewport(ctx)) }
     if OPEN_RIGHT_C_CTX then
         OPEN_RIGHT_C_CTX = nil
         if not r.ImGui_IsPopupOpen(ctx, "RIGHT_C_CTX") then
@@ -2219,12 +2490,49 @@ local function Popups()
         end
     end
 
-    -- r.ImGui_SetNextWindowPos(ctx, mx - 100, my, r.ImGui_Cond_Once())
+    --r.ImGui_SetNextWindowPos(ctx, mx - 100, my, r.ImGui_Cond_Once())
     if r.ImGui_BeginPopupModal(ctx, 'RENAME', nil,
             r.ImGui_WindowFlags_AlwaysAutoResize() | r.ImGui_WindowFlags_TopMost()) then
         Rename()
         r.ImGui_EndPopup(ctx)
     end
+
+    if OPEN_FM then
+        local _, chunk = r.GetTrackStateChunk(TRACK, "")
+        local retch, s1, cl = Chunk_GetFXChainSection(chunk)
+
+        -- TRIM INNER CHAIN TO MAKE SAME STRUCTURE AS .RfxChain
+        if retch then
+            -- FIND FIRST BYPASS
+            local bs, be = string.find(retch, 'BYPASS ')
+            -- REMOVE LAST >
+            local inner_chain = string.sub(retch, bs, -2)
+            local fx_chain_chunk = GetFXChainChunk(inner_chain)
+            SAVED_DATA = fx_chain_chunk
+        end
+        OPEN_FM = nil
+        if not r.ImGui_IsPopupOpen(ctx, "File Dialog") then
+            r.ImGui_OpenPopup(ctx, 'File Dialog')
+        end
+    end
+    r.ImGui_SetNextWindowPos(ctx, center[1], center[2], r.ImGui_Cond_Appearing(), 0.5, 0.5)
+    r.ImGui_SetNextWindowSizeConstraints(ctx, 400, 300, 400, 300)
+    if r.ImGui_BeginPopupModal(ctx, 'File Dialog', true, r.ImGui_WindowFlags_TopMost() |  r.ImGui_WindowFlags_NoResize()) then
+        File_dialog()
+        FM_Modal_POPUP()
+        r.ImGui_EndPopup(ctx)
+    end
+
+    if OPEN_RIGHT_C_CTX_FX_CHAIN then
+        OPEN_RIGHT_C_CTX_FX_CHAIN = nil
+        r.ImGui_OpenPopup(ctx, 'FX_CHAIN')
+    end
+
+    if r.ImGui_BeginPopup(ctx, "FX_CHAIN") then
+        FXChainMenu()
+        r.ImGui_EndPopup(ctx)
+    end
+
     if not r.ImGui_IsPopupOpen(ctx, "FX LIST") and #FILTER ~= 0 then FILTER = '' end
     if not r.ImGui_IsPopupOpen(ctx, "FX LIST") then
         if FX_ID then FX_ID = nil end
@@ -2247,6 +2555,7 @@ local function CheckKeys()
     HOME = r.ImGui_IsKeyPressed(ctx, r.ImGui_Key_Home())
     SPACE = r.ImGui_IsKeyPressed(ctx, r.ImGui_Key_Space())
     Z = r.ImGui_IsKeyPressed(ctx, r.ImGui_Key_Z())
+    P = r.ImGui_IsKeyPressed(ctx, r.ImGui_Key_P())
     ESC = r.ImGui_IsKeyPressed(ctx, r.ImGui_Key_Escape())
 
     if HOME then CANVAS.off_x, CANVAS.off_y = 0, 50 end
@@ -2560,6 +2869,10 @@ end
 
 --LAST_TRACK = r.GetSelectedTrack(0, 0)
 local function Main()
+    if WANT_REFRESH then
+        WANT_REFRESH = nil
+        FX_LIST, CAT = GetFXTbl()
+    end
     -- if PROFILE_DEBUG then
     --     PROFILE_STARTED = true
     --     profiler2.start()
