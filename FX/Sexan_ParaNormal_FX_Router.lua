@@ -18,8 +18,8 @@ local script_path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]];
 local PATH = debug.getinfo(1).source:match("@?(.*[\\|/])")
 
 local ver = r.GetAppVersion():match("(.+)/")
-if ver ~= "7.0rc7" then
-    r.ShowMessageBox("This script requires Reaper V7.0rc7", "WRONG REAPER VERSION", 0)
+if ver ~= "7.0rc8" then
+    r.ShowMessageBox("This script requires Reaper V7.0rc8", "WRONG REAPER VERSION", 0)
     return
 end
 
@@ -280,40 +280,69 @@ local function Chunk_GetFXChainSection(chunk)
     end
 end
 
+local function ExtractContainer(chunk, guid)
+    local r_chunk = chunk:reverse()
+    local r_guid = guid:reverse()
+    local s1 = find(r_chunk, r_guid, 1, true)
+    if s1 then
+        local s = s1
+        local indent, op, cl = nil, nil, nil
+        while (not indent or indent > 0) do
+            -- INITIATE START HERE SINCE WE ARE IN CONTAINER ALREADY
+            if not indent then indent = 0 end
+            cl = find(r_chunk, ('\n<'):reverse(), s + 1, true)
+            op = find(r_chunk, ('\n>\n'):reverse(), s + 1, true) + 1
+            if op == nil and cl == nil then break end
+            --if not indent then if op then indent = 0 end end
+            if op ~= nil then
+                op = op + 1
+                if op <= cl then
+                    indent = indent + 1
+                    s = op
+                else
+                    indent = indent - 1
+                    s = cl
+                end
+            else
+                indent = indent + 1
+                s = cl
+            end
+        end
+        local retch = string.sub(r_chunk, s1, cl):reverse()
+        --local cont_start = find(retch, 'BYPASS ')
+        local cont_fx_chunk = "BYPASS 0 0 0\n" .. retch .. "\nWAK 0 0"
+        return cont_fx_chunk
+    end
+end
+
 local function Chunk_GetTargetContainerFXSection(chunk, guid)
     -- If FXChain - return section
     -- If none - return char after MAIN SEND \n
-    
+
     local s1 = find(chunk, '<FXCHAIN.-\n')
     AAA = {}
     BBB = {}
-    local ge, cont_found
+    local ge, cont_found, last_cc
     if s1 then
         local s = s1
         local indent, op, cl = 1, nil, nil
         while indent > 0 do
-            op = ge and find(chunk, '\n<', ge + 1, true) or find(chunk, '\n<', s + 1, true)
+            op = find(chunk, '\n<', s + 1, true)
             cl = find(chunk, '\n>\n', s + 1, true) + 1
 
-            if cont_found and op then
-                BBB[op] = indent
-                    CONT_END = op-1
-                    CONT_INDENT = indent
-                    --break
-            end
+            -- if cont_found and op then
+            --     BBB[op] = indent
+            --     CONT_END = op - 1
+            --     CONT_INDENT = indent
+            --     --break
+            -- end
 
-            local cc = find(chunk, '<CONTAINER', op, true)
-            if cc then
-                AAA[cc] = indent
-            end
-
-            if not cont_found then
-            _, ge = find(chunk, guid, s + 1, true)
-                if ge then
-                    --r.ShowConsoleMsg(ge)
-                    cont_found = true
-                end
-            end
+            -- local cc = find(chunk, '<CONTAINER', op, true)
+            -- if cc then
+            --     -- if not AAA[#AAA].pos == cc then
+            --     AAA[#AAA + 1] = { indent = indent, pos = cc }
+            --     --end
+            -- end
 
             -- if cont_found then
             --     local bs,be = find(chunk, 'BYPASS ', ge+1, true)
@@ -338,29 +367,51 @@ local function Chunk_GetTargetContainerFXSection(chunk, guid)
                 indent = indent - 1
                 s = cl
             end
+            local cc = find(chunk, '<CONTAINER', op, true)
+            if cc then
+                -- if not AAA[#AAA].pos == cc then
+                AAA[#AAA + 1] = { indent = indent, pos = cc }
+                -- last_cc = cc
+            end
+            if not cont_found then
+                _, ge = find(chunk, guid, s + 1, true)
+                if ge then
+                    cont_found = true
+                    BBB[ge] = indent
+                    CONT_END = ge
+                    CONT_INDENT = indent
+                end
+            end
         end
-        --table.sort(AAA, function(a, b) return a:lower() > b:lower() end)
-        for k, v in next, AAA do
-            if v == CONT_INDENT then
-                --r.ShowConsoleMsg("LASJKHFASOLIHGFHPIOA")
-                CONT_START = k
+        -- for k, v in next, AAA do
+        --     if v == CONT_INDENT then
+        --         --r.ShowConsoleMsg("LASJKHFASOLIHGFHPIOA")
+        --         CONT_START = k
+        --         break
+        --     end
+        -- end
+
+        for i = #AAA, 1, -1 do
+            if AAA[i].indent == CONT_INDENT then
+                CONT_START = AAA[i].pos
                 break
             end
         end
 
-        for k, v in pairs(AAA) do
-            if v == CONT_INDENT then
-                --r.ShowConsoleMsg("LASJKHFASOLIHGFHPIOA")
-                --CONT_START = k
-            end
-        end
+        -- for k, v in pairs(AAA) do
+        --     if v == CONT_INDENT then
+        --         --r.ShowConsoleMsg("LASJKHFASOLIHGFHPIOA")
+        --         --CONT_START = k
+        --     end
+        -- end
         if CONT_START then
-        local retch = string.sub(chunk, CONT_START, CONT_END)
-        return retch, CONT_START, CONT_END
-       end
+            local retch = string.sub(chunk, CONT_START, CONT_END)
+            local cont_chain = "BYPASS 0 0 0\n" .. retch .. "\nWAK 0 0\n"
+            return cont_chain, CONT_START, CONT_END
+        end
         --return retch, s1, cl
     else
-       -- local s1, e1 = find(chunk, 'MAINSEND.-\n')
+        -- local s1, e1 = find(chunk, 'MAINSEND.-\n')
         --return nil, s1, e1
     end
 end
@@ -2266,20 +2317,9 @@ function RCCTXMenu()
 
     if R_CLICK_DATA[1][R_CLICK_DATA[2]].type == "Container" then
         if r.ImGui_MenuItem(ctx, 'SAVE AS CHAIN') then
-        local _, chunk = r.GetTrackStateChunk(TRACK, "")
-        local retch, s1, cl = Chunk_GetTargetContainerFXSection(chunk,R_CLICK_DATA[1][R_CLICK_DATA[2]].guid)
-
-        -- TRIM INNER CHAIN TO MAKE SAME STRUCTURE AS .RfxChain
-        if retch then
-            --r.ShowConsoleMsg(retch)
-            -- FIND FIRST BYPASS
-            --local bs, be = string.find(retch, 'BYPASS ')
-            -- REMOVE LAST >
-            --local inner_chain = string.sub(retch, bs, -2)
-            --local fx_chain_chunk = GetFXChainChunk(retch)
-            r.ShowConsoleMsg(retch)
-            --SAVED_DATA = fx_chain_chunk
-         end
+            OPEN_FM = true
+            FM_TYPE = "SAVE"
+            Init_FM_database()
         end
     end
 
@@ -2423,6 +2463,18 @@ local function FXChainMenu()
         OPEN_FM = true
         FM_TYPE = "SAVE"
         Init_FM_database()
+        local _, chunk = r.GetTrackStateChunk(TRACK, "")
+        local retch, s1, cl = Chunk_GetFXChainSection(chunk)
+
+        -- TRIM INNER CHAIN TO MAKE SAME STRUCTURE AS .RfxChain
+        if retch then
+            -- FIND FIRST BYPASS
+            local bs, be = string.find(retch, 'BYPASS ')
+            -- REMOVE LAST >
+            local inner_chain = string.sub(retch, bs, -2)
+            local fx_chain_chunk = GetFXChainChunk(inner_chain)
+            SAVED_DATA = fx_chain_chunk
+        end
     end
     -- if r.ImGui_MenuItem(ctx, "LOAD CHAIN") then
     --     OPEN_FM = true
@@ -2498,18 +2550,6 @@ local function Popups()
     end
 
     if OPEN_FM then
-        local _, chunk = r.GetTrackStateChunk(TRACK, "")
-        local retch, s1, cl = Chunk_GetFXChainSection(chunk)
-
-        -- TRIM INNER CHAIN TO MAKE SAME STRUCTURE AS .RfxChain
-        if retch then
-            -- FIND FIRST BYPASS
-            local bs, be = string.find(retch, 'BYPASS ')
-            -- REMOVE LAST >
-            local inner_chain = string.sub(retch, bs, -2)
-            local fx_chain_chunk = GetFXChainChunk(inner_chain)
-            SAVED_DATA = fx_chain_chunk
-        end
         OPEN_FM = nil
         if not r.ImGui_IsPopupOpen(ctx, "File Dialog") then
             r.ImGui_OpenPopup(ctx, 'File Dialog')
