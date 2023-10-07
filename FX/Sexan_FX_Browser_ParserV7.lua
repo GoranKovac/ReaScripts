@@ -1,9 +1,9 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.2
+-- @version 1.4
 -- @changelog
---  Fixed sorting FX CHAINS and TRACK TEMPLATES
+--  Reset tables when calling refresh
 
 local r = reaper
 local os = r.GetOS()
@@ -18,6 +18,18 @@ local JS_INFO, JS = {}, {}
 local AU_INFO, AU, AUi = {}, {}, {}
 local CLAP_INFO, CLAP, CLAPi = {}, {}, {}
 local LV2_INFO, LV2, LV2i = {}, {}, {}
+
+local function ResetTables()
+    CAT = {}
+    DEVELOPER_LIST = { "Waves" }
+    PLUGIN_LIST = {}
+    INSTRUMENTS = {}
+    VST_INFO, VST, VSTi, VST3, VST3i = {}, {}, {}, {}, {}
+    JS_INFO, JS = {}, {}
+    AU_INFO, AU, AUi = {}, {}, {}
+    CLAP_INFO, CLAP, CLAPi = {}, {}, {}
+    LV2_INFO, LV2, LV2i = {}, {}, {}
+end
 
 function Literalize(str)
     return str:gsub("[%(%)%.%%%+%-%*%?%[%]%^%$]", function(c) return "%" .. c end)
@@ -419,6 +431,7 @@ function Stripname(name, prefix, suffix)
 end
 
 function GetFXTbl()
+    ResetTables()
     return GenerateFxList(), CAT
 end
 
@@ -442,7 +455,9 @@ end
 -- local ctx = r.ImGui_CreateContext('FX INI PARSER')
 
 -- local FX_LIST, CAT = GetFXTbl()
+
 -- local function Lead_Trim_ws(s) return s:match '^%s*(.*)' end
+
 -- local tsort = table.sort
 -- function SortTable(tab, val1, val2)
 --     tsort(tab, function(a, b)
