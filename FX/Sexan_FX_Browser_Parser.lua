@@ -1,4 +1,4 @@
--- @description Sexan FX Browser parser
+-- @description Sexan FX Browser parser V6
 -- @author Sexan
 -- @license GPL v3
 -- @version 1.4
