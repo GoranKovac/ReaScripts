@@ -1,9 +1,9 @@
 -- @description Sexan FX Browser parser V6
 -- @author Sexan
 -- @license GPL v3
--- @version 1.4
+-- @version 1.5
 -- @changelog
---  Fixed sorting FX CHAINS and TRACK TEMPLATES
+--  Added V6 suffix
 
 local r = reaper
 local os = r.GetOS()
