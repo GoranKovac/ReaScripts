@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="0589168ad3b6c83d8984525bef63f2d99017da14" name="Sexan_Scripts">
+<index version="1" commit="fdb972b2d6f5f3b71fe9c98843604cc142029f53" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -506,7 +506,7 @@
     </reapack>
   </category>
   <category name="FX">
-    <reapack name="Sexan_FX_Browser_Parser.lua" type="script" desc="Sexan FX Browser parser">
+    <reapack name="Sexan_FX_Browser_Parser.lua" type="script" desc="Sexan FX Browser parser V6">
       <version name="1.0" author="Sexan" time="2023-09-20T08:35:59Z">
         <changelog><![CDATA[initial release]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/d59611ccf63a29855353b4c7ad765ea21285fde3/FX/Sexan_FX_Browser_Parser.lua</source>
@@ -528,6 +528,10 @@ Literize developer name from magic characters]]></changelog>
       <version name="1.4" author="Sexan" time="2023-10-04T20:46:46Z">
         <changelog><![CDATA[Fixed sorting FX CHAINS and TRACK TEMPLATES]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/b7fdede98936a8581e95c2c29c2a9820372174f1/FX/Sexan_FX_Browser_Parser.lua</source>
+      </version>
+      <version name="1.5" author="Sexan" time="2023-10-08T08:52:16Z">
+        <changelog><![CDATA[Added V6 suffix]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/fdb972b2d6f5f3b71fe9c98843604cc142029f53/FX/Sexan_FX_Browser_Parser.lua</source>
       </version>
     </reapack>
     <reapack name="Sexan_FX_Browser_ParserV7.lua" type="script" desc="Sexan FX Browser parser V7">
