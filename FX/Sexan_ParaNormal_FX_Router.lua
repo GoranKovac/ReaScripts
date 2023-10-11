@@ -1,11 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.50
+-- @version 1.51
 -- @changelog
---  Drag and drop SideChaining over multiple channels
---  Only available for plugins that have more than 2 inputs
---  Removed version requirement checking
+--  Fix icons
 -- @provides
 --   Icons.ttf
 --   ProggyClean.ttf
