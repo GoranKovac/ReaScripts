@@ -69,8 +69,17 @@ local function DrawEntries(entries, is_dir)
                     path = path .. entry
                     filelist = GetFileList()
                 else
-                    LoadFile()
-                    r.ImGui_CloseCurrentPopup(ctx)
+                    if FM_TYPE == "OPEN" then
+                        LoadFile()
+                        r.ImGui_CloseCurrentPopup(ctx)
+
+                    elseif FM_TYPE == "SAVE" then
+                        --local load_path = path .. os_separator .. filelist.current
+                        --SaveToFIle(load_path)
+                        WANT_OVERRIDE = true
+                        --r.ImGui_OpenPopup(ctx, 'Overwrite')
+                    end
+                    --r.ImGui_CloseCurrentPopup(ctx)
                 end
             end
         end
@@ -279,6 +288,12 @@ end
 function FM_Modal_POPUP()
     local center = { r.ImGui_Viewport_GetCenter(r.ImGui_GetWindowViewport(ctx)) }
     r.ImGui_SetNextWindowPos(ctx, center[1], center[2], r.ImGui_Cond_Appearing(), 0.5, 0.5)
+
+    if WANT_OVERRIDE then
+        WANT_OVERRIDE = nil
+        r.ImGui_OpenPopup(ctx, 'Overwrite')
+    end
+
     if r.ImGui_BeginPopupModal(ctx, 'Overwrite', nil, r.ImGui_WindowFlags_AlwaysAutoResize()) then
         r.ImGui_Text(ctx, filelist.current_text_input .. ' - already exists.\nOverwrite file ?\n\n')
         r.ImGui_Separator(ctx)

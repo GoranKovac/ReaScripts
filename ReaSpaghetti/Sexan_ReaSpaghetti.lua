@@ -1,9 +1,9 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.40
+-- @version 0.41
 -- @changelog
---  Remove standalone "Return Node", not needed since its automatically created by function
+--  When Saving file doublick click stores to selected file
 -- @provides
 --   api_file.txt
 --   Modules/*.lua
