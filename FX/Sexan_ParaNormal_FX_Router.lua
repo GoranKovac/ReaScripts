@@ -1,9 +1,11 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.51
+-- @version 1.52
 -- @changelog
---  Fix icons
+--  Fix plugins passing thru 2channel input check for sidechain
+--  Do not allow sidechaining on containers
+--  Do not draw sidechain preview waveform on containers
 -- @provides
 --   Icons.ttf
 --   ProggyClean.ttf
@@ -11,12 +13,14 @@
 --   [effect] BandSelectFX.jsfx
 --   Tutorials/*.png
 
-local r            = reaper
-local os_separator = package.config:sub(1, 1)
-package.path       = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
-package.path       = package.path .. debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "../ImGui_Tools/?.lua;"
-local script_path  = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]];
-local PATH         = debug.getinfo(1).source:match("@?(.*[\\|/])")
+local r                      = reaper
+local os_separator           = package.config:sub(1, 1)
+package.path                 = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] ..
+"?.lua;"                                                                                   -- GET DIRECTORY FOR REQUIRE
+package.path                 = package.path ..
+debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "../ImGui_Tools/?.lua;"
+local script_path            = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]];
+local PATH                   = debug.getinfo(1).source:match("@?(.*[\\|/])")
 
 -- local ver          = r.GetAppVersion():match("(.+)/")
 -- if ver ~= "7.0rc9" then
@@ -25,7 +29,7 @@ local PATH         = debug.getinfo(1).source:match("@?(.*[\\|/])")
 -- end
 
 local fx_browser_script_path = r.GetResourcePath() .. "/Scripts/Sexan_Scripts/FX/Sexan_FX_Browser_ParserV7.lua"
-local fm_script_path = r.GetResourcePath() .. "/Scripts/Sexan_Scripts/ImGui_Tools/FileManager.lua"
+local fm_script_path         = r.GetResourcePath() .. "/Scripts/Sexan_Scripts/ImGui_Tools/FileManager.lua"
 
 if not r.ImGui_GetVersion then
     r.ShowMessageBox("ReaImGui is required.\nPlease Install it in next window", "MISSING DEPENDENCIES", 0)
@@ -201,7 +205,7 @@ if r.HasExtState("PARANORMALFX", "SETTINGS") then
     end
 end
 
-local LINE_POINTS, FX_DATA, CANVAS--, PLUGINS
+local LINE_POINTS, FX_DATA, CANVAS --, PLUGINS
 local PEAK_TBL = {}
 
 local function InitCanvas()
@@ -1103,7 +1107,7 @@ local function IterateContainer(depth, track, container_id, parent_fx_count, pre
         if name_w > total_w then total_w = name_w end
 
         child_fx[#child_fx + 1] = {
-            FX_ID = fx_id,
+            FX_ID = 0x2000000 + fx_id,
             type = fx_type,
             name = fx_name:gsub("(%S+: )", ""),
             IDX = i,
@@ -1178,7 +1182,7 @@ local function GetOrUpdateFX(target)
         para = i == 1 and "0" or para -- MAKE FIRST ITEMS ALWAYS SERIAL (FIRST ITEMS ARE SAME IF IN PARALELL OR SERIAL)
 
         PLUGINS[#PLUGINS + 1] = {
-            FX_ID = i-1,
+            FX_ID = i - 1,
             type = fx_type,
             name = fx_name:gsub("(%S+: )", ""),
             IDX = i,
@@ -1848,7 +1852,7 @@ function DrawButton(tbl, i, name, width, fade, del_color)
     r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_Alpha(), fade) -- alpha
     r.ImGui_BeginGroup(ctx)
     --! DRAW PEAKS
-    if tbl[i].sc_tracks then
+    if tbl[i].sc_tracks and tbl[i].type ~= "Container" then
         r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_WindowPadding(), 0, 0)
         r.ImGui_PushID(ctx, tbl[i].guid .. "peaks")
         if r.ImGui_BeginChild(ctx, "##peaks", peak_btn_size, def_btn_h, 1) then
@@ -1872,7 +1876,10 @@ function DrawButton(tbl, i, name, width, fade, del_color)
             for t = 1, #tbl[i].sc_tracks do
                 local retval, buf = r.GetTrackName(tbl[i].sc_tracks[t])
                 if t > 1 then tr_names = tr_names .. "            " end
-                tr_names = tr_names .. buf .. " (" ..tbl[i].sc_channels[t].."/"..(tbl[i].sc_channels[t]+1) .. ")" .."\n" --.. tbl[i].sc_channels[t]
+                tr_names = tr_names ..
+                buf ..
+                " (" .. tbl[i].sc_channels[t] .. "/" ..
+                (tbl[i].sc_channels[t] + 1) .. ")" .. "\n"                                                               --.. tbl[i].sc_channels[t]
                 --Tooltip("SIDECHAIN - " .. tr_names)
             end
             Tooltip("SIDECHAIN - " .. tr_names)
@@ -2549,20 +2556,20 @@ local function OpenTrChMenu()
         for i = 3, track_ch, 2 do
             if r.ImGui_Button(ctx, "CH " .. i .. "/" .. (i + 1)) then
                 --if not ALT then
-                    r.Undo_BeginBlock()
+                r.Undo_BeginBlock()
 
-                    -- CHECK IF SEND EXIST ON THAT CHANNEL
-                    if not HasSend(SC_DATA[1], (i + 1) - 2) then
-                        local new_s_idx = r.CreateTrackSend(SC_DATA[1], TRACK)
-                        --r.SetTrackSendInfo_Value(TRACK, -1, r.GetTrackNumSends(TRACK, -1) - 1, 'I_DSTCHAN', (i + 1) - 2)
-                        r.SetTrackSendInfo_Value(SC_DATA[1], 0, new_s_idx, 'I_DSTCHAN', (i + 1) - 2)
-                    end
-                    SetPinsOnOff(3, i)
-                    SetPinsOnOff(4, i + 1)
-                    EndUndoBlock("SET SIDECHAIN PIN MAPPING " .. i .. i + 1)
+                -- CHECK IF SEND EXIST ON THAT CHANNEL
+                if not HasSend(SC_DATA[1], (i + 1) - 2) then
+                    local new_s_idx = r.CreateTrackSend(SC_DATA[1], TRACK)
+                    --r.SetTrackSendInfo_Value(TRACK, -1, r.GetTrackNumSends(TRACK, -1) - 1, 'I_DSTCHAN', (i + 1) - 2)
+                    r.SetTrackSendInfo_Value(SC_DATA[1], 0, new_s_idx, 'I_DSTCHAN', (i + 1) - 2)
+                end
+                SetPinsOnOff(3, i)
+                SetPinsOnOff(4, i + 1)
+                EndUndoBlock("SET SIDECHAIN PIN MAPPING " .. i .. i + 1)
                 --else
-                    --SetPinsOnOff(3, i, true)
-                    --SetPinsOnOff(4, i + 1, true)
+                --SetPinsOnOff(3, i, true)
+                --SetPinsOnOff(4, i + 1, true)
                 --end
                 r.ImGui_CloseCurrentPopup(ctx)
             end
@@ -2600,7 +2607,7 @@ local function OpenSCMenu()
             r.ImGui_CloseCurrentPopup(ctx)
         end
         r.ImGui_SameLine(ctx)
-        Tooltip("UNSET FX (" .. SC_DATA[3][i].. "/" .. (SC_DATA[3][i]+1).. ")")
+        Tooltip("UNSET FX (" .. SC_DATA[3][i] .. "/" .. (SC_DATA[3][i] + 1) .. ")")
         r.ImGui_SameLine(ctx)
         -- DELETE
         if r.ImGui_Button(ctx, "%" .. "##SC" .. i) then
@@ -2616,7 +2623,6 @@ local function OpenSCMenu()
                 end
             end
             EndUndoBlock("DELETE RECEIVE TRACK")
-
         end
         Tooltip("DELETE RECEIVE TRACK")
 
@@ -2624,7 +2630,7 @@ local function OpenSCMenu()
         r.ImGui_PopFont(ctx)
         r.ImGui_SameLine(ctx)
         -- OPEN
-        if r.ImGui_Selectable(ctx, name .. " (" .. SC_DATA[3][i].. "/" .. (SC_DATA[3][i]+1) .. ")".."##" .. i) then
+        if r.ImGui_Selectable(ctx, name .. " (" .. SC_DATA[3][i] .. "/" .. (SC_DATA[3][i] + 1) .. ")" .. "##" .. i) then
             if PIN then
                 SEL_LIST_TRACK = SC_DATA[1][i]
             else
@@ -2815,6 +2821,7 @@ function DragAndDropSidechainTarget(tbl, i)
     if i == 0 then return end
 
     local p_type, inp_cnt = r.TrackFX_GetIOSize(TRACK, tbl[i].FX_ID)
+    if tbl[i].type == "Container" then return end
     if inp_cnt == 2 then return end
     if r.ImGui_BeginDragDropTarget(ctx) then
         local ret, payload = r.ImGui_AcceptDragDropPayload(ctx, 'SIDECHAIN')
