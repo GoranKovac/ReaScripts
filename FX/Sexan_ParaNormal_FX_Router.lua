@@ -1,11 +1,11 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.48
+-- @version 1.50
 -- @changelog
---  FileManager
---  Storing Chain for whole track
---  Storing Chain for Container
+--  Drag and drop SideChaining over multiple channels
+--  Only available for plugins that have more than 2 inputs
+--  Removed version requirement checking
 -- @provides
 --   Icons.ttf
 --   ProggyClean.ttf
@@ -13,18 +13,18 @@
 --   [effect] BandSelectFX.jsfx
 --   Tutorials/*.png
 
-local r = reaper
+local r            = reaper
 local os_separator = package.config:sub(1, 1)
-package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
-package.path  = package.path  .. debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "../ImGui_Tools/?.lua;"
-local script_path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]];
-local PATH = debug.getinfo(1).source:match("@?(.*[\\|/])")
+package.path       = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
+package.path       = package.path .. debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "../ImGui_Tools/?.lua;"
+local script_path  = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]];
+local PATH         = debug.getinfo(1).source:match("@?(.*[\\|/])")
 
-local ver = r.GetAppVersion():match("(.+)/")
-if ver ~= "7.0rc8" then
-    r.ShowMessageBox("This script requires Reaper V7.0rc8", "WRONG REAPER VERSION", 0)
-    return
-end
+-- local ver          = r.GetAppVersion():match("(.+)/")
+-- if ver ~= "7.0rc9" then
+--     r.ShowMessageBox("This script requires Reaper V7.0rc8", "WRONG REAPER VERSION", 0)
+--     return
+-- end
 
 local fx_browser_script_path = r.GetResourcePath() .. "/Scripts/Sexan_Scripts/FX/Sexan_FX_Browser_ParserV7.lua"
 local fm_script_path = r.GetResourcePath() .. "/Scripts/Sexan_Scripts/ImGui_Tools/FileManager.lua"
@@ -59,12 +59,11 @@ local add_bnt_w = 55
 local add_btn_h = 14
 -- SETTINGS
 
-local SYNC = false
+local PIN = false
 local AUTO_COLORING = false
 local CUSTOM_FONT = nil
 local ESC_CLOSE = false
 CLIPBOARD = {}
-
 
 local name_margin = 25
 local COLOR = {
@@ -204,7 +203,8 @@ if r.HasExtState("PARANORMALFX", "SETTINGS") then
     end
 end
 
-local LINE_POINTS, FX_DATA, PLUGINS, CANVAS
+local LINE_POINTS, FX_DATA, CANVAS--, PLUGINS
+local PEAK_TBL = {}
 
 local function InitCanvas()
     return { view_x = 0, view_y = 0, off_x = 0, off_y = 50, scale = 1 }
@@ -252,6 +252,107 @@ local def_s_window_x, def_s_window_y = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar
 local s_frame_x, s_frame_y = def_s_frame_x, def_s_frame_y
 local s_spacing_x, s_spacing_y = def_s_spacing_x, item_spacing_vertical and item_spacing_vertical or def_s_spacing_y
 local s_window_x, s_window_y = def_s_window_x, def_s_window_y
+
+local min = math.min
+local function ringInsert(buffer, value)
+    buffer[buffer.ptr] = value
+    buffer.ptr = (buffer.ptr + 1) % buffer.max_size
+    buffer.size = min(buffer.size + 1, buffer.max_size)
+end
+
+local function ringEnum(buffer)
+    if buffer.size < 1 then return function() end end
+
+    local i = 0
+    return function()
+        local j = (buffer.ptr + i) % buffer.size
+        if i < buffer.size then
+            local value = buffer[j]
+            i = i + 1
+            return value
+        end
+    end
+end
+
+local function Draw_Peak(tr_tbl, dl, x, y, w, h)
+    for t = 1, #tr_tbl do
+        local peak_tbl = PEAK_TBL[tr_tbl[t]]
+        if peak_tbl.size < 1 then return end
+
+        local half_h = h / 2
+        local zero_y = y + half_h
+
+        local points = r.new_array(peak_tbl.size * 2)
+
+        local n = 0
+        for spl_stereo in ringEnum(peak_tbl) do
+            local val = (spl_stereo[1] + spl_stereo[2]) / 2
+
+            local i = 1 + (n * 2)
+            points[i] = x + i
+            -- NEEDED FOR DRAWING POLYLINE
+            -- points[i + 1] = n%2 == 0 and zero_y + (half_h * val) or zero_y - (half_h * val)
+
+            -- FOR DRAWING NORMAL LINES
+            points[i + 1] = (half_h * val)
+            n = n + 1
+        end
+
+        for i = 1, #points, 2 do
+            -- reaper.ImGui_DrawList_AddLine( dl, points[i],  zero_y-1 + points[i+1], points[i],  zero_y - points[i+1], 0xFFFFFFFF, 1 )
+            r.ImGui_DrawList_AddLine(dl, points[i], zero_y + points[i + 1], points[i], zero_y - points[i + 1], 0xFFFFFFFF,
+                3)
+        end
+    end
+
+    --r.ImGui_DrawList_AddPolyline(dl, poly_points, 0xFFFFFFFF, 0, 2)
+end
+
+local function HasValue(tbl, val)
+    for i = 1, #tbl do
+        if tbl[i] == val then return true end
+    end
+end
+
+local function GetActiveSideChain(id)
+    local sc_tracks = {}
+    local sc_ch_data = {}
+    local sc_channels = {}
+    local TR_CH = r.GetMediaTrackInfo_Value(TRACK, "I_NCHAN")
+    for i = 1, TR_CH do
+        local ret, inputPins, outputPins = r.TrackFX_GetIOSize(TRACK, id)
+        if inputPins > 2 then
+            for j = 3, inputPins do
+                local low32, high32 = r.TrackFX_GetPinMappings(TRACK, id, 0, j - 1)
+                if low32 & 1 << (i - 1) ~= 0 then
+                    sc_ch_data[#sc_ch_data + 1] = { tr_ch = i, fx_ch = j }
+                end
+            end
+        end
+    end
+
+    for i = 1, #sc_ch_data do
+        for j = 1, r.GetTrackNumSends(TRACK, -1) do
+            local receive_dst = r.GetTrackSendInfo_Value(TRACK, -1, j - 1, "I_DSTCHAN")
+            local ch = sc_ch_data[i].tr_ch % 2 == 0 and sc_ch_data[i].tr_ch - 2 or sc_ch_data[i].tr_ch - 1
+            if receive_dst == ch then
+                local src_tr = r.GetTrackSendInfo_Value(TRACK, -1, j - 1, "P_SRCTRACK")
+                if not HasValue(sc_tracks, src_tr) then
+                    sc_tracks[#sc_tracks + 1] = src_tr
+                    sc_channels[#sc_channels + 1] = sc_ch_data[i].tr_ch
+                end
+                --sc_tracks[src_tr] = sc_ch_data[i].fx_ch
+                -- sc_tracks[src_tr] = src_tr
+                --local retval, buf = r.GetTrackName(src_tr)
+                --r.ShowConsoleMsg("SC FROM: " .. buf.. " TR_CH: ".. sc_ch_data[i].tr_ch ..  " ON FX_CH: " .. sc_ch_data[i].fx_ch .. "\n")
+            end
+        end
+    end
+    if #sc_tracks ~= 0 then
+        return sc_tracks, sc_channels
+    end
+    --return #sc_tracks ~= 0 and sc_tracks
+end
 
 -- lb0 FUNCTION
 local find = string.find
@@ -497,7 +598,9 @@ local function Tooltip(str)
     if IS_DRAGGING_RIGHT_CANVAS then return end
     if r.ImGui_IsItemHovered(ctx) then
         r.ImGui_BeginTooltip(ctx)
+        r.ImGui_PushFont(ctx, SELECTED_FONT)
         r.ImGui_Text(ctx, str)
+        r.ImGui_PopFont(ctx)
         r.ImGui_EndTooltip(ctx)
     end
 end
@@ -895,6 +998,8 @@ end
 local def_btn_h = custom_btn_h and custom_btn_h or ({ CalculateItemWH({ name = "||" }) })[2]
 local mute = para_btn_size
 local volume = para_btn_size
+local peak_btn_size = para_btn_size
+local peak_width = 10
 local function CalcContainerWH(fx_items)
     local rows = {}
     local W, H = 0, 0
@@ -918,7 +1023,8 @@ local function CalcContainerWH(fx_items)
         if #rows[i] > 1 then
             for j = 1, #rows[i] do
                 local w = fx_items[rows[i][j]].W and fx_items[rows[i][j]].W or
-                    CalculateItemWH(fx_items[rows[i][j]]) + mute + volume + name_margin
+                    CalculateItemWH(fx_items[rows[i][j]]) + mute + volume + name_margin +
+                    (fx_items[rows[i][j]].sc_tracks and peak_btn_size + s_spacing_x or 0)
                 local h = fx_items[rows[i][j]].H and
                     fx_items[rows[i][j]].H + s_spacing_y + insert_point_size or --+ btn_total_size - (add_btn_h) - (add_btn_h//2) or
                     --(btn_total_size * 2)
@@ -932,7 +1038,8 @@ local function CalcContainerWH(fx_items)
             col_w = col_w + (para_btn_size // 2)
         else
             local w = fx_items[rows[i][1]].W and fx_items[rows[i][1]].W + mute + s_spacing_x or
-                CalculateItemWH(fx_items[rows[i][1]]) + mute + volume + s_spacing_x + name_margin
+                CalculateItemWH(fx_items[rows[i][1]]) + mute + volume + s_spacing_x + name_margin +
+                (fx_items[rows[i][1]].sc_tracks and peak_btn_size + s_spacing_x or 0)
             local h = fx_items[rows[i][1]].H and fx_items[rows[i][1]].H + s_spacing_y + insert_point_size or
                 --btn_total_size * 2
                 (btn_total_size + insert_point_size)
@@ -950,6 +1057,7 @@ local function CalcContainerWH(fx_items)
 end
 
 local function IterateContainer(depth, track, container_id, parent_fx_count, previous_diff, container_guid, target)
+    local c_ok, container_fx_count = r.TrackFX_GetNamedConfigParm(track, 0x2000000 + container_id, "container_count")
     local row = 1
     local child_fx = {
         [0] = {
@@ -962,15 +1070,16 @@ local function IterateContainer(depth, track, container_id, parent_fx_count, pre
             ROW = 0,
         }
     }
-    local container_fx_count = tonumber(({ TrackFX_GetNamedConfigParm(track, 0x2000000 + container_id,
-        "container_count") })[2])
+
+    -- local container_fx_count = tonumber(({ TrackFX_GetNamedConfigParm(track, 0x2000000 + container_id,
+    --     "container_count") })[2])
     local diff = depth == 0 and parent_fx_count + 1 or (parent_fx_count + 1) * previous_diff
 
     -- CALCULATER DEFAULT WIDTH
     local _, parrent_cont_name = r.TrackFX_GetFXName(track, 0x2000000 + container_id)
-    local total_w = CalculateItemWH({ name = parrent_cont_name })
+    local total_w, name_h = CalculateItemWH({ name = parrent_cont_name })
     -- CALCULATER DEFAULT WIDTH
-
+    if not c_ok then return child_fx, total_w + (name_margin * 3), name_h + (s_spacing_y * 2) end
     for i = 1, container_fx_count do
         local fx_id = container_id + (diff * i)
         local fx_guid = TrackFX_GetFXGUID(TRACK, 0x2000000 + fx_id)
@@ -982,6 +1091,8 @@ local function IterateContainer(depth, track, container_id, parent_fx_count, pre
         local wetparam = r.TrackFX_GetParamFromIdent(track, 0x2000000 + fx_id, ":wet")
         local wet_val = r.TrackFX_GetParam(track, 0x2000000 + fx_id, wetparam)
         local bypass = r.TrackFX_GetEnabled(track, 0x2000000 + fx_id)
+
+        local sc_tracks, sc_channels = GetActiveSideChain(0x2000000 + fx_id)
         para = i == 1 and "0" or para -- MAKE FIRST ITEMS ALWAYS SERIAL (FIRST ITEMS ARE SAME IF IN PARALELL OR SERIAL)
 
         local h = pearson8(fx_name)
@@ -1007,6 +1118,8 @@ local function IterateContainer(depth, track, container_id, parent_fx_count, pre
             wetparam = wetparam,
             wet_val = wet_val,
             auto_color = color,
+            sc_tracks = sc_tracks,
+            sc_channels = sc_channels,
         }
 
         if fx_type == "Container" then
@@ -1057,6 +1170,7 @@ local function GetOrUpdateFX(target)
         local wet_val = r.TrackFX_GetParam(track, i - 1, wetparam)
         local bypass = r.TrackFX_GetEnabled(track, i - 1)
 
+        local sc_tracks, sc_channels = GetActiveSideChain(i - 1)
         local h = pearson8(fx_name)
         local rr, gg, bb = r.ImGui_ColorConvertHSVtoRGB(h / 0xFF, 1, 1)
         local color = r.ImGui_ColorConvertDouble4ToU32(rr, gg, bb, 1)
@@ -1066,7 +1180,7 @@ local function GetOrUpdateFX(target)
         para = i == 1 and "0" or para -- MAKE FIRST ITEMS ALWAYS SERIAL (FIRST ITEMS ARE SAME IF IN PARALELL OR SERIAL)
 
         PLUGINS[#PLUGINS + 1] = {
-            FX_ID = i,
+            FX_ID = i-1,
             type = fx_type,
             name = fx_name:gsub("(%S+: )", ""),
             IDX = i,
@@ -1079,6 +1193,8 @@ local function GetOrUpdateFX(target)
             wetparam = wetparam,
             wet_val = wet_val,
             auto_color = color,
+            sc_tracks = sc_tracks,
+            sc_channels = sc_channels
         }
         if fx_type == "Container" then
             local sub_plugins, W, H = IterateContainer(0, track, i, total_fx_count, 0, fx_guid, target)
@@ -1393,7 +1509,9 @@ local function ParallelRowWidth(tbl, i, item_width)
         if tbl[idx].p == 0 then
             break
         else
-            local width = tbl[idx].W and tbl[idx].W or CalculateItemWH(tbl[idx]) + mute + volume + name_margin
+            local width = tbl[idx].W and tbl[idx].W or
+                CalculateItemWH(tbl[idx]) + mute + volume + name_margin +
+                (tbl[idx].sc_tracks and peak_btn_size + s_spacing_x or 0)
             local height = tbl[idx].H and tbl[idx].H - s_spacing_y or 0
 
             if total_h < height then
@@ -1415,7 +1533,7 @@ local ROUND_FLAG = {
     ["R"] = r.ImGui_DrawFlags_RoundCornersTopRight()|r.ImGui_DrawFlags_RoundCornersBottomRight()
 }
 
-local function DrawListButton(name, color, round_side, icon, hover)
+local function DrawListButton(name, color, round_side, icon, hover, offset)
     local multi_color = IS_DRAGGING_RIGHT_CANVAS and color or ColorToHex(color, hover and 50 or 0)
     local xs, ys = r.ImGui_GetItemRectMin(ctx)
     local xe, ye = r.ImGui_GetItemRectMax(ctx)
@@ -1437,7 +1555,7 @@ local function DrawListButton(name, color, round_side, icon, hover)
     local FONT_SIZE = r.ImGui_GetFontSize(ctx)
     local font_color = CalculateFontColor(color)
 
-    r.ImGui_DrawList_AddTextEx(draw_list, nil, FONT_SIZE, xs + (w / 2) - (label_size / 2),
+    r.ImGui_DrawList_AddTextEx(draw_list, nil, FONT_SIZE, xs + (w / 2) - (label_size / 2) + (offset or 0),
         ys + ((h / 2)) - FONT_SIZE / 2, r.ImGui_GetColorEx(ctx, font_color), name)
     if icon then r.ImGui_PopFont(ctx) end
 end
@@ -1725,11 +1843,69 @@ end
 function DrawButton(tbl, i, name, width, fade, del_color)
     if tbl[i].type == "INSERT_POINT" then return end
     --! LOWER BUTTON ALPHA SO INSERT POINTS STANDOUT
+
     local SPLITTER = r.ImGui_CreateDrawListSplitter(draw_list)
     r.ImGui_DrawListSplitter_Split(SPLITTER, 2)
     local alpha = (DRAG_ADD_FX and not CTRL) and 0.4 or fade
     r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_Alpha(), fade) -- alpha
     r.ImGui_BeginGroup(ctx)
+    --! DRAW PEAKS
+    if tbl[i].sc_tracks then
+        r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_WindowPadding(), 0, 0)
+        r.ImGui_PushID(ctx, tbl[i].guid .. "peaks")
+        if r.ImGui_BeginChild(ctx, "##peaks", peak_btn_size, def_btn_h, 1) then
+            r.ImGui_PopStyleVar(ctx)
+            local x, y = r.ImGui_GetCursorScreenPos(ctx)
+            local av_x, av_y = r.ImGui_GetContentRegionAvail(ctx)
+            Draw_Peak(tbl[i].sc_tracks, draw_list, x, y, peak_btn_size, av_y)
+            if r.ImGui_InvisibleButton(ctx, "S", peak_btn_size, def_btn_h) then
+                local fx_tbl = GetFx(tbl[i].guid)
+                local parrent = GetFx(tbl[i].pid)
+
+                local item_id = CalcFxID(parrent, fx_tbl.IDX)
+                SC_DATA = { tbl[i].sc_tracks, item_id, tbl[i].sc_channels }
+                OPEN_SIDE_CHAIN = true
+            end
+            -- if r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseReleased(ctx,1) then
+            --     SC_DATA = tbl[i].sc_tracks
+            --     OPEN_SIDE_CHAIN = true
+            -- end
+            local tr_names = ""
+            for t = 1, #tbl[i].sc_tracks do
+                local retval, buf = r.GetTrackName(tbl[i].sc_tracks[t])
+                if t > 1 then tr_names = tr_names .. "            " end
+                tr_names = tr_names .. buf .. " (" ..tbl[i].sc_channels[t].."/"..(tbl[i].sc_channels[t]+1) .. ")" .."\n" --.. tbl[i].sc_channels[t]
+                --Tooltip("SIDECHAIN - " .. tr_names)
+            end
+            Tooltip("SIDECHAIN - " .. tr_names)
+            r.ImGui_EndChild(ctx)
+        end
+        --! DRAW TRIANGLE CONNECT
+        DrawListButton("B", 0, nil, true, nil, peak_btn_size // 2 + s_spacing_x // 2)
+
+        -- if r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseReleased(ctx, 0) then
+        --     --r.SetOnlyTrackSelected(next(tbl[i].sc_tracks))
+        --     r.SetOnlyTrackSelected(tbl[i].sc_tracks[1])
+
+        -- end
+        -- local tr_names = ""
+        -- for t = 1, #tbl[i].sc_tracks do
+        --     local retval, buf = r.GetTrackName(tbl[i].sc_tracks[t])
+        --     if t > 1 then
+        --         tr_names = tr_names .. "            "
+        --     end
+        --     tr_names = tr_names .. buf .. "\n"
+        -- end
+        -- DrawListButton("B", 0, nil, true,nil,peak_btn_size//2 + s_spacing_x//2)
+        -- local tr_name = next(tbl[i].sc_tracks)
+        --local tr_name = tbl[i].sc_tracks[1]
+        --local retval, buf = r.GetTrackName(tr_name)
+
+        r.ImGui_PopID(ctx)
+        --r.ImGui_PopStyleVar(ctx)
+        r.ImGui_SameLine(ctx)
+        --Tooltip("SIDECHAIN - " .. tr_names)
+    end
     --! DRAW BYPASS
     r.ImGui_PushID(ctx, tbl[i].guid .. "bypass")
     if r.ImGui_InvisibleButton(ctx, "B", para_btn_size, def_btn_h) then
@@ -1761,7 +1937,7 @@ function DrawButton(tbl, i, name, width, fade, del_color)
 
     if DRAG_MOVE and DRAG_MOVE.move_guid == tbl[i].guid and not CTRL_DRAG then
     else
-        DrawListButton("A", color, "L", true, r.ImGui_IsItemHovered(ctx))
+        DrawListButton("!", color, "L", true, r.ImGui_IsItemHovered(ctx))
     end
 
     --! DRAW VOL/PAN PLUGIN
@@ -1789,6 +1965,7 @@ function DrawButton(tbl, i, name, width, fade, del_color)
     local is_del_color = del_color and del_color or (ALT and btn_hover) and COLOR["del"] or
         (AUTO_COLORING and tbl[i].auto_color and tbl[i].auto_color or TypToColor(tbl[i]))
     DragAndDropMove(tbl, i)
+    DragAndDropSidechainTarget(tbl, i)
     if DRAG_MOVE and DRAG_MOVE.move_guid == tbl[i].guid and not CTRL_DRAG then
         local xs, ys = r.ImGui_GetItemRectMin(ctx)
         local xe, ye = r.ImGui_GetItemRectMax(ctx)
@@ -1854,7 +2031,7 @@ function DrawButton(tbl, i, name, width, fade, del_color)
         Tooltip("ENCLOSE ALL INTO CONTAINER")
         r.ImGui_PopID(ctx)
 
-        DrawListButton("K", color, "R", true, r.ImGui_IsItemHovered(ctx))
+        DrawListButton("H", color, "R", true, r.ImGui_IsItemHovered(ctx))
     end
     r.ImGui_EndGroup(ctx)
     r.ImGui_PopStyleVar(ctx)
@@ -1872,7 +2049,7 @@ local function SetItemPos(tbl, i, x, item_w)
         else
             -- NORMAL FX HAS BYPASS AND VOLUME
             if tbl[i].type ~= "Container" then
-                item_w = item_w + mute + volume
+                item_w = item_w + mute + volume + (tbl[i].sc_tracks and peak_btn_size + s_spacing_x or 0)
             end
         end
         r.ImGui_SetCursorPosX(ctx, x - (item_w // 2))
@@ -2111,7 +2288,7 @@ end
 local function CreateFxChain(guid)
     local _, chunk = r.GetTrackStateChunk(TRACK, "")
 
-    local chain_chunk,  s1, cl
+    local chain_chunk, s1, cl
     if not guid then
         chain_chunk, s1, cl = Chunk_GetFXChainSection(chunk)
         --if chain_chunk then
@@ -2119,7 +2296,7 @@ local function CreateFxChain(guid)
         --    chain_chunk = bs and string.sub(chain_chunk, bs, -2) or nil
         --end
     else
-        chain_chunk, s1, cl = ExtractContainer(chunk,guid)
+        chain_chunk, s1, cl = ExtractContainer(chunk, guid)
     end
     -- TRIM INNER CHAIN TO MAKE SAME STRUCTURE AS .RfxChain
     if chain_chunk then
@@ -2223,9 +2400,10 @@ end
 local function DrawUserSettings()
     local WX, WY = r.ImGui_GetWindowPos(ctx)
 
-    r.ImGui_SetNextWindowPos(ctx, WX + 5, WY + 70)
-    -- if not r.ImGui_BeginChild(ctx, 'hackUSERSETTIGS', -FLT_MIN, -FLT_MIN, false, r.ImGui_WindowFlags_NoInputs()) then return end
+    if not r.ImGui_BeginChild(ctx, 'toolbars', -FLT_MIN, -FLT_MIN, false, r.ImGui_WindowFlags_NoInputs()) then return end
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x000000EE)
+    r.ImGui_SetNextWindowPos(ctx, WX + 5, WY + 65)
+    -- if not r.ImGui_BeginChild(ctx, 'hackUSERSETTIGS', -FLT_MIN, -FLT_MIN, false, r.ImGui_WindowFlags_NoInputs()) then return end
     if r.ImGui_BeginChild(ctx, "USERSETTIGS", 182, 384, 1) then
         if r.ImGui_BeginListBox(ctx, "FONT", nil, 38) then
             if r.ImGui_Selectable(ctx, "DEFAULT", CUSTOM_FONT == nil) then
@@ -2314,7 +2492,7 @@ local function DrawUserSettings()
         r.ImGui_EndChild(ctx)
     end
     r.ImGui_PopStyleColor(ctx)
-    -- r.ImGui_EndChild(ctx)
+    r.ImGui_EndChild(ctx)
 end
 
 -- FOR FILE MANAGER NOT TO CRASH SINCE IT EXPECTS THIS FUNCTION
@@ -2329,13 +2507,162 @@ local function FXChainMenu()
         Init_FM_database()
         CreateFxChain()
     end
-    if r.ImGui_MenuItem(ctx, "DELETE CHAIN") then
+    if r.ImGui_MenuItem(ctx, "DELETE ALL FX") then
         RemoveAllFX()
+    end
+end
+
+function SetPinsOnOff(pin, ch, del)
+    local Low32, Hi32 = r.TrackFX_GetPinMappings(TRACK, SC_DATA[2], 0, pin - 1)
+    local mask = 2 ^ (ch - 1)
+    --if (Low32&mask) == mask then reaper.ShowConsoleMsg("ALREADY SET") return end
+    r.TrackFX_SetPinMappings(TRACK, SC_DATA[2], 0, pin - 1, del and Low32 ~ mask or Low32 | mask, Hi32)
+end
+
+local function HasSend(dst_tr, ch)
+    for i = 1, r.GetTrackNumSends(TRACK, -1) do
+        if r.GetTrackSendInfo_Value(TRACK, -1, i - 1, "P_SRCTRACK") == dst_tr then
+            if r.GetTrackSendInfo_Value(TRACK, -1, i - 1, "I_DSTCHAN") == ch then
+                return true
+            end
+        end
+    end
+end
+
+local function IsTrackChannelEmpty()
+    local TR_CH = r.GetMediaTrackInfo_Value(TRACK, "I_NCHAN")
+    for i = TR_CH, 3 do
+        local ret, inputPins, outputPins = r.TrackFX_GetIOSize(TRACK, id)
+        if inputPins > 2 then
+            for j = 3, inputPins do
+                local low32, high32 = r.TrackFX_GetPinMappings(TRACK, id, 0, j - 1)
+                if low32 & 1 << (i - 1) ~= 0 then
+                    sc_ch_data[#sc_ch_data + 1] = { tr_ch = i, fx_ch = j }
+                end
+            end
+        end
+    end
+end
+
+local function OpenTrChMenu()
+    local track_ch = r.GetMediaTrackInfo_Value(TRACK, "I_NCHAN")
+    if track_ch > 2 then
+        r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Button(), 0)
+        for i = 3, track_ch, 2 do
+            if r.ImGui_Button(ctx, "CH " .. i .. "/" .. (i + 1)) then
+                --if not ALT then
+                    r.Undo_BeginBlock()
+
+                    -- CHECK IF SEND EXIST ON THAT CHANNEL
+                    if not HasSend(SC_DATA[1], (i + 1) - 2) then
+                        local new_s_idx = r.CreateTrackSend(SC_DATA[1], TRACK)
+                        --r.SetTrackSendInfo_Value(TRACK, -1, r.GetTrackNumSends(TRACK, -1) - 1, 'I_DSTCHAN', (i + 1) - 2)
+                        r.SetTrackSendInfo_Value(SC_DATA[1], 0, new_s_idx, 'I_DSTCHAN', (i + 1) - 2)
+                    end
+                    SetPinsOnOff(3, i)
+                    SetPinsOnOff(4, i + 1)
+                    EndUndoBlock("SET SIDECHAIN PIN MAPPING " .. i .. i + 1)
+                --else
+                    --SetPinsOnOff(3, i, true)
+                    --SetPinsOnOff(4, i + 1, true)
+                --end
+                r.ImGui_CloseCurrentPopup(ctx)
+            end
+        end
+        r.ImGui_PopStyleColor(ctx)
+    end
+    if r.ImGui_MenuItem(ctx, "NEW") then
+        r.Undo_BeginBlock()
+        r.SetMediaTrackInfo_Value(TRACK, "I_NCHAN", track_ch + 2)
+        SetPinsOnOff(3, track_ch + 1)
+        SetPinsOnOff(4, track_ch + 2)
+        local s_idx = r.CreateTrackSend(SC_DATA[1], TRACK)
+        r.SetTrackSendInfo_Value(SC_DATA[1], 0, s_idx, 'I_DSTCHAN', track_ch)
+        EndUndoBlock("ADD TRACK CHANNEL " .. track_ch + 2)
+    end
+end
+
+local function OpenSCMenu()
+    for i = 1, #SC_DATA[1] do
+        local retval, name = r.GetTrackName(SC_DATA[1][i])
+        r.ImGui_PushFont(ctx, ICONS_FONT)
+        r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Button(), 0)
+        -- REMOVE PINS
+        if r.ImGui_Button(ctx, ";" .. "##SC" .. i) then
+            r.Undo_BeginBlock()
+            for s = 1, r.GetTrackNumSends(TRACK, -1) do
+                if r.GetTrackSendInfo_Value(TRACK, -1, s - 1, "P_SRCTRACK") == SC_DATA[1][i] then
+                    local dst_ch = r.GetTrackSendInfo_Value(TRACK, -1, s - 1, "I_DSTCHAN")
+                    SetPinsOnOff(3, dst_ch + 1, true)
+                    SetPinsOnOff(4, dst_ch + 2, true)
+                    r.ImGui_CloseCurrentPopup(ctx)
+                end
+            end
+            EndUndoBlock("REMOVE FX CHANNEL MAPPING")
+            r.ImGui_CloseCurrentPopup(ctx)
+        end
+        r.ImGui_SameLine(ctx)
+        Tooltip("UNSET FX (" .. SC_DATA[3][i].. "/" .. (SC_DATA[3][i]+1).. ")")
+        r.ImGui_SameLine(ctx)
+        -- DELETE
+        if r.ImGui_Button(ctx, "%" .. "##SC" .. i) then
+            --local track_ch = r.GetMediaTrackInfo_Value(TRACK, "I_NCHAN")
+            r.Undo_BeginBlock()
+            for s = 1, r.GetTrackNumSends(TRACK, -1) do
+                if r.GetTrackSendInfo_Value(TRACK, -1, s - 1, "P_SRCTRACK") == SC_DATA[1][i] then
+                    --local dst_ch = r.GetTrackSendInfo_Value(TRACK, -1, s - 1, "I_DSTCHAN")
+                    --SetPinsOnOff(3, dst_ch + 1, true)
+                    --SetPinsOnOff(4, dst_ch + 2, true)
+                    r.RemoveTrackSend(TRACK, -1, s - 1)
+                    r.ImGui_CloseCurrentPopup(ctx)
+                end
+            end
+            EndUndoBlock("DELETE RECEIVE TRACK")
+
+        end
+        Tooltip("DELETE RECEIVE TRACK")
+
+        r.ImGui_PopStyleColor(ctx)
+        r.ImGui_PopFont(ctx)
+        r.ImGui_SameLine(ctx)
+        -- OPEN
+        if r.ImGui_Selectable(ctx, name .. " (" .. SC_DATA[3][i].. "/" .. (SC_DATA[3][i]+1) .. ")".."##" .. i) then
+            if PIN then
+                SEL_LIST_TRACK = SC_DATA[1][i]
+            else
+                r.SetOnlyTrackSelected(SC_DATA[1][i])
+            end
+        end
     end
 end
 
 local function Popups()
     local center = { r.ImGui_Viewport_GetCenter(r.ImGui_GetWindowViewport(ctx)) }
+
+    if OPEN_SIDE_CHAIN then
+        OPEN_SIDE_CHAIN = nil
+        if not r.ImGui_IsPopupOpen(ctx, "OPEN_SIDE_CHAIN") then
+            r.ImGui_OpenPopup(ctx, "OPEN_SIDE_CHAIN")
+        end
+    end
+
+    if r.ImGui_BeginPopup(ctx, "OPEN_SIDE_CHAIN") then
+        OpenSCMenu()
+        r.ImGui_EndPopup(ctx)
+    end
+
+    if OPEN_TR_CH then
+        OPEN_TR_CH = nil
+        if not r.ImGui_IsPopupOpen(ctx, "OPEN_TR_CH") then
+            r.ImGui_OpenPopup(ctx, "OPEN_TR_CH")
+        end
+    end
+
+    if r.ImGui_BeginPopup(ctx, "OPEN_TR_CH") then
+        OpenTrChMenu()
+        r.ImGui_EndPopup(ctx)
+    end
+
     if OPEN_RIGHT_C_CTX then
         OPEN_RIGHT_C_CTX = nil
         if not r.ImGui_IsPopupOpen(ctx, "RIGHT_C_CTX") then
@@ -2392,8 +2719,6 @@ local function Popups()
             r.ImGui_SetNextWindowPos(ctx, mx - 100, my)
         end
     end
-
-    --r.ImGui_SetNextWindowPos(ctx, mx - 100, my, r.ImGui_Cond_Once())
     if r.ImGui_BeginPopupModal(ctx, 'RENAME', nil,
             r.ImGui_WindowFlags_AlwaysAutoResize() | r.ImGui_WindowFlags_TopMost()) then
         Rename()
@@ -2428,7 +2753,6 @@ local function Popups()
     if not r.ImGui_IsPopupOpen(ctx, "FX LIST") then
         if FX_ID then FX_ID = nil end
         if CLICKED then CLICKED = nil end
-        -- if REPLACE then REPLACE = nil end
     end
     if not r.ImGui_IsPopupOpen(ctx, "RIGHT_C_CTX_PARALLEL") then
         if PARA_DATA then PARA_DATA = nil end
@@ -2436,6 +2760,10 @@ local function Popups()
     if not r.ImGui_IsPopupOpen(ctx, "FX LIST") and not r.ImGui_IsPopupOpen(ctx, "RIGHT_C_CTX") and not r.ImGui_IsPopupOpen(ctx, "RENAME") and not r.ImGui_IsPopupOpen(ctx, "RIGHT_C_CTX_PARALLEL") and not r.ImGui_IsPopupOpen(ctx, "RIGHT_C_CTX_INSERT") then
         if R_CLICK_DATA then R_CLICK_DATA = nil end
         if REPLACE then REPLACE = nil end
+    end
+
+    if not r.ImGui_IsPopupOpen(ctx, "OPEN_SIDE_CHAIN") and not r.ImGui_IsPopupOpen(ctx, "OPEN_TR_CH") then
+        if SC_DATA then SC_DATA = nil end
     end
 end
 
@@ -2446,7 +2774,6 @@ local function CheckKeys()
     HOME = r.ImGui_IsKeyPressed(ctx, r.ImGui_Key_Home())
     SPACE = r.ImGui_IsKeyPressed(ctx, r.ImGui_Key_Space())
     Z = r.ImGui_IsKeyPressed(ctx, r.ImGui_Key_Z())
-    P = r.ImGui_IsKeyPressed(ctx, r.ImGui_Key_P())
     ESC = r.ImGui_IsKeyPressed(ctx, r.ImGui_Key_Escape())
 
     if HOME then CANVAS.off_x, CANVAS.off_y = 0, 50 end
@@ -2465,6 +2792,49 @@ local function CheckKeys()
     MOUSE_DRAG = r.ImGui_IsMouseDragging(ctx, 0)
 end
 
+local function GetTrackFromGuid(guid)
+    for i = 1, r.CountTracks(0) do
+        local track = r.GetTrack(0, i - 1)
+        local tr_guid = r.GetTrackGUID(track)
+        if guid == tr_guid then return track end
+    end
+end
+
+local function DragAndDropSidechainSource(track, name)
+    if r.ImGui_BeginDragDropSource(ctx) then
+        DRAG_SC = true
+        local GUID = r.GetTrackGUID(track)
+        r.ImGui_SetDragDropPayload(ctx, "SIDECHAIN", GUID)
+
+        r.ImGui_Text(ctx, "SIDECHAIN " .. name .. "->")
+
+        r.ImGui_EndDragDropSource(ctx)
+    end
+end
+
+function DragAndDropSidechainTarget(tbl, i)
+    if not DRAG_SC then return end
+    if i == 0 then return end
+
+    local p_type, inp_cnt = r.TrackFX_GetIOSize(TRACK, tbl[i].FX_ID)
+    if inp_cnt == 2 then return end
+    if r.ImGui_BeginDragDropTarget(ctx) then
+        local ret, payload = r.ImGui_AcceptDragDropPayload(ctx, 'SIDECHAIN')
+        r.ImGui_EndDragDropTarget(ctx)
+        if ret then
+            local guid = payload
+            local fx_tbl = GetFx(tbl[i].guid)
+            local parrent = GetFx(tbl[i].pid)
+
+            local item_id = CalcFxID(parrent, fx_tbl.IDX)
+            if r.ImGui_IsMouseReleased(ctx, 0) then
+                SC_DATA = { GetTrackFromGuid(guid), item_id }
+                OPEN_TR_CH = true
+            end
+        end
+    end
+end
+
 local function UI()
     r.ImGui_SetCursorPos(ctx, 5, 25)
     -- NIFTY HACK FOR COMMENT BOX NOT OVERLAP UI BUTTONS
@@ -2472,78 +2842,173 @@ local function UI()
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x000000EE)
 
     --r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_WindowPadding(), 0, 2)
-    if r.ImGui_BeginChild(ctx, "TopButtons", 280, def_btn_h + (s_window_y * 2), 1) then
-        local retval, tr_ID = r.GetTrackName(TRACK)
+    local retval, tr_ID = r.GetTrackName(TRACK)
+    local tr_name_w = CalculateItemWH({ name = tr_ID })
+    if r.ImGui_BeginChild(ctx, "TopButtons", 170 + tr_name_w + 40, def_btn_h + (s_window_y * 2), 1) then
+        local child_hovered = r.ImGui_IsWindowHovered(ctx,
+            r.ImGui_HoveredFlags_ChildWindows() |  r.ImGui_HoveredFlags_AllowWhenBlockedByPopup() |
+            r.ImGui_HoveredFlags_AllowWhenBlockedByActiveItem())
+        --local retval, tr_ID = r.GetTrackName(TRACK)
         r.ImGui_PushFont(ctx, ICONS_FONT2)
-        if r.ImGui_InvisibleButton(ctx, "D", CalculateItemWH({ name = "D" }), def_btn_h) then
+        if r.ImGui_InvisibleButton(ctx, "D", 22, def_btn_h) then
             if OPEN_SETTINGS then
                 StoreSettings()
             end
             OPEN_SETTINGS = not OPEN_SETTINGS
         end
-        DrawListButton("D", 0xff, nil, nil, r.ImGui_IsItemHovered(ctx))
+        Tooltip("SETTINGS")
+        DrawListButton("$", 0xff, nil, nil, r.ImGui_IsItemHovered(ctx))
         r.ImGui_SameLine(ctx)
-        if r.ImGui_InvisibleButton(ctx, "L", CalculateItemWH({ name = "D" }), def_btn_h) then
+        if r.ImGui_InvisibleButton(ctx, "H", 22, def_btn_h) then
             CANVAS.off_x, CANVAS.off_y = 0, 50
         end
-        DrawListButton("L", 0xff, nil, nil, r.ImGui_IsItemHovered(ctx))
-        r.ImGui_PopFont(ctx)
+        DrawListButton("&", 0xff, nil, nil, r.ImGui_IsItemHovered(ctx))
         Tooltip("RESET VIEW")
         r.ImGui_SameLine(ctx)
-        local pin_color = SYNC and 0x49cc85FF or 0xff --0x1b3d65ff
-        if r.ImGui_InvisibleButton(ctx, "PIN", CalculateItemWH({ name = "PIN" }), def_btn_h) then
-            --if r.ImGui_Checkbox(ctx, "PIN", SYNC) then
+        local pin_color = PIN and 0x49cc85FF or 0xff --0x1b3d65ff
+        local pin_icon = PIN and "L" or "M"          --0x1b3d65ff
+        if r.ImGui_InvisibleButton(ctx, "M", 22, def_btn_h) then
+            --if r.ImGui_Checkbox(ctx, "PIN", PIN) then
             SEL_LIST_TRACK = TRACK
-            SYNC = not SYNC
+            PIN = not PIN
         end
-        DrawListButton("PIN", pin_color, nil, nil, r.ImGui_IsItemHovered(ctx))
-        Tooltip(
-            "LOCKS TO SELECTED TRACK\nMULTIPLE SCRIPTS CAN HAVE DIFFERENT SELECTIONS\nCAN BE CHANGED VIA TRACKLIST")
-
+        DrawListButton(pin_icon, pin_color, nil, nil, r.ImGui_IsItemHovered(ctx))
+        Tooltip("LOCKS TO SELECTED TRACK\nMULTIPLE SCRIPTS CAN HAVE DIFFERENT SELECTIONS\nCAN BE CHANGED VIA TRACKLIST")
+        r.ImGui_PopFont(ctx)
         r.ImGui_SameLine(ctx)
-        if r.ImGui_InvisibleButton(ctx, "M", CalculateItemWH({ name = "PIN" }), def_btn_h) then
-            if SYNC then
+        if r.ImGui_InvisibleButton(ctx, "M##mute", CalculateItemWH({ name = "PIN" }), def_btn_h) then
+            if PIN then
                 r.SetTrackUIMute(SEL_LIST_TRACK, -1, 0)
             else
                 r.SetTrackUIMute(TRACK, -1, 0)
             end
         end
-        local mute_color = r.GetMediaTrackInfo_Value(SYNC and SEL_LIST_TRACK or TRACK, "B_MUTE")
+        local mute_color = r.GetMediaTrackInfo_Value(PIN and SEL_LIST_TRACK or TRACK, "B_MUTE")
         DrawListButton("M", mute_color == 0 and 0xff or 0xff2222ff, nil, nil, r.ImGui_IsItemHovered(ctx))
 
         r.ImGui_SameLine(ctx, 0, 0)
 
-        if r.ImGui_InvisibleButton(ctx, "S", CalculateItemWH({ name = "PIN" }), def_btn_h) then
-            if SYNC then
+        if r.ImGui_InvisibleButton(ctx, "S##solo", CalculateItemWH({ name = "PIN" }), def_btn_h) then
+            if PIN then
                 r.SetTrackUISolo(SEL_LIST_TRACK, -1, 0)
             else
                 r.SetTrackUISolo(TRACK, -1, 0)
             end
         end
-        local solo_color = r.GetMediaTrackInfo_Value(SYNC and SEL_LIST_TRACK or TRACK, "I_SOLO")
+        local solo_color = r.GetMediaTrackInfo_Value(PIN and SEL_LIST_TRACK or TRACK, "I_SOLO")
         DrawListButton("S", solo_color == 0 and 0xff or 0xf1c524ff, nil, nil, r.ImGui_IsItemHovered(ctx))
         r.ImGui_SameLine(ctx)
 
-        --Tooltip("RESET VIEW")
         r.ImGui_SetCursorPosY(ctx, r.ImGui_GetCursorPosY(ctx) + s_window_y // 2)
         if r.ImGui_BeginMenu(ctx, tr_ID .. "##main") then
             for i = 0, r.CountTracks(0) do
                 local track = i == 0 and r.GetMasterTrack(0) or r.GetTrack(0, i - 1)
                 local _, track_id = r.GetTrackName(track)
-                if r.ImGui_Selectable(ctx, track_id) then
-                    if SYNC then
+                if r.ImGui_Selectable(ctx, track_id, track == TRACK) then
+                    if PIN then
                         SEL_LIST_TRACK = track
                     else
                         r.SetOnlyTrackSelected(track)
                     end
                 end
+                if i > 0 and track ~= TRACK then
+                    DragAndDropSidechainSource(track, track_id)
+                end
+            end
+            if not child_hovered then
+                --r.ImGui_CloseCurrentPopup(ctx)
             end
             r.ImGui_EndMenu(ctx)
         end
+        if not r.ImGui_IsWindowHovered(ctx) then
+            r.ImGui_CloseCurrentPopup(ctx)
+        end
+
         r.ImGui_EndChild(ctx)
     end
     r.ImGui_PopStyleColor(ctx)
     r.ImGui_EndChild(ctx)
+end
+
+local function V_UI()
+    r.ImGui_SetCursorPos(ctx, 5, 65)
+    local w_open, w_closed = 250, def_btn_h + s_window_x * 2
+    local menu_h = 400
+    local buttons_h = def_btn_h + (s_window_x * 2)
+    r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x000000EE)
+    r.ImGui_BeginGroup(ctx)
+    local x, y = r.ImGui_GetCursorPos(ctx)
+    if r.ImGui_BeginChild(ctx, 'BUTTON_SECTION', w_closed, buttons_h, 1) then
+        r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Button(), 0)
+        r.ImGui_PushFont(ctx, ICONS_FONT)
+        for i = 1, 1 do
+            if r.ImGui_Button(ctx, "N") then
+                if not LAST_MENU then
+                    VUI_VISIBLE = true
+                end
+                if LAST_MENU == i then
+                    VUI_VISIBLE = not VUI_VISIBLE
+                else
+                    if not VUI_VISIBLE then
+                        VUI_VISIBLE = true
+                    end
+                end
+
+                LAST_MENU = i
+            end
+        end
+        r.ImGui_PopFont(ctx)
+        r.ImGui_PopStyleColor(ctx)
+        r.ImGui_EndChild(ctx)
+    end
+    if VUI_VISIBLE then
+        r.ImGui_SetCursorPos(ctx, x + w_closed - 1, y)
+        if r.ImGui_BeginChild(ctx, "child_menu", w_open, menu_h, 1) then
+            r.ImGui_SetNextItemWidth(ctx, -FLT_MIN)
+            retval, filter_tr = r.ImGui_InputTextWithHint(ctx, "##tr_filter", "TRACK NAME", filter_tr)
+            if LAST_MENU == 1 then
+                if r.ImGui_BeginTable(ctx, "TRACKLIST", 3, r.ImGui_TableFlags_Borders()) then
+                    r.ImGui_TableSetupColumn(ctx, 'ID', 20)
+                    r.ImGui_TableSetupColumn(ctx, 'NAME')
+                    --r.ImGui_TableSetupColumn(ctx, 'REC',20)
+                    r.ImGui_TableSetupColumn(ctx, 'CH')
+
+                    r.ImGui_TableHeadersRow(ctx)
+                    --for i = 0, 99 do
+                    --r.ImGui_TableNextColumn(ctx)
+                    --    r.ImGui_Button(ctx, ('%03d'):format(i), -FLT_MIN, 0.0)
+                    --  end
+                    --r.ImGui_TableSetColumnIndex(ctx, 0)
+                    for t = 1, r.CountTracks(0) do
+                        local tr = r.GetTrack(0, t - 1)
+                        local rv, name = r.GetTrackName(tr)
+                        if tr ~= TRACK then
+                            r.ImGui_TableNextRow(ctx)
+                            r.ImGui_TableSetColumnIndex(ctx, 0)
+                            r.ImGui_Text(ctx, t)
+                            r.ImGui_TableSetColumnIndex(ctx, 1)
+                            r.ImGui_Selectable(ctx, name)
+                            r.ImGui_TableSetColumnIndex(ctx, 2)
+                            for rec = 1, r.GetTrackNumSends(TRACK, -1) do
+                                if r.GetTrackSendInfo_Value(TRACK, -1, rec - 1, "P_SRCTRACK") == tr then
+                                    local ch = math.floor(r.GetTrackSendInfo_Value(TRACK, -1, rec - 1, "I_DSTCHAN"))
+                                    r.ImGui_Selectable(ctx, (ch + 1) .. "/" .. (ch + 2) .. "##" .. t)
+                                end
+                            end
+                            --r.ImGui_TableSetColumnIndex(ctx, 3)
+                            -- r.ImGui_BeginDisabled(ctx,true)
+                            -- r.ImGui_Checkbox(ctx, "##t",true)
+                            -- r.ImGui_EndDisabled(ctx)
+                        end
+                    end
+                    r.ImGui_EndTable(ctx)
+                end
+            end
+            r.ImGui_EndChild(ctx)
+        end
+    end
+    r.ImGui_EndGroup(ctx)
+    r.ImGui_PopStyleColor(ctx)
 end
 
 local function Frame()
@@ -2588,7 +3053,8 @@ local function Frame()
 end
 
 function Iterate_container(depth, track, container_id, parent_fx_count, previous_diff, container_guid)
-    local _, c_fx_count = r.TrackFX_GetNamedConfigParm(track, 0x2000000 + container_id, "container_count")
+    local c_ok, c_fx_count = r.TrackFX_GetNamedConfigParm(track, 0x2000000 + container_id, "container_count")
+    if not c_ok then return end
     local diff = depth == 0 and parent_fx_count + 1 or (parent_fx_count + 1) * previous_diff
     local child_guids = {}
 
@@ -2645,7 +3111,6 @@ function UpdateFxData()
         local _, fx_type = r.TrackFX_GetNamedConfigParm(TRACK, i - 1, "fx_type")
         local _, para = r.TrackFX_GetNamedConfigParm(TRACK, i - 1, "parallel")
         local fx_guid = TrackFX_GetFXGUID(TRACK, i - 1)
-
         if i > 1 then row = para == "0" and row + 1 or row end
 
         FX_DATA[fx_guid] = {
@@ -2758,8 +3223,24 @@ local function Tutorial()
     --r.ImGui_EndChild(ctx)
 end
 
+local function StoreTrackMeterPeaks()
+    -- VALIDATE IF TRACK EXIST
+    for k in pairs(PEAK_TBL) do
+        if not r.ValidatePtr(k, "MediaTrack*") then PEAK_TBL[k] = nil end
+    end
+    for i = 0, r.CountTracks(0) do
+        local track = i == 0 and r.GetMasterTrack(0) or r.GetTrack(0, i - 1)
+        if not PEAK_TBL[track] then PEAK_TBL[track] = { ptr = 0, size = 0, max_size = peak_width } end
+        local spl1 = r.Track_GetPeakInfo(track, 0)
+        local spl2 = r.Track_GetPeakInfo(track, 1)
+        ringInsert(PEAK_TBL[track], { spl1, spl1 })
+    end
+end
+
+
 --LAST_TRACK = r.GetSelectedTrack(0, 0)
 local function Main()
+    StoreTrackMeterPeaks()
     if WANT_REFRESH then
         WANT_REFRESH = nil
         FX_LIST, CAT = GetFXTbl()
@@ -2774,7 +3255,7 @@ local function Main()
     local master = r.GetMasterTrack(0)
     if r.GetMediaTrackInfo_Value(master, "I_SELECTED") == 1 then TRACK = master end
 
-    TRACK = SYNC and SEL_LIST_TRACK or TRACK
+    TRACK = PIN and SEL_LIST_TRACK or TRACK
 
     if LAST_TRACK ~= TRACK then
         Store_To_PEXT(LAST_TRACK)
@@ -2796,6 +3277,7 @@ local function Main()
         --UpdateFxData()
         if TRACK then
             Frame()
+            --V_UI()
             UI()
             Tutorial()
             ClipBoard()
@@ -2825,6 +3307,7 @@ local function Main()
         DRAG_MOVE = nil
         DRAG_ADD_FX = nil
         DRAW_PREVIEW = nil
+        DRAG_SC = nil
     end
     -- if PROFILE_DEBUG and PROFILE_STARTED then
     --     profiler2.stop()
