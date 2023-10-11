@@ -549,16 +549,16 @@ function Fill_Api_list()
     }
 
     --RETURN NODE
-    api[#api + 1] = {
-        fname = "CUSTOM_ReturnNode",
-        label = "Return Node",
-        desc = "Returns values from function",
-        ins = {
-            { name = "VAL", type = "ANY" },
-        },
-        out = {},
-        run = "in"
-    }
+    -- api[#api + 1] = {
+    --     fname = "CUSTOM_ReturnNode",
+    --     label = "Return Node",
+    --     desc = "Returns values from function",
+    --     ins = {
+    --         { name = "VAL", type = "ANY" },
+    --     },
+    --     out = {},
+    --     run = "in"
+    -- }
 
     -- MATH FLOAT
     api[#api + 1] = {

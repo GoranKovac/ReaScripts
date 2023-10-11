@@ -592,12 +592,8 @@ function FilterBox()
         for i = 1, #filtered_fx do
             r.ImGui_PushID(ctx, i)
             if r.ImGui_Selectable(ctx, filtered_fx[i].label) then
-                local dont_insert = false
-                if filtered_fx[i].label:lower() == "return node" and CURRENT_FUNCTION < 3 then dont_insert = true end
-                if not dont_insert then
-                    InsertNode("api", filtered_fx[i].label, filtered_fx[i])
-                    DIRTY = true
-                end
+                InsertNode("api", filtered_fx[i].label, filtered_fx[i])
+                DIRTY = true
                 r.ImGui_CloseCurrentPopup(ctx)
             end
             r.ImGui_PopID(ctx)

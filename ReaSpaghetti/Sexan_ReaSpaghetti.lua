@@ -1,12 +1,9 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.39
+-- @version 0.40
 -- @changelog
---  Revert TableSerializer
---  Do not insert return node in main or Init
---  If function is in focus and deleted select previous function after delete
---  Append .reanodes to exported action file source if not provided already
+--  Remove standalone "Return Node", not needed since its automatically created by function
 -- @provides
 --   api_file.txt
 --   Modules/*.lua
