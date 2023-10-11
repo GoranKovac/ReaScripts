@@ -1,9 +1,12 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.38
+-- @version 0.39
 -- @changelog
---  fixed optional string argument in number field
+--  Revert TableSerializer
+--  Do not insert return node in main or Init
+--  If function is in focus and deleted select previous function after delete
+--  Append .reanodes to exported action file source if not provided already
 -- @provides
 --   api_file.txt
 --   Modules/*.lua

@@ -3,6 +3,7 @@
 
 local r = reaper
 function ExportTest(name, proj_path, is_defer)
+    name = name:match(".%reanodes") and name or name .. ".reanodes"
     local lua_string = {}
 
     table.insert(lua_string, 'package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\\/])[^\\/]-$]] .. "../?.lua;"')

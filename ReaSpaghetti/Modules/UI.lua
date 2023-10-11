@@ -909,6 +909,7 @@ function Sidebar()
                             --CURRENT_FUNCTION = CHANGE_FTAB
                             final_tbl[CHANGE_FTAB].tab_open = true
                         end
+                        CURRENT_FUNCTION = CURRENT_FUNCTION - 1
                     end
                     --! REMOVE ALL FUNCTIONS
                 elseif CUR_TAB == "NODES" then

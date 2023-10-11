@@ -592,8 +592,12 @@ function FilterBox()
         for i = 1, #filtered_fx do
             r.ImGui_PushID(ctx, i)
             if r.ImGui_Selectable(ctx, filtered_fx[i].label) then
-                InsertNode("api", filtered_fx[i].label, filtered_fx[i])
-                DIRTY = true
+                local dont_insert = false
+                if filtered_fx[i].label:lower() == "return node" and CURRENT_FUNCTION < 3 then dont_insert = true end
+                if not dont_insert then
+                    InsertNode("api", filtered_fx[i].label, filtered_fx[i])
+                    DIRTY = true
+                end
                 r.ImGui_CloseCurrentPopup(ctx)
             end
             r.ImGui_PopID(ctx)
@@ -1143,7 +1147,7 @@ local function Draw_input(node, io_type, pin, x, y, pin_n, h)
                 --     r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_DisabledAlpha(), 0.3)
                 --     r.ImGui_BeginDisabled(ctx)
                 -- end
-                current_input = type(current_input) == "string" and 0 or  current_input
+                current_input = type(current_input) == "string" and 0 or current_input
                 _, pin.i_val = r.ImGui_DragInt(ctx, "##" .. pin.label, current_input, 1, 0, nil,
                     pin.label .. separator .. '%d%', r.ImGui_SliderFlags_AlwaysClamp())
                 -- if CheckOptional(pin) then
@@ -1156,7 +1160,7 @@ local function Draw_input(node, io_type, pin, x, y, pin_n, h)
         elseif pin.type == "NUMBER/INTEGER" or pin.type == "NUMBER" then
             local separator = node.type == "f" and "" or " : "
             if node.type == "f" then
-                current_input = type(current_input) == "string" and 0 or  current_input
+                current_input = type(current_input) == "string" and 0 or current_input
 
                 F_RV, pin.i_val = r.ImGui_DragDouble(ctx, "##" .. pin.label, pin.i_val, 0.01, 0.0, 0.0,
                     pin.label .. separator .. '%.03f')
