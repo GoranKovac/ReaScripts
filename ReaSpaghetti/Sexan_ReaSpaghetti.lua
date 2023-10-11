@@ -1,9 +1,10 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.41
+-- @version 0.42
 -- @changelog
---  When Saving file doublick click stores to selected file
+--  Fix RPR_TYPES tbl (move values to keys since check is looking at keys)
+--  Fix Save when closing the script to actually close the script
 -- @provides
 --   api_file.txt
 --   Modules/*.lua

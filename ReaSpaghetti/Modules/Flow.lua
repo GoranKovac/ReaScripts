@@ -75,12 +75,12 @@ local RPR_PTRS = {
 }
 
 local RPR_TYPES = {
-    "REAPROJECT",
-    "MEDIATRACK",
-    "MEDIAITEM",
-    "MEDIAITEM_TAKE",
-    "TRACKENVELOPE",
-    "PCM_SOURCE"
+    ["REAPROJECT"] = true,
+    ["MEDIATRACK"] = true,
+    ["MEDIAITEM"] = true,
+    ["MEDIAITEM_TAKE"] = true,
+    ["TRACKENVELOPE"] = true,
+    ["PCM_SOURCE"] = true,
 }
 
 local function ValidateRpr(pointer)

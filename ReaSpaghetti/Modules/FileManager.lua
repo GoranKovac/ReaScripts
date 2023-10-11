@@ -305,11 +305,14 @@ function FM_Modal_POPUP()
             r.ImGui_CloseCurrentPopup(ctx)
             FM_TYPE = nil
             WANT_CLOSE_FM = true
+            if WANT_CLOSE then CLOSE = true end
             --OPEN_FM = nil
         end
         r.ImGui_SetItemDefaultFocus(ctx)
         r.ImGui_SameLine(ctx)
-        if r.ImGui_Button(ctx, 'Cancel', 120, 0) then r.ImGui_CloseCurrentPopup(ctx) end
+        if r.ImGui_Button(ctx, 'Cancel', 120, 0) then 
+            if WANT_CLOSE then WANT_CLOSE = nil end
+            r.ImGui_CloseCurrentPopup(ctx) end
         r.ImGui_EndPopup(ctx)
     end
 end
