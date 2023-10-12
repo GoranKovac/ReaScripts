@@ -7,6 +7,7 @@ local lib_path = PATH .. "Library"
 local LIBRARY = {}
 
 function InitLibrary()
+    LIBRARY = {}
     for index = 0, math.huge do
         local lib_file = r.EnumerateFiles(lib_path, index)
         if not lib_file then break end

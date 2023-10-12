@@ -217,6 +217,9 @@ local function CheckShortcuts()
     ENTER = r.ImGui_IsKeyPressed(ctx, r.ImGui_Key_Enter())
     KEYPAD_ENTER = r.ImGui_IsKeyPressed(ctx, r.ImGui_Key_KeypadEnter())
 
+    -- CLEAR WARNING
+    if ESC then ClearNodesWarning() end
+
     if CTRL_DOWN and KEY_R then
         r.ImGui_SetKeyboardFocusHere(ctx)
         LEGO_MGS = {}

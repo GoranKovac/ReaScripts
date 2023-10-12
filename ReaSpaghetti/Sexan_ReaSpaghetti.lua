@@ -1,10 +1,10 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.42
+-- @version 0.43
 -- @changelog
---  Fix RPR_TYPES tbl (move values to keys since check is looking at keys)
---  Fix Save when closing the script to actually close the script
+--  Clear warning on ESC
+--  Refresh Library on export
 -- @provides
 --   api_file.txt
 --   Modules/*.lua

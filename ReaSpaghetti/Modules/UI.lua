@@ -922,6 +922,7 @@ function Sidebar()
             if CUR_SIDEBAR_ID > 2 then
                 if r.ImGui_MenuItem(ctx, 'EXPORT') then
                     ExportFunction(CUR_SIDEBAR_ID)
+                    InitLibrary()
                 end
             end
             r.ImGui_EndPopup(ctx)
