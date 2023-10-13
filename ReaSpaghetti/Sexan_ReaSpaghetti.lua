@@ -1,9 +1,9 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.45
+-- @version 0.46
 -- @changelog
---  Allow reaper api in code nodes
+--  Remove Spriteonator from api
 -- @provides
 --   api_file.txt
 --   Modules/*.lua
