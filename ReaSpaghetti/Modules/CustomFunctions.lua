@@ -522,6 +522,8 @@ local code_vars = {
     rawset = rawset,
     getmetatable = getmetatable,
     setmetatable = setmetatable,
+    reaper = reaper,
+    r = r,
 }
 
 local TMP_FUNC = {}

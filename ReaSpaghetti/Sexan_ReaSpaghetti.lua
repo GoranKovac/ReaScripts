@@ -1,9 +1,9 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.44
+-- @version 0.45
 -- @changelog
---  Include Library folder
+--  Allow reaper api in code nodes
 -- @provides
 --   api_file.txt
 --   Modules/*.lua
