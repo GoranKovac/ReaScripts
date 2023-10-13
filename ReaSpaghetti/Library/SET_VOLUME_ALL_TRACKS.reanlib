@@ -1,0 +1,697 @@
+{
+ label = "SET_VOLUME_ALL_TRACKS",
+ in_values = {
+ },
+ w = 100,
+ guid = "{DA010151-E733-45CA-9A22-64D5BA5F141E}",
+ inputs = {
+  [0] = {
+   type = "RUN",
+   connection = {
+   },
+   y = 0,
+   x = 0,
+   label = "RUN",
+  },
+  [1] = {
+   type = "NUMBER",
+   connection = {
+   },
+   y = 0,
+   x = 0,
+   pin = 1,
+   label = "VOLUME",
+  },
+ },
+ CANVAS = {
+  off_x = 282.875,
+  zone_L = true,
+  zone_B = false,
+  zone_T = false,
+  view_x = 836.0,
+  scale = 0.625,
+  rx = 1083.0,
+  MouseIN = false,
+  w = 0,
+  off_y = 182.0625,
+  zone_R = false,
+  h = 0,
+  view_y = 415.0,
+  ry = 459.0,
+  MY = -320.1,
+  MX = -377.4,
+ },
+ type = "func",
+ h = 50,
+ y = 0,
+ x = 0,
+ selected = false,
+ tab_open = true,
+ NODES = {
+  [8] = {
+   label = "GET VAR VOLUME",
+   in_values = {
+   },
+   w = 232.0,
+   guid = "{7B826A63-67F8-4F63-B49F-68986A552C00}",
+   get = "{E3EFF0F6-AFBC-46A6-93CD-348DEDE464C0}",
+   type = "get",
+   h = 60,
+   y = 190.8,
+   x = 737.65714285714,
+   selected = false,
+   inputs = {
+   },
+   trace = false,
+   outputs = {
+    [1] = {
+     type = "NUMBER",
+     connection = {
+      [1] = {
+       pin = 3,
+       node = "{71F7BE3E-8BE4-436E-AC99-78994C9F99EE}",
+       link = "{7B826A63-67F8-4F63-B49F-68986A552C00}:-{71F7BE3E-8BE4-436E-AC99-78994C9F99EE}:NEWVALUE",
+      },
+     },
+     y = 744.4375,
+     x = 1724.9107142857,
+     pin = 1,
+     trace = false,
+     label = "",
+    },
+   },
+  },
+  [1] = {
+   label = "START",
+   in_values = {
+   },
+   w = 160.0,
+   guid = "{C2E67C60-3831-49F7-8E8B-B99AE90190AB}",
+   y = -6.0,
+   type = "m",
+   h = 60,
+   fname = "CUSTOM_FunctionStartArgs",
+   x = -486.8,
+   selected = false,
+   inputs = {
+   },
+   trace = false,
+   outputs = {
+    [0] = {
+     type = "RUN",
+     connection = {
+      [1] = {
+       pin = 0,
+       node = "{E3EFF0F6-AFBC-46A6-93CD-348DEDE464C0}",
+       link = "{C2E67C60-3831-49F7-8E8B-B99AE90190AB}:RUN-{E3EFF0F6-AFBC-46A6-93CD-348DEDE464C0}:RUN",
+      },
+     },
+     y = 602.6875,
+     x = 914.625,
+     trace = false,
+     label = "RUN",
+    },
+    [1] = {
+     connection = {
+      [1] = {
+       pin = 1,
+       node = "{E3EFF0F6-AFBC-46A6-93CD-348DEDE464C0}",
+       link = "{C2E67C60-3831-49F7-8E8B-B99AE90190AB}:VOLUME-{E3EFF0F6-AFBC-46A6-93CD-348DEDE464C0}:NUMBER",
+      },
+     },
+     pin = 1,
+     i_val = 0.0,
+     type = "NUMBER",
+     y = 621.4375,
+     x = 914.625,
+     o_val = 0.0,
+     trace = false,
+     label = "VOLUME",
+    },
+   },
+  },
+  [2] = {
+   label = "RETURN",
+   in_values = {
+   },
+   w = 168.0,
+   guid = "{A53C4991-7A59-4A61-BAC3-4EA6E3E99BAB}",
+   y = -65.142857142857,
+   type = "retnode",
+   h = 30,
+   fname = "CUSTOM_ReturnNode",
+   x = -482.4,
+   selected = false,
+   inputs = {
+    [0] = {
+     type = "RUN",
+     connection = {
+     },
+     y = 565.72321428571,
+     x = 817.375,
+     trace = false,
+     label = "RUN",
+    },
+   },
+   trace = false,
+   outputs = {
+   },
+  },
+  [3] = {
+   label = "CountTracks",
+   in_values = {
+    [1] = 0,
+   },
+   w = 208.0,
+   guid = "{B897FF72-068D-481C-A8D4-0F74242A9D8B}",
+   y = -0.45714285714284,
+   h = 90,
+   type = "api",
+   desc = "count the number of tracks in the project (proj=0 for active project)",
+   fname = "CountTracks",
+   x = 45.6,
+   selected = false,
+   inputs = {
+    [0] = {
+     type = "RUN",
+     connection = {
+      [1] = {
+       pin = 0,
+       node = "{E3EFF0F6-AFBC-46A6-93CD-348DEDE464C0}",
+       link = "{E3EFF0F6-AFBC-46A6-93CD-348DEDE464C0}:RUN-{B897FF72-068D-481C-A8D4-0F74242A9D8B}:RUN",
+      },
+     },
+     y = 606.15178571429,
+     x = 1147.375,
+     trace = false,
+     label = "RUN",
+    },
+    [1] = {
+     type = "INTEGER",
+     connection = {
+     },
+     y = 624.90178571429,
+     x = 1147.375,
+     pin = 1,
+     trace = false,
+     i_val = 0,
+     label = "PROJ",
+    },
+   },
+   trace = false,
+   outputs = {
+    [0] = {
+     type = "RUN",
+     connection = {
+      [1] = {
+       pin = 0,
+       node = "{23DC1768-13F7-4193-AEAB-C59C54954964}",
+       link = "{B897FF72-068D-481C-A8D4-0F74242A9D8B}:RUN-{23DC1768-13F7-4193-AEAB-C59C54954964}:RUN",
+      },
+     },
+     y = 606.15178571429,
+     x = 1277.375,
+     trace = false,
+     label = "RUN",
+    },
+    [1] = {
+     type = "INTEGER",
+     connection = {
+      [1] = {
+       pin = 3,
+       node = "{23DC1768-13F7-4193-AEAB-C59C54954964}",
+       link = "{B897FF72-068D-481C-A8D4-0F74242A9D8B}:INTEGER-{23DC1768-13F7-4193-AEAB-C59C54954964}:END",
+      },
+     },
+     y = 643.65178571429,
+     x = 1277.375,
+     o_val = 6,
+     trace = false,
+     label = "INTEGER",
+     pin = 1,
+    },
+   },
+  },
+  [4] = {
+   label = "NUMERIC FOR LOOP",
+   in_values = {
+    [4] = true,
+    [1] = 1,
+    [2] = 1,
+    [3] = 6,
+   },
+   w = 248.0,
+   guid = "{23DC1768-13F7-4193-AEAB-C59C54954964}",
+   y = 2.3428571428572,
+   h = 210,
+   type = "api",
+   desc = "Start index \
+ Increment \
+ End index \
+ Loop Run, Loop finish -> RUN",
+   fname = "CUSTOM_ForLoop",
+   x = 334.85714285714,
+   selected = false,
+   inputs = {
+    [0] = {
+     type = "RUN",
+     connection = {
+      [1] = {
+       pin = 0,
+       node = "{B897FF72-068D-481C-A8D4-0F74242A9D8B}",
+       link = "{B897FF72-068D-481C-A8D4-0F74242A9D8B}:RUN-{23DC1768-13F7-4193-AEAB-C59C54954964}:RUN",
+      },
+     },
+     y = 607.90178571429,
+     x = 1328.1607142857,
+     trace = false,
+     label = "RUN",
+    },
+    [1] = {
+     type = "INTEGER",
+     connection = {
+     },
+     y = 626.65178571429,
+     x = 1328.1607142857,
+     pin = 1,
+     trace = false,
+     i_val = 1,
+     label = "START",
+    },
+    [2] = {
+     type = "INTEGER",
+     connection = {
+     },
+     y = 645.40178571429,
+     x = 1328.1607142857,
+     pin = 2,
+     trace = false,
+     i_val = 1,
+     label = "INCREMENT",
+    },
+    [3] = {
+     type = "INTEGER",
+     connection = {
+      [1] = {
+       pin = 1,
+       node = "{B897FF72-068D-481C-A8D4-0F74242A9D8B}",
+       link = "{B897FF72-068D-481C-A8D4-0F74242A9D8B}:INTEGER-{23DC1768-13F7-4193-AEAB-C59C54954964}:END",
+      },
+     },
+     y = 664.15178571429,
+     x = 1328.1607142857,
+     pin = 3,
+     trace = false,
+     i_val = 0,
+     label = "END",
+    },
+    [4] = {
+     type = "BOOLEAN",
+     connection = {
+     },
+     pin_disable = true,
+     x = 1328.1607142857,
+     pin = 4,
+     y = 682.90178571429,
+     i_val = true,
+     label = "OUT IDX -1",
+    },
+   },
+   trace = false,
+   outputs = {
+    [0] = {
+     type = "RUN",
+     connection = {
+     },
+     y = 607.90178571429,
+     x = 1483.1607142857,
+     trace = false,
+     label = "RUN",
+    },
+    [1] = {
+     type = "RUN",
+     run = true,
+     y = 701.65178571429,
+     x = 1483.1607142857,
+     pin = 1,
+     trace = false,
+     label = "LOOP",
+     connection = {
+      [1] = {
+       pin = 0,
+       node = "{7926F233-0DAC-43DE-A114-D7993ECC6663}",
+       link = "{23DC1768-13F7-4193-AEAB-C59C54954964}:LOOP-{7926F233-0DAC-43DE-A114-D7993ECC6663}:RUN",
+      },
+     },
+    },
+    [2] = {
+     type = "INTEGER",
+     connection = {
+      [1] = {
+       pin = 2,
+       node = "{7926F233-0DAC-43DE-A114-D7993ECC6663}",
+       link = "{23DC1768-13F7-4193-AEAB-C59C54954964}:IDX-{7926F233-0DAC-43DE-A114-D7993ECC6663}:TRACKIDX",
+      },
+     },
+     y = 720.40178571429,
+     x = 1483.1607142857,
+     o_val = 5,
+     trace = false,
+     label = "IDX",
+     pin = 2,
+    },
+   },
+  },
+  [5] = {
+   label = "GetTrack",
+   in_values = {
+    [2] = 5,
+    [1] = 0,
+   },
+   w = 184.0,
+   guid = "{7926F233-0DAC-43DE-A114-D7993ECC6663}",
+   y = 7.6,
+   h = 120,
+   type = "api",
+   desc = "get a track from a project by track count (zero-based) (proj=0 for active project)",
+   fname = "GetTrack",
+   x = 683.65714285714,
+   selected = false,
+   inputs = {
+    [0] = {
+     type = "RUN",
+     connection = {
+      [1] = {
+       pin = 1,
+       node = "{23DC1768-13F7-4193-AEAB-C59C54954964}",
+       link = "{23DC1768-13F7-4193-AEAB-C59C54954964}:LOOP-{7926F233-0DAC-43DE-A114-D7993ECC6663}:RUN",
+      },
+     },
+     y = 611.1875,
+     x = 1546.1607142857,
+     trace = false,
+     label = "RUN",
+    },
+    [1] = {
+     type = "INTEGER",
+     connection = {
+     },
+     y = 629.9375,
+     x = 1546.1607142857,
+     pin = 1,
+     trace = false,
+     i_val = 0,
+     label = "PROJ",
+    },
+    [2] = {
+     type = "INTEGER",
+     connection = {
+      [1] = {
+       pin = 2,
+       node = "{23DC1768-13F7-4193-AEAB-C59C54954964}",
+       link = "{23DC1768-13F7-4193-AEAB-C59C54954964}:IDX-{7926F233-0DAC-43DE-A114-D7993ECC6663}:TRACKIDX",
+      },
+     },
+     y = 648.6875,
+     x = 1546.1607142857,
+     pin = 2,
+     trace = false,
+     i_val = 0,
+     label = "TRACKIDX",
+    },
+   },
+   trace = false,
+   outputs = {
+    [0] = {
+     type = "RUN",
+     connection = {
+      [1] = {
+       pin = 0,
+       node = "{71F7BE3E-8BE4-436E-AC99-78994C9F99EE}",
+       link = "{7926F233-0DAC-43DE-A114-D7993ECC6663}:RUN-{71F7BE3E-8BE4-436E-AC99-78994C9F99EE}:RUN",
+      },
+     },
+     y = 611.1875,
+     x = 1661.1607142857,
+     trace = false,
+     label = "RUN",
+    },
+    [1] = {
+     type = "MEDIATRACK",
+     connection = {
+      [1] = {
+       pin = 1,
+       node = "{71F7BE3E-8BE4-436E-AC99-78994C9F99EE}",
+       link = "{7926F233-0DAC-43DE-A114-D7993ECC6663}:MEDIATRACK-{71F7BE3E-8BE4-436E-AC99-78994C9F99EE}:TR",
+      },
+     },
+     y = 667.4375,
+     x = 1661.1607142857,
+     pin = 1,
+     trace = false,
+     label = "MEDIATRACK",
+    },
+   },
+  },
+  [6] = {
+   label = "SetMediaTrackInfo_Value",
+   in_values = {
+    [2] = "D_VOL",
+    [3] = 0.0,
+   },
+   w = 304.0,
+   guid = "{71F7BE3E-8BE4-436E-AC99-78994C9F99EE}",
+   y = 6.3428571428572,
+   h = 150,
+   type = "api",
+   desc = "\9Set track numerical-value attributes.\
+B_MUTE : bool * : muted\
+B_PHASE : bool * : track phase inverted\
+B_RECMON_IN_EFFECT : bool * : record monitoring in effect (current audio-thread playback state, read-only)\
+IP_TRACKNUMBER : int : track number 1-based, 0=not found, -1=master track (read-only, returns the int directly)\
+I_SOLO : int * : soloed, 0=not soloed, 1=soloed, 2=soloed in place, 5=safe soloed, 6=safe soloed in place\
+B_SOLO_DEFEAT : bool * : when set, if anything else is soloed and this track is not muted, this track acts soloed\
+I_FXEN : int * : fx enabled, 0=bypassed, !0=fx active\
+I_RECARM : int * : record armed, 0=not record armed, 1=record armed\
+I_RECINPUT : int * : record input, &lt;0=no input. if 4096 set, input is MIDI and low 5 bits represent channel (0=all, 1-16=only chan), next 6 bits represent physical input (63=all, 62=VKB). If 4096 is not set, low 10 bits (0..1023) are input start channel (ReaRoute/Loopback start at 512). If 2048 is set, input is multichannel input (using track channel count), or if 1024 is set, input is stereo input, otherwise input is mono.\
+I_RECMODE : int * : record mode, 0=input, 1=stereo out, 2=none, 3=stereo out w/latency compensation, 4=midi output, 5=mono out, 6=mono out w/ latency compensation, 7=midi overdub, 8=midi replace\
+I_RECMODE_FLAGS : int * : record mode flags, &amp;3=output recording mode (0=post fader, 1=pre-fx, 2=post-fx/pre-fader)\
+I_RECMON : int * : record monitoring, 0=off, 1=normal, 2=not when playing (tape style)\
+I_RECMONITEMS : int * : monitor items while recording, 0=off, 1=on\
+B_AUTO_RECARM : bool * : automatically set record arm when selected (does not immediately affect recarm state, script should set directly if desired)\
+I_VUMODE : int * : track vu mode, &amp;1:disabled, &amp;30==0:stereo peaks, &amp;30==2:multichannel peaks, &amp;30==4:stereo RMS, &amp;30==8:combined RMS, &amp;30==12:LUFS-M, &amp;30==16:LUFS-S (readout=max), &amp;30==20:LUFS-S (readout=current), &amp;32:LUFS calculation on channels 1+2 only\
+I_AUTOMODE : int * : track automation mode, 0=trim/off, 1=read, 2=touch, 3=write, 4=latch\
+I_NCHAN : int * : number of track channels, 2-64, even numbers only\
+I_SELECTED : int * : track selected, 0=unselected, 1=selected\
+I_WNDH : int * : current TCP window height in pixels including envelopes (read-only)\
+I_TCPH : int * : current TCP window height in pixels not including envelopes (read-only)\
+I_TCPY : int * : current TCP window Y-position in pixels relative to top of arrange view (read-only)\
+I_MCPX : int * : current MCP X-position in pixels relative to mixer container (read-only)\
+I_MCPY : int * : current MCP Y-position in pixels relative to mixer container (read-only)\
+I_MCPW : int * : current MCP width in pixels (read-only)\
+I_MCPH : int * : current MCP height in pixels (read-only)\
+I_FOLDERDEPTH : int * : folder depth change, 0=normal, 1=track is a folder parent, -1=track is the last in the innermost folder, -2=track is the last in the innermost and next-innermost folders, etc\
+I_FOLDERCOMPACT : int * : folder compacted state (only valid on folders), 0=normal, 1=small, 2=tiny children\
+I_MIDIHWOUT : int * : track midi hardware output index, &lt;0=disabled, low 5 bits are which channels (0=all, 1-16), next 5 bits are output device index (0-31)\
+I_PERFFLAGS : int * : track performance flags, &amp;1=no media buffering, &amp;2=no anticipative FX\
+I_CUSTOMCOLOR : int * : custom color, OS dependent color|0x1000000 (i.e. ColorToNative(r,g,b)|0x1000000). If you do not |0x1000000, then it will not be used, but will store the color\
+I_HEIGHTOVERRIDE : int * : custom height override for TCP window, 0 for none, otherwise size in pixels\
+B_HEIGHTLOCK : bool * : track height lock (must set I_HEIGHTOVERRIDE before locking)\
+D_VOL : double * : trim volume of track, 0=-inf, 0.5=-6dB, 1=+0dB, 2=+6dB, etc\
+D_PAN : double * : trim pan of track, -1..1\
+D_WIDTH : double * : width of track, -1..1\
+D_DUALPANL : double * : dualpan position 1, -1..1, only if I_PANMODE==6\
+D_DUALPANR : double * : dualpan position 2, -1..1, only if I_PANMODE==6\
+I_PANMODE : int * : pan mode, 0=classic 3.x, 3=new balance, 5=stereo pan, 6=dual pan\
+D_PANLAW : double * : pan law of track, &lt;0=project default, 0.5=-6dB, 0.707..=-3dB, 1=+0dB, 1.414..=-3dB with gain compensation, 2=-6dB with gain compensation, etc\
+I_PANLAW_FLAGS : int * : pan law flags, 0=sine taper, 1=hybrid taper with deprecated behavior when gain compensation enabled, 2=linear taper, 3=hybrid taper\
+P_ENV:&lt;envchunkname or P_ENV:{GUID... : TrackEnvelope * : (read-only) chunkname can be &lt;VOLENV, &lt;PANENV, etc; GUID is the stringified envelope GUID.\
+B_SHOWINMIXER : bool * : track control panel visible in mixer (do not use on master track)\
+B_SHOWINTCP : bool * : track control panel visible in arrange view (do not use on master track)\
+B_MAINSEND : bool * : track sends audio to parent\
+C_MAINSEND_OFFS : char * : channel offset of track send to parent\
+C_MAINSEND_NCH : char * : channel count of track send to parent (0=use all child track channels, 1=use one channel only)\
+I_FREEMODE : int * : 1=track free item positioning enabled, 2=track fixed lanes enabled (call UpdateTimeline() after changing)\
+C_BEATATTACHMODE : char * : track timebase, -1=project default, 0=time, 1=beats (position, length, rate), 2=beats (position only)\
+F_MCP_FXSEND_SCALE : float * : scale of fx+send area in MCP (0=minimum allowed, 1=maximum allowed)\
+F_MCP_FXPARM_SCALE : float * : scale of fx parameter area in MCP (0=minimum allowed, 1=maximum allowed)\
+F_MCP_SENDRGN_SCALE : float * : scale of send area as proportion of the fx+send total area (0=minimum allowed, 1=maximum allowed)\
+F_TCP_FXPARM_SCALE : float * : scale of TCP parameter area when TCP FX are embedded (0=min allowed, default, 1=max allowed)\
+I_PLAY_OFFSET_FLAG : int * : track media playback offset state, &amp;1=bypassed, &amp;2=offset value is measured in samples (otherwise measured in seconds)\
+D_PLAY_OFFSET : double * : track media playback offset, units depend on I_PLAY_OFFSET_FLAG\
+",
+   fname = "SetMediaTrackInfo_Value",
+   x = 1064.5142857143,
+   selected = false,
+   inputs = {
+    [0] = {
+     type = "RUN",
+     connection = {
+      [1] = {
+       pin = 0,
+       node = "{7926F233-0DAC-43DE-A114-D7993ECC6663}",
+       link = "{7926F233-0DAC-43DE-A114-D7993ECC6663}:RUN-{71F7BE3E-8BE4-436E-AC99-78994C9F99EE}:RUN",
+      },
+     },
+     y = 610.40178571429,
+     x = 1784.1964285714,
+     trace = false,
+     label = "RUN",
+    },
+    [1] = {
+     type = "MEDIATRACK",
+     connection = {
+      [1] = {
+       pin = 1,
+       node = "{7926F233-0DAC-43DE-A114-D7993ECC6663}",
+       link = "{7926F233-0DAC-43DE-A114-D7993ECC6663}:MEDIATRACK-{71F7BE3E-8BE4-436E-AC99-78994C9F99EE}:TR",
+      },
+     },
+     y = 629.15178571429,
+     x = 1784.1964285714,
+     pin = 1,
+     trace = false,
+     label = "TR",
+    },
+    [2] = {
+     type = "STRING",
+     connection = {
+     },
+     y = 647.90178571429,
+     x = 1784.1964285714,
+     pin = 2,
+     trace = false,
+     i_val = "D_VOL",
+     label = "PARMNAME",
+    },
+    [3] = {
+     type = "NUMBER",
+     connection = {
+      [1] = {
+       pin = 1,
+       node = "{7B826A63-67F8-4F63-B49F-68986A552C00}",
+       link = "{7B826A63-67F8-4F63-B49F-68986A552C00}:-{71F7BE3E-8BE4-436E-AC99-78994C9F99EE}:NEWVALUE",
+      },
+     },
+     y = 666.65178571429,
+     x = 1784.1964285714,
+     pin = 3,
+     trace = false,
+     i_val = 0.0,
+     label = "NEWVALUE",
+    },
+   },
+   trace = false,
+   outputs = {
+    [0] = {
+     type = "RUN",
+     connection = {
+     },
+     y = 610.40178571429,
+     x = 1974.1964285714,
+     trace = false,
+     label = "RUN",
+    },
+    [1] = {
+     type = "BOOLEAN",
+     connection = {
+     },
+     y = 685.40178571429,
+     x = 1974.1964285714,
+     o_val = true,
+     trace = false,
+     label = "BOOLEAN",
+     pin = 1,
+    },
+   },
+  },
+  [7] = {
+   label = "VAR VOLUME",
+   in_values = {
+    [1] = 0.0,
+   },
+   w = 200.0,
+   guid = "{E3EFF0F6-AFBC-46A6-93CD-348DEDE464C0}",
+   y = -12.0,
+   h = 90,
+   type = "api_var",
+   inputs = {
+    [0] = {
+     type = "RUN",
+     connection = {
+      [1] = {
+       pin = 0,
+       node = "{C2E67C60-3831-49F7-8E8B-B99AE90190AB}",
+       link = "{C2E67C60-3831-49F7-8E8B-B99AE90190AB}:RUN-{E3EFF0F6-AFBC-46A6-93CD-348DEDE464C0}:RUN",
+      },
+     },
+     y = 598.9375,
+     x = 965.91071428571,
+     trace = false,
+     label = "RUN",
+    },
+    [1] = {
+     type = "NUMBER",
+     connection = {
+      [1] = {
+       pin = 1,
+       node = "{C2E67C60-3831-49F7-8E8B-B99AE90190AB}",
+       link = "{C2E67C60-3831-49F7-8E8B-B99AE90190AB}:VOLUME-{E3EFF0F6-AFBC-46A6-93CD-348DEDE464C0}:NUMBER",
+      },
+     },
+     y = 617.6875,
+     x = 965.91071428571,
+     pin = 1,
+     trace = false,
+     label = "NUMBER",
+    },
+   },
+   fname = "CUSTOM_Set",
+   x = -244.74285714286,
+   selected = false,
+   trace = false,
+   set = {
+    pin = 1,
+    guid = "{C2E67C60-3831-49F7-8E8B-B99AE90190AB}",
+    api = true,
+   },
+   outputs = {
+    [0] = {
+     type = "RUN",
+     connection = {
+      [1] = {
+       pin = 0,
+       node = "{B897FF72-068D-481C-A8D4-0F74242A9D8B}",
+       link = "{E3EFF0F6-AFBC-46A6-93CD-348DEDE464C0}:RUN-{B897FF72-068D-481C-A8D4-0F74242A9D8B}:RUN",
+      },
+     },
+     y = 598.9375,
+     x = 1090.9107142857,
+     trace = false,
+     label = "RUN",
+    },
+    [1] = {
+     type = "NUMBER",
+     connection = {
+     },
+     y = 636.4375,
+     x = 1090.9107142857,
+     o_val = 0.0,
+     trace = false,
+     label = "NUMBER",
+     pin = 1,
+    },
+   },
+  },
+ },
+ outputs = {
+  [0] = {
+   type = "RUN",
+   connection = {
+   },
+   y = 0,
+   x = 0,
+   label = "RUN",
+  },
+ },
+}

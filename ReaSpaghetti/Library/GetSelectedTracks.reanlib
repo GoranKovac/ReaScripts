@@ -1,0 +1,593 @@
+{
+ outputs = {
+  [1] = {
+   pin = 1,
+   label = "SelTracks",
+   y = 0,
+   x = 0,
+   connection = {
+   },
+   type = "TABLE",
+  },
+  [0] = {
+   label = "RUN",
+   y = 0,
+   x = 0,
+   connection = {
+   },
+   type = "RUN",
+  },
+ },
+ tab_open = true,
+ in_values = {
+ },
+ h = 50,
+ CANVAS = {
+  off_x = -236.2280569341,
+  MouseIN = false,
+  zone_B = false,
+  zone_L = false,
+  MY = -68.872358107849,
+  zone_R = false,
+  scale = 0.875,
+  ry = 532.0,
+  MX = 119.11777935326,
+  view_x = 722.0,
+  zone_T = false,
+  off_y = 184.26331334437,
+  w = 0,
+  h = 0,
+  view_y = 446.0,
+  rx = 1157.0,
+ },
+ label = "GetSelectedTracks",
+ inputs = {
+  [0] = {
+   label = "RUN",
+   y = 0,
+   x = 0,
+   connection = {
+   },
+   type = "RUN",
+  },
+ },
+ selected = false,
+ w = 100,
+ guid = "{17BCFAAE-0135-6C48-AC84-68C2079FBB13}",
+ y = 0,
+ x = 0,
+ NODES = {
+  [1] = {
+   outputs = {
+    [0] = {
+     trace = false,
+     label = "RUN",
+     y = 625.88831334437,
+     x = 609.61809691205,
+     connection = {
+      [1] = {
+       link = "{451B1717-D1DD-6743-BC7C-978DC3DEF7F7}:RUN-{3A9DD1D3-AB91-6A48-87C7-B343B8DF5C06}:RUN",
+       node = "{3A9DD1D3-AB91-6A48-87C7-B343B8DF5C06}",
+       pin = 0,
+      },
+     },
+     type = "RUN",
+    },
+   },
+   in_values = {
+   },
+   fname = "CUSTOM_FunctionStartArgs",
+   h = 30,
+   label = "START",
+   inputs = {
+   },
+   selected = false,
+   w = 160.0,
+   trace = false,
+   y = -20.0,
+   x = -18.461538461538,
+   guid = "{451B1717-D1DD-6743-BC7C-978DC3DEF7F7}",
+   type = "m",
+  },
+  [2] = {
+   outputs = {
+   },
+   in_values = {
+    [1] = {
+     [1] = nil,
+     [2] = nil,
+    },
+   },
+   fname = "CUSTOM_ReturnNode",
+   h = 60,
+   label = "RETURN",
+   inputs = {
+    [1] = {
+     pin = 1,
+     i_val = 0,
+     type = "TABLE",
+     trace = false,
+     y = 583.0325441136,
+     x = 1666.9594430659,
+     connection = {
+      [1] = {
+       link = "{079CE8F7-AAAB-4046-AC8F-8E50781913EE}:-{9D5AB492-B9C4-A041-A940-FB3FF7599D90}:SelTracks",
+       node = "{079CE8F7-AAAB-4046-AC8F-8E50781913EE}",
+       pin = 1,
+      },
+     },
+     label = "SelTracks",
+    },
+    [0] = {
+     trace = false,
+     label = "RUN",
+     y = 556.7825441136,
+     x = 1666.9594430659,
+     connection = {
+      [1] = {
+       link = "{2A6A9273-4688-C941-BC66-28A953E0CD59}:RUN-{9D5AB492-B9C4-A041-A940-FB3FF7599D90}:RUN",
+       node = "{2A6A9273-4688-C941-BC66-28A953E0CD59}",
+       pin = 0,
+      },
+     },
+     type = "RUN",
+    },
+   },
+   selected = false,
+   w = 168.0,
+   trace = false,
+   y = -98.978021978024,
+   x = 1349.9285714286,
+   guid = "{9D5AB492-B9C4-A041-A940-FB3FF7599D90}",
+   type = "retnode",
+  },
+  [3] = {
+   outputs = {
+    [1] = {
+     trace = false,
+     label = "INTEGER",
+     o_val = 2,
+     pin = 1,
+     y = 679.26331334437,
+     x = 918.8969430659,
+     connection = {
+      [1] = {
+       link = "{3A9DD1D3-AB91-6A48-87C7-B343B8DF5C06}:INTEGER-{2A6A9273-4688-C941-BC66-28A953E0CD59}:END",
+       node = "{2A6A9273-4688-C941-BC66-28A953E0CD59}",
+       pin = 3,
+      },
+     },
+     type = "INTEGER",
+    },
+    [0] = {
+     trace = false,
+     label = "RUN",
+     y = 626.76331334437,
+     x = 918.8969430659,
+     connection = {
+      [1] = {
+       link = "{3A9DD1D3-AB91-6A48-87C7-B343B8DF5C06}:RUN-{2A6A9273-4688-C941-BC66-28A953E0CD59}:RUN",
+       node = "{2A6A9273-4688-C941-BC66-28A953E0CD59}",
+       pin = 0,
+      },
+     },
+     type = "RUN",
+    },
+   },
+   in_values = {
+    [1] = 0,
+   },
+   fname = "CountSelectedTracks",
+   h = 90,
+   trace = false,
+   label = "CountSelectedTracks",
+   inputs = {
+    [1] = {
+     pin = 1,
+     i_val = 0,
+     type = "INTEGER",
+     trace = false,
+     y = 653.01331334437,
+     x = 680.8969430659,
+     connection = {
+     },
+     label = "PROJ",
+    },
+    [0] = {
+     trace = false,
+     label = "RUN",
+     y = 626.76331334437,
+     x = 680.8969430659,
+     connection = {
+      [1] = {
+       link = "{451B1717-D1DD-6743-BC7C-978DC3DEF7F7}:RUN-{3A9DD1D3-AB91-6A48-87C7-B343B8DF5C06}:RUN",
+       node = "{451B1717-D1DD-6743-BC7C-978DC3DEF7F7}",
+       pin = 0,
+      },
+     },
+     type = "RUN",
+    },
+   },
+   selected = false,
+   w = 272.0,
+   guid = "{3A9DD1D3-AB91-6A48-87C7-B343B8DF5C06}",
+   desc = "Count the number of selected tracks in the project (proj=0 for active project). This function ignores the master track, see <a href=\"#CountSelectedTracks2\">CountSelectedTracks2</a>.",
+   x = 223.0,
+   y = -19.0,
+   type = "api",
+  },
+  [4] = {
+   outputs = {
+    [0] = {
+     trace = false,
+     label = "RUN",
+     y = 630.98126206232,
+     x = 1197.4834815274,
+     connection = {
+      [1] = {
+       link = "{2A6A9273-4688-C941-BC66-28A953E0CD59}:RUN-{9D5AB492-B9C4-A041-A940-FB3FF7599D90}:RUN",
+       node = "{9D5AB492-B9C4-A041-A940-FB3FF7599D90}",
+       pin = 0,
+      },
+     },
+     type = "RUN",
+    },
+    [1] = {
+     run = true,
+     pin = 1,
+     label = "LOOP",
+     trace = false,
+     y = 762.23126206232,
+     x = 1197.4834815274,
+     connection = {
+      [1] = {
+       link = "{2A6A9273-4688-C941-BC66-28A953E0CD59}:LOOP-{2529AA9F-D957-694D-9DF4-05ED2AB67A1C}:RUN",
+       node = "{2529AA9F-D957-694D-9DF4-05ED2AB67A1C}",
+       pin = 0,
+      },
+     },
+     type = "RUN",
+    },
+    [2] = {
+     trace = false,
+     label = "IDX",
+     o_val = 1,
+     pin = 2,
+     y = 788.48126206232,
+     x = 1197.4834815274,
+     connection = {
+      [1] = {
+       link = "{2A6A9273-4688-C941-BC66-28A953E0CD59}:IDX-{2529AA9F-D957-694D-9DF4-05ED2AB67A1C}:SELTRACKIDX",
+       node = "{2529AA9F-D957-694D-9DF4-05ED2AB67A1C}",
+       pin = 2,
+      },
+     },
+     type = "INTEGER",
+    },
+   },
+   type = "api",
+   in_values = {
+    [3] = 2,
+    [1] = 1,
+    [2] = 1,
+    [4] = true,
+   },
+   fname = "CUSTOM_ForLoop",
+   x = 565.38461538462,
+   label = "NUMERIC FOR LOOP",
+   inputs = {
+    [0] = {
+     trace = false,
+     label = "RUN",
+     y = 630.98126206232,
+     x = 980.48348152744,
+     connection = {
+      [1] = {
+       link = "{3A9DD1D3-AB91-6A48-87C7-B343B8DF5C06}:RUN-{2A6A9273-4688-C941-BC66-28A953E0CD59}:RUN",
+       node = "{3A9DD1D3-AB91-6A48-87C7-B343B8DF5C06}",
+       pin = 0,
+      },
+     },
+     type = "RUN",
+    },
+    [1] = {
+     pin = 1,
+     i_val = 1,
+     type = "INTEGER",
+     trace = false,
+     y = 657.23126206232,
+     x = 980.48348152744,
+     connection = {
+     },
+     label = "START",
+    },
+    [2] = {
+     pin = 2,
+     i_val = 1,
+     type = "INTEGER",
+     trace = false,
+     y = 683.48126206232,
+     x = 980.48348152744,
+     connection = {
+     },
+     label = "INCREMENT",
+    },
+    [3] = {
+     pin = 3,
+     i_val = 2,
+     type = "INTEGER",
+     trace = false,
+     y = 709.73126206232,
+     x = 980.48348152744,
+     connection = {
+      [1] = {
+       link = "{3A9DD1D3-AB91-6A48-87C7-B343B8DF5C06}:INTEGER-{2A6A9273-4688-C941-BC66-28A953E0CD59}:END",
+       node = "{3A9DD1D3-AB91-6A48-87C7-B343B8DF5C06}",
+       pin = 1,
+      },
+     },
+     label = "END",
+    },
+    [4] = {
+     pin = 4,
+     i_val = true,
+     type = "BOOLEAN",
+     pin_disable = true,
+     y = 735.98126206232,
+     x = 980.48348152744,
+     connection = {
+     },
+     label = "OUT IDX -1",
+    },
+   },
+   selected = false,
+   w = 248.0,
+   y = -14.179487179487,
+   desc = "Start index \
+ Increment \
+ End index \
+ Loop Run, Loop finish -> RUN",
+   h = 210,
+   guid = "{2A6A9273-4688-C941-BC66-28A953E0CD59}",
+   trace = false,
+  },
+  [5] = {
+   outputs = {
+    [1] = {
+     label = "MEDIATRACK",
+     pin = 1,
+     o_val = nil,
+     trace = false,
+     y = 972.08685897437,
+     x = 1508.9820512821,
+     connection = {
+      [1] = {
+       link = "{2529AA9F-D957-694D-9DF4-05ED2AB67A1C}:MEDIATRACK-{C1EC88AB-CBAF-4B98-A0D9-9C212C3DCB08}:VALUE",
+       node = "{C1EC88AB-CBAF-4B98-A0D9-9C212C3DCB08}",
+       pin = 2,
+      },
+     },
+     type = "MEDIATRACK",
+    },
+    [0] = {
+     trace = false,
+     label = "RUN",
+     y = 893.33685897437,
+     x = 1508.9820512821,
+     connection = {
+      [1] = {
+       link = "{2529AA9F-D957-694D-9DF4-05ED2AB67A1C}:RUN-{C1EC88AB-CBAF-4B98-A0D9-9C212C3DCB08}:RUN",
+       node = "{C1EC88AB-CBAF-4B98-A0D9-9C212C3DCB08}",
+       pin = 0,
+      },
+     },
+     type = "RUN",
+    },
+   },
+   in_values = {
+    [1] = 0,
+    [2] = 1,
+   },
+   fname = "GetSelectedTrack",
+   h = 120,
+   trace = false,
+   label = "GetSelectedTrack",
+   inputs = {
+    [0] = {
+     trace = false,
+     label = "RUN",
+     y = 893.33685897437,
+     x = 1291.9820512821,
+     connection = {
+      [1] = {
+       link = "{2A6A9273-4688-C941-BC66-28A953E0CD59}:LOOP-{2529AA9F-D957-694D-9DF4-05ED2AB67A1C}:RUN",
+       node = "{2A6A9273-4688-C941-BC66-28A953E0CD59}",
+       pin = 1,
+      },
+     },
+     type = "RUN",
+    },
+    [1] = {
+     pin = 1,
+     i_val = 0,
+     type = "INTEGER",
+     trace = false,
+     y = 919.58685897437,
+     x = 1291.9820512821,
+     connection = {
+     },
+     label = "PROJ",
+    },
+    [2] = {
+     pin = 2,
+     i_val = 1,
+     type = "INTEGER",
+     trace = false,
+     y = 945.83685897437,
+     x = 1291.9820512821,
+     connection = {
+      [1] = {
+       link = "{2A6A9273-4688-C941-BC66-28A953E0CD59}:IDX-{2529AA9F-D957-694D-9DF4-05ED2AB67A1C}:SELTRACKIDX",
+       node = "{2A6A9273-4688-C941-BC66-28A953E0CD59}",
+       pin = 2,
+      },
+     },
+     label = "SELTRACKIDX",
+    },
+   },
+   selected = false,
+   w = 248.0,
+   guid = "{2529AA9F-D957-694D-9DF4-05ED2AB67A1C}",
+   desc = "Get a selected track from a project (proj=0 for active project) by selected track count (zero-based). This function ignores the master track, see <a href=\"#GetSelectedTrack2\">GetSelectedTrack2</a>.",
+   x = 921.38298081846,
+   y = 285.65548072,
+   type = "api",
+  },
+  [6] = {
+   outputs = {
+    [0] = {
+     label = "RUN",
+     trace = false,
+     y = 807.625,
+     x = 1982.0,
+     connection = {
+     },
+     type = "RUN",
+    },
+   },
+   in_values = {
+    [1] = {
+     [1] = nil,
+     [2] = nil,
+    },
+    [2] = nil,
+   },
+   fname = "TableInsertFast",
+   label = "Table Insert TBL[#TBL +1]",
+   selected = false,
+   desc = "Table insert TBL[#TBL +1]",
+   h = 90,
+   guid = "{C1EC88AB-CBAF-4B98-A0D9-9C212C3DCB08}",
+   w = 320.0,
+   trace = false,
+   y = 187.69907046358,
+   x = 1389.9749222104,
+   inputs = {
+    [1] = {
+     label = "TABLE",
+     trace = false,
+     pin = 1,
+     y = 833.875,
+     x = 1702.0,
+     connection = {
+      [1] = {
+       link = "{DC088092-0529-4806-BDFD-42AB10518CBC}:-{C1EC88AB-CBAF-4B98-A0D9-9C212C3DCB08}:TABLE",
+       node = "{DC088092-0529-4806-BDFD-42AB10518CBC}",
+       pin = 1,
+      },
+     },
+     type = "TABLE",
+    },
+    [2] = {
+     label = "VALUE",
+     trace = false,
+     pin = 2,
+     y = 860.125,
+     x = 1702.0,
+     connection = {
+      [1] = {
+       link = "{2529AA9F-D957-694D-9DF4-05ED2AB67A1C}:MEDIATRACK-{C1EC88AB-CBAF-4B98-A0D9-9C212C3DCB08}:VALUE",
+       node = "{2529AA9F-D957-694D-9DF4-05ED2AB67A1C}",
+       pin = 1,
+      },
+     },
+     type = "ANY",
+    },
+    [0] = {
+     label = "RUN",
+     trace = false,
+     y = 807.625,
+     x = 1702.0,
+     connection = {
+      [1] = {
+       link = "{2529AA9F-D957-694D-9DF4-05ED2AB67A1C}:RUN-{C1EC88AB-CBAF-4B98-A0D9-9C212C3DCB08}:RUN",
+       node = "{2529AA9F-D957-694D-9DF4-05ED2AB67A1C}",
+       pin = 0,
+      },
+     },
+     type = "RUN",
+    },
+   },
+   type = "api",
+  },
+  [7] = {
+   outputs = {
+    [1] = {
+     o_val = {
+      [1] = nil,
+      [2] = nil,
+     },
+     label = "",
+     trace = false,
+     pin = 1,
+     y = 803.375,
+     x = 1565.25,
+     connection = {
+      [1] = {
+       link = "{DC088092-0529-4806-BDFD-42AB10518CBC}:-{C1EC88AB-CBAF-4B98-A0D9-9C212C3DCB08}:TABLE",
+       node = "{C1EC88AB-CBAF-4B98-A0D9-9C212C3DCB08}",
+       pin = 1,
+      },
+     },
+     type = "TABLE",
+    },
+   },
+   in_values = {
+   },
+   label = "GET_TRACKS_TBL",
+   selected = false,
+   h = 60,
+   guid = "{DC088092-0529-4806-BDFD-42AB10518CBC}",
+   w = 232.0,
+   trace = false,
+   y = 152.84192760644,
+   x = 1001.6892079247,
+   inputs = {
+   },
+   type = "t",
+  },
+  [8] = {
+   outputs = {
+    [1] = {
+     label = "",
+     pin = 1,
+     y = 668.375,
+     x = 1586.25,
+     connection = {
+      [1] = {
+       link = "{079CE8F7-AAAB-4046-AC8F-8E50781913EE}:-{9D5AB492-B9C4-A041-A940-FB3FF7599D90}:SelTracks",
+       node = "{9D5AB492-B9C4-A041-A940-FB3FF7599D90}",
+       pin = 1,
+      },
+     },
+     type = "TABLE",
+    },
+   },
+   in_values = {
+   },
+   label = "GET GET_TRACKS_TBL",
+   selected = false,
+   h = 60,
+   get = "{DC088092-0529-4806-BDFD-42AB10518CBC}",
+   guid = "{079CE8F7-AAAB-4046-AC8F-8E50781913EE}",
+   w = 264.0,
+   trace = false,
+   y = -1.4437866792771,
+   x = 993.68920792469,
+   inputs = {
+   },
+   type = "get",
+  },
+ },
+ type = "func",
+}

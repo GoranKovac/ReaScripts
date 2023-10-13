@@ -1,14 +1,14 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.43
+-- @version 0.44
 -- @changelog
---  Clear warning on ESC
---  Refresh Library on export
+--  Include Library folder
 -- @provides
 --   api_file.txt
 --   Modules/*.lua
 --   Examples/*.reanodes
+--   Library/*.reanlib
 --   ExportedActions/dummy.lua
 --   Docs/*.pdf
 --   Examples/SCHWA/*.png
