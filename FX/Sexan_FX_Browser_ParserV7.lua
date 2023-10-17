@@ -1,16 +1,16 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.4
+-- @version 1.5
 -- @changelog
---  Reset tables when calling refresh
+--  Improved Stripname pefromance a bit by using find instead of match
 
 local r = reaper
 local os = r.GetOS()
 local os_separator = package.config:sub(1, 1)
 
 local CAT = {}
-local DEVELOPER_LIST = { "Waves" }
+local DEVELOPER_LIST = { " (Waves)" }
 local PLUGIN_LIST = {}
 local INSTRUMENTS = {}
 local VST_INFO, VST, VSTi, VST3, VST3i = {}, {}, {}, {}, {}
@@ -21,7 +21,7 @@ local LV2_INFO, LV2, LV2i = {}, {}, {}
 
 local function ResetTables()
     CAT = {}
-    DEVELOPER_LIST = { "Waves" }
+    DEVELOPER_LIST = { " (Waves)" }
     PLUGIN_LIST = {}
     INSTRUMENTS = {}
     VST_INFO, VST, VSTi, VST3, VST3i = {}, {}, {}, {}, {}
@@ -87,9 +87,9 @@ end
 
 function AddDevList(val)
     for i = 1, #DEVELOPER_LIST do
-        if DEVELOPER_LIST[i] == val then return end
+        if DEVELOPER_LIST[i] == " (" .. val ..")" then return end
     end
-    DEVELOPER_LIST[#DEVELOPER_LIST + 1] = val
+    DEVELOPER_LIST[#DEVELOPER_LIST + 1] = " (" ..val ..")"
 end
 
 local function ParseVST(name, ident)
@@ -416,17 +416,25 @@ function GenerateFxList()
     return PLUGIN_LIST
 end
 
+local sub = string.sub
 function Stripname(name, prefix, suffix)
     -- REMOVE DEVELOPER
     if suffix then
         for i = 1, #DEVELOPER_LIST do
-            if name:match(DEVELOPER_LIST[i]) then
-                name = name:gsub(' %(' .. Literalize(DEVELOPER_LIST[i]) .. '%)', "")
+            local ss, se = name:find(DEVELOPER_LIST[i], nil, true)
+            if ss then
+                name = sub(name, 0, ss)
+                break
             end
         end
     end
     -- REMOVE VST: JS: AU: CLAP:
-    name = prefix and name:gsub("(%S+: )", "") or name
+    if prefix then
+        local ps, pe = name:find("(%S+: )")
+        if ps then
+            name = sub(name, pe)
+        end
+    end
     return name
 end
 
@@ -434,6 +442,8 @@ function GetFXTbl()
     ResetTables()
     return GenerateFxList(), CAT
 end
+
+
 
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
