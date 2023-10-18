@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="c19e77d6994c9b41c73aa39db396475128255ad6" name="Sexan_Scripts">
+<index version="1" commit="875b59dc7551f4c23a7256a7441ed94237e0e58f" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -562,6 +562,10 @@ Literize developer name from magic characters]]></changelog>
       <version name="1.6" author="Sexan" time="2023-10-18T20:14:57Z">
         <changelog><![CDATA[Fixed error in naming for excluding sorting FOLDERS ]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/49cff27449dcc2fff54dbcab1290c6eeacadf011/FX/Sexan_FX_Browser_ParserV7.lua</source>
+      </version>
+      <version name="1.7" author="Sexan" time="2023-10-18T21:36:22Z">
+        <changelog><![CDATA[Sort Folders from folders.ini immediatly after parsing by folder number order]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/875b59dc7551f4c23a7256a7441ed94237e0e58f/FX/Sexan_FX_Browser_ParserV7.lua</source>
       </version>
     </reapack>
     <reapack name="Sexan_ParaNormal_FX_Router.lua" type="script" desc="Sexan ParaNormal FX Router">
