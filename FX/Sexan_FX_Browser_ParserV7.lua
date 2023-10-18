@@ -1,9 +1,9 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.6
+-- @version 1.7
 -- @changelog
---  Fixed error in naming for excluding sorting FOLDERS 
+--  Sort Folders from folders.ini immediatly after parsing by folder number order
 
 local r = reaper
 local os = r.GetOS()
@@ -273,7 +273,7 @@ local function ParseFavorites()
     local current_folder
     for line in fav_str:gmatch('[^\r\n]+') do
         local folder = line:match("%[(Folder%d+)%]")
-
+        
         -- GET INITIAL FOLDER NAME "[Folder0]" AND SAVE IF
         if folder then current_folder = folder end
 
@@ -282,7 +282,7 @@ local function ParseFavorites()
             local item = line:match("Item%d+=(.+)")
             local dev_tbl = InTbl(CAT[#CAT].list, current_folder)
             if not dev_tbl then
-                table.insert(CAT[#CAT].list, { name = current_folder, fx = { item } })
+                table.insert(CAT[#CAT].list, { name = current_folder, fx = { item } ,  order = current_folder:match("Folder(%d+)")})
             else
                 table.insert(dev_tbl, item)
             end
@@ -332,6 +332,8 @@ local function ParseFavorites()
             end
         end
     end
+
+    table.sort(CAT[#CAT].list, function(a, b) return tonumber(a.order) < tonumber(b.order) end)
     -- REMOVE SMART FOLDERS FOR NOW
     for i = 1, #CAT do
         for j = #CAT[i].list, 1, -1 do
