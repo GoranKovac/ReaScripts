@@ -1,9 +1,9 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.5
+-- @version 1.6
 -- @changelog
---  Improved Stripname pefromance a bit by using find instead of match
+--  Fixed error in naming for excluding sorting FOLDERS 
 
 local r = reaper
 local os = r.GetOS()
@@ -378,7 +378,7 @@ local function AllPluginsCategory()
     -- SORT EVERYTHING ALPHABETICALLY
     for i = 1, #CAT do
         -- DONT SORT THERE CATEGORIES, LEAVE THEM AS IN FOLDER (CHAINS/TEMPLATES) OR AS CREATED BY USER (FAVORITES)
-        if CAT[i].name ~= "FOLDER" and CAT[i].name ~= "FX CHAINS" and CAT[i].name ~= "TRACK TEMPLATES" then
+        if CAT[i].name ~= "FOLDERS" and CAT[i].name ~= "FX CHAINS" and CAT[i].name ~= "TRACK TEMPLATES" then
             table.sort(CAT[i].list,
                 function(a, b) if a.name and b.name then return a.name:lower() < b.name:lower() end end)
         end
