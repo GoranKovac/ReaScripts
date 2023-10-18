@@ -1,9 +1,9 @@
 -- @description Sexan FX Browser parser V6
 -- @author Sexan
 -- @license GPL v3
--- @version 1.5
+-- @version 1.6
 -- @changelog
---  Added V6 suffix
+--  Fixed error in naming for excluding sorting FOLDERS 
 
 local r = reaper
 local os = r.GetOS()
@@ -519,7 +519,7 @@ local function AllPluginsCategory(JS, AU, AUi, CLAP, CLAPi, VST, VSTi, VST3, VST
 
     -- SORT EVERYTHING ALPHABETICALLY
     for i = 1, #CAT do
-        if CAT[i].name ~= "FOLDER" and CAT[i].name ~= "FX CHAINS" and CAT[i].name ~= "TRACK TEMPLATES" then
+        if CAT[i].name ~= "FOLDERS" and CAT[i].name ~= "FX CHAINS" and CAT[i].name ~= "TRACK TEMPLATES" then
             table.sort(CAT[i].list,
                 function(a, b) if a.name and b.name then return a.name:lower() < b.name:lower() end end)
         end
