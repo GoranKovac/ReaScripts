@@ -364,6 +364,7 @@ end
 local function StoreSettings()
     local data = tableToString(
         {
+            tooltips = TOOLTIPS,
             animated_highlight = ANIMATED_HIGLIGHT,
             ctrl_autocontainer = CTRL_DRAG_AUTOCONTAINER,
             esc_close = ESC_CLOSE,
@@ -406,7 +407,7 @@ function DrawUserSettings()
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x000000EE)
     r.ImGui_SetNextWindowPos(ctx, WX + 5, WY + 65)
 
-    if r.ImGui_BeginChild(ctx, "USERSETTIGS", 200, 538, 1) then
+    if r.ImGui_BeginChild(ctx, "USERSETTIGS", 200, 560, 1) then
         r.ImGui_SeparatorText(ctx, "UI")
         if r.ImGui_BeginListBox(ctx, "FONT", nil, 38) then
             if r.ImGui_Selectable(ctx, "DEFAULT", CUSTOM_FONT == nil) then
@@ -449,6 +450,7 @@ function DrawUserSettings()
         _, COLOR["sine_anim"] = r.ImGui_ColorEdit4(ctx, "ANIMATED HIGLIGHT", COLOR["sine_anim"],
             r.ImGui_ColorEditFlags_NoInputs())
         r.ImGui_SeparatorText(ctx, "BEHAVIORS")
+        _, TOOLTIPS = r.ImGui_Checkbox(ctx, "SHOW TOOLTIPS", TOOLTIPS)
         _, ESC_CLOSE = r.ImGui_Checkbox(ctx, "CLOSE ON ESC", ESC_CLOSE)
         _, ANIMATED_HIGLIGHT = r.ImGui_Checkbox(ctx, "ANIMATED HIGHLIGHT", ANIMATED_HIGLIGHT)
         SettingsTooltips("+ || BUTTONS HAVE ANIMATED COLOR\nFOR BETTER VISIBILITY WHEN DRAGGING")
@@ -467,6 +469,7 @@ function DrawUserSettings()
         r.ImGui_Separator(ctx)
 
         if r.ImGui_Button(ctx, "DEFAULT") then
+            TOOLTIPS = true
             ANIMATED_HIGLIGHT = true
             ESC_CLOSE = false
             DEFAULT_DND = true

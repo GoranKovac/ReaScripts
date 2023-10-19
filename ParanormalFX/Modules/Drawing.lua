@@ -179,6 +179,7 @@ end
 --- DND START ---
 -----------------
 local function DNDTooltips(str)
+    if not TOOLTIPS then return end
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0xFF)
     r.ImGui_PushFont(ctx, SELECTED_FONT)
     if r.ImGui_BeginTooltip(ctx) then
@@ -612,6 +613,7 @@ peak_width = 10
 name_margin = 25
 
 local function Tooltip(str, force)
+    if not TOOLTIPS then return end
     if IS_DRAGGING_RIGHT_CANVAS then return end
 
     if r.ImGui_IsItemHovered(ctx) or r.ImGui_IsItemActive(ctx) or force then
