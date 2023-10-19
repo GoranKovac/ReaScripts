@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.8
+-- @version 1.9
 -- @changelog
---  Fix crash when deleting container that has helpers
+--  20px offset for non tooltip previews
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
