@@ -1,5 +1,3 @@
---REMOVE FROM REAPACK
-
 local r            = reaper
 local os_separator = package.config:sub(1, 1)
 package.path       = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] ..
