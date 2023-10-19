@@ -1334,7 +1334,7 @@ local function DrawVolumePanHelper(tbl, i, w)
         --local parrent_container = GetParentContainerByGuid(tbl[i])
         local item_id = CalcFxID(parrent_container, i)
         local vol_val = r.TrackFX_GetParam(TRACK, item_id, 0) -- 0 IS VOL IDENTIFIER
-        r.ImGui_SameLine(ctx, -FLT_MIN, mute + mute//2)
+        r.ImGui_SameLine(ctx, -FLT_MIN, mute + (CUSTOM_FONT and mute//4 or mute//2))
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_vol")
         local rvh_v, v = MyKnob("", "arc", vol_val, -60, 12, true)
         if rvh_v then
@@ -1345,7 +1345,7 @@ local function DrawVolumePanHelper(tbl, i, w)
             r.TrackFX_SetParam(TRACK, item_id, 0, 0)
         end
         r.ImGui_PopID(ctx)
-        r.ImGui_SameLine(ctx, -FLT_MIN, w - (mute * 2) - mute//2)
+        r.ImGui_SameLine(ctx, -FLT_MIN, w - (mute * 2) - (CUSTOM_FONT and mute//4 or mute//2))
         local pan_val = r.TrackFX_GetParam(TRACK, item_id, 1) -- 1 IS PAN IDENTIFIER
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_pan")
         local rvh_p, p = MyKnob("", "knob", pan_val, -100, 100, nil, true)
@@ -1364,7 +1364,7 @@ local function DrawVolumePanHelper(tbl, i, w)
 
        -- local parrent_container = GetParentContainerByGuid(tbl[i])
         local item_id = CalcFxID(parrent_container, i)
-        r.ImGui_SameLine(ctx, -FLT_MIN, mute + (mute//4))
+        r.ImGui_SameLine(ctx, -FLT_MIN, mute + (CUSTOM_FONT and 0 or mute//4))
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_phase")
         local phase_val = r.TrackFX_GetParam(TRACK, item_id, 0) -- 1 IS PAN IDENTIFIER
         local pos = { r.ImGui_GetCursorScreenPos(ctx) }

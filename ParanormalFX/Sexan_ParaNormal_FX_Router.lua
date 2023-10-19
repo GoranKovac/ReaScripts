@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.9
+-- @version 1.10
 -- @changelog
---  20px offset for non tooltip previews
+--  Fix helpers drawing when using system font
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
