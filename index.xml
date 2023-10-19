@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="8a766bcd656e8c9a759a524fdb2a22ae24a4ab65" name="Sexan_Scripts">
+<index version="1" commit="4db106a7d623808e6c0341507a5578c8ae44b987" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -893,6 +893,21 @@ Clear Clipboard if COPY/CUT target is deleted before paste]]></changelog>
         <source file="JSFX/BandSelectFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/8a766bcd656e8c9a759a524fdb2a22ae24a4ab65/ParanormalFX/JSFX/BandSelectFX.jsfx</source>
         <source type="effect" file="JSFX/3BandSplitterFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/8a766bcd656e8c9a759a524fdb2a22ae24a4ab65/ParanormalFX/JSFX/3BandSplitterFX.jsfx</source>
         <source type="effect" file="JSFX/BandSelectFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/8a766bcd656e8c9a759a524fdb2a22ae24a4ab65/ParanormalFX/JSFX/BandSelectFX.jsfx</source>
+      </version>
+      <version name="1.10" author="Sexan" time="2023-10-19T17:38:42Z">
+        <changelog><![CDATA[Fix helpers drawing when using system font]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/4db106a7d623808e6c0341507a5578c8ae44b987/ParanormalFX/Sexan_ParaNormal_FX_Router.lua</source>
+        <source file="Modules/Canvas.lua">https://github.com/GoranKovac/ReaScripts/raw/4db106a7d623808e6c0341507a5578c8ae44b987/ParanormalFX/Modules/Canvas.lua</source>
+        <source file="Modules/ContainerCode.lua">https://github.com/GoranKovac/ReaScripts/raw/4db106a7d623808e6c0341507a5578c8ae44b987/ParanormalFX/Modules/ContainerCode.lua</source>
+        <source file="Modules/Drawing.lua">https://github.com/GoranKovac/ReaScripts/raw/4db106a7d623808e6c0341507a5578c8ae44b987/ParanormalFX/Modules/Drawing.lua</source>
+        <source file="Modules/Functions.lua">https://github.com/GoranKovac/ReaScripts/raw/4db106a7d623808e6c0341507a5578c8ae44b987/ParanormalFX/Modules/Functions.lua</source>
+        <source file="Modules/Utils.lua">https://github.com/GoranKovac/ReaScripts/raw/4db106a7d623808e6c0341507a5578c8ae44b987/ParanormalFX/Modules/Utils.lua</source>
+        <source file="Fonts/Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/4db106a7d623808e6c0341507a5578c8ae44b987/ParanormalFX/Fonts/Icons.ttf</source>
+        <source file="Fonts/ProggyClean.ttf">https://github.com/GoranKovac/ReaScripts/raw/4db106a7d623808e6c0341507a5578c8ae44b987/ParanormalFX/Fonts/ProggyClean.ttf</source>
+        <source file="JSFX/3BandSplitterFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/4db106a7d623808e6c0341507a5578c8ae44b987/ParanormalFX/JSFX/3BandSplitterFX.jsfx</source>
+        <source file="JSFX/BandSelectFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/4db106a7d623808e6c0341507a5578c8ae44b987/ParanormalFX/JSFX/BandSelectFX.jsfx</source>
+        <source type="effect" file="JSFX/3BandSplitterFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/4db106a7d623808e6c0341507a5578c8ae44b987/ParanormalFX/JSFX/3BandSplitterFX.jsfx</source>
+        <source type="effect" file="JSFX/BandSelectFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/4db106a7d623808e6c0341507a5578c8ae44b987/ParanormalFX/JSFX/BandSelectFX.jsfx</source>
       </version>
     </reapack>
   </category>
