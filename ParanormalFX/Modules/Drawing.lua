@@ -61,6 +61,15 @@ local HELPERS = {
     {name = "Channel Polarity Control", helper = "  POLARITY"},
 }
 
+function ValidateClipboardFX()
+    UpdateFxData()
+    --! MAKE SURE FX IS NOT DELETED BEFORE DOING UPDATE
+    if not GetFx(CLIPBOARD.guid) then
+        ClearExtState()
+        CLIPBOARD = {}
+    end
+end
+
 local function FindBlackListedFX(name)
     for i = 1, #BLACKLIST do
         if name:lower():find(BLACKLIST[i]) then return true end
@@ -198,6 +207,7 @@ local function CreateCustomPreviewData(tbl, i)
         DRAG_PREVIEW[i].guid = "PREVIEW"
         DRAG_PREVIEW.i = i
         DRAG_PREVIEW[i].name = DRAG_PREVIEW[i].name:gsub("^(%S+:)", "")
+        DRAG_PREVIEW.x = tbl[i].type ~= "PREVIEW" and r.ImGui_GetCursorScreenPos(ctx) or nil
     end
 end
 
@@ -212,7 +222,7 @@ local function DndAddFX_SRC(fx)
                     guid = "BTN_PREVIEW",
                     type = "PREVIEW",
                     name = Stripname(fx, true, true) },
-                    is_ara = FindBlackListedFX(fx)
+                    is_ara = FindBlackListedFX(fx),
             }, 1)
         r.ImGui_EndDragDropSource(ctx)
     end
@@ -239,6 +249,7 @@ local function DndAddFX_TARGET(tbl, i, parallel)
 end
 
 local function DndAddReplaceFX_TARGET(tbl, i, parallel)
+    if tbl[i].guid == "PREVIEW" then return end
     if not DND_ADD_FX then return end
     if tbl[i].type == "ROOT" then return end
     if tbl[i].exclude_ara then return end
@@ -403,6 +414,7 @@ local function DndMoveFX_TARGET_SERIAL_PARALLEL(tbl, i, parallel, serial_insert_
 end
 
 local function DndMoveFX_TARGET_SWAP(tbl, i)
+    if tbl[i].guid == "PREVIEW" then return end
     if tbl[i].exclude_ara then return end
     if not DND_MOVE_FX then return end
     --! WE ARE SWAPPING FX, NO COPY OPERATION
@@ -595,6 +607,7 @@ function DrawFXList()
         if r.ImGui_Selectable(ctx, "RECENT: " .. LAST_USED_FX) then AddFX(LAST_USED_FX) end
         DndAddFX_SRC(LAST_USED_FX)
     end
+    if IS_DRAGGING_RIGHT_CANVAS then r.ImGui_CloseCurrentPopup(ctx) end
 end
 
 function CalculateItemWH(tbl)
@@ -1295,6 +1308,7 @@ local function ButtonAction(tbl, i)
             r.PreventUIRefresh(-1)
             EndUndoBlock("DELETE FX: " .. tbl[i].name)
         end
+        ValidateClipboardFX()
     else
         OpenFX(item_id)
     end
@@ -1621,8 +1635,16 @@ end
 local function CustomDNDPreview()
     if not DRAG_PREVIEW then return end
     local mx, my = r.ImGui_GetMousePos(ctx)
-    r.ImGui_SetNextWindowPos(ctx, mx + 25, my + 28)
-
+    local off_x, off_y = 25, 28
+        
+    --! CENTER THE BUTTON AT MOUSE CURSOR IF THERE ARE NO TOOLTIPS
+    if not TOOLTIPS then
+        local click_x = r.ImGui_GetMouseClickedPos(ctx,0)
+        off_x = DRAG_PREVIEW.x and -(click_x - DRAG_PREVIEW.x) or -20
+        off_y = 5
+    end
+    
+    r.ImGui_SetNextWindowPos(ctx, mx + off_x, my + off_y)
     r.ImGui_SetNextWindowBgAlpha(ctx, 0.3)
     if DRAG_PREVIEW[DRAG_PREVIEW.i].type == "Container" then
         if r.ImGui_BeginChild(ctx, "##PREVIEW_DRAW_CONTAINER", DRAG_PREVIEW[DRAG_PREVIEW.i].W, DRAG_PREVIEW[DRAG_PREVIEW.i].H, true) then

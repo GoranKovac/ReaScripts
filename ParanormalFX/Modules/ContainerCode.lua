@@ -464,6 +464,7 @@ function UpdateClipboardInfo()
     end
     -- DONT RECALCULATE IF PASTING ON DIFFERENT TRACK
     if CLIPBOARD.track ~= TRACK then return end
+
     UpdateFxData()
     local updated = GetFx(CLIPBOARD.tbl[CLIPBOARD.i].guid)
     local parrent = GetFx(updated.pid)
@@ -533,6 +534,7 @@ end
 
 function Paste(replace, parallel, serial, enclose)
     if not CLIPBOARD.tbl then return end
+    
     local para_info = serial and "0" or ""
     para_info = parallel and "1" or para_info
     --if CLIPBOARD.guid == RC_DATA.tbl[RC_DATA.i].guid then return end

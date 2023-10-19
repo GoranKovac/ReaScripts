@@ -217,6 +217,7 @@ local function RightClickMenu()
             EndUndoBlock("DELETE FX:" .. RC_DATA.tbl[RC_DATA.i].name)
             r.PreventUIRefresh(-1)
         end
+        ValidateClipboardFX()
     end
     if RC_DATA.type == "ROOT" or RC_DATA.type == "Container" then
         r.ImGui_Separator(ctx)

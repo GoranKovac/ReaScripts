@@ -1,9 +1,11 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.4
+-- @version 1.5
 -- @changelog
---  User settings Tooltips 2
+--  If FX BROWSER is open, close it if user starts to right drag canvas
+--  When tooltips are off draw previews around center position of the mouse
+--  Clear Clipboard if COPY/CUT target is deleted before paste
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -59,7 +61,6 @@ CTRL_DRAG_AUTOCONTAINER      = false
 TOOLTIPS                     = true
 
 local fx_browser_script_path = reaper_path .. "/Scripts/Sexan_Scripts/FX/Sexan_FX_Browser_ParserV7.lua"
-
 local fm_script_path         = reaper_path .. "/Scripts/Sexan_Scripts/ImGui_Tools/FileManager.lua"
 if r.file_exists(fx_browser_script_path) then
     dofile(fx_browser_script_path)
