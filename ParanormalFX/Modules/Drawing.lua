@@ -1641,7 +1641,7 @@ local function CustomDNDPreview()
     if not TOOLTIPS then
         local click_x = r.ImGui_GetMouseClickedPos(ctx,0)
         off_x = DRAG_PREVIEW.x and -(click_x - DRAG_PREVIEW.x) or -20
-        off_y = 5
+        off_y = 15
     end
     
     r.ImGui_SetNextWindowPos(ctx, mx + off_x, my + off_y)

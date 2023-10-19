@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.6
+-- @version 1.7
 -- @changelog
---  Fix PASTE-REPLACE not switching parallel info with the target
+--  Added 10px more distance to drawing preview node when tooltips are off
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
