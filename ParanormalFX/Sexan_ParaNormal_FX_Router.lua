@@ -1,10 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.11
+-- @version 1.12
 -- @changelog
---  Added Time Delay Helper node
---  Added mouse wheel to interact with helpers on hover
+--  fixed volume on containers.... while adding time adjuster
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf

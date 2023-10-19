@@ -1525,7 +1525,7 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
             if tbl[i + 1] and tbl[i + 1].p > 0 or tbl[i].p > 0 then
                 is_vol = true
             end
-            local rv, v, knob_hover = MyKnob("", is_vol and "arc" or "dry_wet", tbl[i].wet_val * 100, 0, 100, "dry_wet")
+            local rv, v, knob_hover = MyKnob("", is_vol and "arc" or "dry_wet", tbl[i].wet_val * 100, 0, 100, is_vol and "vol" or "dry_wet")
             vol_or_enclose_hover = knob_hover
             if rv then
                 local parrent_container = GetParentContainerByGuid(tbl[i])
