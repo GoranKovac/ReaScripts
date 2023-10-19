@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.2
+-- @version 1.3
 -- @changelog
---  woopsie with FX BROWSER
+--  User settings Tooltips
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -56,6 +56,7 @@ CUSTOM_FONT                  = nil
 ANIMATED_HIGLIGHT            = true
 DEFAULT_DND                  = true
 CTRL_DRAG_AUTOCONTAINER      = false
+TOOLTIPS                     = true
 
 local fx_browser_script_path = reaper_path .. "/Scripts/Sexan_Scripts/FX/Sexan_FX_Browser_ParserV7.lua"
 
@@ -85,6 +86,7 @@ if r.HasExtState("PARANORMALFX2", "SETTINGS") then
         local storedTable = stringToTable(stored)
         if storedTable ~= nil then
             -- SETTINGS
+            TOOLTIPS = storedTable.tooltips~=nil and storedTable.tooltips
             ANIMATED_HIGLIGHT = storedTable.animated_highlight
             CTRL_DRAG_AUTOCONTAINER = storedTable.ctrl_autocontainer
             ESC_CLOSE = storedTable.esc_close
@@ -166,7 +168,6 @@ function GetFXBrowserData()
 end
 
 local function Main()
-
     if WANT_REFRESH then
         WANT_REFRESH = nil
         FX_LIST, CAT = GetFXTbl()
@@ -226,7 +227,7 @@ end
 
 function Exit()
     if CLIPBOARD.tbl and CLIPBOARD.track == TRACK then
-       ClearExtState()
+        ClearExtState()
     end
     StoreToPEXT(LAST_TRACK)
 end
