@@ -1,32 +1,19 @@
--- @description Sexan ParaNormal FX Router
--- @author Sexan
--- @license GPL v3
--- @version 1.52
--- @changelog
---  Fix plugins passing thru 2channel input check for sidechain
---  Do not allow sidechaining on containers
---  Do not draw sidechain preview waveform on containers
--- @provides
---   Icons.ttf
---   ProggyClean.ttf
---   [effect] 3BandSplitterFX.jsfx
---   [effect] BandSelectFX.jsfx
---   Tutorials/*.png
+--REMOVE FROM REAPACK
 
-local r                      = reaper
-local os_separator           = package.config:sub(1, 1)
-package.path                 = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] ..
-"?.lua;"                                                                                   -- GET DIRECTORY FOR REQUIRE
-package.path                 = package.path ..
-debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "../ImGui_Tools/?.lua;"
-local script_path            = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]];
-local PATH                   = debug.getinfo(1).source:match("@?(.*[\\|/])")
+local r            = reaper
+local os_separator = package.config:sub(1, 1)
+package.path       = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] ..
+    "?.lua;" -- GET DIRECTORY FOR REQUIRE
+package.path       = package.path ..
+    debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "../ImGui_Tools/?.lua;"
+local script_path  = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]];
+local PATH         = debug.getinfo(1).source:match("@?(.*[\\|/])")
 
--- local ver          = r.GetAppVersion():match("(.+)/")
--- if ver ~= "7.0rc9" then
---     r.ShowMessageBox("This script requires Reaper V7.0rc8", "WRONG REAPER VERSION", 0)
---     return
--- end
+local ver          = r.GetAppVersion():match("(.+)/")
+if not ver:match("^7%.") then
+    r.ShowMessageBox("This script requires Reaper V7", "WRONG REAPER VERSION", 0)
+    return
+end
 
 local fx_browser_script_path = r.GetResourcePath() .. "/Scripts/Sexan_Scripts/FX/Sexan_FX_Browser_ParserV7.lua"
 local fm_script_path         = r.GetResourcePath() .. "/Scripts/Sexan_Scripts/ImGui_Tools/FileManager.lua"
@@ -71,6 +58,7 @@ local name_margin = 25
 local COLOR = {
     ["n"]           = 0x315e94ff,
     ["Container"]   = 0x49cc85FF,
+    ["enclose"]     = 0x192432ff,
     ["knob_bg"]     = 0x192432ff,
     ["knob_vol"]    = 0x49cc85FF,
     ["knob_drywet"] = 0x3a87ffff,
@@ -693,20 +681,22 @@ local function MyKnob(label, style, p_value, v_min, v_max, is_vol, is_pan)
     end
 
     if is_active or is_hovered then
-        local window_padding = { r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_WindowPadding()) }
-        r.ImGui_SetNextWindowPos(ctx, pos[1] - window_padding[1],
-            pos[2] - line_height - (item_inner_spacing[2] * 2) - window_padding[2])
-        r.ImGui_BeginTooltip(ctx)
-        if is_vol then
-            r.ImGui_Text(ctx, "VOL " .. ('%.0f'):format(p_value))
-        else
-            if is_pan then
-                r.ImGui_Text(ctx, "PAN " .. ('%.0f'):format(p_value))
+        if not IS_DRAGGING_RIGHT_CANVAS then
+            local window_padding = { r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_WindowPadding()) }
+            r.ImGui_SetNextWindowPos(ctx, pos[1] - window_padding[1],
+                pos[2] - line_height - (item_inner_spacing[2] * 2) - window_padding[2])
+            r.ImGui_BeginTooltip(ctx)
+            if is_vol then
+                r.ImGui_Text(ctx, "VOL " .. ('%.0f'):format(p_value))
             else
-                r.ImGui_Text(ctx, ('%.0f'):format(100 - p_value) .. " DRY / WET " .. ('%.0f'):format(p_value))
+                if is_pan then
+                    r.ImGui_Text(ctx, "PAN " .. ('%.0f'):format(p_value))
+                else
+                    r.ImGui_Text(ctx, ('%.0f'):format(100 - p_value) .. " DRY / WET " .. ('%.0f'):format(p_value))
+                end
             end
+            r.ImGui_EndTooltip(ctx)
         end
-        r.ImGui_EndTooltip(ctx)
     end
 
     return value_changed, p_value
@@ -737,6 +727,53 @@ local function EndUndoBlock(str)
     r.Undo_EndBlock("PARANORMAL: " .. str, 0)
 end
 
+local function CreateAutoContainer(tbl, i, target, enclose, move)
+    UpdateFxData()
+    r.Undo_BeginBlock()
+    local parrent_container = GetFx(tbl[i].pid)
+
+    -- GET INSERTED FX GUID
+    local inserted_fx_id = CalcFxID(parrent_container, target)
+    local inserted_guid = r.TrackFX_GetFXGUID(TRACK, inserted_fx_id)
+
+    -- INSERT CONTAINER AT BEGINNING
+    r.TrackFX_AddByName(TRACK, "Container", false, -1000)
+
+    -- UPDATE AFTER INSERTING CONTAINER
+    UpdateFxData()
+    parrent_container = GetFx(parrent_container.guid)
+    local inserted_fx_tbl = GetFx(inserted_guid)
+    local inserted_id = CalcFxID(parrent_container, inserted_fx_tbl.IDX)
+    -- SET CONTAINER PARALLEL INFO AS TARGET FX
+    r.TrackFX_SetNamedConfigParm(TRACK, 0x2000000 + 1, "parallel", tbl[i].p)
+    local id = 0x2000000 + 1 + (r.TrackFX_GetCount(TRACK) + 1)
+    -- SET TARGET PLUGIN IN SERIAL IN CONTAINER
+    r.TrackFX_SetNamedConfigParm(TRACK, inserted_id, "parallel", "0")
+    -- MOVE FIRST PLUGIN
+    r.TrackFX_CopyToTrack(TRACK, inserted_id, TRACK, id, true)
+
+    -- MOVE UPDATE AND MOVE SECOND PLUGIN
+    if not enclose then
+        UpdateFxData()
+        parrent_container = GetFx(parrent_container.guid)
+        local original_fx2 = GetFx(tbl[i].guid)
+        local original_fx_id = CalcFxID(parrent_container, original_fx2.IDX)
+        -- SET PLUGIN AS SERIAL IN CONTAINER
+        id = 0x2000000 + 1 + (r.TrackFX_GetCount(TRACK) + 1)
+        r.TrackFX_CopyToTrack(TRACK, original_fx_id, TRACK, id, true)
+    end
+    -- MOVE CONTAINER IN ORIGINAL POSITION
+    UpdateFxData()
+    parrent_container = GetFx(parrent_container.guid)
+
+    --! FIX AUTOCONTAINER SWAP POS if FIRST
+    local original_pos = CalcFxID(parrent_container, i)
+    r.TrackFX_CopyToTrack(TRACK, 0x2000000 + 1, TRACK, original_pos, true)
+
+    EndUndoBlock("AUTOCONTAINER")
+    return true
+end
+
 local function AddFX(name)
     if not TRACK or not FX_ID then return end
     if REPLACE then r.Undo_BeginBlock() end
@@ -750,6 +787,12 @@ local function AddFX(name)
         r.TrackFX_Delete(TRACK, del_id)
         REPLACE = nil
         EndUndoBlock("REPLACE")
+    end
+    if AUTO_CONTAINER and new_fx_id then
+        r.PreventUIRefresh(1)
+        CreateAutoContainer(AUTO_CONTAINER[1], AUTO_CONTAINER[2], new_fx_id + 1)
+        AUTO_CONTAINER = nil
+        r.PreventUIRefresh(-1)
     end
     LAST_USED_FX = name
     UpdateFxData()
@@ -1212,49 +1255,6 @@ local function GetOrUpdateFX(target)
     end
 end
 
-local function CreateAutoContainer(tbl, i, target)
-    UpdateFxData()
-    r.Undo_BeginBlock()
-    local parrent_container = GetFx(tbl[i].pid)
-
-    -- GET INSERTED FX GUID
-    local inserted_fx_id = CalcFxID(parrent_container, target)
-    local inserted_guid = r.TrackFX_GetFXGUID(TRACK, inserted_fx_id)
-
-    -- INSERT CONTAINER AT BEGINNING
-    r.TrackFX_AddByName(TRACK, "Container", false, -1000)
-
-    -- UPDATE AFTER INSERTING CONTAINER
-    UpdateFxData()
-    parrent_container = GetFx(parrent_container.guid)
-    local inserted_fx_tbl = GetFx(inserted_guid)
-    local inserted_id = CalcFxID(parrent_container, inserted_fx_tbl.IDX)
-    -- SET CONTAINER PARALLEL INFO AS TARGET FX
-    r.TrackFX_SetNamedConfigParm(TRACK, 0x2000000 + 1, "parallel", tbl[i].p)
-    local id = 0x2000000 + 1 + (r.TrackFX_GetCount(TRACK) + 1)
-    -- SET TARGET PLUGIN IN SERIAL IN CONTAINER
-    r.TrackFX_SetNamedConfigParm(TRACK, inserted_id, "parallel", "0")
-    -- MOVE FIRST PLUGIN
-    r.TrackFX_CopyToTrack(TRACK, inserted_id, TRACK, id, true)
-
-    -- MOVE UPDATE AND MOVE SECOND PLUGIN
-    UpdateFxData()
-    parrent_container = GetFx(parrent_container.guid)
-    local original_fx2 = GetFx(tbl[i].guid)
-    local original_fx_id = CalcFxID(parrent_container, original_fx2.IDX)
-    -- SET PLUGIN AS SERIAL IN CONTAINER
-    id = 0x2000000 + 1 + (r.TrackFX_GetCount(TRACK) + 1)
-    r.TrackFX_CopyToTrack(TRACK, original_fx_id, TRACK, id, true)
-
-    -- MOVE CONTAINER IN ORIGINAL POSITION
-    UpdateFxData()
-    parrent_container = GetFx(parrent_container.guid)
-    local original_pos = CalcFxID(parrent_container, i)
-    r.TrackFX_CopyToTrack(TRACK, 0x2000000 + 1, TRACK, original_pos, true)
-
-    EndUndoBlock("AUTOCONTAINER")
-end
-
 local function DragAddDDTarget(tbl, i, parallel, additiona_op)
     if r.ImGui_BeginDragDropTarget(ctx) then
         local ret, payload = r.ImGui_AcceptDragDropPayload(ctx, 'DRAG ADD FX')
@@ -1455,6 +1455,7 @@ local function MoveDDSource(tbl, i)
             DRAG_MOVE = Deepcopy(tbl)
             DRAG_MOVE.move_guid = tbl.guid
             DRAG_MOVE.guid = "MOVE_PREVIEW"
+            DRAG_MOVE.i = i
         end
         r.ImGui_SetDragDropPayload(ctx, "MOVE", data)
 
@@ -1469,37 +1470,50 @@ local function MoveDDSource(tbl, i)
     end
 end
 
-local function DragAndDropMove(tbl, i)
+local function DragAndDropMove(tbl, i, autocontainer)
     if tbl[i].type == "ROOT" then return end
     MoveDDSource(tbl[i], i)
-    if not CTRL_DRAG then
-        MoveDDTarget(tbl[i], i)
-    else
-        local xs, ys = r.ImGui_GetItemRectMin(ctx)
-        local xe, ye = r.ImGui_GetItemRectMax(ctx)
-        if r.ImGui_IsMouseHoveringRect(ctx, xs, ys, xe, ye, false) then
-            r.ImGui_DrawList_AddRectFilled(draw_list, xs - (s_spacing_x) - mute - 0.5, ys - (s_spacing_y // 0.8),
-                xe + (s_spacing_x) + (mute // 1.2) + 0.5,
-                ys - (s_spacing_y // 2) + 2, r.ImGui_GetColorEx(ctx, COLOR["enabled"]), 2,
-                r.ImGui_DrawFlags_RoundCornersTopLeft()|r.ImGui_DrawFlags_RoundCornersTopRight())
-            r.ImGui_DrawList_AddRect(draw_list, xs - (s_spacing_x) - mute, ys - (s_spacing_y // 2),
-                xe + (s_spacing_x) + (mute // 1.2),
-                ye + (s_spacing_y // 2),
-                r.ImGui_GetColorEx(ctx, COLOR["enabled"]), 2, nil, 2)
-        end
-
-        -- DISABEL DRAG AND DROP YELLOW RECTANGLE HERE SINCE WE ARE DRAWING OUR OWN
-        r.ImGui_PushStyleColor(ctx, r.ImGui_Col_DragDropTarget(), 0)
-        local inserted_fx_id = MoveDDTarget(tbl[i], i, "serial", tbl[i].INSERT_POINT)
-        r.ImGui_PopStyleColor(ctx)
-        -- DO AUTO CONTAINER MAGIC
-        if inserted_fx_id then
+    --if not CTRL_DRAG then
+        local new_fx_id, src_id = MoveDDTarget(tbl[i], i, autocontainer and "serial" or nil)
+        --local new_fx_id = MoveDDTarget(tbl[i], i, "serial")
+        if autocontainer and new_fx_id then
+            --UpdateFxData()
             r.PreventUIRefresh(1)
-            CreateAutoContainer(tbl, i, i + 1)
+           
+
+            --local ok = CreateAutoContainer(tbl, i, CTRL_DOWN and i + 1 or new_fx_id + 1)
+            --local ok = CreateAutoContainer(tbl, i, CTRL_DOWN and i+1 or tbl[i].IDX)
+                local ok = CreateAutoContainer(tbl, i, i+1)
+
             r.PreventUIRefresh(-1)
+            if ok then return end
         end
+    --else
+        -- local xs, ys = r.ImGui_GetItemRectMin(ctx)
+        -- local xe, ye = r.ImGui_GetItemRectMax(ctx)
+        -- if r.ImGui_IsMouseHoveringRect(ctx, xs, ys, xe, ye, false) then
+        --     r.ImGui_DrawList_AddRectFilled(draw_list, xs - (s_spacing_x) - mute - 0.5, ys - (s_spacing_y // 0.8),
+        --         xe + (s_spacing_x) + (mute // 1.2) + 0.5,
+        --         ys - (s_spacing_y // 2) + 2, r.ImGui_GetColorEx(ctx, COLOR["enabled"]), 2,
+        --         r.ImGui_DrawFlags_RoundCornersTopLeft()|r.ImGui_DrawFlags_RoundCornersTopRight())
+        --     r.ImGui_DrawList_AddRect(draw_list, xs - (s_spacing_x) - mute, ys - (s_spacing_y // 2),
+        --         xe + (s_spacing_x) + (mute // 1.2),
+        --         ye + (s_spacing_y // 2),
+        --         r.ImGui_GetColorEx(ctx, COLOR["enabled"]), 2, nil, 2)
+        -- end
+
+        -- -- DISABEL DRAG AND DROP YELLOW RECTANGLE HERE SINCE WE ARE DRAWING OUR OWN
+        -- r.ImGui_PushStyleColor(ctx, r.ImGui_Col_DragDropTarget(), 0)
+        -- local inserted_fx_id = MoveDDTarget(tbl[i], i, "serial", tbl[i].INSERT_POINT)
+        -- r.ImGui_PopStyleColor(ctx)
+        -- -- DO AUTO CONTAINER MAGIC
+        -- if inserted_fx_id then
+        --     r.PreventUIRefresh(1)
+        --     CreateAutoContainer(tbl, i, i + 1)
+        --     r.PreventUIRefresh(-1)
+        -- end
         EndUndoBlock("Move Plugins")
-    end
+    --end
 end
 
 local function ParallelRowWidth(tbl, i, item_width)
@@ -1852,7 +1866,7 @@ function DrawButton(tbl, i, name, width, fade, del_color)
     r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_Alpha(), fade) -- alpha
     r.ImGui_BeginGroup(ctx)
     --! DRAW PEAKS
-    if tbl[i].sc_tracks and tbl[i].type ~= "Container" then
+    if tbl[i].sc_tracks and tbl[i].type ~= "Container" and not DRAW_PREVIEW then
         r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_WindowPadding(), 0, 0)
         r.ImGui_PushID(ctx, tbl[i].guid .. "peaks")
         if r.ImGui_BeginChild(ctx, "##peaks", peak_btn_size, def_btn_h, 1) then
@@ -1877,9 +1891,10 @@ function DrawButton(tbl, i, name, width, fade, del_color)
                 local retval, buf = r.GetTrackName(tbl[i].sc_tracks[t])
                 if t > 1 then tr_names = tr_names .. "            " end
                 tr_names = tr_names ..
-                buf ..
-                " (" .. tbl[i].sc_channels[t] .. "/" ..
-                (tbl[i].sc_channels[t] + 1) .. ")" .. "\n"                                                               --.. tbl[i].sc_channels[t]
+                    buf ..
+                    " (" .. tbl[i].sc_channels[t] .. "/" ..
+                    (tbl[i].sc_channels[t] + 1) ..
+                    ")" .. "\n"                            --.. tbl[i].sc_channels[t]
                 --Tooltip("SIDECHAIN - " .. tr_names)
             end
             Tooltip("SIDECHAIN - " .. tr_names)
@@ -1964,7 +1979,7 @@ function DrawButton(tbl, i, name, width, fade, del_color)
     end
     local btn_hover = r.ImGui_IsItemHovered(ctx) and (not vol_hover and not pan_hover)
     if (tbl[i].type ~= "Container" and tbl[i].type ~= "ROOT") then
-        AutoContainer(tbl, i)
+        --AutoContainer(tbl, i)
     end
     r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 0)
     local is_del_color = del_color and del_color or (ALT and btn_hover) and COLOR["del"] or
@@ -1976,7 +1991,7 @@ function DrawButton(tbl, i, name, width, fade, del_color)
         local xe, ye = r.ImGui_GetItemRectMax(ctx)
         r.ImGui_DrawList_AddRect(draw_list, xs - mute, ys, xe, ye, 0x666666FF, 3, nil)
     else
-        DrawListButton(name, is_del_color, --  (ALT and btn_hover) and COLOR["del"] or TypToColor(tbl[i])
+        DrawListButton(name, TypToColor(tbl[i]), --  (ALT and btn_hover) and COLOR["del"] or TypToColor(tbl[i])
             tbl[i].type ~= "ROOT" and "R" or nil, nil, btn_hover)
     end
     -- if CTRL_DOWN then
@@ -2079,7 +2094,12 @@ local function GenerateCoordinates(tbl, i, last)
     tbl[i].x, tbl[i].xs, tbl[i].xe, tbl[i].ys, tbl[i].ye = x, xs, xe, ys, ye
 end
 
-local function CreateLines(top, cur, bot)
+local function IsFXSoloInParaLane(tbl,i)
+    if tbl[i].type == "Container" then return end
+    if tbl[i + 1] and tbl[i + 1].p > 0 or tbl[i].p > 0 and (not tbl[i + 1] or tbl[i + 1].p == 0) then return true end
+end
+
+local function CreateLines(top, cur, bot, tbl, i)
     if top then
         local x1 = cur.x
         local y1 = top.ye + s_spacing_y + (add_btn_h // 2) --+ (def_btn_h // 2) --- (add_btn_h // 2)
@@ -2089,9 +2109,9 @@ local function CreateLines(top, cur, bot)
     end
     if bot then
         local x1 = cur.x
-        local y1 = cur.ye
+        local y1 = cur.ye - (IsFXSoloInParaLane(tbl,i) and add_btn_h + s_spacing_y or 0)
         local x2 = x1
-        local y2 = bot.ys - s_spacing_y - (add_btn_h // 2) -- (def_btn_h // 2)
+        local y2 = bot.ys - s_spacing_y - (add_btn_h // 2) 
         LINE_POINTS[#LINE_POINTS + 1] = { x1, y1, x2, y2 }
     end
 end
@@ -2113,6 +2133,33 @@ local function AddRowSeparatorLine(A, B, bot)
     LINE_POINTS[#LINE_POINTS + 1] = { x1, y1, x2, y2 }
 end
 
+local function SerialInsertParaLane(tbl, i, item_w)
+    --if tbl[i].type == "Container" then return end
+    --if tbl[i + 1] and tbl[i + 1].p > 0 or tbl[i].p > 0 and (not tbl[i + 1] or tbl[i + 1].p == 0) then
+    if IsFXSoloInParaLane(tbl,i) then
+        local x = r.ImGui_GetCursorPosX(ctx)
+        r.ImGui_SetCursorPosX(ctx, x + (item_w // 2) - (s_spacing_x // 2))
+        r.ImGui_PushID(ctx, tbl[i].guid .. "insert_point_para_lane")
+        if r.ImGui_InvisibleButton(ctx, "+", add_bnt_w, add_btn_h) then
+            CLICKED = tbl[i].guid
+            local parrent_container = GetParentContainerByGuid(tbl[i])
+            local item_add_id = CalcFxID(parrent_container, i + 1)
+            FX_ID = { item_add_id }
+            OPEN_FX_LIST = true
+            AUTO_CONTAINER = {tbl, i}
+        end
+        r.ImGui_PopID(ctx)
+        DragAddDDTarget(tbl, i, nil, "autocontainer")
+        DragAndDropMove(tbl, i, "autocontainer")
+        if (r.ImGui_IsItemHovered(ctx) and not IS_DRAGGING_RIGHT_CANVAS) or DRAG_MOVE or DRAG_ADD_FX or CLICKED == tbl[i].guid then
+            DrawListButton("H",
+                (DRAG_ADD_FX or DRAG_MOVE) and ColorToHex(COLOR["parallel"], 10) or
+            r.ImGui_IsItemHovered(ctx) and ColorToHex(COLOR["n"], 10) or COLOR["parallel"],nil,true)
+            Tooltip("ADD AND ENCLOSE")
+        end
+    end
+end
+
 function DrawPlugins(center, tbl, fade, color_del)
     r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_Alpha(), fade)
     local last
@@ -2124,9 +2171,12 @@ function DrawPlugins(center, tbl, fade, color_del)
         width = tbl[i].W and tbl[i].W or width + name_margin
         height = tbl[i].H and tbl[i].H or height
         SetItemPos(tbl, i, center, width)
-        if tbl[i].type ~= "Container" then
+        if tbl[i].type ~= "Container" and tbl[i].type ~= "INSERT_POINT" then
+            r.ImGui_BeginGroup(ctx)
             local button_hovered = DrawButton(tbl, i, name, width, fade, color_del)
             color_del = tbl[i].type == "ROOT" and button_hovered and ALT and COLOR["bypass"] or color_del
+            SerialInsertParaLane(tbl, i, width)
+            r.ImGui_EndGroup(ctx)
         end
         if tbl[i].type == "Container" then
             r.ImGui_BeginGroup(ctx)
@@ -2137,7 +2187,7 @@ function DrawPlugins(center, tbl, fade, color_del)
                 if DRAG_MOVE and DRAG_MOVE.move_guid == tbl[i].guid and not CTRL_DRAG then
                 else
                     local button_hovered = DrawButton(tbl, i, name, -volume, fade, color_del)
-                    GenerateCoordinates(tbl, i)
+                    --GenerateCoordinates(tbl, i)
 
                     -- HIGLIGHT EVERYCHILD WITH DELETE COLOR IF PARRENT IS GOING TO BE DELETED
                     local del_color = color_del and color_del or button_hovered and ALT and COLOR["bypass"]
@@ -2171,7 +2221,7 @@ function DrawPlugins(center, tbl, fade, color_del)
         local top = FindNextPrevRow(tbl, i, -1, "HIGHEST")
         local cur = tbl[i]
         local bot = FindNextPrevRow(tbl, i, 1) or last
-        CreateLines(top, cur, bot)
+        CreateLines(top, cur, bot, tbl, i)
 
         if tbl[i + 1] and tbl[i + 1].ROW ~= last_row or not tbl[i + 1] then
             local last_in_row = tbl[i]
@@ -2366,6 +2416,12 @@ function RCCTXMenu()
             FM_TYPE = "SAVE"
             Init_FM_database()
             CreateFxChain(R_CLICK_DATA[1][R_CLICK_DATA[2]].guid)
+        end
+    else
+        if r.ImGui_MenuItem(ctx, 'ENCLOSE INTO CONTAINER') then
+            r.PreventUIRefresh(1)
+            CreateAutoContainer(R_CLICK_DATA[1], R_CLICK_DATA[2], R_CLICK_DATA[1][R_CLICK_DATA[2]].IDX, "enclose")
+            r.PreventUIRefresh(1)
         end
     end
 
@@ -3154,10 +3210,10 @@ local function ClipBoard()
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x000000EE)
 
     --r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_WindowPadding(), 0, 2)
-    if r.HasExtState("PARANORMALFX", "COPY_BUFFER") then
-        local copy_id = r.GetExtState("PARANORMALFX", "COPY_BUFFER_ID")
+    if r.HasExtState("PARANORMALFX2", "COPY_BUFFER") then
+        local copy_id = r.GetExtState("PARANORMALFX2", "COPY_BUFFER_ID")
         if old_copy_id ~= copy_id then
-            local stored = r.GetExtState("PARANORMALFX", "COPY_BUFFER")
+            local stored = r.GetExtState("PARANORMALFX2", "COPY_BUFFER")
             if stored ~= nil then
                 local storedTable = stringToTable(stored)
                 if storedTable ~= nil then
@@ -3184,7 +3240,7 @@ local function ClipBoard()
     if CLIPBOARD.tbl then
         local size = CalculateItemWH({ name = CLIPBOARD.tbl[CLIPBOARD.i].name }) + 190
         if r.ImGui_BeginChild(ctx, "CLIPBOARD", size, def_btn_h + s_window_y, 1) then
-            if r.HasExtState("PARANORMALFX", "COPY_BUFFER") then
+            if r.HasExtState("PARANORMALFX2", "COPY_BUFFER") then
                 if CLIPBOARD.tbl then
                     local rv, name = r.GetTrackName(CLIPBOARD.track)
                     r.ImGui_Text(ctx, "CLIPBOARD: " .. name .. " - FX: " .. CLIPBOARD.tbl[CLIPBOARD.i].name)
