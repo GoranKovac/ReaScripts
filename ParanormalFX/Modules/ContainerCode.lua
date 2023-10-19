@@ -495,6 +495,9 @@ function ClipBoard()
                         id = storedTable.fx_id,
                         guid = storedTable.guid,
                         cut = storedTable.cut,
+                        P_DIFF = storedTable.parrent_DIFF,
+                        P_ID = storedTable.parrent_ID,
+                        P_TYPE = storedTable.parrent_TYPE,
                     }
                     for i = 1, r.CountTracks(0) do
                         local track = r.GetTrack(0, i - 1)
@@ -530,6 +533,8 @@ end
 
 function Paste(replace, parallel, serial, enclose)
     if not CLIPBOARD.tbl then return end
+    local para_info = serial and "0" or ""
+    para_info = parallel and "1" or para_info
     --if CLIPBOARD.guid == RC_DATA.tbl[RC_DATA.i].guid then return end
     local parrent_container = GetParentContainerByGuid(RC_DATA.tbl[RC_DATA.i])
     local item_id = CalcFxID(parrent_container, (parallel or serial) and RC_DATA.i + 1 or RC_DATA.i)
@@ -541,16 +546,18 @@ function Paste(replace, parallel, serial, enclose)
     --end
     local is_cut = CLIPBOARD.cut and true or false
     if is_cut then
-        local src_parrent = GetParentContainerByGuid(CLIPBOARD.tbl[CLIPBOARD.i])
-        CheckNextItemParallel(CLIPBOARD.i, src_parrent)
+       -- r.ShowConsoleMsg(tostring(parallel))
+        CheckSourceNextItemParallel(CLIPBOARD.i, CLIPBOARD.P_TYPE, CLIPBOARD.P_DIFF, CLIPBOARD.P_ID, CLIPBOARD.track)
+        --local src_parrent = GetParentContainerByGuid(CLIPBOARD.tbl[CLIPBOARD.i])
+        --CheckNextItemParallel(CLIPBOARD.i, src_parrent)
         -- SET PARALLEL INFO BEFORE MOVING
-        r.TrackFX_SetNamedConfigParm(TRACK, item_id, "parallel", RC_DATA.tbl[RC_DATA.i].p)
+        r.TrackFX_SetNamedConfigParm(CLIPBOARD.track, CLIPBOARD.id, "parallel", para_info)
     end
 
     r.TrackFX_CopyToTrack(CLIPBOARD.track, CLIPBOARD.id, TRACK, item_id, is_cut)
     
     if not is_cut then
-       r.TrackFX_SetNamedConfigParm(TRACK, item_id, "parallel", (serial and "0" or RC_DATA.tbl[RC_DATA.i].p))
+       r.TrackFX_SetNamedConfigParm(TRACK, item_id, "parallel", para_info)
     end
     
     if replace then
@@ -563,7 +570,7 @@ function Paste(replace, parallel, serial, enclose)
     end
 
     if parallel and not is_cut then
-       r.TrackFX_SetNamedConfigParm(TRACK, item_id, "parallel", 1)
+       r.TrackFX_SetNamedConfigParm(TRACK, item_id, "parallel", "1")
     end
 
     r.PreventUIRefresh(-1)

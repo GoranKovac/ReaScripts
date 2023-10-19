@@ -152,6 +152,29 @@ function CheckNextItemParallel(i, parrent_container)
     if para == "1" then SwapParallelInfo(src, dst) end
 end
 
+function CheckSourceNextItemParallel(i, P_TYPE, P_DIFF, P_ID, track)
+    local function CalcSrcID(parrent_type, parrent_diff, parrent_id, idx)
+        if parrent_type == "Container" then
+            return 0x2000000 + parrent_id + (parrent_diff * idx)
+        elseif parrent_type == "ROOT" then
+            return idx - 1
+        end
+    end
+
+    local function SwapSrcParallelInfo(src, dst, tr)
+        local _, src_p = r.TrackFX_GetNamedConfigParm(tr, src, "parallel")
+        local _, dst_p = r.TrackFX_GetNamedConfigParm(tr, dst, "parallel")
+        r.TrackFX_SetNamedConfigParm(tr, src, "parallel", dst_p)
+        r.TrackFX_SetNamedConfigParm(tr, dst, "parallel", src_p)
+    end
+
+    local src = CalcSrcID(P_TYPE, P_DIFF, P_ID, i)
+    local dst = CalcSrcID(P_TYPE, P_DIFF, P_ID, i + 1)
+    if not r.TrackFX_GetFXGUID(track, dst) then return end
+    local _, para = r.TrackFX_GetNamedConfigParm(track, dst, "parallel")
+    if para == "1" then SwapSrcParallelInfo(src, dst, track) end
+end
+
 -----------------
 --- DND START ---
 -----------------

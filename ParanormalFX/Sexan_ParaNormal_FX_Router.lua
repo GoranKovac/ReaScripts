@@ -1,17 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.0
+-- @version 1.1
 -- @changelog
---  Code overhaul/refactor
---  Unified basic operations and defaults
---  Dedicated enclose into container insert button for FX in parallel lane
---  Added more options to user settings
---  Settings for default DragN'Drop behaviors Replace/Autocontainer when dragging to target FX
---  Setting for CTRL DRAG COPY AutoContainer creation
---  Animated Highlight to targets on Dragging/Adding
---  ARA Protection
---  Hover tooltips
+--  Fixed crash when cuting/pasting from container to another track
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -65,7 +57,9 @@ ANIMATED_HIGLIGHT            = true
 DEFAULT_DND                  = true
 CTRL_DRAG_AUTOCONTAINER      = false
 
-local fx_browser_script_path = reaper_path .. "/Scripts/Sexan_Scripts/FX/Sexan_FX_Browser_ParserV7.lua"
+--local fx_browser_script_path = reaper_path .. "/Scripts/Sexan_Scripts/FX/Sexan_FX_Browser_ParserV7.lua"
+local fx_browser_script_path = "C:/Users/Gokily/Documents/ReaGit/ReaScripts/FX/Sexan_FX_Browser_ParserV7.lua"
+
 local fm_script_path         = reaper_path .. "/Scripts/Sexan_Scripts/ImGui_Tools/FileManager.lua"
 if r.file_exists(fx_browser_script_path) then
     dofile(fx_browser_script_path)

@@ -258,7 +258,10 @@ local function RightClickMenu()
                     track_guid = r.GetTrackGUID(TRACK),
                     fx_id = item_id,
                     guid = RC_DATA.tbl[RC_DATA.i].guid,
-                    cut = true
+                    cut = true,
+                    parrent_DIFF = parrent_container.DIFF,
+                    parrent_ID = parrent_container.ID,
+                    parrent_TYPE = parrent_container.type
                 }
             )
             r.SetExtState("PARANORMALFX2", "COPY_BUFFER", data, false)
