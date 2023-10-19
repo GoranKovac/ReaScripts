@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.7
+-- @version 1.8
 -- @changelog
---  Added 10px more distance to drawing preview node when tooltips are off
+--  Fix crash when deleting container that has helpers
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf

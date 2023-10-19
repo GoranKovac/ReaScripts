@@ -1325,10 +1325,13 @@ end
 local function DrawVolumePanHelper(tbl, i, w)
     if not tbl[i].is_helper then return end
     if not DrawPreviewHideOriginal(tbl[i].guid) then return end
+    local parrent_container = GetParentContainerByGuid(tbl[i])
+    --! FIXES CRASH WHEN INSIDE OF CONTAINER AND DELETED
+    if not parrent_container then return end
     if tbl[i].name:find("VOL - PAN",nil, true) then
         if DRAG_PREVIEW and DRAG_PREVIEW.move_guid == tbl[i].guid and not CTRL_DRAG then return end
 
-        local parrent_container = GetParentContainerByGuid(tbl[i])
+        --local parrent_container = GetParentContainerByGuid(tbl[i])
         local item_id = CalcFxID(parrent_container, i)
         local vol_val = r.TrackFX_GetParam(TRACK, item_id, 0) -- 0 IS VOL IDENTIFIER
         r.ImGui_SameLine(ctx, -FLT_MIN, mute + mute//2)
@@ -1359,7 +1362,7 @@ local function DrawVolumePanHelper(tbl, i, w)
     elseif tbl[i].name:find("POLARITY") then
         --if DRAG_MOVE and DRAG_MOVE.move_guid == tbl[i].guid and not CTRL_DRAG then return end
 
-        local parrent_container = GetParentContainerByGuid(tbl[i])
+       -- local parrent_container = GetParentContainerByGuid(tbl[i])
         local item_id = CalcFxID(parrent_container, i)
         r.ImGui_SameLine(ctx, -FLT_MIN, mute + (mute//4))
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_phase")
