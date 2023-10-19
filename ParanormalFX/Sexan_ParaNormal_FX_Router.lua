@@ -1,9 +1,10 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.10
+-- @version 1.11
 -- @changelog
---  Fix helpers drawing when using system font
+--  Added Time Delay Helper node
+--  Added mouse wheel to interact with helpers on hover
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -200,7 +201,7 @@ local function Main()
         if not IS_DRAGGING_RIGHT_CANVAS and r.ImGui_IsMouseReleased(ctx, 1) and
             not r.ImGui_IsAnyItemHovered(ctx) and
             not r.ImGui_IsPopupOpen(ctx, "RIGHT_CLICK_MENU") and
-            not r.ImGui_IsPopupOpen(ctx, "OPEN_INSERT_POINTS_MENU") and
+            not r.ImGui_IsPopupOpen(ctx, "INSERT_POINTS_MENU") and
             not DND_MOVE_FX and
             not DND_ADD_FX then
             r.ImGui_OpenPopup(ctx, 'FX LIST')

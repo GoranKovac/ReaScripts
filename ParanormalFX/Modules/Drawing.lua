@@ -53,12 +53,10 @@ local BLACKLIST = {
     "vocalign",
 }
 
-local VOL_PAN_HELPER = "Volume/Pan Smoother"
-local PHASE_HELPER = "Channel Polarity Control"
-
 local HELPERS = {
-    {name = "Volume/Pan Smoother", helper = "    VOL - PAN    "},
-    {name = "Channel Polarity Control", helper = "  POLARITY"},
+    {fx = "JS:Volume/Pan Smoother", fx_name = "VOL - PAN", name = "Volume/Pan Smoother", helper = "    VOL - PAN    "},
+    {fx = "JS:Channel Polarity Control",fx_name = "POLARITY",name = "Channel Polarity Control", helper = "  POLARITY"},
+    {fx = "JS:Time Adjustment Delay",fx_name = "TIME DELAY", name = "Time Adjustment Delay",helper = "    TIME DELAY   "}
 }
 
 function ValidateClipboardFX()
@@ -590,10 +588,15 @@ function DrawFXList()
     --if r.ImGui_Selectable(ctx, "VIDEO PROCESSOR") then AddFX("Video processor") end
     --DragAddDDSource("Video processor")
     if r.ImGui_BeginMenu(ctx, "UTILITY") then
-        if r.ImGui_Selectable(ctx, "VOLUME-PAN") then AddFX("JS:Volume/Pan Smoother") end
-        DndAddFX_SRC("JS:Volume/Pan Smoother")
-        if r.ImGui_Selectable(ctx, "POLARITY") then AddFX("JS:Channel Polarity Control") end
-        DndAddFX_SRC("JS:Channel Polarity Control")
+        for i = 1, #HELPERS do
+            if r.ImGui_Selectable(ctx, HELPERS[i].fx_name) then 
+                AddFX(HELPERS[i].fx) 
+            end
+            DndAddFX_SRC(HELPERS[i].fx)
+        end
+        -- if r.ImGui_Selectable(ctx, "VOLUME-PAN") then AddFX("JS:Volume/Pan Smoother") end
+        -- if r.ImGui_Selectable(ctx, "POLARITY") then AddFX("JS:Channel Polarity Control") end
+        -- DndAddFX_SRC("JS:Channel Polarity Control")
         if r.ImGui_Selectable(ctx, "3 BAND SPLITTER FX") then AddFX("JS:3-Band Splitter FX") end
         DndAddFX_SRC("JS:3-Band Splitter FX")
         if r.ImGui_Selectable(ctx, "BAND SELECT FX") then AddFX("JS:Band Select FX") end
@@ -644,7 +647,7 @@ local function Tooltip(str, force)
     end
 end
 
-local function MyKnob(label, style, p_value, v_min, v_max, is_vol, is_pan)
+local function MyKnob(label, style, p_value, v_min, v_max, knob_type)
     local radius_outer = Knob_Radius
     local pos = { r.ImGui_GetCursorScreenPos(ctx) }
     local center = { pos[1] + radius_outer, pos[2] + radius_outer }
@@ -662,6 +665,15 @@ local function MyKnob(label, style, p_value, v_min, v_max, is_vol, is_pan)
     if is_active and mouse_delta[2] ~= 0.0 then
         local step = (v_max - v_min) / (CTRL and 1000 or 200.0)
         p_value = p_value + (-mouse_delta[2] * step)
+        if p_value < v_min then p_value = v_min end
+        if p_value > v_max then p_value = v_max end
+        value_changed = true
+    end
+    
+    local mwheel = r.ImGui_GetMouseWheel(ctx)
+    if is_hovered and mwheel ~= 0 then
+        local step = (v_max - v_min) / (CTRL and 1000 or 200.0)
+        p_value = p_value + (mwheel * step)
         if p_value < v_min then p_value = v_min end
         if p_value > v_max then p_value = v_max end
         value_changed = true
@@ -705,14 +717,17 @@ local function MyKnob(label, style, p_value, v_min, v_max, is_vol, is_pan)
 
     if is_active or is_hovered then
         if not IS_DRAGGING_RIGHT_CANVAS then
-            if is_vol then
+            if knob_type == "vol" then
                 Tooltip("VOL " .. ('%.0f'):format(p_value))
-            else
-                if is_pan then
+            elseif knob_type == "pan" then
+                --if is_vol =then
                     Tooltip("PAN " .. ('%.0f'):format(p_value))
-                else
+            elseif knob_type == "dry_wet" then
                     Tooltip(('%.0f'):format(100 - p_value) .. " DRY / WET " .. ('%.0f'):format(p_value))
-                end
+            elseif knob_type == "ms" then
+                        Tooltip("MS " .. ('%.0f'):format(p_value))
+            elseif knob_type == "sample" then
+                        Tooltip("SAMPLE " .. ('%.0f'):format(p_value))
             end
         end
     end
@@ -1328,15 +1343,15 @@ local function DrawVolumePanHelper(tbl, i, w)
     local parrent_container = GetParentContainerByGuid(tbl[i])
     --! FIXES CRASH WHEN INSIDE OF CONTAINER AND DELETED
     if not parrent_container then return end
+    if DRAG_PREVIEW and DRAG_PREVIEW.move_guid == tbl[i].guid and not CTRL_DRAG then return end
     if tbl[i].name:find("VOL - PAN",nil, true) then
-        if DRAG_PREVIEW and DRAG_PREVIEW.move_guid == tbl[i].guid and not CTRL_DRAG then return end
 
         --local parrent_container = GetParentContainerByGuid(tbl[i])
         local item_id = CalcFxID(parrent_container, i)
         local vol_val = r.TrackFX_GetParam(TRACK, item_id, 0) -- 0 IS VOL IDENTIFIER
         r.ImGui_SameLine(ctx, -FLT_MIN, mute + (CUSTOM_FONT and mute//4 or mute//2))
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_vol")
-        local rvh_v, v = MyKnob("", "arc", vol_val, -60, 12, true)
+        local rvh_v, v = MyKnob("", "arc", vol_val, -60, 12, "vol")
         if rvh_v then
             r.TrackFX_SetParam(TRACK, item_id, 0, v)
         end
@@ -1348,7 +1363,7 @@ local function DrawVolumePanHelper(tbl, i, w)
         r.ImGui_SameLine(ctx, -FLT_MIN, w - (mute * 2) - (CUSTOM_FONT and mute//4 or mute//2))
         local pan_val = r.TrackFX_GetParam(TRACK, item_id, 1) -- 1 IS PAN IDENTIFIER
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_pan")
-        local rvh_p, p = MyKnob("", "knob", pan_val, -100, 100, nil, true)
+        local rvh_p, p = MyKnob("", "knob", pan_val, -100, 100, "pan")
         if rvh_p then
             r.TrackFX_SetParam(TRACK, item_id, 1, p)
         end
@@ -1379,6 +1394,34 @@ local function DrawVolumePanHelper(tbl, i, w)
         DrawListButton(phase_icon, 0, nil, true)
         r.ImGui_PopID(ctx)
         return phase_hover
+    elseif tbl[i].name:find("TIME") then
+        local item_id = CalcFxID(parrent_container, i)
+        local vol_val = r.TrackFX_GetParam(TRACK, item_id, 0) -- 0 IS VOL IDENTIFIER
+        r.ImGui_SameLine(ctx, -FLT_MIN, mute + (CUSTOM_FONT and mute//4 or mute//2))
+        r.ImGui_PushID(ctx, tbl[i].guid .. "helper_time")
+        local rvh_v, v = MyKnob("", "arc", vol_val, -1000, 1000, "ms")
+        if rvh_v then
+            r.TrackFX_SetParam(TRACK, item_id, 0, v)
+        end
+        local vol_hover = r.ImGui_IsItemHovered(ctx)
+        if vol_hover and r.ImGui_IsMouseDoubleClicked(ctx, 0) then
+            r.TrackFX_SetParam(TRACK, item_id, 0, 0)
+        end
+        r.ImGui_PopID(ctx)
+        r.ImGui_SameLine(ctx, -FLT_MIN, w - (mute * 2) - (CUSTOM_FONT and mute//4 or mute//2))
+        local pan_val = r.TrackFX_GetParam(TRACK, item_id, 3) -- 1 IS PAN IDENTIFIER
+        r.ImGui_PushID(ctx, tbl[i].guid .. "helper_time2")
+        local rvh_p, p = MyKnob("", "knob", pan_val, -40000, 40000, "sample")
+        if rvh_p then
+            r.TrackFX_SetParam(TRACK, item_id, 3, p)
+        end
+        local pan_hover = r.ImGui_IsItemHovered(ctx)
+        if pan_hover and r.ImGui_IsMouseDoubleClicked(ctx, 0) then
+            r.TrackFX_SetParam(TRACK, item_id, 3, 0)
+        end
+        r.ImGui_PopID(ctx)
+        r.ImGui_SetCursorPosY(ctx, r.ImGui_GetCursorPosY(ctx))
+        return vol_hover, pan_hover
     end
 end
 
@@ -1482,7 +1525,7 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
             if tbl[i + 1] and tbl[i + 1].p > 0 or tbl[i].p > 0 then
                 is_vol = true
             end
-            local rv, v, knob_hover = MyKnob("", is_vol and "arc" or "dry_wet", tbl[i].wet_val * 100, 0, 100, is_vol)
+            local rv, v, knob_hover = MyKnob("", is_vol and "arc" or "dry_wet", tbl[i].wet_val * 100, 0, 100, "dry_wet")
             vol_or_enclose_hover = knob_hover
             if rv then
                 local parrent_container = GetParentContainerByGuid(tbl[i])
