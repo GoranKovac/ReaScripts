@@ -273,7 +273,7 @@ local function RightClickMenu()
         if CLIPBOARD.tbl and CLIPBOARD.guid ~= RC_DATA.tbl[RC_DATA.i].guid then
             --! DO NOT ALLOW PASTING ON SELF
             if r.ImGui_MenuItem(ctx, 'PASTE-REPLACE') then
-                Paste(true)
+                Paste(true,RC_DATA.tbl[RC_DATA.i].p == 1, RC_DATA.tbl[RC_DATA.i].p == 0)
             end
         end
     end

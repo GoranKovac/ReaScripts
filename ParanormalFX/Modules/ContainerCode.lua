@@ -563,6 +563,7 @@ function Paste(replace, parallel, serial, enclose)
     end
     
     if replace then
+        --r.TrackFX_SetNamedConfigParm(TRACK, item_id, "parallel", RC_DATA.tbl[RC_DATA.i].p)
         UpdateFxData()
         local target_fx = GetFx(RC_DATA.tbl[RC_DATA.i].guid)
         local target_parrent = GetFx(target_fx.pid)

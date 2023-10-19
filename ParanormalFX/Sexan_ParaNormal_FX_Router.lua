@@ -1,11 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.5
+-- @version 1.6
 -- @changelog
---  If FX BROWSER is open, close it if user starts to right drag canvas
---  When tooltips are off draw previews around center position of the mouse
---  Clear Clipboard if COPY/CUT target is deleted before paste
+--  Fix PASTE-REPLACE not switching parallel info with the target
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
