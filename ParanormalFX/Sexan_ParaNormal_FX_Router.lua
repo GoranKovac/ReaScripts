@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.12
+-- @version 1.13
 -- @changelog
---  fixed volume on containers.... while adding time adjuster
+--  Use fx_id directly on helpers instead of calculating them
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf

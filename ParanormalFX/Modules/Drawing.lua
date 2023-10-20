@@ -1340,51 +1340,40 @@ end
 local function DrawVolumePanHelper(tbl, i, w)
     if not tbl[i].is_helper then return end
     if not DrawPreviewHideOriginal(tbl[i].guid) then return end
-    local parrent_container = GetParentContainerByGuid(tbl[i])
-    --! FIXES CRASH WHEN INSIDE OF CONTAINER AND DELETED
-    if not parrent_container then return end
-    if DRAG_PREVIEW and DRAG_PREVIEW.move_guid == tbl[i].guid and not CTRL_DRAG then return end
     if tbl[i].name:find("VOL - PAN",nil, true) then
-
-        --local parrent_container = GetParentContainerByGuid(tbl[i])
-        local item_id = CalcFxID(parrent_container, i)
-        local vol_val = r.TrackFX_GetParam(TRACK, item_id, 0) -- 0 IS VOL IDENTIFIER
+        local vol_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 0) -- 0 IS VOL IDENTIFIER
         r.ImGui_SameLine(ctx, -FLT_MIN, mute + (CUSTOM_FONT and mute//4 or mute//2))
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_vol")
         local rvh_v, v = MyKnob("", "arc", vol_val, -60, 12, "vol")
         if rvh_v then
-            r.TrackFX_SetParam(TRACK, item_id, 0, v)
+            r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 0, v)
         end
         local vol_hover = r.ImGui_IsItemHovered(ctx)
         if vol_hover and r.ImGui_IsMouseDoubleClicked(ctx, 0) then
-            r.TrackFX_SetParam(TRACK, item_id, 0, 0)
+            r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 0, 0)
         end
         r.ImGui_PopID(ctx)
         r.ImGui_SameLine(ctx, -FLT_MIN, w - (mute * 2) - (CUSTOM_FONT and mute//4 or mute//2))
-        local pan_val = r.TrackFX_GetParam(TRACK, item_id, 1) -- 1 IS PAN IDENTIFIER
+        local pan_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 1) -- 1 IS PAN IDENTIFIER
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_pan")
         local rvh_p, p = MyKnob("", "knob", pan_val, -100, 100, "pan")
         if rvh_p then
-            r.TrackFX_SetParam(TRACK, item_id, 1, p)
+            r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 1, p)
         end
         local pan_hover = r.ImGui_IsItemHovered(ctx)
         if pan_hover and r.ImGui_IsMouseDoubleClicked(ctx, 0) then
-            r.TrackFX_SetParam(TRACK, item_id, 1, 0)
+            r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 1, 0)
         end
         r.ImGui_PopID(ctx)
         r.ImGui_SetCursorPosY(ctx, r.ImGui_GetCursorPosY(ctx))
         return vol_hover, pan_hover
     elseif tbl[i].name:find("POLARITY") then
-        --if DRAG_MOVE and DRAG_MOVE.move_guid == tbl[i].guid and not CTRL_DRAG then return end
-
-       -- local parrent_container = GetParentContainerByGuid(tbl[i])
-        local item_id = CalcFxID(parrent_container, i)
         r.ImGui_SameLine(ctx, -FLT_MIN, mute + (CUSTOM_FONT and 0 or mute//4))
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_phase")
-        local phase_val = r.TrackFX_GetParam(TRACK, item_id, 0) -- 1 IS PAN IDENTIFIER
+        local phase_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 0) -- 1 IS PAN IDENTIFIER
         local pos = { r.ImGui_GetCursorScreenPos(ctx) }
         if r.ImGui_InvisibleButton(ctx, "PHASE", mute, mute) then
-            r.TrackFX_SetParam(TRACK, item_id, 0, phase_val == 0 and 3 or 0)
+            r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 0, phase_val == 0 and 3 or 0)
         end
         Tooltip(phase_val == 0 and "NORMAL" or "INVERTED")
         local phase_hover = r.ImGui_IsItemHovered(ctx)
@@ -1395,29 +1384,28 @@ local function DrawVolumePanHelper(tbl, i, w)
         r.ImGui_PopID(ctx)
         return phase_hover
     elseif tbl[i].name:find("TIME") then
-        local item_id = CalcFxID(parrent_container, i)
-        local vol_val = r.TrackFX_GetParam(TRACK, item_id, 0) -- 0 IS VOL IDENTIFIER
+        local vol_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 0) -- 0 IS VOL IDENTIFIER
         r.ImGui_SameLine(ctx, -FLT_MIN, mute + (CUSTOM_FONT and mute//4 or mute//2))
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_time")
         local rvh_v, v = MyKnob("", "arc", vol_val, -1000, 1000, "ms")
         if rvh_v then
-            r.TrackFX_SetParam(TRACK, item_id, 0, v)
+            r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 0, v)
         end
         local vol_hover = r.ImGui_IsItemHovered(ctx)
         if vol_hover and r.ImGui_IsMouseDoubleClicked(ctx, 0) then
-            r.TrackFX_SetParam(TRACK, item_id, 0, 0)
+            r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 0, 0)
         end
         r.ImGui_PopID(ctx)
         r.ImGui_SameLine(ctx, -FLT_MIN, w - (mute * 2) - (CUSTOM_FONT and mute//4 or mute//2))
-        local pan_val = r.TrackFX_GetParam(TRACK, item_id, 3) -- 1 IS PAN IDENTIFIER
+        local pan_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 3) -- 1 IS PAN IDENTIFIER
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_time2")
         local rvh_p, p = MyKnob("", "knob", pan_val, -40000, 40000, "sample")
         if rvh_p then
-            r.TrackFX_SetParam(TRACK, item_id, 3, p)
+            r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 3, p)
         end
         local pan_hover = r.ImGui_IsItemHovered(ctx)
         if pan_hover and r.ImGui_IsMouseDoubleClicked(ctx, 0) then
-            r.TrackFX_SetParam(TRACK, item_id, 3, 0)
+            r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 3, 0)
         end
         r.ImGui_PopID(ctx)
         r.ImGui_SetCursorPosY(ctx, r.ImGui_GetCursorPosY(ctx))
