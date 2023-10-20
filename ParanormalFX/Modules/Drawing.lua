@@ -337,7 +337,6 @@ local function DndMoveFX_ENCLOSE_TARGET(tbl, i)
 end
 
 local function DndMoveFX_TARGET_SERIAL_PARALLEL(tbl, i, parallel, serial_insert_point)
-    --if tbl[i].exclude_ara then return end
     if not DND_MOVE_FX then return end
     if ARA_Protection(tbl,i, parallel) then return end
     --! DO NOT MOVE ON PARALLEL BUTTON WHILE IN SAME PARALLEL LANE
@@ -594,9 +593,6 @@ function DrawFXList()
             end
             DndAddFX_SRC(HELPERS[i].fx)
         end
-        -- if r.ImGui_Selectable(ctx, "VOLUME-PAN") then AddFX("JS:Volume/Pan Smoother") end
-        -- if r.ImGui_Selectable(ctx, "POLARITY") then AddFX("JS:Channel Polarity Control") end
-        -- DndAddFX_SRC("JS:Channel Polarity Control")
         if r.ImGui_Selectable(ctx, "3 BAND SPLITTER FX") then AddFX("JS:3-Band Splitter FX") end
         DndAddFX_SRC("JS:3-Band Splitter FX")
         if r.ImGui_Selectable(ctx, "BAND SELECT FX") then AddFX("JS:Band Select FX") end
@@ -720,7 +716,6 @@ local function MyKnob(label, style, p_value, v_min, v_max, knob_type)
             if knob_type == "vol" then
                 Tooltip("VOL " .. ('%.0f'):format(p_value))
             elseif knob_type == "pan" then
-                --if is_vol =then
                     Tooltip("PAN " .. ('%.0f'):format(p_value))
             elseif knob_type == "dry_wet" then
                     Tooltip(('%.0f'):format(100 - p_value) .. " DRY / WET " .. ('%.0f'):format(p_value))
@@ -1137,7 +1132,7 @@ local function ParallelButton(tbl, i)
         OPEN_FX_LIST = true
     end
     r.ImGui_PopID(ctx)
-    if not IS_DRAGGING_RIGHT_CANVAS and r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseReleased(ctx, 1) then --r.ImGui_IsItemClicked(ctx, 1) then
+    if not IS_DRAGGING_RIGHT_CANVAS and r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseReleased(ctx, 1) then
         OPEN_INSERT_POINTS_MENU = true
         RC_DATA = {
             type = tbl[i].type,
@@ -1176,7 +1171,7 @@ local function SerialInsertParaLane(tbl, i, w)
             OPEN_FX_LIST = true
         end
         r.ImGui_PopID(ctx)
-        if not IS_DRAGGING_RIGHT_CANVAS and r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseReleased(ctx, 1) then --r.ImGui_IsItemClicked(ctx, 1) then
+        if not IS_DRAGGING_RIGHT_CANVAS and r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseReleased(ctx, 1) then
             OPEN_INSERT_POINTS_MENU = true
             RC_DATA = {
                 type = tbl[i].type,
@@ -1370,7 +1365,7 @@ local function DrawVolumePanHelper(tbl, i, w)
     elseif tbl[i].name:find("POLARITY") then
         r.ImGui_SameLine(ctx, -FLT_MIN, mute + (CUSTOM_FONT and 0 or mute//4))
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_phase")
-        local phase_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 0) -- 1 IS PAN IDENTIFIER
+        local phase_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 0) -- 0 POLARITY NORMAL
         local pos = { r.ImGui_GetCursorScreenPos(ctx) }
         if r.ImGui_InvisibleButton(ctx, "PHASE", mute, mute) then
             r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 0, phase_val == 0 and 3 or 0)
@@ -1384,7 +1379,7 @@ local function DrawVolumePanHelper(tbl, i, w)
         r.ImGui_PopID(ctx)
         return phase_hover
     elseif tbl[i].name:find("TIME") then
-        local vol_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 0) -- 0 IS VOL IDENTIFIER
+        local vol_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 0) -- 0 POLARITY NORMAL
         r.ImGui_SameLine(ctx, -FLT_MIN, mute + (CUSTOM_FONT and mute//4 or mute//2))
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_time")
         local rvh_v, v = MyKnob("", "arc", vol_val, -1000, 1000, "ms")
@@ -1397,11 +1392,11 @@ local function DrawVolumePanHelper(tbl, i, w)
         end
         r.ImGui_PopID(ctx)
         r.ImGui_SameLine(ctx, -FLT_MIN, w - (mute * 2) - (CUSTOM_FONT and mute//4 or mute//2))
-        local pan_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 3) -- 1 IS PAN IDENTIFIER
+        local pan_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 3) -- 3 IS POLARITY INVERT
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_time2")
         local rvh_p, p = MyKnob("", "knob", pan_val, -40000, 40000, "sample")
         if rvh_p then
-            r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 3, p)
+            r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 3, p)-- 3 IS POLARITY INVERT
         end
         local pan_hover = r.ImGui_IsItemHovered(ctx)
         if pan_hover and r.ImGui_IsMouseDoubleClicked(ctx, 0) then
@@ -1418,7 +1413,7 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
     local start_x, start_y = r.ImGui_GetCursorPos(ctx)
     local SPLITTER = r.ImGui_CreateDrawListSplitter(draw_list)
     r.ImGui_DrawListSplitter_Split(SPLITTER, 2)
-    r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_Alpha(), fade) -- alpha
+    r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_Alpha(), fade)
     --! BYPASS
     r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 1)
     r.ImGui_PushID(ctx, tbl[i].guid .. "bypass")
@@ -1484,15 +1479,10 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
                 --! CHECK ITS POSITION WITH BLACKLISTED FX (MELODYNE AND SIMILAR NEED TO BE IN SLOT 1 AND CANNOT BE IN CONTAINER)
                 --! CREATE CONTAINER IN POSITION ABOVE BLACKLISTED FX
                 local cont_insert_id = CalculateInsertContainerPosFromBlacklist()
-                --local _, fx_name_0 = r.TrackFX_GetFXName(TRACK, 0)
-                --local cont_insert_pos = fx_name_0:lower():find("melodyne") and -1001 or -1000
                 local cont_id = r.TrackFX_AddByName(TRACK, "Container", false, cont_insert_id)
                 for j = r.TrackFX_GetCount(TRACK), cont_id + 1, -1 do
                     local id = 0x2000000 + cont_id + 1 + (r.TrackFX_GetCount(TRACK) + 1)
-                    --local _, fx_name = r.TrackFX_GetFXName(TRACK, j - 1)
-                    --if not fx_name:lower():find("melodyne") then
                     r.TrackFX_CopyToTrack(TRACK, j, TRACK, id, true)
-                    --end
                 end
                 EndUndoBlock("ENCLOSE ALL INTO CONTAINER")
                 r.PreventUIRefresh(-1)
@@ -1506,7 +1496,6 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
     else
         --! VOLUME
         r.ImGui_SetCursorPos(ctx, start_x + width - mute - (tbl[i].type == "Container" and s_window_x or 0), start_y)
-        --r.ImGui_SameLine(ctx, 0, width - volume - mute - (tbl[i].type == "Container" and s_window_x or 0))
         if DrawPreviewHideOriginal(tbl[i].guid) then
             r.ImGui_PushID(ctx, tbl[i].guid .. "wet/dry")
             local is_vol
@@ -1670,7 +1659,6 @@ local function CustomDNDPreview()
     if not DRAG_PREVIEW then return end
     local mx, my = r.ImGui_GetMousePos(ctx)
     local off_x, off_y = 25, 28
-        
     --! CENTER THE BUTTON AT MOUSE CURSOR IF THERE ARE NO TOOLTIPS
     if not TOOLTIPS then
         local click_x = r.ImGui_GetMouseClickedPos(ctx,0)

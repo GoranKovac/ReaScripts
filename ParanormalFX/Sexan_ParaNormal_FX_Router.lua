@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.13
+-- @version 1.14
 -- @changelog
---  Use fx_id directly on helpers instead of calculating them
+--  Cleanup
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf

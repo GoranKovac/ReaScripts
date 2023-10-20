@@ -176,14 +176,12 @@ function CreateContainerAndInsertFX(tbl, i, fx)
     --! CREATE CONTAINER IN POSITION ABOVE BLACKLISTED FX
     local cont_insert_id = CalculateInsertContainerPosFromBlacklist()
     local cont_pos = r.TrackFX_AddByName(TRACK, "Container", false, cont_insert_id)
-    -- r.TrackFX_AddByName(TRACK, "Container", false, -1000)
 
     -- SWAP PARALLEL DATA WITH TARGET (MAYBE FIRST IN LANE == 0 OR NEXT IN LANE == 1)
     r.TrackFX_SetNamedConfigParm(TRACK, 0x2000000 + cont_pos + 1, "parallel", tbl[i].p)
     UpdateFxData()
 
     -- ADD NEW FX TO IT
-    --local cont_id = 0x2000000 +  1 + (r.TrackFX_GetCount(TRACK) + 1)
     local cont_id = 0x2000000 + cont_pos + 1 + (r.TrackFX_GetCount(TRACK) + 1)
     r.TrackFX_AddByName(TRACK, fx, false, cont_id)
     UpdateFxData()
@@ -202,7 +200,6 @@ function CreateContainerAndInsertFX(tbl, i, fx)
     -- RECALCULATE ORIGINAL TARGET POS
     local original_pos = CalcFxID(target_parrent, i)
     -- MOVE CONTAINER TO ORIGINAL TARGET
-    --r.TrackFX_CopyToTrack(TRACK, 0x2000000 + 1, TRACK, original_pos, true)
     r.TrackFX_CopyToTrack(TRACK, 0x2000000 + cont_pos + 1, TRACK, original_pos, true)
 end
 
@@ -228,11 +225,9 @@ function MoveTargetsToNewContainer(tbl, i, src_guid, src_i)
 
     local cont_pos = r.TrackFX_AddByName(TRACK, "Container", false, cont_insert_id)
     -- SWAP PARALLEL DATA WITH TARGET (MAYBE FIRST IN LANE == 0 OR NEXT IN LANE == 1)
-    --r.TrackFX_SetNamedConfigParm(TRACK, 0x2000000 + 1, "parallel", source_parallel_info)
     r.TrackFX_SetNamedConfigParm(TRACK, 0x2000000 + cont_pos + 1, "parallel", source_parallel_info)
 
     UpdateFxData()
-    --local cont_id = 0x2000000 + 1 + (r.TrackFX_GetCount(TRACK) + 1)
     local cont_id = 0x2000000 + cont_pos + 1 + (r.TrackFX_GetCount(TRACK) + 1)
 
     -- ENCLOSE RIGHT CLICK OPTION IS CALLED
@@ -254,7 +249,6 @@ function MoveTargetsToNewContainer(tbl, i, src_guid, src_i)
         end
     end
     UpdateFxData()
-    --cont_id = 0x2000000 + 1 + (r.TrackFX_GetCount(TRACK) + 1)
     cont_id = 0x2000000 + cont_pos + 1 + (r.TrackFX_GetCount(TRACK) + 1)
 
     local target_fx = GetFx(tbl[i].guid)
@@ -287,9 +281,7 @@ function MoveTargetsToNewContainer(tbl, i, src_guid, src_i)
     end
     -- MOVE CONTAINER INTO TARGET POSITION
     local original_pos = CalcFxID(target_parrent, target_pos)
-    --local original_pos = CalcFxID(target_parrent, i)
     -- MOVE CONTAINER TO ORIGINAL TARGET
-    --r.TrackFX_CopyToTrack(TRACK, 0x2000000 + 1, TRACK, original_pos, true)
     r.TrackFX_CopyToTrack(TRACK, 0x2000000 + cont_pos + 1, TRACK, original_pos, true)
 end
 
@@ -482,7 +474,6 @@ function ClipBoard()
     if not r.ImGui_BeginChild(ctx, 'hack44', -FLT_MIN, -FLT_MIN, false, r.ImGui_WindowFlags_NoInputs()) then return end
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x000000EE)
 
-    --r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_WindowPadding(), 0, 2)
     if r.HasExtState("PARANORMALFX2", "COPY_BUFFER") then
         local copy_id = r.GetExtState("PARANORMALFX2", "COPY_BUFFER_ID")
         if old_copy_id ~= copy_id then
@@ -513,7 +504,6 @@ function ClipBoard()
         end
     end
 
-    -- if size > 0 then
     if CLIPBOARD.tbl then
         local size = CalculateItemWH({ name = CLIPBOARD.tbl[CLIPBOARD.i].name }) + 190
         if r.ImGui_BeginChild(ctx, "CLIPBOARD", size, def_btn_h + s_window_y, 1) then
@@ -537,7 +527,6 @@ function Paste(replace, parallel, serial, enclose)
     
     local para_info = serial and "0" or ""
     para_info = parallel and "1" or para_info
-    --if CLIPBOARD.guid == RC_DATA.tbl[RC_DATA.i].guid then return end
     local parrent_container = GetParentContainerByGuid(RC_DATA.tbl[RC_DATA.i])
     local item_id = CalcFxID(parrent_container, (parallel or serial) and RC_DATA.i + 1 or RC_DATA.i)
     r.Undo_BeginBlock()
@@ -548,11 +537,7 @@ function Paste(replace, parallel, serial, enclose)
     --end
     local is_cut = CLIPBOARD.cut and true or false
     if is_cut then
-       -- r.ShowConsoleMsg(tostring(parallel))
         CheckSourceNextItemParallel(CLIPBOARD.i, CLIPBOARD.P_TYPE, CLIPBOARD.P_DIFF, CLIPBOARD.P_ID, CLIPBOARD.track)
-        --local src_parrent = GetParentContainerByGuid(CLIPBOARD.tbl[CLIPBOARD.i])
-        --CheckNextItemParallel(CLIPBOARD.i, src_parrent)
-        -- SET PARALLEL INFO BEFORE MOVING
         r.TrackFX_SetNamedConfigParm(CLIPBOARD.track, CLIPBOARD.id, "parallel", para_info)
     end
 
@@ -563,11 +548,9 @@ function Paste(replace, parallel, serial, enclose)
     end
     
     if replace then
-        --r.TrackFX_SetNamedConfigParm(TRACK, item_id, "parallel", RC_DATA.tbl[RC_DATA.i].p)
         UpdateFxData()
         local target_fx = GetFx(RC_DATA.tbl[RC_DATA.i].guid)
         local target_parrent = GetFx(target_fx.pid)
-        --local del_id = CalcFxID(parrent_container, RC_DATA.i + 1)
         local del_id = CalcFxID(target_parrent, target_fx.IDX)
         r.TrackFX_Delete(TRACK, del_id)
     end
