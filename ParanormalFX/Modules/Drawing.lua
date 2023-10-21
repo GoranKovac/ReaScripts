@@ -597,6 +597,10 @@ function DrawFXList()
         DndAddFX_SRC("JS:3-Band Splitter FX")
         if r.ImGui_Selectable(ctx, "BAND SELECT FX") then AddFX("JS:Band Select FX") end
         DndAddFX_SRC("JS:Band Select FX")
+        if r.ImGui_Selectable(ctx, "MS MID FX") then AddFX("JS:MS MID FX") end
+        DndAddFX_SRC("JS:MS MID FX")
+        if r.ImGui_Selectable(ctx, "MS SIDE FX") then AddFX("JS:MS SIDE FX") end
+        DndAddFX_SRC("JS:MS SIDE FX")
         r.ImGui_EndMenu(ctx)
     end
     if r.ImGui_Selectable(ctx, "CONTAINER") then AddFX("Container") end
@@ -1061,7 +1065,7 @@ function DrawListButton(name, color, hover, icon, round_side, shrink, active)
     local h = ye - ys
 
     local round_flag = round_side and ROUND_FLAG[round_side] or nil
-    local round_amt = round_flag and ROUND_CORNER or 0
+    local round_amt = round_flag and ROUND_CORNER or 0.5
 
     r.ImGui_DrawList_AddRectFilled(draw_list, shrink and xs + shrink or xs, ys, shrink and xe - shrink or xe, ye,
         r.ImGui_GetColorEx(ctx, rect_col), round_amt,

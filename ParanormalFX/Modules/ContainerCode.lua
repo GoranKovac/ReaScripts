@@ -8,6 +8,10 @@ function GetFx(guid)
     return FX_DATA[guid]
 end
 
+function GetFX_DATA()
+    return FX_DATA
+end
+
 function GetParentContainerByGuid(tbl)
     return tbl.type == "ROOT" and tbl or GetFx(tbl.pid)
 end
@@ -395,7 +399,8 @@ local function IterateContainerUpdate(depth, track, container_id, parent_fx_coun
             IDX = i,
             pid = container_guid,
             guid = fx_guid,
-            ROW = row
+            ROW = row,
+            FX_ID = 0x2000000 + fx_id,
         }
         child_guids[#child_guids + 1] = { guid = fx_guid }
         if fx_type == "Container" then
@@ -430,6 +435,7 @@ function UpdateFxData()
         FX_DATA[fx_guid] = {
             type = fx_type,
             IDX = i,
+            FX_ID = i-1,
             pid = "ROOT",
             guid = fx_guid,
             ROW = row,

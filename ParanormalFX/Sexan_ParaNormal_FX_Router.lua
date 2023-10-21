@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.14
+-- @version 1.15
 -- @changelog
---  Cleanup
+--  Added MID-SIDE modified effect that work in parallel fx
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -57,6 +57,7 @@ ANIMATED_HIGLIGHT            = true
 DEFAULT_DND                  = true
 CTRL_DRAG_AUTOCONTAINER      = false
 TOOLTIPS                     = true
+--V_LAYOUT                     = false
 
 local fx_browser_script_path = reaper_path .. "/Scripts/Sexan_Scripts/FX/Sexan_FX_Browser_ParserV7.lua"
 local fm_script_path         = reaper_path .. "/Scripts/Sexan_Scripts/ImGui_Tools/FileManager.lua"
@@ -75,6 +76,7 @@ end
 
 require("Modules/Utils")
 require("Modules/Drawing")
+--require("Modules/DrawingHorizontal")
 require("Modules/Canvas")
 require("Modules/ContainerCode")
 require("Modules/Functions")
@@ -85,7 +87,7 @@ if r.HasExtState("PARANORMALFX2", "SETTINGS") then
         local storedTable = stringToTable(stored)
         if storedTable ~= nil then
             -- SETTINGS
-            TOOLTIPS = storedTable.tooltips~=nil and storedTable.tooltips
+            TOOLTIPS = storedTable.tooltips ~= nil and storedTable.tooltips
             ANIMATED_HIGLIGHT = storedTable.animated_highlight
             CTRL_DRAG_AUTOCONTAINER = storedTable.ctrl_autocontainer
             ESC_CLOSE = storedTable.esc_close
