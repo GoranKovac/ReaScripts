@@ -1,9 +1,9 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.7
+-- @version 1.8
 -- @changelog
---  Sort Folders from folders.ini immediatly after parsing by folder number order
+--  Exclude names with [] to count as category
 
 local r = reaper
 local os = r.GetOS()
@@ -87,9 +87,9 @@ end
 
 function AddDevList(val)
     for i = 1, #DEVELOPER_LIST do
-        if DEVELOPER_LIST[i] == " (" .. val ..")" then return end
+        if DEVELOPER_LIST[i] == " (" .. val .. ")" then return end
     end
-    DEVELOPER_LIST[#DEVELOPER_LIST + 1] = " (" ..val ..")"
+    DEVELOPER_LIST[#DEVELOPER_LIST + 1] = " (" .. val .. ")"
 end
 
 local function ParseVST(name, ident)
@@ -177,8 +177,8 @@ local function ParseFXTags()
     local tags_str  = GetFileContext(tags_path)
     local DEV       = true
     for line in tags_str:gmatch('[^\r\n]+') do
-        local category = line:match("%[(.+)%]")
-        if line:match("%[(category)%]") then
+        local category = line:match("^%[(.+)%]")
+        if line:match("^%[(category)%]") then
             DEV = false
         end
         -- CATEGORY FOUND
@@ -188,6 +188,7 @@ local function ParseFXTags()
         -- PLUGIN FOUND
         local FX, dev_category = line:match("(.+)=(.+)")
         if dev_category then
+            dev_category = dev_category:gsub("[%[%]]","")
             if DEV then AddDevList(dev_category) end
             local fx_name = FindFXIDName(VST_INFO, FX)
             fx_name = fx_name and fx_name or FindFXIDName(AU_INFO, FX)
@@ -273,7 +274,7 @@ local function ParseFavorites()
     local current_folder
     for line in fav_str:gmatch('[^\r\n]+') do
         local folder = line:match("%[(Folder%d+)%]")
-        
+
         -- GET INITIAL FOLDER NAME "[Folder0]" AND SAVE IF
         if folder then current_folder = folder end
 
@@ -282,7 +283,8 @@ local function ParseFavorites()
             local item = line:match("Item%d+=(.+)")
             local dev_tbl = InTbl(CAT[#CAT].list, current_folder)
             if not dev_tbl then
-                table.insert(CAT[#CAT].list, { name = current_folder, fx = { item } ,  order = current_folder:match("Folder(%d+)")})
+                table.insert(CAT[#CAT].list,
+                    { name = current_folder, fx = { item }, order = current_folder:match("Folder(%d+)") })
             else
                 table.insert(dev_tbl, item)
             end
@@ -334,6 +336,7 @@ local function ParseFavorites()
     end
 
     table.sort(CAT[#CAT].list, function(a, b) return tonumber(a.order) < tonumber(b.order) end)
+
     -- REMOVE SMART FOLDERS FOR NOW
     for i = 1, #CAT do
         for j = #CAT[i].list, 1, -1 do
@@ -444,8 +447,6 @@ function GetFXTbl()
     ResetTables()
     return GenerateFxList(), CAT
 end
-
-
 
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
