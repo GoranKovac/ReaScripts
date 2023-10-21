@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="d5e2b8b3d2cb0e5cf05b23db0bea709f55d557e2" name="Sexan_Scripts">
+<index version="1" commit="11d938ec030a54bfce769333fd03fc86a06a77b4" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -992,6 +992,27 @@ Added mouse wheel to interact with helpers on hover]]></changelog>
         <source type="effect" file="JSFX/BandSelectFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/d5e2b8b3d2cb0e5cf05b23db0bea709f55d557e2/ParanormalFX/JSFX/BandSelectFX.jsfx</source>
         <source type="effect" file="JSFX/MSMidFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/d5e2b8b3d2cb0e5cf05b23db0bea709f55d557e2/ParanormalFX/JSFX/MSMidFX.jsfx</source>
         <source type="effect" file="JSFX/MSSideFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/d5e2b8b3d2cb0e5cf05b23db0bea709f55d557e2/ParanormalFX/JSFX/MSSideFX.jsfx</source>
+      </version>
+      <version name="1.16" author="Sexan" time="2023-10-21T18:13:07Z">
+        <changelog><![CDATA[Added internal FXChains for 1 click Splitter/MS setup]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/11d938ec030a54bfce769333fd03fc86a06a77b4/ParanormalFX/Sexan_ParaNormal_FX_Router.lua</source>
+        <source file="Modules/Canvas.lua">https://github.com/GoranKovac/ReaScripts/raw/11d938ec030a54bfce769333fd03fc86a06a77b4/ParanormalFX/Modules/Canvas.lua</source>
+        <source file="Modules/ContainerCode.lua">https://github.com/GoranKovac/ReaScripts/raw/11d938ec030a54bfce769333fd03fc86a06a77b4/ParanormalFX/Modules/ContainerCode.lua</source>
+        <source file="Modules/Drawing.lua">https://github.com/GoranKovac/ReaScripts/raw/11d938ec030a54bfce769333fd03fc86a06a77b4/ParanormalFX/Modules/Drawing.lua</source>
+        <source file="Modules/Functions.lua">https://github.com/GoranKovac/ReaScripts/raw/11d938ec030a54bfce769333fd03fc86a06a77b4/ParanormalFX/Modules/Functions.lua</source>
+        <source file="Modules/Utils.lua">https://github.com/GoranKovac/ReaScripts/raw/11d938ec030a54bfce769333fd03fc86a06a77b4/ParanormalFX/Modules/Utils.lua</source>
+        <source file="Fonts/Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/11d938ec030a54bfce769333fd03fc86a06a77b4/ParanormalFX/Fonts/Icons.ttf</source>
+        <source file="Fonts/ProggyClean.ttf">https://github.com/GoranKovac/ReaScripts/raw/11d938ec030a54bfce769333fd03fc86a06a77b4/ParanormalFX/Fonts/ProggyClean.ttf</source>
+        <source file="JSFX/3BandSplitterFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/11d938ec030a54bfce769333fd03fc86a06a77b4/ParanormalFX/JSFX/3BandSplitterFX.jsfx</source>
+        <source file="JSFX/BandSelectFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/11d938ec030a54bfce769333fd03fc86a06a77b4/ParanormalFX/JSFX/BandSelectFX.jsfx</source>
+        <source file="JSFX/MSMidFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/11d938ec030a54bfce769333fd03fc86a06a77b4/ParanormalFX/JSFX/MSMidFX.jsfx</source>
+        <source file="JSFX/MSSideFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/11d938ec030a54bfce769333fd03fc86a06a77b4/ParanormalFX/JSFX/MSSideFX.jsfx</source>
+        <source file="FXChains/3BAND_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/11d938ec030a54bfce769333fd03fc86a06a77b4/ParanormalFX/FXChains/3BAND_SETUP.RfxChain</source>
+        <source file="FXChains/MS_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/11d938ec030a54bfce769333fd03fc86a06a77b4/ParanormalFX/FXChains/MS_SETUP.RfxChain</source>
+        <source type="effect" file="JSFX/3BandSplitterFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/11d938ec030a54bfce769333fd03fc86a06a77b4/ParanormalFX/JSFX/3BandSplitterFX.jsfx</source>
+        <source type="effect" file="JSFX/BandSelectFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/11d938ec030a54bfce769333fd03fc86a06a77b4/ParanormalFX/JSFX/BandSelectFX.jsfx</source>
+        <source type="effect" file="JSFX/MSMidFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/11d938ec030a54bfce769333fd03fc86a06a77b4/ParanormalFX/JSFX/MSMidFX.jsfx</source>
+        <source type="effect" file="JSFX/MSSideFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/11d938ec030a54bfce769333fd03fc86a06a77b4/ParanormalFX/JSFX/MSSideFX.jsfx</source>
       </version>
     </reapack>
   </category>
