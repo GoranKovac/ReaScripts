@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="8d84f25534789977411dfdf7028d711536a92ea1" name="Sexan_Scripts">
+<index version="1" commit="d5e2b8b3d2cb0e5cf05b23db0bea709f55d557e2" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -973,6 +973,25 @@ Added mouse wheel to interact with helpers on hover]]></changelog>
         <source file="JSFX/BandSelectFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/115bb4699b0b565df12624b33b15db76036b96ef/ParanormalFX/JSFX/BandSelectFX.jsfx</source>
         <source type="effect" file="JSFX/3BandSplitterFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/115bb4699b0b565df12624b33b15db76036b96ef/ParanormalFX/JSFX/3BandSplitterFX.jsfx</source>
         <source type="effect" file="JSFX/BandSelectFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/115bb4699b0b565df12624b33b15db76036b96ef/ParanormalFX/JSFX/BandSelectFX.jsfx</source>
+      </version>
+      <version name="1.15" author="Sexan" time="2023-10-21T15:39:21Z">
+        <changelog><![CDATA[Added MID-SIDE modified effect that work in parallel fx]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/d5e2b8b3d2cb0e5cf05b23db0bea709f55d557e2/ParanormalFX/Sexan_ParaNormal_FX_Router.lua</source>
+        <source file="Modules/Canvas.lua">https://github.com/GoranKovac/ReaScripts/raw/d5e2b8b3d2cb0e5cf05b23db0bea709f55d557e2/ParanormalFX/Modules/Canvas.lua</source>
+        <source file="Modules/ContainerCode.lua">https://github.com/GoranKovac/ReaScripts/raw/d5e2b8b3d2cb0e5cf05b23db0bea709f55d557e2/ParanormalFX/Modules/ContainerCode.lua</source>
+        <source file="Modules/Drawing.lua">https://github.com/GoranKovac/ReaScripts/raw/d5e2b8b3d2cb0e5cf05b23db0bea709f55d557e2/ParanormalFX/Modules/Drawing.lua</source>
+        <source file="Modules/Functions.lua">https://github.com/GoranKovac/ReaScripts/raw/d5e2b8b3d2cb0e5cf05b23db0bea709f55d557e2/ParanormalFX/Modules/Functions.lua</source>
+        <source file="Modules/Utils.lua">https://github.com/GoranKovac/ReaScripts/raw/d5e2b8b3d2cb0e5cf05b23db0bea709f55d557e2/ParanormalFX/Modules/Utils.lua</source>
+        <source file="Fonts/Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/d5e2b8b3d2cb0e5cf05b23db0bea709f55d557e2/ParanormalFX/Fonts/Icons.ttf</source>
+        <source file="Fonts/ProggyClean.ttf">https://github.com/GoranKovac/ReaScripts/raw/d5e2b8b3d2cb0e5cf05b23db0bea709f55d557e2/ParanormalFX/Fonts/ProggyClean.ttf</source>
+        <source file="JSFX/3BandSplitterFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/d5e2b8b3d2cb0e5cf05b23db0bea709f55d557e2/ParanormalFX/JSFX/3BandSplitterFX.jsfx</source>
+        <source file="JSFX/BandSelectFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/d5e2b8b3d2cb0e5cf05b23db0bea709f55d557e2/ParanormalFX/JSFX/BandSelectFX.jsfx</source>
+        <source file="JSFX/MSMidFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/d5e2b8b3d2cb0e5cf05b23db0bea709f55d557e2/ParanormalFX/JSFX/MSMidFX.jsfx</source>
+        <source file="JSFX/MSSideFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/d5e2b8b3d2cb0e5cf05b23db0bea709f55d557e2/ParanormalFX/JSFX/MSSideFX.jsfx</source>
+        <source type="effect" file="JSFX/3BandSplitterFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/d5e2b8b3d2cb0e5cf05b23db0bea709f55d557e2/ParanormalFX/JSFX/3BandSplitterFX.jsfx</source>
+        <source type="effect" file="JSFX/BandSelectFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/d5e2b8b3d2cb0e5cf05b23db0bea709f55d557e2/ParanormalFX/JSFX/BandSelectFX.jsfx</source>
+        <source type="effect" file="JSFX/MSMidFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/d5e2b8b3d2cb0e5cf05b23db0bea709f55d557e2/ParanormalFX/JSFX/MSMidFX.jsfx</source>
+        <source type="effect" file="JSFX/MSSideFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/d5e2b8b3d2cb0e5cf05b23db0bea709f55d557e2/ParanormalFX/JSFX/MSSideFX.jsfx</source>
       </version>
     </reapack>
   </category>
