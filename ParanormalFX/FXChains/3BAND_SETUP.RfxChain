@@ -1,0 +1,59 @@
+BYPASS 0 0 0
+<JS Sexan_Scripts/ParanormalFX/JSFX/3BandSplitterFX.jsfx ""
+  200 2000 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+>
+WAK 0 0
+BYPASS 0 0 0
+<CONTAINER Container ""
+  CONTAINER_CFG 2 2 2 0
+  <IN_PINS
+  >
+  <OUT_PINS
+  >
+  SHOW 0
+  LASTSEL 0
+  DOCKED 0
+  BYPASS 0 0 0
+  <JS Sexan_Scripts/ParanormalFX/JSFX/BandSelectFX.jsfx ""
+    - - 0 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  >
+  WAK 0 0
+>
+WAK 0 0
+BYPASS 0 0 0
+<CONTAINER Container ""
+  CONTAINER_CFG 2 2 2 0
+  <IN_PINS
+  >
+  <OUT_PINS
+  >
+  SHOW 0
+  LASTSEL 0
+  DOCKED 0
+  BYPASS 0 0 0
+  <JS Sexan_Scripts/ParanormalFX/JSFX/BandSelectFX.jsfx ""
+    - - 1 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  >
+  WAK 0 0
+>
+WAK 0 0
+PARALLEL 1
+BYPASS 0 0 0
+<CONTAINER Container ""
+  CONTAINER_CFG 2 2 2 0
+  <IN_PINS
+  >
+  <OUT_PINS
+  >
+  SHOW 0
+  LASTSEL 0
+  DOCKED 0
+  BYPASS 0 0 0
+  <JS Sexan_Scripts/ParanormalFX/JSFX/BandSelectFX.jsfx ""
+    - - 2 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  >
+  WAK 0 0
+>
+WAK 0 0
+PARALLEL 1
+>

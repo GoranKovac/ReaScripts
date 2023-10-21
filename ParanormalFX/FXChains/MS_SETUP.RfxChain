@@ -1,0 +1,36 @@
+BYPASS 0 0 0
+<CONTAINER Container ""
+  CONTAINER_CFG 2 2 2 0
+  <IN_PINS
+  >
+  <OUT_PINS
+  >
+  SHOW 0
+  LASTSEL 0
+  DOCKED 0
+  BYPASS 0 0 0
+  <JS Sexan_Scripts/ParanormalFX/JSFX/MSMidFX.jsfx ""
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  >
+  WAK 0 0
+>
+WAK 0 0
+BYPASS 0 0 0
+<CONTAINER Container ""
+  CONTAINER_CFG 2 2 2 0
+  <IN_PINS
+  >
+  <OUT_PINS
+  >
+  SHOW 0
+  LASTSEL 0
+  DOCKED 0
+  BYPASS 0 0 0
+  <JS Sexan_Scripts/ParanormalFX/JSFX/MSSideFX.jsfx ""
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  >
+  WAK 0 0
+>
+WAK 0 0
+PARALLEL 1
+>

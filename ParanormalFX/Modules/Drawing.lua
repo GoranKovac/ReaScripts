@@ -31,7 +31,8 @@ COLOR = {
     ["dnd_swap"]    = 0xcd6dc6ff,
     ["sine_anim"]   = 0x6390c6ff,
     ["phase"]       = 0x9674c5ff,
-    ["cut"]         = 0x00ff00ff
+    ["cut"]         = 0x00ff00ff,
+    ["menu_txt_col"] = 0x3a87ffff,
 
 }
 -----------------------------------------------------------------
@@ -587,27 +588,47 @@ function DrawFXList()
     --if r.ImGui_Selectable(ctx, "VIDEO PROCESSOR") then AddFX("Video processor") end
     --DragAddDDSource("Video processor")
     if r.ImGui_BeginMenu(ctx, "UTILITY") then
+        r.ImGui_SeparatorText( ctx, "HELPERS" )
+
         for i = 1, #HELPERS do
             if r.ImGui_Selectable(ctx, HELPERS[i].fx_name) then 
                 AddFX(HELPERS[i].fx) 
             end
             DndAddFX_SRC(HELPERS[i].fx)
         end
-        if r.ImGui_Selectable(ctx, "3 BAND SPLITTER FX") then AddFX("JS:3-Band Splitter FX") end
+        r.ImGui_SeparatorText( ctx, "BAND SPLITTING" )
+        if r.ImGui_Selectable(ctx, "3-BAND SPLITTER FX") then AddFX("JS:3-Band Splitter FX") end
         DndAddFX_SRC("JS:3-Band Splitter FX")
         if r.ImGui_Selectable(ctx, "BAND SELECT FX") then AddFX("JS:Band Select FX") end
         DndAddFX_SRC("JS:Band Select FX")
+        r.ImGui_PushStyleColor( ctx, r.ImGui_Col_Text(), COLOR["menu_txt_col"] )
+        if r.ImGui_Selectable(ctx, "3-BAND SETUP") then 
+            local chain_src = "../Scripts/Sexan_Scripts/ParanormalFX/FXChains/3BAND_SETUP.RfxChain"
+            AddFX(chain_src)
+        end
+        r.ImGui_PopStyleColor( ctx)
+        DndAddFX_SRC("../Scripts/Sexan_Scripts/ParanormalFX/FXChains/3BAND_SETUP.RfxChain")
+        r.ImGui_SeparatorText( ctx, "MID-SIDE" )
         if r.ImGui_Selectable(ctx, "MS MID FX") then AddFX("JS:MS MID FX") end
         DndAddFX_SRC("JS:MS MID FX")
         if r.ImGui_Selectable(ctx, "MS SIDE FX") then AddFX("JS:MS SIDE FX") end
         DndAddFX_SRC("JS:MS SIDE FX")
+        r.ImGui_PushStyleColor( ctx, r.ImGui_Col_Text(), COLOR["menu_txt_col"] )
+        if r.ImGui_Selectable(ctx, "MID-SIDE SETUP") then
+            local chain_src = "../Scripts/Sexan_Scripts/ParanormalFX/FXChains/MS_SETUP.RfxChain"
+            AddFX(chain_src)
+        end
+        r.ImGui_PopStyleColor( ctx)
+        DndAddFX_SRC("../Scripts/Sexan_Scripts/ParanormalFX/FXChains/MS_SETUP.RfxChain")
+
+
         r.ImGui_EndMenu(ctx)
     end
     if r.ImGui_Selectable(ctx, "CONTAINER") then AddFX("Container") end
     DndAddFX_SRC("Container")
     if LAST_USED_FX then
         r.ImGui_Separator(ctx)
-        if r.ImGui_Selectable(ctx, "RECENT: " .. LAST_USED_FX) then AddFX(LAST_USED_FX) end
+        if r.ImGui_Selectable(ctx, "RECENT: " .. LAST_USED_FX:reverse():sub(0,-50):reverse()) then AddFX(LAST_USED_FX) end
         DndAddFX_SRC(LAST_USED_FX)
     end
     if IS_DRAGGING_RIGHT_CANVAS then r.ImGui_CloseCurrentPopup(ctx) end

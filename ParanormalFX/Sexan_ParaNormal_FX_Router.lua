@@ -1,13 +1,14 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.15
+-- @version 1.16
 -- @changelog
---  Added MID-SIDE modified effect that work in parallel fx
+--  Added internal FXChains for 1 click Splitter/MS setup
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
 --   JSFX/*.jsfx
+--   FXChains/*.RfxChain
 --   [effect] JSFX/*.jsfx
 
 local r     = reaper
@@ -18,7 +19,7 @@ for name, func in pairs(reaper) do
 end
 os_separator      = package.config:sub(1, 1)
 script_path       = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]]
-local reaper_path = r.GetResourcePath()
+reaper_path = r.GetResourcePath()
 
 package.path      = script_path .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 
