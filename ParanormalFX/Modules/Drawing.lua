@@ -32,7 +32,7 @@ COLOR = {
     ["sine_anim"]   = 0x6390c6ff,
     ["phase"]       = 0x9674c5ff,
     ["cut"]         = 0x00ff00ff,
-    ["menu_txt_col"] = 0x3a87ffff,
+    ["menu_txt_col"] = 0x3aCCffff,
 
 }
 -----------------------------------------------------------------
@@ -394,14 +394,14 @@ local function DndMoveFX_TARGET_SERIAL_PARALLEL(tbl, i, parallel, serial_insert_
                 -- SWAP INFO WITH NEXT FX TO KEEP PLUGINS IN PLACE
                 CheckNextItemParallel(src_i, src_parrent)
                 -- SET SOURCE FX TO PARALLEL OR SERIAL
-                r.TrackFX_SetNamedConfigParm(TRACK, src_item_id, "parallel", parallel and "1" or "0")
+                r.TrackFX_SetNamedConfigParm(TRACK, src_item_id, "parallel", parallel and DEF_PARALLEL or "0")
                 -- MOVE
                 r.TrackFX_CopyToTrack(TRACK, src_item_id, TRACK, dst_item_id, true)
             else
                 -- CRTL DRAG COPY TO DESTINATION
                 r.TrackFX_CopyToTrack(TRACK, src_item_id, TRACK, dst_item_id, false)
                 -- SET DESTINATION INFO TO PARALLEL OR SERIAL
-                r.TrackFX_SetNamedConfigParm(TRACK, dst_item_id, "parallel", parallel and "1" or "0")
+                r.TrackFX_SetNamedConfigParm(TRACK, dst_item_id, "parallel", parallel and DEF_PARALLEL or "0")
             end
             r.PreventUIRefresh(-1)
             EndUndoBlock((is_move and "MOVE " or "COPY ") ..
@@ -589,41 +589,65 @@ function DrawFXList()
     --DragAddDDSource("Video processor")
     if r.ImGui_BeginMenu(ctx, "UTILITY") then
         r.ImGui_SeparatorText( ctx, "HELPERS" )
-
         for i = 1, #HELPERS do
             if r.ImGui_Selectable(ctx, HELPERS[i].fx_name) then 
                 AddFX(HELPERS[i].fx) 
             end
             DndAddFX_SRC(HELPERS[i].fx)
         end
-        r.ImGui_SeparatorText( ctx, "BAND SPLITTING" )
+        r.ImGui_SeparatorText( ctx, "3 BAND" )
         if r.ImGui_Selectable(ctx, "3-BAND SPLITTER FX") then AddFX("JS:3-Band Splitter FX") end
         DndAddFX_SRC("JS:3-Band Splitter FX")
-        if r.ImGui_Selectable(ctx, "BAND SELECT FX") then AddFX("JS:Band Select FX") end
+        if r.ImGui_Selectable(ctx, "3 BAND SELECT FX") then AddFX("JS:3 Band Select FX") end
         DndAddFX_SRC("JS:Band Select FX")
-        r.ImGui_PushStyleColor( ctx, r.ImGui_Col_Text(), COLOR["menu_txt_col"] )
-        if r.ImGui_Selectable(ctx, "3-BAND SETUP") then 
-            local chain_src = "../Scripts/Sexan_Scripts/ParanormalFX/FXChains/3BAND_SETUP.RfxChain"
-            AddFX(chain_src)
-        end
-        r.ImGui_PopStyleColor( ctx)
-        DndAddFX_SRC("../Scripts/Sexan_Scripts/ParanormalFX/FXChains/3BAND_SETUP.RfxChain")
+        r.ImGui_SeparatorText( ctx, "4 BAND" )
+        if r.ImGui_Selectable(ctx, "4-BAND SPLITTER FX") then AddFX("JS:4-Band Splitter FX") end
+        DndAddFX_SRC("JS:4-Band Splitter FX")
+        if r.ImGui_Selectable(ctx, "4 BAND SELECT FX") then AddFX("JS:4 Band Select FX") end
+        DndAddFX_SRC("JS:4 Band Select FX")
+        r.ImGui_SeparatorText( ctx, "5 BAND" )
+        if r.ImGui_Selectable(ctx, "5-BAND SPLITTER FX") then AddFX("JS:5-Band Splitter FX") end
+        DndAddFX_SRC("JS:5-Band Splitter FX")
+        if r.ImGui_Selectable(ctx, "5 BAND SELECT FX") then AddFX("JS:5 Band Select FX") end
+        DndAddFX_SRC("JS:5 Band Select FX")       
         r.ImGui_SeparatorText( ctx, "MID-SIDE" )
         if r.ImGui_Selectable(ctx, "MS MID FX") then AddFX("JS:MS MID FX") end
         DndAddFX_SRC("JS:MS MID FX")
         if r.ImGui_Selectable(ctx, "MS SIDE FX") then AddFX("JS:MS SIDE FX") end
         DndAddFX_SRC("JS:MS SIDE FX")
-        r.ImGui_PushStyleColor( ctx, r.ImGui_Col_Text(), COLOR["menu_txt_col"] )
+       
+     
+        r.ImGui_EndMenu(ctx)
+    end
+
+    r.ImGui_PushStyleColor( ctx, r.ImGui_Col_Text(), COLOR["menu_txt_col"] )
+    if r.ImGui_BeginMenu(ctx, "PROCESSING SETUPS") then
+        if r.ImGui_Selectable(ctx, "3-BAND SPLITTER SETUP") then 
+            local chain_src = "../Scripts/Sexan_Scripts/ParanormalFX/FXChains/3BAND_SETUP.RfxChain"
+            AddFX(chain_src)
+        end
+        DndAddFX_SRC("../Scripts/Sexan_Scripts/ParanormalFX/FXChains/3BAND_SETUP.RfxChain")
+        if r.ImGui_Selectable(ctx, "4-BAND SPLITTER SETUP") then 
+            local chain_src = "../Scripts/Sexan_Scripts/ParanormalFX/FXChains/4BAND_SETUP.RfxChain"
+            AddFX(chain_src)
+        end
+        DndAddFX_SRC("../Scripts/Sexan_Scripts/ParanormalFX/FXChains/4BAND_SETUP.RfxChain")
+        if r.ImGui_Selectable(ctx, "5-BAND SPLITTER SETUP") then 
+            local chain_src = "../Scripts/Sexan_Scripts/ParanormalFX/FXChains/5BAND_SETUP.RfxChain"
+            AddFX(chain_src)
+        end
+        DndAddFX_SRC("../Scripts/Sexan_Scripts/ParanormalFX/FXChains/5BAND_SETUP.RfxChain")
+       
         if r.ImGui_Selectable(ctx, "MID-SIDE SETUP") then
             local chain_src = "../Scripts/Sexan_Scripts/ParanormalFX/FXChains/MS_SETUP.RfxChain"
             AddFX(chain_src)
         end
-        r.ImGui_PopStyleColor( ctx)
         DndAddFX_SRC("../Scripts/Sexan_Scripts/ParanormalFX/FXChains/MS_SETUP.RfxChain")
-
 
         r.ImGui_EndMenu(ctx)
     end
+    r.ImGui_PopStyleColor( ctx)
+
     if r.ImGui_Selectable(ctx, "CONTAINER") then AddFX("Container") end
     DndAddFX_SRC("Container")
     if LAST_USED_FX then
@@ -1234,7 +1258,10 @@ local function IsLastParallel(tbl, i)
             return true
         end
     else
-        if tbl[i + 1] and tbl[i + 1].p + tbl[i].p == 1 or not tbl[i + 1] then
+        --! FIX MIDI MERGE MODE
+        --if tbl[i + 1] and tbl[i + 1].p + tbl[i].p == 1 or not tbl[i + 1] then
+        if tbl[i + 1] and tbl[i + 1].p == 0 and tbl[i].p > 0 or not tbl[i + 1] then
+        
             return true
         end
     end
@@ -1574,7 +1601,8 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
             tbl = tbl,
             i = i,
             is_fx_button = true,
-            is_helper = tbl[i].is_helper
+            is_helper = tbl[i].is_helper,
+            para_info = tbl[i].p
         }
     end
     -----------------------

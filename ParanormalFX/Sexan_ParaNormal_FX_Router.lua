@@ -1,9 +1,15 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.16
+-- @version 1.18
 -- @changelog
---  Added internal FXChains for 1 click Splitter/MS setup
+--  Added Midi parallel (Midi Merge)
+--  MIDI Merge is default parallel flag
+--  Fix space passthrough when file manager is opened
+--  Separate menu for predefined BAND/MID-SID chains
+--  Added 1 Click setups for 4band,5band setups
+--  Added 4 band, 5 band Modified JSFX for parallel fx
+--  Renamed BAND SELECT to 3 BAND SELECT (will probably need to be re-added for already saved projects)
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -19,7 +25,7 @@ for name, func in pairs(reaper) do
 end
 os_separator      = package.config:sub(1, 1)
 script_path       = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]]
-reaper_path = r.GetResourcePath()
+local reaper_path = r.GetResourcePath()
 
 package.path      = script_path .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 
@@ -51,6 +57,7 @@ ImGui.Attach(ctx, SYSTEM_FONT)
 DEFAULT_FONT = ImGui.CreateFont(script_path .. 'Fonts/ProggyClean.ttf', 13)
 ImGui.Attach(ctx, DEFAULT_FONT)
 
+DEF_PARALLEL = "2"
 ESC_CLOSE                    = false
 AUTO_COLORING                = false
 CUSTOM_FONT                  = nil
@@ -211,6 +218,7 @@ local function Main()
         IS_DRAGGING_RIGHT_CANVAS = r.ImGui_IsMouseDragging(ctx, 1, 2)
         FX_OPENED = r.ImGui_IsPopupOpen(ctx, "FX LIST")
         RENAME_OPENED = r.ImGui_IsPopupOpen(ctx, "RENAME")
+        FILE_MANAGER_OPENED = r.ImGui_IsPopupOpen(ctx, "File Dialog")
 
         CheckStaleData()
         r.ImGui_PopFont(ctx)

@@ -1,5 +1,5 @@
 BYPASS 0 0 0
-<CONTAINER Container ""
+<CONTAINER Container MID
   CONTAINER_CFG 2 2 2 0
   <IN_PINS
   >
@@ -16,7 +16,7 @@ BYPASS 0 0 0
 >
 WAK 0 0
 BYPASS 0 0 0
-<CONTAINER Container ""
+<CONTAINER Container SIDE
   CONTAINER_CFG 2 2 2 0
   <IN_PINS
   >
@@ -32,5 +32,5 @@ BYPASS 0 0 0
   WAK 0 0
 >
 WAK 0 0
-PARALLEL 1
+PARALLEL 2
 >

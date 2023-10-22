@@ -47,7 +47,7 @@ local function CheckKeys()
         r.Main_OnCommand(40030, 0) -- REDO
     end
 
-    if SPACE and (not FX_OPENED and not RENAME_OPENED) then r.Main_OnCommand(40044, 0) end -- PLAY STOP
+    if SPACE and (not FX_OPENED and not RENAME_OPENED and not FILE_MANAGER_OPENED) then r.Main_OnCommand(40044, 0) end -- PLAY STOP
 
     -- ACTIVATE CTRL ONLY IF NOT PREVIOUSLY DRAGGING
     if not CTRL_DRAG then
@@ -196,7 +196,7 @@ local function RightClickMenu()
             local parrent_container = GetParentContainerByGuid(RC_DATA.tbl[RC_DATA.i])
             local item_id = CalcFxID(parrent_container, RC_DATA.i)
             local retval, buf = r.TrackFX_GetNamedConfigParm(TRACK, item_id, "force_auto_bypass")
-            if r.ImGui_MenuItem(ctx, "AUTO BYPASS ON SILENCE",nil, buf == "1" and true or false) then
+            if r.ImGui_MenuItem(ctx, "AUTO BYPASS ON SILENCE", nil, buf == "1" and true or false) then
                 r.TrackFX_SetNamedConfigParm(TRACK, item_id, "force_auto_bypass", buf == "0" and "1" or "0")
             end
             r.ImGui_EndMenu(ctx)
@@ -269,11 +269,28 @@ local function RightClickMenu()
             r.SetExtState("PARANORMALFX2", "COPY_BUFFER_ID", r.genGuid(), false)
         end
 
+        --if RC_DATA.para_info and RC_DATA.para_info > 0 then
+            --local parrent_container = GetParentContainerByGuid(RC_DATA.tbl[RC_DATA.i])
+            --local item_id = CalcFxID(parrent_container, RC_DATA.i)
+            -- local _, para = r.TrackFX_GetNamedConfigParm(TRACK, RC_DATA.tbl[RC_DATA.i].FX_ID, "parallel")
+            -- rv_mp = r.ImGui_Checkbox(ctx, "MIDI PARALLEL", para == "2")
+            -- if rv_mp then
+            --     local new_p_val
+            --     if RC_DATA.i == 1 then
+            --         -- FIRST IN CHAIN CAN ONLY BE 0 OR 2
+            --         new_p_val = para == "0" and "2" or "0"
+            --     else
+            --         -- ANY OTHER IN CHAIN CAN BE 1 OR 2
+            --         new_p_val = para == "1" and "2" or "1"
+            --     end
+            --     r.TrackFX_SetNamedConfigParm(TRACK, RC_DATA.tbl[RC_DATA.i].FX_ID, "parallel", new_p_val)
+            -- end
+        --end
         -- SHOW ONLY WHEN CLIPBOARD IS AVAILABLE
         if CLIPBOARD.tbl and CLIPBOARD.guid ~= RC_DATA.tbl[RC_DATA.i].guid then
             --! DO NOT ALLOW PASTING ON SELF
             if r.ImGui_MenuItem(ctx, 'PASTE-REPLACE') then
-                Paste(true,RC_DATA.tbl[RC_DATA.i].p == 1, RC_DATA.tbl[RC_DATA.i].p == 0)
+                Paste(true, RC_DATA.tbl[RC_DATA.i].p > 0, RC_DATA.tbl[RC_DATA.i].p == 0)
             end
         end
     end

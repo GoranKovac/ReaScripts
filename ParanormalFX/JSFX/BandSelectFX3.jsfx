@@ -1,4 +1,4 @@
-desc:Band Select FX
+desc:3 Band Select FX
 options:gmem=remote
 
 slider3:0<0,3,1{LOW,MID,HIGH}> REMOTE BAND

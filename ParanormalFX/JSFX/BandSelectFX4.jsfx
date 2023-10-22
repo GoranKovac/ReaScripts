@@ -1,0 +1,54 @@
+desc:4 Band Select FX
+options:gmem=remote4
+
+slider3:0<0,3,1{LOW,MID,HIGH,UBERHIGH}> REMOTE BAND 4
+
+in_pin:left input
+in_pin:right input
+out_pin:left output
+out_pin:right output
+
+@init
+cDenorm=10^-30;
+
+@block
+freqHI = gmem[1];
+xHI = gmem[2];
+a0HI = gmem[3];
+b1HI = gmem[4];
+
+freqMID = gmem[5];
+xMID = gmem[6];
+a0MID = gmem[7];
+b1MID = gmem[8];
+
+freqLOW = gmem[9];
+xLOW = gmem[10];
+a0LOW = gmem[11];
+b1LOW = gmem[12];
+
+@sample
+s0 = spl0;
+s1 = spl1;
+
+low0 = (tmplMID = a0MID*s0 - b1MID*tmplMID + cDenorm);
+low1 = (tmprMID = a0MID*s1 - b1MID*tmprMID + cDenorm);
+
+low_00 = (tmplLOW = a0LOW*low0 - b1LOW*tmplLOW + cDenorm);
+low_11 = (tmprLOW = a0LOW*low1 - b1LOW*tmprLOW + cDenorm);
+
+mid_0 = low0 - low_00;
+mid_1 = low1 - low_11;
+
+hi0 = s0 - low0;
+hi1 = s1 - low1;
+
+hi_0 = (tmplHI = a0HI*hi0 - b1HI*tmplHI + cDenorm);
+hi_1 = (tmprHI = a0HI*hi1 - b1HI*tmprHI + cDenorm);
+
+ul_0 = hi0 - hi_0;
+ul_1 = hi1 - hi_1;
+
+spl0 = (slider3 == 0 ? low_00 : slider3 == 1 ? mid_0 : slider3 == 2 ? hi_0 : slider3 == 3 ? ul_0);
+spl1 = (slider3 == 0 ? low_11 : slider3 == 1 ? mid_1 : slider3 == 2 ? hi_1 : slider3 == 3 ? ul_1);
+

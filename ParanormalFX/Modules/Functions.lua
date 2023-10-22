@@ -178,7 +178,8 @@ function AddFX(name, id, parallel)
         local is_parallel = parallel
         is_parallel = INSERT_FX_PARALLEL_POS or is_parallel
         is_parallel = (REPLACE_FX_POS and REPLACE_FX_POS.tbl[REPLACE_FX_POS.i].p > 0) or is_parallel
-        if is_parallel then r.TrackFX_SetNamedConfigParm(TRACK, id, "parallel", "1") end
+        --! PREPARE THIS FOR MIDIMERGE
+        if is_parallel then r.TrackFX_SetNamedConfigParm(TRACK, id, "parallel", DEF_PARALLEL) end
 
         INSERT_FX_SERIAL_POS, INSERT_FX_PARALLEL_POS = nil, nil
     end

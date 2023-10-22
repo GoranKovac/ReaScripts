@@ -532,7 +532,7 @@ function Paste(replace, parallel, serial, enclose)
     if not CLIPBOARD.tbl then return end
     
     local para_info = serial and "0" or ""
-    para_info = parallel and "1" or para_info
+    para_info = parallel and DEF_PARALLEL or para_info
     local parrent_container = GetParentContainerByGuid(RC_DATA.tbl[RC_DATA.i])
     local item_id = CalcFxID(parrent_container, (parallel or serial) and RC_DATA.i + 1 or RC_DATA.i)
     r.Undo_BeginBlock()
@@ -562,7 +562,7 @@ function Paste(replace, parallel, serial, enclose)
     end
 
     if parallel and not is_cut then
-       r.TrackFX_SetNamedConfigParm(TRACK, item_id, "parallel", "1")
+       r.TrackFX_SetNamedConfigParm(TRACK, item_id, "parallel", DEF_PARALLEL)
     end
 
     r.PreventUIRefresh(-1)
