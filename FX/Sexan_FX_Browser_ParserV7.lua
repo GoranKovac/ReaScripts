@@ -1,9 +1,9 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.9
+-- @version 1.10
 -- @changelog
---  Function to update FXChains and TrackTemplates
+--  Add helper functions for serializing and writing to file
 
 local r = reaper
 local os = r.GetOS()
@@ -30,6 +30,78 @@ local function ResetTables()
     CLAP_INFO, CLAP, CLAPi = {}, {}, {}
     LV2_INFO, LV2, LV2i = {}, {}, {}
 end
+
+function ReadFXFile(fx_path, cat_path)
+    local FX_LIST, CAT_LIST
+    local fx_file = io.open(fx_path, "r")
+    if fx_file then
+        FX_LIST = {}
+        local fx_string = fx_file:read("*all")
+        fx_file:close()
+        FX_LIST = StringToTable(fx_string)
+    end
+
+    local cat_file = io.open(cat_path, "r")
+    if cat_file then
+        CAT_LIST = {}
+        local cat_string = cat_file:read("*all")
+        cat_file:close()
+        CAT_LIST = StringToTable(cat_string)
+    end
+    return FX_LIST, CAT_LIST
+end
+
+function WriteToFile(path, data)
+    local file_cat = io.open(path, "w")
+    if file_cat then
+        file_cat:write(data)
+        file_cat:close()
+    end
+end
+
+function SerializeToFile(val, name, skipnewlines, depth)
+    skipnewlines = skipnewlines or false
+    depth = depth or 0
+    local tmp = string.rep(" ", depth)
+    if name then
+        if type(name) == "number" and math.floor(name) == name then
+            name = "[" .. name .. "]"
+        elseif not string.match(name, '^[a-zA-z_][a-zA-Z0-9_]*$') then
+            name = string.gsub(name, "'", "\\'")
+            name = "['" .. name .. "']"
+        end
+        tmp = tmp .. name .. " = "
+    end
+    if type(val) == "table" then
+        tmp = tmp .. "{" .. (not skipnewlines and "\n" or "")
+        for k, v in pairs(val) do
+            tmp = tmp .. SerializeToFile(v, k, skipnewlines, depth + 1) .. "," .. (not skipnewlines and "\n" or "")
+        end
+        tmp = tmp .. string.rep(" ", depth) .. "}"
+    elseif type(val) == "number" then
+        tmp = tmp .. tostring(val)
+    elseif type(val) == "string" then
+        tmp = tmp .. string.format("%q", val)
+    elseif type(val) == "boolean" then
+        tmp = tmp .. (val and "true" or "false")
+    else
+        --! THIS IS MODIFICATION FOR THIS SCRIPT
+        --! POINTERS GET RECALCULATED ON RUN SO WE NIL HERE (MEDIATRACKS, MEDIAITEMS... )
+        tmp = tmp .. "nil"
+        --tmp = tmp .. "\"[inserializeable datatype:" .. type(val) .. "]\""
+    end
+    return tmp
+end
+
+function StringToTable(str)
+    local f, err = load("return " .. str)
+    if err then
+        reaper.ShowConsoleMsg("\nerror" .. err)
+    end
+    return f ~= nil and f() or nil
+end
+
+function TableToString(table) return SerializeToFile(table) end
 
 function Literalize(str)
     return str:gsub("[%(%)%.%%%+%-%*%?%[%]%^%$]", function(c) return "%" .. c end)
