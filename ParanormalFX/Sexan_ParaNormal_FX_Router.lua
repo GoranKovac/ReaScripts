@@ -1,9 +1,10 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.21
+-- @version 1.22
 -- @changelog
---  When deleting fx preserve positions if parallel flag is 1 or 2
+--  Dont move targets if ALT is pressed
+--  Trim recent fx name (FXChains have big path)
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf

@@ -2,6 +2,7 @@
 --NoIndex: true
 
 local r = reaper
+local os = r.GetOS()
 local ImGui = {}
 for name, func in pairs(reaper) do
     name = name:match('^ImGui_(.+)$')
@@ -9,6 +10,7 @@ for name, func in pairs(reaper) do
 end
 
 local LINE_POINTS, PLUGINS
+local stripped_names = {}
 
 COLOR = {
     ["n"]           = 0x315e94ff,
@@ -295,6 +297,7 @@ local function DndAddFX_ENCLOSE_TARGET(tbl, i)
 end
 
 local function DndMoveFX_SRC(tbl, i)
+    if ALT then return end
     if tbl[i].exclude_ara then return end
     if tbl[i].type == "ROOT" then return end
     if r.ImGui_BeginDragDropSource(ctx, r.ImGui_DragDropFlags_AcceptBeforeDelivery() | r.ImGui_DragDropFlags_SourceNoPreviewTooltip()) then
@@ -306,6 +309,7 @@ local function DndMoveFX_SRC(tbl, i)
 end
 
 local function DndMoveFX_ENCLOSE_TARGET(tbl, i)
+    if ALT then return end
     if tbl[i].exclude_ara then return end
     if not DND_MOVE_FX then return end
     --! DO NOT MOVE ON ITSELF UNLESS COPYING
@@ -412,6 +416,7 @@ local function DndMoveFX_TARGET_SERIAL_PARALLEL(tbl, i, parallel, serial_insert_
 end
 
 local function DndMoveFX_TARGET_SWAP(tbl, i)
+    if ALT then return end
     if tbl[i].guid == "PREVIEW" then return end
     if tbl[i].exclude_ara then return end
     if not DND_MOVE_FX then return end
@@ -459,8 +464,8 @@ local FX_LIST, CAT
 FILTER = ''
 local function FilterBox()
     local MAX_FX_SIZE = 300
-    r.ImGui_PushItemWidth(ctx, MAX_FX_SIZE)
     if r.ImGui_IsWindowAppearing(ctx) then r.ImGui_SetKeyboardFocusHere(ctx) end
+    r.ImGui_PushItemWidth(ctx, -FLT_MIN)
     _, FILTER = r.ImGui_InputTextWithHint(ctx, '##input', "SEARCH FX", FILTER)
     local filtered_fx = Filter_actions(FILTER, FX_LIST)
     local filter_h = #filtered_fx == 0 and 0 or (#filtered_fx > 40 and 20 * 17 or (17 * #filtered_fx))
@@ -568,6 +573,7 @@ local function DrawItems(tbl, main_cat_name)
         end
     end
 end
+
 function DrawFXList()
     FX_LIST, CAT = GetFXBrowserData()
     local search = FilterBox()
@@ -651,8 +657,13 @@ function DrawFXList()
     if r.ImGui_Selectable(ctx, "CONTAINER") then AddFX("Container") end
     DndAddFX_SRC("Container")
     if LAST_USED_FX then
+        local recent_name = LAST_USED_FX:gsub("^(%S+:)", "")
+        if recent_name:find(".RfxChain") then
+            local name = os:match("Win") and recent_name:reverse():match("(.-)\\") or recent_name:reverse():match("(.-)/")
+            if name then recent_name = name:reverse() end
+        end
         r.ImGui_Separator(ctx)
-        if r.ImGui_Selectable(ctx, "RECENT: " .. LAST_USED_FX:reverse():sub(0,-50):reverse()) then AddFX(LAST_USED_FX) end
+        if r.ImGui_Selectable(ctx, "RECENT: " .. recent_name) then AddFX(LAST_USED_FX) end
         DndAddFX_SRC(LAST_USED_FX)
     end
     if IS_DRAGGING_RIGHT_CANVAS then r.ImGui_CloseCurrentPopup(ctx) end
@@ -848,8 +859,6 @@ local function CalcContainerWH(fx_items)
     H = H + start_n_add_btn_size + (s_window_y * 2)
     return W, H
 end
-
-local stripped_names = {}
 
 function ResetStrippedNames()
     stripped_names = {}
