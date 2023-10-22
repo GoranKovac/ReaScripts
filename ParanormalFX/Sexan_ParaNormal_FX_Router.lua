@@ -1,10 +1,11 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.22
+-- @version 1.23
 -- @changelog
---  Dont move targets if ALT is pressed
---  Trim recent fx name (FXChains have big path)
+--  Fixed crash when clipboard has data but track gets deleted
+--  On first start script will collect FX Data and store it to txt file
+--  Users will need to manually trigger FX UPDATE In settings
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -14,6 +15,7 @@
 
 local r     = reaper
 local ImGui = {}
+
 for name, func in pairs(reaper) do
     name = name:match('^ImGui_(.+)$')
     if name then ImGui[name] = func end
@@ -21,6 +23,9 @@ end
 os_separator      = package.config:sub(1, 1)
 script_path       = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]]
 local reaper_path = r.GetResourcePath()
+
+FX_FILE = script_path .. "/FX_LIST.txt"
+FX_CAT_FILE = script_path .. "/FX_CAT_FILE.txt"
 
 package.path      = script_path .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 
@@ -34,7 +39,7 @@ if not r.ImGui_GetVersion then
     return r.ReaPack_BrowsePackages('dear imgui')
 end
 
-ctx = ImGui.CreateContext('ParaRefactor')
+ctx = ImGui.CreateContext('ParaNormalFX Router')
 
 ImGui.SetConfigVar(ctx, ImGui.ConfigVar_WindowsMoveFromTitleBarOnly(), 1)
 WND_FLAGS = ImGui.WindowFlags_NoScrollbar() | ImGui.WindowFlags_NoScrollWithMouse()
@@ -165,7 +170,15 @@ function RestoreFromPEXT()
     end
 end
 
-local FX_LIST, CAT = GetFXTbl()
+local FX_LIST, CAT = ReadFXFile(FX_FILE,FX_CAT_FILE)
+if not FX_LIST and not CAT then
+    FX_LIST, CAT = GetFXTbl()
+    local serialized_fx = TableToString(FX_LIST)
+    WriteToFile(FX_FILE, serialized_fx)
+
+    local serialized_cat = TableToString(CAT)
+    WriteToFile(FX_CAT_FILE, serialized_cat)
+end
 
 function GetFXBrowserData()
     return FX_LIST, CAT

@@ -425,7 +425,15 @@ function DrawUserSettings()
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x000000EE)
     r.ImGui_SetNextWindowPos(ctx, WX + 5, WY + 65)
 
-    if r.ImGui_BeginChild(ctx, "USERSETTIGS", 200, 560, 1) then
+    if r.ImGui_BeginChild(ctx, "USERSETTIGS", 200, 584, 1) then
+        if r.ImGui_Button(ctx, "UPDATE FX LIST") then
+            local FX_LIST, CAT = GetFXTbl()
+            local serialized_fx = TableToString(FX_LIST)
+            WriteToFile(FX_FILE, serialized_fx)
+        
+            local serialized_cat = TableToString(CAT)
+            WriteToFile(FX_CAT_FILE, serialized_cat)
+        end
         r.ImGui_SeparatorText(ctx, "UI")
         if r.ImGui_BeginListBox(ctx, "FONT", nil, 38) then
             if r.ImGui_Selectable(ctx, "DEFAULT", CUSTOM_FONT == nil) then

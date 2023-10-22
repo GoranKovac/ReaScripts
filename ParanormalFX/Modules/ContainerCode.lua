@@ -435,7 +435,7 @@ function UpdateFxData()
         FX_DATA[fx_guid] = {
             type = fx_type,
             IDX = i,
-            FX_ID = i-1,
+            FX_ID = i - 1,
             pid = "ROOT",
             guid = fx_guid,
             ROW = row,
@@ -511,17 +511,22 @@ function ClipBoard()
     end
 
     if CLIPBOARD.tbl then
-        local size = CalculateItemWH({ name = CLIPBOARD.tbl[CLIPBOARD.i].name }) + 190
-        if r.ImGui_BeginChild(ctx, "CLIPBOARD", size, def_btn_h + s_window_y, 1) then
-            if r.HasExtState("PARANORMALFX2", "COPY_BUFFER") then
-                if CLIPBOARD.tbl then
-                    local rv, name = r.GetTrackName(CLIPBOARD.track)
-                    r.ImGui_Text(ctx, "CLIPBOARD: " .. name .. " - FX: " .. CLIPBOARD.tbl[CLIPBOARD.i].name)
+        if CLIPBOARD.track and r.ValidatePtr(CLIPBOARD.track, "MediaTrack*") then
+            local size = CalculateItemWH({ name = CLIPBOARD.tbl[CLIPBOARD.i].name }) + 190
+            if r.ImGui_BeginChild(ctx, "CLIPBOARD", size, def_btn_h + s_window_y, 1) then
+                if r.HasExtState("PARANORMALFX2", "COPY_BUFFER") then
+                    if CLIPBOARD.tbl then
+                        local rv, name = r.GetTrackName(CLIPBOARD.track)
+                        r.ImGui_Text(ctx, "CLIPBOARD: " .. name .. " - FX: " .. CLIPBOARD.tbl[CLIPBOARD.i].name)
+                    end
+                else
+                    r.ImGui_Text(ctx, "CLIPBOARD EMPTY ")
                 end
-            else
-                r.ImGui_Text(ctx, "CLIPBOARD EMPTY ")
+                r.ImGui_EndChild(ctx)
             end
-            r.ImGui_EndChild(ctx)
+        else
+            ClearExtState()
+            CLIPBOARD = {}
         end
     end
     r.ImGui_PopStyleColor(ctx)
@@ -530,7 +535,7 @@ end
 
 function Paste(replace, parallel, serial, enclose)
     if not CLIPBOARD.tbl then return end
-    
+
     local para_info = serial and "0" or ""
     para_info = parallel and DEF_PARALLEL or para_info
     local parrent_container = GetParentContainerByGuid(RC_DATA.tbl[RC_DATA.i])
@@ -548,11 +553,11 @@ function Paste(replace, parallel, serial, enclose)
     end
 
     r.TrackFX_CopyToTrack(CLIPBOARD.track, CLIPBOARD.id, TRACK, item_id, is_cut)
-    
+
     if not is_cut then
-       r.TrackFX_SetNamedConfigParm(TRACK, item_id, "parallel", para_info)
+        r.TrackFX_SetNamedConfigParm(TRACK, item_id, "parallel", para_info)
     end
-    
+
     if replace then
         UpdateFxData()
         local target_fx = GetFx(RC_DATA.tbl[RC_DATA.i].guid)
@@ -562,7 +567,7 @@ function Paste(replace, parallel, serial, enclose)
     end
 
     if parallel and not is_cut then
-       r.TrackFX_SetNamedConfigParm(TRACK, item_id, "parallel", DEF_PARALLEL)
+        r.TrackFX_SetNamedConfigParm(TRACK, item_id, "parallel", DEF_PARALLEL)
     end
 
     r.PreventUIRefresh(-1)
