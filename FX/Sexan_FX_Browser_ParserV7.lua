@@ -1,9 +1,9 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.8
+-- @version 1.9
 -- @changelog
---  Exclude names with [] to count as category
+--  Function to update FXChains and TrackTemplates
 
 local r = reaper
 local os = r.GetOS()
@@ -351,8 +351,9 @@ local function ParseFXChains()
     GetDirFilesRecursive(fxChainsFolder, FX_CHAINS, ".RfxChain")
     if #FX_CHAINS ~= 0 then
         --table.sort(FX_CHAINS, function(a, b) if a and b then return a:lower() < b:lower() end end)
-        CAT[#CAT + 1] = { name = "FX CHAINS", list = FX_CHAINS }
+        --CAT[#CAT + 1] = { name = "FX CHAINS", list = FX_CHAINS }
     end
+    return FX_CHAINS
 end
 
 local function ParseTrackTemplates()
@@ -363,6 +364,7 @@ local function ParseTrackTemplates()
         --table.sort(FX_CHAINS, function(a, b) if a and b then return a:lower() < b:lower() end end)
         CAT[#CAT + 1] = { name = "TRACK TEMPLATES", list = TRACK_TEMPLATES }
     end
+    return TRACK_TEMPLATES
 end
 
 local function AllPluginsCategory()
@@ -414,8 +416,14 @@ function GenerateFxList()
     ParseFXTags() -- CATEGORIES
     ParseCustomCategories()
     ParseFavorites()
-    ParseFXChains()
-    ParseTrackTemplates()
+    local FX_CHAINS = ParseFXChains()
+    if #FX_CHAINS ~= 0 then
+        CAT[#CAT + 1] = { name = "FX CHAINS", list = FX_CHAINS }
+    end
+    local TRACK_TEMPLATES = ParseTrackTemplates()
+    if #TRACK_TEMPLATES ~= 0 then
+        CAT[#CAT + 1] = { name = "TRACK TEMPLATES", list = TRACK_TEMPLATES }
+    end
     AllPluginsCategory()
 
     return PLUGIN_LIST
@@ -446,6 +454,19 @@ end
 function GetFXTbl()
     ResetTables()
     return GenerateFxList(), CAT
+end
+
+function UpdateChainsTrackTemplates()
+    local FX_CHAINS = ParseFXChains()
+    local TRACK_TEMPLATES = ParseTrackTemplates()
+    for i = 1, #CAT do
+        if CAT[i].name == "FX CHAINS" then
+            CAT[i].list = FX_CHAINS
+        elseif CAT[i].name == "TRACK TEMPLATES" then
+            CAT[i].list = TRACK_TEMPLATES
+        end
+    end
+    return PLUGIN_LIST, CAT
 end
 
 ---------------------------------------------------------------------------------
