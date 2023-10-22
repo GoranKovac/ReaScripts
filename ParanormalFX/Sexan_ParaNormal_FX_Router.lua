@@ -1,10 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.20
+-- @version 1.21
 -- @changelog
---  Do not allow moving popups when dragging the top of them (except rename and FileManager)
---  Fix preserve FX Positions whilen deleting (broke when added MIDI Merge flag)
+--  When deleting fx preserve positions if parallel flag is 1 or 2
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf

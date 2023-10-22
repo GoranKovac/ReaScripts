@@ -157,7 +157,7 @@ function CheckNextItemParallel(i, parrent_container)
     local dst = CalcFxID(parrent_container, i + 1)
     if not r.TrackFX_GetFXGUID(TRACK, dst) then return end
     local _, para = r.TrackFX_GetNamedConfigParm(TRACK, dst, "parallel")
-    if para == DEF_PARALLEL then SwapParallelInfo(src, dst) end
+    if (para == "1" or para == "2") then SwapParallelInfo(src, dst) end
 end
 
 function CheckSourceNextItemParallel(i, P_TYPE, P_DIFF, P_ID, track)
