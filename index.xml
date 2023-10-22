@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="f98411ab54f758f58561c00cd6fde31b64e02ff0" name="Sexan_Scripts">
+<index version="1" commit="dc98f4d8dad26d5286c1c78602ced074d14d6fdb" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -1184,6 +1184,39 @@ Trim recent fx name (FXChains have big path)]]></changelog>
         <source type="effect" file="JSFX/BandSelectFX5.jsfx">https://github.com/GoranKovac/ReaScripts/raw/8cb843cca7ed827fef5016af76a97ea6cfdc0ca9/ParanormalFX/JSFX/BandSelectFX5.jsfx</source>
         <source type="effect" file="JSFX/MSMidFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/8cb843cca7ed827fef5016af76a97ea6cfdc0ca9/ParanormalFX/JSFX/MSMidFX.jsfx</source>
         <source type="effect" file="JSFX/MSSideFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/8cb843cca7ed827fef5016af76a97ea6cfdc0ca9/ParanormalFX/JSFX/MSSideFX.jsfx</source>
+      </version>
+      <version name="1.23" author="Sexan" time="2023-10-22T18:04:28Z">
+        <changelog><![CDATA[Fixed crash when clipboard has data but track gets deleted
+On first start script will collect FX Data and store it to txt file
+Users will need to manually trigger FX UPDATE In settings]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/dc98f4d8dad26d5286c1c78602ced074d14d6fdb/ParanormalFX/Sexan_ParaNormal_FX_Router.lua</source>
+        <source file="Modules/Canvas.lua">https://github.com/GoranKovac/ReaScripts/raw/dc98f4d8dad26d5286c1c78602ced074d14d6fdb/ParanormalFX/Modules/Canvas.lua</source>
+        <source file="Modules/ContainerCode.lua">https://github.com/GoranKovac/ReaScripts/raw/dc98f4d8dad26d5286c1c78602ced074d14d6fdb/ParanormalFX/Modules/ContainerCode.lua</source>
+        <source file="Modules/Drawing.lua">https://github.com/GoranKovac/ReaScripts/raw/dc98f4d8dad26d5286c1c78602ced074d14d6fdb/ParanormalFX/Modules/Drawing.lua</source>
+        <source file="Modules/Functions.lua">https://github.com/GoranKovac/ReaScripts/raw/dc98f4d8dad26d5286c1c78602ced074d14d6fdb/ParanormalFX/Modules/Functions.lua</source>
+        <source file="Modules/Utils.lua">https://github.com/GoranKovac/ReaScripts/raw/dc98f4d8dad26d5286c1c78602ced074d14d6fdb/ParanormalFX/Modules/Utils.lua</source>
+        <source file="Fonts/Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/dc98f4d8dad26d5286c1c78602ced074d14d6fdb/ParanormalFX/Fonts/Icons.ttf</source>
+        <source file="Fonts/ProggyClean.ttf">https://github.com/GoranKovac/ReaScripts/raw/dc98f4d8dad26d5286c1c78602ced074d14d6fdb/ParanormalFX/Fonts/ProggyClean.ttf</source>
+        <source file="JSFX/3BandSplitterFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/dc98f4d8dad26d5286c1c78602ced074d14d6fdb/ParanormalFX/JSFX/3BandSplitterFX.jsfx</source>
+        <source file="JSFX/4BandSplitterFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/dc98f4d8dad26d5286c1c78602ced074d14d6fdb/ParanormalFX/JSFX/4BandSplitterFX.jsfx</source>
+        <source file="JSFX/5BandSplitterFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/dc98f4d8dad26d5286c1c78602ced074d14d6fdb/ParanormalFX/JSFX/5BandSplitterFX.jsfx</source>
+        <source file="JSFX/BandSelectFX3.jsfx">https://github.com/GoranKovac/ReaScripts/raw/dc98f4d8dad26d5286c1c78602ced074d14d6fdb/ParanormalFX/JSFX/BandSelectFX3.jsfx</source>
+        <source file="JSFX/BandSelectFX4.jsfx">https://github.com/GoranKovac/ReaScripts/raw/dc98f4d8dad26d5286c1c78602ced074d14d6fdb/ParanormalFX/JSFX/BandSelectFX4.jsfx</source>
+        <source file="JSFX/BandSelectFX5.jsfx">https://github.com/GoranKovac/ReaScripts/raw/dc98f4d8dad26d5286c1c78602ced074d14d6fdb/ParanormalFX/JSFX/BandSelectFX5.jsfx</source>
+        <source file="JSFX/MSMidFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/dc98f4d8dad26d5286c1c78602ced074d14d6fdb/ParanormalFX/JSFX/MSMidFX.jsfx</source>
+        <source file="JSFX/MSSideFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/dc98f4d8dad26d5286c1c78602ced074d14d6fdb/ParanormalFX/JSFX/MSSideFX.jsfx</source>
+        <source file="FXChains/3BAND_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/dc98f4d8dad26d5286c1c78602ced074d14d6fdb/ParanormalFX/FXChains/3BAND_SETUP.RfxChain</source>
+        <source file="FXChains/4BAND_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/dc98f4d8dad26d5286c1c78602ced074d14d6fdb/ParanormalFX/FXChains/4BAND_SETUP.RfxChain</source>
+        <source file="FXChains/5BAND_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/dc98f4d8dad26d5286c1c78602ced074d14d6fdb/ParanormalFX/FXChains/5BAND_SETUP.RfxChain</source>
+        <source file="FXChains/MS_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/dc98f4d8dad26d5286c1c78602ced074d14d6fdb/ParanormalFX/FXChains/MS_SETUP.RfxChain</source>
+        <source type="effect" file="JSFX/3BandSplitterFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/dc98f4d8dad26d5286c1c78602ced074d14d6fdb/ParanormalFX/JSFX/3BandSplitterFX.jsfx</source>
+        <source type="effect" file="JSFX/4BandSplitterFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/dc98f4d8dad26d5286c1c78602ced074d14d6fdb/ParanormalFX/JSFX/4BandSplitterFX.jsfx</source>
+        <source type="effect" file="JSFX/5BandSplitterFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/dc98f4d8dad26d5286c1c78602ced074d14d6fdb/ParanormalFX/JSFX/5BandSplitterFX.jsfx</source>
+        <source type="effect" file="JSFX/BandSelectFX3.jsfx">https://github.com/GoranKovac/ReaScripts/raw/dc98f4d8dad26d5286c1c78602ced074d14d6fdb/ParanormalFX/JSFX/BandSelectFX3.jsfx</source>
+        <source type="effect" file="JSFX/BandSelectFX4.jsfx">https://github.com/GoranKovac/ReaScripts/raw/dc98f4d8dad26d5286c1c78602ced074d14d6fdb/ParanormalFX/JSFX/BandSelectFX4.jsfx</source>
+        <source type="effect" file="JSFX/BandSelectFX5.jsfx">https://github.com/GoranKovac/ReaScripts/raw/dc98f4d8dad26d5286c1c78602ced074d14d6fdb/ParanormalFX/JSFX/BandSelectFX5.jsfx</source>
+        <source type="effect" file="JSFX/MSMidFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/dc98f4d8dad26d5286c1c78602ced074d14d6fdb/ParanormalFX/JSFX/MSMidFX.jsfx</source>
+        <source type="effect" file="JSFX/MSSideFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/dc98f4d8dad26d5286c1c78602ced074d14d6fdb/ParanormalFX/JSFX/MSSideFX.jsfx</source>
       </version>
     </reapack>
   </category>
