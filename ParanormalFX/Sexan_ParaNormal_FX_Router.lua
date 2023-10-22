@@ -1,9 +1,10 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.19
+-- @version 1.20
 -- @changelog
---  Update only FXChains and TrackTemplates instead of whole FXLIST in browser
+--  Do not allow moving popups when dragging the top of them (except rename and FileManager)
+--  Fix preserve FX Positions whilen deleting (broke when added MIDI Merge flag)
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -190,6 +191,7 @@ local function Main()
     ImGui.PushStyleColor(ctx, ImGui.Col_WindowBg(), 0x111111FF)
     ImGui.SetNextWindowSizeConstraints(ctx, 500, 500, FLT_MAX, FLT_MAX)
     ImGui.SetNextWindowSize(ctx, 500, 500, ImGui.Cond_FirstUseEver())
+
     local visible, open = ImGui.Begin(ctx, 'PARANORMAL FX ROUTER###PARANORMALFX', true, WND_FLAGS)
     ImGui.PopStyleColor(ctx)
 

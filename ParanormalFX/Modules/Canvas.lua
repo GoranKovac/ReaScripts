@@ -306,7 +306,7 @@ local function Popups()
         end
     end
 
-    if r.ImGui_BeginPopup(ctx, "INSERT_POINTS_MENU") then
+    if r.ImGui_BeginPopup(ctx, "INSERT_POINTS_MENU", r.ImGui_WindowFlags_NoMove()) then
         InsertPointsMenu()
         r.ImGui_EndPopup(ctx)
     end
@@ -318,7 +318,7 @@ local function Popups()
         end
     end
 
-    if r.ImGui_BeginPopup(ctx, "RIGHT_CLICK_MENU") then
+    if r.ImGui_BeginPopup(ctx, "RIGHT_CLICK_MENU", r.ImGui_WindowFlags_NoMove()) then
         RightClickMenu()
         r.ImGui_EndPopup(ctx)
     end
@@ -359,7 +359,7 @@ local function Popups()
         end
     end
 
-    if r.ImGui_BeginPopup(ctx, "FX LIST") then
+    if r.ImGui_BeginPopup(ctx, "FX LIST", r.ImGui_WindowFlags_NoMove()) then
         DrawFXList()
         r.ImGui_EndPopup(ctx)
     end
