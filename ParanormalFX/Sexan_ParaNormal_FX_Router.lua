@@ -1,15 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.18
+-- @version 1.19
 -- @changelog
---  Added Midi parallel (Midi Merge)
---  MIDI Merge is default parallel flag
---  Fix space passthrough when file manager is opened
---  Separate menu for predefined BAND/MID-SID chains
---  Added 1 Click setups for 4band,5band setups
---  Added 4 band, 5 band Modified JSFX for parallel fx
---  Renamed BAND SELECT to 3 BAND SELECT (will probably need to be re-added for already saved projects)
+--  Update only FXChains and TrackTemplates instead of whole FXLIST in browser
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -179,7 +173,7 @@ end
 local function Main()
     if WANT_REFRESH then
         WANT_REFRESH = nil
-        FX_LIST, CAT = GetFXTbl()
+        FX_LIST, CAT = UpdateChainsTrackTemplates()
     end
 
     TRACK = PIN and SEL_LIST_TRACK or r.GetSelectedTrack2(0, 0, true)
