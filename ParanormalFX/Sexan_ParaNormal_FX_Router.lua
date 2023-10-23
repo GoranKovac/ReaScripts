@@ -1,11 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.23
+-- @version 1.24
 -- @changelog
---  Fixed crash when clipboard has data but track gets deleted
---  On first start script will collect FX Data and store it to txt file
---  Users will need to manually trigger FX UPDATE In settings
+--  Trim names of Scripts custom jsfx
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf

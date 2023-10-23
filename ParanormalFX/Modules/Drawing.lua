@@ -62,6 +62,26 @@ local HELPERS = {
     {fx = "JS:Time Adjustment Delay",fx_name = "TIME DELAY", name = "Time Adjustment Delay",helper = "    TIME DELAY   "}
 }
 
+local my_jsfx = {
+    ["Sexan_Scripts/ParanormalFX/JSFX/3BandSplitterFX.jsfx"] = "3-Band Splitter FX",
+    ["Sexan_Scripts/ParanormalFX/JSFX/4BandSplitterFX.jsfx"] = "4-Band Splitter FX",
+    ["Sexan_Scripts/ParanormalFX/JSFX/5BandSplitterFX.jsfx"] = "5-Band Splitter FX",
+    ["Sexan_Scripts/ParanormalFX/JSFX/BandSelectFX3.jsfx"] = "3 Band Select FX",
+    ["Sexan_Scripts/ParanormalFX/JSFX/BandSelectFX4.jsfx"] = "4 Band Select FX",
+    ["Sexan_Scripts/ParanormalFX/JSFX/BandSelectFX5.jsfx"] = "5 Band Select FX",
+    ["Sexan_Scripts/ParanormalFX/JSFX/MSMidFX.jsfx"] = "MS Mid FX",
+    ["Sexan_Scripts/ParanormalFX/JSFX/MSSideFX.jsfx"] = "MS Side FX",
+}
+
+local function TrimMyJSName(name)
+    local function trim(s)
+        -- from PiL2 20.4
+        return (s:gsub("^%s*(.-)%s*$", "%1"))
+    end
+    local new_name = trim(name)
+    return my_jsfx[new_name] or name
+end
+
 function ValidateClipboardFX()
     UpdateFxData()
     --! MAKE SURE FX IS NOT DELETED BEFORE DOING UPDATE
@@ -902,7 +922,9 @@ local function IterateContainer(depth, track, container_id, parent_fx_count, pre
         end
 
         if not stripped_names[fx_name] then
-            stripped_names[fx_name] = Stripname(fx_name, true, true)
+            local new_name = Stripname(fx_name, true, true)
+            new_name = TrimMyJSName(new_name)
+            stripped_names[fx_name] = new_name
         end
 
         local _, fx_type = r.TrackFX_GetNamedConfigParm(track, 0x2000000 + fx_id, "fx_type")
@@ -1001,7 +1023,9 @@ local function GenerateFXData(target)
         end
 
         if not stripped_names[fx_name] then
-            stripped_names[fx_name] = Stripname(fx_name, true, true)
+            local new_name = Stripname(fx_name, true, true)
+            new_name = TrimMyJSName(new_name)
+            stripped_names[fx_name] = new_name
         end
         local _, para = r.TrackFX_GetNamedConfigParm(track, i - 1, "parallel")
         local wetparam = r.TrackFX_GetParamFromIdent(track, i - 1, ":wet")
