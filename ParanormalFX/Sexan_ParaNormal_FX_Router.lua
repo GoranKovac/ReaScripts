@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.30
+-- @version 1.31
 -- @changelog
---  fix reverse mousewheel
+--  Fix drawing helpers in containers
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf

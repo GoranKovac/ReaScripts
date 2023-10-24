@@ -871,6 +871,28 @@ local function MyKnob(label, style, p_value, v_min, v_max, knob_type)
     return value_changed, p_value, is_hovered
 end
 
+local function HelperWidth(tbl, width)
+    if not tbl.is_helper then return width end
+
+    if tbl.name == "VOL - PAN" then
+        width = width + name_margin * 2
+    elseif tbl.name == "POLARITY" then
+        width = width + name_margin
+    elseif tbl.name == "TIME DELAY" then
+        width = width + name_margin * 2
+    elseif tbl.name == "SAIKE SPLITTER" then
+        local cuts = r.TrackFX_GetParam(TRACK, tbl.FX_ID, 0) -- NUMBER OF CUTS
+        width = (width + 80) + (name_margin + 5) * (cuts)
+    elseif tbl.name:find("3-Band Splitter",nil,true) then
+        width = width + name_margin * 2
+    elseif tbl.name:find("4-Band Splitter",nil,true) then
+        width = width + name_margin * 3
+    elseif tbl.name:find("5-Band Splitter",nil,true) then
+        width = width + name_margin * 4
+    end
+    return width
+end
+
 local function ItemFullSize(tbl)
     local w, h = CalculateItemWH(tbl)
     if tbl.type == "ROOT" then
@@ -880,6 +902,7 @@ local function ItemFullSize(tbl)
     else
         w = w + mute + volume + name_margin
     end
+    w = HelperWidth(tbl, w)
     return w, h
 end
 
@@ -1847,33 +1870,11 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
     return (btn_hover and not bypass_hover and not vol_or_enclose_hover)
 end
 
-local function HelperWidth(tbl, width)
-    if not tbl.is_helper then return width end
-
-    if tbl.name == "VOL - PAN" then
-        width = width + name_margin * 2
-    elseif tbl.name == "POLARITY" then
-        width = width + name_margin
-    elseif tbl.name == "TIME DELAY" then
-        width = width + name_margin * 2
-    elseif tbl.name == "SAIKE SPLITTER" then
-        local cuts = r.TrackFX_GetParam(TRACK, tbl.FX_ID, 0) -- NUMBER OF CUTS
-        width = (width + 80) + (name_margin + 5) * (cuts)
-    elseif tbl.name:find("3-Band Splitter",nil,true) then
-        width = width + name_margin * 2
-    elseif tbl.name:find("4-Band Splitter",nil,true) then
-        width = width + name_margin * 3
-    elseif tbl.name:find("5-Band Splitter",nil,true) then
-        width = width + name_margin * 4
-    end
-    return width
-end
-
 local function DrawPlugins(center, tbl, fade, parrent_pass_color)
     local last
     for i = 0, #tbl do
         local width, height = ItemFullSize(tbl[i])
-        width = HelperWidth(tbl[i], width)
+        --width = HelperWidth(tbl[i], width)
         SetItemPos(tbl, i, center, width)
         if tbl[i].type ~= "Container" and tbl[i].type ~= "INSERT_POINT" then
             r.ImGui_BeginGroup(ctx)
