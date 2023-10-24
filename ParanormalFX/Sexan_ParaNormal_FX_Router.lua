@@ -1,11 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.29
+-- @version 1.30
 -- @changelog
---  Fix Cut/Paste into parallel enclose button (would crash when copying on another track)
---  Added mousewheel support on tracklist
---  Removed old unused icon font
+--  fix reverse mousewheel
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
