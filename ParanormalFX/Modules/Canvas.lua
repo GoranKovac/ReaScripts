@@ -556,6 +556,7 @@ local function TooltipUI(str)
 end
 
 local sin = math.sin
+local m_wheel_i = 1
 function UI()
     if not TRACK then return end
     r.ImGui_SetCursorPos(ctx, 5, 25)
@@ -569,7 +570,7 @@ function UI()
         local child_hovered = r.ImGui_IsWindowHovered(ctx,
             r.ImGui_HoveredFlags_ChildWindows() |  r.ImGui_HoveredFlags_AllowWhenBlockedByPopup() |
             r.ImGui_HoveredFlags_AllowWhenBlockedByActiveItem())
-        r.ImGui_PushFont(ctx, ICONS_FONT2)
+        --r.ImGui_PushFont(ctx, ICONS_FONT2)
         if r.ImGui_Button(ctx, "D", 22, def_btn_h) then
             if OPEN_SETTINGS then
                 StoreSettings()
@@ -622,12 +623,17 @@ function UI()
         TooltipUI(
             "LOCKS TO SELECTED TRACK\nMULTIPLE SCRIPTS CAN HAVE DIFFERENT SELECTIONS\nCAN BE CHANGED VIA TRACKLIST")
         r.ImGui_SameLine(ctx)
-        r.ImGui_PopFont(ctx)
+        --r.ImGui_PopFont(ctx)
         -- TRACK LIST
         --! NEED TO FIX OFFSET
+        local vertical_mw = r.ImGui_GetMouseWheel(ctx)
+        local mwheel_val
         if r.ImGui_BeginMenu(ctx, tr_ID .. "##main") then
             for i = 0, r.CountTracks(0) do
                 local track = i == 0 and r.GetMasterTrack(0) or r.GetTrack(0, i - 1)
+                if not mwheel_val then
+                    mwheel_val = track == TRACK and i
+                end
                 local _, track_id = r.GetTrackName(track)
                 if r.ImGui_Selectable(ctx, track_id, track == TRACK) then
                     if PIN then
@@ -639,6 +645,20 @@ function UI()
                 -- if i > 0 and track ~= TRACK then
                 --     DragAndDropSidechainSource(track, track_id)
                 -- end
+            end
+            if vertical_mw ~= 0 then
+                vertical_mw = vertical_mw > 0 and 1 or -1
+                if mwheel_val then
+                    local new_val = (mwheel_val + vertical_mw)
+                    local mw_track = new_val == 0 and r.GetMasterTrack(0) or r.GetTrack(0, new_val-1)
+                    if mw_track then
+                        if PIN then
+                            SEL_LIST_TRACK = mw_track
+                        else
+                            r.SetOnlyTrackSelected(mw_track)
+                        end
+                    end
+                end
             end
             if not child_hovered then
                 r.ImGui_CloseCurrentPopup(ctx)

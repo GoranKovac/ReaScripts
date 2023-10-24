@@ -296,39 +296,35 @@ function CopyTargetsToNewContainer(track, tbl, i, src_guid, src_i, is_cut)
     local src_parrent
 
     local is_move = is_cut
-
-    -- ENCLOSE RIGHT CLICK OPTION IS CALLED
-    if src_guid then
-        src_fx = GetFx(src_guid)
-        src_parrent = GetFx(src_fx.pid)
-        -- SWAP INFO WITH NEXT FX TO KEEP PLUGINS IN PLACE
-        if is_move then CheckNextItemParallel(src_i, src_parrent) end
-    end
+    
     -- ADD CONTAINER AT THE BEGINNING OF THE CHAIN TO MAKE IT EASIER TO INSERT THINGS
     --! CHECK ITS POSITION WITH BLACKLISTED FX (MELODYNE AND SIMILAR NEED TO BE IN SLOT 1 AND CANNOT BE IN CONTAINER)
     --! CREATE CONTAINER IN POSITION ABOVE BLACKLISTED FX
     local cont_insert_id = CalculateInsertContainerPosFromBlacklist()
 
-    local cont_pos = r.TrackFX_AddByName(track, "Container", false, cont_insert_id)
+    local cont_pos = r.TrackFX_AddByName(TRACK, "Container", false, cont_insert_id)
     -- SWAP PARALLEL DATA WITH TARGET (MAYBE FIRST IN LANE == 0 OR NEXT IN LANE == 1)
-    r.TrackFX_SetNamedConfigParm(track, 0x2000000 + cont_pos + 1, "parallel", source_parallel_info)
+    r.TrackFX_SetNamedConfigParm(TRACK, 0x2000000 + cont_pos + 1, "parallel", source_parallel_info)
 
     UpdateFxData()
-    local cont_id = 0x2000000 + cont_pos + 1 + (r.TrackFX_GetCount(track) + 1)
+    local cont_id = 0x2000000 + cont_pos + 1 + (r.TrackFX_GetCount(TRACK) + 1)
 
-    src_fx = GetFx(src_guid)
-    src_parrent = GetFx(src_fx.pid)
-    local src_id = CalcFxID(src_parrent, src_fx.IDX)
-
+    local src_id
+    if track == TRACK then
+        src_fx = GetFx(src_guid)
+        src_parrent = GetFx(src_fx.pid)
+        src_id = CalcFxID(src_parrent, src_fx.IDX)
+    else
+        src_id = CLIPBOARD.id
+    end
 
     -- COPY SOURCE FX INTO IT CONTAINER
     r.TrackFX_CopyToTrack(track, src_id, TRACK, cont_id, is_move)
     -- SET COPY PARRALEL INFO 0 SINCE IT WILL BE IN SERIAL
-    r.TrackFX_SetNamedConfigParm(track, cont_id, "parallel", "0")
+    r.TrackFX_SetNamedConfigParm(TRACK, cont_id, "parallel", "0")
 
     UpdateFxData()
-    --cont_id = 0x2000000 + 1 + (r.TrackFX_GetCount(TRACK) + 1)
-    cont_id = 0x2000000 + cont_pos + 1 + (r.TrackFX_GetCount(track) + 1)
+    cont_id = 0x2000000 + cont_pos + 1 + (r.TrackFX_GetCount(TRACK) + 1)
 
     local target_fx = GetFx(tbl[i].guid)
     local target_parrent = GetFx(tbl[i].pid)
@@ -345,7 +341,7 @@ function CopyTargetsToNewContainer(track, tbl, i, src_guid, src_i, is_cut)
     target_parrent = GetFx(tbl[i].pid)
 
     -- ENCLOSE RIGHT CLICK OPTION IS CALLED
-    if src_guid then
+    if src_guid and track == TRACK then
         src_parrent = GetFx(src_fx.pid)
         -- DETERMINE IF FX WAS BEFORE OR AFTER FOR OFFSET
         if src_parrent.guid == target_parrent.guid then
@@ -360,10 +356,8 @@ function CopyTargetsToNewContainer(track, tbl, i, src_guid, src_i, is_cut)
     end
     -- MOVE CONTAINER INTO TARGET POSITION
     local original_pos = CalcFxID(target_parrent, target_pos)
-    --local original_pos = CalcFxID(target_parrent, i)
     -- MOVE CONTAINER TO ORIGINAL TARGET
-    --r.TrackFX_CopyToTrack(TRACK, 0x2000000 + 1, TRACK, original_pos, true)
-    r.TrackFX_CopyToTrack(track, 0x2000000 + cont_pos + 1, track, original_pos, true)
+    r.TrackFX_CopyToTrack(TRACK, 0x2000000 + cont_pos + 1, TRACK, original_pos, true)
 end
 
 local function IterateContainerUpdate(depth, track, container_id, parent_fx_count, previous_diff, container_guid)
@@ -541,6 +535,10 @@ function Paste(replace, parallel, serial, enclose)
     r.Undo_BeginBlock()
     r.PreventUIRefresh(1)
     if enclose then
+        if is_cut then
+            CheckSourceNextItemParallel(CLIPBOARD.i, CLIPBOARD.P_TYPE, CLIPBOARD.P_DIFF, CLIPBOARD.P_ID, CLIPBOARD.track)
+            r.TrackFX_SetNamedConfigParm(CLIPBOARD.track, CLIPBOARD.id, "parallel", para_info)
+        end
         CopyTargetsToNewContainer(CLIPBOARD.track, RC_DATA.tbl, RC_DATA.i, CLIPBOARD.guid, CLIPBOARD.i, is_cut)
     else
         --local is_cut = CLIPBOARD.cut and true or false

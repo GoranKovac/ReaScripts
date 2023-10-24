@@ -227,7 +227,7 @@ function CheckSourceNextItemParallel(i, P_TYPE, P_DIFF, P_ID, track)
     local dst = CalcSrcID(P_TYPE, P_DIFF, P_ID, i + 1)
     if not r.TrackFX_GetFXGUID(track, dst) then return end
     local _, para = r.TrackFX_GetNamedConfigParm(track, dst, "parallel")
-    if para == "1" then SwapSrcParallelInfo(src, dst, track) end
+    if para ~= "0" then SwapSrcParallelInfo(src, dst, track) end
 end
 
 -----------------
