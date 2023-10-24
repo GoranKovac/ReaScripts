@@ -10,9 +10,9 @@ BYPASS 0 0 0
   DOCKED 0
   BYPASS 0 0 0
   <JS "Saike Tools/Basics/BandSplitter.jsfx" ""
-    2 0.186529 0.442438 0.49133 0.5 0 0 0 0 0 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 0 0 0 0 0 -
+    2 0.186529 0.442438 0.49133 0.5 0 0 0 0 0 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 1 1 0 0 0 0 -
   >
-  JS_DIMS 300 200
+  JS_DIMS 745 266
   <JS_PINMAP
     6AMAABwAAADoAwAABgAAAAIAAAABAAAAAAAAAAIAAAAAAAAAXAAAAOgDAAAGAAAACgAAAAEAAAAAAAAAAgAAAAAAAAAEAAAAAAAAAAgAAAAAAAAAEAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
   >
