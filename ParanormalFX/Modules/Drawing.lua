@@ -1603,6 +1603,7 @@ local function DrawHelper(tbl, i, w)
         r.ImGui_SameLine(ctx, 0, mute // 3)
         local fir_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 13) -- NUMBER OF FIR
         r.ImGui_PushStyleColor(ctx, r.ImGui_Col_CheckMark(), 0xFFFFFFFF)
+        --! need to fix this to be realtive not hard coded +1
         r.ImGui_SetCursorPosY(ctx, r.ImGui_GetCursorPosY(ctx) + 1)
         if r.ImGui_Checkbox(ctx, "FIR", fir_val == 1) then
             r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 13, fir_val == 1 and 0 or 1)
@@ -1611,6 +1612,7 @@ local function DrawHelper(tbl, i, w)
         if not btn_hover then btn_hover = r.ImGui_IsItemHovered(ctx) end
 
         r.ImGui_SameLine(ctx, 0, mute // 3)
+        --! need to fix this to be realtive not hard coded +1
         r.ImGui_SetCursorPosY(ctx, r.ImGui_GetCursorPosY(ctx) + 1)
 
         local pole_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 15) -- NUMBER OF FIR

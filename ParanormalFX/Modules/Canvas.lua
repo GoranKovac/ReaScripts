@@ -647,7 +647,7 @@ function UI()
                 -- end
             end
             if vertical_mw ~= 0 then
-                vertical_mw = vertical_mw > 0 and 1 or -1
+                vertical_mw = vertical_mw > 0 and -1 or 1
                 if mwheel_val then
                     local new_val = (mwheel_val + vertical_mw)
                     local mw_track = new_val == 0 and r.GetMasterTrack(0) or r.GetTrack(0, new_val-1)
