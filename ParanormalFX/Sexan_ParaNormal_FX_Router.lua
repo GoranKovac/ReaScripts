@@ -1,7 +1,7 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.25
+-- @version 1.26
 -- @changelog
 --  Fix helpers display on system font
 --  Added Saike repository to install 4-pole linear phase splitter
@@ -14,6 +14,7 @@
 --  Stock chains for standard splitting, Advance chains for linear phase, 24-12dB slope splitting
 --  Removed TrackTemplates from showing up in FX BROWSER
 --  Added Paste into enclose button in parallel lanes
+--  remove local development fxbrowser 
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -112,8 +113,8 @@ CTRL_DRAG_AUTOCONTAINER      = false
 TOOLTIPS                     = true
 --V_LAYOUT                     = false
 
---local fx_browser_script_path = reaper_path .. "/Scripts/Sexan_Scripts/FX/Sexan_FX_Browser_ParserV7.lua"
-local fx_browser_script_path = "C:/Users/Gokily/Documents/ReaGit/ReaScripts/FX/Sexan_FX_Browser_ParserV7.lua"
+local fx_browser_script_path = reaper_path .. "/Scripts/Sexan_Scripts/FX/Sexan_FX_Browser_ParserV7.lua"
+--local fx_browser_script_path = "C:/Users/Gokily/Documents/ReaGit/ReaScripts/FX/Sexan_FX_Browser_ParserV7.lua"
 local fm_script_path         = reaper_path .. "/Scripts/Sexan_Scripts/ImGui_Tools/FileManager.lua"
 if r.file_exists(fx_browser_script_path) then
     dofile(fx_browser_script_path)
