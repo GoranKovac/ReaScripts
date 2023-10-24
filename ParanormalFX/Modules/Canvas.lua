@@ -434,6 +434,7 @@ function DrawUserSettings()
             local serialized_cat = TableToString(CAT)
             WriteToFile(FX_CAT_FILE, serialized_cat)
             WANT_REFRESH = true
+            UpdateFX_LIST(FX_LIST, CAT)
         end
         SettingsTooltips("FX LIST IS CACHED TO FILE FOR FASTER LOADING TIMES\nNEEDS MANUAL TRIGGER FOR UPDATING")
 

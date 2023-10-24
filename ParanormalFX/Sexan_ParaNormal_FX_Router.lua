@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.31
+-- @version 1.31.1
 -- @changelog
---  Fix drawing helpers in containers
+--  Update main FX BROWSER table when triggering rescan from settings
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -232,6 +232,10 @@ end
 
 function GetFXBrowserData()
     return FX_LIST, CAT
+end
+
+function UpdateFX_LIST(fx_tbl,cat_tbl)
+    FX_LIST, CAT = fx_tbl,cat_tbl
 end
 
 local function Main()
