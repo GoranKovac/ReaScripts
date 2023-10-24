@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.27
+-- @version 1.28
 -- @changelog
---  fix stuff I've broke
+--  Collect new FX_LIST,CAT_LIST on first start if does not exits
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -218,6 +218,8 @@ function MakeFXFiles()
 
     local serialized_dev_list = TableToString(GEN_DEVELOPER_LIST)
     WriteToFile(FX_DEV_LIST_FILE, serialized_dev_list)
+
+    FX_LIST, CAT = GEN_FX_LIST, GEN_CAT
 end
 if not FX_LIST and not CAT or r.HasExtState("PARANORMALFX2", "UPDATEFX") then
     MakeFXFiles()
@@ -226,7 +228,7 @@ if not FX_LIST and not CAT or r.HasExtState("PARANORMALFX2", "UPDATEFX") then
     end
 end
 
-UpdateChainsTrackTemplates(CAT)
+--UpdateChainsTrackTemplates(CAT)
 
 function GetFXBrowserData()
     return FX_LIST, CAT
