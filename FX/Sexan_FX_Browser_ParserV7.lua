@@ -1,9 +1,9 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.10
+-- @version 1.12
 -- @changelog
---  Add helper functions for serializing and writing to file
+--  Update Developer list when reading from cache file
 
 local r = reaper
 local os = r.GetOS()
@@ -31,8 +31,8 @@ local function ResetTables()
     LV2_INFO, LV2, LV2i = {}, {}, {}
 end
 
-function ReadFXFile(fx_path, cat_path)
-    local FX_LIST, CAT_LIST
+function ReadFXFile(fx_path, cat_path, dev_path)
+    local FX_LIST, CAT_LIST, DEV_LIST
     local fx_file = io.open(fx_path, "r")
     if fx_file then
         FX_LIST = {}
@@ -48,6 +48,16 @@ function ReadFXFile(fx_path, cat_path)
         cat_file:close()
         CAT_LIST = StringToTable(cat_string)
     end
+
+    local dev_list_file = io.open(dev_path, "r")
+    if dev_list_file then
+        DEV_LIST = {}
+        local dev_list_string = dev_list_file:read("*all")
+        dev_list_file:close()
+        DEV_LIST = StringToTable(dev_list_string)
+    end
+
+    DEVELOPER_LIST = DEV_LIST
     return FX_LIST, CAT_LIST
 end
 
@@ -525,20 +535,19 @@ end
 
 function GetFXTbl()
     ResetTables()
-    return GenerateFxList(), CAT
+    return GenerateFxList(), CAT, DEVELOPER_LIST
 end
 
-function UpdateChainsTrackTemplates()
+function UpdateChainsTrackTemplates(cat_tbl)
     local FX_CHAINS = ParseFXChains()
     local TRACK_TEMPLATES = ParseTrackTemplates()
-    for i = 1, #CAT do
-        if CAT[i].name == "FX CHAINS" then
-            CAT[i].list = FX_CHAINS
-        elseif CAT[i].name == "TRACK TEMPLATES" then
-            CAT[i].list = TRACK_TEMPLATES
+    for i = 1, #cat_tbl do
+        if cat_tbl[i].name == "FX CHAINS" then
+            cat_tbl[i].list = FX_CHAINS
+        elseif cat_tbl[i].name == "TRACK TEMPLATES" then
+            cat_tbl[i].list = TRACK_TEMPLATES
         end
     end
-    return PLUGIN_LIST, CAT
 end
 
 ---------------------------------------------------------------------------------
