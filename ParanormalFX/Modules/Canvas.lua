@@ -437,7 +437,7 @@ function DrawUserSettings()
             local serialized_dev_list = TableToString(DEV_LIST)
             WriteToFile(FX_DEV_LIST_FILE, serialized_dev_list)
 
-            GetFXBrowserData()
+            UpdateFXBrowserData()
             WANT_REFRESH = true
         end
         SettingsTooltips("FX LIST IS CACHED TO FILE FOR FASTER LOADING TIMES\nNEEDS MANUAL TRIGGER FOR UPDATING")

@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.31.2
+-- @version 1.31.3
 -- @changelog
---  When RESCANING fx list, read files after its done to update the main tables
+--  this caching is killing me
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -231,11 +231,11 @@ end
 --UpdateChainsTrackTemplates(CAT)
 
 function GetFXBrowserData()
-    FX_LIST, CAT = ReadFXFile(FX_FILE, FX_CAT_FILE, FX_DEV_LIST_FILE)
+    return FX_LIST, CAT
 end
 
-function UpdateFX_LIST(fx_tbl,cat_tbl)
-    FX_LIST, CAT = fx_tbl,cat_tbl
+function UpdateFXBrowserData()
+    FX_LIST, CAT = ReadFXFile(FX_FILE, FX_CAT_FILE, FX_DEV_LIST_FILE)
 end
 
 local function Main()
