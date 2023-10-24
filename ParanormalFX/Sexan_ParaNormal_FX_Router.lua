@@ -1,20 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.26
+-- @version 1.27
 -- @changelog
---  Fix helpers display on system font
---  Added Saike repository to install 4-pole linear phase splitter
---  Added saike splitter to name correcting also (if it gets renamed for some reason)
---  Added gui for saike splitter for common controls
---  Added gui for band splitters for common controls
---  Fixed some bugs with collecting fx data (broken with caching update)
---  Remove all custom band-splitting JSFX
---  Added new band splitting chains with native routing (no custom JSFX required) , thanks Tapio
---  Stock chains for standard splitting, Advance chains for linear phase, 24-12dB slope splitting
---  Removed TrackTemplates from showing up in FX BROWSER
---  Added Paste into enclose button in parallel lanes
---  remove local development fxbrowser 
+--  fix stuff I've broke
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -77,7 +66,7 @@ function ThirdPartyDeps()
       else
          r.ShowMessageBox("Sai'ke 4 Pole Band Splitter is needed.\nPlease Install it in next window", "MISSING DEPENDENCIES", 0)
          r.ReaPack_BrowsePackages('saike 4 pole bandsplitter')
-         r.SetExtState("PARANORMALFX2", "UPDATEFX", false)
+         r.SetExtState("PARANORMALFX2", "UPDATEFX", "true", false)
          return 'error saike splitter'
       end
     end
