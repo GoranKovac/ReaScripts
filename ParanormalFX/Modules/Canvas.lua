@@ -137,13 +137,13 @@ local function InsertPointsMenu()
             r.ImGui_CloseCurrentPopup(ctx)
         end
     elseif RC_DATA.lane == "sc" then
-        -- if CLIPBOARD.tbl then
-        --     if r.ImGui_MenuItem(ctx, 'PASTE') then
-        --         Paste(false, false, true, true)
-        --     end
-        -- else
-        r.ImGui_CloseCurrentPopup(ctx)
-        -- end
+        if CLIPBOARD.tbl then
+            if r.ImGui_MenuItem(ctx, 'PASTE') then
+                Paste(false, false, true, true)
+            end
+        else
+            r.ImGui_CloseCurrentPopup(ctx)
+        end
     end
 end
 
@@ -270,21 +270,21 @@ local function RightClickMenu()
         end
 
         --if RC_DATA.para_info and RC_DATA.para_info > 0 then
-            --local parrent_container = GetParentContainerByGuid(RC_DATA.tbl[RC_DATA.i])
-            --local item_id = CalcFxID(parrent_container, RC_DATA.i)
-            -- local _, para = r.TrackFX_GetNamedConfigParm(TRACK, RC_DATA.tbl[RC_DATA.i].FX_ID, "parallel")
-            -- rv_mp = r.ImGui_Checkbox(ctx, "MIDI PARALLEL", para == "2")
-            -- if rv_mp then
-            --     local new_p_val
-            --     if RC_DATA.i == 1 then
-            --         -- FIRST IN CHAIN CAN ONLY BE 0 OR 2
-            --         new_p_val = para == "0" and "2" or "0"
-            --     else
-            --         -- ANY OTHER IN CHAIN CAN BE 1 OR 2
-            --         new_p_val = para == "1" and "2" or "1"
-            --     end
-            --     r.TrackFX_SetNamedConfigParm(TRACK, RC_DATA.tbl[RC_DATA.i].FX_ID, "parallel", new_p_val)
-            -- end
+        --local parrent_container = GetParentContainerByGuid(RC_DATA.tbl[RC_DATA.i])
+        --local item_id = CalcFxID(parrent_container, RC_DATA.i)
+        -- local _, para = r.TrackFX_GetNamedConfigParm(TRACK, RC_DATA.tbl[RC_DATA.i].FX_ID, "parallel")
+        -- rv_mp = r.ImGui_Checkbox(ctx, "MIDI PARALLEL", para == "2")
+        -- if rv_mp then
+        --     local new_p_val
+        --     if RC_DATA.i == 1 then
+        --         -- FIRST IN CHAIN CAN ONLY BE 0 OR 2
+        --         new_p_val = para == "0" and "2" or "0"
+        --     else
+        --         -- ANY OTHER IN CHAIN CAN BE 1 OR 2
+        --         new_p_val = para == "1" and "2" or "1"
+        --     end
+        --     r.TrackFX_SetNamedConfigParm(TRACK, RC_DATA.tbl[RC_DATA.i].FX_ID, "parallel", new_p_val)
+        -- end
         --end
         -- SHOW ONLY WHEN CLIPBOARD IS AVAILABLE
         if CLIPBOARD.tbl and CLIPBOARD.guid ~= RC_DATA.tbl[RC_DATA.i].guid then
@@ -426,14 +426,17 @@ function DrawUserSettings()
     r.ImGui_SetNextWindowPos(ctx, WX + 5, WY + 65)
 
     if r.ImGui_BeginChild(ctx, "USERSETTIGS", 200, 584, 1) then
-        if r.ImGui_Button(ctx, "UPDATE FX LIST") then
+        if r.ImGui_Button(ctx, "RESCAN FX LIST") then
             local FX_LIST, CAT = GetFXTbl()
             local serialized_fx = TableToString(FX_LIST)
             WriteToFile(FX_FILE, serialized_fx)
-        
+
             local serialized_cat = TableToString(CAT)
             WriteToFile(FX_CAT_FILE, serialized_cat)
+            WANT_REFRESH = true
         end
+        SettingsTooltips("FX LIST IS CACHED TO FILE FOR FASTER LOADING TIMES\nNEEDS MANUAL TRIGGER FOR UPDATING")
+
         r.ImGui_SeparatorText(ctx, "UI")
         if r.ImGui_BeginListBox(ctx, "FONT", nil, 38) then
             if r.ImGui_Selectable(ctx, "DEFAULT", CUSTOM_FONT == nil) then

@@ -1,9 +1,19 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.24
+-- @version 1.25
 -- @changelog
---  Trim names of Scripts custom jsfx
+--  Fix helpers display on system font
+--  Added Saike repository to install 4-pole linear phase splitter
+--  Added saike splitter to name correcting also (if it gets renamed for some reason)
+--  Added gui for saike splitter for common controls
+--  Added gui for band splitters for common controls
+--  Fixed some bugs with collecting fx data (broken with caching update)
+--  Remove all custom band-splitting JSFX
+--  Added new band splitting chains with native routing (no custom JSFX required) , thanks Tapio
+--  Stock chains for standard splitting, Advance chains for linear phase, 24-12dB slope splitting
+--  Removed TrackTemplates from showing up in FX BROWSER
+--  Added Paste into enclose button in parallel lanes
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -24,6 +34,7 @@ local reaper_path = r.GetResourcePath()
 
 FX_FILE = script_path .. "/FX_LIST.txt"
 FX_CAT_FILE = script_path .. "/FX_CAT_FILE.txt"
+FX_DEV_LIST_FILE = script_path .. "/FX_DEV_LIST_FILE.txt"
 
 package.path      = script_path .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 
@@ -36,6 +47,42 @@ if not r.ImGui_GetVersion then
     r.ShowMessageBox("ReaImGui is required.\nPlease Install it in next window", "MISSING DEPENDENCIES", 0)
     return r.ReaPack_BrowsePackages('dear imgui')
 end
+
+function ThirdPartyDeps()
+    local saike_splitter_path = reaper_path .. "/Effects/Saike Tools/Basics/BandSplitter.jsfx"
+    local reapack_process
+    local repos = {
+      {name = "Saike Tools", url = 'https://raw.githubusercontent.com/JoepVanlier/JSFX/master/index.xml'},
+    }
+    
+    for i = 1, #repos do
+      local retinfo, url, enabled, autoInstall = r.ReaPack_GetRepositoryInfo( repos[i].name )
+      if not retinfo then
+        retval, error = r.ReaPack_AddSetRepository( repos[i].name, repos[i].url, true, 0 )
+        reapack_process = true
+      end
+    end
+   
+    -- ADD NEEDED REPOSITORIES
+    if reapack_process then
+      r.ShowMessageBox("Added Third-Party ReaPack Repositories", "ADDING REPACK REPOSITORIES", 0)
+      r.ReaPack_ProcessQueue(true)
+      reapack_process = nil
+    end
+    
+    if not reapack_process then
+      -- FX BROWSER
+      if r.file_exists(saike_splitter_path) then
+      else
+         r.ShowMessageBox("Sai'ke 4 Pole Band Splitter is needed.\nPlease Install it in next window", "MISSING DEPENDENCIES", 0)
+         r.ReaPack_BrowsePackages('saike 4 pole bandsplitter')
+         r.SetExtState("PARANORMALFX2", "UPDATEFX", false)
+         return 'error saike splitter'
+      end
+    end
+end
+
+if ThirdPartyDeps() then return end
 
 ctx = ImGui.CreateContext('ParaNormalFX Router')
 
@@ -65,7 +112,8 @@ CTRL_DRAG_AUTOCONTAINER      = false
 TOOLTIPS                     = true
 --V_LAYOUT                     = false
 
-local fx_browser_script_path = reaper_path .. "/Scripts/Sexan_Scripts/FX/Sexan_FX_Browser_ParserV7.lua"
+--local fx_browser_script_path = reaper_path .. "/Scripts/Sexan_Scripts/FX/Sexan_FX_Browser_ParserV7.lua"
+local fx_browser_script_path = "C:/Users/Gokily/Documents/ReaGit/ReaScripts/FX/Sexan_FX_Browser_ParserV7.lua"
 local fm_script_path         = reaper_path .. "/Scripts/Sexan_Scripts/ImGui_Tools/FileManager.lua"
 if r.file_exists(fx_browser_script_path) then
     dofile(fx_browser_script_path)
@@ -168,15 +216,27 @@ function RestoreFromPEXT()
     end
 end
 
-local FX_LIST, CAT = ReadFXFile(FX_FILE,FX_CAT_FILE)
-if not FX_LIST and not CAT then
-    FX_LIST, CAT = GetFXTbl()
-    local serialized_fx = TableToString(FX_LIST)
+local FX_LIST, CAT = ReadFXFile(FX_FILE, FX_CAT_FILE, FX_DEV_LIST_FILE)
+
+function MakeFXFiles()
+    local GEN_FX_LIST, GEN_CAT, GEN_DEVELOPER_LIST = GetFXTbl()
+    local serialized_fx = TableToString(GEN_FX_LIST)
     WriteToFile(FX_FILE, serialized_fx)
 
-    local serialized_cat = TableToString(CAT)
+    local serialized_cat = TableToString(GEN_CAT)
     WriteToFile(FX_CAT_FILE, serialized_cat)
+
+    local serialized_dev_list = TableToString(GEN_DEVELOPER_LIST)
+    WriteToFile(FX_DEV_LIST_FILE, serialized_dev_list)
 end
+if not FX_LIST and not CAT or r.HasExtState("PARANORMALFX2", "UPDATEFX") then
+    MakeFXFiles()
+    if r.HasExtState("PARANORMALFX2", "UPDATEFX") then
+        r.DeleteExtState("PARANORMALFX2", "UPDATEFX", false)
+    end
+end
+
+UpdateChainsTrackTemplates(CAT)
 
 function GetFXBrowserData()
     return FX_LIST, CAT
@@ -185,7 +245,7 @@ end
 local function Main()
     if WANT_REFRESH then
         WANT_REFRESH = nil
-        FX_LIST, CAT = UpdateChainsTrackTemplates()
+        UpdateChainsTrackTemplates(CAT)
     end
 
     TRACK = PIN and SEL_LIST_TRACK or r.GetSelectedTrack2(0, 0, true)

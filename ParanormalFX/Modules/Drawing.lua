@@ -13,27 +13,27 @@ local LINE_POINTS, PLUGINS
 local stripped_names = {}
 
 COLOR = {
-    ["n"]           = 0x315e94ff,
-    ["Container"]   = 0x49cc85FF,
-    ["enclose"]     = 0x192432ff,
-    ["knob_bg"]     = 0x192432ff,
-    ["knob_vol"]    = 0x49cc85FF,
-    ["knob_drywet"] = 0x3a87ffff,
-    ["midi"]        = 0x8833AAFF,
-    ["del"]         = 0xBB2222FF,
-    ["ROOT"]        = 0x49cc85FF,
-    ["add"]         = 0x192432ff,
-    ["parallel"]    = 0x192432ff,
-    ["bypass"]      = 0xdc5454ff,
-    ["enabled"]     = 0x49cc85FF,
-    ["wire"]        = 0xB0B0B9FF,
-    ["dnd"]         = 0x00b4d8ff,
-    ["dnd_enclose"] = 0x49cc85ff,
-    ["dnd_replace"] = 0xdc5454ff,
-    ["dnd_swap"]    = 0xcd6dc6ff,
-    ["sine_anim"]   = 0x6390c6ff,
-    ["phase"]       = 0x9674c5ff,
-    ["cut"]         = 0x00ff00ff,
+    ["n"]            = 0x315e94ff,
+    ["Container"]    = 0x49cc85FF,
+    ["enclose"]      = 0x192432ff,
+    ["knob_bg"]      = 0x192432ff,
+    ["knob_vol"]     = 0x49cc85FF,
+    ["knob_drywet"]  = 0x3a87ffff,
+    ["midi"]         = 0x8833AAFF,
+    ["del"]          = 0xBB2222FF,
+    ["ROOT"]         = 0x49cc85FF,
+    ["add"]          = 0x192432ff,
+    ["parallel"]     = 0x192432ff,
+    ["bypass"]       = 0xdc5454ff,
+    ["enabled"]      = 0x49cc85FF,
+    ["wire"]         = 0xB0B0B9FF,
+    ["dnd"]          = 0x00b4d8ff,
+    ["dnd_enclose"]  = 0x49cc85ff,
+    ["dnd_replace"]  = 0xdc5454ff,
+    ["dnd_swap"]     = 0xcd6dc6ff,
+    ["sine_anim"]    = 0x6390c6ff,
+    ["phase"]        = 0x9674c5ff,
+    ["cut"]          = 0x00ff00ff,
     ["menu_txt_col"] = 0x3aCCffff,
 
 }
@@ -57,20 +57,45 @@ local BLACKLIST = {
 }
 
 local HELPERS = {
-    {fx = "JS:Volume/Pan Smoother", fx_name = "VOL - PAN", name = "Volume/Pan Smoother", helper = "    VOL - PAN    "},
-    {fx = "JS:Channel Polarity Control",fx_name = "POLARITY",name = "Channel Polarity Control", helper = "  POLARITY"},
-    {fx = "JS:Time Adjustment Delay",fx_name = "TIME DELAY", name = "Time Adjustment Delay",helper = "    TIME DELAY   "}
+    {
+        fx = "JS:Volume/Pan Smoother",
+        fx_name = "VOL - PAN",
+        name = "Volume/Pan Smoother",
+        helper = "VOL - PAN"
+    },
+    {
+        fx = "JS:Channel Polarity Control",
+        fx_name = "POLARITY",
+        name = "Channel Polarity Control",
+        helper = "POLARITY"
+    },
+    {
+        fx = "JS:Time Adjustment Delay",
+        fx_name = "TIME DELAY",
+        name = "Time Adjustment Delay",
+        helper = "TIME DELAY"
+    },
+    {
+        fx = "JS:Saike 4-pole BandSplitter",
+        fx_name = "SAIKE SPLITTER",
+        name = "Saike 4-pole BandSplitter",
+        helper = "SAIKE SPLITTER"
+    },
+    {
+        name = "3-Band Splitter",
+    },
+    {
+        name = "4-Band Splitter",
+    },
+    {
+        name = "5-Band Splitter",
+    },
 }
 
 local my_jsfx = {
-    ["Sexan_Scripts/ParanormalFX/JSFX/3BandSplitterFX.jsfx"] = "3-Band Splitter FX",
-    ["Sexan_Scripts/ParanormalFX/JSFX/4BandSplitterFX.jsfx"] = "4-Band Splitter FX",
-    ["Sexan_Scripts/ParanormalFX/JSFX/5BandSplitterFX.jsfx"] = "5-Band Splitter FX",
-    ["Sexan_Scripts/ParanormalFX/JSFX/BandSelectFX3.jsfx"] = "3 Band Select FX",
-    ["Sexan_Scripts/ParanormalFX/JSFX/BandSelectFX4.jsfx"] = "4 Band Select FX",
-    ["Sexan_Scripts/ParanormalFX/JSFX/BandSelectFX5.jsfx"] = "5 Band Select FX",
     ["Sexan_Scripts/ParanormalFX/JSFX/MSMidFX.jsfx"] = "MS Mid FX",
     ["Sexan_Scripts/ParanormalFX/JSFX/MSSideFX.jsfx"] = "MS Side FX",
+    ["Saike Tools/Basics/BandSplitter.jsfx"] = "SAIKE SPLITTER",
 }
 
 local function TrimMyJSName(name)
@@ -243,7 +268,7 @@ local function DndAddFX_SRC(fx)
                     guid = "BTN_PREVIEW",
                     type = "PREVIEW",
                     name = Stripname(fx, true, true) },
-                    is_ara = FindBlackListedFX(fx),
+                is_ara = FindBlackListedFX(fx),
             }, 1)
         r.ImGui_EndDragDropSource(ctx)
     end
@@ -251,7 +276,7 @@ end
 
 local function DndAddFX_TARGET(tbl, i, parallel)
     if not DND_ADD_FX then return end
-    if ARA_Protection(tbl,i, parallel) then return end
+    if ARA_Protection(tbl, i, parallel) then return end
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_DragDropTarget(), COLOR["dnd"])
     r.ImGui_SetNextWindowBgAlpha(ctx, 0)
     if r.ImGui_BeginDragDropTarget(ctx) then
@@ -363,7 +388,7 @@ end
 
 local function DndMoveFX_TARGET_SERIAL_PARALLEL(tbl, i, parallel, serial_insert_point)
     if not DND_MOVE_FX then return end
-    if ARA_Protection(tbl,i, parallel) then return end
+    if ARA_Protection(tbl, i, parallel) then return end
     --! DO NOT MOVE ON PARALLEL BUTTON WHILE IN SAME PARALLEL LANE
     if IsOnSameParallelLane(tbl, i, parallel) then
         tbl[i].no_draw_p = true
@@ -599,71 +624,96 @@ function DrawFXList()
     local search = FilterBox()
     if search then return end
     for i = 1, #CAT do
-        if r.ImGui_BeginMenu(ctx, CAT[i].name) then
-            if CAT[i].name == "FX CHAINS" then
-                DrawFxChains(CAT[i].list)
-            elseif CAT[i].name == "TRACK TEMPLATES" then
-                DrawTrackTemplates(CAT[i].list)
-            else
-                DrawItems(CAT[i].list, CAT[i].name)
+        if CAT[i].name ~= "TRACK TEMPLATES" then
+            if r.ImGui_BeginMenu(ctx, CAT[i].name) then
+                if CAT[i].name == "FX CHAINS" then
+                    DrawFxChains(CAT[i].list)
+                    --elseif CAT[i].name == "TRACK TEMPLATES" then
+                    --    DrawTrackTemplates(CAT[i].list)
+                else
+                    DrawItems(CAT[i].list, CAT[i].name)
+                end
+                r.ImGui_EndMenu(ctx)
             end
-            r.ImGui_EndMenu(ctx)
         end
     end
 
-    --if r.ImGui_Selectable(ctx, "VIDEO PROCESSOR") then AddFX("Video processor") end
-    --DragAddDDSource("Video processor")
     if r.ImGui_BeginMenu(ctx, "UTILITY") then
-        r.ImGui_SeparatorText( ctx, "HELPERS" )
+        --r.ImGui_SeparatorText(ctx, "HELPERS")
         for i = 1, #HELPERS do
-            if r.ImGui_Selectable(ctx, HELPERS[i].fx_name) then 
-                AddFX(HELPERS[i].fx) 
+            if HELPERS[i].fx_name then
+            if r.ImGui_Selectable(ctx, HELPERS[i].fx_name) then
+                AddFX(HELPERS[i].fx)
             end
             DndAddFX_SRC(HELPERS[i].fx)
         end
-        r.ImGui_SeparatorText( ctx, "3 BAND" )
-        if r.ImGui_Selectable(ctx, "3-BAND SPLITTER FX") then AddFX("JS:3-Band Splitter FX") end
-        DndAddFX_SRC("JS:3-Band Splitter FX")
-        if r.ImGui_Selectable(ctx, "3 BAND SELECT FX") then AddFX("JS:3 Band Select FX") end
-        DndAddFX_SRC("JS:Band Select FX")
-        r.ImGui_SeparatorText( ctx, "4 BAND" )
-        if r.ImGui_Selectable(ctx, "4-BAND SPLITTER FX") then AddFX("JS:4-Band Splitter FX") end
-        DndAddFX_SRC("JS:4-Band Splitter FX")
-        if r.ImGui_Selectable(ctx, "4 BAND SELECT FX") then AddFX("JS:4 Band Select FX") end
-        DndAddFX_SRC("JS:4 Band Select FX")
-        r.ImGui_SeparatorText( ctx, "5 BAND" )
-        if r.ImGui_Selectable(ctx, "5-BAND SPLITTER FX") then AddFX("JS:5-Band Splitter FX") end
-        DndAddFX_SRC("JS:5-Band Splitter FX")
-        if r.ImGui_Selectable(ctx, "5 BAND SELECT FX") then AddFX("JS:5 Band Select FX") end
-        DndAddFX_SRC("JS:5 Band Select FX")       
-        r.ImGui_SeparatorText( ctx, "MID-SIDE" )
+        end
+        -- r.ImGui_SeparatorText(ctx, "3 BAND")
+        -- if r.ImGui_Selectable(ctx, "3-BAND SPLITTER FX") then AddFX("JS:3-Band Splitter FX") end
+        -- DndAddFX_SRC("JS:3-Band Splitter FX")
+        -- if r.ImGui_Selectable(ctx, "3 BAND SELECT FX") then AddFX("JS:3 Band Select FX") end
+        -- DndAddFX_SRC("JS:Band Select FX")
+        -- r.ImGui_SeparatorText(ctx, "4 BAND")
+        -- if r.ImGui_Selectable(ctx, "4-BAND SPLITTER FX") then AddFX("JS:4-Band Splitter FX") end
+        -- DndAddFX_SRC("JS:4-Band Splitter FX")
+        -- if r.ImGui_Selectable(ctx, "4 BAND SELECT FX") then AddFX("JS:4 Band Select FX") end
+        -- DndAddFX_SRC("JS:4 Band Select FX")
+        -- r.ImGui_SeparatorText(ctx, "5 BAND")
+        -- if r.ImGui_Selectable(ctx, "5-BAND SPLITTER FX") then AddFX("JS:5-Band Splitter FX") end
+        -- DndAddFX_SRC("JS:5-Band Splitter FX")
+        -- if r.ImGui_Selectable(ctx, "5 BAND SELECT FX") then AddFX("JS:5 Band Select FX") end
+        -- DndAddFX_SRC("JS:5 Band Select FX")
+        -- r.ImGui_SeparatorText(ctx, "MID-SIDE")
         if r.ImGui_Selectable(ctx, "MS MID FX") then AddFX("JS:MS MID FX") end
         DndAddFX_SRC("JS:MS MID FX")
         if r.ImGui_Selectable(ctx, "MS SIDE FX") then AddFX("JS:MS SIDE FX") end
         DndAddFX_SRC("JS:MS SIDE FX")
-       
-     
+
+
         r.ImGui_EndMenu(ctx)
     end
 
-    r.ImGui_PushStyleColor( ctx, r.ImGui_Col_Text(), COLOR["menu_txt_col"] )
+    r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Text(), COLOR["menu_txt_col"])
     if r.ImGui_BeginMenu(ctx, "PROCESSING SETUPS") then
-        if r.ImGui_Selectable(ctx, "3-BAND SPLITTER SETUP") then 
-            local chain_src = "../Scripts/Sexan_Scripts/ParanormalFX/FXChains/3BAND_SETUP.RfxChain"
+        r.ImGui_SeparatorText(ctx, "STOCK")
+        if r.ImGui_Selectable(ctx, "3-BAND SPLITTER STOCK") then
+            local chain_src = "../Scripts/Sexan_Scripts/ParanormalFX/FXChains/3BANDSTOCK.RfxChain"
             AddFX(chain_src)
         end
-        DndAddFX_SRC("../Scripts/Sexan_Scripts/ParanormalFX/FXChains/3BAND_SETUP.RfxChain")
-        if r.ImGui_Selectable(ctx, "4-BAND SPLITTER SETUP") then 
-            local chain_src = "../Scripts/Sexan_Scripts/ParanormalFX/FXChains/4BAND_SETUP.RfxChain"
+        DndAddFX_SRC("../Scripts/Sexan_Scripts/ParanormalFX/FXChains/3BANDSTOCK.RfxChain")
+        if r.ImGui_Selectable(ctx, "4-BAND SPLITTER STOCK") then
+            local chain_src = "../Scripts/Sexan_Scripts/ParanormalFX/FXChains/4BANDSTOCK.RfxChain"
             AddFX(chain_src)
         end
-        DndAddFX_SRC("../Scripts/Sexan_Scripts/ParanormalFX/FXChains/4BAND_SETUP.RfxChain")
-        if r.ImGui_Selectable(ctx, "5-BAND SPLITTER SETUP") then 
-            local chain_src = "../Scripts/Sexan_Scripts/ParanormalFX/FXChains/5BAND_SETUP.RfxChain"
+        DndAddFX_SRC("../Scripts/Sexan_Scripts/ParanormalFX/FXChains/4BANDSTOCK.RfxChain")
+        if r.ImGui_Selectable(ctx, "5-BAND SPLITTER STOCK") then
+            local chain_src = "../Scripts/Sexan_Scripts/ParanormalFX/FXChains/5BANDSTOCK.RfxChain"
             AddFX(chain_src)
         end
-        DndAddFX_SRC("../Scripts/Sexan_Scripts/ParanormalFX/FXChains/5BAND_SETUP.RfxChain")
-       
+        DndAddFX_SRC("../Scripts/Sexan_Scripts/ParanormalFX/FXChains/5BANDSTOCK.RfxChain")
+        r.ImGui_SeparatorText(ctx, "LINEAR PHASE - 24/12dB SLOPE")
+        if r.ImGui_Selectable(ctx, "2-BAND SPLITTER ADVANCE") then
+            local chain_src = "../Scripts/Sexan_Scripts/ParanormalFX/FXChains/SAIKE_2_SETUP.RfxChain"
+            AddFX(chain_src)
+        end
+        DndAddFX_SRC("../Scripts/Sexan_Scripts/ParanormalFX/FXChains/SAIKE_2_SETUP.RfxChain")
+        if r.ImGui_Selectable(ctx, "3-BAND SPLITTER ADVANCE") then
+            local chain_src = "../Scripts/Sexan_Scripts/ParanormalFX/FXChains/SAIKE_3_SETUP.RfxChain"
+            AddFX(chain_src)
+        end
+        DndAddFX_SRC("../Scripts/Sexan_Scripts/ParanormalFX/FXChains/SAIKE_3_SETUP.RfxChain")
+        if r.ImGui_Selectable(ctx, "4-BAND SPLITTER ADVANCE") then
+            local chain_src = "../Scripts/Sexan_Scripts/ParanormalFX/FXChains/SAIKE_4_SETUP.RfxChain"
+            AddFX(chain_src)
+        end
+        DndAddFX_SRC("../Scripts/Sexan_Scripts/ParanormalFX/FXChains/SAIKE_4_SETUP.RfxChain")
+        if r.ImGui_Selectable(ctx, "5-BAND SPLITTER ADVANCE") then
+            local chain_src = "../Scripts/Sexan_Scripts/ParanormalFX/FXChains/SAIKE_5_SETUP.RfxChain"
+            AddFX(chain_src)
+        end
+        DndAddFX_SRC("../Scripts/Sexan_Scripts/ParanormalFX/FXChains/SAIKE_5_SETUP.RfxChain")
+        r.ImGui_SeparatorText(ctx, "MID-SIDE")
+
         if r.ImGui_Selectable(ctx, "MID-SIDE SETUP") then
             local chain_src = "../Scripts/Sexan_Scripts/ParanormalFX/FXChains/MS_SETUP.RfxChain"
             AddFX(chain_src)
@@ -672,14 +722,15 @@ function DrawFXList()
 
         r.ImGui_EndMenu(ctx)
     end
-    r.ImGui_PopStyleColor( ctx)
+    r.ImGui_PopStyleColor(ctx)
 
     if r.ImGui_Selectable(ctx, "CONTAINER") then AddFX("Container") end
     DndAddFX_SRC("Container")
     if LAST_USED_FX then
         local recent_name = LAST_USED_FX:gsub("^(%S+:)", "")
         if recent_name:find(".RfxChain") then
-            local name = os:match("Win") and recent_name:reverse():match("(.-)\\") or recent_name:reverse():match("(.-)/")
+            local name = os:match("Win") and recent_name:reverse():match("(.-)\\") or
+                recent_name:reverse():match("(.-)/")
             if name then recent_name = name:reverse() end
         end
         r.ImGui_Separator(ctx)
@@ -703,7 +754,6 @@ enclose_btn = para_btn_size
 peak_btn_size = para_btn_size
 peak_width = 10
 name_margin = 25
-
 local function Tooltip(str, force)
     if not TOOLTIPS then return end
     if IS_DRAGGING_RIGHT_CANVAS then return end
@@ -745,7 +795,7 @@ local function MyKnob(label, style, p_value, v_min, v_max, knob_type)
         if p_value > v_max then p_value = v_max end
         value_changed = true
     end
-    
+
     local mwheel = r.ImGui_GetMouseWheel(ctx)
     if is_hovered and mwheel ~= 0 then
         local step = (v_max - v_min) / (CTRL and 1000 or 200.0)
@@ -796,13 +846,24 @@ local function MyKnob(label, style, p_value, v_min, v_max, knob_type)
             if knob_type == "vol" then
                 Tooltip("VOL " .. ('%.0f'):format(p_value))
             elseif knob_type == "pan" then
-                    Tooltip("PAN " .. ('%.0f'):format(p_value))
+                Tooltip("PAN " .. ('%.0f'):format(p_value))
             elseif knob_type == "dry_wet" then
-                    Tooltip(('%.0f'):format(100 - p_value) .. " DRY / WET " .. ('%.0f'):format(p_value))
+                Tooltip(('%.0f'):format(100 - p_value) .. " DRY / WET " .. ('%.0f'):format(p_value))
             elseif knob_type == "ms" then
-                        Tooltip("MS " .. ('%.0f'):format(p_value))
+                Tooltip("MS " .. ('%.0f'):format(p_value))
             elseif knob_type == "sample" then
-                        Tooltip("SAMPLE " .. ('%.0f'):format(p_value))
+                Tooltip("SAMPLE " .. ('%.0f'):format(p_value))
+            elseif knob_type == "freq" then
+                -- r.ShowConsoleMsg(p_value.."\n")
+                local srate = r.GetSetProjectInfo(0, "PROJECT_SRATE", 0, false)
+                --r.ShowConsoleMsg(srate.."\n")
+                local freq_max = 0.5 * srate;
+                local norm_freq_min = 20.0 / 22050.0
+
+                local val = freq_max * math.exp((1.0 - p_value) * math.log(norm_freq_min));
+                Tooltip("FREQ " .. ('%.0f'):format(val))
+            elseif knob_type == "freq3" then
+                Tooltip("FREQ " .. ('%.0f'):format(p_value))
             end
         end
     end
@@ -905,6 +966,7 @@ local function IterateContainer(depth, track, container_id, parent_fx_count, pre
     -- CALCULATER DEFAULT WIDTH
     local _, parrent_cont_name = r.TrackFX_GetFXName(track, 0x2000000 + container_id)
     local total_w, name_h = CalculateItemWH({ name = parrent_cont_name })
+    total_w = total_w + name_margin
     -- CALCULATER DEFAULT WIDTH
     if not c_ok then return child_fx, total_w + (name_margin * 3), name_h + (S_SPACING_Y * 3) end
     for i = 1, container_fx_count do
@@ -915,8 +977,8 @@ local function IterateContainer(depth, track, container_id, parent_fx_count, pre
 
         local is_helper
         for h = 1, #HELPERS do
-            if original_fx_name:lower():find(HELPERS[h].name:lower()) then
-                fx_name = HELPERS[h].helper
+            if fx_name:lower():find(HELPERS[h].name:lower(), nil, true) then
+                fx_name = HELPERS[h].helper or fx_name
                 is_helper = true
             end
         end
@@ -1010,14 +1072,13 @@ local function GenerateFXData(target)
         local fx_guid = r.TrackFX_GetFXGUID(TRACK, i - 1)
         local _, fx_type = r.TrackFX_GetNamedConfigParm(track, i - 1, "fx_type")
         local _, fx_name = r.TrackFX_GetFXName(track, i - 1)
-
         local _, original_fx_name = r.TrackFX_GetNamedConfigParm(track, i - 1, "fx_name")
 
-        
+
         local is_helper
         for h = 1, #HELPERS do
-            if original_fx_name:lower():find(HELPERS[h].name:lower()) then
-                fx_name = HELPERS[h].helper
+            if fx_name:lower():find(HELPERS[h].name:lower(), nil, true) then
+                fx_name = HELPERS[h].helper or fx_name
                 is_helper = true
             end
         end
@@ -1027,6 +1088,7 @@ local function GenerateFXData(target)
             new_name = TrimMyJSName(new_name)
             stripped_names[fx_name] = new_name
         end
+
         local _, para = r.TrackFX_GetNamedConfigParm(track, i - 1, "parallel")
         local wetparam = r.TrackFX_GetParamFromIdent(track, i - 1, ":wet")
         local wet_val = r.TrackFX_GetParam(track, i - 1, wetparam)
@@ -1135,7 +1197,7 @@ local function SineColorBrightness(color, org_col)
     return IncreaseDecreaseBrightness(color, color_over_time, "no_alpha")
 end
 
-function DrawListButton(name, color, hover, icon, round_side, shrink, active)
+function DrawListButton(name, color, hover, icon, round_side, shrink, active, txt_align)
     local rect_col = IS_DRAGGING_RIGHT_CANVAS and color or IncreaseDecreaseBrightness(color, hover and 50 or 0)
     local xs, ys = r.ImGui_GetItemRectMin(ctx)
     local xe, ye = r.ImGui_GetItemRectMax(ctx)
@@ -1158,8 +1220,13 @@ function DrawListButton(name, color, hover, icon, round_side, shrink, active)
     local font_size = r.ImGui_GetFontSize(ctx)
     local font_color = CalculateFontColor(color)
 
-    r.ImGui_DrawList_AddTextEx(draw_list, nil, font_size, xs + (w / 2) - (label_size / 2) + (offset or 0),
-        ys + ((h / 2)) - font_size / 2, r.ImGui_GetColorEx(ctx, font_color), name)
+    local txt_x = xs + (w / 2) - (label_size / 2)
+    txt_x = txt_align == "L" and xs or txt_x
+    txt_x = txt_align == "R" and xe - label_size - shrink - (name_margin // 2) or txt_x
+
+
+    r.ImGui_DrawList_AddTextEx(draw_list, nil, font_size, txt_x,
+        ys + (h / 2) - font_size / 2, r.ImGui_GetColorEx(ctx, font_color), name)
 
     if icon then r.ImGui_PopFont(ctx) end
 end
@@ -1294,7 +1361,6 @@ local function IsLastParallel(tbl, i)
         --! FIX MIDI MERGE MODE
         --if tbl[i + 1] and tbl[i + 1].p + tbl[i].p == 1 or not tbl[i + 1] then
         if tbl[i + 1] and tbl[i + 1].p == 0 and tbl[i].p > 0 or not tbl[i + 1] then
-        
             return true
         end
     end
@@ -1417,23 +1483,33 @@ local function DrawPreviewHideOriginal(guid)
     end
 end
 
-local function DrawVolumePanHelper(tbl, i, w)
+function Clamp(x, min_x, max_x)
+    if x < min_x then return min_x end
+    if x > max_x then return max_x end
+    return x
+end
+
+local function DrawHelper(tbl, i, w)
     if not tbl[i].is_helper then return end
     if not DrawPreviewHideOriginal(tbl[i].guid) then return end
-    if tbl[i].name:find("VOL - PAN",nil, true) then
+    local btn_hover, new_width
+    if tbl[i].name:find("VOL - PAN", nil, true) then
         local vol_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 0) -- 0 IS VOL IDENTIFIER
-        r.ImGui_SameLine(ctx, -FLT_MIN, mute + (CUSTOM_FONT and mute//4 or mute//2))
+        r.ImGui_SameLine(ctx, -FLT_MIN, mute + mute // 2)
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_vol")
         local rvh_v, v = MyKnob("", "arc", vol_val, -60, 12, "vol")
         if rvh_v then
             r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 0, v)
         end
         local vol_hover = r.ImGui_IsItemHovered(ctx)
+        if not btn_hover then
+            btn_hover = vol_hover
+        end
         if vol_hover and r.ImGui_IsMouseDoubleClicked(ctx, 0) then
             r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 0, 0)
         end
         r.ImGui_PopID(ctx)
-        r.ImGui_SameLine(ctx, -FLT_MIN, w - (mute * 2) - (CUSTOM_FONT and mute//4 or mute//2))
+        r.ImGui_SameLine(ctx, -FLT_MIN, w - (mute * 2) - mute // 2)
         local pan_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 1) -- 1 IS PAN IDENTIFIER
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_pan")
         local rvh_p, p = MyKnob("", "knob", pan_val, -100, 100, "pan")
@@ -1444,11 +1520,14 @@ local function DrawVolumePanHelper(tbl, i, w)
         if pan_hover and r.ImGui_IsMouseDoubleClicked(ctx, 0) then
             r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 1, 0)
         end
+        if not btn_hover then
+            btn_hover = pan_hover
+        end
         r.ImGui_PopID(ctx)
         r.ImGui_SetCursorPosY(ctx, r.ImGui_GetCursorPosY(ctx))
-        return vol_hover, pan_hover
+        --return vol_hover, pan_hover
     elseif tbl[i].name:find("POLARITY") then
-        r.ImGui_SameLine(ctx, -FLT_MIN, mute + (CUSTOM_FONT and 0 or mute//4))
+        r.ImGui_SameLine(ctx, -FLT_MIN, mute + mute // 4)
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_phase")
         local phase_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 0) -- 0 POLARITY NORMAL
         local pos = { r.ImGui_GetCursorScreenPos(ctx) }
@@ -1458,14 +1537,17 @@ local function DrawVolumePanHelper(tbl, i, w)
         Tooltip(phase_val == 0 and "NORMAL" or "INVERTED")
         local phase_hover = r.ImGui_IsItemHovered(ctx)
         local center = { pos[1] + Knob_Radius, pos[2] + Knob_Radius }
-        r.ImGui_DrawList_AddCircleFilled(draw_list, center[1], center[2], Knob_Radius - 2,        COLOR["knob_bg"])
+        r.ImGui_DrawList_AddCircleFilled(draw_list, center[1], center[2], Knob_Radius - 2, COLOR["knob_bg"])
         local phase_icon = phase_val == 0 and '"' or "Q"
         DrawListButton(phase_icon, 0, nil, true)
         r.ImGui_PopID(ctx)
-        return phase_hover
+        if not btn_hover then
+            btn_hover = phase_hover
+        end
+        --return phase_hover
     elseif tbl[i].name:find("TIME") then
         local vol_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 0) -- 0 POLARITY NORMAL
-        r.ImGui_SameLine(ctx, -FLT_MIN, mute + (CUSTOM_FONT and mute//4 or mute//2))
+        r.ImGui_SameLine(ctx, -FLT_MIN, mute + mute // 2)
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_time")
         local rvh_v, v = MyKnob("", "arc", vol_val, -1000, 1000, "ms")
         if rvh_v then
@@ -1475,22 +1557,118 @@ local function DrawVolumePanHelper(tbl, i, w)
         if vol_hover and r.ImGui_IsMouseDoubleClicked(ctx, 0) then
             r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 0, 0)
         end
+        if not btn_hover then
+            btn_hover = vol_hover
+        end
         r.ImGui_PopID(ctx)
-        r.ImGui_SameLine(ctx, -FLT_MIN, w - (mute * 2) - (CUSTOM_FONT and mute//4 or mute//2))
+        r.ImGui_SameLine(ctx, -FLT_MIN, w - (mute * 2) - mute // 2)
         local pan_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 3) -- 3 IS POLARITY INVERT
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_time2")
         local rvh_p, p = MyKnob("", "knob", pan_val, -40000, 40000, "sample")
         if rvh_p then
-            r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 3, p)-- 3 IS POLARITY INVERT
+            r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 3, p) -- 3 IS POLARITY INVERT
         end
         local pan_hover = r.ImGui_IsItemHovered(ctx)
         if pan_hover and r.ImGui_IsMouseDoubleClicked(ctx, 0) then
             r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 3, 0)
         end
+        if not btn_hover then
+            btn_hover = pan_hover
+        end
         r.ImGui_PopID(ctx)
         r.ImGui_SetCursorPosY(ctx, r.ImGui_GetCursorPosY(ctx))
-        return vol_hover, pan_hover
+        --return vol_hover, pan_hover
+    elseif tbl[i].name:find("SAIKE SPLITTER") then
+        new_width = true
+        local cuts = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 0) -- NUMBER OF CUTS
+        for c = 1, cuts do
+            r.ImGui_SameLine(ctx, 0, mute // 3)
+
+            r.ImGui_PushID(ctx, tbl[i].guid .. "saike" .. c)
+            local cf, minf, maxf = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, c) -- SLIDERS
+            local prev_v, next_v
+
+            prev_v = c > 1 and r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, c - 1) or 0
+            next_v = c < cuts and r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, c + 1) or 1
+
+            local val = Clamp(cf, prev_v, next_v)
+
+            local rvc, freq = MyKnob("", "knob", val, minf, maxf, "freq")
+            if rvc then
+                r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, c, freq)
+            end
+            r.ImGui_PopID(ctx)
+            if not btn_hover then btn_hover = r.ImGui_IsItemHovered(ctx) end
+        end
+        r.ImGui_SameLine(ctx, 0, mute // 3)
+        local fir_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 13) -- NUMBER OF FIR
+        r.ImGui_PushStyleColor(ctx, r.ImGui_Col_CheckMark(), 0xFFFFFFFF)
+        r.ImGui_SetCursorPosY(ctx, r.ImGui_GetCursorPosY(ctx) + 1)
+        if r.ImGui_Checkbox(ctx, "FIR", fir_val == 1) then
+            r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 13, fir_val == 1 and 0 or 1)
+        end
+        r.ImGui_PopStyleColor(ctx)
+        if not btn_hover then btn_hover = r.ImGui_IsItemHovered(ctx) end
+
+        r.ImGui_SameLine(ctx, 0, mute // 3)
+        r.ImGui_SetCursorPosY(ctx, r.ImGui_GetCursorPosY(ctx) + 1)
+
+        local pole_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 15) -- NUMBER OF FIR
+        local pol_name = pole_val == 1 and "12dB" or "24dB"
+        if r.ImGui_Button(ctx, pol_name) then
+            r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 15, pole_val == 1 and 0 or 1)
+        end
+        if not btn_hover then btn_hover = r.ImGui_IsItemHovered(ctx) end
+    elseif tbl[i].name:find("3-Band Splitter", nil, true) then
+        new_width = true
+        for c = 1, 2 do
+            r.ImGui_SameLine(ctx, 0, mute // 3)
+
+            r.ImGui_PushID(ctx, tbl[i].guid .. "3band_splitter" .. c)
+            local cf, minf, maxf = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, c-1) -- SLIDERS
+
+            local rvc, freq = MyKnob("", "knob", cf, minf, maxf, "freq3")
+            if rvc then
+                r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, c-1, freq)
+            end
+            r.ImGui_PopID(ctx)
+            if not btn_hover then btn_hover = r.ImGui_IsItemHovered(ctx) end
+        end
+        if not btn_hover then btn_hover = r.ImGui_IsItemHovered(ctx) end
+    elseif tbl[i].name:find("4-Band Splitter", nil, true) then
+        new_width = true
+        for c = 1, 3 do
+            r.ImGui_SameLine(ctx, 0, mute // 3)
+
+            r.ImGui_PushID(ctx, tbl[i].guid .. "3band_splitter" .. c)
+            local cf, minf, maxf = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, c-1) -- SLIDERS
+
+            local rvc, freq = MyKnob("", "knob", cf, minf, maxf, "freq3")
+            if rvc then
+                r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, c-1, freq)
+            end
+            r.ImGui_PopID(ctx)
+            if not btn_hover then btn_hover = r.ImGui_IsItemHovered(ctx) end
+        end
+        if not btn_hover then btn_hover = r.ImGui_IsItemHovered(ctx) end
+    elseif tbl[i].name:find("5-Band Splitter", nil, true) then
+        new_width = true
+        for c = 1, 4 do
+            r.ImGui_SameLine(ctx, 0, mute // 3)
+
+            r.ImGui_PushID(ctx, tbl[i].guid .. "3band_splitter" .. c)
+            local cf, minf, maxf = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, c-1) -- SLIDERS
+
+            local rvc, freq = MyKnob("", "knob", cf, minf, maxf, "freq3")
+            if rvc then
+                r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, c-1, freq)
+            end
+            r.ImGui_PopID(ctx)
+            if not btn_hover then btn_hover = r.ImGui_IsItemHovered(ctx) end
+        end
+        if not btn_hover then btn_hover = r.ImGui_IsItemHovered(ctx) end
     end
+    return btn_hover, new_width
 end
 
 local function DrawButton(tbl, i, name, width, fade, parrent_color)
@@ -1532,13 +1710,13 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
     r.ImGui_PopID(ctx)
     local color = tbl[i].bypass and COLOR["enabled"] or COLOR["bypass"]
     color = tbl[i].offline and COLOR["bypass"] or color
-    color = is_cut and IncreaseDecreaseBrightness(color,-40) or color
+    color = is_cut and IncreaseDecreaseBrightness(color, -40) or color
     local bypass_hover = r.ImGui_IsItemHovered(ctx)
 
     local tt_bypass = table.concat({ (not CTRL and not SHIFT and not ALT and "* " or "  "), "BYPASS" })
     local tt_solo = table.concat({ (SHIFT and not CTRL and "* " or "  "), "SOLO IN LANE - SHIFT" })
     local tt_offline = table.concat({ (CTRL and not SHIFT and "* " or "  "), "FX OFFLINE   - CTRL" })
-    local tt_lane_unsolo = table.concat({ (ALT and "* " or "  "), "UNSOLE LANE  - ALT" })
+    local tt_lane_unsolo = table.concat({ (ALT and "* " or "  "), "UNSOLO LANE  - ALT" })
 
     local tt_str = table.concat({ "HOLD MODIFIER", tt_bypass, tt_offline, tt_solo, tt_lane_unsolo }, "\n")
     tt_str = tbl[i].offline and "FX OFFLINE" or tt_str
@@ -1550,7 +1728,7 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
         DrawListButton(icon, color, bypass_hover, true, "L")
     end
     -------------------
-    local hlp_vol_hover, hlp_pan_hover = DrawVolumePanHelper(tbl, i, width)
+    local hlp_vol_hover, is_saike = DrawHelper(tbl, i, width)
     ------------------
     local vol_or_enclose_hover
     if tbl[i].type == "ROOT" then
@@ -1587,7 +1765,8 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
             if tbl[i + 1] and tbl[i + 1].p > 0 or tbl[i].p > 0 then
                 is_vol = true
             end
-            local rv, v, knob_hover = MyKnob("", is_vol and "arc" or "dry_wet", tbl[i].wet_val * 100, 0, 100, is_vol and "vol" or "dry_wet")
+            local rv, v, knob_hover = MyKnob("", is_vol and "arc" or "dry_wet", tbl[i].wet_val * 100, 0, 100,
+                is_vol and "vol" or "dry_wet")
             vol_or_enclose_hover = knob_hover
             if rv then
                 local parrent_container = GetParentContainerByGuid(tbl[i])
@@ -1627,7 +1806,7 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
         DndAddFX_ENCLOSE_TARGET(tbl, i)
     end
     ---------------------
-    if (btn_hover and not bypass_hover and not vol_or_enclose_hover and not hlp_pan_hover and not hlp_vol_hover) and not IS_DRAGGING_RIGHT_CANVAS and r.ImGui_IsMouseReleased(ctx, 1) then --r.ImGui_IsItemClicked(ctx, 1) then
+    if (btn_hover and not bypass_hover and not vol_or_enclose_hover and not hlp_vol_hover) and not IS_DRAGGING_RIGHT_CANVAS and r.ImGui_IsMouseReleased(ctx, 1) then --r.ImGui_IsItemClicked(ctx, 1) then
         OPEN_RIGHT_CLICK_MENU = true
         RC_DATA = {
             type = tbl[i].type,
@@ -1644,18 +1823,19 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
         (ALT and btn_hover and not bypass_hover and not vol_or_enclose_hover) and COLOR["del"] or TypToColor(tbl[i])
 
     color = tbl[i].offline and COLOR["del"] or color
-    color = is_cut and IncreaseDecreaseBrightness(color,-40) or color
+    color = is_cut and IncreaseDecreaseBrightness(color, -40) or color
+
     if DrawPreviewHideOriginal(tbl[i].guid) then
         DrawListButton(name, color,
-            (not bypass_hover and not vol_or_enclose_hover and not hlp_pan_hover and not hlp_vol_hover and (btn_hover or is_active)),
+            (not bypass_hover and not vol_or_enclose_hover and not hlp_vol_hover and (btn_hover or is_active)),
             nil,
-            tbl[i].type ~= "ROOT" and "R", mute, is_active)
+            tbl[i].type ~= "ROOT" and "R", mute, is_active, is_saike and "R")
     else
         local xs, ys = r.ImGui_GetItemRectMin(ctx)
         local xe, ye = r.ImGui_GetItemRectMax(ctx)
         r.ImGui_DrawList_AddRect(draw_list, xs, ys, xe, ye, 0x666666FF, 3, nil)
     end
-    if ALT and (btn_hover and not bypass_hover and not vol_or_enclose_hover and not hlp_pan_hover and not hlp_vol_hover) then
+    if ALT and (btn_hover and not bypass_hover and not vol_or_enclose_hover and not hlp_vol_hover) then
         Tooltip("DELETE " ..
             (tbl[i].type == "Container" and "CONTAINER WITH CONTENT" or tbl[i].type == "ROOT" and "FX CHAIN" or "FX"))
     end
@@ -1665,10 +1845,33 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
     return (btn_hover and not bypass_hover and not vol_or_enclose_hover)
 end
 
+local function HelperWidth(tbl, width)
+    if not tbl.is_helper then return width end
+
+    if tbl.name == "VOL - PAN" then
+        width = width + name_margin * 2
+    elseif tbl.name == "POLARITY" then
+        width = width + name_margin
+    elseif tbl.name == "TIME DELAY" then
+        width = width + name_margin * 2
+    elseif tbl.name == "SAIKE SPLITTER" then
+        local cuts = r.TrackFX_GetParam(TRACK, tbl.FX_ID, 0) -- NUMBER OF CUTS
+        width = (width + 80) + (name_margin + 5) * (cuts)
+    elseif tbl.name:find("3-Band Splitter",nil,true) then
+        width = width + name_margin * 2
+    elseif tbl.name:find("4-Band Splitter",nil,true) then
+        width = width + name_margin * 3
+    elseif tbl.name:find("5-Band Splitter",nil,true) then
+        width = width + name_margin * 4
+    end
+    return width
+end
+
 local function DrawPlugins(center, tbl, fade, parrent_pass_color)
     local last
     for i = 0, #tbl do
         local width, height = ItemFullSize(tbl[i])
+        width = HelperWidth(tbl[i], width)
         SetItemPos(tbl, i, center, width)
         if tbl[i].type ~= "Container" and tbl[i].type ~= "INSERT_POINT" then
             r.ImGui_BeginGroup(ctx)
@@ -1682,7 +1885,7 @@ local function DrawPlugins(center, tbl, fade, parrent_pass_color)
         if tbl[i].type == "ROOT" then
             local xs, ys = r.ImGui_GetItemRectMin(ctx)
             local xe, ye = r.ImGui_GetItemRectMax(ctx)
-            OFF_SCREEN  = r.ImGui_IsRectVisibleEx( ctx, xs, ys, xe, ye )
+            OFF_SCREEN   = r.ImGui_IsRectVisibleEx(ctx, xs, ys, xe, ye)
         end
 
         if tbl[i].type == "Container" then
@@ -1747,11 +1950,11 @@ local function CustomDNDPreview()
     local off_x, off_y = 25, 28
     --! CENTER THE BUTTON AT MOUSE CURSOR IF THERE ARE NO TOOLTIPS
     if not TOOLTIPS then
-        local click_x = r.ImGui_GetMouseClickedPos(ctx,0)
+        local click_x = r.ImGui_GetMouseClickedPos(ctx, 0)
         off_x = DRAG_PREVIEW.x and -(click_x - DRAG_PREVIEW.x) or -20
         off_y = 20
     end
-    
+
     r.ImGui_SetNextWindowPos(ctx, mx + off_x, my + off_y)
     r.ImGui_SetNextWindowBgAlpha(ctx, 0.3)
     if DRAG_PREVIEW[DRAG_PREVIEW.i].type == "Container" then
@@ -1765,6 +1968,7 @@ local function CustomDNDPreview()
         end
     else
         local width, height = ItemFullSize(DRAG_PREVIEW[DRAG_PREVIEW.i])
+        width = HelperWidth(DRAG_PREVIEW[DRAG_PREVIEW.i], width)
         if r.ImGui_BeginChild(ctx, "##PREVIEW_DRAW_FX", width + (s_window_x * 2), height + (s_window_y * 2), true) then
             DrawButton(DRAG_PREVIEW, DRAG_PREVIEW.i, DRAG_PREVIEW[DRAG_PREVIEW.i].name, width, 1)
             r.ImGui_EndChild(ctx)
