@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.31.1
+-- @version 1.31.2
 -- @changelog
---  Update main FX BROWSER table when triggering rescan from settings
+--  When RESCANING fx list, read files after its done to update the main tables
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -231,7 +231,7 @@ end
 --UpdateChainsTrackTemplates(CAT)
 
 function GetFXBrowserData()
-    return FX_LIST, CAT
+    FX_LIST, CAT = ReadFXFile(FX_FILE, FX_CAT_FILE, FX_DEV_LIST_FILE)
 end
 
 function UpdateFX_LIST(fx_tbl,cat_tbl)

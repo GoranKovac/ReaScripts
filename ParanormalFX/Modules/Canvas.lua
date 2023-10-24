@@ -427,14 +427,18 @@ function DrawUserSettings()
 
     if r.ImGui_BeginChild(ctx, "USERSETTIGS", 200, 584, 1) then
         if r.ImGui_Button(ctx, "RESCAN FX LIST") then
-            local FX_LIST, CAT = GetFXTbl()
+            local FX_LIST, CAT, DEV_LIST = GetFXTbl()
             local serialized_fx = TableToString(FX_LIST)
             WriteToFile(FX_FILE, serialized_fx)
 
             local serialized_cat = TableToString(CAT)
             WriteToFile(FX_CAT_FILE, serialized_cat)
+
+            local serialized_dev_list = TableToString(DEV_LIST)
+            WriteToFile(FX_DEV_LIST_FILE, serialized_dev_list)
+
+            GetFXBrowserData()
             WANT_REFRESH = true
-            UpdateFX_LIST(FX_LIST, CAT)
         end
         SettingsTooltips("FX LIST IS CACHED TO FILE FOR FASTER LOADING TIMES\nNEEDS MANUAL TRIGGER FOR UPDATING")
 
