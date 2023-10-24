@@ -1,9 +1,9 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.12
+-- @version 1.13
 -- @changelog
---  Update Developer list when reading from cache file
+--  Fix empty developer list from file
 
 local r = reaper
 local os = r.GetOS()
@@ -513,6 +513,7 @@ end
 
 local sub = string.sub
 function Stripname(name, prefix, suffix)
+    if not DEVELOPER_LIST then return name end
     -- REMOVE DEVELOPER
     if suffix then
         for i = 1, #DEVELOPER_LIST do
