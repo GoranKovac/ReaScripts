@@ -1,9 +1,9 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.13
+-- @version 1.14
 -- @changelog
---  Fix empty developer list from file
+--  Fix empty category file
 
 local r = reaper
 local os = r.GetOS()
@@ -540,6 +540,7 @@ function GetFXTbl()
 end
 
 function UpdateChainsTrackTemplates(cat_tbl)
+    if not cat_tbl then return end
     local FX_CHAINS = ParseFXChains()
     local TRACK_TEMPLATES = ParseTrackTemplates()
     for i = 1, #cat_tbl do
