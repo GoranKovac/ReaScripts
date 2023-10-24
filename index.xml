@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="6d19f9abcea0a8c1c0c6adef13fdfb23d375db51" name="Sexan_Scripts">
+<index version="1" commit="d15cfd2c1181636f160465da8196023d858d196b" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -582,6 +582,10 @@ Literize developer name from magic characters]]></changelog>
       <version name="1.12" author="Sexan" time="2023-10-24T11:13:19Z">
         <changelog><![CDATA[Update Developer list when reading from cache file]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/0d93b2deabb4897f6178c2baf910a51c827a2c47/FX/Sexan_FX_Browser_ParserV7.lua</source>
+      </version>
+      <version name="1.13" author="Sexan" time="2023-10-24T11:20:46Z">
+        <changelog><![CDATA[Fix empty developer list from file]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/d15cfd2c1181636f160465da8196023d858d196b/FX/Sexan_FX_Browser_ParserV7.lua</source>
       </version>
     </reapack>
   </category>
