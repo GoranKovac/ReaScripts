@@ -1717,7 +1717,20 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
                 r.TrackFX_SetOffline(TRACK, item_id, not tbl[i].offline)
             else
                 if SHIFT and not CTRL then
-                    SoloInLane(parrent_container, item_id, tbl, i)
+                    --! TOGGLE SOLO IN LANE
+                    if PREV_SOLO_LANE_ID ~= tbl[i].FX_ID then
+                        SoloInLane(parrent_container, item_id, tbl, i)
+                        PREV_SOLO_LANE_ID = tbl[i].FX_ID
+                    else
+                        local _, first_idx_in_row = FindNextPrevRow(tbl, i, -1)
+                        local _, last_idx_in_row = FindNextPrevRow(tbl, i, 1)
+    
+                        for j = first_idx_in_row, last_idx_in_row do
+                            local solo_item_id = CalcFxID(parrent_container, j)
+                            r.TrackFX_SetEnabled(TRACK, solo_item_id, true)
+                        end
+                        PREV_SOLO_LANE_ID = nil
+                    end
                 elseif CTRL and not SHIFT then
                     r.TrackFX_SetOffline(TRACK, item_id, not tbl[i].offline)
                 elseif ALT then
@@ -1742,6 +1755,7 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
 
     local tt_bypass = table.concat({ (not CTRL and not SHIFT and not ALT and "* " or "  "), "BYPASS" })
     local tt_solo = table.concat({ (SHIFT and not CTRL and "* " or "  "), "SOLO IN LANE - SHIFT" })
+
     local tt_offline = table.concat({ (CTRL and not SHIFT and "* " or "  "), "FX OFFLINE   - CTRL" })
     local tt_lane_unsolo = table.concat({ (ALT and "* " or "  "), "UNSOLO LANE  - ALT" })
 

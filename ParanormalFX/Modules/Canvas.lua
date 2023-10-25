@@ -73,7 +73,9 @@ local function Rename()
         if SAVED_NAME then
             local parrent_container = GetParentContainerByGuid(tbl[i])
             local item_id = CalcFxID(parrent_container, i)
+            r.Undo_BeginBlock()
             r.TrackFX_SetNamedConfigParm(TRACK, item_id, "renamed_name", SAVED_NAME)
+            EndUndoBlock("RENAME FX: " .. (RENAME_DATA.tbl[RENAME_DATA.i].name))
         end
         RENAME_DATA = nil
         r.ImGui_CloseCurrentPopup(ctx)
@@ -120,6 +122,39 @@ local function InsertPointsMenu()
                     local item_id = CalcFxID(parrent_container, i)
                     r.TrackFX_SetEnabled(TRACK, item_id, true)
                 end
+            end
+            if r.ImGui_MenuItem(ctx, 'ENCLOSE LANE INTO CONTAINER') then
+                r.Undo_BeginBlock()
+                r.PreventUIRefresh(1)
+                local parrent_container = GetFx(RC_DATA.tbl[RC_DATA.i].pid)
+
+                local _, first_idx_in_row = FindNextPrevRow(RC_DATA.tbl, RC_DATA.i, -1)
+                local _, last_idx_in_row = FindNextPrevRow(RC_DATA.tbl, RC_DATA.i, 1)
+
+                local lane_tbl = {}
+                for i = first_idx_in_row, last_idx_in_row do
+                    local id = CalcFxID(parrent_container, i)
+                    local fx_guid = r.TrackFX_GetFXGUID(TRACK, id)
+                    if fx_guid then lane_tbl[#lane_tbl+1] = fx_guid end
+                end
+
+                local cont_insert_id = CalculateInsertContainerPosFromBlacklist()
+                local cont_pos = r.TrackFX_AddByName(TRACK, "Container", false, cont_insert_id)
+                UpdateFxData()
+                for i = #lane_tbl, 1, -1 do
+                    local cont_id = 0x2000000 + cont_pos + 1 + (r.TrackFX_GetCount(TRACK) + 1)
+                    parrent_container = GetFx(RC_DATA.tbl[RC_DATA.i].pid)
+                    local child_id = GetFx(lane_tbl[i]).FX_ID
+                    r.TrackFX_CopyToTrack(TRACK, child_id, TRACK, cont_id, true)
+                    UpdateFxData()
+                end
+                UpdateFxData()
+                parrent_container = GetFx(RC_DATA.tbl[RC_DATA.i].pid)
+                local original_pos = CalcFxID(parrent_container, first_idx_in_row)
+                -- MOVE CONTAINER TO ORIGINAL TARGET
+                r.TrackFX_CopyToTrack(TRACK, 0x2000000 + cont_pos + 1, TRACK, original_pos, true)
+                r.PreventUIRefresh(-1)
+                EndUndoBlock("ENCLOSE PARALLEL LANE")
             end
         end
         -- SHOW ONLY WHEN CLIPBOARD IS AVAILABLE
