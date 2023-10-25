@@ -1,9 +1,10 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.14
+-- @version 1.15
 -- @changelog
---  Fix empty category file
+--  Parsing fxfolder items are now flaged instead of replaced
+--  Found FX is added last to list then flags get deleted to ensure numeric key order
 
 local r = reaper
 local os = r.GetOS()
@@ -353,16 +354,17 @@ local function ParseFavorites()
     local fav_str  = GetFileContext(fav_path)
 
     CAT[#CAT + 1]  = { name = "FOLDERS", list = {} }
+
     local current_folder
     for line in fav_str:gmatch('[^\r\n]+') do
-        local folder = line:match("%[(Folder%d+)%]")
+        local folder = line:match("^%[(Folder%d+)%]")
 
         -- GET INITIAL FOLDER NAME "[Folder0]" AND SAVE IF
         if folder then current_folder = folder end
 
         -- GET FOLDER ITEMS "Item0=..."
         if line:match("Item%d+") then
-            local item = line:match("Item%d+=(.+)")
+            local item = "R_ITEM_" .. line:match("Item%d+=(.+)")
             local dev_tbl = InTbl(CAT[#CAT].list, current_folder)
             if not dev_tbl then
                 table.insert(CAT[#CAT].list,
@@ -377,27 +379,47 @@ local function ParseFavorites()
         if line:match("Type%d+") then
             local line_id, fx_type = line:match("(%d+)=(%d+)")
             if fx_type == "3" then -- VST
-                local item = CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1]
+                local item = CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1]:gsub("R_ITEM_", "", 1)
                 if item then
                     local id = os:match("Win") and item:reverse():match("(.-)\\") or item:reverse():match("(.-)/")
                     if id then
                         -- NEED TO REPLACE WHITESPACES AND DASH WITH LOWER DASH ALSO (HOW ITS IN VST INI FILE)
                         id = id:reverse():gsub(" ", "_"):gsub("-", "_")
-                        CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1] = FindFXIDName(VST_INFO, id)
+                        local fx_found = FindFXIDName(VST_INFO, id)
+                        if fx_found then
+                            table.insert(CAT[#CAT].list[#CAT[#CAT].list].fx, fx_found)
+                        end
+                        --CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1] = FindFXIDName(VST_INFO, id)
                     end
                 end
             elseif fx_type == "2" then --JSFX
-                local item = CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1]
-                CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1] = FindFXIDName(JS_INFO, item)
+                local item = CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1]:gsub("R_ITEM_", "", 1)
+                local fx_found = FindFXIDName(JS_INFO, item)
+                if fx_found then
+                    table.insert(CAT[#CAT].list[#CAT[#CAT].list].fx, fx_found)
+                end
+                --CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1] = FindFXIDName(JS_INFO, item)
             elseif fx_type == "7" then -- CLAP
-                local item = CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1]
-                CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1] = FindFXIDName(CLAP_INFO, item)
+                local item = CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1]:gsub("R_ITEM_", "", 1)
+                local fx_found = FindFXIDName(CLAP_INFO, item)
+                if fx_found then
+                    table.insert(CAT[#CAT].list[#CAT[#CAT].list].fx, fx_found)
+                end
+                --CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1] = FindFXIDName(CLAP_INFO, item)
             elseif fx_type == "1" then -- LV2
-                local item = CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1]
-                CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1] = FindFXIDName(LV2_INFO, item)
+                local item = CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1]:gsub("R_ITEM_", "", 1)
+                local fx_found = FindFXIDName(LV2_INFO, item)
+                if fx_found then
+                    table.insert(CAT[#CAT].list[#CAT[#CAT].list].fx, fx_found)
+                end
+                --CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1] = FindFXIDName(LV2_INFO, item)
             elseif fx_type == "5" then -- AU
-                local item = CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1]
-                CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1] = FindFXIDName(AU_INFO, item)
+                local item = CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1]:gsub("R_ITEM_", "", 1)
+                local fx_found = FindFXIDName(AU_INFO, item)
+                if fx_found then
+                    table.insert(CAT[#CAT].list[#CAT[#CAT].list].fx, fx_found)
+                end
+                --CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1] = FindFXIDName(AU_INFO, item)
             elseif fx_type == "1048576" then -- SMART FOLDER
                 CAT[#CAT].list[#CAT[#CAT].list].smart = true
             end
@@ -423,6 +445,13 @@ local function ParseFavorites()
     for i = 1, #CAT do
         for j = #CAT[i].list, 1, -1 do
             if CAT[i].list[j].smart then table.remove(CAT[i].list, j) end
+            --if CAT[i].list[j]
+            for f = #CAT[i].list[j].fx, 1, -1 do
+                if CAT[i].list[j].fx[f]:find("R_ITEM_") then
+                   -- r.ShowConsoleMsg(CAT[i].list[j].fx[f] .. "\n")
+                   table.remove(CAT[i].list[j].fx, f)
+                end
+            end
         end
     end
 end
