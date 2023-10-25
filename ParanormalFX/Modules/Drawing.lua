@@ -35,6 +35,7 @@ COLOR = {
     ["phase"]        = 0x9674c5ff,
     ["cut"]          = 0x00ff00ff,
     ["menu_txt_col"] = 0x3aCCffff,
+    ["offline"] = 0x4d5e72ff,
 
 }
 -----------------------------------------------------------------
@@ -1863,7 +1864,7 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
     color = parrent_color and parrent_color or
         (ALT and btn_hover and not bypass_hover and not vol_or_enclose_hover) and COLOR["del"] or TypToColor(tbl[i])
 
-    color = tbl[i].offline and COLOR["del"] or color
+    color = tbl[i].offline and COLOR["offline"] or color
     color = is_cut and IncreaseDecreaseBrightness(color, -40) or color
 
     if DrawPreviewHideOriginal(tbl[i].guid) then
