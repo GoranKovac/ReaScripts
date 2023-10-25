@@ -625,15 +625,17 @@ function DrawFXList()
     if search then return end
     for i = 1, #CAT do
         if CAT[i].name ~= "TRACK TEMPLATES" then
-            if r.ImGui_BeginMenu(ctx, CAT[i].name) then
-                if CAT[i].name == "FX CHAINS" then
-                    DrawFxChains(CAT[i].list)
-                    --elseif CAT[i].name == "TRACK TEMPLATES" then
-                    --    DrawTrackTemplates(CAT[i].list)
-                else
-                    DrawItems(CAT[i].list, CAT[i].name)
+            if #CAT[i].list ~= 0 then
+                if r.ImGui_BeginMenu(ctx, CAT[i].name) then
+                    if CAT[i].name == "FX CHAINS" then
+                        DrawFxChains(CAT[i].list)
+                        --elseif CAT[i].name == "TRACK TEMPLATES" then
+                        --    DrawTrackTemplates(CAT[i].list)
+                    else
+                        DrawItems(CAT[i].list, CAT[i].name)
+                    end
+                    r.ImGui_EndMenu(ctx)
                 end
-                r.ImGui_EndMenu(ctx)
             end
         end
     end
@@ -642,11 +644,11 @@ function DrawFXList()
         --r.ImGui_SeparatorText(ctx, "HELPERS")
         for i = 1, #HELPERS do
             if HELPERS[i].fx_name then
-            if r.ImGui_Selectable(ctx, HELPERS[i].fx_name) then
-                AddFX(HELPERS[i].fx)
+                if r.ImGui_Selectable(ctx, HELPERS[i].fx_name) then
+                    AddFX(HELPERS[i].fx)
+                end
+                DndAddFX_SRC(HELPERS[i].fx)
             end
-            DndAddFX_SRC(HELPERS[i].fx)
-        end
         end
         -- r.ImGui_SeparatorText(ctx, "3 BAND")
         -- if r.ImGui_Selectable(ctx, "3-BAND SPLITTER FX") then AddFX("JS:3-Band Splitter FX") end
@@ -883,11 +885,11 @@ local function HelperWidth(tbl, width)
     elseif tbl.name == "SAIKE SPLITTER" then
         local cuts = r.TrackFX_GetParam(TRACK, tbl.FX_ID, 0) -- NUMBER OF CUTS
         width = (width + 80) + (name_margin + 5) * (cuts)
-    elseif tbl.name:find("3-Band Splitter",nil,true) then
+    elseif tbl.name:find("3-Band Splitter", nil, true) then
         width = width + name_margin * 2
-    elseif tbl.name:find("4-Band Splitter",nil,true) then
+    elseif tbl.name:find("4-Band Splitter", nil, true) then
         width = width + name_margin * 3
-    elseif tbl.name:find("5-Band Splitter",nil,true) then
+    elseif tbl.name:find("5-Band Splitter", nil, true) then
         width = width + name_margin * 4
     end
     return width
@@ -1247,9 +1249,9 @@ function DrawListButton(name, color, hover, icon, round_side, shrink, active, tx
     txt_x = txt_align == "L" and xs or txt_x
     txt_x = txt_align == "R" and xe - label_size - shrink - (name_margin // 2) or txt_x
 
+    local txt_y = ys + (h / 2) - (font_size / 2)
 
-    r.ImGui_DrawList_AddTextEx(draw_list, nil, font_size, txt_x,
-        ys + (h / 2) - font_size / 2, r.ImGui_GetColorEx(ctx, font_color), name)
+    r.ImGui_DrawList_AddTextEx(draw_list, nil, font_size, txt_x,    txt_y, r.ImGui_GetColorEx(ctx, font_color), name)
 
     if icon then r.ImGui_PopFont(ctx) end
 end
@@ -1650,11 +1652,11 @@ local function DrawHelper(tbl, i, w)
             r.ImGui_SameLine(ctx, 0, mute // 3)
 
             r.ImGui_PushID(ctx, tbl[i].guid .. "3band_splitter" .. c)
-            local cf, minf, maxf = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, c-1) -- SLIDERS
+            local cf, minf, maxf = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, c - 1) -- SLIDERS
 
             local rvc, freq = MyKnob("", "knob", cf, minf, maxf, "freq3")
             if rvc then
-                r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, c-1, freq)
+                r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, c - 1, freq)
             end
             r.ImGui_PopID(ctx)
             if not btn_hover then btn_hover = r.ImGui_IsItemHovered(ctx) end
@@ -1666,11 +1668,11 @@ local function DrawHelper(tbl, i, w)
             r.ImGui_SameLine(ctx, 0, mute // 3)
 
             r.ImGui_PushID(ctx, tbl[i].guid .. "3band_splitter" .. c)
-            local cf, minf, maxf = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, c-1) -- SLIDERS
+            local cf, minf, maxf = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, c - 1) -- SLIDERS
 
             local rvc, freq = MyKnob("", "knob", cf, minf, maxf, "freq3")
             if rvc then
-                r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, c-1, freq)
+                r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, c - 1, freq)
             end
             r.ImGui_PopID(ctx)
             if not btn_hover then btn_hover = r.ImGui_IsItemHovered(ctx) end
@@ -1682,11 +1684,11 @@ local function DrawHelper(tbl, i, w)
             r.ImGui_SameLine(ctx, 0, mute // 3)
 
             r.ImGui_PushID(ctx, tbl[i].guid .. "3band_splitter" .. c)
-            local cf, minf, maxf = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, c-1) -- SLIDERS
+            local cf, minf, maxf = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, c - 1) -- SLIDERS
 
             local rvc, freq = MyKnob("", "knob", cf, minf, maxf, "freq3")
             if rvc then
-                r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, c-1, freq)
+                r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, c - 1, freq)
             end
             r.ImGui_PopID(ctx)
             if not btn_hover then btn_hover = r.ImGui_IsItemHovered(ctx) end
@@ -1749,7 +1751,7 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
     Tooltip(tt_str)
 
     if DrawPreviewHideOriginal(tbl[i].guid) then
-        local icon = tbl[i].offline and "#" or "!"
+        local icon = tbl[i].offline and "R" or "!"
         DrawListButton(icon, color, bypass_hover, true, "L")
     end
     -------------------

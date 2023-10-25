@@ -206,3 +206,12 @@ function RemoveAllFX()
     EndUndoBlock("DELETE ALL FX IN CHAIN")
     r.PreventUIRefresh(-1)
 end
+
+function SetFXSlot(tbl, num)
+    local chunk = tbl.fx[num].chunk
+    local _, track_chunk = r.GetTrackStateChunk(TRACK, "", false)
+    local fx_slot_chunk = get_fx_chunk(tbl.guid)
+    local fx_chunk = Literalize(fx_slot_chunk)
+    local new_chunk = string.gsub(track_chunk, fx_chunk, chunk)
+    r.SetTrackStateChunk(TRACK, new_chunk, false)
+end

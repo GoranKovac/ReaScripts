@@ -1,9 +1,10 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.31.4
+-- @version 1.31.5
 -- @changelog
---  Fix copy/cut/paste on Master track
+--  Exclude empty Menu entries from showing
+--  Better fx offline icon
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
