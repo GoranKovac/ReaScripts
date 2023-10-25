@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="59d34c942c69bbdf4ada0fa325db83f34849f017" name="Sexan_Scripts">
+<index version="1" commit="2ac77a07bafbad2f02732b6576bc785d3972e432" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -1565,6 +1565,31 @@ Better fx offline icon]]></changelog>
         <source file="FXChains/SAIKE_5_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/015d663381ecc0be2fa2c78d0d57044879447f97/ParanormalFX/FXChains/SAIKE_5_SETUP.RfxChain</source>
         <source type="effect" file="JSFX/MSMidFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/015d663381ecc0be2fa2c78d0d57044879447f97/ParanormalFX/JSFX/MSMidFX.jsfx</source>
         <source type="effect" file="JSFX/MSSideFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/015d663381ecc0be2fa2c78d0d57044879447f97/ParanormalFX/JSFX/MSSideFX.jsfx</source>
+      </version>
+      <version name="1.31.6" author="Sexan" time="2023-10-25T14:48:23Z">
+        <changelog><![CDATA[Solo in Lane now toggles
+NEW Enclose whole parallel lane into container (only available if multiple parallel lanes)
+Added undo point when renaming]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/2ac77a07bafbad2f02732b6576bc785d3972e432/ParanormalFX/Sexan_ParaNormal_FX_Router.lua</source>
+        <source file="Modules/Canvas.lua">https://github.com/GoranKovac/ReaScripts/raw/2ac77a07bafbad2f02732b6576bc785d3972e432/ParanormalFX/Modules/Canvas.lua</source>
+        <source file="Modules/ContainerCode.lua">https://github.com/GoranKovac/ReaScripts/raw/2ac77a07bafbad2f02732b6576bc785d3972e432/ParanormalFX/Modules/ContainerCode.lua</source>
+        <source file="Modules/Drawing.lua">https://github.com/GoranKovac/ReaScripts/raw/2ac77a07bafbad2f02732b6576bc785d3972e432/ParanormalFX/Modules/Drawing.lua</source>
+        <source file="Modules/Functions.lua">https://github.com/GoranKovac/ReaScripts/raw/2ac77a07bafbad2f02732b6576bc785d3972e432/ParanormalFX/Modules/Functions.lua</source>
+        <source file="Modules/Utils.lua">https://github.com/GoranKovac/ReaScripts/raw/2ac77a07bafbad2f02732b6576bc785d3972e432/ParanormalFX/Modules/Utils.lua</source>
+        <source file="Fonts/Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/2ac77a07bafbad2f02732b6576bc785d3972e432/ParanormalFX/Fonts/Icons.ttf</source>
+        <source file="Fonts/ProggyClean.ttf">https://github.com/GoranKovac/ReaScripts/raw/2ac77a07bafbad2f02732b6576bc785d3972e432/ParanormalFX/Fonts/ProggyClean.ttf</source>
+        <source file="JSFX/MSMidFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/2ac77a07bafbad2f02732b6576bc785d3972e432/ParanormalFX/JSFX/MSMidFX.jsfx</source>
+        <source file="JSFX/MSSideFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/2ac77a07bafbad2f02732b6576bc785d3972e432/ParanormalFX/JSFX/MSSideFX.jsfx</source>
+        <source file="FXChains/3BANDSTOCK.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/2ac77a07bafbad2f02732b6576bc785d3972e432/ParanormalFX/FXChains/3BANDSTOCK.RfxChain</source>
+        <source file="FXChains/4BANDSTOCK.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/2ac77a07bafbad2f02732b6576bc785d3972e432/ParanormalFX/FXChains/4BANDSTOCK.RfxChain</source>
+        <source file="FXChains/5BANDSTOCK.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/2ac77a07bafbad2f02732b6576bc785d3972e432/ParanormalFX/FXChains/5BANDSTOCK.RfxChain</source>
+        <source file="FXChains/MS_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/2ac77a07bafbad2f02732b6576bc785d3972e432/ParanormalFX/FXChains/MS_SETUP.RfxChain</source>
+        <source file="FXChains/SAIKE_2_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/2ac77a07bafbad2f02732b6576bc785d3972e432/ParanormalFX/FXChains/SAIKE_2_SETUP.RfxChain</source>
+        <source file="FXChains/SAIKE_3_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/2ac77a07bafbad2f02732b6576bc785d3972e432/ParanormalFX/FXChains/SAIKE_3_SETUP.RfxChain</source>
+        <source file="FXChains/SAIKE_4_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/2ac77a07bafbad2f02732b6576bc785d3972e432/ParanormalFX/FXChains/SAIKE_4_SETUP.RfxChain</source>
+        <source file="FXChains/SAIKE_5_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/2ac77a07bafbad2f02732b6576bc785d3972e432/ParanormalFX/FXChains/SAIKE_5_SETUP.RfxChain</source>
+        <source type="effect" file="JSFX/MSMidFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/2ac77a07bafbad2f02732b6576bc785d3972e432/ParanormalFX/JSFX/MSMidFX.jsfx</source>
+        <source type="effect" file="JSFX/MSSideFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/2ac77a07bafbad2f02732b6576bc785d3972e432/ParanormalFX/JSFX/MSSideFX.jsfx</source>
       </version>
     </reapack>
   </category>
