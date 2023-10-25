@@ -1750,7 +1750,7 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
     end
     r.ImGui_PopID(ctx)
     local color = tbl[i].bypass and COLOR["enabled"] or COLOR["bypass"]
-    color = tbl[i].offline and COLOR["bypass"] or color
+    color = tbl[i].offline and COLOR["offline"] or color
     color = is_cut and IncreaseDecreaseBrightness(color, -40) or color
     local bypass_hover = r.ImGui_IsItemHovered(ctx)
 

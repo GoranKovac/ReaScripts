@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.31.8
+-- @version 1.31.9
 -- @changelog
---  FX offline color
+--  FX offline color V2
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
