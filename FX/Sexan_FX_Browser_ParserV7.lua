@@ -1,10 +1,9 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.15
+-- @version 1.17
 -- @changelog
---  Parsing fxfolder items are now flaged instead of replaced
---  Found FX is added last to list then flags get deleted to ensure numeric key order
+--  Ignore Empty favorites folders (cause crash)
 
 local r = reaper
 local os = r.GetOS()
@@ -271,7 +270,7 @@ local function ParseFXTags()
         -- PLUGIN FOUND
         local FX, dev_category = line:match("(.+)=(.+)")
         if dev_category then
-            dev_category = dev_category:gsub("[%[%]]","")
+            dev_category = dev_category:gsub("[%[%]]", "")
             if DEV then AddDevList(dev_category) end
             local fx_name = FindFXIDName(VST_INFO, FX)
             fx_name = fx_name and fx_name or FindFXIDName(AU_INFO, FX)
@@ -446,10 +445,11 @@ local function ParseFavorites()
         for j = #CAT[i].list, 1, -1 do
             if CAT[i].list[j].smart then table.remove(CAT[i].list, j) end
             --if CAT[i].list[j]
-            for f = #CAT[i].list[j].fx, 1, -1 do
-                if CAT[i].list[j].fx[f]:find("R_ITEM_") then
-                   -- r.ShowConsoleMsg(CAT[i].list[j].fx[f] .. "\n")
-                   table.remove(CAT[i].list[j].fx, f)
+            if CAT[i].list[j] then
+                for f = #CAT[i].list[j].fx, 1, -1 do
+                    if CAT[i].list[j].fx[f]:find("R_ITEM_") then
+                        table.remove(CAT[i].list[j].fx, f)
+                    end
                 end
             end
         end
