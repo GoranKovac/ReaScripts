@@ -1,11 +1,12 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.31.6
+-- @version 1.31.7
 -- @changelog
 --  Solo in Lane now toggles
 --  NEW Enclose whole parallel lane into container (only available if multiple parallel lanes)
 --  Added undo point when renaming
+--  removed local dev fxbrowser
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -104,8 +105,8 @@ CTRL_DRAG_AUTOCONTAINER      = false
 TOOLTIPS                     = true
 --V_LAYOUT                     = false
 
---local fx_browser_script_path = reaper_path .. "/Scripts/Sexan_Scripts/FX/Sexan_FX_Browser_ParserV7.lua"
-local fx_browser_script_path = "C:/Users/Gokily/Documents/ReaGit/ReaScripts/FX/Sexan_FX_Browser_ParserV7.lua"
+local fx_browser_script_path = reaper_path .. "/Scripts/Sexan_Scripts/FX/Sexan_FX_Browser_ParserV7.lua"
+--local fx_browser_script_path = "C:/Users/Gokily/Documents/ReaGit/ReaScripts/FX/Sexan_FX_Browser_ParserV7.lua"
 local fm_script_path         = reaper_path .. "/Scripts/Sexan_Scripts/ImGui_Tools/FileManager.lua"
 if r.file_exists(fx_browser_script_path) then
     dofile(fx_browser_script_path)
