@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="b06380416f218a92ae2afcd1567a87903b1b6115" name="Sexan_Scripts">
+<index version="1" commit="2c3dcdbb37c55e2d008544586d2ea36f8ecff950" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -595,6 +595,10 @@ Literize developer name from magic characters]]></changelog>
         <changelog><![CDATA[Parsing fxfolder items are now flaged instead of replaced
 Found FX is added last to list then flags get deleted to ensure numeric key order]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/59d34c942c69bbdf4ada0fa325db83f34849f017/FX/Sexan_FX_Browser_ParserV7.lua</source>
+      </version>
+      <version name="1.17" author="Sexan" time="2023-10-25T15:53:31Z">
+        <changelog><![CDATA[Ignore Empty favorites folders (cause crash)]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/2c3dcdbb37c55e2d008544586d2ea36f8ecff950/FX/Sexan_FX_Browser_ParserV7.lua</source>
       </version>
     </reapack>
   </category>
