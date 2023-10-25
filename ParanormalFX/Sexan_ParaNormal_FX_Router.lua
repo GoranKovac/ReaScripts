@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.31.3
+-- @version 1.31.4
 -- @changelog
---  this caching is killing me
+--  Fix copy/cut/paste on Master track
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf

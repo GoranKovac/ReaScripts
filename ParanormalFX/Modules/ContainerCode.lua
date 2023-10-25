@@ -487,8 +487,8 @@ function ClipBoard()
                         P_ID = storedTable.parrent_ID,
                         P_TYPE = storedTable.parrent_TYPE,
                     }
-                    for i = 1, r.CountTracks(0) do
-                        local track = r.GetTrack(0, i - 1)
+                    for i = 0, r.CountTracks(0) do
+                        local track = i == 0 and r.GetMasterTrack(0) or r.GetTrack(0, i - 1)
                         if storedTable.track_guid == r.GetTrackGUID(track) then
                             CLIPBOARD.track = track
                             break
