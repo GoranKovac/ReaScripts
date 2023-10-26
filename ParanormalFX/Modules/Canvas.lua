@@ -135,7 +135,7 @@ local function InsertPointsMenu()
                 for i = first_idx_in_row, last_idx_in_row do
                     local id = CalcFxID(parrent_container, i)
                     local fx_guid = r.TrackFX_GetFXGUID(TRACK, id)
-                    if fx_guid then lane_tbl[#lane_tbl+1] = fx_guid end
+                    if fx_guid then lane_tbl[#lane_tbl + 1] = fx_guid end
                 end
 
                 local cont_insert_id = CalculateInsertContainerPosFromBlacklist()
@@ -509,7 +509,8 @@ function DrawUserSettings()
         _, COLOR["Container"] = r.ImGui_ColorEdit4(ctx, "CONTAINER COLOR", COLOR["Container"],
             r.ImGui_ColorEditFlags_NoInputs())
         _, COLOR["bypass"] = r.ImGui_ColorEdit4(ctx, "BYPASS COLOR", COLOR["bypass"], r.ImGui_ColorEditFlags_NoInputs())
-        _, COLOR["offline"] = r.ImGui_ColorEdit4(ctx, "OFFLINE COLOR", COLOR["offline"], r.ImGui_ColorEditFlags_NoInputs())
+        _, COLOR["offline"] = r.ImGui_ColorEdit4(ctx, "OFFLINE COLOR", COLOR["offline"],
+            r.ImGui_ColorEditFlags_NoInputs())
         --if AUTO_COLORING then r.ImGui_EndDisabled(ctx) end
 
         _, COLOR["parallel"] = r.ImGui_ColorEdit4(ctx, "+ || COLOR", COLOR["parallel"],
@@ -555,26 +556,29 @@ function DrawUserSettings()
             ADD_BTN_W = 55
             ADD_BTN_H = 14
             COLOR = {
-                ["n"]           = 0x315e94ff,
-                ["Container"]   = 0x49cc85FF,
-                ["enclose"]     = 0x192432ff,
-                ["knob_bg"]     = 0x192432ff,
-                ["knob_vol"]    = 0x49cc85FF,
-                ["knob_drywet"] = 0x3a87ffff,
-                ["midi"]        = 0x8833AAFF,
-                ["del"]         = 0xFF2222FF,
-                ["ROOT"]        = 0x49cc85FF,
-                ["add"]         = 0x192432ff,
-                ["parallel"]    = 0x192432ff,
-                ["bypass"]      = 0xdc5454ff,
-                ["enabled"]     = 0x49cc85FF,
-                ["wire"]        = 0xB0B0B9FF,
-                ["dnd"]         = 0x00b4d8ff,
-                ["dnd_enclose"] = 0x49cc85ff,
-                ["dnd_replace"] = 0xdc5454ff,
-                ["dnd_swap"]    = 0xcd6dc6ff,
-                ["sine_anim"]   = 0x6390c6ff,
-                ["offline"]     = 0x4d5e72ff,
+                ["n"]            = 0x315e94ff,
+                ["Container"]    = 0x49cc85FF,
+                ["enclose"]      = 0x192432ff,
+                ["knob_bg"]      = 0x192432ff,
+                ["knob_vol"]     = 0x49cc85FF,
+                ["knob_drywet"]  = 0x3a87ffff,
+                ["midi"]         = 0x8833AAFF,
+                ["del"]          = 0xBB2222FF,
+                ["ROOT"]         = 0x49cc85FF,
+                ["add"]          = 0x192432ff,
+                ["parallel"]     = 0x192432ff,
+                ["bypass"]       = 0xdc5454ff,
+                ["enabled"]      = 0x49cc85FF,
+                ["wire"]         = 0xB0B0B9FF,
+                ["dnd"]          = 0x00b4d8ff,
+                ["dnd_enclose"]  = 0x49cc85ff,
+                ["dnd_replace"]  = 0xdc5454ff,
+                ["dnd_swap"]     = 0xcd6dc6ff,
+                ["sine_anim"]    = 0x6390c6ff,
+                ["phase"]        = 0x9674c5ff,
+                ["cut"]          = 0x00ff00ff,
+                ["menu_txt_col"] = 0x3aCCffff,
+                ["offline"]      = 0x4d5e72ff,
             }
         end
         r.ImGui_SameLine(ctx)
@@ -693,7 +697,7 @@ function UI()
                 vertical_mw = vertical_mw > 0 and -1 or 1
                 if mwheel_val then
                     local new_val = (mwheel_val + vertical_mw)
-                    local mw_track = new_val == 0 and r.GetMasterTrack(0) or r.GetTrack(0, new_val-1)
+                    local mw_track = new_val == 0 and r.GetMasterTrack(0) or r.GetTrack(0, new_val - 1)
                     if mw_track then
                         if PIN then
                             SEL_LIST_TRACK = mw_track

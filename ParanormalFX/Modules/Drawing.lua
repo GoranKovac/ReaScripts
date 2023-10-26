@@ -36,7 +36,6 @@ COLOR = {
     ["cut"]          = 0x00ff00ff,
     ["menu_txt_col"] = 0x3aCCffff,
     ["offline"]      = 0x4d5e72ff,
-
 }
 -----------------------------------------------------------------
 ITEM_SPACING_VERTICAL = 4 -- VERTICAL SPACING BETEWEEN ITEMS
@@ -762,6 +761,7 @@ mute = para_btn_size
 volume = para_btn_size
 enclose_btn = para_btn_size
 peak_btn_size = para_btn_size
+collapse_btn_size = para_btn_size
 peak_width = 10
 name_margin = 25
 local function Tooltip(str, force)
@@ -901,12 +901,34 @@ local function HelperWidth(tbl, width)
     return width
 end
 
+local function CheckCollapse(tbl, w, h)
+    local CONT_COL_DATA = GetTRContainerData()
+    local is_collapsed = CONT_COL_DATA[tbl.guid].collapse
+    h = is_collapsed and def_btn_h + (s_window_y * 2) or h
+    w = is_collapsed and w + mute + volume + collapse_btn_size + (name_margin * 2) or w
+    return is_collapsed, w, h
+end
+
+local function CheckCollapse2(tbl, i, height, width)
+    local CONT_COL_DATA = GetTRContainerData()
+    local is_collapsed = CONT_COL_DATA[tbl[i].guid].collapse
+    local tw, th = CalculateItemWH({ name = tbl[i].name })
+    --height = is_collapsed and def_btn_h + (s_window_y *2) or height
+    --width = is_collapsed and tw + mute + volume + collapse_btn_size + (name_margin * 2) or width
+    return height, width, is_collapsed
+end
+
 local function ItemFullSize(tbl)
     local w, h = CalculateItemWH(tbl)
     if tbl.type == "ROOT" then
         w = w + mute + enclose_btn + name_margin
     elseif tbl.type == "Container" then
-        w, h = tbl.W, tbl.H
+        local is_collapsed, cw, ch = CheckCollapse(tbl, w, h)
+        if is_collapsed then
+            w, h = cw, ch
+        else
+            w, h = tbl.W, tbl.H
+        end
     else
         w = w + mute + volume + name_margin
     end
@@ -941,10 +963,11 @@ local function CalcContainerWH(fx_items)
         local col_w, col_h = 0, 0
         if #rows[i] > 1 then
             for j = 1, #rows[i] do
-                local w = fx_items[rows[i][j]].W and fx_items[rows[i][j]].W or ItemFullSize(fx_items[rows[i][j]]) +
+                local w, h = ItemFullSize(fx_items[rows[i][j]])
+                w = fx_items[rows[i][j]].W and w or w +
                     --CalculateItemWH(fx_items[rows[i][j]]) + mute + volume + name_margin +
                     (fx_items[rows[i][j]].sc_tracks and peak_btn_size + s_spacing_x or 0)
-                local h = fx_items[rows[i][j]].H and fx_items[rows[i][j]].H + S_SPACING_Y + insert_point_size or
+                h = fx_items[rows[i][j]].H and h + S_SPACING_Y + insert_point_size or
                     (btn_total_size + insert_point_size) + solo_parallel_fx_add
 
                 col_w = col_w + w
@@ -953,11 +976,12 @@ local function CalcContainerWH(fx_items)
             col_w = col_w + (s_spacing_x * (#rows[i] - 1))
             col_w = col_w + (para_btn_size // 2)
         else
-            local w = fx_items[rows[i][1]].W and fx_items[rows[i][1]].W + mute + s_spacing_x or
-                ItemFullSize(fx_items[rows[i][1]]) +
+            local w, h = ItemFullSize(fx_items[rows[i][1]])
+            w = fx_items[rows[i][1]].W and w + mute + s_spacing_x or
+                w +
                 --CalculateItemWH(fx_items[rows[i][1]]) + mute + volume + s_spacing_x + name_margin +
                 (fx_items[rows[i][1]].sc_tracks and peak_btn_size + s_spacing_x or 0)
-            local h = fx_items[rows[i][1]].H and fx_items[rows[i][1]].H + S_SPACING_Y + insert_point_size or
+            h = fx_items[rows[i][1]].H and h + S_SPACING_Y + insert_point_size or
                 (btn_total_size + insert_point_size)
 
             H = H + h
@@ -971,6 +995,59 @@ local function CalcContainerWH(fx_items)
     H = H + start_n_add_btn_size + (s_window_y * 2)
     return W, H
 end
+
+-- --! I NEVER WANT TO VISIT THIS FUNCTION EVER AGAIN WHILE IM ALIVE
+-- local function CalcContainerWH(fx_items)
+--     local rows = {}
+--     local W, H = 0, 0
+--     for i = 1, #fx_items do
+--         if fx_items[i].p == 0 or (i == 1 and fx_items[i].p > 0) then
+--             rows[#rows + 1] = {}
+--             table.insert(rows[#rows], i)
+--         else
+--             table.insert(rows[#rows], i)
+--         end
+--     end
+
+--     local btn_total_size = def_btn_h + S_SPACING_Y
+--     local start_n_add_btn_size = S_SPACING_Y + (def_btn_h + ADD_BTN_H)
+--     local insert_point_size = ADD_BTN_H + S_SPACING_Y
+--     local solo_parallel_fx_add = (ADD_BTN_H + S_SPACING_Y)
+
+--     for i = 1, #rows do
+--         local col_w, col_h = 0, 0
+--         if #rows[i] > 1 then
+--             for j = 1, #rows[i] do
+--                 local w = fx_items[rows[i][j]].W and fx_items[rows[i][j]].W or ItemFullSize(fx_items[rows[i][j]]) +
+--                     --CalculateItemWH(fx_items[rows[i][j]]) + mute + volume + name_margin +
+--                     (fx_items[rows[i][j]].sc_tracks and peak_btn_size + s_spacing_x or 0)
+--                 local h = fx_items[rows[i][j]].H and fx_items[rows[i][j]].H + S_SPACING_Y + insert_point_size or
+--                     (btn_total_size + insert_point_size) + solo_parallel_fx_add
+
+--                 col_w = col_w + w
+--                 if h > col_h then col_h = h end
+--             end
+--             col_w = col_w + (s_spacing_x * (#rows[i] - 1))
+--             col_w = col_w + (para_btn_size // 2)
+--         else
+--             local w = fx_items[rows[i][1]].W and fx_items[rows[i][1]].W + mute + s_spacing_x or
+--                 ItemFullSize(fx_items[rows[i][1]]) +
+--                 --CalculateItemWH(fx_items[rows[i][1]]) + mute + volume + s_spacing_x + name_margin +
+--                 (fx_items[rows[i][1]].sc_tracks and peak_btn_size + s_spacing_x or 0)
+--             local h = fx_items[rows[i][1]].H and fx_items[rows[i][1]].H + S_SPACING_Y + insert_point_size or
+--                 (btn_total_size + insert_point_size)
+
+--             H = H + h
+--             if w > col_w then col_w = w end
+--         end
+--         if col_w > W then W = col_w end
+--         H = H + col_h
+--     end
+--     W = W + (s_window_x * 2) + s_spacing_x + mute + volume + para_btn_size
+
+--     H = H + start_n_add_btn_size + (s_window_y * 2)
+--     return W, H
+-- end
 
 function ResetStrippedNames()
     stripped_names = {}
@@ -997,9 +1074,9 @@ local function IterateContainer(depth, track, container_id, parent_fx_count, pre
     -- CALCULATER DEFAULT WIDTH
     local _, parrent_cont_name = r.TrackFX_GetFXName(track, 0x2000000 + container_id)
     local total_w, name_h = CalculateItemWH({ name = parrent_cont_name })
-    total_w = total_w + name_margin
+    total_w = total_w + collapse_btn_size + name_margin
     -- CALCULATER DEFAULT WIDTH
-    if not c_ok then return child_fx, total_w + (name_margin * 3), name_h + (S_SPACING_Y * 3) end
+    if not c_ok then return child_fx, total_w + mute + volume + name_margin, name_h + (s_window_y * 2) end
     for i = 1, container_fx_count do
         local fx_id = container_id + (diff * i)
         local fx_guid = r.TrackFX_GetFXGUID(TRACK, 0x2000000 + fx_id)
@@ -1258,6 +1335,7 @@ function DrawListButton(name, color, hover, icon, round_side, shrink, active, tx
     local txt_x = xs + (w / 2) - (label_size / 2)
     txt_x = txt_align == "L" and xs or txt_x
     txt_x = txt_align == "R" and xe - label_size - shrink - (name_margin // 2) or txt_x
+    txt_x = txt_align == "LC" and xs + (w / 2) - (label_size / 2) - (collapse_btn_size // 4) or txt_x
 
     local txt_y = ys + (h / 2) - (font_size / 2)
 
@@ -1448,8 +1526,8 @@ local function GenerateCoordinates(tbl, i, last)
     tbl[i].x, tbl[i].xs, tbl[i].xe, tbl[i].ys, tbl[i].ye = x, xs, xe, ys, ye
 end
 
-local function ParallelRowWidth(tbl, i, item_width)
-    local total_w, total_h = item_width, tbl[i].H and tbl[i].H or 0
+local function ParallelRowWidth(tbl, i, item_width, item_height)
+    local total_w, total_h = item_width, item_height and item_height or 0
     local idx = i + 1
     local last_big_idx = i
     while true do
@@ -1473,13 +1551,17 @@ local function ParallelRowWidth(tbl, i, item_width)
     return total_w - para_btn_size
 end
 
-local function SetItemPos(tbl, i, x, item_w)
+local function SetItemPos(tbl, i, x, item_w, item_h)
     if tbl[i].p > 0 then
         r.ImGui_SameLine(ctx)
     else
+        -- if tbl[i].type == "Container" then
+        --     local _, width, is_collapsed = CheckCollapse(tbl, i, height, item_w)
+        --     if is_collapsed then                item_w = width            end
+        -- end
         r.ImGui_SetCursorPosX(ctx, x - item_w // 2)
         if tbl[i + 1] and tbl[i + 1].p > 0 then
-            local width = ParallelRowWidth(tbl, i, item_w)
+            local width = ParallelRowWidth(tbl, i, item_w, item_h)
             r.ImGui_SetCursorPosX(ctx, x - (width // 2) - (para_btn_size // 2))
         end
     end
@@ -1782,6 +1864,7 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
     local hlp_vol_hover, is_saike = DrawHelper(tbl, i, width)
     ------------------
     local vol_or_enclose_hover
+    local collapse_hover
     if tbl[i].type == "ROOT" then
         --! FX_CHAIN MAIN
         r.ImGui_SameLine(ctx, 0, width - volume - mute)
@@ -1808,22 +1891,23 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
         r.ImGui_PopID(ctx)
         DrawListButton("H", color, vol_or_enclose_hover, true, "R")
     else
-        --! ENCLOSE
-    -- if tbl[i].type == "Container" then
-    --     r.ImGui_SameLine(ctx, 0, width - volume - (mute*2)- s_window_x)
-
-    --     --r.ImGui_SameLine(ctx, 0, tbl[i].type == "Container" and s_window_x or 0)
-        
-    --     r.ImGui_PushID(ctx, tbl[i].guid .. "COLAPSE")
-    --     if r.ImGui_Button(ctx, "C", mute, def_btn_h) then
-    --         local TR_CONT = GetTRContainerData()
-    --         if TR_CONT[tbl[i].guid] then
-    --             TR_CONT[tbl[i].guid].collapse = not TR_CONT[tbl[i].guid].collapse
-    --            -- r.ShowConsoleMsg(tostring(TR_CONT[tbl[i].guid].collapse))
-    --         end
-    --     end
-    --     r.ImGui_PopID(ctx)
-    -- end
+        --! COLLAPSE
+        if tbl[i].type == "Container" and not tbl[i].offline then
+            r.ImGui_SameLine(ctx, 0, width - volume - (mute * 2) - s_window_x)
+            r.ImGui_PushID(ctx, tbl[i].guid .. "COLAPSE")
+            local TR_CONT = GetTRContainerData()
+            if r.ImGui_Button(ctx, "C", mute, def_btn_h) then
+                if TR_CONT[tbl[i].guid] then
+                    TR_CONT[tbl[i].guid].collapse = not TR_CONT[tbl[i].guid].collapse
+                end
+            end
+            local icon = (TR_CONT[tbl[i].guid] and TR_CONT[tbl[i].guid].collapse) and "S" or "?"
+            local collapse_state = (TR_CONT[tbl[i].guid] and TR_CONT[tbl[i].guid].collapse) and true or false
+            collapse_hover = r.ImGui_IsItemHovered(ctx)
+            Tooltip(collapse_state and "EXPAND CONTAINER" or "COLLAPSE CONTAINER")
+            DrawListButton(icon, color, collapse_hover, true, "R")
+            r.ImGui_PopID(ctx)
+        end
         --! VOLUME
         r.ImGui_SetCursorPos(ctx, start_x + width - mute - (tbl[i].type == "Container" and s_window_x or 0), start_y)
         if DrawPreviewHideOriginal(tbl[i].guid) then
@@ -1873,7 +1957,7 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
         DndAddFX_ENCLOSE_TARGET(tbl, i)
     end
     ---------------------
-    if (btn_hover and not bypass_hover and not vol_or_enclose_hover and not hlp_vol_hover) and not IS_DRAGGING_RIGHT_CANVAS and r.ImGui_IsMouseReleased(ctx, 1) then --r.ImGui_IsItemClicked(ctx, 1) then
+    if (btn_hover and not bypass_hover and not vol_or_enclose_hover and not hlp_vol_hover and not collapse_hover) and not IS_DRAGGING_RIGHT_CANVAS and r.ImGui_IsMouseReleased(ctx, 1) then --r.ImGui_IsItemClicked(ctx, 1) then
         OPEN_RIGHT_CLICK_MENU = true
         RC_DATA = {
             type = tbl[i].type,
@@ -1887,37 +1971,39 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
     -----------------------
 
     color = parrent_color and parrent_color or
-        (ALT and btn_hover and not bypass_hover and not vol_or_enclose_hover) and COLOR["del"] or TypToColor(tbl[i])
+        (ALT and btn_hover and not bypass_hover and not vol_or_enclose_hover and not collapse_hover) and COLOR["del"] or
+        TypToColor(tbl[i])
 
     color = tbl[i].offline and COLOR["offline"] or color
     color = is_cut and IncreaseDecreaseBrightness(color, -40) or color
 
     if DrawPreviewHideOriginal(tbl[i].guid) then
+        local txt_align = is_saike and "R"
+        txt_align = tbl[i].type == "Container" and "LC" or txt_align
         DrawListButton(name, color,
-            (not bypass_hover and not vol_or_enclose_hover and not hlp_vol_hover and (btn_hover or is_active)),
+            (not bypass_hover and not vol_or_enclose_hover and not hlp_vol_hover and not collapse_hover and (btn_hover or is_active)),
             nil,
-            tbl[i].type ~= "ROOT" and "R", mute, is_active, is_saike and "R")
+            tbl[i].type ~= "ROOT" and "R", mute, is_active, txt_align)
     else
         local xs, ys = r.ImGui_GetItemRectMin(ctx)
         local xe, ye = r.ImGui_GetItemRectMax(ctx)
         r.ImGui_DrawList_AddRect(draw_list, xs, ys, xe, ye, 0x666666FF, 3, nil)
     end
-    if ALT and (btn_hover and not bypass_hover and not vol_or_enclose_hover and not hlp_vol_hover) then
+    if ALT and (btn_hover and not bypass_hover and not vol_or_enclose_hover and not hlp_vol_hover and not collapse_hover) then
         Tooltip("DELETE " ..
             (tbl[i].type == "Container" and "CONTAINER WITH CONTENT" or tbl[i].type == "ROOT" and "FX CHAIN" or "FX"))
     end
 
     r.ImGui_PopStyleVar(ctx)
     r.ImGui_DrawListSplitter_Merge(SPLITTER)
-    return (btn_hover and not bypass_hover and not vol_or_enclose_hover)
+    return (btn_hover and not bypass_hover and not vol_or_enclose_hover and not collapse_hover)
 end
 
 local function DrawPlugins(center, tbl, fade, parrent_pass_color)
     local last
     for i = 0, #tbl do
         local width, height = ItemFullSize(tbl[i])
-        --width = HelperWidth(tbl[i], width)
-        SetItemPos(tbl, i, center, width)
+        SetItemPos(tbl, i, center, width, height)
         if tbl[i].type ~= "Container" and tbl[i].type ~= "INSERT_POINT" then
             r.ImGui_BeginGroup(ctx)
             local button_hovered = DrawButton(tbl, i, tbl[i].name, width, fade, parrent_pass_color)
@@ -1926,7 +2012,6 @@ local function DrawPlugins(center, tbl, fade, parrent_pass_color)
             SerialInsertParaLane(tbl, i, width)
             r.ImGui_EndGroup(ctx)
         end
-
         if tbl[i].type == "ROOT" then
             local xs, ys = r.ImGui_GetItemRectMin(ctx)
             local xe, ye = r.ImGui_GetItemRectMax(ctx)
@@ -1936,10 +2021,11 @@ local function DrawPlugins(center, tbl, fade, parrent_pass_color)
         if tbl[i].type == "Container" then
             r.ImGui_BeginGroup(ctx)
             r.ImGui_PushID(ctx, tbl[i].guid .. "container")
-            --local CONT_COL_DATA = GetTRContainerData()
-            --local is_collapsed = CONT_COL_DATA[tbl[i].guid].collapse
-           -- tbl[i].H = is_collapsed and 40 or tbl[i].H
-           -- height = tbl[i].H
+            local is_collapsed = CheckCollapse(tbl[i], 1, 1)
+            --! MAKE FIRST  INSERT POINT DISABLED
+            if tbl[i].offline then
+                tbl[i].sub[0].no_draw_s = true
+            end
             if r.ImGui_BeginChild(ctx, "##", width, height, true, WND_FLAGS) then
                 if DrawPreviewHideOriginal(tbl[i].guid) then
                     local button_hovered = DrawButton(tbl, i, tbl[i].name, width - (s_window_x), fade, parrent_pass_color)
@@ -1947,9 +2033,10 @@ local function DrawPlugins(center, tbl, fade, parrent_pass_color)
                         ["bypass"]
                     r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_Alpha(), not tbl[i].bypass and 0.5 or fade)
                     local fade_alpha = not tbl[i].bypass and 0.5 or fade
-                    --if not is_collapsed then
-                    DrawPlugins(r.ImGui_GetCursorPosX(ctx) + (width // 2) - s_window_x, tbl[i].sub, fade_alpha, del_color)
-                    --end
+                    if not is_collapsed then
+                        DrawPlugins(r.ImGui_GetCursorPosX(ctx) + (width // 2) - s_window_x, tbl[i].sub, fade_alpha,
+                            del_color)
+                    end
                     r.ImGui_PopStyleVar(ctx)
                 end
                 r.ImGui_EndChild(ctx)

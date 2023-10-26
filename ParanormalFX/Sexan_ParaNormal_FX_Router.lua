@@ -1,10 +1,15 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.32
+-- @version 1.33
 -- @changelog
---  Added settings color for offline
---  added alternative names to helpers (if reaper renames them)
+--  Added Container collapsing
+--  Container collapse state is stored in track P_EXT state
+--  Alocate new track P_EXT state because of new Collapse feature
+--  Don't draw first insert point when container is collapsed
+--  Restore all colors when clicking Default in settings (fixed crash when right clicking on canvas while seetings are still open)
+--  Refactored a little bit main drawing calculation
+--  Provide current height to ParallelRowWidth function instead of reading Container.H (fixes non container items wrongly attach to collapsed biggest container)
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -189,14 +194,14 @@ function StoreToPEXT(last_track)
     end
     local serialized = tableToString(storedTable)
     if r.ValidatePtr(last_track, "MediaTrack*") then
-        r.GetSetMediaTrackInfo_String(last_track, "P_EXT:PARANORMAL_FX", serialized, true)
+        r.GetSetMediaTrackInfo_String(last_track, "P_EXT:PARANORMAL_FX2", serialized, true)
     end
 end
 
 function RestoreFromPEXT()
     local rv, stored
     if r.ValidatePtr(TRACK, "MediaTrack*") then
-        rv, stored = r.GetSetMediaTrackInfo_String(TRACK, "P_EXT:PARANORMAL_FX", "", false)
+        rv, stored = r.GetSetMediaTrackInfo_String(TRACK, "P_EXT:PARANORMAL_FX2", "", false)
     end
     if rv == true and stored ~= nil then
         local storedTable = stringToTable(stored)
@@ -256,7 +261,7 @@ local function Main()
         LAST_TRACK = TRACK
         if not RestoreFromPEXT() then
             CANVAS = InitCanvas()
-            --InitTrackContainers()
+            InitTrackContainers()
         end
     end
 

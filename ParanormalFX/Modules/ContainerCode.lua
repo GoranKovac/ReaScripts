@@ -2,7 +2,7 @@
 --NoIndex: true
 local r = reaper
 local FX_DATA
-local TR_CONTAINERS = {}
+TR_CONTAINERS = {}
 
 CLIPBOARD = {}
 
@@ -22,13 +22,27 @@ function SetTRContainerData(tbl)
     TR_CONTAINERS = tbl
 end
 
-function InitTrackContainers()
-    UpdateFxData()
+function TrackContainers()
+    if not TR_CONTAINERS then return end
     for k in pairs(FX_DATA) do
-        if not TR_CONTAINERS[k] then
-            TR_CONTAINERS[k] = {collapse = false}
+        if FX_DATA[k].type == "Container" then
+            if not TR_CONTAINERS[k] then
+                TR_CONTAINERS[k] = { collapse = false }
+            end
         end
     end
+end
+
+function ValidateTrackContainers()
+    if not TR_CONTAINERS then return end
+    for k in pairs(TR_CONTAINERS) do
+        if not FX_DATA[k] then TR_CONTAINERS[k] = nil end
+    end
+end
+
+function InitTrackContainers()
+    UpdateFxData()
+    TrackContainers()
 end
 
 function GetParentContainerByGuid(tbl)
@@ -315,7 +329,7 @@ function CopyTargetsToNewContainer(track, tbl, i, src_guid, src_i, is_cut)
     local src_parrent
 
     local is_move = is_cut
-    
+
     -- ADD CONTAINER AT THE BEGINNING OF THE CHAIN TO MAKE IT EASIER TO INSERT THINGS
     --! CHECK ITS POSITION WITH BLACKLISTED FX (MELODYNE AND SIMILAR NEED TO BE IN SLOT 1 AND CANNOT BE IN CONTAINER)
     --! CREATE CONTAINER IN POSITION ABOVE BLACKLISTED FX
@@ -458,27 +472,11 @@ function UpdateFxData()
     end
 end
 
-function TrackContainers()
-    if not TR_CONTAINERS then return end
-    for k in pairs(FX_DATA) do
-        if not TR_CONTAINERS[k] then
-            TR_CONTAINERS[k] = {collapse = false}
-        end
-    end
-end
-
-function ValidateTrackContainers()
-    if not TR_CONTAINERS then return end
-    for k in pairs(TR_CONTAINERS) do
-        if not FX_DATA[k] then TR_CONTAINERS[k] = nil end
-    end
-end
-
 function CollectFxData()
     if not TRACK then return end
     UpdateFxData()
-    --ValidateTrackContainers()
-    --TrackContainers()
+    ValidateTrackContainers()
+    TrackContainers()
 end
 
 function UpdateClipboardInfo()
