@@ -434,6 +434,7 @@ local function StoreSettings()
             knobvol_color = COLOR["knob_vol"],
             drywet_color = COLOR["knob_drywet"],
             bypass_color = COLOR["bypass"],
+            offline_color = COLOR["offline"],
             anim_color = COLOR["sine_anim"],
         }
     )
@@ -460,7 +461,7 @@ function DrawUserSettings()
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x000000EE)
     r.ImGui_SetNextWindowPos(ctx, WX + 5, WY + 65)
 
-    if r.ImGui_BeginChild(ctx, "USERSETTIGS", 200, 584, 1) then
+    if r.ImGui_BeginChild(ctx, "USERSETTIGS", 200, 606, 1) then
         if r.ImGui_Button(ctx, "RESCAN FX LIST") then
             local FX_LIST, CAT, DEV_LIST = GetFXTbl()
             local serialized_fx = TableToString(FX_LIST)
@@ -508,6 +509,7 @@ function DrawUserSettings()
         _, COLOR["Container"] = r.ImGui_ColorEdit4(ctx, "CONTAINER COLOR", COLOR["Container"],
             r.ImGui_ColorEditFlags_NoInputs())
         _, COLOR["bypass"] = r.ImGui_ColorEdit4(ctx, "BYPASS COLOR", COLOR["bypass"], r.ImGui_ColorEditFlags_NoInputs())
+        _, COLOR["offline"] = r.ImGui_ColorEdit4(ctx, "OFFLINE COLOR", COLOR["offline"], r.ImGui_ColorEditFlags_NoInputs())
         --if AUTO_COLORING then r.ImGui_EndDisabled(ctx) end
 
         _, COLOR["parallel"] = r.ImGui_ColorEdit4(ctx, "+ || COLOR", COLOR["parallel"],
@@ -572,6 +574,7 @@ function DrawUserSettings()
                 ["dnd_replace"] = 0xdc5454ff,
                 ["dnd_swap"]    = 0xcd6dc6ff,
                 ["sine_anim"]   = 0x6390c6ff,
+                ["offline"]     = 0x4d5e72ff,
             }
         end
         r.ImGui_SameLine(ctx)

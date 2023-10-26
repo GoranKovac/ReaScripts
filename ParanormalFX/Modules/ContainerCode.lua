@@ -2,6 +2,8 @@
 --NoIndex: true
 local r = reaper
 local FX_DATA
+local TR_CONTAINERS = {}
+
 CLIPBOARD = {}
 
 function GetFx(guid)
@@ -10,6 +12,23 @@ end
 
 function GetFX_DATA()
     return FX_DATA
+end
+
+function GetTRContainerData()
+    return TR_CONTAINERS
+end
+
+function SetTRContainerData(tbl)
+    TR_CONTAINERS = tbl
+end
+
+function InitTrackContainers()
+    UpdateFxData()
+    for k in pairs(FX_DATA) do
+        if not TR_CONTAINERS[k] then
+            TR_CONTAINERS[k] = {collapse = false}
+        end
+    end
 end
 
 function GetParentContainerByGuid(tbl)
@@ -439,9 +458,27 @@ function UpdateFxData()
     end
 end
 
+function TrackContainers()
+    if not TR_CONTAINERS then return end
+    for k in pairs(FX_DATA) do
+        if not TR_CONTAINERS[k] then
+            TR_CONTAINERS[k] = {collapse = false}
+        end
+    end
+end
+
+function ValidateTrackContainers()
+    if not TR_CONTAINERS then return end
+    for k in pairs(TR_CONTAINERS) do
+        if not FX_DATA[k] then TR_CONTAINERS[k] = nil end
+    end
+end
+
 function CollectFxData()
     if not TRACK then return end
     UpdateFxData()
+    --ValidateTrackContainers()
+    --TrackContainers()
 end
 
 function UpdateClipboardInfo()

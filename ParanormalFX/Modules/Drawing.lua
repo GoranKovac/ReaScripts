@@ -35,7 +35,7 @@ COLOR = {
     ["phase"]        = 0x9674c5ff,
     ["cut"]          = 0x00ff00ff,
     ["menu_txt_col"] = 0x3aCCffff,
-    ["offline"] = 0x4d5e72ff,
+    ["offline"]      = 0x4d5e72ff,
 
 }
 -----------------------------------------------------------------
@@ -62,34 +62,41 @@ local HELPERS = {
         fx = "JS:Volume/Pan Smoother",
         fx_name = "VOL - PAN",
         name = "Volume/Pan Smoother",
+        alt_name = "utility/volume_pan",
         helper = "VOL - PAN"
     },
     {
         fx = "JS:Channel Polarity Control",
         fx_name = "POLARITY",
         name = "Channel Polarity Control",
+        alt_name = "IX/StereoPhaseInvert",
         helper = "POLARITY"
     },
     {
         fx = "JS:Time Adjustment Delay",
         fx_name = "TIME DELAY",
         name = "Time Adjustment Delay",
+        alt_name = "delay/time_adjustment",
         helper = "TIME DELAY"
     },
     {
         fx = "JS:Saike 4-pole BandSplitter",
         fx_name = "SAIKE SPLITTER",
+        alt_name = "Saike Tools/Basics/BandSplitter.jsfx",
         name = "Saike 4-pole BandSplitter",
         helper = "SAIKE SPLITTER"
     },
     {
         name = "3-Band Splitter",
+        alt_name = "loser/3BandSplitter",
     },
     {
         name = "4-Band Splitter",
+        alt_name = "loser/4BandSplitter",
     },
     {
         name = "5-Band Splitter",
+        alt_name = "loser/5BandSplitter",
     },
 }
 
@@ -857,9 +864,7 @@ local function MyKnob(label, style, p_value, v_min, v_max, knob_type)
             elseif knob_type == "sample" then
                 Tooltip("SAMPLE " .. ('%.0f'):format(p_value))
             elseif knob_type == "freq" then
-                -- r.ShowConsoleMsg(p_value.."\n")
                 local srate = r.GetSetProjectInfo(0, "PROJECT_SRATE", 0, false)
-                --r.ShowConsoleMsg(srate.."\n")
                 local freq_max = 0.5 * srate;
                 local norm_freq_min = 20.0 / 22050.0
 
@@ -1000,10 +1005,12 @@ local function IterateContainer(depth, track, container_id, parent_fx_count, pre
         local fx_guid = r.TrackFX_GetFXGUID(TRACK, 0x2000000 + fx_id)
         local _, fx_name = r.TrackFX_GetFXName(track, 0x2000000 + fx_id)
         local _, original_fx_name = r.TrackFX_GetNamedConfigParm(track, 0x2000000 + fx_id, "fx_name")
-
         local is_helper
         for h = 1, #HELPERS do
             if fx_name:lower():find(HELPERS[h].name:lower(), nil, true) then
+                fx_name = HELPERS[h].helper or fx_name
+                is_helper = true
+            elseif HELPERS[h].alt_name and fx_name:lower():find(HELPERS[h].alt_name:lower(), nil, true) then
                 fx_name = HELPERS[h].helper or fx_name
                 is_helper = true
             end
@@ -1100,10 +1107,12 @@ local function GenerateFXData(target)
         local _, fx_name = r.TrackFX_GetFXName(track, i - 1)
         local _, original_fx_name = r.TrackFX_GetNamedConfigParm(track, i - 1, "fx_name")
 
-
         local is_helper
         for h = 1, #HELPERS do
             if fx_name:lower():find(HELPERS[h].name:lower(), nil, true) then
+                fx_name = HELPERS[h].helper or fx_name
+                is_helper = true
+            elseif HELPERS[h].alt_name and fx_name:lower():find(HELPERS[h].alt_name:lower(), nil, true) then
                 fx_name = HELPERS[h].helper or fx_name
                 is_helper = true
             end
@@ -1252,7 +1261,7 @@ function DrawListButton(name, color, hover, icon, round_side, shrink, active, tx
 
     local txt_y = ys + (h / 2) - (font_size / 2)
 
-    r.ImGui_DrawList_AddTextEx(draw_list, nil, font_size, txt_x,    txt_y, r.ImGui_GetColorEx(ctx, font_color), name)
+    r.ImGui_DrawList_AddTextEx(draw_list, nil, font_size, txt_x, txt_y, r.ImGui_GetColorEx(ctx, font_color), name)
 
     if icon then r.ImGui_PopFont(ctx) end
 end
@@ -1725,7 +1734,7 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
                     else
                         local _, first_idx_in_row = FindNextPrevRow(tbl, i, -1)
                         local _, last_idx_in_row = FindNextPrevRow(tbl, i, 1)
-    
+
                         for j = first_idx_in_row, last_idx_in_row do
                             local solo_item_id = CalcFxID(parrent_container, j)
                             r.TrackFX_SetEnabled(TRACK, solo_item_id, true)
@@ -1799,6 +1808,22 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
         r.ImGui_PopID(ctx)
         DrawListButton("H", color, vol_or_enclose_hover, true, "R")
     else
+        --! ENCLOSE
+    -- if tbl[i].type == "Container" then
+    --     r.ImGui_SameLine(ctx, 0, width - volume - (mute*2)- s_window_x)
+
+    --     --r.ImGui_SameLine(ctx, 0, tbl[i].type == "Container" and s_window_x or 0)
+        
+    --     r.ImGui_PushID(ctx, tbl[i].guid .. "COLAPSE")
+    --     if r.ImGui_Button(ctx, "C", mute, def_btn_h) then
+    --         local TR_CONT = GetTRContainerData()
+    --         if TR_CONT[tbl[i].guid] then
+    --             TR_CONT[tbl[i].guid].collapse = not TR_CONT[tbl[i].guid].collapse
+    --            -- r.ShowConsoleMsg(tostring(TR_CONT[tbl[i].guid].collapse))
+    --         end
+    --     end
+    --     r.ImGui_PopID(ctx)
+    -- end
         --! VOLUME
         r.ImGui_SetCursorPos(ctx, start_x + width - mute - (tbl[i].type == "Container" and s_window_x or 0), start_y)
         if DrawPreviewHideOriginal(tbl[i].guid) then
@@ -1911,6 +1936,10 @@ local function DrawPlugins(center, tbl, fade, parrent_pass_color)
         if tbl[i].type == "Container" then
             r.ImGui_BeginGroup(ctx)
             r.ImGui_PushID(ctx, tbl[i].guid .. "container")
+            --local CONT_COL_DATA = GetTRContainerData()
+            --local is_collapsed = CONT_COL_DATA[tbl[i].guid].collapse
+           -- tbl[i].H = is_collapsed and 40 or tbl[i].H
+           -- height = tbl[i].H
             if r.ImGui_BeginChild(ctx, "##", width, height, true, WND_FLAGS) then
                 if DrawPreviewHideOriginal(tbl[i].guid) then
                     local button_hovered = DrawButton(tbl, i, tbl[i].name, width - (s_window_x), fade, parrent_pass_color)
@@ -1918,7 +1947,9 @@ local function DrawPlugins(center, tbl, fade, parrent_pass_color)
                         ["bypass"]
                     r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_Alpha(), not tbl[i].bypass and 0.5 or fade)
                     local fade_alpha = not tbl[i].bypass and 0.5 or fade
+                    --if not is_collapsed then
                     DrawPlugins(r.ImGui_GetCursorPosX(ctx) + (width // 2) - s_window_x, tbl[i].sub, fade_alpha, del_color)
+                    --end
                     r.ImGui_PopStyleVar(ctx)
                 end
                 r.ImGui_EndChild(ctx)

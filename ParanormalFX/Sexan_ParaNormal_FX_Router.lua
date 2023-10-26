@@ -1,9 +1,10 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.31.9
+-- @version 1.32
 -- @changelog
---  FX offline color V2
+--  Added settings color for offline
+--  added alternative names to helpers (if reaper renames them)
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -150,6 +151,7 @@ if r.HasExtState("PARANORMALFX2", "SETTINGS") then
             COLOR["knob_drywet"] = storedTable.drywet_color
             COLOR["knob_drywet"] = storedTable.drywet_color
             COLOR["sine_anim"] = storedTable.anim_color
+            COLOR["offline"] = storedTable.offline_color and storedTable.offline_color or COLOR["offline"]
         end
     end
 end
@@ -183,6 +185,7 @@ function StoreToPEXT(last_track)
     local storedTable = {}
     if r.ValidatePtr(last_track, "MediaTrack*") then
         storedTable.CANVAS = CANVAS
+        storedTable.CONTAINERS = GetTRContainerData()
     end
     local serialized = tableToString(storedTable)
     if r.ValidatePtr(last_track, "MediaTrack*") then
@@ -200,6 +203,7 @@ function RestoreFromPEXT()
         if storedTable ~= nil then
             if r.ValidatePtr(TRACK, "MediaTrack*") then
                 CANVAS = storedTable.CANVAS
+                SetTRContainerData(storedTable.CONTAINERS)
             end
             return true
         end
@@ -252,6 +256,7 @@ local function Main()
         LAST_TRACK = TRACK
         if not RestoreFromPEXT() then
             CANVAS = InitCanvas()
+            --InitTrackContainers()
         end
     end
 
