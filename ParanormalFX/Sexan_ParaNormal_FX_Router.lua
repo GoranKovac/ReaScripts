@@ -1,15 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.33
+-- @version 1.33.1
 -- @changelog
---  Added Container collapsing
---  Container collapse state is stored in track P_EXT state
---  Alocate new track P_EXT state because of new Collapse feature
---  Don't draw first insert point when container is collapsed
---  Restore all colors when clicking Default in settings (fixed crash when right clicking on canvas while seetings are still open)
---  Refactored a little bit main drawing calculation
---  Provide current height to ParallelRowWidth function instead of reading Container.H (fixes non container items wrongly attach to collapsed biggest container)
+--  Fix drawwing of move preview when container is collapsed
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf

@@ -903,19 +903,11 @@ end
 
 local function CheckCollapse(tbl, w, h)
     local CONT_COL_DATA = GetTRContainerData()
-    local is_collapsed = CONT_COL_DATA[tbl.guid].collapse
+    local guid = tbl.guid == "PREVIEW" and DRAG_PREVIEW.move_guid or tbl.guid
+    local is_collapsed = CONT_COL_DATA[guid].collapse
     h = is_collapsed and def_btn_h + (s_window_y * 2) or h
     w = is_collapsed and w + mute + volume + collapse_btn_size + (name_margin * 2) or w
     return is_collapsed, w, h
-end
-
-local function CheckCollapse2(tbl, i, height, width)
-    local CONT_COL_DATA = GetTRContainerData()
-    local is_collapsed = CONT_COL_DATA[tbl[i].guid].collapse
-    local tw, th = CalculateItemWH({ name = tbl[i].name })
-    --height = is_collapsed and def_btn_h + (s_window_y *2) or height
-    --width = is_collapsed and tw + mute + volume + collapse_btn_size + (name_margin * 2) or width
-    return height, width, is_collapsed
 end
 
 local function ItemFullSize(tbl)
@@ -2096,12 +2088,15 @@ local function CustomDNDPreview()
     r.ImGui_SetNextWindowPos(ctx, mx + off_x, my + off_y)
     r.ImGui_SetNextWindowBgAlpha(ctx, 0.3)
     if DRAG_PREVIEW[DRAG_PREVIEW.i].type == "Container" then
-        if r.ImGui_BeginChild(ctx, "##PREVIEW_DRAW_CONTAINER", DRAG_PREVIEW[DRAG_PREVIEW.i].W, DRAG_PREVIEW[DRAG_PREVIEW.i].H, true) then
+        local is_collapsed = CheckCollapse(DRAG_PREVIEW[DRAG_PREVIEW.i], 1, 1)
+        local w,h = ItemFullSize(DRAG_PREVIEW[DRAG_PREVIEW.i], DRAG_PREVIEW.move_guid)
+        if r.ImGui_BeginChild(ctx, "##PREVIEW_DRAW_CONTAINER", w, h, true) then
             DrawButton(DRAG_PREVIEW, DRAG_PREVIEW.i, DRAG_PREVIEW[DRAG_PREVIEW.i].name,
-                DRAG_PREVIEW[DRAG_PREVIEW.i].W - s_window_x, 1)
-
+                w - s_window_x, 1)
             local area_w = r.ImGui_GetContentRegionMax(ctx)
-            DrawPlugins((area_w // 2) + (s_window_x // 2), DRAG_PREVIEW[DRAG_PREVIEW.i].sub, 1)
+            if not is_collapsed then
+                DrawPlugins((area_w // 2) + (s_window_x // 2), DRAG_PREVIEW[DRAG_PREVIEW.i].sub, 1)
+            end
             r.ImGui_EndChild(ctx)
         end
     else
