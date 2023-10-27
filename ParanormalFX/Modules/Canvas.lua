@@ -35,6 +35,7 @@ local function CheckKeys()
     ESC = ImGui.IsKeyPressed(ctx, ImGui.Key_Escape())
 
     Z = ImGui.IsKeyPressed(ctx, ImGui.Key_Z())
+    C = ImGui.IsKeyPressed(ctx, ImGui.Key_C())
 
     if HOME then CANVAS.off_x, CANVAS.off_y = 0, def_vertical_y_center end
 
@@ -272,13 +273,16 @@ local function RightClickMenu()
         if r.ImGui_MenuItem(ctx, 'COPY') then
             local parrent_container = GetParentContainerByGuid(RC_DATA.tbl[RC_DATA.i])
             local item_id = CalcFxID(parrent_container, RC_DATA.i)
+            local is_collapsed = CheckCollapse(RC_DATA.tbl[RC_DATA.i],1,1)
             local data = tableToString(
                 {
                     tbl = RC_DATA.tbl,
                     i = RC_DATA.i,
                     track_guid = r.GetTrackGUID(TRACK),
                     fx_id = item_id,
-                    guid = RC_DATA.tbl[RC_DATA.i].guid
+                    guid = RC_DATA.tbl[RC_DATA.i].guid,
+                    collapsed = is_collapsed,
+                    type = RC_DATA.tbl[RC_DATA.i].type
                 }
             )
             r.SetExtState("PARANORMALFX2", "COPY_BUFFER", data, false)
@@ -287,6 +291,7 @@ local function RightClickMenu()
         if r.ImGui_MenuItem(ctx, 'CUT') then
             local parrent_container = GetParentContainerByGuid(RC_DATA.tbl[RC_DATA.i])
             local item_id = CalcFxID(parrent_container, RC_DATA.i)
+            local is_collapsed = CheckCollapse(RC_DATA.tbl[RC_DATA.i],1,1)
             local data = tableToString(
                 {
                     tbl = RC_DATA.tbl,
@@ -297,7 +302,9 @@ local function RightClickMenu()
                     cut = true,
                     parrent_DIFF = parrent_container.DIFF,
                     parrent_ID = parrent_container.ID,
-                    parrent_TYPE = parrent_container.type
+                    parrent_TYPE = parrent_container.type,
+                    collapsed = is_collapsed,
+                    type = RC_DATA.tbl[RC_DATA.i].type
                 }
             )
             r.SetExtState("PARANORMALFX2", "COPY_BUFFER", data, false)
@@ -417,6 +424,7 @@ end
 local function StoreSettings()
     local data = tableToString(
         {
+            show_c_content_tooltips = SHOW_C_CONTENT_TOOLTIP,
             tooltips = TOOLTIPS,
             animated_highlight = ANIMATED_HIGLIGHT,
             ctrl_autocontainer = CTRL_DRAG_AUTOCONTAINER,
@@ -461,7 +469,7 @@ function DrawUserSettings()
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x000000EE)
     r.ImGui_SetNextWindowPos(ctx, WX + 5, WY + 65)
 
-    if r.ImGui_BeginChild(ctx, "USERSETTIGS", 200, 606, 1) then
+    if r.ImGui_BeginChild(ctx, "USERSETTIGS", 220, 628, 1) then
         if r.ImGui_Button(ctx, "RESCAN FX LIST") then
             local FX_LIST, CAT, DEV_LIST = GetFXTbl()
             local serialized_fx = TableToString(FX_LIST)
@@ -523,6 +531,8 @@ function DrawUserSettings()
             r.ImGui_ColorEditFlags_NoInputs())
         r.ImGui_SeparatorText(ctx, "BEHAVIORS")
         _, TOOLTIPS = r.ImGui_Checkbox(ctx, "SHOW TOOLTIPS", TOOLTIPS)
+        _, SHOW_C_CONTENT_TOOLTIP = r.ImGui_Checkbox(ctx, "PEAK COLLAPSED CONTAINER", SHOW_C_CONTENT_TOOLTIP)
+        SettingsTooltips("HOVERING OVER CONTAINER COLLAPSED BUTTON \nWILL DRAW PREVIEW OF CONTAINER CONTENT")
         _, ESC_CLOSE = r.ImGui_Checkbox(ctx, "CLOSE ON ESC", ESC_CLOSE)
         _, ANIMATED_HIGLIGHT = r.ImGui_Checkbox(ctx, "ANIMATED HIGHLIGHT", ANIMATED_HIGLIGHT)
         SettingsTooltips("+ || BUTTONS HAVE ANIMATED COLOR\nFOR BETTER VISIBILITY WHEN DRAGGING")
@@ -541,6 +551,7 @@ function DrawUserSettings()
         r.ImGui_Separator(ctx)
 
         if r.ImGui_Button(ctx, "DEFAULT") then
+            SHOW_C_CONTENT_TOOLTIP = true
             TOOLTIPS = true
             ANIMATED_HIGLIGHT = true
             ESC_CLOSE = false
@@ -722,6 +733,9 @@ function CheckStaleData()
     if r.ImGui_IsMouseReleased(ctx, 0) then
         CTRL_DRAG = nil
         DRAG_PREVIEW = nil
+    end
+    if not PEAK_INTO_TOOLTIP then
+        if PREVIEW_TOOLTIP then PREVIEW_TOOLTIP = nil end
     end
 end
 

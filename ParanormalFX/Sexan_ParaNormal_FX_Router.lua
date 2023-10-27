@@ -1,9 +1,13 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.33.1
+-- @version 1.33.2
 -- @changelog
---  Fix drawwing of move preview when container is collapsed
+--  Transfer collapse state when copy/cut/pasting
+--  Show collapse container icon only if has fx inside
+--  Added collapse shortcut "C" when hovering over container
+--  Added Preview collapsed contrainer tooltip
+--  Added user settings for preview collapsed containers
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -22,9 +26,9 @@ os_separator      = package.config:sub(1, 1)
 script_path       = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]]
 local reaper_path = r.GetResourcePath()
 
-FX_FILE = script_path .. "/FX_LIST.txt"
-FX_CAT_FILE = script_path .. "/FX_CAT_FILE.txt"
-FX_DEV_LIST_FILE = script_path .. "/FX_DEV_LIST_FILE.txt"
+FX_FILE           = script_path .. "/FX_LIST.txt"
+FX_CAT_FILE       = script_path .. "/FX_CAT_FILE.txt"
+FX_DEV_LIST_FILE  = script_path .. "/FX_DEV_LIST_FILE.txt"
 
 package.path      = script_path .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 
@@ -36,39 +40,54 @@ end
 if not r.ImGui_GetVersion then
     r.ShowMessageBox("ReaImGui is required.\nPlease Install it in next window", "MISSING DEPENDENCIES", 0)
     return r.ReaPack_BrowsePackages('dear imgui')
+else
+    -- local v, v1, v2 = r.ImGui_GetVersion():match("(%d+)%.(%d+)%.(%d+)")
+    -- local old
+    -- if tonumber(v) < 1 then
+    --     old = true
+    -- elseif tonumber(v1) < 89 then
+    --     old = true
+    -- elseif tonumber(v2) < 6 then
+    --     old = true
+    -- end
+    -- if old then
+    --     r.ShowMessageBox("Script requires ReaImGui version 1.89.6\nPlease update in Reapack", "OLD REAIMGUI VERSION", 0)
+    --     return r.ReaPack_BrowsePackages('dear imgui')
+    -- end
 end
 
 function ThirdPartyDeps()
     local saike_splitter_path = reaper_path .. "/Effects/Saike Tools/Basics/BandSplitter.jsfx"
     local reapack_process
     local repos = {
-      {name = "Saike Tools", url = 'https://raw.githubusercontent.com/JoepVanlier/JSFX/master/index.xml'},
+        { name = "Saike Tools", url = 'https://raw.githubusercontent.com/JoepVanlier/JSFX/master/index.xml' },
     }
-    
+
     for i = 1, #repos do
-      local retinfo, url, enabled, autoInstall = r.ReaPack_GetRepositoryInfo( repos[i].name )
-      if not retinfo then
-        retval, error = r.ReaPack_AddSetRepository( repos[i].name, repos[i].url, true, 0 )
-        reapack_process = true
-      end
+        local retinfo, url, enabled, autoInstall = r.ReaPack_GetRepositoryInfo(repos[i].name)
+        if not retinfo then
+            retval, error = r.ReaPack_AddSetRepository(repos[i].name, repos[i].url, true, 0)
+            reapack_process = true
+        end
     end
-   
+
     -- ADD NEEDED REPOSITORIES
     if reapack_process then
-      r.ShowMessageBox("Added Third-Party ReaPack Repositories", "ADDING REPACK REPOSITORIES", 0)
-      r.ReaPack_ProcessQueue(true)
-      reapack_process = nil
+        r.ShowMessageBox("Added Third-Party ReaPack Repositories", "ADDING REPACK REPOSITORIES", 0)
+        r.ReaPack_ProcessQueue(true)
+        reapack_process = nil
     end
-    
+
     if not reapack_process then
-      -- FX BROWSER
-      if r.file_exists(saike_splitter_path) then
-      else
-         r.ShowMessageBox("Sai'ke 4 Pole Band Splitter is needed.\nPlease Install it in next window", "MISSING DEPENDENCIES", 0)
-         r.ReaPack_BrowsePackages('saike 4 pole bandsplitter')
-         r.SetExtState("PARANORMALFX2", "UPDATEFX", "true", false)
-         return 'error saike splitter'
-      end
+        -- FX BROWSER
+        if r.file_exists(saike_splitter_path) then
+        else
+            r.ShowMessageBox("Sai'ke 4 Pole Band Splitter is needed.\nPlease Install it in next window",
+                "MISSING DEPENDENCIES", 0)
+            r.ReaPack_BrowsePackages('saike 4 pole bandsplitter')
+            r.SetExtState("PARANORMALFX2", "UPDATEFX", "true", false)
+            return 'error saike splitter'
+        end
     end
 end
 
@@ -92,7 +111,7 @@ ImGui.Attach(ctx, SYSTEM_FONT)
 DEFAULT_FONT = ImGui.CreateFont(script_path .. 'Fonts/ProggyClean.ttf', 13)
 ImGui.Attach(ctx, DEFAULT_FONT)
 
-DEF_PARALLEL = "2"
+DEF_PARALLEL                 = "2"
 ESC_CLOSE                    = false
 AUTO_COLORING                = false
 CUSTOM_FONT                  = nil
@@ -100,6 +119,7 @@ ANIMATED_HIGLIGHT            = true
 DEFAULT_DND                  = true
 CTRL_DRAG_AUTOCONTAINER      = false
 TOOLTIPS                     = true
+SHOW_C_CONTENT_TOOLTIP       = true
 --V_LAYOUT                     = false
 
 --local fx_browser_script_path = "C:/Users/Gokily/Documents/ReaGit/ReaScripts/FX/Sexan_FX_Browser_ParserV7.lua"
@@ -131,6 +151,7 @@ if r.HasExtState("PARANORMALFX2", "SETTINGS") then
         local storedTable = stringToTable(stored)
         if storedTable ~= nil then
             -- SETTINGS
+            SHOW_C_CONTENT_TOOLTIP = storedTable.show_c_content_tooltips ~= nil and storedTable.show_c_content_tooltips
             TOOLTIPS = storedTable.tooltips ~= nil and storedTable.tooltips
             ANIMATED_HIGLIGHT = storedTable.animated_highlight
             CTRL_DRAG_AUTOCONTAINER = storedTable.ctrl_autocontainer
@@ -224,6 +245,7 @@ function MakeFXFiles()
 
     FX_LIST, CAT = GEN_FX_LIST, GEN_CAT
 end
+
 if not FX_LIST and not CAT or r.HasExtState("PARANORMALFX2", "UPDATEFX") then
     MakeFXFiles()
     if r.HasExtState("PARANORMALFX2", "UPDATEFX") then
@@ -241,7 +263,27 @@ function UpdateFXBrowserData()
     FX_LIST, CAT = ReadFXFile(FX_FILE, FX_CAT_FILE, FX_DEV_LIST_FILE)
 end
 
+-- local function CheckReaperIODnd()
+--     M_TEST()
+--     local mx, my = r.GetMousePosition()
+--     if LAST_CLICK and not A_X then
+--         A_X, A_Y = mx, my
+--     end
+    
+--     if A_X then
+--         local tr, buf = r.GetThingFromPoint(A_X, A_Y)
+--         if buf == "tcp.io" and not REAPER_DND then
+--             REAPER_DND = buf == "tcp.io" and tr or nil
+--         end
+--     end
+--     return mx, my
+-- end
+
+-- img = r.ImGui_CreateImage( script_path .. "SchwaARM.png")
+-- r.ImGui_Attach(ctx, img)
+
 local function Main()
+
     if WANT_REFRESH then
         WANT_REFRESH = nil
         UpdateChainsTrackTemplates(CAT)
@@ -258,14 +300,25 @@ local function Main()
             InitTrackContainers()
         end
     end
+    -- if REAPER_DND then
+    --     ImGui.SetNextWindowSizeConstraints(ctx, 500, 500, FLT_MAX, FLT_MAX)
+    --     ImGui.SetNextWindowSize(ctx, 150, 150, ImGui.Cond_FirstUseEver())
+    --     r.ImGui_SetNextWindowPos(ctx, mx-25, my-25)
+    --     if r.ImGui_Begin(ctx, 'REAPERDND', false, r.ImGui_WindowFlags_NoInputs() | r.ImGui_WindowFlags_NoDecoration() |  r.ImGui_WindowFlags_NoBackground() |  r.ImGui_WindowFlags_AlwaysAutoResize() | r.ImGui_WindowFlags_NoMove()) then
+    --             if r.ImGui_IsMouseDown(ctx,0) then
+    --                 r.ShowConsoleMsg("DOWN")
+    --             end
+    --             r.ImGui_Image( ctx, img, 182//3, 125//3 )
+    --         ImGui.End(ctx)
+    --     end
+    -- end
 
     ImGui.PushStyleColor(ctx, ImGui.Col_WindowBg(), 0x111111FF)
     ImGui.SetNextWindowSizeConstraints(ctx, 500, 500, FLT_MAX, FLT_MAX)
     ImGui.SetNextWindowSize(ctx, 500, 500, ImGui.Cond_FirstUseEver())
-
-    local visible, open = ImGui.Begin(ctx, 'PARANORMAL FX ROUTER###PARANORMALFX', true, WND_FLAGS)
+    
+    local visible, open = r.ImGui_Begin(ctx, 'PARANORMAL FX ROUTER###PARANORMALFX', true, WND_FLAGS)
     ImGui.PopStyleColor(ctx)
-
     if visible then
         r.ImGui_PushFont(ctx, SELECTED_FONT)
         CanvasLoop()
@@ -291,7 +344,6 @@ local function Main()
         r.ImGui_PopFont(ctx)
         ImGui.End(ctx)
     end
-
     if ESC and ESC_CLOSE then open = nil end
 
     if open then
@@ -300,6 +352,12 @@ local function Main()
 
     UpdateScroll()
     if FONT_UPDATE then FONT_UPDATE = nil end
+    -- if MOUSE_UP then
+    --     if A_X then A_X, A_Y = nil,nil end
+    --     if REAPER_DND then 
+    --         REAPER_DND = nil
+    --     end
+    -- end
 end
 
 function Exit()

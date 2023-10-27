@@ -458,6 +458,9 @@ local function DndMoveFX_TARGET_SERIAL_PARALLEL(tbl, i, parallel, serial_insert_
                 r.TrackFX_CopyToTrack(TRACK, src_item_id, TRACK, dst_item_id, false)
                 -- SET DESTINATION INFO TO PARALLEL OR SERIAL
                 r.TrackFX_SetNamedConfigParm(TRACK, dst_item_id, "parallel", parallel and DEF_PARALLEL or "0")
+
+                --! IF COPYING CONTAINER TRANSFER COLLAPSE STATE
+                AddCollapseData(src_fx, dst_item_id)
             end
             r.PreventUIRefresh(-1)
             EndUndoBlock((is_move and "MOVE " or "COPY ") ..
@@ -901,10 +904,10 @@ local function HelperWidth(tbl, width)
     return width
 end
 
-local function CheckCollapse(tbl, w, h)
+function CheckCollapse(tbl, w, h)
     local CONT_COL_DATA = GetTRContainerData()
     local guid = tbl.guid == "PREVIEW" and DRAG_PREVIEW.move_guid or tbl.guid
-    local is_collapsed = CONT_COL_DATA[guid].collapse
+    local is_collapsed = CONT_COL_DATA[guid] and CONT_COL_DATA[guid].collapse
     h = is_collapsed and def_btn_h + (s_window_y * 2) or h
     w = is_collapsed and w + mute + volume + collapse_btn_size + (name_margin * 2) or w
     return is_collapsed, w, h
@@ -1782,6 +1785,14 @@ local function DrawHelper(tbl, i, w)
     return btn_hover, new_width
 end
 
+function SetCollapseData(dollapse_tbl, tbl, i)
+    if dollapse_tbl[tbl[i].guid] then
+        if #tbl[i].sub ~= 0 then
+            dollapse_tbl[tbl[i].guid].collapse = not dollapse_tbl[tbl[i].guid].collapse
+        end
+    end
+end
+
 local function DrawButton(tbl, i, name, width, fade, parrent_color)
     local is_cut = (CLIPBOARD and CLIPBOARD.cut and CLIPBOARD.guid == tbl[i].guid)
     local start_x, start_y = r.ImGui_GetCursorPos(ctx)
@@ -1884,21 +1895,33 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
         DrawListButton("H", color, vol_or_enclose_hover, true, "R")
     else
         --! COLLAPSE
-        if tbl[i].type == "Container" and not tbl[i].offline then
-            r.ImGui_SameLine(ctx, 0, width - volume - (mute * 2) - s_window_x)
-            r.ImGui_PushID(ctx, tbl[i].guid .. "COLAPSE")
-            local TR_CONT = GetTRContainerData()
-            if r.ImGui_Button(ctx, "C", mute, def_btn_h) then
-                if TR_CONT[tbl[i].guid] then
-                    TR_CONT[tbl[i].guid].collapse = not TR_CONT[tbl[i].guid].collapse
+        PEAK_INTO_TOOLTIP = nil
+        if tbl[i].type == "Container" then --and not tbl[i].offline then
+            --! SHOW COLLAPSE ONLY IF THERE ARE CHILDS INSIDE
+            if #tbl[i].sub ~= 0 then
+                r.ImGui_SameLine(ctx, 0, width - volume - (mute * 2) - s_window_x)
+                r.ImGui_PushID(ctx, tbl[i].guid .. "COLAPSE")
+                local TR_CONT = GetTRContainerData()
+                if r.ImGui_Button(ctx, "C", mute, def_btn_h) then
+                    SetCollapseData(TR_CONT, tbl, i)
                 end
+                local icon = (TR_CONT[tbl[i].guid] and TR_CONT[tbl[i].guid].collapse) and "S" or "?"
+                local collapse_state = (TR_CONT[tbl[i].guid] and TR_CONT[tbl[i].guid].collapse) and true or false
+                collapse_hover = r.ImGui_IsItemHovered(ctx)
+                Tooltip(collapse_state and "EXPAND CONTAINER" or "COLLAPSE CONTAINER")
+                --! PEAK INSIDE CONTAINER TOOLTIP
+                if not PEAK_INTO_TOOLTIP then
+                    PEAK_INTO_TOOLTIP = (collapse_state and collapse_hover) and true
+                end
+                if not PREVIEW_TOOLTIP then
+                    if (collapse_state and collapse_hover) then
+                        PREVIEW_TOOLTIP = tbl
+                        PREVIEW_TOOLTIP.i = i
+                    end
+                end
+                DrawListButton(icon, color, collapse_hover, true, "R")
+                r.ImGui_PopID(ctx)
             end
-            local icon = (TR_CONT[tbl[i].guid] and TR_CONT[tbl[i].guid].collapse) and "S" or "?"
-            local collapse_state = (TR_CONT[tbl[i].guid] and TR_CONT[tbl[i].guid].collapse) and true or false
-            collapse_hover = r.ImGui_IsItemHovered(ctx)
-            Tooltip(collapse_state and "EXPAND CONTAINER" or "COLLAPSE CONTAINER")
-            DrawListButton(icon, color, collapse_hover, true, "R")
-            r.ImGui_PopID(ctx)
         end
         --! VOLUME
         r.ImGui_SetCursorPos(ctx, start_x + width - mute - (tbl[i].type == "Container" and s_window_x or 0), start_y)
@@ -1937,6 +1960,16 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
     local is_active = r.ImGui_IsItemActive(ctx)
     is_active = (RC_DATA and RC_DATA.tbl[RC_DATA.i].guid == tbl[i].guid and RC_DATA.is_fx_button) or is_active
     is_active = (REPLACE_FX_POS and REPLACE_FX_POS.tbl[REPLACE_FX_POS.i].guid == tbl[i].guid) or is_active
+    --! SHORTCUT COLLAPSE
+    local x1, y1 = r.ImGui_GetItemRectMin( ctx )
+    local x2, y2 = r.ImGui_GetItemRectMax( ctx )
+    
+    if (btn_hover and not bypass_hover and not vol_or_enclose_hover and not hlp_vol_hover and not collapse_hover) then
+        if C then
+            local TR_CONT = GetTRContainerData()
+            SetCollapseData(TR_CONT, tbl, i)
+        end
+    end
     -----------------------
     DndMoveFX_SRC(tbl, i)
     DndMoveFX_TARGET_SWAP(tbl, i)
@@ -2075,7 +2108,7 @@ local function CheckDNDType()
 end
 
 local function CustomDNDPreview()
-    if not DRAG_PREVIEW then return end
+    if not DRAG_PREVIEW and not PREVIEW_TOOLTIP then return end
     local mx, my = r.ImGui_GetMousePos(ctx)
     local off_x, off_y = 25, 28
     --! CENTER THE BUTTON AT MOUSE CURSOR IF THERE ARE NO TOOLTIPS
@@ -2085,26 +2118,43 @@ local function CustomDNDPreview()
         off_y = 20
     end
 
-    r.ImGui_SetNextWindowPos(ctx, mx + off_x, my + off_y)
-    r.ImGui_SetNextWindowBgAlpha(ctx, 0.3)
-    if DRAG_PREVIEW[DRAG_PREVIEW.i].type == "Container" then
-        local is_collapsed = CheckCollapse(DRAG_PREVIEW[DRAG_PREVIEW.i], 1, 1)
-        local w,h = ItemFullSize(DRAG_PREVIEW[DRAG_PREVIEW.i], DRAG_PREVIEW.move_guid)
-        if r.ImGui_BeginChild(ctx, "##PREVIEW_DRAW_CONTAINER", w, h, true) then
-            DrawButton(DRAG_PREVIEW, DRAG_PREVIEW.i, DRAG_PREVIEW[DRAG_PREVIEW.i].name,
-                w - s_window_x, 1)
-            local area_w = r.ImGui_GetContentRegionMax(ctx)
-            if not is_collapsed then
-                DrawPlugins((area_w // 2) + (s_window_x // 2), DRAG_PREVIEW[DRAG_PREVIEW.i].sub, 1)
+    --r.ImGui_SetNextWindowBgAlpha(ctx, 0.3)
+    --r.ImGui_SetNextWindowPos(ctx, mx + off_x, my + off_y)
+    if not PREVIEW_TOOLTIP then
+        r.ImGui_SetNextWindowBgAlpha(ctx, 0.3)
+        r.ImGui_SetNextWindowPos(ctx, mx + off_x, my + off_y)
+        if DRAG_PREVIEW[DRAG_PREVIEW.i].type == "Container" then
+            local is_collapsed = CheckCollapse(DRAG_PREVIEW[DRAG_PREVIEW.i], 1, 1)
+            local w, h = ItemFullSize(DRAG_PREVIEW[DRAG_PREVIEW.i])
+            if r.ImGui_BeginChild(ctx, "##PREVIEW_DRAW_CONTAINER", w, h, true) then
+                DrawButton(DRAG_PREVIEW, DRAG_PREVIEW.i, DRAG_PREVIEW[DRAG_PREVIEW.i].name,
+                    w - s_window_x, 1)
+                local area_w = r.ImGui_GetContentRegionMax(ctx)
+                if not is_collapsed then
+                    DrawPlugins((area_w // 2) + (s_window_x // 2), DRAG_PREVIEW[DRAG_PREVIEW.i].sub, 1)
+                end
+                r.ImGui_EndChild(ctx)
             end
-            r.ImGui_EndChild(ctx)
+        else
+            local width, height = ItemFullSize(DRAG_PREVIEW[DRAG_PREVIEW.i])
+            width = HelperWidth(DRAG_PREVIEW[DRAG_PREVIEW.i], width)
+            if r.ImGui_BeginChild(ctx, "##PREVIEW_DRAW_FX", width + (s_window_x * 2), height + (s_window_y * 2), true) then
+                DrawButton(DRAG_PREVIEW, DRAG_PREVIEW.i, DRAG_PREVIEW[DRAG_PREVIEW.i].name, width, 1)
+                r.ImGui_EndChild(ctx)
+            end
         end
     else
-        local width, height = ItemFullSize(DRAG_PREVIEW[DRAG_PREVIEW.i])
-        width = HelperWidth(DRAG_PREVIEW[DRAG_PREVIEW.i], width)
-        if r.ImGui_BeginChild(ctx, "##PREVIEW_DRAW_FX", width + (s_window_x * 2), height + (s_window_y * 2), true) then
-            DrawButton(DRAG_PREVIEW, DRAG_PREVIEW.i, DRAG_PREVIEW[DRAG_PREVIEW.i].name, width, 1)
-            r.ImGui_EndChild(ctx)
+        if SHOW_C_CONTENT_TOOLTIP then
+            local px = PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].W // 2
+            r.ImGui_SetNextWindowBgAlpha(ctx, 0.6)
+            r.ImGui_SetNextWindowPos(ctx, mx - px, my + off_y)
+            if r.ImGui_BeginChild(ctx, "##PEAK_DRAW_CONTAINER", PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].W, PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].H, true) then
+                DrawButton(PREVIEW_TOOLTIP, PREVIEW_TOOLTIP.i, PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].name,
+                    PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].W - s_window_x, 1)
+                local area_w = r.ImGui_GetContentRegionMax(ctx)
+                DrawPlugins((area_w // 2) + (s_window_x // 2), PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].sub, 1)
+                r.ImGui_EndChild(ctx)
+            end
         end
     end
 end

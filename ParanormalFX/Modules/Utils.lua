@@ -159,3 +159,17 @@ function Deepcopy(orig)
     end
     return copy
 end
+
+function M_CLICK() return r.JS_Mouse_GetState(95) &1 == 1 end
+
+function M_TEST()
+    if not LAST_CLICK and M_CLICK() then
+        LAST_CLICK = true
+    end
+
+    MOUSE_UP = not LAST_CLICK and true or false
+
+    if LAST_CLICK and not M_CLICK() then
+        LAST_CLICK = nil
+    end
+end

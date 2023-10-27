@@ -2,7 +2,7 @@
 --NoIndex: true
 local r = reaper
 local FX_DATA
-TR_CONTAINERS = {}
+local TR_CONTAINERS = {}
 
 CLIPBOARD = {}
 
@@ -38,6 +38,18 @@ function ValidateTrackContainers()
     for k in pairs(TR_CONTAINERS) do
         if not FX_DATA[k] then TR_CONTAINERS[k] = nil end
     end
+end
+
+function AddCollapseData(tbl, id)
+    if tbl.type ~= "Container" then return end
+    local guid = r.TrackFX_GetFXGUID( TRACK, id )
+    TR_CONTAINERS[guid] = {collapse = CheckCollapse(tbl, 1, 1)}
+end
+
+function AddCollapsePASTEData(id)
+    if CLIPBOARD.type ~= "Container" then return end
+    local guid = r.TrackFX_GetFXGUID( TRACK, id )
+    TR_CONTAINERS[guid] = {collapse = CLIPBOARD.collapsed}
 end
 
 function InitTrackContainers()
@@ -193,11 +205,7 @@ local function CheckIsFirstARA(tbl, i, parallel)
 end
 
 function ARA_Protection(tbl, i, parallel)
-    if CheckIsFirstARA(tbl, i, parallel) then
-        -- tbl[i].no_draw_s = true
-        --tbl[i].no_draw_p = true
-        return true
-    end
+    if CheckIsFirstARA(tbl, i, parallel) then return true end
     if DRAG_PREVIEW and DRAG_PREVIEW.is_ara then
         if tbl[i].type ~= "ROOT" then
             tbl[i].no_draw_s = true
@@ -248,7 +256,7 @@ function MoveTargetsToNewContainer(tbl, i, src_guid, src_i)
 
     local is_move = (not CTRL_DRAG) and true or false
 
-    -- ENCLOSE RIGHT CLICK OPTION IS CALLED
+    -- ENCLOSE RIGHT CLICK OPTION IS CALLED IF GUID IS NOT PROVIDED
     if src_guid then
         src_fx = GetFx(src_guid)
         src_parrent = GetFx(src_fx.pid)
@@ -267,7 +275,7 @@ function MoveTargetsToNewContainer(tbl, i, src_guid, src_i)
     UpdateFxData()
     local cont_id = 0x2000000 + cont_pos + 1 + (r.TrackFX_GetCount(TRACK) + 1)
 
-    -- ENCLOSE RIGHT CLICK OPTION IS CALLED
+    -- ENCLOSE RIGHT CLICK OPTION IS CALLED IS GUID IS NOT PROVIDED
     if src_guid then
         src_fx = GetFx(src_guid)
         src_parrent = GetFx(src_fx.pid)
@@ -283,6 +291,8 @@ function MoveTargetsToNewContainer(tbl, i, src_guid, src_i)
             r.TrackFX_CopyToTrack(TRACK, src_id, TRACK, cont_id, false)
             -- SET COPY PARRALEL INFO 0 SINCE IT WILL BE IN SERIAL
             r.TrackFX_SetNamedConfigParm(TRACK, cont_id, "parallel", "0")
+            --! ADD INSERT COLLAPSE DATA IF CONTAINER WAS COPIED
+            AddCollapseData(src_fx, cont_id)
         end
     end
     UpdateFxData()
@@ -355,6 +365,17 @@ function CopyTargetsToNewContainer(track, tbl, i, src_guid, src_i, is_cut)
     r.TrackFX_CopyToTrack(track, src_id, TRACK, cont_id, is_move)
     -- SET COPY PARRALEL INFO 0 SINCE IT WILL BE IN SERIAL
     r.TrackFX_SetNamedConfigParm(TRACK, cont_id, "parallel", "0")
+
+    if not is_move then
+        --! ADD NEW COLLAPSE DATA IF CONTAINER
+        AddCollapsePASTEData(cont_id)
+    else
+        if track == TRACK then
+            AddCollapsePASTEData(src_id)
+        else
+            AddCollapsePASTEData(cont_id)
+        end
+    end
 
     UpdateFxData()
     cont_id = 0x2000000 + cont_pos + 1 + (r.TrackFX_GetCount(TRACK) + 1)
@@ -521,6 +542,8 @@ function ClipBoard()
                         P_DIFF = storedTable.parrent_DIFF,
                         P_ID = storedTable.parrent_ID,
                         P_TYPE = storedTable.parrent_TYPE,
+                        collapsed = storedTable.collapsed,
+                        type = storedTable.type,
                     }
                     for i = 0, r.CountTracks(0) do
                         local track = i == 0 and r.GetMasterTrack(0) or r.GetTrack(0, i - 1)
@@ -580,12 +603,16 @@ function Paste(replace, parallel, serial, enclose)
         if is_cut then
             CheckSourceNextItemParallel(CLIPBOARD.i, CLIPBOARD.P_TYPE, CLIPBOARD.P_DIFF, CLIPBOARD.P_ID, CLIPBOARD.track)
             r.TrackFX_SetNamedConfigParm(CLIPBOARD.track, CLIPBOARD.id, "parallel", para_info)
+            --! ADD NEW COLLAPSE DATA IF CONTAINER
+            AddCollapsePASTEData(CLIPBOARD.id)
         end
 
         r.TrackFX_CopyToTrack(CLIPBOARD.track, CLIPBOARD.id, TRACK, item_id, is_cut)
 
         if not is_cut then
             r.TrackFX_SetNamedConfigParm(TRACK, item_id, "parallel", para_info)
+            --! ADD NEW COLLAPSE DATA IF CONTAINER
+            AddCollapsePASTEData(item_id)
         end
 
         if replace then
@@ -600,23 +627,24 @@ function Paste(replace, parallel, serial, enclose)
             r.TrackFX_SetNamedConfigParm(TRACK, item_id, "parallel", DEF_PARALLEL)
         end
     end
+
     r.PreventUIRefresh(-1)
     EndUndoBlock((is_cut and "CUT FX: " or "PASTE FX: ") .. RC_DATA.tbl[RC_DATA.i].name)
     UpdateClipboardInfo()
 end
 
-function Copy()
-    local parrent_container = GetParentContainerByGuid(RC_DATA.tbl[RC_DATA.i])
-    local item_id = CalcFxID(parrent_container, RC_DATA.i)
-    local data = tableToString(
-        {
-            tbl = RC_DATA.tbl,
-            tbl_i = RC_DATA.i,
-            track_guid = r.GetTrackGUID(TRACK),
-            fx_id = item_id,
-            guid = RC_DATA.tbl[RC_DATA.i].guid
-        }
-    )
-    r.SetExtState("PARANORMALFX2", "COPY_BUFFER", data, false)
-    r.SetExtState("PARANORMALFX2", "COPY_BUFFER_ID", r.genGuid(), false)
-end
+-- function Copy()
+--     local parrent_container = GetParentContainerByGuid(RC_DATA.tbl[RC_DATA.i])
+--     local item_id = CalcFxID(parrent_container, RC_DATA.i)
+--     local data = tableToString(
+--         {
+--             tbl = RC_DATA.tbl,
+--             tbl_i = RC_DATA.i,
+--             track_guid = r.GetTrackGUID(TRACK),
+--             fx_id = item_id,
+--             guid = RC_DATA.tbl[RC_DATA.i].guid
+--         }
+--     )
+--     r.SetExtState("PARANORMALFX2", "COPY_BUFFER", data, false)
+--     r.SetExtState("PARANORMALFX2", "COPY_BUFFER_ID", r.genGuid(), false)
+-- end
