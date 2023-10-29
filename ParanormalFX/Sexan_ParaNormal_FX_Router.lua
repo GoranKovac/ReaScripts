@@ -1,13 +1,10 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.33.2
+-- @version 1.33.3
 -- @changelog
---  Transfer collapse state when copy/cut/pasting
---  Show collapse container icon only if has fx inside
---  Added collapse shortcut "C" when hovering over container
---  Added Preview collapsed contrainer tooltip
---  Added user settings for preview collapsed containers
+--  Fixed Crash when tooltips are disabled and hovering over collapse icon
+--  Constrain FX Browser items to 500px so huge item names dont expand it over whole screen
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf

@@ -618,7 +618,8 @@ local function DrawItems(tbl, main_cat_name)
                         -- STRIP SUFFIX (DEVELOPER) FROM THESE CATEGORIES
                         name = name:gsub(' %(' .. Literalize(tbl[i].name) .. '%)', "")
                     end
-                    if r.ImGui_Selectable(ctx, name) then
+                    local tw = r.ImGui_CalcTextSize( ctx, name )
+                    if r.ImGui_Selectable(ctx, name, nil, nil, tw > 500 and 500 or tw) then
                         AddFX(tbl[i].fx[j])
                     end
                     DndAddFX_SRC(tbl[i].fx[j])
@@ -2112,7 +2113,7 @@ local function CustomDNDPreview()
     local mx, my = r.ImGui_GetMousePos(ctx)
     local off_x, off_y = 25, 28
     --! CENTER THE BUTTON AT MOUSE CURSOR IF THERE ARE NO TOOLTIPS
-    if not TOOLTIPS then
+    if not TOOLTIPS and DRAG_PREVIEW then
         local click_x = r.ImGui_GetMouseClickedPos(ctx, 0)
         off_x = DRAG_PREVIEW.x and -(click_x - DRAG_PREVIEW.x) or -20
         off_y = 20
