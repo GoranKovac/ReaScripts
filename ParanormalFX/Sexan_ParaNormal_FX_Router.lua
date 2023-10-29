@@ -1,9 +1,10 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.33.31
+-- @version 1.33.32
 -- @changelog
---  Fix typo PEAK INTO CONTAINER - PEEK
+--  I really need to fix more stuff in one go
+--  Fix settings height
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf

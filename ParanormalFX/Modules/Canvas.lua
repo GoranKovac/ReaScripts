@@ -469,7 +469,7 @@ function DrawUserSettings()
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x000000EE)
     r.ImGui_SetNextWindowPos(ctx, WX + 5, WY + 65)
 
-    if r.ImGui_BeginChild(ctx, "USERSETTIGS", 220, 628, 1) then
+    if r.ImGui_BeginChild(ctx, "USERSETTIGS", 220, 630, 1) then
         if r.ImGui_Button(ctx, "RESCAN FX LIST") then
             local FX_LIST, CAT, DEV_LIST = GetFXTbl()
             local serialized_fx = TableToString(FX_LIST)
