@@ -618,7 +618,7 @@ local function DrawItems(tbl, main_cat_name)
                         -- STRIP SUFFIX (DEVELOPER) FROM THESE CATEGORIES
                         name = name:gsub(' %(' .. Literalize(tbl[i].name) .. '%)', "")
                     end
-                    local tw = r.ImGui_CalcTextSize( ctx, name )
+                    local tw = r.ImGui_CalcTextSize(ctx, name)
                     if r.ImGui_Selectable(ctx, name, nil, nil, tw > 500 and 500 or tw) then
                         AddFX(tbl[i].fx[j])
                     end
@@ -1920,6 +1920,17 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
                         PREVIEW_TOOLTIP.i = i
                     end
                 end
+                --if CheckIfSafeToExplode(tbl, i) then
+                if collapse_hover and r.ImGui_IsMouseReleased(ctx, 1) then
+                    OPEN_INSERT_POINTS_MENU = true
+                    RC_DATA = {
+                        type = tbl[i].type,
+                        tbl = tbl,
+                        i = i,
+                        lane = "collapse"
+                    }
+                end
+                --end
                 DrawListButton(icon, color, collapse_hover, true, "R")
                 r.ImGui_PopID(ctx)
             end
@@ -1962,9 +1973,7 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
     is_active = (RC_DATA and RC_DATA.tbl[RC_DATA.i].guid == tbl[i].guid and RC_DATA.is_fx_button) or is_active
     is_active = (REPLACE_FX_POS and REPLACE_FX_POS.tbl[REPLACE_FX_POS.i].guid == tbl[i].guid) or is_active
     --! SHORTCUT COLLAPSE
-    local x1, y1 = r.ImGui_GetItemRectMin( ctx )
-    local x2, y2 = r.ImGui_GetItemRectMax( ctx )
-    
+
     if (btn_hover and not bypass_hover and not vol_or_enclose_hover and not hlp_vol_hover and not collapse_hover) then
         if C then
             local TR_CONT = GetTRContainerData()
@@ -2112,16 +2121,15 @@ local function CustomDNDPreview()
     if not DRAG_PREVIEW and not PREVIEW_TOOLTIP then return end
     local mx, my = r.ImGui_GetMousePos(ctx)
     local off_x, off_y = 25, 28
-    --! CENTER THE BUTTON AT MOUSE CURSOR IF THERE ARE NO TOOLTIPS
-    if not TOOLTIPS and DRAG_PREVIEW then
-        local click_x = r.ImGui_GetMouseClickedPos(ctx, 0)
-        off_x = DRAG_PREVIEW.x and -(click_x - DRAG_PREVIEW.x) or -20
-        off_y = 20
-    end
 
-    --r.ImGui_SetNextWindowBgAlpha(ctx, 0.3)
-    --r.ImGui_SetNextWindowPos(ctx, mx + off_x, my + off_y)
-    if not PREVIEW_TOOLTIP then
+    if DRAG_PREVIEW then
+        --! CENTER THE BUTTON AT MOUSE CURSOR IF THERE ARE NO TOOLTIPS
+        if not TOOLTIPS then
+            local click_x = r.ImGui_GetMouseClickedPos(ctx, 0)
+            off_x = DRAG_PREVIEW.x and -(click_x - DRAG_PREVIEW.x) or -20
+            off_y = 20
+        end
+
         r.ImGui_SetNextWindowBgAlpha(ctx, 0.3)
         r.ImGui_SetNextWindowPos(ctx, mx + off_x, my + off_y)
         if DRAG_PREVIEW[DRAG_PREVIEW.i].type == "Container" then
@@ -2144,7 +2152,7 @@ local function CustomDNDPreview()
                 r.ImGui_EndChild(ctx)
             end
         end
-    else
+    elseif PREVIEW_TOOLTIP then
         if SHOW_C_CONTENT_TOOLTIP then
             local px = PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].W // 2
             r.ImGui_SetNextWindowBgAlpha(ctx, 0.6)

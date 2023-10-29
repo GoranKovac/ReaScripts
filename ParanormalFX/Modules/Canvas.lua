@@ -180,6 +180,16 @@ local function InsertPointsMenu()
         else
             r.ImGui_CloseCurrentPopup(ctx)
         end
+    elseif RC_DATA.type == "Container" then
+        if RC_DATA.lane == "collapse" then
+            local can_explode = CheckIfSafeToExplode(RC_DATA.tbl,RC_DATA.i)
+            if not can_explode then                r.ImGui_BeginDisabled(ctx,true) end
+            if r.ImGui_MenuItem(ctx, can_explode and 'EXPLODE' or "NON EXPLODABLE") then
+                ExplodeContainer(RC_DATA.tbl,RC_DATA.i)
+            end
+            if not can_explode then                r.ImGui_EndDisabled(ctx) end
+
+        end
     end
 end
 

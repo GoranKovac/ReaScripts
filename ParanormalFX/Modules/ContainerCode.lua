@@ -33,6 +33,42 @@ function TrackContainers()
     end
 end
 
+function CheckIfSafeToExplode(tbl, i)
+    if tbl[i].type ~= "Container" then return end
+
+    if tbl[i].p > 0 then
+        if #tbl[i].sub > 1 then return end
+    end
+    if tbl[i].p == 0 and tbl[i + 1] and tbl[i + 1].p > 0 then
+        if #tbl[i].sub > 1 then return end
+
+    end
+    return true
+end
+
+function ExplodeContainer(tbl, i)
+    local cont_parent = tbl[i].pid
+   r.Undo_BeginBlock()
+   r.PreventUIRefresh(1)
+    for child_i = 1, #tbl[i].sub do
+        UpdateFxData()
+        local cont_parent_tbl = GetFx(cont_parent)
+        local cont = GetFx(tbl[i].guid)
+        local ID = CalcFxID(cont_parent_tbl, cont.IDX)
+
+        local child = GetFx(tbl[i].sub[child_i].guid)
+        r.TrackFX_CopyToTrack(TRACK, child.FX_ID, TRACK, ID, true)
+        if tbl[i].p > 0 then
+            r.TrackFX_SetNamedConfigParm(TRACK, ID, "parallel", tbl[i].p)
+        end
+    end
+    UpdateFxData()
+    local cont = GetFx(tbl[i].guid)
+    r.TrackFX_Delete(TRACK, cont.FX_ID)
+    r.PreventUIRefresh(-1)
+    EndUndoBlock("EXPLODE CONTAINER " .. tbl[i].name)
+end
+
 function ValidateTrackContainers()
     if not TR_CONTAINERS then return end
     for k in pairs(TR_CONTAINERS) do
@@ -42,14 +78,14 @@ end
 
 function AddCollapseData(tbl, id)
     if tbl.type ~= "Container" then return end
-    local guid = r.TrackFX_GetFXGUID( TRACK, id )
-    TR_CONTAINERS[guid] = {collapse = CheckCollapse(tbl, 1, 1)}
+    local guid = r.TrackFX_GetFXGUID(TRACK, id)
+    TR_CONTAINERS[guid] = { collapse = CheckCollapse(tbl, 1, 1) }
 end
 
 function AddCollapsePASTEData(id)
     if CLIPBOARD.type ~= "Container" then return end
-    local guid = r.TrackFX_GetFXGUID( TRACK, id )
-    TR_CONTAINERS[guid] = {collapse = CLIPBOARD.collapsed}
+    local guid = r.TrackFX_GetFXGUID(TRACK, id)
+    TR_CONTAINERS[guid] = { collapse = CLIPBOARD.collapsed }
 end
 
 function InitTrackContainers()
