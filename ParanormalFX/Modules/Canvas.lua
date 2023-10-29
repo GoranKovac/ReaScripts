@@ -194,7 +194,7 @@ local function InsertPointsMenu()
 end
 
 local function RightClickMenu()
-    if RC_DATA.type ~= "ROOT" and not RC_DATA.is_helper then
+    if RC_DATA.type ~= "ROOT" then
         if r.ImGui_MenuItem(ctx, 'RENAME') then
             RENAME_DATA = { tbl = RC_DATA.tbl, i = RC_DATA.i }
             OPEN_RENAME = true

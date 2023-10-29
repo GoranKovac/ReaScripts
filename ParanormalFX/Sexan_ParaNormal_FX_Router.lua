@@ -1,11 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.33.4
+-- @version 1.33.41
 -- @changelog
---  Added exploding containers
---  Exploding is possible only in safe positions
---  If position is not safe to explode show disabled option
+--  Remove right click restriction from helpers
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
