@@ -1,10 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.33.3
+-- @version 1.33.31
 -- @changelog
---  Fixed Crash when tooltips are disabled and hovering over collapse icon
---  Constrain FX Browser items to 500px so huge item names dont expand it over whole screen
+--  Fix typo PEAK INTO CONTAINER - PEEK
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
