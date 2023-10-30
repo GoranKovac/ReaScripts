@@ -180,16 +180,6 @@ local function InsertPointsMenu()
         else
             r.ImGui_CloseCurrentPopup(ctx)
         end
-    elseif RC_DATA.type == "Container" then
-        if RC_DATA.lane == "collapse" then
-            local can_explode = CheckIfSafeToExplode(RC_DATA.tbl,RC_DATA.i)
-            if not can_explode then                r.ImGui_BeginDisabled(ctx,true) end
-            if r.ImGui_MenuItem(ctx, can_explode and 'EXPLODE' or "NON EXPLODABLE") then
-                ExplodeContainer(RC_DATA.tbl,RC_DATA.i)
-            end
-            if not can_explode then                r.ImGui_EndDisabled(ctx) end
-
-        end
     end
 end
 
@@ -207,6 +197,7 @@ local function RightClickMenu()
                 REPLACE_FX_POS = { tbl = RC_DATA.tbl, i = RC_DATA.i, id = item_add_id }
                 OPEN_FX_LIST = true
             end
+            r.ImGui_Separator(ctx)
 
             if r.ImGui_MenuItem(ctx, 'ENCLOSE INTO CONTAINER') then
                 r.Undo_BeginBlock()
@@ -214,6 +205,15 @@ local function RightClickMenu()
                 MoveTargetsToNewContainer(RC_DATA.tbl, RC_DATA.i)
                 r.PreventUIRefresh(-1)
                 EndUndoBlock("MOVE FX AND ENCLOSE INTO CONTAINER")
+            end
+            if RC_DATA.type == "Container"  then
+                local can_explode = CheckIfSafeToExplode(RC_DATA.tbl, RC_DATA.i)
+                local no_childs = #RC_DATA.tbl[RC_DATA.i].sub == 0
+                if not can_explode or no_childs then r.ImGui_BeginDisabled(ctx, true) end
+                if r.ImGui_MenuItem(ctx, can_explode and 'EXPLODE CONTAINER' or "EXPLODE (NOT SUPPRTED)") then
+                    ExplodeContainer(RC_DATA.tbl, RC_DATA.i)
+                end
+                if not can_explode or no_childs then r.ImGui_EndDisabled(ctx) end
             end
         end
         r.ImGui_Separator(ctx)
@@ -283,7 +283,7 @@ local function RightClickMenu()
         if r.ImGui_MenuItem(ctx, 'COPY') then
             local parrent_container = GetParentContainerByGuid(RC_DATA.tbl[RC_DATA.i])
             local item_id = CalcFxID(parrent_container, RC_DATA.i)
-            local is_collapsed = CheckCollapse(RC_DATA.tbl[RC_DATA.i],1,1)
+            local is_collapsed = CheckCollapse(RC_DATA.tbl[RC_DATA.i], 1, 1)
             local data = tableToString(
                 {
                     tbl = RC_DATA.tbl,
@@ -301,7 +301,7 @@ local function RightClickMenu()
         if r.ImGui_MenuItem(ctx, 'CUT') then
             local parrent_container = GetParentContainerByGuid(RC_DATA.tbl[RC_DATA.i])
             local item_id = CalcFxID(parrent_container, RC_DATA.i)
-            local is_collapsed = CheckCollapse(RC_DATA.tbl[RC_DATA.i],1,1)
+            local is_collapsed = CheckCollapse(RC_DATA.tbl[RC_DATA.i], 1, 1)
             local data = tableToString(
                 {
                     tbl = RC_DATA.tbl,

@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.33.41
+-- @version 1.33.42
 -- @changelog
---  Remove right click restriction from helpers
+--  Move Explode to normal right click menu
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf

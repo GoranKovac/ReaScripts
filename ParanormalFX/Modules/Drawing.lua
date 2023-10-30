@@ -1920,17 +1920,15 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
                         PREVIEW_TOOLTIP.i = i
                     end
                 end
-                --if CheckIfSafeToExplode(tbl, i) then
-                if collapse_hover and r.ImGui_IsMouseReleased(ctx, 1) then
-                    OPEN_INSERT_POINTS_MENU = true
-                    RC_DATA = {
-                        type = tbl[i].type,
-                        tbl = tbl,
-                        i = i,
-                        lane = "collapse"
-                    }
-                end
-                --end
+                -- if collapse_hover and r.ImGui_IsMouseReleased(ctx, 1) then
+                --     OPEN_RIGHT_CLICK_MENU = true
+                --     RC_DATA = {
+                --         type = tbl[i].type,
+                --         tbl = tbl,
+                --         i = i,
+                --         explode = true
+                --     }
+                -- end
                 DrawListButton(icon, color, collapse_hover, true, "R")
                 r.ImGui_PopID(ctx)
             end
