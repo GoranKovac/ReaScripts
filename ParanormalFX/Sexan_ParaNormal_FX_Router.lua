@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.33.45
+-- @version 1.33.46
 -- @changelog
---  Woopsie FX BROWSER
+--  Move caching code to FX BROWSER
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -226,37 +226,25 @@ function RestoreFromPEXT()
     end
 end
 
-local FX_LIST, CAT = ReadFXFile(FX_FILE, FX_CAT_FILE, FX_DEV_LIST_FILE)
+local FX_LIST, CAT = ReadFXFile()
 
-function MakeFXFiles()
-    local GEN_FX_LIST, GEN_CAT, GEN_DEVELOPER_LIST = GetFXTbl()
-    local serialized_fx = TableToString(GEN_FX_LIST)
-    WriteToFile(FX_FILE, serialized_fx)
-
-    local serialized_cat = TableToString(GEN_CAT)
-    WriteToFile(FX_CAT_FILE, serialized_cat)
-
-    local serialized_dev_list = TableToString(GEN_DEVELOPER_LIST)
-    WriteToFile(FX_DEV_LIST_FILE, serialized_dev_list)
-
-    FX_LIST, CAT = GEN_FX_LIST, GEN_CAT
-end
-
-if not FX_LIST and not CAT or r.HasExtState("PARANORMALFX2", "UPDATEFX") then
-    MakeFXFiles()
+if not FX_LIST or not CAT or r.HasExtState("PARANORMALFX2", "UPDATEFX") then
+    FX_LIST, CAT = MakeFXFiles()
     if r.HasExtState("PARANORMALFX2", "UPDATEFX") then
         r.DeleteExtState("PARANORMALFX2", "UPDATEFX", false)
     end
 end
-
---UpdateChainsTrackTemplates(CAT)
 
 function GetFXBrowserData()
     return FX_LIST, CAT
 end
 
 function UpdateFXBrowserData()
-    FX_LIST, CAT = ReadFXFile(FX_FILE, FX_CAT_FILE, FX_DEV_LIST_FILE)
+    FX_LIST, CAT = ReadFXFile()
+end
+
+function RescanFxList()
+    FX_LIST, CAT = MakeFXFiles()
 end
 
 -- local function CheckReaperIODnd()
@@ -279,7 +267,6 @@ end
 -- r.ImGui_Attach(ctx, img)
 
 local function Main()
-
     if WANT_REFRESH then
         WANT_REFRESH = nil
         UpdateChainsTrackTemplates(CAT)
