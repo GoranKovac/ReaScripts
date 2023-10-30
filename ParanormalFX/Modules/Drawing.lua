@@ -1896,8 +1896,8 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
         DrawListButton("H", color, vol_or_enclose_hover, true, "R")
     else
         --! COLLAPSE
-        PEAK_INTO_TOOLTIP = nil
-        if tbl[i].type == "Container" then --and not tbl[i].offline then
+        -- PEAK_INTO_TOOLTIP = nil
+        if tbl[i].type == "Container" then
             --! SHOW COLLAPSE ONLY IF THERE ARE CHILDS INSIDE
             if #tbl[i].sub ~= 0 then
                 r.ImGui_SameLine(ctx, 0, width - volume - (mute * 2) - s_window_x)
@@ -1909,26 +1909,19 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
                 local icon = (TR_CONT[tbl[i].guid] and TR_CONT[tbl[i].guid].collapse) and "S" or "?"
                 local collapse_state = (TR_CONT[tbl[i].guid] and TR_CONT[tbl[i].guid].collapse) and true or false
                 collapse_hover = r.ImGui_IsItemHovered(ctx)
+                PEAK_INTO_TOOLTIP = collapse_hover and true or PEAK_INTO_TOOLTIP
                 Tooltip(collapse_state and "EXPAND CONTAINER" or "COLLAPSE CONTAINER")
                 --! PEAK INSIDE CONTAINER TOOLTIP
-                if not PEAK_INTO_TOOLTIP then
-                    PEAK_INTO_TOOLTIP = (collapse_state and collapse_hover) and true
-                end
+                --if not PEAK_INTO_TOOLTIP then
+                --    PEAK_INTO_TOOLTIP = (collapse_state and collapse_hover) and true
+                --end
                 if not PREVIEW_TOOLTIP then
                     if (collapse_state and collapse_hover) then
                         PREVIEW_TOOLTIP = tbl
                         PREVIEW_TOOLTIP.i = i
+                        PREVIEW_TOOLTIP.start = r.time_precise()
                     end
                 end
-                -- if collapse_hover and r.ImGui_IsMouseReleased(ctx, 1) then
-                --     OPEN_RIGHT_CLICK_MENU = true
-                --     RC_DATA = {
-                --         type = tbl[i].type,
-                --         tbl = tbl,
-                --         i = i,
-                --         explode = true
-                --     }
-                -- end
                 DrawListButton(icon, color, collapse_hover, true, "R")
                 r.ImGui_PopID(ctx)
             end
@@ -2152,21 +2145,25 @@ local function CustomDNDPreview()
         end
     elseif PREVIEW_TOOLTIP then
         if SHOW_C_CONTENT_TOOLTIP then
-            local px = PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].W // 2
-            r.ImGui_SetNextWindowBgAlpha(ctx, 0.6)
-            r.ImGui_SetNextWindowPos(ctx, mx - px, my + off_y)
-            if r.ImGui_BeginChild(ctx, "##PEAK_DRAW_CONTAINER", PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].W, PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].H, true) then
-                DrawButton(PREVIEW_TOOLTIP, PREVIEW_TOOLTIP.i, PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].name,
-                    PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].W - s_window_x, 1)
-                local area_w = r.ImGui_GetContentRegionMax(ctx)
-                DrawPlugins((area_w // 2) + (s_window_x // 2), PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].sub, 1)
-                r.ImGui_EndChild(ctx)
+            if r.time_precise() - PREVIEW_TOOLTIP.start > 0.25 then
+                --r.ShowConsoleMsg(r.time_precise() - PREVIEW_TOOLTIP.start .."\n")
+                local px = PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].W // 2
+                r.ImGui_SetNextWindowBgAlpha(ctx, 0.6)
+                r.ImGui_SetNextWindowPos(ctx, mx - px, my + off_y)
+                if r.ImGui_BeginChild(ctx, "##PEAK_DRAW_CONTAINER", PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].W, PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].H, true) then
+                    DrawButton(PREVIEW_TOOLTIP, PREVIEW_TOOLTIP.i, PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].name,
+                        PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].W - s_window_x, 1)
+                    local area_w = r.ImGui_GetContentRegionMax(ctx)
+                    DrawPlugins((area_w // 2) + (s_window_x // 2), PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].sub, 1)
+                    r.ImGui_EndChild(ctx)
+                end
             end
         end
     end
 end
 
 function Draw()
+    PEAK_INTO_TOOLTIP = false
     LINE_POINTS = {}
     if not TRACK then return end
     GenerateFXData()

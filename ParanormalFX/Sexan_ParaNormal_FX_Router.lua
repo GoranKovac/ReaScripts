@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.33.42
+-- @version 1.33.43
 -- @changelog
---  Move Explode to normal right click menu
+--  Added small delay for container peek preview
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
