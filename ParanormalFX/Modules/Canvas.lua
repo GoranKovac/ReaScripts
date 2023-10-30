@@ -210,7 +210,7 @@ local function RightClickMenu()
                 local can_explode = CheckIfSafeToExplode(RC_DATA.tbl, RC_DATA.i)
                 local no_childs = #RC_DATA.tbl[RC_DATA.i].sub == 0
                 if not can_explode or no_childs then r.ImGui_BeginDisabled(ctx, true) end
-                if r.ImGui_MenuItem(ctx, can_explode and 'EXPLODE CONTAINER' or "EXPLODE (NOT SUPPRTED)") then
+                if r.ImGui_MenuItem(ctx, can_explode and 'EXPLODE CONTAINER' or "EXPLODE (NOT SUPPORTED)") then
                     ExplodeContainer(RC_DATA.tbl, RC_DATA.i)
                 end
                 if not can_explode or no_childs then r.ImGui_EndDisabled(ctx) end
