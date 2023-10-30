@@ -1,23 +1,28 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.17
+-- @version 1.18
 -- @changelog
---  Ignore Empty favorites folders (cause crash)
+--  Added Code for caching FX DATA to local txt file for faster loading (FX_LIST.txt, FX_CAT_FILE.txt, FX_DEV_LIST_FILE.txt)
 
-local r = reaper
-local os = r.GetOS()
-local os_separator = package.config:sub(1, 1)
+local r                                = reaper
+local os                               = r.GetOS()
+local os_separator                     = package.config:sub(1, 1)
+local script_path                      = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]]
 
-local CAT = {}
-local DEVELOPER_LIST = { " (Waves)" }
-local PLUGIN_LIST = {}
-local INSTRUMENTS = {}
+local FX_FILE                          = script_path .. "/FX_LIST.txt"
+local FX_CAT_FILE                      = script_path .. "/FX_CAT_FILE.txt"
+local FX_DEV_LIST_FILE                 = script_path .. "/FX_DEV_LIST_FILE.txt"
+
+local CAT                              = {}
+local DEVELOPER_LIST                   = { " (Waves)" }
+local PLUGIN_LIST                      = {}
+local INSTRUMENTS                      = {}
 local VST_INFO, VST, VSTi, VST3, VST3i = {}, {}, {}, {}, {}
-local JS_INFO, JS = {}, {}
-local AU_INFO, AU, AUi = {}, {}, {}
-local CLAP_INFO, CLAP, CLAPi = {}, {}, {}
-local LV2_INFO, LV2, LV2i = {}, {}, {}
+local JS_INFO, JS                      = {}, {}
+local AU_INFO, AU, AUi                 = {}, {}, {}
+local CLAP_INFO, CLAP, CLAPi           = {}, {}, {}
+local LV2_INFO, LV2, LV2i              = {}, {}, {}
 
 local function ResetTables()
     CAT = {}
@@ -31,9 +36,22 @@ local function ResetTables()
     LV2_INFO, LV2, LV2i = {}, {}, {}
 end
 
-function ReadFXFile(fx_path, cat_path, dev_path)
-    local FX_LIST, CAT_LIST, DEV_LIST
-    local fx_file = io.open(fx_path, "r")
+function MakeFXFiles()
+    PLUGIN_LIST, CAT, DEVELOPER_LIST = GetFXTbl()
+    local serialized_fx = TableToString(PLUGIN_LIST)
+    WriteToFile(FX_FILE, serialized_fx)
+
+    local serialized_cat = TableToString(CAT)
+    WriteToFile(FX_CAT_FILE, serialized_cat)
+
+    local serialized_dev_list = TableToString(DEVELOPER_LIST)
+    WriteToFile(FX_DEV_LIST_FILE, serialized_dev_list)
+
+    return PLUGIN_LIST, CAT
+end
+
+function ReadFXFile()
+    local fx_file = io.open(FX_FILE, "r")
     if fx_file then
         FX_LIST = {}
         local fx_string = fx_file:read("*all")
@@ -41,7 +59,7 @@ function ReadFXFile(fx_path, cat_path, dev_path)
         FX_LIST = StringToTable(fx_string)
     end
 
-    local cat_file = io.open(cat_path, "r")
+    local cat_file = io.open(FX_CAT_FILE, "r")
     if cat_file then
         CAT_LIST = {}
         local cat_string = cat_file:read("*all")
@@ -49,15 +67,14 @@ function ReadFXFile(fx_path, cat_path, dev_path)
         CAT_LIST = StringToTable(cat_string)
     end
 
-    local dev_list_file = io.open(dev_path, "r")
+    local dev_list_file = io.open(FX_DEV_LIST_FILE, "r")
     if dev_list_file then
-        DEV_LIST = {}
+        DEVELOPER_LIST = {}
         local dev_list_string = dev_list_file:read("*all")
         dev_list_file:close()
-        DEV_LIST = StringToTable(dev_list_string)
+        DEVELOPER_LIST = StringToTable(dev_list_string)
     end
 
-    DEVELOPER_LIST = DEV_LIST
     return FX_LIST, CAT_LIST
 end
 
@@ -600,7 +617,17 @@ end
 -- local r = reaper
 -- local ctx = r.ImGui_CreateContext('FX INI PARSER')
 
--- local FX_LIST, CAT = GetFXTbl()
+-- -- USE ONLY NON CHACHING OR CACHING! NOT BOTH AT THE SAME TIME
+
+-- --NON CACHING -- USE IF YOU WANT RESCAN ON EVERY SCRIPT STARTUP
+-- --local FX_LIST_TEST, CAT_TEST = GetFXTbl()
+
+-- --CACHIN TO FILE - USE IF YOU WANT TO SCAN ONLY ONCE THEN USE THAT TXT FILE FOR FASTER LOADS
+-- local FX_LIST_TEST, CAT_TEST = ReadFXFile()
+-- if not FX_LIST_TEST or not CAT_TEST then
+--     FX_LIST_TEST, CAT_TEST = MakeFXFiles()
+-- end
+-- --CACHIN TO FILE
 
 -- local function Lead_Trim_ws(s) return s:match '^%s*(.*)' end
 
@@ -627,8 +654,8 @@ end
 --     filter_text = Lead_Trim_ws(filter_text)
 --     local t = {}
 --     if filter_text == "" or not filter_text then return t end
---     for i = 1, #FX_LIST do
---         local name = FX_LIST[i]:lower() --:gsub("(%S+:)", "")
+--     for i = 1, #FX_LIST_TEST do
+--         local name = FX_LIST_TEST[i]:lower() --:gsub("(%S+:)", "")
 --         local found = true
 --         for word in filter_text:gmatch("%S+") do
 --             if not name:find(word:lower(), 1, true) then
@@ -636,7 +663,7 @@ end
 --                 break
 --             end
 --         end
---         if found then t[#t + 1] = { score = FX_LIST[i]:len() - filter_text:len(), name = FX_LIST[i] } end
+--         if found then t[#t + 1] = { score = FX_LIST_TEST[i]:len() - filter_text:len(), name = FX_LIST_TEST[i] } end
 --     end
 --     if #t >= 2 then
 --         SortTable(t, "score", "name") -- Sort by key priority
@@ -780,14 +807,14 @@ end
 -- function Frame()
 --     local search = FilterBox()
 --     if search then return end
---     for i = 1, #CAT do
---         if r.ImGui_BeginMenu(ctx, CAT[i].name) then
---             if CAT[i].name == "FX CHAINS" then
---                 DrawFxChains(CAT[i].list)
---             elseif CAT[i].name == "TRACK TEMPLATES" then
---                 DrawTrackTemplates(CAT[i].list)
+--     for i = 1, #CAT_TEST do
+--         if r.ImGui_BeginMenu(ctx, CAT_TEST[i].name) then
+--             if CAT_TEST[i].name == "FX CHAINS" then
+--                 DrawFxChains(CAT_TEST[i].list)
+--             elseif CAT_TEST[i].name == "TRACK TEMPLATES" then
+--                 DrawTrackTemplates(CAT_TEST[i].list)
 --             else
---                 DrawItems(CAT[i].list, CAT[i].name)
+--                 DrawItems(CAT_TEST[i].list, CAT_TEST[i].name)
 --             end
 --             r.ImGui_EndMenu(ctx)
 --         end
@@ -815,6 +842,15 @@ end
 --     local visible, open = r.ImGui_Begin(ctx, 'FX INI PARSER', true)
 --     if visible then
 --         if TRACK then
+--             --UPDATE FX CHAINS (WE DONT NEED TO RESCAN EVERYTHING IF NEW CHAIN WAS CREATED BY SCRIPT)
+--             if WANT_REFRESH then
+--                 WANT_REFRESH = nil
+--                 UpdateChainsTrackTemplates(CAT)
+--             end
+--             -- RESCAN FILE LIST
+--             if r.ImGui_Button(ctx, "RESCAN PLUGIN LIST") then
+--                 FX_LIST_TEST, CAT_TEST = MakeFXFiles()
+--             end
 --             Frame()
 --         else
 --             reaper.ImGui_Text(ctx, "SELECT TRACK")
