@@ -1,9 +1,9 @@
 -- @description Sexan ImGui FileManager
 -- @author Sexan
 -- @license GPL v3
--- @version 1.0
+-- @version 1.01
 -- @changelog
---  initial release
+--  Fix doubleclick to save tries to load
 
 local r = reaper
 local os_separator = package.config:sub(1, 1)
@@ -80,8 +80,13 @@ local function DrawEntries(entries, is_dir)
                     path = path .. entry
                     filelist = GetFileList()
                 else
-                    LoadFile()
-                    r.ImGui_CloseCurrentPopup(ctx)
+                    if FM_TYPE == "LOAD" then
+                        LoadFile()
+                        r.ImGui_CloseCurrentPopup(ctx)
+                    elseif FM_TYPE == "SAVE" then
+                        CAN_SAVE = true
+                        DoSave()
+                    end
                 end
             end
         end
@@ -159,7 +164,7 @@ function Init_FM_database()
     filelist = GetFileList()
 end
 
-local function DoSave()
+function DoSave()
     if not CAN_SAVE then return end
     --local save_extension = filelist.current_text_input:match(exstension) and filelist.current_text_input or        filelist.current_text_input .. exstensions_preview[1]
     local save_file = filelist.current_text_input .. exstensions[1] -- APPEND EXTENSION TO FILE NAME
@@ -167,7 +172,8 @@ local function DoSave()
     local file = io.open(save_path, "r")
     if file ~= nil then
         io.close(file)
-        r.ImGui_OpenPopup(ctx, 'Overwrite')
+        --r.ImGui_OpenPopup(ctx, 'Overwrite')
+        OPEN_OVERWRITE = true
     else
         SaveToFIle(save_path)
         FM_TYPE = nil
@@ -213,6 +219,10 @@ function File_dialog()
         DrawEntries(files, false)
 
         r.ImGui_EndListBox(ctx)
+    end
+    if OPEN_OVERWRITE then
+        r.ImGui_OpenPopup(ctx, 'Overwrite')
+        OPEN_OVERWRITE = nil
     end
     r.ImGui_PopStyleColor(ctx)
     r.ImGui_Separator(ctx)
