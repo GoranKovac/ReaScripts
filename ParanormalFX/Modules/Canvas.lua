@@ -375,27 +375,8 @@ local function RightClickMenu()
     end
 end
 
-local function ZoomMenu()
-    if r.ImGui_MenuItem(ctx, 'RESET ZOOM') then
-        ZOOM_MAX = 1
-        CANVAS.scale = 1
-    end
-end
-
 local function Popups()
     local center = { r.ImGui_Viewport_GetCenter(r.ImGui_GetWindowViewport(ctx)) }
-
-    if OPEN_ZOOM_MENU then
-        OPEN_ZOOM_MENU = nil
-        if not r.ImGui_IsPopupOpen(ctx, "ZOOM_MENU") then
-            r.ImGui_OpenPopup(ctx, "ZOOM_MENU")
-        end
-    end
-
-    if r.ImGui_BeginPopup(ctx, "ZOOM_MENU", r.ImGui_WindowFlags_NoMove()) then
-        ZoomMenu()
-        r.ImGui_EndPopup(ctx)
-    end
 
     if OPEN_INSERT_POINTS_MENU then
         OPEN_INSERT_POINTS_MENU = nil
@@ -724,15 +705,16 @@ function UI()
         r.ImGui_SameLine(ctx)
         if r.ImGui_InvisibleButton(ctx, "H", 22, def_btn_h) then
             ResetView()
-            --CANVAS.off_x, CANVAS.off_y = def_vertical_x_center, def_vertical_y_center
         end
-        if r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseReleased(ctx, 1) then
-            OPEN_ZOOM_MENU = true
+        if r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseClicked(ctx, 1) then
+            ZOOM_MAX = 1
+            CANVAS.scale = 1
+            ResetView()
         end
         local color_over_time = ((sin(r.time_precise() * 4) - 0.5) * 40) // 1
         local color = OFF_SCREEN and 0xff or IncreaseDecreaseBrightness(0x992222ff, color_over_time, "no_alpha")
         DrawListButton2("&", color, r.ImGui_IsItemHovered(ctx), true)
-        TooltipUI("RESET VIEW")
+        TooltipUI("RESET VIEW\nRIGHT CLICK RESETS VIEW AND ZOOM")
         r.ImGui_SameLine(ctx)
         -- MUTE
         if r.ImGui_InvisibleButton(ctx, "M##mute", CalculateItemWH({ name = "PIN" }), def_btn_h) then

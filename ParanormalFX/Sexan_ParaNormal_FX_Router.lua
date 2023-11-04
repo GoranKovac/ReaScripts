@@ -1,11 +1,10 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.34
+-- @version 1.34.1
 -- @changelog
---  Added zoom (CTRL + MOUSE WHEEL)
---  Added user setting for max zoom level
---  Added right click option on HOME icon to reset zoom level
+--  Removed Right click option to reset view
+--  Removed Right click HOME Icon resets view and ZOOM
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
