@@ -688,7 +688,6 @@ function UI()
             ResetView()
         end
         if r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseClicked(ctx, 1) then
-            ZOOM_MAX = 1
             CANVAS.scale = 1
             ResetView()
         end
