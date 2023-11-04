@@ -347,24 +347,7 @@ local function RightClickMenu()
             r.SetExtState("PARANORMALFX2", "COPY_BUFFER", data, false)
             r.SetExtState("PARANORMALFX2", "COPY_BUFFER_ID", r.genGuid(), false)
         end
-
-        --if RC_DATA.para_info and RC_DATA.para_info > 0 then
-        --local parrent_container = GetParentContainerByGuid(RC_DATA.tbl[RC_DATA.i])
-        --local item_id = CalcFxID(parrent_container, RC_DATA.i)
-        -- local _, para = r.TrackFX_GetNamedConfigParm(TRACK, RC_DATA.tbl[RC_DATA.i].FX_ID, "parallel")
-        -- rv_mp = r.ImGui_Checkbox(ctx, "MIDI PARALLEL", para == "2")
-        -- if rv_mp then
-        --     local new_p_val
-        --     if RC_DATA.i == 1 then
-        --         -- FIRST IN CHAIN CAN ONLY BE 0 OR 2
-        --         new_p_val = para == "0" and "2" or "0"
-        --     else
-        --         -- ANY OTHER IN CHAIN CAN BE 1 OR 2
-        --         new_p_val = para == "1" and "2" or "1"
-        --     end
-        --     r.TrackFX_SetNamedConfigParm(TRACK, RC_DATA.tbl[RC_DATA.i].FX_ID, "parallel", new_p_val)
-        -- end
-        --end
+      
         -- SHOW ONLY WHEN CLIPBOARD IS AVAILABLE
         if CLIPBOARD.tbl and CLIPBOARD.guid ~= RC_DATA.tbl[RC_DATA.i].guid then
             --! DO NOT ALLOW PASTING ON SELF
@@ -510,7 +493,6 @@ function DrawUserSettings()
     if r.ImGui_BeginChild(ctx, "USERSETTIGS", 220, 652, 1) then
         if r.ImGui_Button(ctx, "RESCAN FX LIST") then
             RescanFxList()
-           -- WANT_REFRESH = true
         end
         SettingsTooltips("FX LIST IS CACHED TO FILE FOR FASTER LOADING TIMES\nNEEDS MANUAL TRIGGER FOR UPDATING")
 
@@ -591,7 +573,6 @@ function DrawUserSettings()
             CUSTOM_FONT = nil
             SELECTED_FONT = DEFAULT_FONT
             new_spacing_y = 10
-            --CUSTOM_BTN_H = 22
             Knob_Radius = CUSTOM_BTN_H // 2
             ROUND_CORNER = 2
             WireThickness = 1
@@ -751,7 +732,6 @@ function UI()
         TooltipUI(
             "LOCKS TO SELECTED TRACK\nMULTIPLE SCRIPTS CAN HAVE DIFFERENT SELECTIONS\nCAN BE CHANGED VIA TRACKLIST")
         r.ImGui_SameLine(ctx)
-        --r.ImGui_PopFont(ctx)
         -- TRACK LIST
         --! NEED TO FIX OFFSET
         local vertical_mw = r.ImGui_GetMouseWheel(ctx)

@@ -1,10 +1,10 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.34.1
+-- @version 1.34.2
 -- @changelog
---  Removed Right click option to reset view
---  Removed Right click HOME Icon resets view and ZOOM
+--  Zoom code cleanup
+--  Fix text alingment of helpers
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
