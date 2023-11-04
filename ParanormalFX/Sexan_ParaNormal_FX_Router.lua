@@ -1,9 +1,11 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.33.46
+-- @version 1.34
 -- @changelog
---  Move caching code to FX BROWSER
+--  Added zoom (CTRL + MOUSE WHEEL)
+--  Added user setting for max zoom level
+--  Added right click option on HOME icon to reset zoom level
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -97,15 +99,25 @@ FLT_MIN, FLT_MAX = ImGui.NumericLimits_Float()
 
 draw_list = r.ImGui_GetWindowDrawList(ctx)
 
-ICONS_FONT_SMALL = ImGui.CreateFont(script_path .. 'Fonts/Icons.ttf', 13)
+ORG_FONT_SIZE = 13
+FONT_SIZE = ORG_FONT_SIZE
+
+ICONS_FONT_SMALL = ImGui.CreateFont(script_path .. 'Fonts/Icons.ttf', FONT_SIZE)
 ImGui.Attach(ctx, ICONS_FONT_SMALL)
+ICONS_FONT_SMALL_FACTORY = ImGui.CreateFont(script_path .. 'Fonts/Icons.ttf', FONT_SIZE)
+ImGui.Attach(ctx, ICONS_FONT_SMALL_FACTORY)
 ICONS_FONT_LARGE = ImGui.CreateFont(script_path .. 'Fonts/Icons.ttf', 16)
 ImGui.Attach(ctx, ICONS_FONT_LARGE)
 
-SYSTEM_FONT = ImGui.CreateFont('sans-serif', 13, ImGui.FontFlags_Bold())
+SYSTEM_FONT = ImGui.CreateFont('sans-serif', FONT_SIZE, ImGui.FontFlags_Bold())
 ImGui.Attach(ctx, SYSTEM_FONT)
-DEFAULT_FONT = ImGui.CreateFont(script_path .. 'Fonts/ProggyClean.ttf', 13)
+DEFAULT_FONT = ImGui.CreateFont(script_path .. 'Fonts/ProggyClean.ttf', FONT_SIZE)
 ImGui.Attach(ctx, DEFAULT_FONT)
+
+DEFAULT_FONT_FACTORY = ImGui.CreateFont(script_path .. 'Fonts/ProggyClean.ttf', ORG_FONT_SIZE)
+ImGui.Attach(ctx, DEFAULT_FONT_FACTORY)
+SYSTEM_FONT_FACTORY = ImGui.CreateFont('sans-serif', FONT_SIZE, ImGui.FontFlags_Bold())
+ImGui.Attach(ctx, SYSTEM_FONT_FACTORY)
 
 DEF_PARALLEL                 = "2"
 ESC_CLOSE                    = false
@@ -116,7 +128,6 @@ DEFAULT_DND                  = true
 CTRL_DRAG_AUTOCONTAINER      = false
 TOOLTIPS                     = true
 SHOW_C_CONTENT_TOOLTIP       = true
---V_LAYOUT                     = false
 
 --local fx_browser_script_path = "C:/Users/Gokily/Documents/ReaGit/ReaScripts/FX/Sexan_FX_Browser_ParserV7.lua"
 local fx_browser_script_path = reaper_path .. "/Scripts/Sexan_Scripts/FX/Sexan_FX_Browser_ParserV7.lua"
@@ -136,7 +147,6 @@ end
 
 require("Modules/Utils")
 require("Modules/Drawing")
---require("Modules/DrawingHorizontal")
 require("Modules/Canvas")
 require("Modules/ContainerCode")
 require("Modules/Functions")
@@ -154,7 +164,8 @@ if r.HasExtState("PARANORMALFX2", "SETTINGS") then
             ESC_CLOSE = storedTable.esc_close
             CUSTOM_FONT = storedTable.custom_font
             AUTO_COLORING = storedTable.auto_color
-            S_SPACING_Y = storedTable.spacing
+            new_spacing_y = storedTable.spacing
+            ZOOM_MAX = storedTable.zoom_max and storedTable.zoom_max or 1
             ADD_BTN_H = storedTable.add_btn_h
             ADD_BTN_W = storedTable.add_btn_w
             WireThickness = storedTable.wirethickness
@@ -266,7 +277,33 @@ end
 -- img = r.ImGui_CreateImage( script_path .. "SchwaARM.png")
 -- r.ImGui_Attach(ctx, img)
 
+function UpdateZoomFont()
+    if not CANVAS then return end
+    local new_font_size = (ORG_FONT_SIZE * CANVAS.scale)//1
+    if FONT_SIZE ~= new_font_size then
+        if NEXT_FRAME then
+            if DEFAULT_FONT then
+                r.ImGui_Detach(ctx, ICONS_FONT_SMALL)
+                r.ImGui_Detach(ctx, SYSTEM_FONT)
+                r.ImGui_Detach(ctx, DEFAULT_FONT)
+            end
+            ICONS_FONT_SMALL = ImGui.CreateFont(script_path .. 'Fonts/Icons.ttf', new_font_size)
+            ImGui.Attach(ctx, ICONS_FONT_SMALL)
+            SYSTEM_FONT = ImGui.CreateFont('sans-serif', new_font_size, ImGui.FontFlags_Bold())
+            ImGui.Attach(ctx, SYSTEM_FONT)
+            DEFAULT_FONT = ImGui.CreateFont(script_path .. 'Fonts/ProggyClean.ttf', new_font_size)
+            ImGui.Attach(ctx, DEFAULT_FONT)
+            FONT_SIZE = new_font_size
+            SELECTED_FONT = CUSTOM_FONT and SYSTEM_FONT or DEFAULT_FONT
+            NEXT_FRAME = nil
+        end
+    end
+end
+
+
 local function Main()
+    UpdateZoomFont()
+   -- UpdateStyle()
     if WANT_REFRESH then
         WANT_REFRESH = nil
         UpdateChainsTrackTemplates(CAT)
@@ -303,11 +340,16 @@ local function Main()
     local visible, open = r.ImGui_Begin(ctx, 'PARANORMAL FX ROUTER###PARANORMALFX', true, WND_FLAGS)
     ImGui.PopStyleColor(ctx)
     if visible then
-        r.ImGui_PushFont(ctx, SELECTED_FONT)
+        AW,AH = r.ImGui_GetContentRegionAvail(ctx)
+        WX,WY = r.ImGui_GetWindowPos(ctx)
         CanvasLoop()
         CollectFxData()
+        r.ImGui_PushFont(ctx, SELECTED_FONT)
         Draw()
+        r.ImGui_PopFont(ctx)
+        r.ImGui_PushFont(ctx, CUSTOM_FONT and SYSTEM_FONT_FACTORY or DEFAULT_FONT_FACTORY)
         UI()
+        r.ImGui_PopFont(ctx)
         ClipBoard()
         if OPEN_SETTINGS then DrawUserSettings() end
         if not IS_DRAGGING_RIGHT_CANVAS and r.ImGui_IsMouseReleased(ctx, 1) and
@@ -324,7 +366,6 @@ local function Main()
         FILE_MANAGER_OPENED = r.ImGui_IsPopupOpen(ctx, "File Dialog")
 
         CheckStaleData()
-        r.ImGui_PopFont(ctx)
         ImGui.End(ctx)
     end
     if ESC and ESC_CLOSE then open = nil end
@@ -333,8 +374,10 @@ local function Main()
         pdefer(Main)
     end
 
-    UpdateScroll()
+    --UpdateScroll()
+   -- updateZoom()
     if FONT_UPDATE then FONT_UPDATE = nil end
+    NEXT_FRAME = true
     -- if MOUSE_UP then
     --     if A_X then A_X, A_Y = nil,nil end
     --     if REAPER_DND then 

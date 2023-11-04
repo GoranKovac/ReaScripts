@@ -635,7 +635,6 @@ function Paste(replace, parallel, serial, enclose)
         end
         CopyTargetsToNewContainer(CLIPBOARD.track, RC_DATA.tbl, RC_DATA.i, CLIPBOARD.guid, CLIPBOARD.i, is_cut)
     else
-        --local is_cut = CLIPBOARD.cut and true or false
         if is_cut then
             CheckSourceNextItemParallel(CLIPBOARD.i, CLIPBOARD.P_TYPE, CLIPBOARD.P_DIFF, CLIPBOARD.P_ID, CLIPBOARD.track)
             r.TrackFX_SetNamedConfigParm(CLIPBOARD.track, CLIPBOARD.id, "parallel", para_info)
@@ -668,19 +667,3 @@ function Paste(replace, parallel, serial, enclose)
     EndUndoBlock((is_cut and "CUT FX: " or "PASTE FX: ") .. RC_DATA.tbl[RC_DATA.i].name)
     UpdateClipboardInfo()
 end
-
--- function Copy()
---     local parrent_container = GetParentContainerByGuid(RC_DATA.tbl[RC_DATA.i])
---     local item_id = CalcFxID(parrent_container, RC_DATA.i)
---     local data = tableToString(
---         {
---             tbl = RC_DATA.tbl,
---             tbl_i = RC_DATA.i,
---             track_guid = r.GetTrackGUID(TRACK),
---             fx_id = item_id,
---             guid = RC_DATA.tbl[RC_DATA.i].guid
---         }
---     )
---     r.SetExtState("PARANORMALFX2", "COPY_BUFFER", data, false)
---     r.SetExtState("PARANORMALFX2", "COPY_BUFFER_ID", r.genGuid(), false)
--- end

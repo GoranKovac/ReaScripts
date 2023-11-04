@@ -8,10 +8,10 @@ for name, func in pairs(reaper) do
     if name then ImGui[name] = func end
 end
 
-local def_vertical_y_center = 100
+local def_vertical_x_center,def_vertical_y_center = 300, 100
 
 function InitCanvas()
-    return { view_x = 0, view_y = 0, off_x = 0, off_y = def_vertical_y_center, scale = 1 }
+    return { view_x = 0, view_y = 0, off_x = def_vertical_x_center, off_y = def_vertical_y_center, scale = 1 }
 end
 
 function UpdateScroll()
@@ -23,6 +23,33 @@ function UpdateScroll()
         CANVAS.off_x, CANVAS.off_y = CANVAS.off_x + drag_x, CANVAS.off_y + drag_y
         ImGui.ResetMouseDragDelta(ctx, btn)
     end
+end
+
+ZOOM_MIN, ZOOM_MAX, ZOOM_SPEED = 0.2, 1, 1/8
+
+ function round(num) return (num + 0.5)//1 end
+
+function updateZoom()
+    if not CTRL then return end
+    local WX, WY = r.ImGui_GetWindowPos( ctx )
+    local new_scale = CANVAS.scale + (r.ImGui_GetMouseWheel(ctx) * ZOOM_SPEED)
+    new_scale = math.max(ZOOM_MIN, math.min(ZOOM_MAX, new_scale))
+    
+    if new_scale == CANVAS.scale then return end
+  
+    local scale_diff = (new_scale / CANVAS.scale)
+    local mouse_x, mouse_y = r.ImGui_GetMousePos(ctx)
+    mouse_x, mouse_y = (mouse_x - WX) - CANVAS.view_x - CANVAS.off_x,
+                       (mouse_y - WY) - CANVAS.view_y - CANVAS.off_y
+    local diff_x, diff_y = mouse_x - (mouse_x * scale_diff),
+                           mouse_y - (mouse_y * scale_diff)
+    CANVAS.off_x, CANVAS.off_y = (CANVAS.off_x + diff_x),
+                                 (CANVAS.off_y + diff_y)
+    CANVAS.scale = new_scale
+end
+
+local function ResetView()
+    CANVAS.off_x, CANVAS.off_y = AW/2, def_vertical_y_center
 end
 
 local function CheckKeys()
@@ -37,7 +64,7 @@ local function CheckKeys()
     Z = ImGui.IsKeyPressed(ctx, ImGui.Key_Z())
     C = ImGui.IsKeyPressed(ctx, ImGui.Key_C())
 
-    if HOME then CANVAS.off_x, CANVAS.off_y = 0, def_vertical_y_center end
+    if HOME then ResetView() end
 
     if CTRL and Z then
         r.Main_OnCommand(40029, 0)
@@ -348,8 +375,27 @@ local function RightClickMenu()
     end
 end
 
+local function ZoomMenu()
+    if r.ImGui_MenuItem(ctx, 'RESET ZOOM') then
+        ZOOM_MAX = 1
+        CANVAS.scale = 1
+    end
+end
+
 local function Popups()
     local center = { r.ImGui_Viewport_GetCenter(r.ImGui_GetWindowViewport(ctx)) }
+
+    if OPEN_ZOOM_MENU then
+        OPEN_ZOOM_MENU = nil
+        if not r.ImGui_IsPopupOpen(ctx, "ZOOM_MENU") then
+            r.ImGui_OpenPopup(ctx, "ZOOM_MENU")
+        end
+    end
+
+    if r.ImGui_BeginPopup(ctx, "ZOOM_MENU", r.ImGui_WindowFlags_NoMove()) then
+        ZoomMenu()
+        r.ImGui_EndPopup(ctx)
+    end
 
     if OPEN_INSERT_POINTS_MENU then
         OPEN_INSERT_POINTS_MENU = nil
@@ -434,6 +480,7 @@ end
 local function StoreSettings()
     local data = tableToString(
         {
+            zoom_max = ZOOM_MAX,
             show_c_content_tooltips = SHOW_C_CONTENT_TOOLTIP,
             tooltips = TOOLTIPS,
             animated_highlight = ANIMATED_HIGLIGHT,
@@ -441,7 +488,7 @@ local function StoreSettings()
             esc_close = ESC_CLOSE,
             custom_font = CUSTOM_FONT,
             auto_color = AUTO_COLORING,
-            spacing = S_SPACING_Y,
+            spacing = new_spacing_y,
             add_btn_h = ADD_BTN_H,
             add_btn_w = ADD_BTN_W,
             wirethickness = WireThickness,
@@ -462,7 +509,7 @@ end
 local function SettingsTooltips(str)
     if r.ImGui_IsItemHovered(ctx) then
         r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0xFF)
-        r.ImGui_PushFont(ctx, SELECTED_FONT)
+        r.ImGui_PushFont(ctx, CUSTOM_FONT and SYSTEM_FONT_FACTORY or DEFAULT_FONT_FACTORY)
         if r.ImGui_BeginTooltip(ctx) then
             r.ImGui_Text(ctx, str)
             r.ImGui_EndTooltip(ctx)
@@ -479,21 +526,10 @@ function DrawUserSettings()
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x000000EE)
     r.ImGui_SetNextWindowPos(ctx, WX + 5, WY + 65)
 
-    if r.ImGui_BeginChild(ctx, "USERSETTIGS", 220, 630, 1) then
+    if r.ImGui_BeginChild(ctx, "USERSETTIGS", 220, 652, 1) then
         if r.ImGui_Button(ctx, "RESCAN FX LIST") then
             RescanFxList()
-            -- local FX_LIST, CAT, DEV_LIST = GetFXTbl()
-            -- local serialized_fx = TableToString(FX_LIST)
-            -- WriteToFile(FX_FILE, serialized_fx)
-
-            -- local serialized_cat = TableToString(CAT)
-            -- WriteToFile(FX_CAT_FILE, serialized_cat)
-
-            -- local serialized_dev_list = TableToString(DEV_LIST)
-            -- WriteToFile(FX_DEV_LIST_FILE, serialized_dev_list)
-
-            -- UpdateFXBrowserData()
-            WANT_REFRESH = true
+           -- WANT_REFRESH = true
         end
         SettingsTooltips("FX LIST IS CACHED TO FILE FOR FASTER LOADING TIMES\nNEEDS MANUAL TRIGGER FOR UPDATING")
 
@@ -509,8 +545,10 @@ function DrawUserSettings()
             end
             r.ImGui_EndListBox(ctx)
         end
+        r.ImGui_SetNextItemWidth(ctx, 50)
+        _, ZOOM_MAX = r.ImGui_SliderInt(ctx, "MAX ZOOM", ZOOM_MAX, 1, 3)
         r.ImGui_SetNextItemWidth(ctx, 100)
-        _, S_SPACING_Y = r.ImGui_SliderInt(ctx, "SPACING", S_SPACING_Y, 0, 20)
+        _, new_spacing_y = r.ImGui_SliderInt(ctx, "SPACING", new_spacing_y, 0, 20)
         r.ImGui_SetNextItemWidth(ctx, 100)
 
         _, ADD_BTN_H = r.ImGui_SliderInt(ctx, "+ HEIGHT", ADD_BTN_H, 10, 22)
@@ -562,6 +600,7 @@ function DrawUserSettings()
         r.ImGui_Separator(ctx)
 
         if r.ImGui_Button(ctx, "DEFAULT") then
+            ZOOM_MAX = 1
             SHOW_C_CONTENT_TOOLTIP = true
             TOOLTIPS = true
             ANIMATED_HIGLIGHT = true
@@ -570,8 +609,8 @@ function DrawUserSettings()
             CTRL_DRAG_AUTOCONTAINER = false
             CUSTOM_FONT = nil
             SELECTED_FONT = DEFAULT_FONT
-            S_SPACING_Y = 4
-            CUSTOM_BTN_H = 22
+            new_spacing_y = 10
+            --CUSTOM_BTN_H = 22
             Knob_Radius = CUSTOM_BTN_H // 2
             ROUND_CORNER = 2
             WireThickness = 1
@@ -617,11 +656,45 @@ end
 local function TooltipUI(str)
     if r.ImGui_IsItemHovered(ctx) then
         r.ImGui_BeginTooltip(ctx)
-        r.ImGui_PushFont(ctx, SELECTED_FONT)
+        r.ImGui_PushFont(ctx, CUSTOM_FONT and SYSTEM_FONT_FACTORY or DEFAULT_FONT_FACTORY)
         r.ImGui_Text(ctx, str)
         r.ImGui_PopFont(ctx)
         r.ImGui_EndTooltip(ctx)
     end
+end
+
+function DrawListButton2(name, color, hover, icon, round_side, shrink, active, txt_align)
+    local rect_col = IS_DRAGGING_RIGHT_CANVAS and color or IncreaseDecreaseBrightness(color, hover and 50 or 0)
+    local xs, ys = r.ImGui_GetItemRectMin(ctx)
+    local xe, ye = r.ImGui_GetItemRectMax(ctx)
+    local w = xe - xs
+    local h = ye - ys
+
+    local round_flag = round_side and ROUND_FLAG[round_side] or nil
+    local round_amt = round_flag and ROUND_CORNER or 0.5
+
+    r.ImGui_DrawList_AddRectFilled(draw_list, shrink and xs + shrink or xs, ys, shrink and xe - shrink or xe, ye,
+        r.ImGui_GetColorEx(ctx, rect_col), round_amt,
+        round_flag)
+    if r.ImGui_IsItemActive(ctx) or active then
+        r.ImGui_DrawList_AddRect(draw_list, xs - 2, ys - 2, xe + 2, ye + 2, 0x22FF44FF, 2, nil, 2)
+    end
+
+    if icon then r.ImGui_PushFont(ctx, ICONS_FONT_SMALL_FACTORY) end
+
+    local label_size = r.ImGui_CalcTextSize(ctx, name)
+    local font_size = r.ImGui_GetFontSize(ctx)
+    local font_color = 0xFFFFFFFF
+
+    local txt_x = xs + (w / 2) - (label_size / 2)
+    txt_x = txt_align == "L" and xs or txt_x
+    txt_x = txt_align == "R" and xe - label_size - shrink - (name_margin // 2) or txt_x
+    txt_x = txt_align == "LC" and xs + (w / 2) - (label_size / 2) - (collapse_btn_size // 4) or txt_x
+
+    local txt_y = ys + (h / 2) - (font_size / 2)
+    r.ImGui_DrawList_AddTextEx(draw_list, nil, font_size, txt_x, txt_y, r.ImGui_GetColorEx(ctx, font_color), name)
+
+    if icon then r.ImGui_PopFont(ctx) end
 end
 
 local sin = math.sin
@@ -647,14 +720,18 @@ function UI()
             OPEN_SETTINGS = not OPEN_SETTINGS
         end
         TooltipUI("SETTINGS")
-        DrawListButton("$", 0xff, r.ImGui_IsItemHovered(ctx), true)
+        DrawListButton2("$", 0xff, r.ImGui_IsItemHovered(ctx), true)
         r.ImGui_SameLine(ctx)
         if r.ImGui_InvisibleButton(ctx, "H", 22, def_btn_h) then
-            CANVAS.off_x, CANVAS.off_y = 0, def_vertical_y_center
+            ResetView()
+            --CANVAS.off_x, CANVAS.off_y = def_vertical_x_center, def_vertical_y_center
+        end
+        if r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseReleased(ctx, 1) then
+            OPEN_ZOOM_MENU = true
         end
         local color_over_time = ((sin(r.time_precise() * 4) - 0.5) * 40) // 1
         local color = OFF_SCREEN and 0xff or IncreaseDecreaseBrightness(0x992222ff, color_over_time, "no_alpha")
-        DrawListButton("&", color, r.ImGui_IsItemHovered(ctx), true)
+        DrawListButton2("&", color, r.ImGui_IsItemHovered(ctx), true)
         TooltipUI("RESET VIEW")
         r.ImGui_SameLine(ctx)
         -- MUTE
@@ -666,7 +743,7 @@ function UI()
             end
         end
         local mute_color = r.GetMediaTrackInfo_Value(PIN and SEL_LIST_TRACK or TRACK, "B_MUTE")
-        DrawListButton("O", mute_color == 0 and 0xff or 0xff2222ff, r.ImGui_IsItemHovered(ctx), true)
+        DrawListButton2("O", mute_color == 0 and 0xff or 0xff2222ff, r.ImGui_IsItemHovered(ctx), true)
 
         r.ImGui_SameLine(ctx, 0, 3)
         -- SOLO
@@ -678,7 +755,7 @@ function UI()
             end
         end
         local solo_color = r.GetMediaTrackInfo_Value(PIN and SEL_LIST_TRACK or TRACK, "I_SOLO")
-        DrawListButton("P", solo_color == 0 and 0xff or 0xf1c524ff, r.ImGui_IsItemHovered(ctx), true)
+        DrawListButton2("P", solo_color == 0 and 0xff or 0xf1c524ff, r.ImGui_IsItemHovered(ctx), true)
         r.ImGui_SameLine(ctx)
 
         -- PIN
@@ -688,7 +765,7 @@ function UI()
             SEL_LIST_TRACK = TRACK
             PIN = not PIN
         end
-        DrawListButton(pin_icon, pin_color, r.ImGui_IsItemHovered(ctx), true)
+        DrawListButton2(pin_icon, pin_color, r.ImGui_IsItemHovered(ctx), true)
         TooltipUI(
             "LOCKS TO SELECTED TRACK\nMULTIPLE SCRIPTS CAN HAVE DIFFERENT SELECTIONS\nCAN BE CHANGED VIA TRACKLIST")
         r.ImGui_SameLine(ctx)
