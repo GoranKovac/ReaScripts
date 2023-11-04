@@ -956,7 +956,7 @@ local function CalcContainerWH(fx_items)
                 if h > col_h then col_h = h end
             end
             col_w = col_w + (def_s_spacing_x * (#rows[i] - 1))
-            col_w = col_w + (para_btn_size // 2)
+            col_w = col_w + (para_btn_size / 2)
         else
             local w, h = ItemFullSize(fx_items[rows[i][1]])
             w = fx_items[rows[i][1]].W and w + mute + def_s_spacing_x or
@@ -1267,7 +1267,7 @@ function DrawListButton(name, color, hover, icon, round_side, shrink, active, tx
     local txt_x = xs + (w / 2) - (label_size / 2)
     txt_x = txt_align == "L" and xs or txt_x
     txt_x = txt_align == "R" and xe - label_size - shrink - ((name_margin / 2))*CANVAS.scale or txt_x
-    txt_x = txt_align == "LC" and xs + (w / 2) - (label_size / 2) - (collapse_btn_size // 4) or txt_x
+    txt_x = txt_align == "LC" and xs + (w / 2) - (label_size / 2) - (collapse_btn_size / 4) or txt_x
 
     local txt_y = ys + (h / 2) - (font_size / 2)
     r.ImGui_DrawList_AddTextEx(draw_list, nil, font_size, txt_x, txt_y, r.ImGui_GetColorEx(ctx, font_color), name)
@@ -1450,7 +1450,7 @@ local function GenerateCoordinates(tbl, i, last)
     local xs, ys = r.ImGui_GetItemRectMin(ctx)
     local xe, ye = r.ImGui_GetItemRectMax(ctx)
 
-    local x = xs + ((xe - xs) // 2)
+    local x = xs + ((xe - xs) / 2)
     if last then
         return { x = x, ys = ye + (new_spacing_y / 2) * CANVAS.scale, ye = ye }
     end
@@ -1549,7 +1549,7 @@ local function DrawHelper(tbl, i, w)
     local btn_hover, new_width
     if tbl[i].name:find("VOL - PAN", nil, true) then
         local vol_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 0) -- 0 IS VOL IDENTIFIER
-        r.ImGui_SameLine(ctx, -FLT_MIN, (mute + mute // 2)*CANVAS.scale)
+        r.ImGui_SameLine(ctx, -FLT_MIN, (mute + mute / 2)*CANVAS.scale)
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_vol")
         local rvh_v, v = MyKnob("", "arc", vol_val, -60, 12, "vol")
         if rvh_v then
@@ -1563,7 +1563,7 @@ local function DrawHelper(tbl, i, w)
             r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 0, 0)
         end
         r.ImGui_PopID(ctx)
-        r.ImGui_SameLine(ctx, -FLT_MIN, (w - (mute * 2) - mute // 2) * CANVAS.scale)
+        r.ImGui_SameLine(ctx, -FLT_MIN, (w - (mute * 2) - mute / 2) * CANVAS.scale)
         local pan_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 1) -- 1 IS PAN IDENTIFIER
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_pan")
         local rvh_p, p = MyKnob("", "knob", pan_val, -100, 100, "pan")
@@ -1580,7 +1580,7 @@ local function DrawHelper(tbl, i, w)
         r.ImGui_PopID(ctx)
         r.ImGui_SetCursorPosY(ctx, r.ImGui_GetCursorPosY(ctx))
     elseif tbl[i].name:find("POLARITY", nil, true) then
-        r.ImGui_SameLine(ctx, -FLT_MIN, (mute + mute // 4) * CANVAS.scale)
+        r.ImGui_SameLine(ctx, -FLT_MIN, (mute + mute / 4) * CANVAS.scale)
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_phase")
         local phase_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 0) -- 0 POLARITY NORMAL
         local pos = { r.ImGui_GetCursorScreenPos(ctx) }
@@ -1599,7 +1599,7 @@ local function DrawHelper(tbl, i, w)
         end
     elseif tbl[i].name:find("TIME", nil, true) then
         local vol_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 0) -- 0 POLARITY NORMAL
-        r.ImGui_SameLine(ctx, -FLT_MIN, (mute + mute // 2) * CANVAS.scale)
+        r.ImGui_SameLine(ctx, -FLT_MIN, (mute + mute / 2) * CANVAS.scale)
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_time")
         local rvh_v, v = MyKnob("", "arc", vol_val, -1000, 1000, "ms")
         if rvh_v then
@@ -1613,7 +1613,7 @@ local function DrawHelper(tbl, i, w)
             btn_hover = vol_hover
         end
         r.ImGui_PopID(ctx)
-        r.ImGui_SameLine(ctx, -FLT_MIN, (w - (mute * 2) - mute // 2)*CANVAS.scale)
+        r.ImGui_SameLine(ctx, -FLT_MIN, (w - (mute * 2) - mute / 2)*CANVAS.scale)
         local pan_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 3) -- 3 IS POLARITY INVERT
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_time2")
         local rvh_p, p = MyKnob("", "knob", pan_val, -40000, 40000, "sample")
@@ -1632,7 +1632,7 @@ local function DrawHelper(tbl, i, w)
         new_width = true
         local cuts = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 0) -- NUMBER OF CUTS
         for c = 1, cuts do
-            r.ImGui_SameLine(ctx, 0, (mute // 3) * CANVAS.scale)
+            r.ImGui_SameLine(ctx, 0, (mute / 3) * CANVAS.scale)
 
             r.ImGui_PushID(ctx, tbl[i].guid .. "saike" .. c)
             local cf, minf, maxf = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, c) -- SLIDERS
@@ -1650,7 +1650,7 @@ local function DrawHelper(tbl, i, w)
             r.ImGui_PopID(ctx)
             if not btn_hover then btn_hover = r.ImGui_IsItemHovered(ctx) end
         end
-        r.ImGui_SameLine(ctx, 0, (mute // 3)*CANVAS.scale)
+        r.ImGui_SameLine(ctx, 0, (mute / 3)*CANVAS.scale)
         local fir_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 13) -- NUMBER OF FIR
         
         if r.ImGui_InvisibleButton(ctx, fir_val == 1 and "FIR" or "IIR",  (mute+10)*CANVAS.scale, mute*CANVAS.scale) then
@@ -1660,7 +1660,7 @@ local function DrawHelper(tbl, i, w)
         if not btn_hover then btn_hover = fir_hover end
         DrawListButton(fir_val == 1 and "FIR" or "IIR", 0x22aaffff, fir_hover)
 
-        r.ImGui_SameLine(ctx, 0, (mute // 3)*CANVAS.scale)
+        r.ImGui_SameLine(ctx, 0, (mute / 3)*CANVAS.scale)
 
         local pole_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 15) -- NUMBER OF FIR
         local pol_name = pole_val == 1 and "12dB" or "24dB"
@@ -1673,7 +1673,7 @@ local function DrawHelper(tbl, i, w)
     elseif tbl[i].name:find("3-Band Splitter", nil, true) then
         new_width = true
         for c = 1, 2 do
-            r.ImGui_SameLine(ctx, 0, (mute // 3) * CANVAS.scale)
+            r.ImGui_SameLine(ctx, 0, (mute / 3) * CANVAS.scale)
 
             r.ImGui_PushID(ctx, tbl[i].guid .. "3band_splitter" .. c)
             local cf, minf, maxf = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, c - 1) -- SLIDERS
@@ -1689,7 +1689,7 @@ local function DrawHelper(tbl, i, w)
     elseif tbl[i].name:find("4-Band Splitter", nil, true) then
         new_width = true
         for c = 1, 3 do
-            r.ImGui_SameLine(ctx, 0, (mute // 3)*CANVAS.scale)
+            r.ImGui_SameLine(ctx, 0, (mute / 3)*CANVAS.scale)
 
             r.ImGui_PushID(ctx, tbl[i].guid .. "3band_splitter" .. c)
             local cf, minf, maxf = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, c - 1) -- SLIDERS
@@ -1705,7 +1705,7 @@ local function DrawHelper(tbl, i, w)
     elseif tbl[i].name:find("5-Band Splitter", nil, true) then
         new_width = true
         for c = 1, 4 do
-            r.ImGui_SameLine(ctx, 0, (mute // 3)*CANVAS.scale)
+            r.ImGui_SameLine(ctx, 0, (mute / 3)*CANVAS.scale)
 
             r.ImGui_PushID(ctx, tbl[i].guid .. "3band_splitter" .. c)
             local cf, minf, maxf = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, c - 1) -- SLIDERS

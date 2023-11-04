@@ -1,10 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.34.2
+-- @version 1.34.3
 -- @changelog
---  Zoom code cleanup
---  Fix text alingment of helpers
+--  Remove various roundings since not needed
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
