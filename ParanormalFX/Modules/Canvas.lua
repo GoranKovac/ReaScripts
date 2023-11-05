@@ -49,7 +49,8 @@ function updateZoom()
 end
 
 local function ResetView()
-    CANVAS.off_x, CANVAS.off_y = AW/2, def_vertical_y_center
+    --CANVAS.off_x, CANVAS.off_y = AW/2, def_vertical_y_center
+    FLUX.to(CANVAS, 0.5, { off_x = AW/2, off_y = def_vertical_y_center }):ease("cubicout")
 end
 
 local function CheckKeys()
@@ -442,6 +443,7 @@ local function Popups()
 end
 
 local function StoreSettings()
+    local COLOR = GetColorTbl()
     local data = tableToString(
         {
             zoom_max = ZOOM_MAX,
@@ -491,6 +493,7 @@ function DrawUserSettings()
     r.ImGui_SetNextWindowPos(ctx, WX + 5, WY + 65)
 
     if r.ImGui_BeginChild(ctx, "USERSETTIGS", 220, 652, 1) then
+        local COLOR = GetColorTbl()
         if r.ImGui_Button(ctx, "RESCAN FX LIST") then
             RescanFxList()
         end
@@ -578,7 +581,7 @@ function DrawUserSettings()
             WireThickness = 1
             ADD_BTN_W = 55
             ADD_BTN_H = 14
-            COLOR = {
+            local NEW_COLOR = {
                 ["n"]            = 0x315e94ff,
                 ["Container"]    = 0x49cc85FF,
                 ["enclose"]      = 0x192432ff,
@@ -603,6 +606,7 @@ function DrawUserSettings()
                 ["menu_txt_col"] = 0x3aCCffff,
                 ["offline"]      = 0x4d5e72ff,
             }
+            SetColorTbl(NEW_COLOR)
         end
         r.ImGui_SameLine(ctx)
 
@@ -674,7 +678,6 @@ function UI()
         local child_hovered = r.ImGui_IsWindowHovered(ctx,
             r.ImGui_HoveredFlags_ChildWindows() |  r.ImGui_HoveredFlags_AllowWhenBlockedByPopup() |
             r.ImGui_HoveredFlags_AllowWhenBlockedByActiveItem())
-        --r.ImGui_PushFont(ctx, ICONS_FONT2)
         if r.ImGui_Button(ctx, "D", 22, def_btn_h) then
             if OPEN_SETTINGS then
                 StoreSettings()
@@ -688,7 +691,7 @@ function UI()
             ResetView()
         end
         if r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseClicked(ctx, 1) then
-            CANVAS.scale = 1
+            FLUX.to(CANVAS, 0.5, { scale = 1 }):ease("cubicout")
             ResetView()
         end
         local color_over_time = ((sin(r.time_precise() * 4) - 0.5) * 40) // 1

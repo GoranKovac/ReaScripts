@@ -1,9 +1,11 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.34.4
+-- @version 1.34.41
 -- @changelog
---  Fix reseting zoom resets user settings
+--  Make color table local
+--  Added tweening
+--  More little fixups
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -148,12 +150,14 @@ require("Modules/Drawing")
 require("Modules/Canvas")
 require("Modules/ContainerCode")
 require("Modules/Functions")
+FLUX = require("Modules/flux")
 
 if r.HasExtState("PARANORMALFX2", "SETTINGS") then
     local stored = r.GetExtState("PARANORMALFX2", "SETTINGS")
     if stored ~= nil then
         local storedTable = stringToTable(stored)
         if storedTable ~= nil then
+            local COLOR = GetColorTbl()
             -- SETTINGS
             SHOW_C_CONTENT_TOOLTIP = storedTable.show_c_content_tooltips ~= nil and storedTable.show_c_content_tooltips
             TOOLTIPS = storedTable.tooltips ~= nil and storedTable.tooltips
@@ -298,8 +302,22 @@ function UpdateZoomFont()
     end
 end
 
+local old_time = r.time_precise()
+local function UpdateDeltaTime()
+    local now_time = r.time_precise()
+    local DT = now_time - old_time
+    old_time = now_time
+    FLUX.update(DT)
+end
+
+function test()
+    local TR_CONT = GetTRContainerData()
+    SetCollapseData(TR_CONT, TMP.tbl, TMP.i)
+    if TMP then TMP = nil end
+end
 
 local function Main()
+    UpdateDeltaTime()
     UpdateZoomFont()
    -- UpdateStyle()
     if WANT_REFRESH then
