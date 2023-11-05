@@ -2128,7 +2128,7 @@ local function CustomDNDPreview()
         if DRAG_PREVIEW[DRAG_PREVIEW.i].type == "Container" then
             local is_collapsed = CheckCollapse(DRAG_PREVIEW[DRAG_PREVIEW.i], 1, 1)
             local w, h = ItemFullSize(DRAG_PREVIEW[DRAG_PREVIEW.i])
-            if r.ImGui_BeginChild(ctx, "##PREVIEW_DRAW_CONTAINER", (w + def_s_window_x) * CANVAS.scale, h * CANVAS.scale, true) then
+            if r.ImGui_BeginChild(ctx, "##PREVIEW_DRAW_CONTAINER", (w + def_s_window_x) * CANVAS.scale, (h +def_s_window_y*2)* CANVAS.scale, true) then
                 DrawButton(DRAG_PREVIEW, DRAG_PREVIEW.i, DRAG_PREVIEW[DRAG_PREVIEW.i].name, w, 1)
                 if not is_collapsed then
                     DrawPlugins(mx + off_x + (w / 2.2) * CANVAS.scale, my + def_btn_h * CANVAS.scale,

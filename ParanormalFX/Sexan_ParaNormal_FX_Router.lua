@@ -1,11 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.34.41
+-- @version 1.34.42
 -- @changelog
---  Make color table local
---  Added tweening
---  More little fixups
+--  Fix DragPreview of collapsed container
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
