@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="36f14800133e0ea8616206f3b0b9992c0fee2b6c" name="Sexan_Scripts">
+<index version="1" commit="7aa201795e5c4f1a63e9992d9c4ab05911cb65d5" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -603,6 +603,10 @@ Found FX is added last to list then flags get deleted to ensure numeric key orde
       <version name="1.18" author="Sexan" time="2023-10-30T20:23:57Z">
         <changelog><![CDATA[Added Code for caching FX DATA to local txt file for faster loading (FX_LIST.txt, FX_CAT_FILE.txt, FX_DEV_LIST_FILE.txt)]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/0cfbaab0837eba8bf07e65a431dbf79951a1088b/FX/Sexan_FX_Browser_ParserV7.lua</source>
+      </version>
+      <version name="1.19" author="Sexan" time="2023-11-05T10:12:30Z">
+        <changelog><![CDATA[Fix Reading/Writeing to file creates another global table instead of using defined ones]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/7aa201795e5c4f1a63e9992d9c4ab05911cb65d5/FX/Sexan_FX_Browser_ParserV7.lua</source>
       </version>
     </reapack>
   </category>
