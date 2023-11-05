@@ -1,9 +1,9 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.18
+-- @version 1.19
 -- @changelog
---  Added Code for caching FX DATA to local txt file for faster loading (FX_LIST.txt, FX_CAT_FILE.txt, FX_DEV_LIST_FILE.txt)
+--  Fix Reading/Writeing to file creates another global table instead of using defined ones
 
 local r                                = reaper
 local os                               = r.GetOS()
@@ -37,7 +37,7 @@ local function ResetTables()
 end
 
 function MakeFXFiles()
-    PLUGIN_LIST, CAT, DEVELOPER_LIST = GetFXTbl()
+    GetFXTbl()
     local serialized_fx = TableToString(PLUGIN_LIST)
     WriteToFile(FX_FILE, serialized_fx)
 
@@ -53,7 +53,7 @@ end
 function ReadFXFile()
     local fx_file = io.open(FX_FILE, "r")
     if fx_file then
-        FX_LIST = {}
+        PLUGIN_LIST = {}
         local fx_string = fx_file:read("*all")
         fx_file:close()
         FX_LIST = StringToTable(fx_string)
@@ -61,10 +61,10 @@ function ReadFXFile()
 
     local cat_file = io.open(FX_CAT_FILE, "r")
     if cat_file then
-        CAT_LIST = {}
+        CAT = {}
         local cat_string = cat_file:read("*all")
         cat_file:close()
-        CAT_LIST = StringToTable(cat_string)
+        CAT = StringToTable(cat_string)
     end
 
     local dev_list_file = io.open(FX_DEV_LIST_FILE, "r")
@@ -75,7 +75,7 @@ function ReadFXFile()
         DEVELOPER_LIST = StringToTable(dev_list_string)
     end
 
-    return FX_LIST, CAT_LIST
+    return PLUGIN_LIST, CAT_LIST
 end
 
 function WriteToFile(path, data)
