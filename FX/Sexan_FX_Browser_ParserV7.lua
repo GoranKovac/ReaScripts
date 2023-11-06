@@ -1,9 +1,9 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.20
+-- @version 1.21
 -- @changelog
---  Fix CAT table return from reading file
+--  Fix Plugin list not returning
 
 local r                                = reaper
 local os                               = r.GetOS()
@@ -56,7 +56,7 @@ function ReadFXFile()
         PLUGIN_LIST = {}
         local fx_string = fx_file:read("*all")
         fx_file:close()
-        FX_LIST = StringToTable(fx_string)
+        PLUGIN_LIST = StringToTable(fx_string)
     end
 
     local cat_file = io.open(FX_CAT_FILE, "r")
