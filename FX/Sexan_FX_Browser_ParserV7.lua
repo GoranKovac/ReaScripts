@@ -1,9 +1,9 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.19
+-- @version 1.20
 -- @changelog
---  Fix Reading/Writeing to file creates another global table instead of using defined ones
+--  Fix CAT table return from reading file
 
 local r                                = reaper
 local os                               = r.GetOS()
@@ -75,7 +75,7 @@ function ReadFXFile()
         DEVELOPER_LIST = StringToTable(dev_list_string)
     end
 
-    return PLUGIN_LIST, CAT_LIST
+    return PLUGIN_LIST, CAT
 end
 
 function WriteToFile(path, data)
