@@ -1,9 +1,9 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.23
+-- @version 1.24
 -- @changelog
---  Don't crash if order of fxfolders.ini file is wrong
+--  Sort fxfolders.ini data first before parsing
 
 local r                                = reaper
 local os                               = r.GetOS()
@@ -364,10 +364,51 @@ local function ParseCustomCategories()
     end
 end
 
+local function SortFoldersINI(fav_str)
+    folders = {}
+    --local cur_folder
+    local add
+    for line in fav_str:gmatch('[^\r\n]+') do
+        local category = line:match("%[(.-)%]")
+        if category then
+            if category:find("Folder",nil,true) then
+                add = true
+                --cur_folder = category
+                folders[#folders+1] = {name = category}
+            else
+                add = false
+            end
+        end
+        if folders[#folders] and not category and add then
+            folders[#folders][#folders[#folders]+1] = line .. "\n"
+        end
+    end
+    
+    local main_folder
+    for i = #folders, 1,-1 do
+        table.sort(folders[i])
+        table.insert(folders[i],1,"[" .. folders[i].name .. "]".. "\n")
+        if folders[i].name == "Folders" then
+            main_folder = table.remove(folders,i)
+        end
+    end
+    folders[#folders+1] = main_folder
+
+    local sorted = ""
+    for i = 1, #folders do
+        folders[i].name = nil
+        sorted = sorted .. table.concat(folders[i])
+    end
+
+    return sorted
+end
+
 local function ParseFavorites()
     -- PARSE FAVORITES FOLDER
     local fav_path = r.GetResourcePath() .. "/reaper-fxfolders.ini"
     local fav_str  = GetFileContext(fav_path)
+
+    fav_str = SortFoldersINI(fav_str)
 
     CAT[#CAT + 1]  = { name = "FOLDERS", list = {} }
 
