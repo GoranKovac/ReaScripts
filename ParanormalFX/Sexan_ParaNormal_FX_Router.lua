@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.34.42
+-- @version 1.34.43
 -- @changelog
---  Fix DragPreview of collapsed container
+--  Collect all dependencies and install them in 1 go
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -33,27 +33,13 @@ if not r.GetAppVersion():match("^7%.") then
     return
 end
 
-if not r.ImGui_GetVersion then
-    r.ShowMessageBox("ReaImGui is required.\nPlease Install it in next window", "MISSING DEPENDENCIES", 0)
-    return r.ReaPack_BrowsePackages('dear imgui')
-else
-    -- local v, v1, v2 = r.ImGui_GetVersion():match("(%d+)%.(%d+)%.(%d+)")
-    -- local old
-    -- if tonumber(v) < 1 then
-    --     old = true
-    -- elseif tonumber(v1) < 89 then
-    --     old = true
-    -- elseif tonumber(v2) < 6 then
-    --     old = true
-    -- end
-    -- if old then
-    --     r.ShowMessageBox("Script requires ReaImGui version 1.89.6\nPlease update in Reapack", "OLD REAIMGUI VERSION", 0)
-    --     return r.ReaPack_BrowsePackages('dear imgui')
-    -- end
-end
+local saike_splitter_path = reaper_path .. "/Effects/Saike Tools/Basics/BandSplitter.jsfx"
+
+--local fx_browser_script_path = "C:/Users/Gokily/Documents/ReaGit/ReaScripts/FX/Sexan_FX_Browser_ParserV7.lua"
+local fx_browser_script_path = reaper_path .. "/Scripts/Sexan_Scripts/FX/Sexan_FX_Browser_ParserV7.lua"
+local fm_script_path         = reaper_path .. "/Scripts/Sexan_Scripts/ImGui_Tools/FileManager.lua"
 
 function ThirdPartyDeps()
-    local saike_splitter_path = reaper_path .. "/Effects/Saike Tools/Basics/BandSplitter.jsfx"
     local reapack_process
     local repos = {
         { name = "Saike Tools", url = 'https://raw.githubusercontent.com/JoepVanlier/JSFX/master/index.xml' },
@@ -69,25 +55,41 @@ function ThirdPartyDeps()
 
     -- ADD NEEDED REPOSITORIES
     if reapack_process then
-        r.ShowMessageBox("Added Third-Party ReaPack Repositories", "ADDING REPACK REPOSITORIES", 0)
+        --r.ShowMessageBox("Added Third-Party ReaPack Repositories", "ADDING REPACK REPOSITORIES", 0)
         r.ReaPack_ProcessQueue(true)
         reapack_process = nil
     end
+end
 
-    if not reapack_process then
-        -- FX BROWSER
-        if r.file_exists(saike_splitter_path) then
-        else
-            r.ShowMessageBox("Sai'ke 4 Pole Band Splitter is needed.\nPlease Install it in next window",
-                "MISSING DEPENDENCIES", 0)
-            r.ReaPack_BrowsePackages('saike 4 pole bandsplitter')
-            r.SetExtState("PARANORMALFX2", "UPDATEFX", "true", false)
-            return 'error saike splitter'
-        end
+local function CheckDeps()
+    --'Sexan FX Browser Parser V7' OR 'Sexan ImGui FileManager' OR 'Dear Imgui' OR 'Saike 4-pole BandSplitter'
+    ThirdPartyDeps()
+    local deps = {}
+    
+    if not r.ImGui_GetVersion then
+        deps[#deps+1] = '"Dear Imgui"'
+    end
+    if not r.file_exists(fx_browser_script_path) then
+        deps[#deps+1] = '"FX Browser Parser V7"'
+    end
+    if not r.file_exists(fm_script_path) then
+        deps[#deps+1] = '"Sexan ImGui FileManager"'
+    end
+
+    if not r.file_exists(saike_splitter_path) then
+        deps[#deps+1] = '"Saike 4-pole BandSplitter"'
+        r.SetExtState("PARANORMALFX2", "UPDATEFX", "true", false)
+    end
+
+    if #deps ~= 0 then
+        r.ShowMessageBox("Need Additional Packages.\nPlease Install it in next window", "MISSING DEPENDENCIES", 0)
+        r.ReaPack_BrowsePackages(table.concat(deps, " OR "))
+        return true
     end
 end
 
-if ThirdPartyDeps() then return end
+if CheckDeps() then return end
+--if ThirdPartyDeps() then return end
 
 ctx = ImGui.CreateContext('ParaNormalFX Router')
 
@@ -127,20 +129,12 @@ CTRL_DRAG_AUTOCONTAINER      = false
 TOOLTIPS                     = true
 SHOW_C_CONTENT_TOOLTIP       = true
 
---local fx_browser_script_path = "C:/Users/Gokily/Documents/ReaGit/ReaScripts/FX/Sexan_FX_Browser_ParserV7.lua"
-local fx_browser_script_path = reaper_path .. "/Scripts/Sexan_Scripts/FX/Sexan_FX_Browser_ParserV7.lua"
-local fm_script_path         = reaper_path .. "/Scripts/Sexan_Scripts/ImGui_Tools/FileManager.lua"
+
 if r.file_exists(fx_browser_script_path) then
-    dofile(fx_browser_script_path)
-else
-    r.ShowMessageBox("Sexan FX Browser is needed.\nPlease Install it in next window", "MISSING DEPENDENCIES", 0)
-    return r.ReaPack_BrowsePackages('sexan fx browser parser V7')
+    dofile(fx_browser_script_path)    
 end
 if r.file_exists(fm_script_path) then
     dofile(fm_script_path)
-else
-    r.ShowMessageBox("Sexan FileManager is needed.\nPlease Install it in next window", "MISSING DEPENDENCIES", 0)
-    return r.ReaPack_BrowsePackages('sexan ImGui FileManager')
 end
 
 require("Modules/Utils")
