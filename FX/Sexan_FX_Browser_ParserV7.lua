@@ -1,9 +1,9 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.24
+-- @version 1.25
 -- @changelog
---  Sort fxfolders.ini data first before parsing
+--  Make sorting table local
 
 local r                                = reaper
 local os                               = r.GetOS()
@@ -365,7 +365,7 @@ local function ParseCustomCategories()
 end
 
 local function SortFoldersINI(fav_str)
-    folders = {}
+    local folders = {}
     --local cur_folder
     local add
     for line in fav_str:gmatch('[^\r\n]+') do
