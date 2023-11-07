@@ -1,9 +1,9 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.22
+-- @version 1.23
 -- @changelog
---  Don't crash if order of fxfolders.ini filer is wrong
+--  Don't crash if order of fxfolders.ini file is wrong
 
 local r                                = reaper
 local os                               = r.GetOS()
@@ -413,7 +413,7 @@ local function ParseFavorites()
             elseif fx_type == "2" then --JSFX
                 local folder_item = CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1]
                 if folder_item then
-                    local item = CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1]:gsub("R_ITEM_", "", 1)
+                    local item = folder_item:gsub("R_ITEM_", "", 1)
                     local fx_found = FindFXIDName(JS_INFO, item)
                     if fx_found then
                         table.insert(CAT[#CAT].list[#CAT[#CAT].list].fx, fx_found)
@@ -422,7 +422,7 @@ local function ParseFavorites()
             elseif fx_type == "7" then -- CLAP
                 local folder_item = CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1]
                 if folder_item then
-                    local item = CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1]:gsub("R_ITEM_", "", 1)
+                    local item = folder_item:gsub("R_ITEM_", "", 1)
                     local fx_found = FindFXIDName(CLAP_INFO, item)
                     if fx_found then
                         table.insert(CAT[#CAT].list[#CAT[#CAT].list].fx, fx_found)
@@ -431,7 +431,7 @@ local function ParseFavorites()
             elseif fx_type == "1" then -- LV2
                 local folder_item = CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1]
                 if folder_item then
-                    local item = CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1]:gsub("R_ITEM_", "", 1)
+                    local item = folder_item:gsub("R_ITEM_", "", 1)
                     local fx_found = FindFXIDName(LV2_INFO, item)
                     if fx_found then
                         table.insert(CAT[#CAT].list[#CAT[#CAT].list].fx, fx_found)
@@ -440,7 +440,7 @@ local function ParseFavorites()
             elseif fx_type == "5" then -- AU
                 local folder_item = CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1]
                 if folder_item then
-                    local item = CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1]:gsub("R_ITEM_", "", 1)
+                    local item = folder_item:gsub("R_ITEM_", "", 1)
                     local fx_found = FindFXIDName(AU_INFO, item)
                     if fx_found then
                         table.insert(CAT[#CAT].list[#CAT[#CAT].list].fx, fx_found)
