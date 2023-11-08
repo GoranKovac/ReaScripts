@@ -1,9 +1,10 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.34.43
+-- @version 1.34.5
 -- @changelog
---  Collect all dependencies and install them in 1 go
+--  Horizonal mode
+--  Fixed some stuff also
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -128,6 +129,7 @@ DEFAULT_DND                  = true
 CTRL_DRAG_AUTOCONTAINER      = false
 TOOLTIPS                     = true
 SHOW_C_CONTENT_TOOLTIP       = true
+V_LAYOUT                     = false
 
 
 if r.file_exists(fx_browser_script_path) then
@@ -151,6 +153,7 @@ if r.HasExtState("PARANORMALFX2", "SETTINGS") then
         if storedTable ~= nil then
             local COLOR = GetColorTbl()
             -- SETTINGS
+            V_LAYOUT = storedTable.v_layout ~= nil and storedTable.v_layout or V_LAYOUT
             SHOW_C_CONTENT_TOOLTIP = storedTable.show_c_content_tooltips ~= nil and storedTable.show_c_content_tooltips
             TOOLTIPS = storedTable.tooltips ~= nil and storedTable.tooltips
             ANIMATED_HIGLIGHT = storedTable.animated_highlight

@@ -48,9 +48,22 @@ function updateZoom()
     CANVAS.scale = new_scale
 end
 
-local function ResetView()
-    --CANVAS.off_x, CANVAS.off_y = AW/2, def_vertical_y_center
-    FLUX.to(CANVAS, 0.5, { off_x = AW/2, off_y = def_vertical_y_center }):ease("cubicout")
+local function ResetView(force)
+    if V_LAYOUT then
+        if force then
+            CANVAS.off_x = AW/2
+            CANVAS.off_y = def_vertical_y_center
+        else
+            FLUX.to(CANVAS, 0.5, { off_x = AW/2, off_y = def_vertical_y_center }):ease("cubicout")
+        end
+    else
+        if force then
+            CANVAS.off_x = def_vertical_x_center
+            CANVAS.off_y = AH/2
+        else
+            FLUX.to(CANVAS, 0.5, { off_x = def_vertical_x_center, off_y = AH/2 }):ease("cubicout")
+        end
+    end
 end
 
 local function CheckKeys()
@@ -446,6 +459,7 @@ local function StoreSettings()
     local COLOR = GetColorTbl()
     local data = tableToString(
         {
+            v_layout = V_LAYOUT,
             zoom_max = ZOOM_MAX,
             show_c_content_tooltips = SHOW_C_CONTENT_TOOLTIP,
             tooltips = TOOLTIPS,
@@ -485,6 +499,22 @@ local function SettingsTooltips(str)
     end
 end
 
+local function DefaultHorizontal()
+    LAST_V_BTN_W = ADD_BTN_W
+    LAST_V_BTN_H = ADD_BTN_H
+    LAST_NEW_Y = new_spacing_y
+    ADD_BTN_W = 22
+    ADD_BTN_H = 22
+    new_spacing_y = 4
+end
+
+local function RevertVertical()
+    --ADD_BTN_W = LAST_V_BTN_W
+    --ADD_BTN_H = LAST_V_BTN_H
+   -- new_spacing_y = LAST_NEW_Y
+    --LAST_V_BTN_W, LAST_V_BTN_H, LAST_NEW_Y = nil, nil, nil
+end
+
 function DrawUserSettings()
     local WX, WY = r.ImGui_GetWindowPos(ctx)
 
@@ -492,7 +522,7 @@ function DrawUserSettings()
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x000000EE)
     r.ImGui_SetNextWindowPos(ctx, WX + 5, WY + 65)
 
-    if r.ImGui_BeginChild(ctx, "USERSETTIGS", 220, 652, 1) then
+    if r.ImGui_BeginChild(ctx, "USERSETTIGS", 220, 718, 1) then
         local COLOR = GetColorTbl()
         if r.ImGui_Button(ctx, "RESCAN FX LIST") then
             RescanFxList()
@@ -511,14 +541,34 @@ function DrawUserSettings()
             end
             r.ImGui_EndListBox(ctx)
         end
+        r.ImGui_SeparatorText(ctx, "LAYOUT")
+        if r.ImGui_BeginListBox(ctx, "##LAYOUT1234", nil, 38) then
+            if r.ImGui_Selectable(ctx, "VERTICAL", V_LAYOUT == true) then
+                if V_LAYOUT ~= true then
+                    V_LAYOUT = true
+                    RevertVertical()
+                    ResetView(true)
+                end
+            end
+            if r.ImGui_Selectable(ctx, "HORIZONTAL", V_LAYOUT == false) then
+                if V_LAYOUT ~= false then
+                    V_LAYOUT = false
+                    DefaultHorizontal()
+                    ResetView(true)
+                end
+            end
+            r.ImGui_EndListBox(ctx)
+        end
         r.ImGui_SetNextItemWidth(ctx, 50)
         _, ZOOM_MAX = r.ImGui_SliderInt(ctx, "MAX ZOOM", ZOOM_MAX, 1, 3)
         r.ImGui_SetNextItemWidth(ctx, 100)
         _, new_spacing_y = r.ImGui_SliderInt(ctx, "SPACING", new_spacing_y, 0, 20)
         r.ImGui_SetNextItemWidth(ctx, 100)
 
+        if not V_LAYOUT then r.ImGui_BeginDisabled(ctx, true) end
         _, ADD_BTN_H = r.ImGui_SliderInt(ctx, "+ HEIGHT", ADD_BTN_H, 10, 22)
         r.ImGui_SetNextItemWidth(ctx, 100)
+        if not V_LAYOUT then r.ImGui_EndDisabled(ctx) end
 
         _, ADD_BTN_W = r.ImGui_SliderInt(ctx, "+ WIDTH", ADD_BTN_W, 20, 100)
         r.ImGui_SetNextItemWidth(ctx, 50)
@@ -566,6 +616,7 @@ function DrawUserSettings()
         r.ImGui_Separator(ctx)
 
         if r.ImGui_Button(ctx, "DEFAULT") then
+            V_LAYOUT = true
             ZOOM_MAX = 1
             SHOW_C_CONTENT_TOOLTIP = true
             TOOLTIPS = true
@@ -607,6 +658,7 @@ function DrawUserSettings()
                 ["offline"]      = 0x4d5e72ff,
             }
             SetColorTbl(NEW_COLOR)
+            ResetView(true)
         end
         r.ImGui_SameLine(ctx)
 
