@@ -338,7 +338,12 @@ local function DndAddReplaceFX_TARGET(tbl, i, parallel)
 end
 
 local function DndAddFX_ENCLOSE_TARGET(tbl, i)
+    
+    if not DND_ADD_FX then return end
     if tbl[i].exclude_ara then return end
+
+    if ARA_Protection(tbl, i) then return end
+
     if not DND_ADD_FX then return end
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_DragDropTarget(), COLOR["dnd_enclose"])
     if r.ImGui_BeginDragDropTarget(ctx) then

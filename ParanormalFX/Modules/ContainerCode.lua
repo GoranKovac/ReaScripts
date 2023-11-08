@@ -246,6 +246,7 @@ function ARA_Protection(tbl, i, parallel)
         if tbl[i].type ~= "ROOT" then
             tbl[i].no_draw_s = true
             tbl[i].no_draw_p = true
+            tbl[i].no_draw_e = true
             return true
         end
     end

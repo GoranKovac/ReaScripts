@@ -1,10 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.34.53
+-- @version 1.34.54
 -- @changelog
---  Cleanup
---  Exclude enclosed flag for drawing for containers
+--  Fix ARA Protection passing enclose button on parallel lane
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
