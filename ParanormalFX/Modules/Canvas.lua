@@ -8,7 +8,7 @@ for name, func in pairs(reaper) do
     if name then ImGui[name] = func end
 end
 
-local def_vertical_x_center,def_vertical_y_center = 300, 100
+local def_vertical_x_center,def_vertical_y_center = 50, 100
 
 function InitCanvas()
     return { view_x = 0, view_y = 0, off_x = def_vertical_x_center, off_y = def_vertical_y_center, scale = 1 }
