@@ -54,14 +54,14 @@ local function ResetView(force)
             CANVAS.off_x = AW/2
             CANVAS.off_y = def_vertical_y_center
         else
-            FLUX.to(CANVAS, 0.5, { off_x = AW/2, off_y = def_vertical_y_center }):ease("cubicout")
+            FLUX.to(CANVAS, 0.5, { off_x = AW/2, off_y = def_vertical_y_center*CANVAS.scale }):ease("cubicout")
         end
     else
         if force then
             CANVAS.off_x = def_vertical_x_center
             CANVAS.off_y = AH/2
         else
-            FLUX.to(CANVAS, 0.5, { off_x = def_vertical_x_center, off_y = AH/2 }):ease("cubicout")
+            FLUX.to(CANVAS, 0.5, { off_x = def_vertical_x_center*CANVAS.scale, off_y = AH/2 }):ease("cubicout")
         end
     end
 end
@@ -743,8 +743,8 @@ function UI()
             ResetView()
         end
         if r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseClicked(ctx, 1) then
-            FLUX.to(CANVAS, 0.5, { scale = 1 }):ease("cubicout")
-            ResetView()
+            FLUX.to(CANVAS, 0.5, { scale = 1 }):ease("cubicout"):oncomplete(ResetView)
+            --ResetView()
         end
         local color_over_time = ((sin(r.time_precise() * 4) - 0.5) * 40) // 1
         local color = OFF_SCREEN and 0xff or IncreaseDecreaseBrightness(0x992222ff, color_over_time, "no_alpha")

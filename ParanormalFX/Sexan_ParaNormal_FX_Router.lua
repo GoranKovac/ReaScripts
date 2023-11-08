@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.34.54
+-- @version 1.34.55
 -- @changelog
---  Fix ARA Protection passing enclose button on parallel lane
+--  Resetting view with left click respect zoom level
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
