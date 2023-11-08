@@ -1,9 +1,10 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.34.52
+-- @version 1.34.53
 -- @changelog
---  Set default screen X for horizontal layout 50 instaed of 300
+--  Cleanup
+--  Exclude enclosed flag for drawing for containers
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf

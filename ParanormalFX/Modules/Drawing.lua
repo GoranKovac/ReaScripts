@@ -1142,7 +1142,7 @@ local function IterateContainer(depth, track, container_id, parent_fx_count, pre
 
     total_w = total_w + mute + volume + (def_s_window_x * 2)
 
-    local C_W, C_H --= CalcContainerWH(child_fx)
+    local C_W, C_H 
 
     if V_LAYOUT then
         C_W, C_H = CalcContainerWH(child_fx)
@@ -1357,7 +1357,7 @@ local function SerialButton(tbl, i, x, y)
         OPEN_FX_LIST = true
     end
     r.ImGui_PopID(ctx)
-    if not IS_DRAGGING_RIGHT_CANVAS and r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseReleased(ctx, 1) then --r.ImGui_IsItemClicked(ctx, 1) then
+    if not IS_DRAGGING_RIGHT_CANVAS and r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseReleased(ctx, 1) then
         OPEN_INSERT_POINTS_MENU = true
         RC_DATA = {
             type = tbl[i].type,
@@ -1564,16 +1564,13 @@ local function GenerateCoordinatesH(tbl, i, last, enclose)
         return { x = xe - (ADD_BTN_W/2) * CANVAS.scale, ys = ye + (new_spacing_y / 2) * CANVAS.scale, ye = ye }
     end
     if tbl[i].type == "Container" then
-        if #tbl[i].sub == 0 and not CheckCollapse(tbl[i], 1, 1) then --or CheckCollapse(tbl[i], 1, 1) then
+        if #tbl[i].sub == 0 and not CheckCollapse(tbl[i], 1, 1) then
             ys = ys + (new_spacing_y)*CANVAS.scale
         elseif #tbl[i].sub ~= 0 and not CheckCollapse(tbl[i], 1, 1) then
             ys = ys + (new_spacing_y/2)*CANVAS.scale
         end
     end
-   -- ys = tbl[i].type == "Container" and ys + (new_spacing_y/2)*CANVAS.scale or ys
-   -- ys = (tbl[i].type == "Container" and #tbl[i].sub == 0) and ys - (new_spacing_y/2)*CANVAS.scale or ys
-   -- ys = (tbl[i].type == "Container" and CheckCollapse(tbl[i], 1, 1)) and ys - (new_spacing_y/2)*CANVAS.scale or ys
-    tbl[i].x, tbl[i].xs, tbl[i].xe, tbl[i].ys, tbl[i].ye = xs - (def_s_spacing_x + ADD_BTN_W/2) * CANVAS.scale, xs, xe - (enclose and (ADD_BTN_W + def_s_spacing_x) * CANVAS.scale or 0), ys, ye
+    tbl[i].x, tbl[i].xs, tbl[i].xe, tbl[i].ys, tbl[i].ye = xs - (def_s_spacing_x + ADD_BTN_W/2) * CANVAS.scale, xs, xe - ((enclose and tbl[i].type ~= "Container") and (ADD_BTN_W + def_s_spacing_x) * CANVAS.scale or 0), ys, ye
 end
 
 local function GenerateCoordinates(tbl, i, last)
@@ -1588,11 +1585,9 @@ local function GenerateCoordinates(tbl, i, last)
 end
 
 local function ParallelRowHeight(tbl, i, item_width, item_height)
-    --local total_w, total_h = tbl[i].type == "Container" and item_width or item_width + volume + def_s_spacing_x, item_height
     local total_w, total_h = item_width, item_height
-    --total_w = tbl[i].type == "ROOT" and item_width or total_w
     local idx = i + 1
-    local last_big_idx = not CheckCollapse(tbl[i], 1, 1) and i --i    
+    local last_big_idx = not CheckCollapse(tbl[i], 1, 1) and i   
     while true do
         if not tbl[idx] then break end
         if tbl[idx].p == 0 then
@@ -1601,10 +1596,7 @@ local function ParallelRowHeight(tbl, i, item_width, item_height)
             local width, height = ItemFullSize(tbl[idx])
             if total_w <= width and tbl[idx].W then
                 total_w = width
-                --total_w = tbl[idx].W and total_w or total_w + ADD_BTN_W + def_s_spacing_x
-               -- if not CheckCollapse(tbl[idx], 1, 1) then
-                   last_big_idx = idx
-               -- end
+                last_big_idx = idx
             end
             total_h = total_h + height + new_spacing_y*2
             idx = idx + 1
@@ -1613,13 +1605,13 @@ local function ParallelRowHeight(tbl, i, item_width, item_height)
     if last_big_idx then
         tbl[last_big_idx].biggest = true
     end
-    return total_h, total_w--(last_big_idx and tbl[last_big_idx].W)
+    return total_h, total_w
 end
 
 local function ParallelRowWidth(tbl, i, item_width, item_height)
     local total_w, total_h = item_width, item_height and item_height or 0
     local idx = i + 1
-    local last_big_idx = not CheckCollapse(tbl[i], 1, 1) and i --i
+    local last_big_idx = not CheckCollapse(tbl[i], 1, 1) and i
     while true do
         if not tbl[idx] then break end
         if tbl[idx].p == 0 then
@@ -1935,7 +1927,6 @@ end
 
 local function DrawButton(tbl, i, name, width, fade, parrent_color)
     local is_cut = (CLIPBOARD and CLIPBOARD.cut and CLIPBOARD.guid == tbl[i].guid)
-    -- local start_x, start_y = r.ImGui_GetCursorPos(ctx)
     local SPLITTER = r.ImGui_CreateDrawListSplitter(draw_list)
     r.ImGui_DrawListSplitter_Split(SPLITTER, 2)
     r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_Alpha(), fade)
@@ -2012,7 +2003,6 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
     if tbl[i].type == "ROOT" then
         --! FX_CHAIN MAIN
         r.ImGui_SameLine(ctx, -FLT_MIN, (width - mute) * CANVAS.scale)
-        --r.ImGui_SameLine(ctx, 0, width - volume - mute)
         r.ImGui_PushID(ctx, tbl[i].guid .. "enclose")
         if r.ImGui_InvisibleButton(ctx, "e", para_btn_size * CANVAS.scale, def_btn_h * CANVAS.scale) then
             if r.TrackFX_GetCount(TRACK) ~= 0 then
@@ -2074,7 +2064,6 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
         end
         --! VOLUME
         r.ImGui_SameLine(ctx, -FLT_MIN, (width - volume) * CANVAS.scale)
-        --r.ImGui_SetCursorPos(ctx, start_x + width - mute - (tbl[i].type == "Container" and s_window_x or 0), start_y)
         if DrawPreviewHideOriginal(tbl[i].guid) then
             r.ImGui_PushID(ctx, tbl[i].guid .. "wet/dry")
             local is_vol
@@ -2200,10 +2189,8 @@ local function DrawPluginsH(x, y, tbl, fade, parrent_pass_color)
             local button_hovered = DrawButton(tbl, i, tbl[i].name, width, fade, parrent_pass_color)
             parrent_pass_color = (tbl[i].type == "ROOT" and button_hovered and ALT) and COLOR["bypass"] or
                 parrent_pass_color
-            --enclosed = SerialInsertParaLane(tbl, i, width, height, prev_xs, prev_ye)
             enclosed = SerialInsertParaLane(tbl, i, width, height)
             if enclosed then
-                --prev_xe = prev_xe + (ADD_BTN_W + def_s_spacing_x) * CANVAS.scale
                 local next_xe = prev_xe + (ADD_BTN_W + def_s_spacing_x) * CANVAS.scale
                 if not largest_xe then
                     largest_xe = next_xe
@@ -2252,7 +2239,7 @@ local function DrawPluginsH(x, y, tbl, fade, parrent_pass_color)
         end
         prev_ys = prev_ye + (new_spacing_y) * CANVAS.scale
         GenerateCoordinatesH(tbl, i, nil, enclosed)
-        --enclosed = nil
+        enclosed = nil
         if IsLastParallel(tbl, i) then
             --! CENTER PARALLEL BUTTON
             --ParallelButton(tbl, i, prev_xs + (width / 2 - para_btn_size / 2) * CANVAS.scale, prev_ye + (new_spacing_y) * CANVAS.scale)
