@@ -1,7 +1,7 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.34.5
+-- @version 1.34.51
 -- @changelog
 --  Horizonal mode
 --  Fixed some stuff also
