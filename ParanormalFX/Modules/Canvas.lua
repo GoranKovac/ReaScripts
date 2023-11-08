@@ -500,12 +500,11 @@ local function SettingsTooltips(str)
 end
 
 local function DefaultHorizontal()
-    LAST_V_BTN_W = ADD_BTN_W
-    LAST_V_BTN_H = ADD_BTN_H
-    LAST_NEW_Y = new_spacing_y
-    ADD_BTN_W = 22
+    --LAST_V_BTN_W = ADD_BTN_W
+    --LAST_V_BTN_H = ADD_BTN_H
+    --LAST_NEW_Y = new_spacing_y
+    --ADD_BTN_W = 22
     ADD_BTN_H = 22
-    new_spacing_y = 4
 end
 
 local function RevertVertical()
@@ -743,8 +742,11 @@ function UI()
             ResetView()
         end
         if r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseClicked(ctx, 1) then
-            FLUX.to(CANVAS, 0.5, { scale = 1 }):ease("cubicout"):oncomplete(ResetView)
-            --ResetView()
+            if CANVAS.scale ~= 1 then
+                FLUX.to(CANVAS, 0.5, { scale = 1 }):ease("cubicout"):oncomplete(ResetView)
+            else
+                ResetView()
+            end
         end
         local color_over_time = ((sin(r.time_precise() * 4) - 0.5) * 40) // 1
         local color = OFF_SCREEN and 0xff or IncreaseDecreaseBrightness(0x992222ff, color_over_time, "no_alpha")

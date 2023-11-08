@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.34.55
+-- @version 1.34.56
 -- @changelog
---  Resetting view with left click respect zoom level
+--  Share spacing between layouts
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
