@@ -1,9 +1,9 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.25
+-- @version 1.26
 -- @changelog
---  Make sorting table local
+--  Allow only files with provided extension when iterating files and folders
 
 local r                                = reaper
 local os                               = r.GetOS()
@@ -157,7 +157,9 @@ local function GetDirFilesRecursive(dir, tbl, filter)
     for index = 0, math.huge do
         local file = r.EnumerateFiles(dir, index)
         if not file then break end
-        tbl[#tbl + 1] = file:gsub(filter, "")
+        if file:find(filter,nil,true) then
+            tbl[#tbl + 1] = file:gsub(filter, "")
+        end
     end
 end
 
