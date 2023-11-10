@@ -136,6 +136,22 @@ function CreateFxChain(guid)
     end
 end
 
+SLOTS = {}
+
+function StoreSlot(x)
+    local _, chunk = r.GetTrackStateChunk(TRACK, "")
+    local chain_chunk = Chunk_GetFXChainSection(chunk)
+    SLOTS[x] = chain_chunk
+end
+
+function LoadSlot(x)
+    if #SLOTS[x] == 0 then return end
+    local _, track_chunk = r.GetTrackStateChunk(TRACK, "")
+    local chain_chunk = Chunk_GetFXChainSection(track_chunk)
+    local slot_chunk = Literalize(SLOTS[x])
+    local new_chunk = string.gsub(track_chunk, chain_chunk, slot_chunk)
+    r.SetTrackStateChunk(TRACK, new_chunk, false)
+end
 
 local min = math.min
 function ringInsert(buffer, value)
@@ -158,9 +174,22 @@ function ringEnum(buffer)
     end
 end
 
+function CheckPMActive(fx_id)
+    local found = false
+    for p_id = 0, r.TrackFX_GetNumParams(TRACK, fx_id) do
+        -- check if fx parameter has modulators: LFO, ACS, or link
+
+        local rv, mod = r.TrackFX_GetNamedConfigParm(TRACK, fx_id, "param." .. p_id .. ".mod.active")
+        local rv, acs = r.TrackFX_GetNamedConfigParm(TRACK, fx_id, "param." .. p_id .. ".acs.active")
+        local rv, lfo = r.TrackFX_GetNamedConfigParm(TRACK, fx_id, "param." .. p_id .. ".lfo.active")
+        if mod == "1" or lfo == "1" or acs == "1" then found = true end
+    end
+    return found
+end
+
 function AddFX(name, id, parallel)
     if not TRACK then return end
-    
+
     r.Undo_BeginBlock()
     if INSERT_FX_ENCLOSE_POS then
         CreateContainerAndInsertFX(INSERT_FX_ENCLOSE_POS.tbl, INSERT_FX_ENCLOSE_POS.i, name)
@@ -174,7 +203,7 @@ function AddFX(name, id, parallel)
 
         local idx = id > 0x2000000 and id or -1000 - id
         r.TrackFX_AddByName(TRACK, name, false, idx)
-        
+
         local is_parallel = parallel
         is_parallel = INSERT_FX_PARALLEL_POS or is_parallel
         is_parallel = (REPLACE_FX_POS and REPLACE_FX_POS.tbl[REPLACE_FX_POS.i].p > 0) or is_parallel
@@ -194,7 +223,8 @@ function AddFX(name, id, parallel)
     end
     LAST_USED_FX = name
     UpdateFxData()
-    EndUndoBlock((replaced and "REPLACED FX: " or "ADD FX: ") .. name .. (parallel and " PARALLEL LANE" or " SERIAL LANE"))
+    EndUndoBlock((replaced and "REPLACED FX: " or "ADD FX: ") ..
+        name .. (parallel and " PARALLEL LANE" or " SERIAL LANE"))
 end
 
 function RemoveAllFX()

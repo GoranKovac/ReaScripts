@@ -38,6 +38,7 @@ local COLOR = {
     ["cut"]          = 0x00ff00ff,
     ["menu_txt_col"] = 0x3aCCffff,
     ["offline"]      = 0x4d5e72ff,
+    ["active_PM"]    = 0x22aaffff,
 }
 
 function GetColorTbl()
@@ -160,7 +161,12 @@ end
 local min, max = math.min, math.max
 function IncreaseDecreaseBrightness(color, amt, no_alpha)
     function AdjustBrightness(channel, delta)
-        return min(255, max(0, channel + delta))
+        if channel + delta < 255 then
+            return channel + delta
+        else
+            return 255
+        end
+        --return min(255, max(0, channel + delta))
     end
 
     local alpha = color & 0xFF
@@ -176,15 +182,15 @@ function IncreaseDecreaseBrightness(color, amt, no_alpha)
     return (alpha) | (blue << 8) | (green << 16) | (red << 24)
 end
 
-local function CalculateFontColor(color)
-    local alpha = color & 0xFF
-    local blue = (color >> 8) & 0xFF
-    local green = (color >> 16) & 0xFF
-    local red = (color >> 24) & 0xFF
+-- local function CalculateFontColor(color)
+--     local alpha = color & 0xFF
+--     local blue = (color >> 8) & 0xFF
+--     local green = (color >> 16) & 0xFF
+--     local red = (color >> 24) & 0xFF
 
-    local luminance = (0.299 * red + 0.587 * green + 0.114 * blue) / 255
-    return luminance > 0.5 and 0xFF or 0xFFFFFFFF
-end
+--     local luminance = (0.299 * red + 0.587 * green + 0.114 * blue) / 255
+--     return luminance > 0.5 and 0xFF or 0xFFFFFFFF
+-- end
 
 local def_s_frame_x, def_s_frame_y = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_FramePadding())
 local def_s_spacing_x, def_s_spacing_y = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing())
@@ -1125,6 +1131,7 @@ local function IterateContainer(depth, track, container_id, parent_fx_count, pre
             offline = offline,
             exclude_ara = FindBlackListedFX(original_fx_name),
             is_helper = is_helper,
+            PM_active = CheckPMActive(0x2000000 + fx_id),
             auto_color = color,
             sc_tracks = sc_tracks,
             sc_channels = sc_channels,
@@ -1231,6 +1238,7 @@ local function GenerateFXData(target)
             offline = offline,
             exclude_ara = FindBlackListedFX(original_fx_name),
             is_helper = is_helper,
+            PM_active = CheckPMActive(i-1),
             auto_color = color,
             sc_tracks = sc_tracks,
             sc_channels = sc_channels,
@@ -1316,6 +1324,15 @@ local function SineColorBrightness(color, org_col)
 end
 
 function DrawListButton(name, color, hover, icon, round_side, shrink, active, txt_align)
+    local function CalculateFontColor(org_color)
+        local alpha = org_color & 0xFF
+        local blue = (org_color >> 8) & 0xFF
+        local green = (org_color >> 16) & 0xFF
+        local red = (org_color >> 24) & 0xFF
+    
+        local luminance = (0.299 * red + 0.587 * green + 0.114 * blue) / 255
+        return luminance > 0.5 and 0xFF or 0xFFFFFFFF
+    end
     local rect_col = IS_DRAGGING_RIGHT_CANVAS and color or IncreaseDecreaseBrightness(color, hover and 50 or 0)
     local xs, ys = r.ImGui_GetItemRectMin(ctx)
     local xe, ye = r.ImGui_GetItemRectMax(ctx)
@@ -1362,7 +1379,8 @@ local function SerialButton(tbl, i, x, y)
         OPEN_FX_LIST = true
     end
     r.ImGui_PopID(ctx)
-    if not IS_DRAGGING_RIGHT_CANVAS and r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseReleased(ctx, 1) then
+    local is_hovered = r.ImGui_IsItemHovered(ctx)
+    if not IS_DRAGGING_RIGHT_CANVAS and is_hovered and r.ImGui_IsMouseReleased(ctx, 1) then
         OPEN_INSERT_POINTS_MENU = true
         RC_DATA = {
             type = tbl[i].type,
@@ -1373,7 +1391,6 @@ local function SerialButton(tbl, i, x, y)
     end
     DndAddFX_TARGET(tbl, i, nil)
     DndMoveFX_TARGET_SERIAL_PARALLEL(tbl, i, nil, "insert_point_serial")
-    local is_hovered = r.ImGui_IsItemHovered(ctx)
     if IS_DRAGGING_RIGHT_CANVAS then is_hovered = false end
     local is_active = (CLICKED and CLICKED.guid == tbl[i].guid and CLICKED.lane == "s") and true or
         r.ImGui_IsItemActive(ctx)
@@ -1406,7 +1423,8 @@ local function ParallelButton(tbl, i, x, y)
         OPEN_FX_LIST = true
     end
     r.ImGui_PopID(ctx)
-    if not IS_DRAGGING_RIGHT_CANVAS and r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseReleased(ctx, 1) then
+    local is_hovered = r.ImGui_IsItemHovered(ctx)
+    if not IS_DRAGGING_RIGHT_CANVAS and is_hovered and r.ImGui_IsMouseReleased(ctx, 1) then
         OPEN_INSERT_POINTS_MENU = true
         RC_DATA = {
             type = tbl[i].type,
@@ -1417,7 +1435,6 @@ local function ParallelButton(tbl, i, x, y)
     end
     DndAddFX_TARGET(tbl, i, "parallel")
     DndMoveFX_TARGET_SERIAL_PARALLEL(tbl, i, tbl[i].guid)
-    local is_hovered = r.ImGui_IsItemHovered(ctx)
     if IS_DRAGGING_RIGHT_CANVAS then is_hovered = false end
     local is_active = (CLICKED and CLICKED.guid == tbl[i].guid and CLICKED.lane == "p") and true or
         r.ImGui_IsItemActive(ctx)
@@ -1448,7 +1465,8 @@ local function SerialInsertParaLane(tbl, i, w, h, x, y)
             OPEN_FX_LIST = true
         end
         r.ImGui_PopID(ctx)
-        if not IS_DRAGGING_RIGHT_CANVAS and r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseReleased(ctx, 1) then
+        local is_hovered = r.ImGui_IsItemHovered(ctx)
+        if not IS_DRAGGING_RIGHT_CANVAS and is_hovered and r.ImGui_IsMouseReleased(ctx, 1) then
             OPEN_INSERT_POINTS_MENU = true
             RC_DATA = {
                 type = tbl[i].type,
@@ -1459,7 +1477,6 @@ local function SerialInsertParaLane(tbl, i, w, h, x, y)
         end
         DndAddFX_ENCLOSE_TARGET(tbl, i)
         DndMoveFX_ENCLOSE_TARGET(tbl, i)
-        local is_hovered = r.ImGui_IsItemHovered(ctx)
         if IS_DRAGGING_RIGHT_CANVAS then is_hovered = false end
         local is_active = (CLICKED and CLICKED.guid == tbl[i].guid and CLICKED.lane == "sc") and CLICKED or
             r.ImGui_IsItemActive(ctx)
@@ -1930,6 +1947,7 @@ function SetCollapseData(dollapse_tbl, tbl, i)
     end
 end
 
+local concat = table.concat
 local function DrawButton(tbl, i, name, width, fade, parrent_color)
     local is_cut = (CLIPBOARD and CLIPBOARD.cut and CLIPBOARD.guid == tbl[i].guid)
     local SPLITTER = r.ImGui_CreateDrawListSplitter(draw_list)
@@ -1984,13 +2002,13 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
     color = is_cut and IncreaseDecreaseBrightness(color, -40) or color
     local bypass_hover = r.ImGui_IsItemHovered(ctx)
 
-    local tt_bypass = table.concat({ (not CTRL and not SHIFT and not ALT and "* " or "  "), "BYPASS" })
-    local tt_solo = table.concat({ (SHIFT and not CTRL and "* " or "  "), "SOLO IN LANE - SHIFT" })
+    local tt_bypass = concat({ (not CTRL and not SHIFT and not ALT and "* " or "  "), "BYPASS" })
+    local tt_solo = concat({ (SHIFT and not CTRL and "* " or "  "), "SOLO IN LANE - SHIFT" })
 
-    local tt_offline = table.concat({ (CTRL and not SHIFT and "* " or "  "), "FX OFFLINE   - CTRL" })
-    local tt_lane_unsolo = table.concat({ (ALT and "* " or "  "), "UNSOLO LANE  - ALT" })
+    local tt_offline = concat({ (CTRL and not SHIFT and "* " or "  "), "FX OFFLINE   - CTRL" })
+    local tt_lane_unsolo = concat({ (ALT and "* " or "  "), "UNSOLO LANE  - ALT" })
 
-    local tt_str = table.concat({ "HOLD MODIFIER", tt_bypass, tt_offline, tt_solo, tt_lane_unsolo }, "\n")
+    local tt_str = concat({ "HOLD MODIFIER", tt_bypass, tt_offline, tt_solo, tt_lane_unsolo }, "\n")
     tt_str = tbl[i].offline and "FX OFFLINE" or tt_str
     tt_str = tbl[i].type == "ROOT" and "BYPASS" or tt_str
     Tooltip(tt_str)
@@ -1999,6 +2017,18 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
         local icon = tbl[i].offline and "R" or "!"
         DrawListButton(icon, color, bypass_hover, true, "L")
     end
+    --!PM ACTIVE
+    local pm_hover
+    if tbl[i].PM_active then
+        r.ImGui_SameLine(ctx, -FLT_MIN, (mute) * CANVAS.scale)
+        r.ImGui_PushID(ctx, tbl[i].guid .. "PM_ACTIVE")
+        r.ImGui_InvisibleButton(ctx,"##T" , (mute/1.8)*CANVAS.scale, (mute*CANVAS.scale))
+        pm_hover = r.ImGui_IsItemHovered(ctx)
+        DrawListButton("U", COLOR["active_PM"], pm_hover, true)
+        Tooltip("PARAMETER MODULATION ACTIVE")
+        r.ImGui_PopID(ctx)
+    end
+
     r.ImGui_SameLine(ctx, -FLT_MIN)
     -------------------
     local hlp_vol_hover, is_saike = DrawHelper(tbl, i, width)
@@ -2107,7 +2137,7 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
     is_active = (REPLACE_FX_POS and REPLACE_FX_POS.tbl[REPLACE_FX_POS.i].guid == tbl[i].guid) or is_active
     --! SHORTCUT COLLAPSE
 
-    if (btn_hover and not bypass_hover and not vol_or_enclose_hover and not hlp_vol_hover and not collapse_hover) then
+    if (btn_hover and not bypass_hover and not vol_or_enclose_hover and not hlp_vol_hover and not collapse_hover and not pm_hover) then
         if C then
             local TR_CONT = GetTRContainerData()
             SetCollapseData(TR_CONT, tbl, i)
@@ -2125,7 +2155,7 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
         DndAddFX_ENCLOSE_TARGET(tbl, i)
     end
     ---------------------
-    if (btn_hover and not bypass_hover and not vol_or_enclose_hover and not hlp_vol_hover and not collapse_hover) and not IS_DRAGGING_RIGHT_CANVAS and r.ImGui_IsMouseReleased(ctx, 1) then --r.ImGui_IsItemClicked(ctx, 1) then
+    if (btn_hover and not bypass_hover and not vol_or_enclose_hover and not hlp_vol_hover and not collapse_hover and not pm_hover) and not IS_DRAGGING_RIGHT_CANVAS and r.ImGui_IsMouseReleased(ctx, 1) then --r.ImGui_IsItemClicked(ctx, 1) then
         OPEN_RIGHT_CLICK_MENU = true
         RC_DATA = {
             type = tbl[i].type,
@@ -2139,7 +2169,7 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
     -----------------------
 
     color = parrent_color and parrent_color or
-        (ALT and btn_hover and not bypass_hover and not vol_or_enclose_hover and not collapse_hover) and COLOR["del"] or
+        (ALT and btn_hover and not bypass_hover and not vol_or_enclose_hover and not collapse_hover and not pm_hover) and COLOR["del"] or
         TypToColor(tbl[i])
 
     color = tbl[i].offline and COLOR["offline"] or color
@@ -2149,7 +2179,7 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
         local txt_align = is_saike and "R"
         --txt_align = tbl[i].type == "Container" and "LC" or txt_align
         DrawListButton(name, color,
-            (not bypass_hover and not vol_or_enclose_hover and not hlp_vol_hover and not collapse_hover and (btn_hover or is_active)),
+            (not bypass_hover and not vol_or_enclose_hover and not hlp_vol_hover and not collapse_hover and not pm_hover and (btn_hover or is_active)),
             nil,
             tbl[i].type ~= "ROOT" and "R", mute * CANVAS.scale, is_active, txt_align)
     else
@@ -2158,14 +2188,14 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
         r.ImGui_DrawList_AddRectFilled(draw_list, xs, ys, xe, ye, 0x111111FF, 3, nil)
         r.ImGui_DrawList_AddRect(draw_list, xs, ys, xe, ye, 0x666666FF, 3, nil)
     end
-    if ALT and (btn_hover and not bypass_hover and not vol_or_enclose_hover and not hlp_vol_hover and not collapse_hover) then
+    if ALT and (btn_hover and not bypass_hover and not vol_or_enclose_hover and not hlp_vol_hover and not collapse_hover and not pm_hover) then
         Tooltip("DELETE " ..
             (tbl[i].type == "Container" and "CONTAINER WITH CONTENT" or tbl[i].type == "ROOT" and "FX CHAIN" or "FX"))
     end
 
     r.ImGui_PopStyleVar(ctx)
     r.ImGui_DrawListSplitter_Merge(SPLITTER)
-    return (btn_hover and not bypass_hover and not vol_or_enclose_hover and not collapse_hover)
+    return (btn_hover and not bypass_hover and not vol_or_enclose_hover and not collapse_hover and not pm_hover)
 end
 
 
@@ -2404,7 +2434,7 @@ end
 
 local function CustomDNDPreview()
     if not DRAG_PREVIEW and not PREVIEW_TOOLTIP then return end
-    local mx, my = r.ImGui_GetMousePos(ctx)
+    --local MX, MY = r.ImGui_GetMousePos(ctx)
     local off_x, off_y = 25 * CANVAS.scale, 28 * CANVAS.scale
 
     if DRAG_PREVIEW then
@@ -2416,7 +2446,7 @@ local function CustomDNDPreview()
         end
 
         r.ImGui_SetNextWindowBgAlpha(ctx, 0.3)
-        r.ImGui_SetNextWindowPos(ctx, mx + off_x, my + off_y)
+        r.ImGui_SetNextWindowPos(ctx, MX + off_x, MY + off_y)
         if DRAG_PREVIEW[DRAG_PREVIEW.i].type == "Container" then
             local is_collapsed = CheckCollapse(DRAG_PREVIEW[DRAG_PREVIEW.i], 1, 1)
             local w, h = ItemFullSize(DRAG_PREVIEW[DRAG_PREVIEW.i])
@@ -2425,7 +2455,7 @@ local function CustomDNDPreview()
                 DrawButton(DRAG_PREVIEW, DRAG_PREVIEW.i, DRAG_PREVIEW[DRAG_PREVIEW.i].name, w, 1)
                 if not is_collapsed then
                     if V_LAYOUT == true then
-                        DrawPlugins(mx + off_x + (w / 2.2) * CANVAS.scale, my + def_btn_h * CANVAS.scale,
+                        DrawPlugins(MX + off_x + (w / 2.2) * CANVAS.scale, MY + def_btn_h * CANVAS.scale,
                             DRAG_PREVIEW[DRAG_PREVIEW.i].sub, 1)
                     else
                         DrawPluginsH(x - (para_btn_size/2) * CANVAS.scale, y + ((h/2) - (para_btn_size/2))* CANVAS.scale,
@@ -2447,14 +2477,14 @@ local function CustomDNDPreview()
             if r.time_precise() - PREVIEW_TOOLTIP.start > 0.25 then
                 local px = (PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].W / 2) * CANVAS.scale
                 r.ImGui_SetNextWindowBgAlpha(ctx, 0.6)
-                r.ImGui_SetCursorScreenPos(ctx, mx - px, my + off_y)
+                r.ImGui_SetCursorScreenPos(ctx, MX - px, MY + off_y)
                 local H_OFF = not V_LAYOUT and para_btn_size or 0
                 if r.ImGui_BeginChild(ctx, "##PEAK_DRAW_CONTAINER", PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].W * CANVAS.scale, (H_OFF + PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].H) * CANVAS.scale, true) then
                     local x,y = r.ImGui_GetCursorScreenPos(ctx)
                     DrawButton(PREVIEW_TOOLTIP, PREVIEW_TOOLTIP.i, PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].name,
                     PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].W - s_window_x, 1)
                         if V_LAYOUT == true then
-                           DrawPlugins(mx - (def_s_window_x * 4) * CANVAS.scale, my + def_btn_h * CANVAS.scale,
+                           DrawPlugins(MX - (def_s_window_x * 4) * CANVAS.scale, MY + def_btn_h * CANVAS.scale,
                            PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].sub, 1)
                         else
                             DrawPluginsH(x - (para_btn_size/2) * CANVAS.scale, y + ((PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].H/2)- (para_btn_size/2)) * CANVAS.scale,  PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].sub, 1)
@@ -2482,14 +2512,13 @@ function Draw()
         r.ImGui_SetCursorScreenPos(ctx, x, y)
         local bypass = PLUGINS[0].bypass and 1 or 0.5
         DrawVH(x, y, PLUGINS, bypass)
-        --DrawPlugins(x, y, PLUGINS, bypass)
         UpdateScroll()
         updateZoom()
         r.ImGui_EndChild(ctx)
     end
     if SHOW_DND_TOOLTIPS then
-        local mx, my = r.ImGui_GetMousePos(ctx)
-        r.ImGui_SetNextWindowPos(ctx, mx + 25 * CANVAS.scale, my)
+        --local MX, MY = r.ImGui_GetMousePos(ctx)
+        r.ImGui_SetNextWindowPos(ctx, MX + 25 * CANVAS.scale, MY)
         r.ImGui_SetNextWindowBgAlpha(ctx, 1)
         DNDTooltips(SHOW_DND_TOOLTIPS)
         SHOW_DND_TOOLTIPS = nil

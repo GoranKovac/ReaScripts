@@ -374,7 +374,6 @@ end
 
 local function Popups()
     local center = { r.ImGui_Viewport_GetCenter(r.ImGui_GetWindowViewport(ctx)) }
-
     if OPEN_INSERT_POINTS_MENU then
         OPEN_INSERT_POINTS_MENU = nil
         if not r.ImGui_IsPopupOpen(ctx, "INSERT_POINTS_MENU") then
@@ -787,6 +786,7 @@ function UI()
         DrawListButton2(pin_icon, pin_color, r.ImGui_IsItemHovered(ctx), true)
         TooltipUI(
             "LOCKS TO SELECTED TRACK\nMULTIPLE SCRIPTS CAN HAVE DIFFERENT SELECTIONS\nCAN BE CHANGED VIA TRACKLIST")
+
         r.ImGui_SameLine(ctx)
         -- TRACK LIST
         --! NEED TO FIX OFFSET

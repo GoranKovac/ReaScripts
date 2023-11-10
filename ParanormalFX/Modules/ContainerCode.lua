@@ -668,3 +668,4 @@ function Paste(replace, parallel, serial, enclose)
     EndUndoBlock((is_cut and "CUT FX: " or "PASTE FX: ") .. RC_DATA.tbl[RC_DATA.i].name)
     UpdateClipboardInfo()
 end
+

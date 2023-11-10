@@ -1,9 +1,11 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.34.56
+-- @version 1.34.57
 -- @changelog
---  Share spacing between layouts
+--  Fix font selection in settings
+--  Check for active PM
+--  Active PM Indicator
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -33,7 +35,7 @@ if not r.GetAppVersion():match("^7%.") then
     return
 end
 
-local saike_splitter_path = reaper_path .. "/Effects/Saike Tools/Basics/BandSplitter.jsfx"
+local saike_splitter_path    = reaper_path .. "/Effects/Saike Tools/Basics/BandSplitter.jsfx"
 
 --local fx_browser_script_path = "C:/Users/Gokily/Documents/ReaGit/ReaScripts/FX/Sexan_FX_Browser_ParserV7.lua"
 local fx_browser_script_path = reaper_path .. "/Scripts/Sexan_Scripts/FX/Sexan_FX_Browser_ParserV7.lua"
@@ -65,19 +67,19 @@ local function CheckDeps()
     --'Sexan FX Browser Parser V7' OR 'Sexan ImGui FileManager' OR 'Dear Imgui' OR 'Saike 4-pole BandSplitter'
     ThirdPartyDeps()
     local deps = {}
-    
+
     if not r.ImGui_GetVersion then
-        deps[#deps+1] = '"Dear Imgui"'
+        deps[#deps + 1] = '"Dear Imgui"'
     end
     if not r.file_exists(fx_browser_script_path) then
-        deps[#deps+1] = '"FX Browser Parser V7"'
+        deps[#deps + 1] = '"FX Browser Parser V7"'
     end
     if not r.file_exists(fm_script_path) then
-        deps[#deps+1] = '"Sexan ImGui FileManager"'
+        deps[#deps + 1] = '"Sexan ImGui FileManager"'
     end
 
     if not r.file_exists(saike_splitter_path) then
-        deps[#deps+1] = '"Saike 4-pole BandSplitter"'
+        deps[#deps + 1] = '"Saike 4-pole BandSplitter"'
         r.SetExtState("PARANORMALFX2", "UPDATEFX", "true", false)
     end
 
@@ -119,20 +121,23 @@ ImGui.Attach(ctx, DEFAULT_FONT_FACTORY)
 SYSTEM_FONT_FACTORY = ImGui.CreateFont('sans-serif', FONT_SIZE, ImGui.FontFlags_Bold())
 ImGui.Attach(ctx, SYSTEM_FONT_FACTORY)
 
-DEF_PARALLEL                 = "2"
-ESC_CLOSE                    = false
-AUTO_COLORING                = false
-CUSTOM_FONT                  = nil
-ANIMATED_HIGLIGHT            = true
-DEFAULT_DND                  = true
-CTRL_DRAG_AUTOCONTAINER      = false
-TOOLTIPS                     = true
-SHOW_C_CONTENT_TOOLTIP       = true
-V_LAYOUT                     = false
+DEF_PARALLEL            = "2"
+ESC_CLOSE               = false
+AUTO_COLORING           = false
+CUSTOM_FONT             = nil
+ANIMATED_HIGLIGHT       = true
+DEFAULT_DND             = true
+CTRL_DRAG_AUTOCONTAINER = false
+TOOLTIPS                = true
+SHOW_C_CONTENT_TOOLTIP  = true
+V_LAYOUT                = false
 
+-- profiler = dofile(reaper.GetResourcePath() ..
+--   '/Scripts/ReaTeam Scripts/Development/cfillion_Lua profiler.lua')
+-- reaper.defer = profiler.defer
 
 if r.file_exists(fx_browser_script_path) then
-    dofile(fx_browser_script_path)    
+    dofile(fx_browser_script_path)
 end
 if r.file_exists(fm_script_path) then
     dofile(fm_script_path)
@@ -180,6 +185,7 @@ if r.HasExtState("PARANORMALFX2", "SETTINGS") then
 end
 
 SELECTED_FONT = CUSTOM_FONT and SYSTEM_FONT or DEFAULT_FONT
+
 
 local function pdefer(func)
     reaper.defer(function()
@@ -260,7 +266,7 @@ end
 --     if LAST_CLICK and not A_X then
 --         A_X, A_Y = mx, my
 --     end
-    
+
 --     if A_X then
 --         local tr, buf = r.GetThingFromPoint(A_X, A_Y)
 --         if buf == "tcp.io" and not REAPER_DND then
@@ -275,7 +281,7 @@ end
 
 function UpdateZoomFont()
     if not CANVAS then return end
-    local new_font_size = (ORG_FONT_SIZE * CANVAS.scale)//1
+    local new_font_size = (ORG_FONT_SIZE * CANVAS.scale) // 1
     if FONT_SIZE ~= new_font_size then
         if NEXT_FRAME then
             if DEFAULT_FONT then
@@ -313,7 +319,7 @@ end
 local function Main()
     UpdateDeltaTime()
     UpdateZoomFont()
-   -- UpdateStyle()
+    -- UpdateStyle()
     if WANT_REFRESH then
         WANT_REFRESH = nil
         UpdateChainsTrackTemplates(CAT)
@@ -346,12 +352,13 @@ local function Main()
     ImGui.PushStyleColor(ctx, ImGui.Col_WindowBg(), 0x111111FF)
     ImGui.SetNextWindowSizeConstraints(ctx, 500, 500, FLT_MAX, FLT_MAX)
     ImGui.SetNextWindowSize(ctx, 500, 500, ImGui.Cond_FirstUseEver())
-    
+
     local visible, open = r.ImGui_Begin(ctx, 'PARANORMAL FX ROUTER###PARANORMALFX', true, WND_FLAGS)
     ImGui.PopStyleColor(ctx)
     if visible then
-        AW,AH = r.ImGui_GetContentRegionAvail(ctx)
-        WX,WY = r.ImGui_GetWindowPos(ctx)
+        AW, AH = r.ImGui_GetContentRegionAvail(ctx)
+        WX, WY = r.ImGui_GetWindowPos(ctx)
+        MX, MY = r.ImGui_GetMousePos(ctx)
         CanvasLoop()
         CollectFxData()
         r.ImGui_PushFont(ctx, SELECTED_FONT)
@@ -359,9 +366,10 @@ local function Main()
         r.ImGui_PopFont(ctx)
         r.ImGui_PushFont(ctx, CUSTOM_FONT and SYSTEM_FONT_FACTORY or DEFAULT_FONT_FACTORY)
         UI()
+        if OPEN_SETTINGS then DrawUserSettings() end
         r.ImGui_PopFont(ctx)
         ClipBoard()
-        if OPEN_SETTINGS then DrawUserSettings() end
+        --if OPEN_SLOTS then SlotsMenu() end
         if not IS_DRAGGING_RIGHT_CANVAS and r.ImGui_IsMouseReleased(ctx, 1) and
             not r.ImGui_IsAnyItemHovered(ctx) and
             not r.ImGui_IsPopupOpen(ctx, "RIGHT_CLICK_MENU") and
@@ -385,12 +393,12 @@ local function Main()
     end
 
     --UpdateScroll()
-   -- updateZoom()
+    -- updateZoom()
     if FONT_UPDATE then FONT_UPDATE = nil end
     NEXT_FRAME = true
     -- if MOUSE_UP then
     --     if A_X then A_X, A_Y = nil,nil end
-    --     if REAPER_DND then 
+    --     if REAPER_DND then
     --         REAPER_DND = nil
     --     end
     -- end
@@ -405,3 +413,6 @@ end
 
 r.atexit(Exit)
 pdefer(Main)
+
+-- profiler.attachToWorld() -- after all functions have been defined
+-- profiler.run()
