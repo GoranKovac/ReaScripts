@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="7a5a191551818bd30ec335c2450b71b1e10cd62c" name="Sexan_Scripts">
+<index version="1" commit="55e4573d47144072a48d37f8edd2a7610303ec69" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -631,6 +631,10 @@ Found FX is added last to list then flags get deleted to ensure numeric key orde
       <version name="1.25" author="Sexan" time="2023-11-07T20:11:28Z">
         <changelog><![CDATA[Make sorting table local]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/514ec489c8f0a087ea1dd4c7bc498b509e6bb0f7/FX/Sexan_FX_Browser_ParserV7.lua</source>
+      </version>
+      <version name="1.26" author="Sexan" time="2023-11-10T19:34:48Z">
+        <changelog><![CDATA[Allow only files with provided extension when iterating files and folders]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/55e4573d47144072a48d37f8edd2a7610303ec69/FX/Sexan_FX_Browser_ParserV7.lua</source>
       </version>
     </reapack>
   </category>
