@@ -8,10 +8,14 @@ for name, func in pairs(reaper) do
     if name then ImGui[name] = func end
 end
 
-local def_vertical_x_center,def_vertical_y_center = 50, 100
+local def_vertical_x_center, def_vertical_y_center = 50, 100
 
 function InitCanvas()
-    return { view_x = 0, view_y = 0, off_x = def_vertical_x_center, off_y = def_vertical_y_center, scale = 1 }
+    local init_x, init_y = 500, 100
+    if not V_LAYOUT then
+        init_x, init_y = 50, 250
+    end
+    return { view_x = 0, view_y = 0, off_x = init_x, off_y = init_y, scale = 1 }
 end
 
 function UpdateScroll()
@@ -25,43 +29,43 @@ function UpdateScroll()
     end
 end
 
-ZOOM_MIN, ZOOM_MAX, ZOOM_SPEED = 0.2, 1, 1/8
+ZOOM_MIN, ZOOM_MAX, ZOOM_SPEED = 0.2, 1, 1 / 8
 
- function round(num) return (num + 0.5)//1 end
+function round(num) return (num + 0.5) // 1 end
 
 function updateZoom()
     if not CTRL then return end
-    local WX, WY = r.ImGui_GetWindowPos( ctx )
+    local WX, WY = r.ImGui_GetWindowPos(ctx)
     local new_scale = CANVAS.scale + (r.ImGui_GetMouseWheel(ctx) * ZOOM_SPEED)
     new_scale = math.max(ZOOM_MIN, math.min(ZOOM_MAX, new_scale))
-    
+
     if new_scale == CANVAS.scale then return end
-  
+
     local scale_diff = (new_scale / CANVAS.scale)
     local mouse_x, mouse_y = r.ImGui_GetMousePos(ctx)
     mouse_x, mouse_y = (mouse_x - WX) - CANVAS.view_x - CANVAS.off_x,
-                       (mouse_y - WY) - CANVAS.view_y - CANVAS.off_y
+        (mouse_y - WY) - CANVAS.view_y - CANVAS.off_y
     local diff_x, diff_y = mouse_x - (mouse_x * scale_diff),
-                           mouse_y - (mouse_y * scale_diff)
+        mouse_y - (mouse_y * scale_diff)
     CANVAS.off_x, CANVAS.off_y = (CANVAS.off_x + diff_x),
-                                 (CANVAS.off_y + diff_y)
+        (CANVAS.off_y + diff_y)
     CANVAS.scale = new_scale
 end
 
 local function ResetView(force)
     if V_LAYOUT then
         if force then
-            CANVAS.off_x = AW/2
+            CANVAS.off_x = AW / 2
             CANVAS.off_y = def_vertical_y_center
         else
-            FLUX.to(CANVAS, 0.5, { off_x = AW/2, off_y = def_vertical_y_center*CANVAS.scale }):ease("cubicout")
+            FLUX.to(CANVAS, 0.5, { off_x = AW / 2, off_y = def_vertical_y_center * CANVAS.scale }):ease("cubicout")
         end
     else
         if force then
             CANVAS.off_x = def_vertical_x_center
-            CANVAS.off_y = AH/2
+            CANVAS.off_y = AH / 2
         else
-            FLUX.to(CANVAS, 0.5, { off_x = def_vertical_x_center*CANVAS.scale, off_y = AH/2 }):ease("cubicout")
+            FLUX.to(CANVAS, 0.5, { off_x = def_vertical_x_center * CANVAS.scale, off_y = AH / 2 }):ease("cubicout")
         end
     end
 end
@@ -247,7 +251,7 @@ local function RightClickMenu()
                 r.PreventUIRefresh(-1)
                 EndUndoBlock("MOVE FX AND ENCLOSE INTO CONTAINER")
             end
-            if RC_DATA.type == "Container"  then
+            if RC_DATA.type == "Container" then
                 local can_explode = CheckIfSafeToExplode(RC_DATA.tbl, RC_DATA.i)
                 local no_childs = #RC_DATA.tbl[RC_DATA.i].sub == 0
                 if not can_explode or no_childs then r.ImGui_BeginDisabled(ctx, true) end
@@ -361,7 +365,7 @@ local function RightClickMenu()
             r.SetExtState("PARANORMALFX2", "COPY_BUFFER", data, false)
             r.SetExtState("PARANORMALFX2", "COPY_BUFFER_ID", r.genGuid(), false)
         end
-      
+
         -- SHOW ONLY WHEN CLIPBOARD IS AVAILABLE
         if CLIPBOARD.tbl and CLIPBOARD.guid ~= RC_DATA.tbl[RC_DATA.i].guid then
             --! DO NOT ALLOW PASTING ON SELF
@@ -509,8 +513,216 @@ end
 local function RevertVertical()
     --ADD_BTN_W = LAST_V_BTN_W
     --ADD_BTN_H = LAST_V_BTN_H
-   -- new_spacing_y = LAST_NEW_Y
+    -- new_spacing_y = LAST_NEW_Y
     --LAST_V_BTN_W, LAST_V_BTN_H, LAST_NEW_Y = nil, nil, nil
+end
+
+PEAK_TBL = { ptr = 0, size = 0, max_size = 25 }
+local tbl_flags = ImGui.TableFlags_SizingFixedFit()| ImGui.TableFlags_Borders() | ImGui.TableFlags_SizingFixedFit()
+local function PMTable()
+    if not PM_INSPECTOR_FXID then return end
+
+    if ImGui.BeginTable(ctx, 'ALL_PARAMETERS', 4, tbl_flags) then
+        ImGui.TableSetupColumn(ctx, 'PARAMETER', r.ImGui_TableColumnFlags_WidthStretch())
+        ImGui.TableSetupColumn(ctx, 'PMD')
+        ImGui.TableSetupColumn(ctx, 'ACS')
+        ImGui.TableSetupColumn(ctx, 'LFO')
+        --ImGui.TableSetupColumn(ctx, 'ENV')
+        --ImGui.TableSetupColumn(ctx, 'INP')
+        --ImGui.TableSetupColumn(ctx, 'TYP')
+        ImGui.TableHeadersRow(ctx)
+        for p_id = 0, r.TrackFX_GetNumParams(TRACK, PM_INSPECTOR_FXID) do
+            local _, p_name = r.TrackFX_GetParamName(TRACK, PM_INSPECTOR_FXID, p_id)
+            local _, mod = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.active")
+            local _, acs = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".acs.active")
+            local _, lfo = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.active")
+            local _, mod_vis = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.visible")
+            local fx_env = r.GetFXEnvelope(TRACK, PM_INSPECTOR_FXID, p_id, false)
+            local has_points = (fx_env and r.CountEnvelopePoints(fx_env) ~= 0)
+            if mod == "1" or acs == "1" or lfo == "1" or has_points then
+                ImGui.TableNextRow(ctx)
+                for column = 0, 3 do
+                    ImGui.TableSetColumnIndex(ctx, column)
+                    if column == 0 then
+                        r.ImGui_PushID(ctx, PM_INSPECTOR_FXID .. p_id .. "PM_ACTIVE")
+                        if r.ImGui_Button(ctx, p_name, -FLT_MIN, 0.0) then
+                            if ALT then
+                                r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.active",
+                                    "0")
+                                r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".acs.active",
+                                    "0")
+                                r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.active",
+                                    "0")
+                            else
+                                r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.visible",
+                                    mod_vis == "0" and "1" or "0")
+                            end
+                        end
+                        r.ImGui_PopID(ctx)
+                    elseif column == 1 then
+                        if r.ImGui_Checkbox(ctx, "##PM" .. PM_INSPECTOR_FXID .. p_id, mod == "1") then
+                            r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.active",
+                                mod == "0" and "1" or "0")
+                        end
+                    elseif column == 2 then
+                        if r.ImGui_Checkbox(ctx, "##ACS" .. PM_INSPECTOR_FXID .. p_id, acs == "1") then
+                            r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".acs.active",
+                                acs == "0" and "1" or "0")
+                        end
+                    elseif column == 3 then
+                        if r.ImGui_Checkbox(ctx, "##LFO" .. PM_INSPECTOR_FXID .. p_id, lfo == "1") then
+                            r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.active",
+                                lfo == "0" and "1" or "0")
+                        end
+                    -- elseif column == 4 then
+                    --     if r.ImGui_Checkbox(ctx, "##ENV" .. PM_INSPECTOR_FXID .. p_id, has_points) then
+                    --         if not fx_env then
+                    --             r.GetFXEnvelope(TRACK, PM_INSPECTOR_FXID, p_id, true)
+                    --             r.TrackList_AdjustWindows(false)
+                    --         end
+                    --         if fx_env then
+                    --             local retval, env_chunk = r.GetEnvelopeStateChunk(fx_env, "", true)
+                    --             local vis = env_chunk:match("VIS (%d+)")
+                    --             if vis == "1" then
+                    --                 env_chunk = env_chunk:gsub("VIS 1", "VIS 0", 1)
+                    --             elseif vis == "0" then
+                    --                 env_chunk = env_chunk:gsub("VIS 0", "VIS 1", 1)
+                    --             end
+                    --             r.SetEnvelopeStateChunk(fx_env, env_chunk, false)
+                    --             r.TrackList_AdjustWindows(false)
+                    --         end
+                            -- end
+                       -- end
+                        --  elseif column == 4 then
+                        -- elseif column == 5 then
+                        --     --r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_WindowPadding(), 0, 0)
+                        --     --if r.ImGui_BeginChild(ctx, "##WF_LFO" .. PM_INSPECTOR_FXID .. p_id, 22,22) then
+                        --         local xx,yy = r.ImGui_GetCursorScreenPos(ctx)
+                        --         local _, lfo_shape = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.shape")
+                        --         local _, lfo_speed = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.speed")
+
+                        --         --r.ShowConsoleMsg(lfo_shape.."\n")
+                        --        -- GetPeakInfo(PEAK_TBL, lfo_shape, lfo_speed, 22)
+                        --        -- DrawPeak(draw_list, PEAK_TBL, xx, yy, 22, 22)
+                        --         --r.ImGui_EndChild(ctx)
+                        --    -- end
+                        --     --r.ImGui_PopStyleVar(ctx)
+                    end
+                end
+            end
+        end
+        ImGui.EndTable(ctx)
+    end
+end
+
+function DrawPMInspector()
+    if not TRACK then return end
+    if not PM_INSPECTOR_FXID then return end
+    local WX, WY = r.ImGui_GetWindowPos(ctx)
+
+    r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x000000EE)
+    r.ImGui_SetNextWindowPos(ctx, WX + 5, WY + 65)
+    local total_columns = 2
+    if r.ImGui_BeginChild(ctx, "PM_INSPECTOR", 300, 400, true) then
+        local retval, buf = r.TrackFX_GetFXName(TRACK, PM_INSPECTOR_FXID)
+        local aw = r.ImGui_GetContentRegionAvail(ctx)
+        r.ImGui_Text(ctx, "PARAMETER INSPECTOR")
+        r.ImGui_SameLine(ctx, aw - s_frame_x)
+        r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Button(), 0)
+        if r.ImGui_Button(ctx, "X") then
+            OPEN_PM_INSPECTOR = nil
+        end
+        r.ImGui_PopStyleColor(ctx)
+        r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Text(), 0x0088FFFF)
+        r.ImGui_Text(ctx, buf:upper())
+        r.ImGui_PopStyleColor(ctx)
+
+        r.ImGui_Separator(ctx)
+        local child_hovered = r.ImGui_IsWindowHovered(ctx,
+            r.ImGui_HoveredFlags_ChildWindows() |  r.ImGui_HoveredFlags_AllowWhenBlockedByPopup() |
+            r.ImGui_HoveredFlags_AllowWhenBlockedByActiveItem())
+        if LASTTOUCH_FX_ID and LASTTOUCH_FX_ID == PM_INSPECTOR_FXID and LASTTOUCH_P_ID then
+            local rv, p_name = r.TrackFX_GetParamName(TRACK, LASTTOUCH_FX_ID, LASTTOUCH_P_ID)
+            if rv then
+                if ImGui.BeginTable(ctx, 'LAST_TOUCHED_PARAMETER', total_columns, tbl_flags) then
+                    ImGui.TableSetupColumn(ctx, 'LAST TOUCHED', r.ImGui_TableColumnFlags_WidthStretch())
+                    ImGui.TableSetupColumn(ctx, 'AUTO-SET')
+                    --ImGui.TableSetupColumn(ctx, 'ENV')
+                    --ImGui.TableSetupColumn(ctx, 'ALL')
+                    ImGui.TableHeadersRow(ctx)
+                    ImGui.TableNextRow(ctx)
+                    for column = 0, total_columns - 1 do
+                        ImGui.TableSetColumnIndex(ctx, column)
+                        if column == 0 then
+                            if r.ImGui_Button(ctx, p_name, -FLT_MIN) then
+                                r.TrackFX_SetNamedConfigParm(TRACK, LASTTOUCH_FX_ID,
+                                    "param." .. LASTTOUCH_P_ID .. ".mod.visible", "1")
+                            end
+                            -- elseif column == 1 then
+                            --     if r.ImGui_Button(ctx, "SET##ACS") then
+                            --         r.Undo_BeginBlock()
+                            --         r.TrackFX_SetNamedConfigParm(TRACK, LASTTOUCH_FX_ID, "param." .. LASTTOUCH_P_ID .. ".mod.visible", "1")
+                            --         r.TrackFX_SetNamedConfigParm(TRACK, LASTTOUCH_FX_ID, "param." .. LASTTOUCH_P_ID .. ".mod.active", "1")
+                            --         r.TrackFX_SetNamedConfigParm(TRACK, LASTTOUCH_FX_ID, "param." .. LASTTOUCH_P_ID .. ".acs.active", "1")
+                            --         r.TrackFX_SetNamedConfigParm(TRACK, LASTTOUCH_FX_ID, "param." .. LASTTOUCH_P_ID .. ".acs.chan", "2")
+                            --         EndUndoBlock("SET ACS")
+                            --     end
+                            -- elseif column == 2 then
+                            --     if r.ImGui_Button(ctx, "SET##LFO") then
+                            --         r.Undo_BeginBlock()
+                            --         r.TrackFX_SetNamedConfigParm(TRACK, LASTTOUCH_FX_ID, "param." .. LASTTOUCH_P_ID .. ".mod.visible", "1")
+                            --         r.TrackFX_SetNamedConfigParm(TRACK, LASTTOUCH_FX_ID, "param." .. LASTTOUCH_P_ID .. ".mod.active", "1")
+                            --         r.TrackFX_SetNamedConfigParm(TRACK, LASTTOUCH_FX_ID, "param." .. LASTTOUCH_P_ID .. ".lfo.active", "1")
+                            --         EndUndoBlock("SET LFO")
+                            --     end
+                        elseif column == 1 then
+                            if r.ImGui_Button(ctx, "SET##ALL", -FLT_MIN, 0) then
+                                r.Undo_BeginBlock()
+                                r.TrackFX_SetNamedConfigParm(TRACK, LASTTOUCH_FX_ID,
+                                    "param." .. LASTTOUCH_P_ID .. ".mod.visible", "1")
+                                r.TrackFX_SetNamedConfigParm(TRACK, LASTTOUCH_FX_ID,
+                                    "param." .. LASTTOUCH_P_ID .. ".mod.active", "1")
+                                r.TrackFX_SetNamedConfigParm(TRACK, LASTTOUCH_FX_ID,
+                                    "param." .. LASTTOUCH_P_ID .. ".acs.active", "1")
+                                r.TrackFX_SetNamedConfigParm(TRACK, LASTTOUCH_FX_ID,
+                                    "param." .. LASTTOUCH_P_ID .. ".acs.chan", "2")
+                                r.TrackFX_SetNamedConfigParm(TRACK, LASTTOUCH_FX_ID,
+                                    "param." .. LASTTOUCH_P_ID .. ".lfo.active", "1")
+                                EndUndoBlock("SET ALL PARAMETER")
+                            end
+                        elseif column == 2 then
+                            if r.ImGui_Button(ctx, "SHOW##ENV") then
+                                if PM_INSPECTOR_FXID == LASTTOUCH_FX_ID then
+                                    r.Main_OnCommand(41142, 0)
+                                end
+                            end
+                        end
+                    end
+                    ImGui.EndTable(ctx)
+                end
+            end
+        end
+        if r.ImGui_BeginMenu(ctx, "PARAMETER LIST") then
+            for p_id = 0, r.TrackFX_GetNumParams(TRACK, PM_INSPECTOR_FXID) do
+                local rv, p_name = r.TrackFX_GetParamName(TRACK, PM_INSPECTOR_FXID, p_id)
+                if rv and #p_name ~= 0 then
+                    if r.ImGui_MenuItem(ctx, p_name) then
+                        r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.active", "1")
+                    end
+                end
+            end
+            if not child_hovered then
+                r.ImGui_CloseCurrentPopup(ctx)
+            end
+            r.ImGui_EndMenu(ctx)
+        end
+
+        r.ImGui_Separator(ctx)
+        PMTable()
+
+        r.ImGui_EndChild(ctx)
+    end
+    r.ImGui_PopStyleColor(ctx)
 end
 
 function DrawUserSettings()
@@ -520,7 +732,7 @@ function DrawUserSettings()
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x000000EE)
     r.ImGui_SetNextWindowPos(ctx, WX + 5, WY + 65)
 
-    if r.ImGui_BeginChild(ctx, "USERSETTIGS", 220, 718, 1) then
+    if r.ImGui_BeginChild(ctx, "USERSETTIGS", 220, 718, true) then
         local COLOR = GetColorTbl()
         if r.ImGui_Button(ctx, "RESCAN FX LIST") then
             RescanFxList()
@@ -717,14 +929,14 @@ local sin = math.sin
 local m_wheel_i = 1
 function UI()
     if not TRACK then return end
-    r.ImGui_SetCursorPos(ctx, 5, 25)
+    r.ImGui_SetCursorPos(ctx, 5, r.ImGui_IsWindowDocked(ctx) and 5 or 25)
     -- NIFTY HACK FOR COMMENT BOX NOT OVERLAP UI BUTTONS
     if not r.ImGui_BeginChild(ctx, 'toolbars', -FLT_MIN, -FLT_MIN, false, r.ImGui_WindowFlags_NoInputs()) then return end
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x000000EE)
 
     local retval, tr_ID = r.GetTrackName(TRACK)
     local tr_name_w = CalculateItemWH({ name = tr_ID })
-    if r.ImGui_BeginChild(ctx, "TopButtons", 170 + tr_name_w + 40, def_btn_h + (s_window_y * 2), 1) then
+    if r.ImGui_BeginChild(ctx, "TopButtons", 170 + tr_name_w + 40, def_btn_h + (s_window_y * 2), true) then
         local child_hovered = r.ImGui_IsWindowHovered(ctx,
             r.ImGui_HoveredFlags_ChildWindows() |  r.ImGui_HoveredFlags_AllowWhenBlockedByPopup() |
             r.ImGui_HoveredFlags_AllowWhenBlockedByActiveItem())

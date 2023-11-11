@@ -1,11 +1,14 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.34.57
+-- @version 1.34.58
 -- @changelog
---  Fix font selection in settings
---  Check for active PM
---  Active PM Indicator
+--  Fixed offset when docked
+--  Fixed few graphical issues
+--  Added Parameters button
+--  Added parameters inspector
+--  Added Last touched auto-config
+--  Fixed initial x,y to respect selected layout mode
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -131,6 +134,8 @@ CTRL_DRAG_AUTOCONTAINER = false
 TOOLTIPS                = true
 SHOW_C_CONTENT_TOOLTIP  = true
 V_LAYOUT                = false
+
+OPEN_PM_INSPECTOR = false
 
 -- profiler = dofile(reaper.GetResourcePath() ..
 --   '/Scripts/ReaTeam Scripts/Development/cfillion_Lua profiler.lua')
@@ -331,6 +336,7 @@ local function Main()
         ResetStrippedNames()
         StoreToPEXT(LAST_TRACK)
         LAST_TRACK = TRACK
+        LASTTOUCH_RV, LASTTOUCH_TR_NUM, LASTTOUCH_FX_ID, LASTTOUCH_P_ID = nil, nil, nil, nil
         if not RestoreFromPEXT() then
             CANVAS = InitCanvas()
             InitTrackContainers()
@@ -356,6 +362,7 @@ local function Main()
     local visible, open = r.ImGui_Begin(ctx, 'PARANORMAL FX ROUTER###PARANORMALFX', true, WND_FLAGS)
     ImGui.PopStyleColor(ctx)
     if visible then
+        MonitorLastTouchedFX()
         AW, AH = r.ImGui_GetContentRegionAvail(ctx)
         WX, WY = r.ImGui_GetWindowPos(ctx)
         MX, MY = r.ImGui_GetMousePos(ctx)
@@ -366,7 +373,15 @@ local function Main()
         r.ImGui_PopFont(ctx)
         r.ImGui_PushFont(ctx, CUSTOM_FONT and SYSTEM_FONT_FACTORY or DEFAULT_FONT_FACTORY)
         UI()
-        if OPEN_SETTINGS then DrawUserSettings() end
+        if OPEN_SETTINGS then 
+            DrawUserSettings() 
+            if OPEN_PM_INSPECTOR then OPEN_PM_INSPECTOR = nil end
+        end
+        if OPEN_PM_INSPECTOR then 
+            DrawPMInspector()
+        else
+            if PM_INSPECTOR_FXID then PM_INSPECTOR_FXID = nil end
+        end
         r.ImGui_PopFont(ctx)
         ClipBoard()
         --if OPEN_SLOTS then SlotsMenu() end
@@ -413,6 +428,10 @@ end
 
 r.atexit(Exit)
 pdefer(Main)
+
+if r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseClicked(ctx,1) then
+    ACTIVE_LANE = i
+end
 
 -- profiler.attachToWorld() -- after all functions have been defined
 -- profiler.run()

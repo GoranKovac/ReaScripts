@@ -12,6 +12,11 @@ end
 new_spacing_x, new_spacing_y = 8, 10
 enclose_bnt_offset = 1.3
 local LINE_POINTS, PLUGINS
+
+
+LASTTOUCH_RV, LASTTOUCH_TR_NUM, LASTTOUCH_FX_ID, LASTTOUCH_P_ID = nil, nil, nil
+
+
 local stripped_names = {}
 
 local COLOR = {
@@ -39,6 +44,7 @@ local COLOR = {
     ["menu_txt_col"] = 0x3aCCffff,
     ["offline"]      = 0x4d5e72ff,
     ["active_PM"]    = 0x22aaffff,
+    ["no_PM"]        = 0x606582ff,
 }
 
 function GetColorTbl()
@@ -48,6 +54,7 @@ end
 function SetColorTbl(tbl)
     COLOR = tbl
 end
+
 -----------------------------------------------------------------
 ITEM_SPACING_VERTICAL = 4 -- VERTICAL SPACING BETEWEEN ITEMS
 
@@ -344,7 +351,6 @@ local function DndAddReplaceFX_TARGET(tbl, i, parallel)
 end
 
 local function DndAddFX_ENCLOSE_TARGET(tbl, i)
-    
     if not DND_ADD_FX then return end
     if tbl[i].exclude_ara then return end
 
@@ -773,7 +779,7 @@ enclose_btn = para_btn_size
 peak_btn_size = para_btn_size
 collapse_btn_size = para_btn_size
 peak_width = 10
-name_margin = 25
+name_margin = 35
 local function Tooltip(str, force)
     if not TOOLTIPS then return end
     if IS_DRAGGING_RIGHT_CANVAS then return end
@@ -890,6 +896,7 @@ local function MyKnob(label, style, p_value, v_min, v_max, knob_type)
 end
 
 local function HelperWidth(tbl, width)
+    --if DRAG_PREVIEW then return width end
     if not tbl.is_helper then return width end
 
     if tbl.name == "VOL - PAN" then
@@ -1020,7 +1027,8 @@ local function CalcContainerWH_H(fx_items)
             -- PARALLEL (BELOW EACH OTHER)
             for j = 1, #rows[i] do
                 local w, h = ItemFullSize(fx_items[rows[i][j]])
-                w = fx_items[rows[i][j]].W and w + ADD_BTN_W + def_s_spacing_x*2 or w + def_s_spacing_x*2 + solo_parallel_fx_add + ADD_BTN_W
+                w = fx_items[rows[i][j]].W and w + ADD_BTN_W + def_s_spacing_x * 2 or
+                    w + def_s_spacing_x * 2 + solo_parallel_fx_add + ADD_BTN_W
                 h = fx_items[rows[i][j]].H and h + new_spacing_y or btn_total_size
 
                 col_w = col_w < w and w or col_w
@@ -1030,19 +1038,19 @@ local function CalcContainerWH_H(fx_items)
         else
             --SERIAL (NEXT TO EACH OTHER)
             local w, h = ItemFullSize(fx_items[rows[i][1]])
-            w = w + ADD_BTN_W + def_s_spacing_x*2
+            w = w + ADD_BTN_W + def_s_spacing_x * 2
 
             h = fx_items[rows[i][1]].H and h + new_spacing_y or btn_total_size
 
             col_w = col_w + w
-            col_h = col_h < h  and h or col_h
+            col_h = col_h < h and h or col_h
         end
         W = W + col_w
         H = H < col_h and col_h or H
     end
     W = W + def_s_spacing_x + ADD_BTN_W + def_s_spacing_x
 
-    H = H + para_btn_size + (para_btn_size/2) + (ADD_BTN_H/2) + (new_spacing_y*2)
+    H = H + para_btn_size + (para_btn_size / 2) + (ADD_BTN_H / 2) + (new_spacing_y * 2)
     return W, H
 end
 
@@ -1154,7 +1162,7 @@ local function IterateContainer(depth, track, container_id, parent_fx_count, pre
 
     total_w = total_w + mute + volume + (def_s_window_x * 2)
 
-    local C_W, C_H 
+    local C_W, C_H
 
     if V_LAYOUT then
         C_W, C_H = CalcContainerWH(child_fx)
@@ -1238,7 +1246,7 @@ local function GenerateFXData(target)
             offline = offline,
             exclude_ara = FindBlackListedFX(original_fx_name),
             is_helper = is_helper,
-            PM_active = CheckPMActive(i-1),
+            PM_active = CheckPMActive(i - 1),
             auto_color = color,
             sc_tracks = sc_tracks,
             sc_channels = sc_channels,
@@ -1329,7 +1337,7 @@ function DrawListButton(name, color, hover, icon, round_side, shrink, active, tx
         local blue = (org_color >> 8) & 0xFF
         local green = (org_color >> 16) & 0xFF
         local red = (org_color >> 24) & 0xFF
-    
+
         local luminance = (0.299 * red + 0.587 * green + 0.114 * blue) / 255
         return luminance > 0.5 and 0xFF or 0xFFFFFFFF
     end
@@ -1454,7 +1462,8 @@ end
 local function SerialInsertParaLane(tbl, i, w, h, x, y)
     if IsFXSoloInParaLane(tbl, i) then
         if V_LAYOUT then
-        r.ImGui_SetCursorScreenPos(ctx, x + ((w / 2) - (ADD_BTN_W / 2)) * CANVAS.scale,            y + (new_spacing_y / 2) * CANVAS.scale)
+            r.ImGui_SetCursorScreenPos(ctx, x + ((w / 2) - (ADD_BTN_W / 2)) * CANVAS.scale,
+                y + (new_spacing_y / 2) * CANVAS.scale)
         else
             r.ImGui_SameLine(ctx)
         end
@@ -1516,16 +1525,16 @@ end
 
 local function AddLaneSeparatorLineH(A, B, bot)
     if A.FX_ID == B.FX_ID then return end
-    local x1 = A.xs - (def_s_spacing_x + ADD_BTN_W/2) * CANVAS.scale
-    local y1 = A.ys + (A.ye - A.ys)/2
+    local x1 = A.xs - (def_s_spacing_x + ADD_BTN_W / 2) * CANVAS.scale
+    local y1 = A.ys + (A.ye - A.ys) / 2
     local x2 = x1
-    local y2 = B.ye - (B.ye - B.ys)/2
+    local y2 = B.ye - (B.ye - B.ys) / 2
     LINE_POINTS[#LINE_POINTS + 1] = { x1, y1, x2, y2 }
 
     x1 = bot.x
-    y1 = A.ys + (A.ye - A.ys)/2
+    y1 = A.ys + (A.ye - A.ys) / 2
     x2 = x1
-    y2 = B.ye - (B.ye - B.ys)/2
+    y2 = B.ye - (B.ye - B.ys) / 2
     LINE_POINTS[#LINE_POINTS + 1] = { x1, y1, x2, y2 }
 end
 
@@ -1546,15 +1555,15 @@ end
 
 local function CreateLinesH(top, cur, bot, tbl, i)
     if top then
-        local x1 = cur.xs - (def_s_spacing_x + ADD_BTN_W/2)* CANVAS.scale
-        local y1 = cur.ys + (cur.ye - cur.ys)/2
-        local x2 = cur.xs + (def_s_spacing_x + ADD_BTN_W/2)* CANVAS.scale
+        local x1 = cur.xs - (def_s_spacing_x + ADD_BTN_W / 2) * CANVAS.scale
+        local y1 = cur.ys + (cur.ye - cur.ys) / 2
+        local x2 = cur.xs + (def_s_spacing_x + ADD_BTN_W / 2) * CANVAS.scale
         local y2 = y1
         LINE_POINTS[#LINE_POINTS + 1] = { x1, y1, x2, y2 }
     end
     if bot then
         local x1 = cur.xe
-        local y1 = cur.ys + (cur.ye - cur.ys)/2
+        local y1 = cur.ys + (cur.ye - cur.ys) / 2
         local x2 = bot.x
         local y2 = y1
         LINE_POINTS[#LINE_POINTS + 1] = { x1, y1, x2, y2 }
@@ -1583,16 +1592,17 @@ local function GenerateCoordinatesH(tbl, i, last, enclose)
     local xe, ye = r.ImGui_GetItemRectMax(ctx)
 
     if last then
-        return { x = xe - (ADD_BTN_W/2) * CANVAS.scale, ys = ye + (new_spacing_y / 2) * CANVAS.scale, ye = ye }
+        return { x = xe - (ADD_BTN_W / 2) * CANVAS.scale, ys = ye + (new_spacing_y / 2) * CANVAS.scale, ye = ye }
     end
     if tbl[i].type == "Container" then
         if #tbl[i].sub == 0 and not CheckCollapse(tbl[i], 1, 1) then
-            ys = ys + (new_spacing_y)*CANVAS.scale
+            ys = ys + (new_spacing_y) * CANVAS.scale
         elseif #tbl[i].sub ~= 0 and not CheckCollapse(tbl[i], 1, 1) then
-            ys = ys + (new_spacing_y/2)*CANVAS.scale
+            ys = ys + (new_spacing_y / 2) * CANVAS.scale
         end
     end
-    tbl[i].x, tbl[i].xs, tbl[i].xe, tbl[i].ys, tbl[i].ye = xs - (def_s_spacing_x + ADD_BTN_W/2) * CANVAS.scale, xs, xe - ((enclose and tbl[i].type ~= "Container") and (ADD_BTN_W + def_s_spacing_x) * CANVAS.scale or 0), ys, ye
+    tbl[i].x, tbl[i].xs, tbl[i].xe, tbl[i].ys, tbl[i].ye = xs - (def_s_spacing_x + ADD_BTN_W / 2) * CANVAS.scale, xs,
+        xe - ((enclose and tbl[i].type ~= "Container") and (ADD_BTN_W + def_s_spacing_x) * CANVAS.scale or 0), ys, ye
 end
 
 local function GenerateCoordinates(tbl, i, last)
@@ -1609,7 +1619,7 @@ end
 local function ParallelRowHeight(tbl, i, item_width, item_height)
     local total_w, total_h = item_width, item_height
     local idx = i + 1
-    local last_big_idx = not CheckCollapse(tbl[i], 1, 1) and i   
+    local last_big_idx = not CheckCollapse(tbl[i], 1, 1) and i
     while true do
         if not tbl[idx] then break end
         if tbl[idx].p == 0 then
@@ -1620,7 +1630,7 @@ local function ParallelRowHeight(tbl, i, item_width, item_height)
                 total_w = width
                 last_big_idx = idx
             end
-            total_h = total_h + height + new_spacing_y*2
+            total_h = total_h + height + new_spacing_y * 2
             idx = idx + 1
         end
     end
@@ -1668,7 +1678,7 @@ local function SetItemPos_H(tbl, i, x, y, item_w, item_h, prev_x, prev_y)
         end
         new_x = prev_x + (def_s_spacing_x) * CANVAS.scale
         --! CENTER AROUND H
-        new_y = prev_y - (((height/2) - (para_btn_size / 2)) * CANVAS.scale)
+        new_y = prev_y - (((height / 2) - (para_btn_size / 2)) * CANVAS.scale)
 
         r.ImGui_SetCursorScreenPos(ctx, new_x, new_y)
     else
@@ -1678,12 +1688,13 @@ local function SetItemPos_H(tbl, i, x, y, item_w, item_h, prev_x, prev_y)
         r.ImGui_SetCursorScreenPos(ctx, new_x, new_y)
     end
     return new_x, new_y, new_x + (item_w * CANVAS.scale), new_y + (item_h * CANVAS.scale), largest_w
-
 end
 
 local function SetItemPos(tbl, i, x, item_w, item_h, prev_x, prev_y)
-    if tbl[i].type == "INSERT_POINT" then return prev_x, prev_y, prev_x + item_w * CANVAS.scale,
-            prev_y + item_h * CANVAS.scale end
+    if tbl[i].type == "INSERT_POINT" then
+        return prev_x, prev_y, prev_x + item_w * CANVAS.scale,
+            prev_y + item_h * CANVAS.scale
+    end
     local new_x, new_y, largest_h
     -- PARALLEL LANE
     if tbl[i].p > 0 then
@@ -1691,7 +1702,6 @@ local function SetItemPos(tbl, i, x, item_w, item_h, prev_x, prev_y)
         --r.ImGui_SameLine(ctx,(TMP and tbl[i].pid == TMP.guid)and -FLT_MIN or nil)
         r.ImGui_SameLine(ctx)
         new_x, new_y = r.ImGui_GetCursorScreenPos(ctx)
-        
     else
         --SERIAL
         local width, max_h = ParallelRowWidth(tbl, i, item_w, item_h)
@@ -1707,7 +1717,7 @@ local function SetItemPos(tbl, i, x, item_w, item_h, prev_x, prev_y)
         --         end
         --     end
         -- end
-        new_x = x - (((width/2) - (para_btn_size / 2)) * CANVAS.scale)
+        new_x = x - (((width / 2) - (para_btn_size / 2)) * CANVAS.scale)
         new_y = prev_y + new_spacing_y * CANVAS.scale
         r.ImGui_SetCursorScreenPos(ctx, new_x, new_y)
     end
@@ -1759,7 +1769,7 @@ local function DrawHelper(tbl, i, w)
     local btn_hover, new_width
     if tbl[i].name:find("VOL - PAN", nil, true) then
         local vol_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 0) -- 0 IS VOL IDENTIFIER
-        r.ImGui_SameLine(ctx, -FLT_MIN, (mute + mute / 2) * CANVAS.scale)
+        r.ImGui_SameLine(ctx, -FLT_MIN, (mute *2) * CANVAS.scale)
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_vol")
         local rvh_v, v = MyKnob("", "arc", vol_val, -60, 12, "vol")
         if rvh_v then
@@ -1773,7 +1783,7 @@ local function DrawHelper(tbl, i, w)
             r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 0, 0)
         end
         r.ImGui_PopID(ctx)
-        r.ImGui_SameLine(ctx, -FLT_MIN, (w - (mute * 2) - mute / 2) * CANVAS.scale)
+        r.ImGui_SameLine(ctx, -FLT_MIN, (w - (mute * 3)) * CANVAS.scale)
         local pan_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 1) -- 1 IS PAN IDENTIFIER
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_pan")
         local rvh_p, p = MyKnob("", "knob", pan_val, -100, 100, "pan")
@@ -1790,7 +1800,7 @@ local function DrawHelper(tbl, i, w)
         r.ImGui_PopID(ctx)
         r.ImGui_SetCursorPosY(ctx, r.ImGui_GetCursorPosY(ctx))
     elseif tbl[i].name:find("POLARITY", nil, true) then
-        r.ImGui_SameLine(ctx, -FLT_MIN, (mute + mute / 4) * CANVAS.scale)
+        r.ImGui_SameLine(ctx, -FLT_MIN, (w - (mute *2) - (mute/2)) * CANVAS.scale)
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_phase")
         local phase_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 0) -- 0 POLARITY NORMAL
         local pos = { r.ImGui_GetCursorScreenPos(ctx) }
@@ -1810,7 +1820,7 @@ local function DrawHelper(tbl, i, w)
         end
     elseif tbl[i].name:find("TIME", nil, true) then
         local vol_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 0) -- 0 POLARITY NORMAL
-        r.ImGui_SameLine(ctx, -FLT_MIN, (mute + mute / 2) * CANVAS.scale)
+        r.ImGui_SameLine(ctx, -FLT_MIN, (mute *2) * CANVAS.scale)
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_time")
         local rvh_v, v = MyKnob("", "arc", vol_val, -1000, 1000, "ms")
         if rvh_v then
@@ -1824,7 +1834,7 @@ local function DrawHelper(tbl, i, w)
             btn_hover = vol_hover
         end
         r.ImGui_PopID(ctx)
-        r.ImGui_SameLine(ctx, -FLT_MIN, (w - (mute * 2) - mute / 2) * CANVAS.scale)
+        r.ImGui_SameLine(ctx, -FLT_MIN, (w - (mute * 3)) * CANVAS.scale)
         local pan_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 3) -- 3 IS POLARITY INVERT
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_time2")
         local rvh_p, p = MyKnob("", "knob", pan_val, -40000, 40000, "sample")
@@ -1948,7 +1958,7 @@ function SetCollapseData(dollapse_tbl, tbl, i)
 end
 
 local concat = table.concat
-local function DrawButton(tbl, i, name, width, fade, parrent_color)
+local function DrawButton(tbl, i, name, width, fade, parrent_color, cx,cy)
     local is_cut = (CLIPBOARD and CLIPBOARD.cut and CLIPBOARD.guid == tbl[i].guid)
     local SPLITTER = r.ImGui_CreateDrawListSplitter(draw_list)
     r.ImGui_DrawListSplitter_Split(SPLITTER, 2)
@@ -2019,13 +2029,23 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
     end
     --!PM ACTIVE
     local pm_hover
-    if tbl[i].PM_active then
-        r.ImGui_SameLine(ctx, -FLT_MIN, (mute) * CANVAS.scale)
+    if tbl[i].type ~= "ROOT" then
+        --r.ImGui_SameLine(ctx, -FLT_MIN, (mute) * CANVAS.scale)
+        r.ImGui_SameLine(ctx,0,0)
+
         r.ImGui_PushID(ctx, tbl[i].guid .. "PM_ACTIVE")
-        r.ImGui_InvisibleButton(ctx,"##T" , (mute/1.8)*CANVAS.scale, (mute*CANVAS.scale))
+        if r.ImGui_InvisibleButton(ctx, "##T", (mute/1.3) * CANVAS.scale, (mute * CANVAS.scale)) then
+            if PM_INSPECTOR_FXID and PM_INSPECTOR_FXID == tbl[i].FX_ID or not PM_INSPECTOR_FXID then
+                OPEN_PM_INSPECTOR = not OPEN_PM_INSPECTOR
+            end
+            PM_INSPECTOR_FXID = tbl[i].FX_ID
+        end
         pm_hover = r.ImGui_IsItemHovered(ctx)
-        DrawListButton("U", COLOR["active_PM"], pm_hover, true)
-        Tooltip("PARAMETER MODULATION ACTIVE")
+        local color = tbl[i].PM_active and COLOR["active_PM"] or TypToColor(tbl[i])
+    if DrawPreviewHideOriginal(tbl[i].guid) then
+        DrawListButton("U", color, pm_hover, true)
+    end
+        Tooltip("PARAMETER INSPECTOR")
         r.ImGui_PopID(ctx)
     end
 
@@ -2098,7 +2118,8 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
             end
         end
         --! VOLUME
-        r.ImGui_SameLine(ctx, -FLT_MIN, (width - volume) * CANVAS.scale)
+        --r.ImGui_SameLine(ctx, 0, (width - volume) * CANVAS.scale)
+        r.ImGui_SetCursorScreenPos(ctx, cx + (width-mute)*CANVAS.scale, cy)
         if DrawPreviewHideOriginal(tbl[i].guid) then
             r.ImGui_PushID(ctx, tbl[i].guid .. "wet/dry")
             local is_vol
@@ -2121,7 +2142,8 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
             r.ImGui_PopID(ctx)
         end
     end
-    r.ImGui_SameLine(ctx, -FLT_MIN)
+    r.ImGui_SetCursorScreenPos(ctx, cx, cy)
+    --r.ImGui_SameLine(ctx, nil,-width  )
     --! PLUGIN BUTTON
     r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 0)
     --r.ImGui_SameLine(ctx, -FLT_MIN, tbl[i].type == "Container" and s_window_x or 0)
@@ -2169,7 +2191,8 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color)
     -----------------------
 
     color = parrent_color and parrent_color or
-        (ALT and btn_hover and not bypass_hover and not vol_or_enclose_hover and not collapse_hover and not pm_hover) and COLOR["del"] or
+        (ALT and btn_hover and not bypass_hover and not vol_or_enclose_hover and not collapse_hover and not pm_hover) and
+        COLOR["del"] or
         TypToColor(tbl[i])
 
     color = tbl[i].offline and COLOR["offline"] or color
@@ -2209,7 +2232,7 @@ local function DrawPluginsH(x, y, tbl, fade, parrent_pass_color)
     for i = 0, #tbl do
         local width, height = ItemFullSize(tbl[i])
         local new_xs, new_ys, new_xe, new_ye, lw = SetItemPos_H(tbl, i, x, y, width, height, prev_xs, prev_ys)
-      
+
         prev_xs = new_xs and new_xs or prev_xs
         prev_ys = new_ys and new_ys or prev_ys
         prev_xe = new_xe and new_xe or prev_xe
@@ -2218,10 +2241,10 @@ local function DrawPluginsH(x, y, tbl, fade, parrent_pass_color)
         if lw then
             large = lw
         end
-       
+
         if tbl[i].type ~= "Container" and tbl[i].type ~= "INSERT_POINT" then
             r.ImGui_BeginGroup(ctx)
-            local button_hovered = DrawButton(tbl, i, tbl[i].name, width, fade, parrent_pass_color)
+            local button_hovered = DrawButton(tbl, i, tbl[i].name, width, fade, parrent_pass_color, prev_xs, prev_ys)
             parrent_pass_color = (tbl[i].type == "ROOT" and button_hovered and ALT) and COLOR["bypass"] or
                 parrent_pass_color
             enclosed = SerialInsertParaLane(tbl, i, width, height)
@@ -2253,13 +2276,14 @@ local function DrawPluginsH(x, y, tbl, fade, parrent_pass_color)
                 tbl[i].sub[0].no_draw_s = true
             end
             if DrawPreviewHideOriginal(tbl[i].guid) then
-                local button_hovered = DrawButton(tbl, i, tbl[i].name, width, fade, parrent_pass_color)
+                local button_hovered = DrawButton(tbl, i, tbl[i].name, width, fade, parrent_pass_color, prev_xs, prev_ys)
                 local del_color = parrent_pass_color and parrent_pass_color or button_hovered and ALT and COLOR
                     ["bypass"]
                 r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_Alpha(), not tbl[i].bypass and 0.5 or fade)
                 local fade_alpha = not tbl[i].bypass and 0.5 or fade
                 if not is_collapsed then
-                    local cont_h = ((#tbl[i].sub == 0 and para_btn_size/2 or 0) + (height/2) - (para_btn_size/2))*CANVAS.scale
+                    local cont_h = ((#tbl[i].sub == 0 and para_btn_size / 2 or 0) + (height / 2) - (para_btn_size / 2)) *
+                        CANVAS.scale
                     DrawPluginsH(prev_xs, prev_ys + cont_h, tbl[i].sub, fade_alpha, del_color)
                 end
                 r.ImGui_PopStyleVar(ctx)
@@ -2283,12 +2307,13 @@ local function DrawPluginsH(x, y, tbl, fade, parrent_pass_color)
         end
         if IsLastSerial(tbl, i) then
             local serial_x = largest_xe or prev_xe
-            serial_x = (large and prev_xs + (large*CANVAS.scale) > serial_x) and prev_xs + (large*CANVAS.scale) or serial_x
-            
-            SerialButton(tbl, i, serial_x + ( def_s_spacing_x) * CANVAS.scale, y)
+            serial_x = (large and prev_xs + (large * CANVAS.scale) > serial_x) and prev_xs + (large * CANVAS.scale) or
+                serial_x
+
+            SerialButton(tbl, i, serial_x + (def_s_spacing_x) * CANVAS.scale, y)
             prev_xs = serial_x + (ADD_BTN_W + def_s_spacing_x) * CANVAS.scale
             prev_ys = y
-           
+
             largest_xe = nil
             large = nil
         end
@@ -2331,7 +2356,7 @@ local function DrawPlugins(x, y, tbl, fade, parrent_pass_color)
         if lh then large = lh end
         if tbl[i].type ~= "Container" and tbl[i].type ~= "INSERT_POINT" then
             r.ImGui_BeginGroup(ctx)
-            local button_hovered = DrawButton(tbl, i, tbl[i].name, width, fade, parrent_pass_color)
+            local button_hovered = DrawButton(tbl, i, tbl[i].name, width, fade, parrent_pass_color, prev_xs, prev_ys)
             parrent_pass_color = (tbl[i].type == "ROOT" and button_hovered and ALT) and COLOR["bypass"] or
                 parrent_pass_color
             enclosed = SerialInsertParaLane(tbl, i, width, height, prev_xs, prev_ye)
@@ -2353,7 +2378,7 @@ local function DrawPlugins(x, y, tbl, fade, parrent_pass_color)
                 tbl[i].sub[0].no_draw_s = true
             end
             if DrawPreviewHideOriginal(tbl[i].guid) then
-                local button_hovered = DrawButton(tbl, i, tbl[i].name, width, fade, parrent_pass_color)
+                local button_hovered = DrawButton(tbl, i, tbl[i].name, width, fade, parrent_pass_color, prev_xs, prev_ys)
                 local del_color = parrent_pass_color and parrent_pass_color or button_hovered and ALT and COLOR
                     ["bypass"]
                 r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_Alpha(), not tbl[i].bypass and 0.5 or fade)
@@ -2450,25 +2475,28 @@ local function CustomDNDPreview()
         if DRAG_PREVIEW[DRAG_PREVIEW.i].type == "Container" then
             local is_collapsed = CheckCollapse(DRAG_PREVIEW[DRAG_PREVIEW.i], 1, 1)
             local w, h = ItemFullSize(DRAG_PREVIEW[DRAG_PREVIEW.i])
-            if r.ImGui_BeginChild(ctx, "##PREVIEW_DRAW_CONTAINER", (w + def_s_window_x) * CANVAS.scale, (h + def_s_window_y*2)* CANVAS.scale, true) then
-                local x,y = r.ImGui_GetCursorScreenPos(ctx)
-                DrawButton(DRAG_PREVIEW, DRAG_PREVIEW.i, DRAG_PREVIEW[DRAG_PREVIEW.i].name, w, 1)
+            if r.ImGui_BeginChild(ctx, "##PREVIEW_DRAW_CONTAINER", (w + def_s_window_x) * CANVAS.scale, (h + (def_s_window_y * 2)) * CANVAS.scale, true) then
+                local x, y = r.ImGui_GetCursorScreenPos(ctx)
+                DrawButton(DRAG_PREVIEW, DRAG_PREVIEW.i, DRAG_PREVIEW[DRAG_PREVIEW.i].name, w - def_s_spacing_x, 1, nil, x, y)
                 if not is_collapsed then
                     if V_LAYOUT == true then
                         DrawPlugins(MX + off_x + (w / 2.2) * CANVAS.scale, MY + def_btn_h * CANVAS.scale,
                             DRAG_PREVIEW[DRAG_PREVIEW.i].sub, 1)
                     else
-                        DrawPluginsH(x - (para_btn_size/2) * CANVAS.scale, y + ((h/2) - (para_btn_size/2))* CANVAS.scale,
-                        DRAG_PREVIEW[DRAG_PREVIEW.i].sub, 1)
+                        DrawPluginsH(x - (para_btn_size / 2) * CANVAS.scale,
+                            y + ((h / 2) - (para_btn_size / 2)) * CANVAS.scale,
+                            DRAG_PREVIEW[DRAG_PREVIEW.i].sub, 1)
                     end
                 end
                 r.ImGui_EndChild(ctx)
             end
         else
             local width, height = ItemFullSize(DRAG_PREVIEW[DRAG_PREVIEW.i])
-            width = HelperWidth(DRAG_PREVIEW[DRAG_PREVIEW.i], width)
-            if r.ImGui_BeginChild(ctx, "##PREVIEW_DRAW_FX", (width + def_s_window_x) * CANVAS.scale, (height + def_s_window_y * 2) * CANVAS.scale, true) then
-                DrawButton(DRAG_PREVIEW, DRAG_PREVIEW.i, DRAG_PREVIEW[DRAG_PREVIEW.i].name, width, 1)
+            --width = HelperWidth(DRAG_PREVIEW[DRAG_PREVIEW.i], width)
+            if r.ImGui_BeginChild(ctx, "##PREVIEW_DRAW_FX", (width + def_s_window_x*2) * CANVAS.scale, (height + def_s_window_y * 2) * CANVAS.scale, true) then
+                local x, y = r.ImGui_GetCursorScreenPos(ctx)
+                --r.ImGui_SetCursorScreenPos(ctx,0,0)
+                DrawButton(DRAG_PREVIEW, DRAG_PREVIEW.i, DRAG_PREVIEW[DRAG_PREVIEW.i].name, width, 1, nil, x, y)
                 r.ImGui_EndChild(ctx)
             end
         end
@@ -2479,16 +2507,18 @@ local function CustomDNDPreview()
                 r.ImGui_SetNextWindowBgAlpha(ctx, 0.6)
                 r.ImGui_SetCursorScreenPos(ctx, MX - px, MY + off_y)
                 local H_OFF = not V_LAYOUT and para_btn_size or 0
-                if r.ImGui_BeginChild(ctx, "##PEAK_DRAW_CONTAINER", PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].W * CANVAS.scale, (H_OFF + PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].H) * CANVAS.scale, true) then
-                    local x,y = r.ImGui_GetCursorScreenPos(ctx)
+                if r.ImGui_BeginChild(ctx, "##PEAK_DRAW_CONTAINER", PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].W* CANVAS.scale, (H_OFF + PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].H) * CANVAS.scale, true) then
+                    local x, y = r.ImGui_GetCursorScreenPos(ctx)
                     DrawButton(PREVIEW_TOOLTIP, PREVIEW_TOOLTIP.i, PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].name,
-                    PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].W - s_window_x, 1)
-                        if V_LAYOUT == true then
-                           DrawPlugins(MX - (def_s_window_x * 4) * CANVAS.scale, MY + def_btn_h * CANVAS.scale,
-                           PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].sub, 1)
-                        else
-                            DrawPluginsH(x - (para_btn_size/2) * CANVAS.scale, y + ((PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].H/2)- (para_btn_size/2)) * CANVAS.scale,  PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].sub, 1)
-                        end
+                        PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].W - s_window_x, 1, nil, x, y)
+                    if V_LAYOUT == true then
+                        DrawPlugins(MX - (def_s_window_x * 4) * CANVAS.scale, MY + def_btn_h * CANVAS.scale,
+                            PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].sub, 1)
+                    else
+                        DrawPluginsH(x - (para_btn_size / 2) * CANVAS.scale,
+                            y + ((PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].H / 2) - (para_btn_size / 2)) * CANVAS.scale,
+                            PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].sub, 1)
+                    end
                     r.ImGui_EndChild(ctx)
                 end
             end

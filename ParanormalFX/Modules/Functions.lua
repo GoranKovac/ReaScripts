@@ -4,6 +4,44 @@
 local r = reaper
 local find = string.find
 
+local INV_TAU = 1 / (2 * math.pi)
+local sin, floor, abs, pi = math.sin, math.floor, math.abs, math.pi
+
+function Sine(t, h, a, f)
+    f = f * (pi*2)
+    local s = sin(t * f) * a
+    return s, s
+end
+
+function Square(t, h, a, f)
+    local temp_sync = 120/60
+    f = f * (pi*2)
+    local s = sin(t * f*temp_sync)
+    s = abs(s) / s * a
+    return s, s
+end
+
+function SawtoothR(t, h, a, f)
+    f = f * (pi*2)
+    local s = (t * f) * INV_TAU
+    s = 2 * (s - (0.5 + s) // 1) * a
+    return s, s
+end
+
+function SawtoothL(t, h, a, f)
+    f = f * (pi*2)
+    local s = (t * f) * -INV_TAU
+    s = 2 * (s - (0.5 + s) // 1) * a
+    return s, s
+end
+
+function Triangle(t, h, a, f)
+    f = f * (pi*2)
+    local s = (t * f) * INV_TAU
+    s = (2 * abs(2 * (s - (0.5 + s) // 1)) - 1) * a
+    return s, s
+end
+
 function OpenFX(id)
     r.Undo_BeginBlock()
     local open = r.TrackFX_GetFloatingWindow(TRACK, id)
@@ -154,13 +192,13 @@ function LoadSlot(x)
 end
 
 local min = math.min
-function ringInsert(buffer, value)
+function RingInsert(buffer, value)
     buffer[buffer.ptr] = value
     buffer.ptr = (buffer.ptr + 1) % buffer.max_size
     buffer.size = min(buffer.size + 1, buffer.max_size)
 end
 
-function ringEnum(buffer)
+function RingEnum(buffer)
     if buffer.size < 1 then return function() end end
 
     local i = 0
@@ -174,17 +212,65 @@ function ringEnum(buffer)
     end
 end
 
+peak_width = 35
+function DrawPeak(dl, tbl, x, y, w, h)
+    -- TODO: use w to skip some samples
+
+    if tbl.size < 1 then return end
+
+    local half_h = h / 2
+    local zero_y = y + half_h
+
+    local points = r.new_array(tbl.size * 2)
+
+    local n = 0
+    for spl_stereo in RingEnum(tbl) do
+        local val = (spl_stereo[1] + spl_stereo[2]) / 2
+        --val = val * 0.2
+        local i = 1 + (n * 2)
+        points[i] = x + (i*0.3)--* 0.2)
+        points[i + 1] = zero_y + (half_h * val)
+
+        n = n + 1
+    end
+
+    r.ImGui_DrawList_AddPolyline(dl, points, 0xFFFFFFFF, 0, 2)
+end
+
+function GetPeakInfo(tbl, lfo_type, freq, h)
+    local t = r.ImGui_GetTime(ctx)
+    local wf
+    if lfo_type == "0" then
+        wf = Sine(t, 1, 1, freq)
+    elseif lfo_type == "1" then
+        wf = Square(t, 1, 1, freq)
+    elseif lfo_type == "2" then
+        wf = SawtoothL(t, 1, 1, freq)
+    elseif lfo_type == "3" then
+        wf = SawtoothR(t, 1, 1, freq)
+    elseif lfo_type == "4" then
+        wf = Triangle(t, 1, 1, freq)
+    elseif lfo_type == "5" then
+        -- random
+        --wf = Triangle(t, 1, 1, freq * 2)    
+    end
+    
+    RingInsert(tbl, { wf, wf })
+end
+
 function CheckPMActive(fx_id)
     local found = false
     for p_id = 0, r.TrackFX_GetNumParams(TRACK, fx_id) do
-        -- check if fx parameter has modulators: LFO, ACS, or link
-
         local rv, mod = r.TrackFX_GetNamedConfigParm(TRACK, fx_id, "param." .. p_id .. ".mod.active")
         local rv, acs = r.TrackFX_GetNamedConfigParm(TRACK, fx_id, "param." .. p_id .. ".acs.active")
         local rv, lfo = r.TrackFX_GetNamedConfigParm(TRACK, fx_id, "param." .. p_id .. ".lfo.active")
         if mod == "1" or lfo == "1" or acs == "1" then found = true end
     end
     return found
+end
+
+function MonitorLastTouchedFX()
+    LASTTOUCH_RV, LASTTOUCH_TR_NUM, _, _, LASTTOUCH_FX_ID, LASTTOUCH_P_ID = r.GetTouchedOrFocusedFX(0)
 end
 
 function AddFX(name, id, parallel)
