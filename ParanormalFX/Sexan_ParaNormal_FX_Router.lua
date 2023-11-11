@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.34.59
+-- @version 1.34.591
 -- @changelog
---  Add Drawlistbutton to inspector for color hovering
+--  Make collapsed button use bypass button when bypassed
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf

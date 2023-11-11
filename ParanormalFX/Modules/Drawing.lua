@@ -2042,6 +2042,7 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color, cx,cy)
         end
         pm_hover = r.ImGui_IsItemHovered(ctx)
         local color = tbl[i].PM_active and COLOR["active_PM"] or TypToColor(tbl[i])
+        color = tbl[i].bypass and color or COLOR["bypass"]
     if DrawPreviewHideOriginal(tbl[i].guid) then
         DrawListButton("U", color, pm_hover, true)
     end
