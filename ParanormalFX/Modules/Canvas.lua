@@ -521,7 +521,7 @@ PEAK_TBL = { ptr = 0, size = 0, max_size = 25 }
 local tbl_flags = ImGui.TableFlags_SizingFixedFit()| ImGui.TableFlags_Borders() | ImGui.TableFlags_SizingFixedFit()
 local function PMTable()
     if not PM_INSPECTOR_FXID then return end
-
+    local COLOR = GetColorTbl()
     if ImGui.BeginTable(ctx, 'ALL_PARAMETERS', 4, tbl_flags) then
         ImGui.TableSetupColumn(ctx, 'PARAMETER', r.ImGui_TableColumnFlags_WidthStretch())
         ImGui.TableSetupColumn(ctx, 'PMD')
@@ -558,6 +558,8 @@ local function PMTable()
                                     mod_vis == "0" and "1" or "0")
                             end
                         end
+                        local color = (ALT and r.ImGui_IsItemHovered(ctx)) and COLOR["del"] or COLOR["n"]
+                        DrawListButton(p_name, color, r.ImGui_IsItemHovered(ctx))
                         r.ImGui_PopID(ctx)
                     elseif column == 1 then
                         if r.ImGui_Checkbox(ctx, "##PM" .. PM_INSPECTOR_FXID .. p_id, mod == "1") then

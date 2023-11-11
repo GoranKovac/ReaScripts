@@ -1,14 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.34.58
+-- @version 1.34.59
 -- @changelog
---  Fixed offset when docked
---  Fixed few graphical issues
---  Added Parameters button
---  Added parameters inspector
---  Added Last touched auto-config
---  Fixed initial x,y to respect selected layout mode
+--  Add Drawlistbutton to inspector for color hovering
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
