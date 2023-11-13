@@ -1,7 +1,7 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.34.6
+-- @version 1.35
 -- @changelog
 --  LFO type Preview (shape,speed)
 --  Parameter list menu keeps open while selection
