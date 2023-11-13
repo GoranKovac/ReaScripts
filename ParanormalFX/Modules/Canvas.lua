@@ -521,12 +521,14 @@ PEAK_TBL = { ptr = 0, size = 0, max_size = 25 }
 local tbl_flags = ImGui.TableFlags_SizingFixedFit()| ImGui.TableFlags_Borders() | ImGui.TableFlags_SizingFixedFit()
 local function PMTable()
     if not PM_INSPECTOR_FXID then return end
-    local COLOR = GetColorTbl()
-    if ImGui.BeginTable(ctx, 'ALL_PARAMETERS', 4, tbl_flags) then
+    --local COLOR = GetColorTbl()
+    local columns = 5
+    if ImGui.BeginTable(ctx, 'ALL_PARAMETERS', columns, tbl_flags) then
         ImGui.TableSetupColumn(ctx, 'PARAMETER', r.ImGui_TableColumnFlags_WidthStretch())
         ImGui.TableSetupColumn(ctx, 'PMD')
         ImGui.TableSetupColumn(ctx, 'ACS')
         ImGui.TableSetupColumn(ctx, 'LFO')
+        ImGui.TableSetupColumn(ctx, 'SHAPE')
         --ImGui.TableSetupColumn(ctx, 'ENV')
         --ImGui.TableSetupColumn(ctx, 'INP')
         --ImGui.TableSetupColumn(ctx, 'TYP')
@@ -534,17 +536,23 @@ local function PMTable()
         for p_id = 0, r.TrackFX_GetNumParams(TRACK, PM_INSPECTOR_FXID) do
             local _, p_name = r.TrackFX_GetParamName(TRACK, PM_INSPECTOR_FXID, p_id)
             local _, mod = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.active")
+            local _, mod_vis = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.visible")
             local _, acs = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".acs.active")
             local _, lfo = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.active")
-            local _, mod_vis = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.visible")
+            local _, lfo_speed = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.speed")
+            local _, lfo_shape = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.shape")
             local fx_env = r.GetFXEnvelope(TRACK, PM_INSPECTOR_FXID, p_id, false)
-            local has_points = (fx_env and r.CountEnvelopePoints(fx_env) ~= 0)
+            local has_points = (fx_env and r.CountEnvelopePoints(fx_env) > 2)
             if mod == "1" or acs == "1" or lfo == "1" or has_points then
                 ImGui.TableNextRow(ctx)
-                for column = 0, 3 do
+                for column = 0, columns - 1 do
                     ImGui.TableSetColumnIndex(ctx, column)
                     if column == 0 then
                         r.ImGui_PushID(ctx, PM_INSPECTOR_FXID .. p_id .. "PM_ACTIVE")
+                        if ALT then
+                            r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ButtonHovered(), 0xBB2222FF)
+                            r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ButtonActive(), 0xDD2222FF)
+                        end
                         if r.ImGui_Button(ctx, p_name, -FLT_MIN, 0.0) then
                             if ALT then
                                 r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.active",
@@ -558,8 +566,11 @@ local function PMTable()
                                     mod_vis == "0" and "1" or "0")
                             end
                         end
-                        local color = (ALT and r.ImGui_IsItemHovered(ctx)) and COLOR["del"] or COLOR["n"]
-                        DrawListButton(p_name, color, r.ImGui_IsItemHovered(ctx))
+                        if ALT then
+                            r.ImGui_PopStyleColor(ctx, 2)
+                        end
+                        --local color = (ALT and r.ImGui_IsItemHovered(ctx)) and COLOR["del"] or COLOR["n"]
+                        --DrawListButton(p_name, color, r.ImGui_IsItemHovered(ctx))
                         r.ImGui_PopID(ctx)
                     elseif column == 1 then
                         if r.ImGui_Checkbox(ctx, "##PM" .. PM_INSPECTOR_FXID .. p_id, mod == "1") then
@@ -576,25 +587,50 @@ local function PMTable()
                             r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.active",
                                 lfo == "0" and "1" or "0")
                         end
-                    -- elseif column == 4 then
-                    --     if r.ImGui_Checkbox(ctx, "##ENV" .. PM_INSPECTOR_FXID .. p_id, has_points) then
-                    --         if not fx_env then
-                    --             r.GetFXEnvelope(TRACK, PM_INSPECTOR_FXID, p_id, true)
-                    --             r.TrackList_AdjustWindows(false)
-                    --         end
-                    --         if fx_env then
-                    --             local retval, env_chunk = r.GetEnvelopeStateChunk(fx_env, "", true)
-                    --             local vis = env_chunk:match("VIS (%d+)")
-                    --             if vis == "1" then
-                    --                 env_chunk = env_chunk:gsub("VIS 1", "VIS 0", 1)
-                    --             elseif vis == "0" then
-                    --                 env_chunk = env_chunk:gsub("VIS 0", "VIS 1", 1)
-                    --             end
-                    --             r.SetEnvelopeStateChunk(fx_env, env_chunk, false)
-                    --             r.TrackList_AdjustWindows(false)
-                    --         end
-                            -- end
-                       -- end
+                    elseif column == 4 then
+                        local xx, yy = r.ImGui_GetCursorScreenPos(ctx)
+                        local aw = r.ImGui_GetContentRegionAvail(ctx)
+                        local x_speed = ReaperPhase(tonumber(lfo_speed))
+                        local points, y_pos = GetWaveType(tonumber(lfo_shape), x_speed, xx, yy, aw, (21 - 2))
+                        if y_pos and lfo == "1" then
+                            if lfo_shape ~= "0" then
+                                for i = 1, #points do
+                                    r.ImGui_DrawList_AddLine(draw_list, xx + points[i][1], yy + points[i][2],
+                                        xx + points[i][3], yy + points[i][4], 0xFFFFFF88)
+                                end
+                            else
+                                r.ImGui_DrawList_AddPolyline(draw_list, points, 0xFFFFFF88, 0, 1)
+                            end
+                            r.ImGui_DrawList_AddCircleFilled(draw_list, xx + (x_speed * aw), yy + y_pos + 10, 2.5,
+                                0xFF0000FF)
+                        end
+                        --elseif column == 5 then
+                        --   if r.ImGui_Checkbox(ctx, "##LFO" .. PM_INSPECTOR_FXID .. p_id, has_points) then
+                        --if not fx_env then
+                        --            r.GetFXEnvelope(TRACK, PM_INSPECTOR_FXID, p_id, true)
+                        -- end
+                        -- r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.active",
+                        --      lfo == "0" and "1" or "0")
+                        --   end
+                        -- elseif column == 4 then
+                        --     if r.ImGui_Checkbox(ctx, "##ENV" .. PM_INSPECTOR_FXID .. p_id, has_points) then
+                        --         if not fx_env then
+                        --             r.GetFXEnvelope(TRACK, PM_INSPECTOR_FXID, p_id, true)
+                        --             r.TrackList_AdjustWindows(false)
+                        --         end
+                        --         if fx_env then
+                        --             local retval, env_chunk = r.GetEnvelopeStateChunk(fx_env, "", true)
+                        --             local vis = env_chunk:match("VIS (%d+)")
+                        --             if vis == "1" then
+                        --                 env_chunk = env_chunk:gsub("VIS 1", "VIS 0", 1)
+                        --             elseif vis == "0" then
+                        --                 env_chunk = env_chunk:gsub("VIS 0", "VIS 1", 1)
+                        --             end
+                        --             r.SetEnvelopeStateChunk(fx_env, env_chunk, false)
+                        --             r.TrackList_AdjustWindows(false)
+                        --         end
+                        -- end
+                        -- end
                         --  elseif column == 4 then
                         -- elseif column == 5 then
                         --     --r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_WindowPadding(), 0, 0)
@@ -625,7 +661,8 @@ function DrawPMInspector()
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x000000EE)
     r.ImGui_SetNextWindowPos(ctx, WX + 5, WY + 65)
     local total_columns = 2
-    if r.ImGui_BeginChild(ctx, "PM_INSPECTOR", 300, 400, true) then
+    if r.ImGui_BeginChild(ctx, "PM_INSPECTOR", 350, 400, true) then
+        INSPECTOR_HOVERED = r.ImGui_IsWindowHovered(ctx)
         local retval, buf = r.TrackFX_GetFXName(TRACK, PM_INSPECTOR_FXID)
         local aw = r.ImGui_GetContentRegionAvail(ctx)
         r.ImGui_Text(ctx, "PARAMETER INSPECTOR")
@@ -707,10 +744,34 @@ function DrawPMInspector()
         if r.ImGui_BeginMenu(ctx, "PARAMETER LIST") then
             for p_id = 0, r.TrackFX_GetNumParams(TRACK, PM_INSPECTOR_FXID) do
                 local rv, p_name = r.TrackFX_GetParamName(TRACK, PM_INSPECTOR_FXID, p_id)
+                local _, mod = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.active")
+                local _, acs = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".acs.active")
+                local _, lfo = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.active")
+                local fx_env = r.GetFXEnvelope(TRACK, PM_INSPECTOR_FXID, p_id, false)
+                local has_points = (fx_env and r.CountEnvelopePoints(fx_env) > 2)
+                local is_there = mod == "1" or acs == "1" or lfo == "1" or has_points
                 if rv and #p_name ~= 0 then
-                    if r.ImGui_MenuItem(ctx, p_name) then
-                        r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.active", "1")
+                    if ALT then
+                        r.ImGui_PushStyleColor(ctx, r.ImGui_Col_HeaderHovered(), 0xBB2222FF)
+                        r.ImGui_PushStyleColor(ctx, r.ImGui_Col_HeaderActive(), 0xBB2222FF)
                     end
+                    if is_there then r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Header(), 0x49cc8588) end
+                    if r.ImGui_Selectable(ctx, p_name, is_there, r.ImGui_SelectableFlags_DontClosePopups()) then
+                        if ALT then
+                            r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.active",
+                                "0")
+                            r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".acs.active",
+                                "0")
+                            r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.active",
+                                "0")
+                        else
+                            r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.active", "1")
+                        end
+                    end
+                    if ALT then
+                        r.ImGui_PopStyleColor(ctx, 2)
+                    end
+                    if is_there then r.ImGui_PopStyleColor(ctx) end
                 end
             end
             if not child_hovered then
@@ -735,6 +796,7 @@ function DrawUserSettings()
     r.ImGui_SetNextWindowPos(ctx, WX + 5, WY + 65)
 
     if r.ImGui_BeginChild(ctx, "USERSETTIGS", 220, 718, true) then
+        SETTINGS_HOVERED = r.ImGui_IsWindowHovered(ctx)
         local COLOR = GetColorTbl()
         if r.ImGui_Button(ctx, "RESCAN FX LIST") then
             RescanFxList()
@@ -939,6 +1001,7 @@ function UI()
     local retval, tr_ID = r.GetTrackName(TRACK)
     local tr_name_w = CalculateItemWH({ name = tr_ID })
     if r.ImGui_BeginChild(ctx, "TopButtons", 170 + tr_name_w + 40, def_btn_h + (s_window_y * 2), true) then
+        UI_HOVERED = r.ImGui_IsWindowHovered(ctx)
         local child_hovered = r.ImGui_IsWindowHovered(ctx,
             r.ImGui_HoveredFlags_ChildWindows() |  r.ImGui_HoveredFlags_AllowWhenBlockedByPopup() |
             r.ImGui_HoveredFlags_AllowWhenBlockedByActiveItem())

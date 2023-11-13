@@ -115,6 +115,13 @@ local HELPERS = {
         name = "5-Band Splitter",
         alt_name = "loser/5BandSplitter",
     },
+    -- {
+    --     fx = "JS:LFO",
+    --     fx_name = "FX LFO",
+    --     name = "LFO",
+    --     alt_name = "LFO.jsfx",
+    --     helper = "FX LFO"
+    -- },
 }
 
 local my_jsfx = {
@@ -913,6 +920,8 @@ local function HelperWidth(tbl, width)
     elseif tbl.name:find("4-Band Splitter", nil, true) then
         width = width + name_margin * 3
     elseif tbl.name:find("5-Band Splitter", nil, true) then
+        width = width + name_margin * 4
+    elseif tbl.name:find("FX LFO", nil, true) then
         width = width + name_margin * 4
     end
     return width
@@ -1945,8 +1954,47 @@ local function DrawHelper(tbl, i, w)
             if not btn_hover then btn_hover = r.ImGui_IsItemHovered(ctx) end
         end
         if not btn_hover then btn_hover = r.ImGui_IsItemHovered(ctx) end
+    elseif tbl[i].name:find("LFO",nil,true) then
+        --new_width = true
+        --r.ShowConsoleMsg("HERE")
+        -- local x = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 20) -- x
+        -- local y = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 16) -- y
+        -- local shape = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 1) -- shape
+        -- local xx,yy = r.ImGui_GetCursorScreenPos(ctx)
+        -- r.ImGui_DrawList_AddCircleFilled( draw_list, xx + mute + (mute/1.2) + (x* (w/6)), yy + def_btn_h/2 + (-y*(def_btn_h/3)), 4, 0xFF0000FF )
+        --local points = generateWave(w/6, def_btn_h/3, shape)
+        -- for j = 1, #points, 2 do
+        --     r.ImGui_DrawList_AddLine(draw_list, xx + mute + (mute/1.2) + j, yy + (def_btn_h/2) + points[j],xx + mute + (mute/1.2) + j+1, yy+(def_btn_h/2)+points[j], 0xFFFFFFFF)
+        -- end
+
     end
     return btn_hover, new_width
+end
+
+function generateWave(w, h, shape)
+    local samples = {}
+   
+    for i = 1, w do
+        local t = i / w
+        local sample
+        if shape == 0 then
+            sample = Sine(t, h, 1)
+        elseif shape == 1 then
+            sample = -Square(t, h, 1)
+        elseif shape == 2 then
+            sample = SawtL(t, h, 1)
+        elseif shape == 3 then
+            sample = SawtR(t, h, 1)
+        elseif shape == 4 then
+            sample = -Triangle(t, h, 1)
+        elseif shape == 5 then
+            sample = Square(t, h, 1)
+        end
+        --Sine(t, def_btn_h/3, 1)
+        table.insert(samples, sample)
+    end
+ 
+    return samples
 end
 
 function SetCollapseData(dollapse_tbl, tbl, i)

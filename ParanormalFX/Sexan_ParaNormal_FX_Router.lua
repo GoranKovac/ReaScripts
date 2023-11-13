@@ -1,9 +1,12 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.34.591
+-- @version 1.34.6
 -- @changelog
---  Make collapsed button use bypass button when bypassed
+--  LFO type Preview (shape,speed)
+--  Parameter list menu keeps open while selection
+--  Parameter list menu highlight enabled parameters
+--  Parameter list menu ALT CLICK disable all parameters
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -130,7 +133,7 @@ TOOLTIPS                = true
 SHOW_C_CONTENT_TOOLTIP  = true
 V_LAYOUT                = false
 
-OPEN_PM_INSPECTOR = false
+OPEN_PM_INSPECTOR       = false
 
 -- profiler = dofile(reaper.GetResourcePath() ..
 --   '/Scripts/ReaTeam Scripts/Development/cfillion_Lua profiler.lua')
@@ -303,9 +306,20 @@ function UpdateZoomFont()
 end
 
 local old_time = r.time_precise()
+local start_time = old_time
+local old_play = r.GetPlayState() & 1
+local old_ex_pos = r.GetCursorPosition()
 local function UpdateDeltaTime()
     local now_time = r.time_precise()
-    local DT = now_time - old_time
+    TIME_SINCE_START = now_time - start_time
+
+    if r.GetPlayState() & 1 ~= old_play or old_ex_pos ~= r.GetCursorPosition() then
+        start_time = r.time_precise()
+        old_play = r.GetPlayState() & 1
+        old_ex_pos = r.GetCursorPosition()
+    end
+
+    DT = now_time - old_time
     old_time = now_time
     FLUX.update(DT)
 end
@@ -319,7 +333,6 @@ end
 local function Main()
     UpdateDeltaTime()
     UpdateZoomFont()
-    -- UpdateStyle()
     if WANT_REFRESH then
         WANT_REFRESH = nil
         UpdateChainsTrackTemplates(CAT)
@@ -368,11 +381,11 @@ local function Main()
         r.ImGui_PopFont(ctx)
         r.ImGui_PushFont(ctx, CUSTOM_FONT and SYSTEM_FONT_FACTORY or DEFAULT_FONT_FACTORY)
         UI()
-        if OPEN_SETTINGS then 
-            DrawUserSettings() 
+        if OPEN_SETTINGS then
+            DrawUserSettings()
             if OPEN_PM_INSPECTOR then OPEN_PM_INSPECTOR = nil end
         end
-        if OPEN_PM_INSPECTOR then 
+        if OPEN_PM_INSPECTOR then
             DrawPMInspector()
         else
             if PM_INSPECTOR_FXID then PM_INSPECTOR_FXID = nil end
@@ -385,7 +398,10 @@ local function Main()
             not r.ImGui_IsPopupOpen(ctx, "RIGHT_CLICK_MENU") and
             not r.ImGui_IsPopupOpen(ctx, "INSERT_POINTS_MENU") and
             not DND_MOVE_FX and
-            not DND_ADD_FX then
+            not DND_ADD_FX and
+            not INSPECTOR_HOVERED and
+            not UI_HOVERED and
+            not SETTINGS_HOVERED then
             r.ImGui_OpenPopup(ctx, 'FX LIST')
         end
         IS_DRAGGING_RIGHT_CANVAS = r.ImGui_IsMouseDragging(ctx, 1, 2)
@@ -402,8 +418,6 @@ local function Main()
         pdefer(Main)
     end
 
-    --UpdateScroll()
-    -- updateZoom()
     if FONT_UPDATE then FONT_UPDATE = nil end
     NEXT_FRAME = true
     -- if MOUSE_UP then
@@ -423,10 +437,6 @@ end
 
 r.atexit(Exit)
 pdefer(Main)
-
-if r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseClicked(ctx,1) then
-    ACTIVE_LANE = i
-end
 
 -- profiler.attachToWorld() -- after all functions have been defined
 -- profiler.run()

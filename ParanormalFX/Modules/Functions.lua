@@ -5,41 +5,81 @@ local r = reaper
 local find = string.find
 
 local INV_TAU = 1 / (2 * math.pi)
-local sin, floor, abs, pi = math.sin, math.floor, math.abs, math.pi
+local sin, floor, abs, pi, fmod, randomseed, random = math.sin, math.floor, math.abs, math.pi, math.fmod, math.randomseed, math.random
 
-function Sine(t, h, a, f)
+function Wrap(number)
+    return number <= 1 and number or number - 1
+end
+
+function ReaperPhase(speed)
+    return fmod(TIME_SINCE_START*speed, 1.0)
+end
+
+function Sine(t, a, f)
     f = f * (pi*2)
-    local s = sin(t * f) * a
+    local s = -sin(t * f) * a
     return s, s
 end
 
-function Square(t, h, a, f)
-    local temp_sync = 120/60
+function Square(t, a, f)
     f = f * (pi*2)
-    local s = sin(t * f*temp_sync)
+    local s = sin(t * f)
     s = abs(s) / s * a
     return s, s
 end
 
-function SawtoothR(t, h, a, f)
+function SawtL(t, a, f)
     f = f * (pi*2)
-    local s = (t * f) * INV_TAU
-    s = 2 * (s - (0.5 + s) // 1) * a
-    return s, s
+    return ((f*t) * 2 - a)
+    --local s = (t) * INV_TAU
+	--s = 2 * (s - floor(0.5 + s)) * a
+	--return s, s
 end
 
-function SawtoothL(t, h, a, f)
+function SawtR(t, a, f)
     f = f * (pi*2)
-    local s = (t * f) * -INV_TAU
-    s = 2 * (s - (0.5 + s) // 1) * a
-    return s, s
+    -- local s = (t * f) * -INV_TAU
+    -- s = 2 * (s - (0.5 + s) // 1) * a
+    -- return s, s
+    return ((f*t) * -2 + a)
 end
 
-function Triangle(t, h, a, f)
+function Triangle(t, a, f)
     f = f * (pi*2)
     local s = (t * f) * INV_TAU
     s = (2 * abs(2 * (s - (0.5 + s) // 1)) - 1) * a
     return s, s
+end
+
+function GetWaveType(shape, t, x, y, w, h)
+    local shape_points = {}
+    if shape == 0 then
+        local points = {}
+        for i = 1, w, 2 do
+            local t2 = 1/w
+            local yval = Sine(t2*i, h/2-2, 1)
+            points[#points+1] = x + i
+            points[#points+1] = y + yval + (h/2)
+        end
+        return r.new_array(points,#points), Sine(t, h/2, 1)
+    elseif shape == 1 then
+        shape_points = {{0,2,w/2,2}, {w/2,2, w/2,h-2}, {w/2,h-2, w,h-2}}
+        return shape_points, -Square(t, (h/2)-2, 1)
+    elseif shape == 2 then
+        shape_points = {{0,2,w,h-2}}
+        return shape_points, SawtL(t, h/2, 1)
+    elseif shape == 3 then
+        shape_points = {{0,h-2, w,2}}
+        return shape_points, SawtR(t, h/2, 1)
+    elseif shape == 4 then
+        shape_points = {{0, h-2, w/2,2}, {w/2,2, w,h-2}}
+        return shape_points, -Triangle(t, h/2, 1)
+    elseif shape == 5 then
+        math.randomseed(r.time_precise())
+        local rnd_shape = math.random(0,4)
+        local _, rnd_y = GetWaveType(rnd_shape, t, x, y, w, h)
+        return shape_points, rnd_y
+    end
 end
 
 function OpenFX(id)
