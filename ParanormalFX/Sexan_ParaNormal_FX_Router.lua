@@ -1,12 +1,11 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.35
+-- @version 1.35.1
 -- @changelog
---  LFO type Preview (shape,speed)
---  Parameter list menu keeps open while selection
---  Parameter list menu highlight enabled parameters
---  Parameter list menu ALT CLICK disable all parameters
+--  Drag And Drop Copy ACS/LFO Settings
+--  Parameter list drop down menu toggles parameter modulation on/off
+--  Enabling ACS sets default channel to 1/2 only if not set already
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -368,6 +367,7 @@ local function Main()
     ImGui.SetNextWindowSize(ctx, 500, 500, ImGui.Cond_FirstUseEver())
 
     local visible, open = r.ImGui_Begin(ctx, 'PARANORMAL FX ROUTER###PARANORMALFX', true, WND_FLAGS)
+
     ImGui.PopStyleColor(ctx)
     if visible then
         MonitorLastTouchedFX()
@@ -413,7 +413,7 @@ local function Main()
         ImGui.End(ctx)
     end
     if ESC and ESC_CLOSE then open = nil end
-
+   
     if open then
         pdefer(Main)
     end

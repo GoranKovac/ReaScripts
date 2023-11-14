@@ -285,9 +285,9 @@ function GetPeakInfo(tbl, lfo_type, freq, h)
     elseif lfo_type == "1" then
         wf = Square(t, 1, 1, freq)
     elseif lfo_type == "2" then
-        wf = SawtoothL(t, 1, 1, freq)
+        wf = SawtL(t, 1, 1, freq)
     elseif lfo_type == "3" then
-        wf = SawtoothR(t, 1, 1, freq)
+        wf = SawtR(t, 1, 1, freq)
     elseif lfo_type == "4" then
         wf = Triangle(t, 1, 1, freq)
     elseif lfo_type == "5" then
@@ -304,7 +304,9 @@ function CheckPMActive(fx_id)
         local rv, mod = r.TrackFX_GetNamedConfigParm(TRACK, fx_id, "param." .. p_id .. ".mod.active")
         local rv, acs = r.TrackFX_GetNamedConfigParm(TRACK, fx_id, "param." .. p_id .. ".acs.active")
         local rv, lfo = r.TrackFX_GetNamedConfigParm(TRACK, fx_id, "param." .. p_id .. ".lfo.active")
-        if mod == "1" or lfo == "1" or acs == "1" then found = true end
+        local fx_env = r.GetFXEnvelope(TRACK, fx_id, p_id, false)
+        local has_points = (fx_env and r.CountEnvelopePoints(fx_env) > 2)
+        if mod == "1" or lfo == "1" or acs == "1" or has_points then found = true end
     end
     return found
 end

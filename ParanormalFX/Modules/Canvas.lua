@@ -517,11 +517,91 @@ local function RevertVertical()
     --LAST_V_BTN_W, LAST_V_BTN_H, LAST_NEW_Y = nil, nil, nil
 end
 
-PEAK_TBL = { ptr = 0, size = 0, max_size = 25 }
+--PEAK_TBL = { ptr = 0, size = 0, max_size = 25 }
+
+local ACS_TBL = { "active", "dir", "strength", "attack", "release", "dblo", "dbhi", "x2", "y2", }
+
+local function DNDACS_SRC(p_id)
+    if not PM_INSPECTOR_FXID then return end
+    --param.X.acs.[active,dir,strength,attack,release,dblo,dbhi,chan,stereo,x2,y2] : parameter modulation ACS state
+    if r.ImGui_BeginDragDropSource(ctx) then
+        local data = {}
+        for i = 1, #ACS_TBL do
+            local _, buf = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID,
+                "param." .. p_id .. ".acs." .. ACS_TBL[i])
+            data[i] = buf
+        end
+        r.ImGui_Text(ctx, "COPY ACS")
+        r.ImGui_SetDragDropPayload(ctx, 'DND ACS', table.concat(data, ","))
+        r.ImGui_EndDragDropSource(ctx)
+    end
+end
+
+local function DNDACS_TARGET(p_id)
+    if not PM_INSPECTOR_FXID then return end
+    if r.ImGui_BeginDragDropTarget(ctx) then
+        local ret, payload = r.ImGui_AcceptDragDropPayload(ctx, 'DND ACS')
+        r.ImGui_EndDragDropTarget(ctx)
+        if ret then
+            local data = {}
+            for val in payload:gmatch('([^,]+)') do
+                data[#data + 1] = val
+            end
+            if #data ~= 0 then
+                r.Undo_BeginBlock()
+
+                for i = 1, #ACS_TBL do
+                    r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".acs." .. ACS_TBL[i],
+                        data[i])
+                end
+                EndUndoBlock("ACS COPY SETTINGS")
+            end
+        end
+    end
+end
+
+local LFO_TBL = { "active", "dir", "phase", "speed", "strength", "temposync", "free", "shape" }
+local function DNDLFO_SRC(p_id)
+    if not PM_INSPECTOR_FXID then return end
+    --param.X.lfo.[active,dir,phase,speed,strength,temposync,free,shape] : parameter moduation LFO state
+    if r.ImGui_BeginDragDropSource(ctx) then
+        local data = {}
+        for i = 1, #LFO_TBL do
+            local _, buf = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID,
+                "param." .. p_id .. ".lfo." .. LFO_TBL[i])
+            data[i] = buf
+        end
+        r.ImGui_Text(ctx, "COPY LFO")
+        r.ImGui_SetDragDropPayload(ctx, 'DND LFO', table.concat(data, ","))
+        r.ImGui_EndDragDropSource(ctx)
+    end
+end
+
+local function DNDLFO_TARGET(p_id)
+    if not PM_INSPECTOR_FXID then return end
+    if r.ImGui_BeginDragDropTarget(ctx) then
+        local ret, payload = r.ImGui_AcceptDragDropPayload(ctx, 'DND LFO')
+        r.ImGui_EndDragDropTarget(ctx)
+        if ret then
+            local data = {}
+            for val in payload:gmatch('([^,]+)') do
+                data[#data + 1] = val
+            end
+            if #data ~= 0 then
+                r.Undo_BeginBlock()
+                for i = 1, #LFO_TBL do
+                    r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo." .. LFO_TBL[i],
+                        data[i])
+                end
+                EndUndoBlock("LFO COPY SETTINGS")
+            end
+        end
+    end
+end
+
 local tbl_flags = ImGui.TableFlags_SizingFixedFit()| ImGui.TableFlags_Borders() | ImGui.TableFlags_SizingFixedFit()
 local function PMTable()
     if not PM_INSPECTOR_FXID then return end
-    --local COLOR = GetColorTbl()
     local columns = 5
     if ImGui.BeginTable(ctx, 'ALL_PARAMETERS', columns, tbl_flags) then
         ImGui.TableSetupColumn(ctx, 'PARAMETER', r.ImGui_TableColumnFlags_WidthStretch())
@@ -529,7 +609,7 @@ local function PMTable()
         ImGui.TableSetupColumn(ctx, 'ACS')
         ImGui.TableSetupColumn(ctx, 'LFO')
         ImGui.TableSetupColumn(ctx, 'SHAPE')
-        --ImGui.TableSetupColumn(ctx, 'ENV')
+        --!ImGui.TableSetupColumn(ctx, 'ENV')
         --ImGui.TableSetupColumn(ctx, 'INP')
         --ImGui.TableSetupColumn(ctx, 'TYP')
         ImGui.TableHeadersRow(ctx)
@@ -542,7 +622,7 @@ local function PMTable()
             local _, lfo_speed = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.speed")
             local _, lfo_shape = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.shape")
             local fx_env = r.GetFXEnvelope(TRACK, PM_INSPECTOR_FXID, p_id, false)
-            local has_points = (fx_env and r.CountEnvelopePoints(fx_env) > 2)
+            --!local has_points = (fx_env and r.CountEnvelopePoints(fx_env) > 2)
             if mod == "1" or acs == "1" or lfo == "1" or has_points then
                 ImGui.TableNextRow(ctx)
                 for column = 0, columns - 1 do
@@ -555,12 +635,14 @@ local function PMTable()
                         end
                         if r.ImGui_Button(ctx, p_name, -FLT_MIN, 0.0) then
                             if ALT then
+                                r.Undo_BeginBlock()
                                 r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.active",
                                     "0")
                                 r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".acs.active",
                                     "0")
                                 r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.active",
                                     "0")
+                                EndUndoBlock("PARAMETER MODULATION UNSET FX ALL PARAMETERS")
                             else
                                 r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.visible",
                                     mod_vis == "0" and "1" or "0")
@@ -569,8 +651,6 @@ local function PMTable()
                         if ALT then
                             r.ImGui_PopStyleColor(ctx, 2)
                         end
-                        --local color = (ALT and r.ImGui_IsItemHovered(ctx)) and COLOR["del"] or COLOR["n"]
-                        --DrawListButton(p_name, color, r.ImGui_IsItemHovered(ctx))
                         r.ImGui_PopID(ctx)
                     elseif column == 1 then
                         if r.ImGui_Checkbox(ctx, "##PM" .. PM_INSPECTOR_FXID .. p_id, mod == "1") then
@@ -581,12 +661,23 @@ local function PMTable()
                         if r.ImGui_Checkbox(ctx, "##ACS" .. PM_INSPECTOR_FXID .. p_id, acs == "1") then
                             r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".acs.active",
                                 acs == "0" and "1" or "0")
+                            local _, acs_ch = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID,
+                                "param." .. p_id .. ".acs.chan")
+                            --! IF NO CHANNELS HAVE BEEN ASSIGNED SET DEFAULT TO 1/2
+                            if acs_ch == "-1" then
+                                r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".acs.chan",
+                                    "2")
+                            end
                         end
+                        DNDACS_SRC(p_id)
+                        DNDACS_TARGET(p_id)
                     elseif column == 3 then
                         if r.ImGui_Checkbox(ctx, "##LFO" .. PM_INSPECTOR_FXID .. p_id, lfo == "1") then
                             r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.active",
                                 lfo == "0" and "1" or "0")
                         end
+                        DNDLFO_SRC(p_id)
+                        DNDLFO_TARGET(p_id)
                     elseif column == 4 then
                         local xx, yy = r.ImGui_GetCursorScreenPos(ctx)
                         local aw = r.ImGui_GetContentRegionAvail(ctx)
@@ -604,47 +695,46 @@ local function PMTable()
                             r.ImGui_DrawList_AddCircleFilled(draw_list, xx + (x_speed * aw), yy + y_pos + 10, 2.5,
                                 0xFF0000FF)
                         end
-                        --elseif column == 5 then
-                        --   if r.ImGui_Checkbox(ctx, "##LFO" .. PM_INSPECTOR_FXID .. p_id, has_points) then
-                        --if not fx_env then
-                        --            r.GetFXEnvelope(TRACK, PM_INSPECTOR_FXID, p_id, true)
-                        -- end
-                        -- r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.active",
-                        --      lfo == "0" and "1" or "0")
-                        --   end
-                        -- elseif column == 4 then
-                        --     if r.ImGui_Checkbox(ctx, "##ENV" .. PM_INSPECTOR_FXID .. p_id, has_points) then
-                        --         if not fx_env then
-                        --             r.GetFXEnvelope(TRACK, PM_INSPECTOR_FXID, p_id, true)
-                        --             r.TrackList_AdjustWindows(false)
-                        --         end
-                        --         if fx_env then
-                        --             local retval, env_chunk = r.GetEnvelopeStateChunk(fx_env, "", true)
-                        --             local vis = env_chunk:match("VIS (%d+)")
-                        --             if vis == "1" then
-                        --                 env_chunk = env_chunk:gsub("VIS 1", "VIS 0", 1)
-                        --             elseif vis == "0" then
-                        --                 env_chunk = env_chunk:gsub("VIS 0", "VIS 1", 1)
-                        --             end
-                        --             r.SetEnvelopeStateChunk(fx_env, env_chunk, false)
-                        --             r.TrackList_AdjustWindows(false)
-                        --         end
-                        -- end
-                        -- end
-                        --  elseif column == 4 then
-                        -- elseif column == 5 then
-                        --     --r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_WindowPadding(), 0, 0)
-                        --     --if r.ImGui_BeginChild(ctx, "##WF_LFO" .. PM_INSPECTOR_FXID .. p_id, 22,22) then
-                        --         local xx,yy = r.ImGui_GetCursorScreenPos(ctx)
-                        --         local _, lfo_shape = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.shape")
-                        --         local _, lfo_speed = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.speed")
-
-                        --         --r.ShowConsoleMsg(lfo_shape.."\n")
-                        --        -- GetPeakInfo(PEAK_TBL, lfo_shape, lfo_speed, 22)
-                        --        -- DrawPeak(draw_list, PEAK_TBL, xx, yy, 22, 22)
-                        --         --r.ImGui_EndChild(ctx)
-                        --    -- end
-                        --     --r.ImGui_PopStyleVar(ctx)
+                    elseif column == 5 then
+                        local retval, env_chunk, is_visible
+                        if fx_env then
+                            retval, env_chunk = r.GetEnvelopeStateChunk(fx_env, "", true)
+                            is_visible = env_chunk:find("VIS 1", nil, true) and true or false
+                        end
+                        if has_points then
+                            r.ImGui_PushStyleColor(ctx, r.ImGui_Col_FrameBg(), 0x49cc8588)
+                        end
+                        if r.ImGui_Checkbox(ctx, "##ENV_new" .. PM_INSPECTOR_FXID .. p_id, is_visible) then
+                            r.GetFXEnvelope(TRACK, PM_INSPECTOR_FXID, p_id, true)
+                            local enabled_previously
+                            --! WEIRD HACK TO BRING ENVELOPE BACK VISIBLE WHEN CHUNK IS NOT RESPONDING
+                            if not is_visible and fx_env then
+                                r.TrackList_AdjustWindows(false)
+                                enabled_previously = true
+                            end
+                            if env_chunk then
+                                if not ALT then
+                                    local vis = env_chunk:match("VIS (%d+)")
+                                    if vis == "1" then
+                                        env_chunk = env_chunk:gsub("VIS 1", "VIS 0", 1)
+                                        r.SetCursorContext(2, fx_env)
+                                    elseif vis == "0" and not enabled_previously then
+                                        env_chunk = env_chunk:gsub("VIS 0", "VIS 1", 1)
+                                    end
+                                    if not enabled_previously then
+                                        r.SetEnvelopeStateChunk(fx_env, env_chunk, false)
+                                    end
+                                elseif ALT and is_visible then
+                                    r.SetCursorContext(2, fx_env)
+                                    r.Main_OnCommand(40065, 0)
+                                    r.SetCursorContext(2)
+                                end
+                            end
+                            r.TrackList_AdjustWindows(false)
+                        end
+                        if has_points then
+                            r.ImGui_PopStyleColor(ctx)
+                        end
                     end
                 end
             end
@@ -686,8 +776,7 @@ function DrawPMInspector()
                 if ImGui.BeginTable(ctx, 'LAST_TOUCHED_PARAMETER', total_columns, tbl_flags) then
                     ImGui.TableSetupColumn(ctx, 'LAST TOUCHED', r.ImGui_TableColumnFlags_WidthStretch())
                     ImGui.TableSetupColumn(ctx, 'AUTO-SET')
-                    --ImGui.TableSetupColumn(ctx, 'ENV')
-                    --ImGui.TableSetupColumn(ctx, 'ALL')
+                    --!ImGui.TableSetupColumn(ctx, 'ENV')
                     ImGui.TableHeadersRow(ctx)
                     ImGui.TableNextRow(ctx)
                     for column = 0, total_columns - 1 do
@@ -697,23 +786,6 @@ function DrawPMInspector()
                                 r.TrackFX_SetNamedConfigParm(TRACK, LASTTOUCH_FX_ID,
                                     "param." .. LASTTOUCH_P_ID .. ".mod.visible", "1")
                             end
-                            -- elseif column == 1 then
-                            --     if r.ImGui_Button(ctx, "SET##ACS") then
-                            --         r.Undo_BeginBlock()
-                            --         r.TrackFX_SetNamedConfigParm(TRACK, LASTTOUCH_FX_ID, "param." .. LASTTOUCH_P_ID .. ".mod.visible", "1")
-                            --         r.TrackFX_SetNamedConfigParm(TRACK, LASTTOUCH_FX_ID, "param." .. LASTTOUCH_P_ID .. ".mod.active", "1")
-                            --         r.TrackFX_SetNamedConfigParm(TRACK, LASTTOUCH_FX_ID, "param." .. LASTTOUCH_P_ID .. ".acs.active", "1")
-                            --         r.TrackFX_SetNamedConfigParm(TRACK, LASTTOUCH_FX_ID, "param." .. LASTTOUCH_P_ID .. ".acs.chan", "2")
-                            --         EndUndoBlock("SET ACS")
-                            --     end
-                            -- elseif column == 2 then
-                            --     if r.ImGui_Button(ctx, "SET##LFO") then
-                            --         r.Undo_BeginBlock()
-                            --         r.TrackFX_SetNamedConfigParm(TRACK, LASTTOUCH_FX_ID, "param." .. LASTTOUCH_P_ID .. ".mod.visible", "1")
-                            --         r.TrackFX_SetNamedConfigParm(TRACK, LASTTOUCH_FX_ID, "param." .. LASTTOUCH_P_ID .. ".mod.active", "1")
-                            --         r.TrackFX_SetNamedConfigParm(TRACK, LASTTOUCH_FX_ID, "param." .. LASTTOUCH_P_ID .. ".lfo.active", "1")
-                            --         EndUndoBlock("SET LFO")
-                            --     end
                         elseif column == 1 then
                             if r.ImGui_Button(ctx, "SET##ALL", -FLT_MIN, 0) then
                                 r.Undo_BeginBlock()
@@ -730,10 +802,29 @@ function DrawPMInspector()
                                 EndUndoBlock("SET ALL PARAMETER")
                             end
                         elseif column == 2 then
-                            if r.ImGui_Button(ctx, "SHOW##ENV") then
-                                if PM_INSPECTOR_FXID == LASTTOUCH_FX_ID then
-                                    r.Main_OnCommand(41142, 0)
+                            if PM_INSPECTOR_FXID == LASTTOUCH_FX_ID then
+                                if r.ImGui_Button(ctx, "SHOW##ENV") then
+                                    local fx_env = r.GetFXEnvelope(TRACK, PM_INSPECTOR_FXID, LASTTOUCH_FX_ID, false)
+
+                                    local retval, env_chunk, is_visible
+                                    if not fx_env then
+                                        fx_env = r.GetFXEnvelope(TRACK, PM_INSPECTOR_FXID, LASTTOUCH_FX_ID, true)
+                                    else
+                                        retval, env_chunk = r.GetEnvelopeStateChunk(fx_env, "", true)
+                                        -- is_visible = env_chunk:find("VIS 1", nil, true) and true or false
+                                    end
+
+                                    if env_chunk then
+                                        local vis = env_chunk:match("VIS (%d+)")
+                                        if vis == "1" then
+                                            env_chunk = env_chunk:gsub("VIS 1", "VIS 0", 1)
+                                        elseif vis == "0" then
+                                            env_chunk = env_chunk:gsub("VIS 0", "VIS 1", 1)
+                                        end
+                                        r.SetEnvelopeStateChunk(fx_env, env_chunk, false)
+                                    end
                                 end
+                                r.TrackList_AdjustWindows(false)
                             end
                         end
                     end
@@ -758,14 +849,21 @@ function DrawPMInspector()
                     if is_there then r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Header(), 0x49cc8588) end
                     if r.ImGui_Selectable(ctx, p_name, is_there, r.ImGui_SelectableFlags_DontClosePopups()) then
                         if ALT then
+                            r.Undo_BeginBlock()
                             r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.active",
                                 "0")
                             r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".acs.active",
                                 "0")
                             r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.active",
                                 "0")
+                            EndUndoBlock("PARAMETER MODULATION UNSET FX ALL PARAMETERS")
                         else
-                            r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.active", "1")
+                            r.Undo_BeginBlock()
+
+                            local toggle = mod == "1" and "0"
+                            r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.active",
+                                toggle or "1")
+                            EndUndoBlock("TOGGLE FX PARAMETER")
                         end
                     end
                     if ALT then
