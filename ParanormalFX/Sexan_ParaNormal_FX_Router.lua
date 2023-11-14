@@ -1,7 +1,7 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.35.2
+-- @version 1.35.3
 -- @changelog
 --  Added Right Click menu to Reset ACS/LFO to default
 -- @provides
