@@ -3,7 +3,7 @@
 -- @license GPL v3
 -- @version 1.35.2
 -- @changelog
--- Added Right Click menu to Reset ACS/LFO to default
+--  Added Right Click menu to Reset ACS/LFO to default
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
