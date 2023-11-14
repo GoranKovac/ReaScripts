@@ -1,11 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.35.1
+-- @version 1.35.2
 -- @changelog
---  Drag And Drop Copy ACS/LFO Settings
---  Parameter list drop down menu toggles parameter modulation on/off
---  Enabling ACS sets default channel to 1/2 only if not set already
+-- Added Right Click menu to Reset ACS/LFO to default
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf

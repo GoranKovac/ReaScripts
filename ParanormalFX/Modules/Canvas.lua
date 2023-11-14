@@ -375,9 +375,46 @@ local function RightClickMenu()
         end
     end
 end
+local ACS_TBL = { "active", "dir", "strength", "attack", "release", "dblo", "dbhi", "x2", "y2", }
+local ACS_defaults = { 0, 1, 1, 300, 300, -24, 0, 0.5, 0.5 }
+
+local LFO_TBL = { "active", "dir", "phase", "speed", "strength", "temposync", "free", "shape" }
+local LFO_defaults = { 0, 1, 0, 1, 1, 0, 0, 0 }
+
+local function PMMenu()
+    if not PM_RC_DATA then return end
+    if PM_RC_DATA.type == "ACS" then
+        if r.ImGui_MenuItem(ctx, "RESET TO ACS DEFAULT") then
+            for i = 1, #ACS_TBL do
+                r.TrackFX_SetNamedConfigParm(TRACK, PM_RC_DATA.fx_id, "param." .. PM_RC_DATA.p_id .. ".acs." .. ACS_TBL[i],
+                    ACS_defaults[i])
+            end
+        end
+    elseif PM_RC_DATA.type == "LFO" then
+        if r.ImGui_MenuItem(ctx, "RESET TO LFO DEFAULT") then
+            for i = 1, #LFO_TBL do
+                r.TrackFX_SetNamedConfigParm(TRACK, PM_RC_DATA.fx_id, "param." .. PM_RC_DATA.p_id .. ".lfo." .. LFO_TBL[i],
+                    LFO_defaults[i])
+            end
+        end
+    end
+end
 
 local function Popups()
     local center = { r.ImGui_Viewport_GetCenter(r.ImGui_GetWindowViewport(ctx)) }
+
+    if OPEN_PM_MENU then
+        OPEN_PM_MENU = nil
+        if not r.ImGui_IsPopupOpen(ctx, "PM_MENU") then
+            r.ImGui_OpenPopup(ctx, "PM_MENU")
+        end
+    end
+
+    if r.ImGui_BeginPopup(ctx, "PM_MENU", r.ImGui_WindowFlags_NoMove()) then
+        PMMenu()
+        r.ImGui_EndPopup(ctx)
+    end
+
     if OPEN_INSERT_POINTS_MENU then
         OPEN_INSERT_POINTS_MENU = nil
         if not r.ImGui_IsPopupOpen(ctx, "INSERT_POINTS_MENU") then
@@ -456,6 +493,10 @@ local function Popups()
         not r.ImGui_IsPopupOpen(ctx, "INSERT_POINTS_MENU") then
         if RC_DATA then RC_DATA = nil end
     end
+
+    if not r.ImGui_IsPopupOpen(ctx, "PM_MENU") then
+        if PM_RC_DATA then PM_RC_DATA = nil end
+    end
 end
 
 local function StoreSettings()
@@ -519,7 +560,7 @@ end
 
 --PEAK_TBL = { ptr = 0, size = 0, max_size = 25 }
 
-local ACS_TBL = { "active", "dir", "strength", "attack", "release", "dblo", "dbhi", "x2", "y2", }
+--local ACS_TBL = { "active", "dir", "strength", "attack", "release", "dblo", "dbhi", "x2", "y2", }
 
 local function DNDACS_SRC(p_id)
     if not PM_INSPECTOR_FXID then return end
@@ -560,7 +601,7 @@ local function DNDACS_TARGET(p_id)
     end
 end
 
-local LFO_TBL = { "active", "dir", "phase", "speed", "strength", "temposync", "free", "shape" }
+-- local LFO_TBL = { "active", "dir", "phase", "speed", "strength", "temposync", "free", "shape" }
 local function DNDLFO_SRC(p_id)
     if not PM_INSPECTOR_FXID then return end
     --param.X.lfo.[active,dir,phase,speed,strength,temposync,free,shape] : parameter moduation LFO state
@@ -671,6 +712,14 @@ local function PMTable()
                         end
                         DNDACS_SRC(p_id)
                         DNDACS_TARGET(p_id)
+                        if r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseReleased(ctx, 1) then
+                            PM_RC_DATA = {
+                                type = "ACS",
+                                p_id = p_id,
+                                fx_id = PM_INSPECTOR_FXID,
+                            }
+                            OPEN_PM_MENU = true
+                        end
                     elseif column == 3 then
                         if r.ImGui_Checkbox(ctx, "##LFO" .. PM_INSPECTOR_FXID .. p_id, lfo == "1") then
                             r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.active",
@@ -678,6 +727,14 @@ local function PMTable()
                         end
                         DNDLFO_SRC(p_id)
                         DNDLFO_TARGET(p_id)
+                        if r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseReleased(ctx, 1) then
+                            PM_RC_DATA = {
+                                type = "LFO",
+                                p_id = p_id,
+                                fx_id = PM_INSPECTOR_FXID,
+                            }
+                            OPEN_PM_MENU = true
+                        end
                     elseif column == 4 then
                         local xx, yy = r.ImGui_GetCursorScreenPos(ctx)
                         local aw = r.ImGui_GetContentRegionAvail(ctx)
