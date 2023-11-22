@@ -1,3 +1,6 @@
 {
-    "lua.targetVersion": "5.3"
+    "lua.targetVersion": "5.3",
+    "Lua.workspace.library": [
+        "c:\\Users\\Gokily\\.vscode\\extensions\\antoinebalaine.reascript-docs-0.1.1/resources/reaper-types.lua"
+    ]
 }

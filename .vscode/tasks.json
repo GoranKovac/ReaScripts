@@ -1,0 +1,28 @@
+{   
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run Reaper Script",
+            "type": "shell",
+            "command": "C:/REAPER/reaper.exe",
+            "args": [
+                "-nonewinst",
+                "${file}"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Debug Script",
+            "command": "${command:workbench.action.debug.start}"
+        },
+        {
+            "label": "Debug and Run",
+            "dependsOrder": "parallel",
+            "dependsOn": [
+                "Debug Script",
+                "Run Script"
+            ],
+            "problemMatcher": []
+        }
+    ]
+}
