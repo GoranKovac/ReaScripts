@@ -1,0 +1,363 @@
+{
+ arrange = {
+  [1] = {
+   cmd = "",
+   name = "FOR SETUP SCRIPT",
+   icon = "E",
+  },
+  [2] = {
+   icon = "",
+   name = "WHEN YOU GET TIME",
+  },
+  [3] = {
+   cmd = {
+    [1] = {
+     cmd = 2019,
+     name = "THANK",
+    },
+    [2] = {
+     cmd = 2003,
+     name = "YOU",
+    },
+    [3] = {
+     cmd = 42383,
+     name = "VERY MUCH",
+    },
+   },
+   name = "?",
+   icon = "X",
+  },
+  [4] = {
+   icon = "O",
+   name = "BIRDY",
+  },
+  [5] = {
+   cmd = "",
+   name = "WILL YOU PLEASE",
+   icon = "X",
+  },
+  [6] = {
+   cmd = "",
+   name = "MAKE A SANE UI",
+   icon = "L",
+  },
+  [7] = {
+   cmd = 65547,
+   name = "Script: PieSetup.lua",
+   icon = "",
+  },
+  [8] = {
+   cmd = {
+    [2] = {
+     cmd = 41738,
+     name = "Edit: Delete notes of less than 1/128 note in length in selected MIDI items",
+    },
+    [1] = {
+     cmd = 40698,
+     name = "Edit: Copy items",
+    },
+   },
+   name = "EMPTY MENU7",
+   icon = "",
+  },
+  [9] = {
+   cmd = 40858,
+   name = "Automation lane: Decrease active fader a little bit",
+   icon = "",
+  },
+ },
+ mcp = {
+  [8] = {
+   cmd = {
+    [1] = {
+     cmd = 40406,
+     name = "Toggle Volume",
+    },
+    [2] = {
+     cmd = 40407,
+     name = "Toggle Pan",
+    },
+    [3] = {
+     cmd = 1007,
+     name = "Yellow",
+    },
+    [4] = {
+     cmd = 1007,
+     name = "Blue",
+    },
+    [5] = {
+     cmd = 1007,
+     name = "Schwa",
+    },
+    [6] = {
+     cmd = 1007,
+     name = "Justin",
+    },
+    [7] = {
+     cmd = 1007,
+     name = "PLAY",
+    },
+   },
+   name = "ENV Menu",
+   icon = "E",
+  },
+  [1] = {
+   cmd = 1007,
+   name = "Play",
+   icon = "A",
+  },
+  [2] = {
+   cmd = 1013,
+   name = "Record",
+   icon = "B",
+  },
+  [3] = {
+   cmd = 1007,
+   name = "Play",
+   icon = "A",
+  },
+  [4] = {
+   cmd = 1013,
+   name = "Record",
+   icon = "B",
+  },
+  [5] = {
+   cmd = 1003,
+   name = "Schwa",
+   icon = "C",
+  },
+  [6] = {
+   cmd = 1003,
+   name = "Justin",
+   icon = "D",
+  },
+  [7] = {
+   cmd = "_RSaea4bc032a8e5652fe85818e22f6a1a1b38557f3",
+   name = "Birdy TAG",
+   icon = "E",
+  },
+ },
+ envelope = {
+  [8] = {
+   cmd = {
+    [1] = {
+     cmd = 40406,
+     name = "Toggle Volume",
+    },
+    [2] = {
+     cmd = 40407,
+     name = "Toggle Pan",
+    },
+    [3] = {
+     cmd = 1007,
+     name = "Yellow",
+    },
+    [4] = {
+     cmd = 1007,
+     name = "Blue",
+    },
+    [5] = {
+     cmd = 1007,
+     name = "Schwa",
+    },
+    [6] = {
+     cmd = 1007,
+     name = "Justin",
+    },
+    [7] = {
+     cmd = 1007,
+     name = "PLAY",
+    },
+   },
+   name = "ENV Menu",
+   icon = "E",
+  },
+  [1] = {
+   cmd = 1007,
+   name = "Play",
+   icon = "A",
+  },
+  [2] = {
+   cmd = 1013,
+   name = "Record",
+   icon = "B",
+  },
+  [3] = {
+   cmd = 1007,
+   name = "Play",
+   icon = "A",
+  },
+  [4] = {
+   cmd = 1013,
+   name = "Record",
+   icon = "B",
+  },
+  [5] = {
+   cmd = 1003,
+   name = "Schwa",
+   icon = "C",
+  },
+  [6] = {
+   cmd = 1003,
+   name = "Justin",
+   icon = "D",
+  },
+  [7] = {
+   cmd = "_RSaea4bc032a8e5652fe85818e22f6a1a1b38557f3",
+   name = "Birdy TAG",
+   icon = "E",
+  },
+ },
+ tcp = {
+  [8] = {
+   cmd = {
+    [1] = {
+     cmd = 40406,
+     name = "Toggle Volume",
+    },
+    [2] = {
+     cmd = 40407,
+     name = "Toggle Pan",
+    },
+    [3] = {
+     cmd = 1007,
+     name = "Yellow",
+    },
+    [4] = {
+     cmd = 1007,
+     name = "Blue",
+    },
+    [5] = {
+     cmd = 1007,
+     name = "Schwa",
+    },
+    [6] = {
+     cmd = 1007,
+     name = "Justin",
+    },
+    [7] = {
+     cmd = 1007,
+     name = "PLAY",
+    },
+   },
+   name = "ENV Menu",
+   icon = "E",
+  },
+  [1] = {
+   cmd = 1007,
+   name = "Play",
+   icon = "A",
+  },
+  [2] = {
+   cmd = 1013,
+   name = "Record",
+   icon = "B",
+  },
+  [3] = {
+   cmd = 1007,
+   name = "Play",
+   icon = "A",
+  },
+  [4] = {
+   cmd = 1013,
+   name = "Record",
+   icon = "B",
+  },
+  [5] = {
+   cmd = 1003,
+   name = "Schwa",
+   icon = "C",
+  },
+  [6] = {
+   cmd = 1003,
+   name = "Justin",
+   icon = "D",
+  },
+  [7] = {
+   cmd = "_RSaea4bc032a8e5652fe85818e22f6a1a1b38557f3",
+   name = "Birdy TAG",
+   icon = "E",
+  },
+ },
+ item = {
+  [1] = {
+   cmd = 1007,
+   name = "Play",
+   icon = "A",
+  },
+  [2] = {
+   cmd = 1013,
+   name = "Record",
+   icon = "B",
+  },
+  [3] = {
+   cmd = 1007,
+   name = "Play",
+   icon = "A",
+  },
+  [4] = {
+   cmd = 1013,
+   name = "Record",
+   icon = "B",
+  },
+  [5] = {
+   cmd = 1003,
+   name = "Schwa",
+   icon = "C",
+  },
+  [6] = {
+   cmd = 1003,
+   name = "Justin",
+   icon = "D",
+  },
+  [7] = {
+   cmd = 40406,
+   name = "envelope VISIBLE",
+   icon = "E",
+  },
+  [8] = {
+   cmd = {
+    [1] = {
+     cmd = 40406,
+     name = "Toggle Volume",
+    },
+    [2] = {
+     cmd = 40407,
+     name = "Toggle Pan",
+    },
+    [3] = {
+     cmd = 1007,
+     name = "Yellow",
+    },
+    [4] = {
+     cmd = 1007,
+     name = "Blue",
+    },
+    [5] = {
+     cmd = 1007,
+     name = "Schwa",
+    },
+    [6] = {
+     cmd = 1007,
+     name = "Justin",
+    },
+    [7] = {
+     cmd = 1007,
+     name = "PLAY",
+    },
+   },
+   name = "ENV Menu",
+   icon = "E",
+  },
+  [9] = {
+   action = "",
+   name = "ADD MORE",
+   icon = "C",
+  },
+  [10] = {
+   action = "",
+   name = "BATTNS",
+   icon = "C",
+  },
+ },
+}
