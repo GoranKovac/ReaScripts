@@ -476,7 +476,9 @@ local function Popups()
     end
 
     if r.ImGui_BeginPopup(ctx, "FX LIST", r.ImGui_WindowFlags_NoMove()) then
+        r.ImGui_PushFont(ctx, SELECTED_FONT)
         DrawFXList()
+        r.ImGui_PopFont(ctx)
         r.ImGui_EndPopup(ctx)
     end
 
@@ -1207,7 +1209,7 @@ function UI()
         local solo_color = r.GetMediaTrackInfo_Value(PIN and SEL_LIST_TRACK or TRACK, "I_SOLO")
         DrawListButton2("P", solo_color == 0 and 0xff or 0xf1c524ff, r.ImGui_IsItemHovered(ctx), true)
         r.ImGui_SameLine(ctx)
-
+       
         -- PIN
         local pin_color = PIN and 0x49cc85FF or 0xff
         local pin_icon = PIN and "L" or "M"

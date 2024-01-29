@@ -122,12 +122,70 @@ local HELPERS = {
     --     alt_name = "LFO.jsfx",
     --     helper = "FX LFO"
     -- },
+    ----------------------------------------
+    ----------------------------------------
+    {
+        fx = "JS:Frequency Splitter (lewloiwc)",
+        fx_name = "LEWLOIWC 2-4 BAND MODE SPLITTER",
+        alt_name = "Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_frequency_splitter.jsfx",
+        name = "Frequency Splitter (lewloiwc)",
+        helper = "LEWLOIWC 2-4 FREQUENCY MODE SPLITTER"
+    },
+    {
+        fx = "JS:Frequency Splitter - Linkwitz-Riley Minimum Phase (lewloiwc)",
+        fx_name = "LEWLOIWC 3 BAND SPLITTER MINIMAL PHASE",
+        alt_name = "Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_frequency_splitter_linkwitz-riley(minimum_phase).jsfx",
+        name = "Frequency Splitter - Linkwitz-Riley Minimum Phase (lewloiwc)",
+        helper = "LEWLOIWC 3 FREQUENCY SPLITTER MINIMAL PHASE"
+    },
+    {
+        fx = "JS:Frequency Splitter - Comb and Phaser (lewloiwc)",
+        fx_name = "LEWLOIWC 2 BAND COMB/PHASER",
+        alt_name = "Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_frequency_splitter_comb_and_phaser.jsfx",
+        name = "Frequency Splitter - Comb and Phaser (lewloiwc)",
+        helper = "LEWLOIWC 2 BAND COMB/PHASER"
+    },
+    {
+        fx = "JS:Frequency Splitter - Band and Notch (lewloiwc)",
+        fx_name = "LEWLOIWC 2 BAND BAND/NOTCH",
+        alt_name = "Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_frequency_splitter_band_and_notch(minimum_phase).jsfx",
+        name = "Frequency Splitter - Band and Notch (lewloiwc)",
+        helper = "LEWLOIWC 2 BAND BAND/NOTCH"
+    },
+    {
+        fx = "JS:Amplitude Splitter - Gate (lewloiwc)",
+        fx_name = "LEWLOIWC GATE SPLITTER",
+        alt_name = "Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_amplitude_splitter_gate.jsfx",
+        name = "Amplitude Splitter - Gate (lewloiwc)",
+        helper = "LEWLOIWC GATE SPLITTER"
+    },
+    {
+        fx = "JS:Amplitude Splitter - Transient (lewloiwc)",
+        fx_name = "LEWLOIWC TRANSIENT SPLITTER",
+        alt_name = "Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_amplitude_splitter_transient.jsfx",
+        name = "Amplitude Splitter - Transient (lewloiwc)",
+        helper = "LEWLOIWC TRANSIENT SPLITTER"
+    },
+    {
+        fx = "JS:Amplitude Splitter - Envelope Follower (lewloiwc)",
+        fx_name = "LEWLOIWC ENVELOPE FOLLOWER",
+        alt_name = "Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_amplitude_splitter_envelope_follower.jsfx",
+        name = "Amplitude Splitter - Envelope Follower (lewloiwc)",
+        helper = "LEWLOIWC ENVELOPE FOLLOWER"
+    },
 }
 
 local my_jsfx = {
     ["Sexan_Scripts/ParanormalFX/JSFX/MSMidFX.jsfx"] = "MS Mid FX",
     ["Sexan_Scripts/ParanormalFX/JSFX/MSSideFX.jsfx"] = "MS Side FX",
     ["Saike Tools/Basics/BandSplitter.jsfx"] = "SAIKE SPLITTER",
+    ["Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_amplitude_splitter_gate.jsfx"] = "GATE SPLITTER",
+    ["Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_amplitude_splitter_transient.jsfx"] = "TRANSIENT SPLITTER",
+    ["Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_frequency_splitter.jsfx"] = "ENVELOPE FOLLOWER",
+    ["Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_amplitude_splitter_envelope_follower.jsfx"] = "LEWLOIWC 2-4 BAND MODE SPLITTER",
+    ["Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_frequency_splitter_linkwitz-riley(minimum_phase).jsfx"] = "LEWLOIWC 3 FREQUENCY SPLITTER MINIMAL PHASE",
+    ["Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_frequency_splitter_comb_and_phaser.jsfx"] = "LEWLOIWC 2 BAND COMB/PHASER",
+    ["Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_frequency_splitter_band_and_notch(minimum_phase).jsfx"] = "LEWLOIWC 2 BAND BAND/NOTCH",
 }
 
 local function TrimMyJSName(name)
@@ -742,8 +800,40 @@ function DrawFXList()
             AddFX(chain_src)
         end
         DndAddFX_SRC("../Scripts/Sexan_Scripts/ParanormalFX/FXChains/SAIKE_5_SETUP.RfxChain")
-        r.ImGui_SeparatorText(ctx, "MID-SIDE")
+        r.ImGui_SeparatorText(ctx, "CUSTOM ADVANCE")        
+        if r.ImGui_Selectable(ctx, "2-4 BAND CONFIGURABLE MODE SPLITTER") then
+            local chain_src = "../Scripts/Sexan_Scripts/ParanormalFX/FXChains/LEWLOIWC_2_4_MODE_SETUP.RfxChain"
+            AddFX(chain_src)
+        end
+        if r.ImGui_Selectable(ctx, "2 BAND/NOTCH SPLITTER") then
+            local chain_src = "../Scripts/Sexan_Scripts/ParanormalFX/FXChains/LEWLOIWC_2_BANDNOTCH_SETUP.RfxChain"
+            AddFX(chain_src)
+        end
+        if r.ImGui_Selectable(ctx, "2 COMB/PHASER SPLITTER") then
+            local chain_src = "../Scripts/Sexan_Scripts/ParanormalFX/FXChains/LEWLOIWC_2_COMBPHASE_SETUP.RfxChain"
+            AddFX(chain_src)
+        end
+        if r.ImGui_Selectable(ctx, "3 BAND MINIMAL PHASE SPLITTER") then
+            local chain_src = "../Scripts/Sexan_Scripts/ParanormalFX/FXChains/LEWLOIWC_3_MIN_PHASE_SETUP.RfxChain"
+            AddFX(chain_src)
+        end
+        
+        r.ImGui_SeparatorText(ctx, "AMPLITUDE")
+        if r.ImGui_Selectable(ctx, "TRANSIENT SPLITTER") then
+            local chain_src = "../Scripts/Sexan_Scripts/ParanormalFX/FXChains/LEWLOIWC_TRANSIENT_SETUP.RfxChain"
+            AddFX(chain_src)
+        end
+        if r.ImGui_Selectable(ctx, "GATE SPLITTER") then
+            local chain_src = "../Scripts/Sexan_Scripts/ParanormalFX/FXChains/LEWLOIWC_GATE_SETUP.RfxChain"
+            AddFX(chain_src)
+        end
+        if r.ImGui_Selectable(ctx, "ENVELOPE SPLITTER") then
+            local chain_src = "../Scripts/Sexan_Scripts/ParanormalFX/FXChains/LEWLOIWC_ENVELOPE_SETUP.RfxChain"
+            AddFX(chain_src)
+        end
+        DndAddFX_SRC("../Scripts/Sexan_Scripts/ParanormalFX/FXChains/SAIKE_5_SETUP.RfxChain")
 
+        r.ImGui_SeparatorText(ctx, "MID-SIDE")
         if r.ImGui_Selectable(ctx, "MID-SIDE SETUP") then
             local chain_src = "../Scripts/Sexan_Scripts/ParanormalFX/FXChains/MS_SETUP.RfxChain"
             AddFX(chain_src)
@@ -921,8 +1011,8 @@ local function HelperWidth(tbl, width)
         width = width + name_margin * 3
     elseif tbl.name:find("5-Band Splitter", nil, true) then
         width = width + name_margin * 4
-    elseif tbl.name:find("FX LFO", nil, true) then
-        width = width + name_margin * 4
+    -- elseif tbl.name:find("FX LFO", nil, true) then
+    --     width = width + name_margin * 2.5
     end
     return width
 end
@@ -1955,18 +2045,35 @@ local function DrawHelper(tbl, i, w)
         end
         if not btn_hover then btn_hover = r.ImGui_IsItemHovered(ctx) end
     elseif tbl[i].name:find("LFO",nil,true) then
-        --new_width = true
-        --r.ShowConsoleMsg("HERE")
-        -- local x = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 20) -- x
-        -- local y = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 16) -- y
-        -- local shape = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 1) -- shape
-        -- local xx,yy = r.ImGui_GetCursorScreenPos(ctx)
-        -- r.ImGui_DrawList_AddCircleFilled( draw_list, xx + mute + (mute/1.2) + (x* (w/6)), yy + def_btn_h/2 + (-y*(def_btn_h/3)), 4, 0xFF0000FF )
-        --local points = generateWave(w/6, def_btn_h/3, shape)
-        -- for j = 1, #points, 2 do
-        --     r.ImGui_DrawList_AddLine(draw_list, xx + mute + (mute/1.2) + j, yy + (def_btn_h/2) + points[j],xx + mute + (mute/1.2) + j+1, yy+(def_btn_h/2)+points[j], 0xFFFFFFFF)
-        -- end
+        new_width = true
+        local xx, yy = r.ImGui_GetCursorScreenPos(ctx)
+        local x = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 27) -- x
+        local y = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 23) -- y
+        local lfo_shape = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 2) -- shape
+        xx = xx + (mute*2)
+        r.ImGui_DrawList_AddCircleFilled( draw_list, xx + (x* (w/6)), yy + def_btn_h/2 + (-y*(def_btn_h/3)), 4, 0xFF0000FF )
+        local aw = w/6
 
+        local points2, y_pos = GetWaveType(tonumber(lfo_shape), 1, xx, yy, aw, (21 - 2), "invert")
+        if y_pos then
+            if tonumber(lfo_shape) ~= 0 then
+                for j = 1, #points2 do
+                  r.ImGui_DrawList_AddLine(draw_list, xx + points2[j][1], yy + points2[j][2],
+                        xx + points2[j][3], yy + points2[j][4], 0xFFFFFF88)
+                end
+            else
+                r.ImGui_DrawList_AddPolyline(draw_list, points2, 0xFFFFFF88, 0, 1)
+            end
+        end
+        r.ImGui_SameLine(ctx,0,50)
+        r.ImGui_PushID(ctx, tbl[i].guid .. "LINK")
+        if r.ImGui_Button(ctx, "LINK",0,def_btn_h) then
+            local src_param = 23
+            local src_fx_id, buf = MapToParents(TRACK, tbl[i].FX_ID, src_param)
+            LinkLastTouched(TRACK, src_fx_id, buf)
+        end
+        r.ImGui_PopID(ctx)
+        if not btn_hover then btn_hover = r.ImGui_IsItemHovered(ctx) end
     end
     return btn_hover, new_width
 end

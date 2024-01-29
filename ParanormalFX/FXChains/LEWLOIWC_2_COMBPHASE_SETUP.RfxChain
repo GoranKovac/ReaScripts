@@ -1,0 +1,54 @@
+BYPASS 0 0 0
+<CONTAINER Container "2 BAND COMB/PHASER SPLITTER"
+  CONTAINER_CFG 6 6 6 0
+  <IN_PINS
+    PIN 2
+    PIN 3
+    PIN 4
+    PIN 5
+  >
+  <OUT_PINS
+    PIN 2
+    PIN 3
+    PIN 4
+    PIN 5
+  >
+  SHOW 0
+  LASTSEL 3
+  DOCKED 0
+  BYPASS 0 0 0
+  <JS "Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_frequency_splitter_comb_and_phaser.jsfx" ""
+    0 1000 0.25 8 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  >
+  WAK 0 0
+  BYPASS 0 0 0
+  <CONTAINER Container LOW
+    CONTAINER_CFG 2 2 2 0
+    <IN_PINS
+    >
+    <OUT_PINS
+    >
+    SHOW 0
+    LASTSEL 0
+    DOCKED 0
+  >
+  WAK 0 0
+  BYPASS 0 0 0
+  <CONTAINER Container HIGH
+    CONTAINER_CFG 2 2 2 0
+    <IN_PINS
+      PIN 0 2
+      PIN 1 3
+    >
+    <OUT_PINS
+    >
+    SHOW 0
+    LASTSEL 0
+    DOCKED 0
+  >
+  WAK 0 0
+  PARALLEL 1
+>
+PRESETNAME "[Template] 3 Band"
+WAK 0 0
+>

@@ -1,9 +1,11 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.35.3
+-- @version 1.35.4
 -- @changelog
---  Added Right Click menu to Reset ACS/LFO to default
+--  Set Vertical layout as default
+--  FX Browser uses user font
+--  Added lewloiwc Splitter Suite
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -33,7 +35,11 @@ if not r.GetAppVersion():match("^7%.") then
     return
 end
 
+-- JSFX paths
 local saike_splitter_path    = reaper_path .. "/Effects/Saike Tools/Basics/BandSplitter.jsfx"
+--local lfos_path = reaper_path .. "/Effects/ReaTeam JSFX/Modulation/snjuk2_LFO.jsfx"
+local splitters_path = reaper_path .. "/Effects/Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_frequency_splitter.jsfx"
+
 
 --local fx_browser_script_path = "C:/Users/Gokily/Documents/ReaGit/ReaScripts/FX/Sexan_FX_Browser_ParserV7.lua"
 local fx_browser_script_path = reaper_path .. "/Scripts/Sexan_Scripts/FX/Sexan_FX_Browser_ParserV7.lua"
@@ -43,6 +49,7 @@ function ThirdPartyDeps()
     local reapack_process
     local repos = {
         { name = "Saike Tools", url = 'https://raw.githubusercontent.com/JoepVanlier/JSFX/master/index.xml' },
+        { name = "Suzuki Scripts", url = "https://github.com/Suzuki-Re/Suzuki-Scripts/raw/master/index.xml" },
     }
 
     for i = 1, #repos do
@@ -75,7 +82,12 @@ local function CheckDeps()
     if not r.file_exists(fm_script_path) then
         deps[#deps + 1] = '"Sexan ImGui FileManager"'
     end
-
+    -- if not r.file_exists(lfos_path) then
+    --     deps[#deps + 1] = '"Snjuk2"'
+    -- end
+    if not r.file_exists(splitters_path) then
+        deps[#deps + 1] = [["lewloiwc's Splitter Suite"]]
+    end
     if not r.file_exists(saike_splitter_path) then
         deps[#deps + 1] = '"Saike 4-pole BandSplitter"'
         r.SetExtState("PARANORMALFX2", "UPDATEFX", "true", false)
@@ -128,7 +140,7 @@ DEFAULT_DND             = true
 CTRL_DRAG_AUTOCONTAINER = false
 TOOLTIPS                = true
 SHOW_C_CONTENT_TOOLTIP  = true
-V_LAYOUT                = false
+V_LAYOUT                = true
 
 OPEN_PM_INSPECTOR       = false
 

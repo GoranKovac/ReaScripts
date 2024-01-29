@@ -5,81 +5,105 @@ local r = reaper
 local find = string.find
 
 local INV_TAU = 1 / (2 * math.pi)
-local sin, floor, abs, pi, fmod, randomseed, random = math.sin, math.floor, math.abs, math.pi, math.fmod, math.randomseed, math.random
+local sin, floor, abs, pi, fmod, randomseed, random = math.sin, math.floor, math.abs, math.pi, math.fmod, math
+.randomseed, math.random
 
 function Wrap(number)
     return number <= 1 and number or number - 1
 end
 
 function ReaperPhase(speed)
-    return fmod(TIME_SINCE_START*speed, 1.0)
+    return fmod(TIME_SINCE_START * speed, 1.0)
 end
 
 function Sine(t, a, f)
-    f = f * (pi*2)
+    f = f * (pi * 2)
     local s = -sin(t * f) * a
     return s, s
 end
 
 function Square(t, a, f)
-    f = f * (pi*2)
+    f = f * (pi * 2)
     local s = sin(t * f)
     s = abs(s) / s * a
     return s, s
 end
 
 function SawtL(t, a, f)
-    f = f * (pi*2)
-    return ((f*t) * 2 - a)
+    f = f * (pi * 2)
+    return ((f * t) * 2 - a)
     --local s = (t) * INV_TAU
-	--s = 2 * (s - floor(0.5 + s)) * a
-	--return s, s
+    --s = 2 * (s - floor(0.5 + s)) * a
+    --return s, s
 end
 
 function SawtR(t, a, f)
-    f = f * (pi*2)
+    f = f * (pi * 2)
     -- local s = (t * f) * -INV_TAU
     -- s = 2 * (s - (0.5 + s) // 1) * a
     -- return s, s
-    return ((f*t) * -2 + a)
+    return ((f * t) * -2 + a)
 end
 
 function Triangle(t, a, f)
-    f = f * (pi*2)
+    f = f * (pi * 2)
     local s = (t * f) * INV_TAU
     s = (2 * abs(2 * (s - (0.5 + s) // 1)) - 1) * a
     return s, s
 end
 
-function GetWaveType(shape, t, x, y, w, h)
+function GetWaveType(shape, t, x, y, w, h, inv)
     local shape_points = {}
     if shape == 0 then
         local points = {}
         for i = 1, w, 2 do
-            local t2 = 1/w
-            local yval = Sine(t2*i, h/2-2, 1)
-            points[#points+1] = x + i
-            points[#points+1] = y + yval + (h/2)
+            local t2 = 1 / w
+            local yval = Sine(t2 * i, h / 2 - 2, 1)
+            points[#points + 1] = x + i
+            points[#points + 1] = y + yval + (h / 2)
         end
-        return r.new_array(points,#points), Sine(t, h/2, 1)
+        return r.new_array(points, #points), Sine(t, h / 2, 1)
     elseif shape == 1 then
-        shape_points = {{0,2,w/2,2}, {w/2,2, w/2,h-2}, {w/2,h-2, w,h-2}}
-        return shape_points, -Square(t, (h/2)-2, 1)
+        shape_points = inv and { { 0, h - 2, w / 2, h - 2 }, { w / 2, 2, w / 2, h - 2 }, { w / 2, 2, w, 2 } } or
+        { { 0, 2, w / 2, 2 }, { w / 2, 2, w / 2, h - 2 }, { w / 2, h - 2, w, h - 2 } }
+        return shape_points, -Square(t, (h / 2) - 2, 1)
     elseif shape == 2 then
-        shape_points = {{0,2,w,h-2}}
-        return shape_points, SawtL(t, h/2, 1)
+        shape_points = { { 0, 2, w, h - 2 } }
+        return shape_points, SawtL(t, h / 2, 1)
     elseif shape == 3 then
-        shape_points = {{0,h-2, w,2}}
-        return shape_points, SawtR(t, h/2, 1)
+        shape_points = { { 0, h - 2, w, 2 } }
+        return shape_points, SawtR(t, h / 2, 1)
     elseif shape == 4 then
-        shape_points = {{0, h-2, w/2,2}, {w/2,2, w,h-2}}
-        return shape_points, -Triangle(t, h/2, 1)
+        shape_points = { { 0, h - 2, w / 2, 2 }, { w / 2, 2, w, h - 2 } }
+        return shape_points, -Triangle(t, h / 2, 1)
     elseif shape == 5 then
         math.randomseed(r.time_precise())
-        local rnd_shape = math.random(0,4)
+        local rnd_shape = math.random(0, 4)
         local _, rnd_y = GetWaveType(rnd_shape, t, x, y, w, h)
         return shape_points, rnd_y
     end
+end
+
+function MapToParents(track, fx_id, p_id)
+    local has_parent = true
+    local cont_idx, new_idx
+    local cur_fx = fx_id
+    while has_parent do -- to get root parent container id
+        has_parent, new_idx = r.TrackFX_GetNamedConfigParm(track, cur_fx, "parent_container")
+        cur_fx = new_idx
+        if #new_idx ~= 0 then cont_idx = new_idx end
+    end
+    if cont_idx then
+        local _ , buf = r.TrackFX_GetNamedConfigParm(track, cont_idx, "container_map.add." .. fx_id .. "." .. p_id)
+        return cont_idx, buf
+    end
+end
+
+function LinkLastTouched(track, src_fx_id, src_p_id)
+    local cur_fx_id, buf = MapToParents( track, LASTTOUCH_FX_ID, LASTTOUCH_P_ID)
+    r.TrackFX_SetNamedConfigParm(track, cur_fx_id, "param.".. buf ..".plink.active", 1)
+    r.TrackFX_SetNamedConfigParm(track, cur_fx_id, "param.".. buf ..".plink.effect", src_fx_id) 
+    r.TrackFX_SetNamedConfigParm(track, cur_fx_id, "param.".. buf ..".plink.param", src_p_id) 
 end
 
 function OpenFX(id)
@@ -129,6 +153,10 @@ function ExtractContainer(chunk, guid)
     local r_chunk = chunk:reverse()
     local r_guid = guid:reverse()
     local s1 = find(r_chunk, r_guid, 1, true)
+    --r.ShowConsoleMsg(guid.."\n\n\n\n")
+    --r.ShowConsoleMsg(guid.."\n")
+    --r.ShowConsoleMsg(chunk.."\n")
+
     if s1 then
         local s = s1
         local indent, op, cl = nil, nil, nil
@@ -137,9 +165,9 @@ function ExtractContainer(chunk, guid)
             if not indent then indent = 0 end
             cl = find(r_chunk, ('\n<'):reverse(), s + 1, true)
             op = find(r_chunk, ('\n>\n'):reverse(), s + 1, true) + 1
-            if op == nil and cl == nil then break end
+            if op == nil or cl == nil then break end
             if op ~= nil then
-                op = op + 1
+                op = op + 2
                 if op <= cl then
                     indent = indent + 1
                     s = op
@@ -268,7 +296,7 @@ function DrawPeak(dl, tbl, x, y, w, h)
         local val = (spl_stereo[1] + spl_stereo[2]) / 2
         --val = val * 0.2
         local i = 1 + (n * 2)
-        points[i] = x + (i*0.3)--* 0.2)
+        points[i] = x + (i * 0.3) --* 0.2)
         points[i + 1] = zero_y + (half_h * val)
 
         n = n + 1
@@ -292,9 +320,9 @@ function GetPeakInfo(tbl, lfo_type, freq, h)
         wf = Triangle(t, 1, 1, freq)
     elseif lfo_type == "5" then
         -- random
-        --wf = Triangle(t, 1, 1, freq * 2)    
+        --wf = Triangle(t, 1, 1, freq * 2)
     end
-    
+
     RingInsert(tbl, { wf, wf })
 end
 
