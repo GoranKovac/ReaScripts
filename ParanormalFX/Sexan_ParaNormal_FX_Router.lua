@@ -1,11 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.35.4
+-- @version 1.35.5
 -- @changelog
---  Set Vertical layout as default
---  FX Browser uses user font
---  Added lewloiwc Splitter Suite
+--  Fix Transient splitter chain
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
