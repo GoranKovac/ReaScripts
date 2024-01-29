@@ -1,9 +1,9 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.46
+-- @version 0.47
 -- @changelog
---  Remove Spriteonator from api
+--  Fix tableconstructor not allowing first input to change type
 -- @provides
 --   api_file.txt
 --   Modules/*.lua

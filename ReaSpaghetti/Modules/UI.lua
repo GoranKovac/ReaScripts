@@ -224,7 +224,7 @@ local function TableSpecial(node)
         if r.ImGui_BeginChild(ctx, "code_inputs") then
             for ins = 1, #node.inputs do
                 if node.inputs[ins].type ~= "CODE" then
-                    if ins > 1 then
+                    if ins > 0 then
                         local cur_type = node.inputs[ins].type
                         r.ImGui_PushID(ctx, "tc_inp" .. ins)
                         r.ImGui_SetNextItemWidth(ctx, avail_w / 3)
@@ -813,9 +813,9 @@ function Sidebar()
                 end
             end
 
-            if r.ImGui_IsItemHovered(ctx) then
-                Tooltip_Tutorial()
-            end
+            -- if r.ImGui_IsItemHovered(ctx) then
+            --     Tooltip_Tutorial()
+            -- end
 
             if r.ImGui_IsItemActive(ctx) and r.ImGui_IsMouseDragging(ctx, 0) then
                 if CUR_TAB == "API" then
