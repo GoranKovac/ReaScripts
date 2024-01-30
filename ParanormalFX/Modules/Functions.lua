@@ -6,7 +6,7 @@ local find = string.find
 
 local INV_TAU = 1 / (2 * math.pi)
 local sin, floor, abs, pi, fmod, randomseed, random = math.sin, math.floor, math.abs, math.pi, math.fmod, math
-.randomseed, math.random
+    .randomseed, math.random
 
 function Wrap(number)
     return number <= 1 and number or number - 1
@@ -65,7 +65,7 @@ function GetWaveType(shape, t, x, y, w, h, inv)
         return r.new_array(points, #points), Sine(t, h / 2, 1)
     elseif shape == 1 then
         shape_points = inv and { { 0, h - 2, w / 2, h - 2 }, { w / 2, 2, w / 2, h - 2 }, { w / 2, 2, w, 2 } } or
-        { { 0, 2, w / 2, 2 }, { w / 2, 2, w / 2, h - 2 }, { w / 2, h - 2, w, h - 2 } }
+            { { 0, 2, w / 2, 2 }, { w / 2, 2, w / 2, h - 2 }, { w / 2, h - 2, w, h - 2 } }
         return shape_points, -Square(t, (h / 2) - 2, 1)
     elseif shape == 2 then
         shape_points = { { 0, 2, w, h - 2 } }
@@ -94,16 +94,24 @@ function MapToParents(track, fx_id, p_id)
         if #new_idx ~= 0 then cont_idx = new_idx end
     end
     if cont_idx then
-        local _ , buf = r.TrackFX_GetNamedConfigParm(track, cont_idx, "container_map.add." .. fx_id .. "." .. p_id)
+        local _, buf = r.TrackFX_GetNamedConfigParm(track, cont_idx, "container_map.add." .. fx_id .. "." .. p_id)
         return cont_idx, buf
     end
 end
 
 function LinkLastTouched(track, src_fx_id, src_p_id)
-    local cur_fx_id, buf = MapToParents( track, LASTTOUCH_FX_ID, LASTTOUCH_P_ID)
-    r.TrackFX_SetNamedConfigParm(track, cur_fx_id, "param.".. buf ..".plink.active", 1)
-    r.TrackFX_SetNamedConfigParm(track, cur_fx_id, "param.".. buf ..".plink.effect", src_fx_id) 
-    r.TrackFX_SetNamedConfigParm(track, cur_fx_id, "param.".. buf ..".plink.param", src_p_id) 
+    local cur_fx_id, buf = MapToParents(track, LASTTOUCH_FX_ID, LASTTOUCH_P_ID)
+    -- TARGET IN CONTAINER
+    if buf then
+        -- TARGET IN CONTAINER
+        r.TrackFX_SetNamedConfigParm(track, cur_fx_id, "param." .. buf .. ".plink.active", 1)
+        r.TrackFX_SetNamedConfigParm(track, cur_fx_id, "param." .. buf .. ".plink.effect", src_fx_id)
+        r.TrackFX_SetNamedConfigParm(track, cur_fx_id, "param." .. buf .. ".plink.param", src_p_id)
+    else
+        r.TrackFX_SetNamedConfigParm(track, LASTTOUCH_FX_ID, "param." .. LASTTOUCH_P_ID .. ".plink.active", 1)
+        r.TrackFX_SetNamedConfigParm(track, LASTTOUCH_FX_ID, "param." .. LASTTOUCH_P_ID .. ".plink.effect", src_fx_id)
+        r.TrackFX_SetNamedConfigParm(track, LASTTOUCH_FX_ID, "param." .. LASTTOUCH_P_ID .. ".plink.param", src_p_id)
+    end
 end
 
 function OpenFX(id)

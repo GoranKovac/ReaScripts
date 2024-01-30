@@ -115,13 +115,13 @@ local HELPERS = {
         name = "5-Band Splitter",
         alt_name = "loser/5BandSplitter",
     },
-    -- {
-    --     fx = "JS:LFO",
-    --     fx_name = "FX LFO",
-    --     name = "LFO",
-    --     alt_name = "LFO.jsfx",
-    --     helper = "FX LFO"
-    -- },
+    {
+        fx = "JS:LFO",
+        fx_name = "FX LFO",
+        name = "LFO",
+        alt_name = "LFO.jsfx",
+        helper = "FX LFO"
+    },
     ----------------------------------------
     ----------------------------------------
     {
@@ -134,7 +134,8 @@ local HELPERS = {
     {
         fx = "JS:Frequency Splitter - Linkwitz-Riley Minimum Phase (lewloiwc)",
         fx_name = "LEWLOIWC 3 BAND SPLITTER MINIMAL PHASE",
-        alt_name = "Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_frequency_splitter_linkwitz-riley(minimum_phase).jsfx",
+        alt_name =
+        "Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_frequency_splitter_linkwitz-riley(minimum_phase).jsfx",
         name = "Frequency Splitter - Linkwitz-Riley Minimum Phase (lewloiwc)",
         helper = "LEWLOIWC 3 FREQUENCY SPLITTER MINIMAL PHASE"
     },
@@ -148,7 +149,8 @@ local HELPERS = {
     {
         fx = "JS:Frequency Splitter - Band and Notch (lewloiwc)",
         fx_name = "LEWLOIWC 2 BAND BAND/NOTCH",
-        alt_name = "Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_frequency_splitter_band_and_notch(minimum_phase).jsfx",
+        alt_name =
+        "Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_frequency_splitter_band_and_notch(minimum_phase).jsfx",
         name = "Frequency Splitter - Band and Notch (lewloiwc)",
         helper = "LEWLOIWC 2 BAND BAND/NOTCH"
     },
@@ -182,10 +184,14 @@ local my_jsfx = {
     ["Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_amplitude_splitter_gate.jsfx"] = "GATE SPLITTER",
     ["Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_amplitude_splitter_transient.jsfx"] = "TRANSIENT SPLITTER",
     ["Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_frequency_splitter.jsfx"] = "ENVELOPE FOLLOWER",
-    ["Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_amplitude_splitter_envelope_follower.jsfx"] = "LEWLOIWC 2-4 BAND MODE SPLITTER",
-    ["Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_frequency_splitter_linkwitz-riley(minimum_phase).jsfx"] = "LEWLOIWC 3 FREQUENCY SPLITTER MINIMAL PHASE",
-    ["Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_frequency_splitter_comb_and_phaser.jsfx"] = "LEWLOIWC 2 BAND COMB/PHASER",
-    ["Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_frequency_splitter_band_and_notch(minimum_phase).jsfx"] = "LEWLOIWC 2 BAND BAND/NOTCH",
+    ["Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_amplitude_splitter_envelope_follower.jsfx"] =
+    "LEWLOIWC 2-4 BAND MODE SPLITTER",
+    ["Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_frequency_splitter_linkwitz-riley(minimum_phase).jsfx"] =
+    "LEWLOIWC 3 FREQUENCY SPLITTER MINIMAL PHASE",
+    ["Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_frequency_splitter_comb_and_phaser.jsfx"] =
+    "LEWLOIWC 2 BAND COMB/PHASER",
+    ["Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_frequency_splitter_band_and_notch(minimum_phase).jsfx"] =
+    "LEWLOIWC 2 BAND BAND/NOTCH",
 }
 
 local function TrimMyJSName(name)
@@ -357,12 +363,14 @@ local function DndAddFX_SRC(fx)
         r.ImGui_SetDragDropPayload(ctx, 'DND ADD FX', fx)
         CreateCustomPreviewData(
             {
-                [1] = { bypass = true,
+                [1] = {
+                    bypass = true,
                     wet_val = 0,
                     p = 0,
                     guid = "BTN_PREVIEW",
                     type = "PREVIEW",
-                    name = Stripname(fx, true, true) },
+                    name = Stripname(fx, true, true)
+                },
                 is_ara = FindBlackListedFX(fx),
             }, 1)
         r.ImGui_EndDragDropSource(ctx)
@@ -800,7 +808,7 @@ function DrawFXList()
             AddFX(chain_src)
         end
         DndAddFX_SRC("../Scripts/Sexan_Scripts/ParanormalFX/FXChains/SAIKE_5_SETUP.RfxChain")
-        r.ImGui_SeparatorText(ctx, "CUSTOM ADVANCE")        
+        r.ImGui_SeparatorText(ctx, "CUSTOM ADVANCE")
         if r.ImGui_Selectable(ctx, "2-4 BAND CONFIGURABLE MODE SPLITTER") then
             local chain_src = "../Scripts/Sexan_Scripts/ParanormalFX/FXChains/LEWLOIWC_2_4_MODE_SETUP.RfxChain"
             AddFX(chain_src)
@@ -817,7 +825,7 @@ function DrawFXList()
             local chain_src = "../Scripts/Sexan_Scripts/ParanormalFX/FXChains/LEWLOIWC_3_MIN_PHASE_SETUP.RfxChain"
             AddFX(chain_src)
         end
-        
+
         r.ImGui_SeparatorText(ctx, "AMPLITUDE")
         if r.ImGui_Selectable(ctx, "TRANSIENT SPLITTER") then
             local chain_src = "../Scripts/Sexan_Scripts/ParanormalFX/FXChains/LEWLOIWC_TRANSIENT_SETUP.RfxChain"
@@ -994,6 +1002,7 @@ end
 
 local function HelperWidth(tbl, width)
     --if DRAG_PREVIEW then return width end
+    if tbl.type == "Container" then return width end
     if not tbl.is_helper then return width end
 
     if tbl.name == "VOL - PAN" then
@@ -1011,8 +1020,8 @@ local function HelperWidth(tbl, width)
         width = width + name_margin * 3
     elseif tbl.name:find("5-Band Splitter", nil, true) then
         width = width + name_margin * 4
-    -- elseif tbl.name:find("FX LFO", nil, true) then
-    --     width = width + name_margin * 2.5
+    elseif tbl.name:find("FX LFO", nil, true) then
+        width = width + name_margin * 2.5
     end
     return width
 end
@@ -1186,24 +1195,26 @@ local function IterateContainer(depth, track, container_id, parent_fx_count, pre
         local fx_guid = r.TrackFX_GetFXGUID(TRACK, 0x2000000 + fx_id)
         local _, fx_name = r.TrackFX_GetFXName(track, 0x2000000 + fx_id)
         local _, original_fx_name = r.TrackFX_GetNamedConfigParm(track, 0x2000000 + fx_id, "fx_name")
+        local _, fx_type = r.TrackFX_GetNamedConfigParm(track, 0x2000000 + fx_id, "fx_type")
+
         local is_helper
-        for h = 1, #HELPERS do
-            if fx_name:find(HELPERS[h].name, nil, true) then
-                fx_name = HELPERS[h].helper or fx_name
-                is_helper = true
-            elseif HELPERS[h].alt_name and fx_name:find(HELPERS[h].alt_name, nil, true) then
-                fx_name = HELPERS[h].helper or fx_name
-                is_helper = true
+        if fx_type ~= "Container" then
+            for h = 1, #HELPERS do
+                if fx_name:find(HELPERS[h].name, nil, true) then
+                    fx_name = HELPERS[h].helper or fx_name
+                    is_helper = true
+                elseif HELPERS[h].alt_name and fx_name:find(HELPERS[h].alt_name, nil, true) then
+                    fx_name = HELPERS[h].helper or fx_name
+                    is_helper = true
+                end
             end
         end
-
         if not stripped_names[fx_name] then
             local new_name = Stripname(fx_name, true, true)
             new_name = TrimMyJSName(new_name)
             stripped_names[fx_name] = new_name
         end
 
-        local _, fx_type = r.TrackFX_GetNamedConfigParm(track, 0x2000000 + fx_id, "fx_type")
         local _, para = r.TrackFX_GetNamedConfigParm(track, 0x2000000 + fx_id, "parallel")
         local wetparam = r.TrackFX_GetParamFromIdent(track, 0x2000000 + fx_id, ":wet")
         local wet_val = r.TrackFX_GetParam(track, 0x2000000 + fx_id, wetparam)
@@ -1297,13 +1308,15 @@ local function GenerateFXData(target)
         local _, original_fx_name = r.TrackFX_GetNamedConfigParm(track, i - 1, "fx_name")
 
         local is_helper
-        for h = 1, #HELPERS do
-            if fx_name:find(HELPERS[h].name, nil, true) then
-                fx_name = HELPERS[h].helper or fx_name
-                is_helper = true
-            elseif HELPERS[h].alt_name and fx_name:find(HELPERS[h].alt_name, nil, true) then
-                fx_name = HELPERS[h].helper or fx_name
-                is_helper = true
+        if fx_type ~= "Container" then
+            for h = 1, #HELPERS do
+                if fx_name:find(HELPERS[h].name, nil, true) then
+                    fx_name = HELPERS[h].helper or fx_name
+                    is_helper = true
+                elseif HELPERS[h].alt_name and fx_name:find(HELPERS[h].alt_name, nil, true) then
+                    fx_name = HELPERS[h].helper or fx_name
+                    is_helper = true
+                end
             end
         end
 
@@ -1868,7 +1881,7 @@ local function DrawHelper(tbl, i, w)
     local btn_hover, new_width
     if tbl[i].name:find("VOL - PAN", nil, true) then
         local vol_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 0) -- 0 IS VOL IDENTIFIER
-        r.ImGui_SameLine(ctx, -FLT_MIN, (mute *2) * CANVAS.scale)
+        r.ImGui_SameLine(ctx, -FLT_MIN, (mute * 2) * CANVAS.scale)
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_vol")
         local rvh_v, v = MyKnob("", "arc", vol_val, -60, 12, "vol")
         if rvh_v then
@@ -1899,7 +1912,7 @@ local function DrawHelper(tbl, i, w)
         r.ImGui_PopID(ctx)
         r.ImGui_SetCursorPosY(ctx, r.ImGui_GetCursorPosY(ctx))
     elseif tbl[i].name:find("POLARITY", nil, true) then
-        r.ImGui_SameLine(ctx, -FLT_MIN, (w - (mute *2) - (mute/2)) * CANVAS.scale)
+        r.ImGui_SameLine(ctx, -FLT_MIN, (w - (mute * 2) - (mute / 2)) * CANVAS.scale)
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_phase")
         local phase_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 0) -- 0 POLARITY NORMAL
         local pos = { r.ImGui_GetCursorScreenPos(ctx) }
@@ -1919,7 +1932,7 @@ local function DrawHelper(tbl, i, w)
         end
     elseif tbl[i].name:find("TIME", nil, true) then
         local vol_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 0) -- 0 POLARITY NORMAL
-        r.ImGui_SameLine(ctx, -FLT_MIN, (mute *2) * CANVAS.scale)
+        r.ImGui_SameLine(ctx, -FLT_MIN, (mute * 2) * CANVAS.scale)
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_time")
         local rvh_v, v = MyKnob("", "arc", vol_val, -1000, 1000, "ms")
         if rvh_v then
@@ -2044,33 +2057,54 @@ local function DrawHelper(tbl, i, w)
             if not btn_hover then btn_hover = r.ImGui_IsItemHovered(ctx) end
         end
         if not btn_hover then btn_hover = r.ImGui_IsItemHovered(ctx) end
-    elseif tbl[i].name:find("LFO",nil,true) then
+    elseif tbl[i].name:find("LFO", nil, true) then
         new_width = true
         local xx, yy = r.ImGui_GetCursorScreenPos(ctx)
-        local x = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 27) -- x
-        local y = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 23) -- y
+        local x = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 27)        -- x
+        local y = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 23)        -- y
         local lfo_shape = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 2) -- shape
-        xx = xx + (mute*2)
-        r.ImGui_DrawList_AddCircleFilled( draw_list, xx + (x* (w/6)), yy + def_btn_h/2 + (-y*(def_btn_h/3)), 4, 0xFF0000FF )
-        local aw = w/6
+        xx = xx + (mute * 2)
+        r.ImGui_DrawList_AddCircleFilled(draw_list, xx + (x * (w / 6)), yy + def_btn_h / 2 + (-y * (def_btn_h / 3)), 4,
+            0xFF0000FF)
+        local aw = w / 6
 
         local points2, y_pos = GetWaveType(tonumber(lfo_shape), 1, xx, yy, aw, (21 - 2), "invert")
         if y_pos then
             if tonumber(lfo_shape) ~= 0 then
                 for j = 1, #points2 do
-                  r.ImGui_DrawList_AddLine(draw_list, xx + points2[j][1], yy + points2[j][2],
+                    r.ImGui_DrawList_AddLine(draw_list, xx + points2[j][1], yy + points2[j][2],
                         xx + points2[j][3], yy + points2[j][4], 0xFFFFFF88)
                 end
             else
                 r.ImGui_DrawList_AddPolyline(draw_list, points2, 0xFFFFFF88, 0, 1)
             end
         end
-        r.ImGui_SameLine(ctx,0,50)
+        r.ImGui_SameLine(ctx, 0, 50)
         r.ImGui_PushID(ctx, tbl[i].guid .. "LINK")
-        if r.ImGui_Button(ctx, "LINK",0,def_btn_h) then
-            local src_param = 23
+        if r.ImGui_Button(ctx, "LINK", 0, def_btn_h) then
+            local src_param = 23 -- LFO MODULATOR
             local src_fx_id, buf = MapToParents(TRACK, tbl[i].FX_ID, src_param)
-            LinkLastTouched(TRACK, src_fx_id, buf)
+            if buf then
+                -- LFO IN CONTAINER
+                LinkLastTouched(TRACK, src_fx_id, buf)
+            else
+                -- LFO OUTSIDE CONTAINER
+                local cur_fx_id_target, buf_target = MapToParents(TRACK, LASTTOUCH_FX_ID, LASTTOUCH_P_ID)
+                if buf_target then
+                    -- FX IN CONTAINER
+                    r.TrackFX_SetNamedConfigParm(TRACK, cur_fx_id_target, "param." .. buf_target .. ".plink.active", 1)
+                    r.TrackFX_SetNamedConfigParm(TRACK, cur_fx_id_target, "param." .. buf_target .. ".plink.effect",
+                        tbl[i].FX_ID)
+                    r.TrackFX_SetNamedConfigParm(TRACK, cur_fx_id_target, "param." .. buf_target .. ".plink.param",
+                        src_param)
+                else
+                    r.TrackFX_SetNamedConfigParm(TRACK, LASTTOUCH_FX_ID, "param." .. LASTTOUCH_P_ID .. ".plink.active", 1)
+                    r.TrackFX_SetNamedConfigParm(TRACK, LASTTOUCH_FX_ID, "param." .. LASTTOUCH_P_ID .. ".plink.effect",
+                        tbl[i].FX_ID)
+                    r.TrackFX_SetNamedConfigParm(TRACK, LASTTOUCH_FX_ID, "param." .. LASTTOUCH_P_ID .. ".plink.param",
+                        src_param)
+                end
+            end
         end
         r.ImGui_PopID(ctx)
         if not btn_hover then btn_hover = r.ImGui_IsItemHovered(ctx) end
@@ -2080,7 +2114,7 @@ end
 
 function generateWave(w, h, shape)
     local samples = {}
-   
+
     for i = 1, w do
         local t = i / w
         local sample
@@ -2100,7 +2134,7 @@ function generateWave(w, h, shape)
         --Sine(t, def_btn_h/3, 1)
         table.insert(samples, sample)
     end
- 
+
     return samples
 end
 
@@ -2113,7 +2147,7 @@ function SetCollapseData(dollapse_tbl, tbl, i)
 end
 
 local concat = table.concat
-local function DrawButton(tbl, i, name, width, fade, parrent_color, cx,cy)
+local function DrawButton(tbl, i, name, width, fade, parrent_color, cx, cy)
     local is_cut = (CLIPBOARD and CLIPBOARD.cut and CLIPBOARD.guid == tbl[i].guid)
     local SPLITTER = r.ImGui_CreateDrawListSplitter(draw_list)
     r.ImGui_DrawListSplitter_Split(SPLITTER, 2)
@@ -2186,10 +2220,10 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color, cx,cy)
     local pm_hover
     if tbl[i].type ~= "ROOT" then
         --r.ImGui_SameLine(ctx, -FLT_MIN, (mute) * CANVAS.scale)
-        r.ImGui_SameLine(ctx,0,0)
+        r.ImGui_SameLine(ctx, 0, 0)
 
         r.ImGui_PushID(ctx, tbl[i].guid .. "PM_ACTIVE")
-        if r.ImGui_InvisibleButton(ctx, "##T", (mute/1.3) * CANVAS.scale, (mute * CANVAS.scale)) then
+        if r.ImGui_InvisibleButton(ctx, "##T", (mute / 1.3) * CANVAS.scale, (mute * CANVAS.scale)) then
             if PM_INSPECTOR_FXID and PM_INSPECTOR_FXID == tbl[i].FX_ID or not PM_INSPECTOR_FXID then
                 OPEN_PM_INSPECTOR = not OPEN_PM_INSPECTOR
             end
@@ -2198,9 +2232,9 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color, cx,cy)
         pm_hover = r.ImGui_IsItemHovered(ctx)
         local color = tbl[i].PM_active and COLOR["active_PM"] or TypToColor(tbl[i])
         color = tbl[i].bypass and color or COLOR["bypass"]
-    if DrawPreviewHideOriginal(tbl[i].guid) then
-        DrawListButton("U", color, pm_hover, true)
-    end
+        if DrawPreviewHideOriginal(tbl[i].guid) then
+            DrawListButton("U", color, pm_hover, true)
+        end
         Tooltip("PARAMETER INSPECTOR")
         r.ImGui_PopID(ctx)
     end
@@ -2275,7 +2309,7 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color, cx,cy)
         end
         --! VOLUME
         --r.ImGui_SameLine(ctx, 0, (width - volume) * CANVAS.scale)
-        r.ImGui_SetCursorScreenPos(ctx, cx + (width-mute)*CANVAS.scale, cy)
+        r.ImGui_SetCursorScreenPos(ctx, cx + (width - mute) * CANVAS.scale, cy)
         if DrawPreviewHideOriginal(tbl[i].guid) then
             r.ImGui_PushID(ctx, tbl[i].guid .. "wet/dry")
             local is_vol
@@ -2633,7 +2667,8 @@ local function CustomDNDPreview()
             local w, h = ItemFullSize(DRAG_PREVIEW[DRAG_PREVIEW.i])
             if r.ImGui_BeginChild(ctx, "##PREVIEW_DRAW_CONTAINER", (w + def_s_window_x) * CANVAS.scale, (h + (def_s_window_y * 2)) * CANVAS.scale, true) then
                 local x, y = r.ImGui_GetCursorScreenPos(ctx)
-                DrawButton(DRAG_PREVIEW, DRAG_PREVIEW.i, DRAG_PREVIEW[DRAG_PREVIEW.i].name, w - def_s_spacing_x, 1, nil, x, y)
+                DrawButton(DRAG_PREVIEW, DRAG_PREVIEW.i, DRAG_PREVIEW[DRAG_PREVIEW.i].name, w - def_s_spacing_x, 1, nil,
+                    x, y)
                 if not is_collapsed then
                     if V_LAYOUT == true then
                         DrawPlugins(MX + off_x + (w / 2.2) * CANVAS.scale, MY + def_btn_h * CANVAS.scale,
@@ -2649,7 +2684,7 @@ local function CustomDNDPreview()
         else
             local width, height = ItemFullSize(DRAG_PREVIEW[DRAG_PREVIEW.i])
             --width = HelperWidth(DRAG_PREVIEW[DRAG_PREVIEW.i], width)
-            if r.ImGui_BeginChild(ctx, "##PREVIEW_DRAW_FX", (width + def_s_window_x*2) * CANVAS.scale, (height + def_s_window_y * 2) * CANVAS.scale, true) then
+            if r.ImGui_BeginChild(ctx, "##PREVIEW_DRAW_FX", (width + def_s_window_x * 2) * CANVAS.scale, (height + def_s_window_y * 2) * CANVAS.scale, true) then
                 local x, y = r.ImGui_GetCursorScreenPos(ctx)
                 --r.ImGui_SetCursorScreenPos(ctx,0,0)
                 DrawButton(DRAG_PREVIEW, DRAG_PREVIEW.i, DRAG_PREVIEW[DRAG_PREVIEW.i].name, width, 1, nil, x, y)
@@ -2663,7 +2698,7 @@ local function CustomDNDPreview()
                 r.ImGui_SetNextWindowBgAlpha(ctx, 0.6)
                 r.ImGui_SetCursorScreenPos(ctx, MX - px, MY + off_y)
                 local H_OFF = not V_LAYOUT and para_btn_size or 0
-                if r.ImGui_BeginChild(ctx, "##PEAK_DRAW_CONTAINER", PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].W* CANVAS.scale, (H_OFF + PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].H) * CANVAS.scale, true) then
+                if r.ImGui_BeginChild(ctx, "##PEAK_DRAW_CONTAINER", PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].W * CANVAS.scale, (H_OFF + PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].H) * CANVAS.scale, true) then
                     local x, y = r.ImGui_GetCursorScreenPos(ctx)
                     DrawButton(PREVIEW_TOOLTIP, PREVIEW_TOOLTIP.i, PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].name,
                         PREVIEW_TOOLTIP[PREVIEW_TOOLTIP.i].W - s_window_x, 1, nil, x, y)

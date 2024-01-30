@@ -1,9 +1,12 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.35.5
+-- @version 1.35.6
 -- @changelog
---  Fix Transient splitter chain
+--  Exclude containers from being processed as helpers
+--  Added SNJUK2 LFO
+--  LFO Preview and learn/map button
+--  LastTouch mapping for Container/Root and all other combinations
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -35,7 +38,7 @@ end
 
 -- JSFX paths
 local saike_splitter_path    = reaper_path .. "/Effects/Saike Tools/Basics/BandSplitter.jsfx"
---local lfos_path = reaper_path .. "/Effects/ReaTeam JSFX/Modulation/snjuk2_LFO.jsfx"
+local lfos_path = reaper_path .. "/Effects/ReaTeam JSFX/Modulation/snjuk2_LFO.jsfx"
 local splitters_path = reaper_path .. "/Effects/Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_frequency_splitter.jsfx"
 
 
@@ -80,9 +83,9 @@ local function CheckDeps()
     if not r.file_exists(fm_script_path) then
         deps[#deps + 1] = '"Sexan ImGui FileManager"'
     end
-    -- if not r.file_exists(lfos_path) then
-    --     deps[#deps + 1] = '"Snjuk2"'
-    -- end
+    if not r.file_exists(lfos_path) then
+        deps[#deps + 1] = '"Snjuk2"'
+    end
     if not r.file_exists(splitters_path) then
         deps[#deps + 1] = [["lewloiwc's Splitter Suite"]]
     end
