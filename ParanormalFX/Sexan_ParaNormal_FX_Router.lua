@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.35.7
+-- @version 1.35.8
 -- @changelog
---  Properly calculate native lfo preview when tempo sync is enabled
+--  User settings have collapsed headers to preserve space and "avoid" scrolling
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf

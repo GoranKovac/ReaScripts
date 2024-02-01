@@ -966,8 +966,17 @@ function DrawUserSettings()
     if not r.ImGui_BeginChild(ctx, 'toolbars', -FLT_MIN, -FLT_MIN, false, r.ImGui_WindowFlags_NoInputs()) then return end
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x000000EE)
     r.ImGui_SetNextWindowPos(ctx, WX + 5, WY + 65)
-
-    if r.ImGui_BeginChild(ctx, "USERSETTIGS", 220, 718, true) then
+    local settings_min_h = 196
+    if CLH_LAYOUT then
+        settings_min_h = settings_min_h + 157
+    end
+    if CLH_COLORING then
+        settings_min_h = settings_min_h + 207
+    end
+    if CLH_BEHAVIORS then
+        settings_min_h = settings_min_h + 157
+    end
+    if r.ImGui_BeginChild(ctx, "USERSETTIGS", 220, settings_min_h, true) then --718
         SETTINGS_HOVERED = r.ImGui_IsWindowHovered(ctx)
         local COLOR = GetColorTbl()
         if r.ImGui_Button(ctx, "RESCAN FX LIST") then
@@ -975,8 +984,9 @@ function DrawUserSettings()
         end
         SettingsTooltips("FX LIST IS CACHED TO FILE FOR FASTER LOADING TIMES\nNEEDS MANUAL TRIGGER FOR UPDATING")
 
-        r.ImGui_SeparatorText(ctx, "UI")
-        if r.ImGui_BeginListBox(ctx, "FONT", nil, 38) then
+        r.ImGui_SeparatorText(ctx, "FONT")
+        r.ImGui_PushID(ctx,"SETTINGS_FONT")
+        if r.ImGui_BeginListBox(ctx, "", nil, 38) then
             if r.ImGui_Selectable(ctx, "DEFAULT", CUSTOM_FONT == nil) then
                 SELECTED_FONT = DEFAULT_FONT
                 CUSTOM_FONT = nil
@@ -987,7 +997,11 @@ function DrawUserSettings()
             end
             r.ImGui_EndListBox(ctx)
         end
-        r.ImGui_SeparatorText(ctx, "LAYOUT")
+        r.ImGui_PopID(ctx)
+        --r.ImGui_SeparatorText(ctx, "LAYOUT")
+        --! LAYOUT COLLAPSE
+        CLH_LAYOUT = r.ImGui_CollapsingHeader( ctx, "LAYOUT", false )
+        if CLH_LAYOUT then
         if r.ImGui_BeginListBox(ctx, "##LAYOUT1234", nil, 38) then
             if r.ImGui_Selectable(ctx, "VERTICAL", V_LAYOUT == true) then
                 if V_LAYOUT ~= true then
@@ -1019,7 +1033,12 @@ function DrawUserSettings()
         _, ADD_BTN_W = r.ImGui_SliderInt(ctx, "+ WIDTH", ADD_BTN_W, 20, 100)
         r.ImGui_SetNextItemWidth(ctx, 50)
         _, WireThickness = r.ImGui_SliderInt(ctx, "WIRE THICKNESS", WireThickness, 1, 5)
-        r.ImGui_SeparatorText(ctx, "COLORING")
+    end
+        --r.ImGui_SeparatorText(ctx, "COLORING")
+        --! LAYOUT COLLAPSE
+        CLH_COLORING = r.ImGui_CollapsingHeader( ctx, "COLORING", false )
+        if CLH_COLORING then
+
         --_, AUTO_COLORING = r.ImGui_Checkbox(ctx, "AUTO COLORING", AUTO_COLORING)
         --r.ImGui_Separator(ctx)
         _, COLOR["wire"] = r.ImGui_ColorEdit4(ctx, "WIRE COLOR", COLOR["wire"], r.ImGui_ColorEditFlags_NoInputs())
@@ -1040,7 +1059,11 @@ function DrawUserSettings()
             r.ImGui_ColorEditFlags_NoInputs())
         _, COLOR["sine_anim"] = r.ImGui_ColorEdit4(ctx, "ANIMATED HIGLIGHT", COLOR["sine_anim"],
             r.ImGui_ColorEditFlags_NoInputs())
-        r.ImGui_SeparatorText(ctx, "BEHAVIORS")
+        end
+        --r.ImGui_SeparatorText(ctx, "BEHAVIORS")
+         --! LAYOUT COLORING
+         CLH_BEHAVIORS = r.ImGui_CollapsingHeader( ctx, "BEHAVIORS", false )
+        if CLH_BEHAVIORS then
         _, TOOLTIPS = r.ImGui_Checkbox(ctx, "SHOW TOOLTIPS", TOOLTIPS)
         _, SHOW_C_CONTENT_TOOLTIP = r.ImGui_Checkbox(ctx, "PEEK COLLAPSED CONTAINER", SHOW_C_CONTENT_TOOLTIP)
         SettingsTooltips("HOVERING OVER CONTAINER COLLAPSED BUTTON \nWILL DRAW PREVIEW OF CONTAINER CONTENT")
@@ -1059,6 +1082,7 @@ function DrawUserSettings()
             r.ImGui_EndListBox(ctx)
         end
         SettingsTooltips("DRAGGING NEW FX FROM BROWSER TO ANOTHER FX")
+    end
         r.ImGui_Separator(ctx)
 
         if r.ImGui_Button(ctx, "DEFAULT") then
