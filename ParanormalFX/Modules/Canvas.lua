@@ -653,6 +653,8 @@ local function PMTable()
         ImGui.TableSetupColumn(ctx, 'LFO')
         ImGui.TableSetupColumn(ctx, 'SHAPE')
         --!ImGui.TableSetupColumn(ctx, 'ENV')
+        --ImGui.TableSetupColumn(ctx, 'LINK')
+
         --ImGui.TableSetupColumn(ctx, 'INP')
         --ImGui.TableSetupColumn(ctx, 'TYP')
         ImGui.TableHeadersRow(ctx)
@@ -664,6 +666,8 @@ local function PMTable()
             local _, lfo = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.active")
             local _, lfo_speed = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.speed")
             local _, lfo_shape = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.shape")
+            local _, lfo_temposync = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.temposync")
+            local _, plink = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".plink.active")
             local fx_env = r.GetFXEnvelope(TRACK, PM_INSPECTOR_FXID, p_id, false)
             --!local has_points = (fx_env and r.CountEnvelopePoints(fx_env) > 2)
             if mod == "1" or acs == "1" or lfo == "1" or has_points then
@@ -740,7 +744,10 @@ local function PMTable()
                     elseif column == 4 then
                         local xx, yy = r.ImGui_GetCursorScreenPos(ctx)
                         local aw = r.ImGui_GetContentRegionAvail(ctx)
-                        local x_speed = ReaperPhase(tonumber(lfo_speed))
+                        if lfo_temposync == "1" then
+                            lfo_speed =  1/r.TimeMap_QNToTime( tonumber(lfo_speed))
+                        end
+                        local x_speed = ReaperPhase(tonumber(lfo_speed))            
                         local points, y_pos = GetWaveType(tonumber(lfo_shape), x_speed, xx, yy, aw, (21 - 2))
                         if y_pos and lfo == "1" then
                             if lfo_shape ~= "0" then
@@ -794,6 +801,14 @@ local function PMTable()
                         if has_points then
                             r.ImGui_PopStyleColor(ctx)
                         end
+                    -- elseif column == 5 then
+                    --     if r.ImGui_Checkbox(ctx, "##PLINK" .. PM_INSPECTOR_FXID .. p_id, plink == "1") then
+                    --         if plink == "1" then
+                    --             r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".plink.active", "")
+                    --             r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".plink.effect", "")
+                    --             r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".plink.param", "")
+                    --         end
+                    --     end
                     end
                 end
             end

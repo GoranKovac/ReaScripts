@@ -1,12 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.35.6
+-- @version 1.35.7
 -- @changelog
---  Exclude containers from being processed as helpers
---  Added SNJUK2 LFO
---  LFO Preview and learn/map button
---  LastTouch mapping for Container/Root and all other combinations
+--  Properly calculate native lfo preview when tempo sync is enabled
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
