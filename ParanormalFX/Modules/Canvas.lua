@@ -386,16 +386,24 @@ local function PMMenu()
     if PM_RC_DATA.type == "ACS" then
         if r.ImGui_MenuItem(ctx, "RESET TO ACS DEFAULT") then
             for i = 1, #ACS_TBL do
-                r.TrackFX_SetNamedConfigParm(TRACK, PM_RC_DATA.fx_id, "param." .. PM_RC_DATA.p_id .. ".acs." .. ACS_TBL[i],
+                r.TrackFX_SetNamedConfigParm(TRACK, PM_RC_DATA.fx_id,
+                    "param." .. PM_RC_DATA.p_id .. ".acs." .. ACS_TBL[i],
                     ACS_defaults[i])
             end
         end
     elseif PM_RC_DATA.type == "LFO" then
         if r.ImGui_MenuItem(ctx, "RESET TO LFO DEFAULT") then
             for i = 1, #LFO_TBL do
-                r.TrackFX_SetNamedConfigParm(TRACK, PM_RC_DATA.fx_id, "param." .. PM_RC_DATA.p_id .. ".lfo." .. LFO_TBL[i],
+                r.TrackFX_SetNamedConfigParm(TRACK, PM_RC_DATA.fx_id,
+                    "param." .. PM_RC_DATA.p_id .. ".lfo." .. LFO_TBL[i],
                     LFO_defaults[i])
             end
+        end
+    elseif PM_RC_DATA.type == "ENV" then
+        if r.ImGui_MenuItem(ctx, "DELETE ENVELOPE") then
+            r.SetCursorContext(2, PM_RC_DATA.fx_id)
+            r.Main_OnCommand(40065, 0)
+            r.SetCursorContext(2)
         end
     end
 end
@@ -645,14 +653,14 @@ end
 local tbl_flags = ImGui.TableFlags_SizingFixedFit()| ImGui.TableFlags_Borders() | ImGui.TableFlags_SizingFixedFit()
 local function PMTable()
     if not PM_INSPECTOR_FXID then return end
-    local columns = 5
+    local columns = 6
     if ImGui.BeginTable(ctx, 'ALL_PARAMETERS', columns, tbl_flags) then
         ImGui.TableSetupColumn(ctx, 'PARAMETER', r.ImGui_TableColumnFlags_WidthStretch())
         ImGui.TableSetupColumn(ctx, 'PMD')
         ImGui.TableSetupColumn(ctx, 'ACS')
         ImGui.TableSetupColumn(ctx, 'LFO')
         ImGui.TableSetupColumn(ctx, 'SHAPE')
-        --!ImGui.TableSetupColumn(ctx, 'ENV')
+        ImGui.TableSetupColumn(ctx, 'ENV')
         --ImGui.TableSetupColumn(ctx, 'LINK')
 
         --ImGui.TableSetupColumn(ctx, 'INP')
@@ -666,10 +674,10 @@ local function PMTable()
             local _, lfo = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.active")
             local _, lfo_speed = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.speed")
             local _, lfo_shape = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.shape")
-            local _, lfo_temposync = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.temposync")
+            local _, lfo_temposync = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID,"param." .. p_id .. ".lfo.temposync")
             local _, plink = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".plink.active")
             local fx_env = r.GetFXEnvelope(TRACK, PM_INSPECTOR_FXID, p_id, false)
-            --!local has_points = (fx_env and r.CountEnvelopePoints(fx_env) > 2)
+            local has_points = (fx_env and r.CountEnvelopePoints(fx_env) > 2)
             if mod == "1" or acs == "1" or lfo == "1" or has_points then
                 ImGui.TableNextRow(ctx)
                 for column = 0, columns - 1 do
@@ -745,9 +753,9 @@ local function PMTable()
                         local xx, yy = r.ImGui_GetCursorScreenPos(ctx)
                         local aw = r.ImGui_GetContentRegionAvail(ctx)
                         if lfo_temposync == "1" then
-                            lfo_speed =  1/r.TimeMap_QNToTime( tonumber(lfo_speed))
+                            lfo_speed = 1 / r.TimeMap_QNToTime(tonumber(lfo_speed))
                         end
-                        local x_speed = ReaperPhase(tonumber(lfo_speed))            
+                        local x_speed = ReaperPhase(tonumber(lfo_speed))
                         local points, y_pos = GetWaveType(tonumber(lfo_shape), x_speed, xx, yy, aw, (21 - 2))
                         if y_pos and lfo == "1" then
                             if lfo_shape ~= "0" then
@@ -772,43 +780,37 @@ local function PMTable()
                         end
                         if r.ImGui_Checkbox(ctx, "##ENV_new" .. PM_INSPECTOR_FXID .. p_id, is_visible) then
                             r.GetFXEnvelope(TRACK, PM_INSPECTOR_FXID, p_id, true)
-                            local enabled_previously
-                            --! WEIRD HACK TO BRING ENVELOPE BACK VISIBLE WHEN CHUNK IS NOT RESPONDING
-                            if not is_visible and fx_env then
-                                r.TrackList_AdjustWindows(false)
-                                enabled_previously = true
-                            end
                             if env_chunk then
-                                if not ALT then
-                                    local vis = env_chunk:match("VIS (%d+)")
-                                    if vis == "1" then
-                                        env_chunk = env_chunk:gsub("VIS 1", "VIS 0", 1)
-                                        r.SetCursorContext(2, fx_env)
-                                    elseif vis == "0" and not enabled_previously then
-                                        env_chunk = env_chunk:gsub("VIS 0", "VIS 1", 1)
-                                    end
-                                    if not enabled_previously then
-                                        r.SetEnvelopeStateChunk(fx_env, env_chunk, false)
-                                    end
-                                elseif ALT and is_visible then
+                                local vis = env_chunk:match("VIS (%d+)")
+                                if vis == "1" then
+                                    env_chunk = env_chunk:gsub("VIS 1", "VIS 0", 1)
                                     r.SetCursorContext(2, fx_env)
-                                    r.Main_OnCommand(40065, 0)
-                                    r.SetCursorContext(2)
+                                elseif vis == "0" then--and not enabled_previously then
+                                    env_chunk = env_chunk:gsub("VIS 0", "VIS 1", 1)
                                 end
+                                r.SetEnvelopeStateChunk(fx_env, env_chunk, false)
                             end
-                            r.TrackList_AdjustWindows(false)
+                            --r.TrackList_AdjustWindows(false)
+                        end
+                        if r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseReleased(ctx, 1) and env_chunk then
+                            PM_RC_DATA = {
+                                type = "ENV",
+                                p_id = p_id,
+                                fx_id = fx_env,
+                            }
+                            OPEN_PM_MENU = true
                         end
                         if has_points then
                             r.ImGui_PopStyleColor(ctx)
                         end
-                    -- elseif column == 5 then
-                    --     if r.ImGui_Checkbox(ctx, "##PLINK" .. PM_INSPECTOR_FXID .. p_id, plink == "1") then
-                    --         if plink == "1" then
-                    --             r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".plink.active", "")
-                    --             r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".plink.effect", "")
-                    --             r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".plink.param", "")
-                    --         end
-                    --     end
+                        -- elseif column == 5 then
+                        --     if r.ImGui_Checkbox(ctx, "##PLINK" .. PM_INSPECTOR_FXID .. p_id, plink == "1") then
+                        --         if plink == "1" then
+                        --             r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".plink.active", "")
+                        --             r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".plink.effect", "")
+                        --             r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".plink.param", "")
+                        --         end
+                        --     end
                     end
                 end
             end
@@ -985,7 +987,7 @@ function DrawUserSettings()
         SettingsTooltips("FX LIST IS CACHED TO FILE FOR FASTER LOADING TIMES\nNEEDS MANUAL TRIGGER FOR UPDATING")
 
         r.ImGui_SeparatorText(ctx, "FONT")
-        r.ImGui_PushID(ctx,"SETTINGS_FONT")
+        r.ImGui_PushID(ctx, "SETTINGS_FONT")
         if r.ImGui_BeginListBox(ctx, "", nil, 38) then
             if r.ImGui_Selectable(ctx, "DEFAULT", CUSTOM_FONT == nil) then
                 SELECTED_FONT = DEFAULT_FONT
@@ -1000,89 +1002,89 @@ function DrawUserSettings()
         r.ImGui_PopID(ctx)
         --r.ImGui_SeparatorText(ctx, "LAYOUT")
         --! LAYOUT COLLAPSE
-        CLH_LAYOUT = r.ImGui_CollapsingHeader( ctx, "LAYOUT", false )
+        CLH_LAYOUT = r.ImGui_CollapsingHeader(ctx, "LAYOUT", false)
         if CLH_LAYOUT then
-        if r.ImGui_BeginListBox(ctx, "##LAYOUT1234", nil, 38) then
-            if r.ImGui_Selectable(ctx, "VERTICAL", V_LAYOUT == true) then
-                if V_LAYOUT ~= true then
-                    V_LAYOUT = true
-                    RevertVertical()
-                    ResetView(true)
+            if r.ImGui_BeginListBox(ctx, "##LAYOUT1234", nil, 38) then
+                if r.ImGui_Selectable(ctx, "VERTICAL", V_LAYOUT == true) then
+                    if V_LAYOUT ~= true then
+                        V_LAYOUT = true
+                        RevertVertical()
+                        ResetView(true)
+                    end
                 end
-            end
-            if r.ImGui_Selectable(ctx, "HORIZONTAL", V_LAYOUT == false) then
-                if V_LAYOUT ~= false then
-                    V_LAYOUT = false
-                    DefaultHorizontal()
-                    ResetView(true)
+                if r.ImGui_Selectable(ctx, "HORIZONTAL", V_LAYOUT == false) then
+                    if V_LAYOUT ~= false then
+                        V_LAYOUT = false
+                        DefaultHorizontal()
+                        ResetView(true)
+                    end
                 end
+                r.ImGui_EndListBox(ctx)
             end
-            r.ImGui_EndListBox(ctx)
+            r.ImGui_SetNextItemWidth(ctx, 50)
+            _, ZOOM_MAX = r.ImGui_SliderInt(ctx, "MAX ZOOM", ZOOM_MAX, 1, 3)
+            r.ImGui_SetNextItemWidth(ctx, 100)
+            _, new_spacing_y = r.ImGui_SliderInt(ctx, "SPACING", new_spacing_y, 0, 20)
+            r.ImGui_SetNextItemWidth(ctx, 100)
+
+            if not V_LAYOUT then r.ImGui_BeginDisabled(ctx, true) end
+            _, ADD_BTN_H = r.ImGui_SliderInt(ctx, "+ HEIGHT", ADD_BTN_H, 10, 22)
+            r.ImGui_SetNextItemWidth(ctx, 100)
+            if not V_LAYOUT then r.ImGui_EndDisabled(ctx) end
+
+            _, ADD_BTN_W = r.ImGui_SliderInt(ctx, "+ WIDTH", ADD_BTN_W, 20, 100)
+            r.ImGui_SetNextItemWidth(ctx, 50)
+            _, WireThickness = r.ImGui_SliderInt(ctx, "WIRE THICKNESS", WireThickness, 1, 5)
         end
-        r.ImGui_SetNextItemWidth(ctx, 50)
-        _, ZOOM_MAX = r.ImGui_SliderInt(ctx, "MAX ZOOM", ZOOM_MAX, 1, 3)
-        r.ImGui_SetNextItemWidth(ctx, 100)
-        _, new_spacing_y = r.ImGui_SliderInt(ctx, "SPACING", new_spacing_y, 0, 20)
-        r.ImGui_SetNextItemWidth(ctx, 100)
-
-        if not V_LAYOUT then r.ImGui_BeginDisabled(ctx, true) end
-        _, ADD_BTN_H = r.ImGui_SliderInt(ctx, "+ HEIGHT", ADD_BTN_H, 10, 22)
-        r.ImGui_SetNextItemWidth(ctx, 100)
-        if not V_LAYOUT then r.ImGui_EndDisabled(ctx) end
-
-        _, ADD_BTN_W = r.ImGui_SliderInt(ctx, "+ WIDTH", ADD_BTN_W, 20, 100)
-        r.ImGui_SetNextItemWidth(ctx, 50)
-        _, WireThickness = r.ImGui_SliderInt(ctx, "WIRE THICKNESS", WireThickness, 1, 5)
-    end
         --r.ImGui_SeparatorText(ctx, "COLORING")
         --! LAYOUT COLLAPSE
-        CLH_COLORING = r.ImGui_CollapsingHeader( ctx, "COLORING", false )
+        CLH_COLORING = r.ImGui_CollapsingHeader(ctx, "COLORING", false)
         if CLH_COLORING then
+            --_, AUTO_COLORING = r.ImGui_Checkbox(ctx, "AUTO COLORING", AUTO_COLORING)
+            --r.ImGui_Separator(ctx)
+            _, COLOR["wire"] = r.ImGui_ColorEdit4(ctx, "WIRE COLOR", COLOR["wire"], r.ImGui_ColorEditFlags_NoInputs())
+            --if AUTO_COLORING then r.ImGui_BeginDisabled(ctx, true) end
+            _, COLOR["n"] = r.ImGui_ColorEdit4(ctx, "FX COLOR", COLOR["n"], r.ImGui_ColorEditFlags_NoInputs())
+            _, COLOR["Container"] = r.ImGui_ColorEdit4(ctx, "CONTAINER COLOR", COLOR["Container"],
+                r.ImGui_ColorEditFlags_NoInputs())
+            _, COLOR["bypass"] = r.ImGui_ColorEdit4(ctx, "BYPASS COLOR", COLOR["bypass"],
+                r.ImGui_ColorEditFlags_NoInputs())
+            _, COLOR["offline"] = r.ImGui_ColorEdit4(ctx, "OFFLINE COLOR", COLOR["offline"],
+                r.ImGui_ColorEditFlags_NoInputs())
+            --if AUTO_COLORING then r.ImGui_EndDisabled(ctx) end
 
-        --_, AUTO_COLORING = r.ImGui_Checkbox(ctx, "AUTO COLORING", AUTO_COLORING)
-        --r.ImGui_Separator(ctx)
-        _, COLOR["wire"] = r.ImGui_ColorEdit4(ctx, "WIRE COLOR", COLOR["wire"], r.ImGui_ColorEditFlags_NoInputs())
-        --if AUTO_COLORING then r.ImGui_BeginDisabled(ctx, true) end
-        _, COLOR["n"] = r.ImGui_ColorEdit4(ctx, "FX COLOR", COLOR["n"], r.ImGui_ColorEditFlags_NoInputs())
-        _, COLOR["Container"] = r.ImGui_ColorEdit4(ctx, "CONTAINER COLOR", COLOR["Container"],
-            r.ImGui_ColorEditFlags_NoInputs())
-        _, COLOR["bypass"] = r.ImGui_ColorEdit4(ctx, "BYPASS COLOR", COLOR["bypass"], r.ImGui_ColorEditFlags_NoInputs())
-        _, COLOR["offline"] = r.ImGui_ColorEdit4(ctx, "OFFLINE COLOR", COLOR["offline"],
-            r.ImGui_ColorEditFlags_NoInputs())
-        --if AUTO_COLORING then r.ImGui_EndDisabled(ctx) end
-
-        _, COLOR["parallel"] = r.ImGui_ColorEdit4(ctx, "+ || COLOR", COLOR["parallel"],
-            r.ImGui_ColorEditFlags_NoInputs())
-        _, COLOR["knob_vol"] = r.ImGui_ColorEdit4(ctx, "KNOB VOLUME", COLOR["knob_vol"],
-            r.ImGui_ColorEditFlags_NoInputs())
-        _, COLOR["knob_drywet"] = r.ImGui_ColorEdit4(ctx, "KNOB DRY/WET", COLOR["knob_drywet"],
-            r.ImGui_ColorEditFlags_NoInputs())
-        _, COLOR["sine_anim"] = r.ImGui_ColorEdit4(ctx, "ANIMATED HIGLIGHT", COLOR["sine_anim"],
-            r.ImGui_ColorEditFlags_NoInputs())
+            _, COLOR["parallel"] = r.ImGui_ColorEdit4(ctx, "+ || COLOR", COLOR["parallel"],
+                r.ImGui_ColorEditFlags_NoInputs())
+            _, COLOR["knob_vol"] = r.ImGui_ColorEdit4(ctx, "KNOB VOLUME", COLOR["knob_vol"],
+                r.ImGui_ColorEditFlags_NoInputs())
+            _, COLOR["knob_drywet"] = r.ImGui_ColorEdit4(ctx, "KNOB DRY/WET", COLOR["knob_drywet"],
+                r.ImGui_ColorEditFlags_NoInputs())
+            _, COLOR["sine_anim"] = r.ImGui_ColorEdit4(ctx, "ANIMATED HIGLIGHT", COLOR["sine_anim"],
+                r.ImGui_ColorEditFlags_NoInputs())
         end
         --r.ImGui_SeparatorText(ctx, "BEHAVIORS")
-         --! LAYOUT COLORING
-         CLH_BEHAVIORS = r.ImGui_CollapsingHeader( ctx, "BEHAVIORS", false )
+        --! LAYOUT COLORING
+        CLH_BEHAVIORS = r.ImGui_CollapsingHeader(ctx, "BEHAVIORS", false)
         if CLH_BEHAVIORS then
-        _, TOOLTIPS = r.ImGui_Checkbox(ctx, "SHOW TOOLTIPS", TOOLTIPS)
-        _, SHOW_C_CONTENT_TOOLTIP = r.ImGui_Checkbox(ctx, "PEEK COLLAPSED CONTAINER", SHOW_C_CONTENT_TOOLTIP)
-        SettingsTooltips("HOVERING OVER CONTAINER COLLAPSED BUTTON \nWILL DRAW PREVIEW OF CONTAINER CONTENT")
-        _, ESC_CLOSE = r.ImGui_Checkbox(ctx, "CLOSE ON ESC", ESC_CLOSE)
-        _, ANIMATED_HIGLIGHT = r.ImGui_Checkbox(ctx, "ANIMATED HIGHLIGHT", ANIMATED_HIGLIGHT)
-        SettingsTooltips("+ || BUTTONS HAVE ANIMATED COLOR\nFOR BETTER VISIBILITY WHEN DRAGGING")
-        _, CTRL_DRAG_AUTOCONTAINER = r.ImGui_Checkbox(ctx, "CTRL-DRAG AUTOCONTAINER", CTRL_DRAG_AUTOCONTAINER)
-        SettingsTooltips("CTRL-DRAG COPYING FX OVER ANOTHER FX\nWILL ENCLOSE BOTH IN CONTAINER")
-        if r.ImGui_BeginListBox(ctx, "NEW FX\nDND", nil, 38) then
-            if r.ImGui_Selectable(ctx, "REPLACE", DEFAULT_DND == true) then
-                DEFAULT_DND = true
+            _, TOOLTIPS = r.ImGui_Checkbox(ctx, "SHOW TOOLTIPS", TOOLTIPS)
+            _, SHOW_C_CONTENT_TOOLTIP = r.ImGui_Checkbox(ctx, "PEEK COLLAPSED CONTAINER", SHOW_C_CONTENT_TOOLTIP)
+            SettingsTooltips("HOVERING OVER CONTAINER COLLAPSED BUTTON \nWILL DRAW PREVIEW OF CONTAINER CONTENT")
+            _, ESC_CLOSE = r.ImGui_Checkbox(ctx, "CLOSE ON ESC", ESC_CLOSE)
+            _, ANIMATED_HIGLIGHT = r.ImGui_Checkbox(ctx, "ANIMATED HIGHLIGHT", ANIMATED_HIGLIGHT)
+            SettingsTooltips("+ || BUTTONS HAVE ANIMATED COLOR\nFOR BETTER VISIBILITY WHEN DRAGGING")
+            _, CTRL_DRAG_AUTOCONTAINER = r.ImGui_Checkbox(ctx, "CTRL-DRAG AUTOCONTAINER", CTRL_DRAG_AUTOCONTAINER)
+            SettingsTooltips("CTRL-DRAG COPYING FX OVER ANOTHER FX\nWILL ENCLOSE BOTH IN CONTAINER")
+            if r.ImGui_BeginListBox(ctx, "NEW FX\nDND", nil, 38) then
+                if r.ImGui_Selectable(ctx, "REPLACE", DEFAULT_DND == true) then
+                    DEFAULT_DND = true
+                end
+                if r.ImGui_Selectable(ctx, "AUTOCONTAINER", DEFAULT_DND == false) then
+                    DEFAULT_DND = false
+                end
+                r.ImGui_EndListBox(ctx)
             end
-            if r.ImGui_Selectable(ctx, "AUTOCONTAINER", DEFAULT_DND == false) then
-                DEFAULT_DND = false
-            end
-            r.ImGui_EndListBox(ctx)
+            SettingsTooltips("DRAGGING NEW FX FROM BROWSER TO ANOTHER FX")
         end
-        SettingsTooltips("DRAGGING NEW FX FROM BROWSER TO ANOTHER FX")
-    end
         r.ImGui_Separator(ctx)
 
         if r.ImGui_Button(ctx, "DEFAULT") then
@@ -1220,7 +1222,7 @@ function UI()
                 ResetView()
             end
         end
-        local color_over_time = ((sin(r.time_precise() * 4) - 0.5) * 40) // 1
+        local color_over_time = ((sin(r.time_precise() * 4) - 0.5) * 20) // 1
         local color = OFF_SCREEN and 0xff or IncreaseDecreaseBrightness(0x992222ff, color_over_time, "no_alpha")
         DrawListButton2("&", color, r.ImGui_IsItemHovered(ctx), true)
         TooltipUI("RESET VIEW\nRIGHT CLICK RESETS VIEW AND ZOOM")
@@ -1248,7 +1250,7 @@ function UI()
         local solo_color = r.GetMediaTrackInfo_Value(PIN and SEL_LIST_TRACK or TRACK, "I_SOLO")
         DrawListButton2("P", solo_color == 0 and 0xff or 0xf1c524ff, r.ImGui_IsItemHovered(ctx), true)
         r.ImGui_SameLine(ctx)
-       
+
         -- PIN
         local pin_color = PIN and 0x49cc85FF or 0xff
         local pin_icon = PIN and "L" or "M"

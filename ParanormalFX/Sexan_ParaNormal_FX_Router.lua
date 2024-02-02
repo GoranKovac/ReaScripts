@@ -1,9 +1,11 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.35.8
+-- @version 1.35.9
 -- @changelog
---  User settings have collapsed headers to preserve space and "avoid" scrolling
+--  Reintroduce show/hide active envelope in parameter inspector
+--  Right click on ENV shows DELETE ENV option (only if envelope has points or its active)
+--  Fix HOME Icon offscreen indicator go full white
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
