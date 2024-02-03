@@ -117,10 +117,10 @@ local HELPERS = {
     },
     {
         fx = "JS:LFO",
-        fx_name = "FX LFO",
+        fx_name = "SNJUK2 LFO",
         name = "LFO",
         alt_name = "LFO.jsfx",
-        helper = "FX LFO"
+        helper = "SNJUK2 LFO"
     },
     ----------------------------------------
     ----------------------------------------
@@ -1020,7 +1020,7 @@ local function HelperWidth(tbl, width)
         width = width + name_margin * 3
     elseif tbl.name:find("5-Band Splitter", nil, true) then
         width = width + name_margin * 4
-    elseif tbl.name:find("FX LFO", nil, true) then
+    elseif tbl.name:find("SNJUK2 LFO", nil, true) then
         width = width + name_margin * 2.5
     end
     return width
@@ -2057,7 +2057,7 @@ local function DrawHelper(tbl, i, w)
             if not btn_hover then btn_hover = r.ImGui_IsItemHovered(ctx) end
         end
         if not btn_hover then btn_hover = r.ImGui_IsItemHovered(ctx) end
-    elseif tbl[i].name:find("LFO", nil, true) then
+    elseif tbl[i].name:find("SNJUK2 LFO", nil, true) then
         new_width = true
         local xx, yy = r.ImGui_GetCursorScreenPos(ctx)
         local x = API.GetParam(TARGET, tbl[i].FX_ID, 27)        -- x
