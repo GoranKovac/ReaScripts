@@ -1,11 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.35.9
+-- @version 1.36.0
 -- @changelog
---  Reintroduce show/hide active envelope in parameter inspector
---  Right click on ENV shows DELETE ENV option (only if envelope has points or its active)
---  Fix HOME Icon offscreen indicator go full white
+--  Use user font for all menus
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -384,12 +382,12 @@ local function Main()
         AW, AH = r.ImGui_GetContentRegionAvail(ctx)
         WX, WY = r.ImGui_GetWindowPos(ctx)
         MX, MY = r.ImGui_GetMousePos(ctx)
+        --r.ImGui_PushFont(ctx, SELECTED_FONT)
+        r.ImGui_PushFont(ctx, CUSTOM_FONT and SYSTEM_FONT_FACTORY or DEFAULT_FONT_FACTORY)
         CanvasLoop()
         CollectFxData()
-        r.ImGui_PushFont(ctx, SELECTED_FONT)
         Draw()
-        r.ImGui_PopFont(ctx)
-        r.ImGui_PushFont(ctx, CUSTOM_FONT and SYSTEM_FONT_FACTORY or DEFAULT_FONT_FACTORY)
+        --r.ImGui_PopFont(ctx)
         UI()
         if OPEN_SETTINGS then
             DrawUserSettings()
