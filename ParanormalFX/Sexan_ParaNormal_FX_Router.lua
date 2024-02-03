@@ -15,11 +15,26 @@
 
 local r     = reaper
 local ImGui = {}
+local track_api = {}
+local take_api = {}
+for name, func in pairs(r) do
+    local track_name = name:match('^TrackFX_(.+)$')
+    local take_name = name:match('^TakeFX_(.+)$')
+    if track_name then track_api[track_name] = func end
+    if take_name then take_api[take_name] = func end
+end
+
+take_api["CopyToTrack"] = r.TakeFX_CopyToTake
+take_api["GetFXEnvelope"] = r.TakeFX_GetEnvelope
+track_api["GetFXEnvelope"] = r.GetFXEnvelope
 
 for name, func in pairs(reaper) do
     name = name:match('^ImGui_(.+)$')
     if name then ImGui[name] = func end
 end
+
+API = track_api
+
 os_separator      = package.config:sub(1, 1)
 script_path       = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]]
 local reaper_path = r.GetResourcePath()
@@ -36,9 +51,10 @@ if not r.GetAppVersion():match("^7%.") then
 end
 
 -- JSFX paths
-local saike_splitter_path    = reaper_path .. "/Effects/Saike Tools/Basics/BandSplitter.jsfx"
-local lfos_path = reaper_path .. "/Effects/ReaTeam JSFX/Modulation/snjuk2_LFO.jsfx"
-local splitters_path = reaper_path .. "/Effects/Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_frequency_splitter.jsfx"
+local saike_splitter_path = reaper_path .. "/Effects/Saike Tools/Basics/BandSplitter.jsfx"
+local lfos_path           = reaper_path .. "/Effects/ReaTeam JSFX/Modulation/snjuk2_LFO.jsfx"
+local splitters_path      = reaper_path ..
+"/Effects/Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_frequency_splitter.jsfx"
 
 
 --local fx_browser_script_path = "C:/Users/Gokily/Documents/ReaGit/ReaScripts/FX/Sexan_FX_Browser_ParserV7.lua"
@@ -48,7 +64,7 @@ local fm_script_path         = reaper_path .. "/Scripts/Sexan_Scripts/ImGui_Tool
 function ThirdPartyDeps()
     local reapack_process
     local repos = {
-        { name = "Saike Tools", url = 'https://raw.githubusercontent.com/JoepVanlier/JSFX/master/index.xml' },
+        { name = "Saike Tools",    url = 'https://raw.githubusercontent.com/JoepVanlier/JSFX/master/index.xml' },
         { name = "Suzuki Scripts", url = "https://github.com/Suzuki-Re/Suzuki-Scripts/raw/master/index.xml" },
     }
 
@@ -143,6 +159,8 @@ SHOW_C_CONTENT_TOOLTIP  = true
 V_LAYOUT                = true
 
 OPEN_PM_INSPECTOR       = false
+
+MODE = "TRACK"
 
 -- profiler = dofile(reaper.GetResourcePath() ..
 --   '/Scripts/ReaTeam Scripts/Development/cfillion_Lua profiler.lua')
@@ -339,6 +357,19 @@ function test()
     if TMP then TMP = nil end
 end
 
+local function UpdateTarget()
+    if MODE == "ITEM" then
+        if ITEM then
+            TRACK =  r.GetMediaItem_Track( ITEM )
+            TARGET = TAKE
+        end
+    else
+        if TRACK then
+            TARGET = TRACK
+        end
+    end
+end
+
 local function Main()
     UpdateDeltaTime()
     UpdateZoomFont()
@@ -348,7 +379,10 @@ local function Main()
     end
 
     TRACK = PIN and SEL_LIST_TRACK or r.GetSelectedTrack2(0, 0, true)
-
+    ITEM =  r.GetSelectedMediaItem( 0, 0 )
+    TAKE = ITEM and r.GetActiveTake( ITEM ) or nil
+    --TARGET = MODE == "TRACK" and TRACK or TAKE
+    UpdateTarget()
     if LAST_TRACK ~= TRACK then
         ResetStrippedNames()
         StoreToPEXT(LAST_TRACK)
@@ -380,6 +414,23 @@ local function Main()
 
     ImGui.PopStyleColor(ctx)
     if visible then
+        if r.ImGui_BeginTabBar(ctx, "GLOBAL TABS") then
+            r.ImGui_PushStyleColor( ctx, r.ImGui_Col_TabActive(), 0x00FF88AA )
+            if r.ImGui_BeginTabItem(ctx, "TRACK", false) then
+                MODE = "TRACK"
+                UpdateTarget()
+                API = track_api
+                r.ImGui_EndTabItem(ctx)
+            end
+            if r.ImGui_BeginTabItem(ctx, "ITEM", false) then
+                MODE = "ITEM"
+                UpdateTarget()
+                API = take_api
+                r.ImGui_EndTabItem(ctx)
+            end
+            r.ImGui_PopStyleColor(ctx)
+            r.ImGui_EndTabBar(ctx)
+        end
         MonitorLastTouchedFX()
         AW, AH = r.ImGui_GetContentRegionAvail(ctx)
         WX, WY = r.ImGui_GetWindowPos(ctx)
@@ -423,7 +474,7 @@ local function Main()
         ImGui.End(ctx)
     end
     if ESC and ESC_CLOSE then open = nil end
-   
+
     if open then
         pdefer(Main)
     end

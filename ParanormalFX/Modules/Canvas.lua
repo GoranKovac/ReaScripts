@@ -19,7 +19,7 @@ function InitCanvas()
 end
 
 function UpdateScroll()
-    if not TRACK then return end
+    if not TARGET then return end
     local btn = ImGui.MouseButton_Right()
     if ImGui.IsMouseDragging(ctx, btn) then
         ImGui.SetMouseCursor(ctx, ImGui.MouseCursor_ResizeAll())
@@ -86,8 +86,8 @@ local function CheckKeys()
 
     if CTRL and Z then
         r.Main_OnCommand(40029, 0)
-        -- CHECK IF TRACK CHANGED
-        TRACK = r.GetSelectedTrack2(0, 0, true)
+        -- CHECK IF TARGET CHANGED
+        TARGET = r.GetSelectedTrack2(0, 0, true)
     end                            -- UNDO
     if ImGui.GetKeyMods(ctx) == ImGui.Mod_Shortcut() | ImGui.Mod_Shift() and Z then
         r.Main_OnCommand(40030, 0) -- REDO
@@ -120,7 +120,7 @@ local function Rename()
             local parrent_container = GetParentContainerByGuid(tbl[i])
             local item_id = CalcFxID(parrent_container, i)
             r.Undo_BeginBlock()
-            r.TrackFX_SetNamedConfigParm(TRACK, item_id, "renamed_name", SAVED_NAME)
+            API.SetNamedConfigParm(TARGET, item_id, "renamed_name", SAVED_NAME)
             EndUndoBlock("RENAME FX: " .. (RENAME_DATA.tbl[RENAME_DATA.i].name))
         end
         RENAME_DATA = nil
@@ -145,7 +145,7 @@ local function InsertPointsMenu()
 
             for i = first_idx_in_row, RC_DATA.i do
                 local item_id = CalcFxID(parrent_container, i)
-                r.TrackFX_SetParam(TRACK, item_id, RC_DATA.tbl[i].wetparam, 1)
+                API.SetParam(TARGET, item_id, RC_DATA.tbl[i].wetparam, 1)
             end
         end
         if RC_DATA.tbl[RC_DATA.i].p > 0 then
@@ -155,7 +155,7 @@ local function InsertPointsMenu()
 
                 for i = first_idx_in_row, RC_DATA.i do
                     local item_id = CalcFxID(parrent_container, i)
-                    r.TrackFX_SetParam(TRACK, item_id, RC_DATA.tbl[i].wetparam, 1 / p_cnt)
+                    API.SetParam(TARGET, item_id, RC_DATA.tbl[i].wetparam, 1 / p_cnt)
                 end
             end
             r.ImGui_Separator(ctx)
@@ -166,7 +166,7 @@ local function InsertPointsMenu()
 
                 for i = first_idx_in_row, last_idx_in_row do
                     local item_id = CalcFxID(parrent_container, i)
-                    r.TrackFX_SetEnabled(TRACK, item_id, true)
+                    API.SetEnabled(TARGET, item_id, true)
                 end
             end
             if r.ImGui_MenuItem(ctx, 'ENCLOSE LANE INTO CONTAINER') then
@@ -180,25 +180,25 @@ local function InsertPointsMenu()
                 local lane_tbl = {}
                 for i = first_idx_in_row, last_idx_in_row do
                     local id = CalcFxID(parrent_container, i)
-                    local fx_guid = r.TrackFX_GetFXGUID(TRACK, id)
+                    local fx_guid = API.GetFXGUID(TARGET, id)
                     if fx_guid then lane_tbl[#lane_tbl + 1] = fx_guid end
                 end
 
                 local cont_insert_id = CalculateInsertContainerPosFromBlacklist()
-                local cont_pos = r.TrackFX_AddByName(TRACK, "Container", false, cont_insert_id)
+                local cont_pos = API.AddByName(TARGET, "Container", MODE == "ITEM" and cont_insert_id or false, cont_insert_id)
                 UpdateFxData()
                 for i = #lane_tbl, 1, -1 do
-                    local cont_id = 0x2000000 + cont_pos + 1 + (r.TrackFX_GetCount(TRACK) + 1)
+                    local cont_id = 0x2000000 + cont_pos + 1 + (API.GetCount(TARGET) + 1)
                     parrent_container = GetFx(RC_DATA.tbl[RC_DATA.i].pid)
                     local child_id = GetFx(lane_tbl[i]).FX_ID
-                    r.TrackFX_CopyToTrack(TRACK, child_id, TRACK, cont_id, true)
+                    API.CopyToTrack(TARGET, child_id, TARGET, cont_id, true)
                     UpdateFxData()
                 end
                 UpdateFxData()
                 parrent_container = GetFx(RC_DATA.tbl[RC_DATA.i].pid)
                 local original_pos = CalcFxID(parrent_container, first_idx_in_row)
                 -- MOVE CONTAINER TO ORIGINAL TARGET
-                r.TrackFX_CopyToTrack(TRACK, 0x2000000 + cont_pos + 1, TRACK, original_pos, true)
+                API.CopyToTrack(TARGET, 0x2000000 + cont_pos + 1, TARGET, original_pos, true)
                 r.PreventUIRefresh(-1)
                 EndUndoBlock("ENCLOSE PARALLEL LANE")
             end
@@ -267,15 +267,15 @@ local function RightClickMenu()
             if r.ImGui_BeginMenu(ctx, "OVERSAMPLING") then
                 local parrent_container = GetParentContainerByGuid(RC_DATA.tbl[RC_DATA.i])
                 local item_id = CalcFxID(parrent_container, RC_DATA.i)
-                local retval1, buf1 = r.TrackFX_GetNamedConfigParm(TRACK, item_id, "chain_oversample_shift")
-                local retval2, buf2 = r.TrackFX_GetNamedConfigParm(TRACK, item_id, "instance_oversample_shift")
+                local retval1, buf1 = API.GetNamedConfigParm(TARGET, item_id, "chain_oversample_shift")
+                local retval2, buf2 = API.GetNamedConfigParm(TARGET, item_id, "instance_oversample_shift")
 
                 for i = 1, 2 do
                     if r.ImGui_BeginMenu(ctx, i == 1 and "CHAIN" or "INSTANCE") then
                         for j = 0, 2 do
                             local name = j == 0 and "NONE" or j == 1 and "96kHz" or "192kHz"
                             if r.ImGui_MenuItem(ctx, name, nil, (i == 1 and buf1 or buf2) == tostring(j)) then
-                                r.TrackFX_SetNamedConfigParm(TRACK, item_id,
+                                API.SetNamedConfigParm(TARGET, item_id,
                                     i == 1 and "chain_oversample_shift" or "instance_oversample_shift", tostring(j))
                             end
                         end
@@ -286,9 +286,9 @@ local function RightClickMenu()
             end
             local parrent_container = GetParentContainerByGuid(RC_DATA.tbl[RC_DATA.i])
             local item_id = CalcFxID(parrent_container, RC_DATA.i)
-            local retval, buf = r.TrackFX_GetNamedConfigParm(TRACK, item_id, "force_auto_bypass")
+            local retval, buf = API.GetNamedConfigParm(TARGET, item_id, "force_auto_bypass")
             if r.ImGui_MenuItem(ctx, "AUTO BYPASS ON SILENCE", nil, buf == "1" and true or false) then
-                r.TrackFX_SetNamedConfigParm(TRACK, item_id, "force_auto_bypass", buf == "0" and "1" or "0")
+                API.SetNamedConfigParm(TARGET, item_id, "force_auto_bypass", buf == "0" and "1" or "0")
             end
             r.ImGui_EndMenu(ctx)
         end
@@ -304,7 +304,7 @@ local function RightClickMenu()
             local parrent_container = GetParentContainerByGuid(RC_DATA.tbl[RC_DATA.i])
             local item_id = CalcFxID(parrent_container, RC_DATA.i)
             CheckNextItemParallel(RC_DATA.i, parrent_container)
-            r.TrackFX_Delete(TRACK, item_id)
+            API.Delete(TARGET, item_id)
             EndUndoBlock("DELETE FX:" .. RC_DATA.tbl[RC_DATA.i].name)
             r.PreventUIRefresh(-1)
         end
@@ -333,7 +333,7 @@ local function RightClickMenu()
                 {
                     tbl = RC_DATA.tbl,
                     i = RC_DATA.i,
-                    track_guid = r.GetTrackGUID(TRACK),
+                    track_guid = r.GetTrackGUID(TARGET),
                     fx_id = item_id,
                     guid = RC_DATA.tbl[RC_DATA.i].guid,
                     collapsed = is_collapsed,
@@ -351,7 +351,7 @@ local function RightClickMenu()
                 {
                     tbl = RC_DATA.tbl,
                     i = RC_DATA.i,
-                    track_guid = r.GetTrackGUID(TRACK),
+                    track_guid = r.GetTrackGUID(TARGET),
                     fx_id = item_id,
                     guid = RC_DATA.tbl[RC_DATA.i].guid,
                     cut = true,
@@ -386,7 +386,7 @@ local function PMMenu()
     if PM_RC_DATA.type == "ACS" then
         if r.ImGui_MenuItem(ctx, "RESET TO ACS DEFAULT") then
             for i = 1, #ACS_TBL do
-                r.TrackFX_SetNamedConfigParm(TRACK, PM_RC_DATA.fx_id,
+                API.SetNamedConfigParm(TARGET, PM_RC_DATA.fx_id,
                     "param." .. PM_RC_DATA.p_id .. ".acs." .. ACS_TBL[i],
                     ACS_defaults[i])
             end
@@ -394,7 +394,7 @@ local function PMMenu()
     elseif PM_RC_DATA.type == "LFO" then
         if r.ImGui_MenuItem(ctx, "RESET TO LFO DEFAULT") then
             for i = 1, #LFO_TBL do
-                r.TrackFX_SetNamedConfigParm(TRACK, PM_RC_DATA.fx_id,
+                API.SetNamedConfigParm(TARGET, PM_RC_DATA.fx_id,
                     "param." .. PM_RC_DATA.p_id .. ".lfo." .. LFO_TBL[i],
                     LFO_defaults[i])
             end
@@ -578,7 +578,7 @@ local function DNDACS_SRC(p_id)
     if r.ImGui_BeginDragDropSource(ctx) then
         local data = {}
         for i = 1, #ACS_TBL do
-            local _, buf = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID,
+            local _, buf = API.GetNamedConfigParm(TARGET, PM_INSPECTOR_FXID,
                 "param." .. p_id .. ".acs." .. ACS_TBL[i])
             data[i] = buf
         end
@@ -602,7 +602,7 @@ local function DNDACS_TARGET(p_id)
                 r.Undo_BeginBlock()
 
                 for i = 1, #ACS_TBL do
-                    r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".acs." .. ACS_TBL[i],
+                    API.SetNamedConfigParm(TARGET, PM_INSPECTOR_FXID, "param." .. p_id .. ".acs." .. ACS_TBL[i],
                         data[i])
                 end
                 EndUndoBlock("ACS COPY SETTINGS")
@@ -618,7 +618,7 @@ local function DNDLFO_SRC(p_id)
     if r.ImGui_BeginDragDropSource(ctx) then
         local data = {}
         for i = 1, #LFO_TBL do
-            local _, buf = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID,
+            local _, buf = API.GetNamedConfigParm(TARGET, PM_INSPECTOR_FXID,
                 "param." .. p_id .. ".lfo." .. LFO_TBL[i])
             data[i] = buf
         end
@@ -641,7 +641,7 @@ local function DNDLFO_TARGET(p_id)
             if #data ~= 0 then
                 r.Undo_BeginBlock()
                 for i = 1, #LFO_TBL do
-                    r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo." .. LFO_TBL[i],
+                    API.SetNamedConfigParm(TARGET, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo." .. LFO_TBL[i],
                         data[i])
                 end
                 EndUndoBlock("LFO COPY SETTINGS")
@@ -666,17 +666,17 @@ local function PMTable()
         --ImGui.TableSetupColumn(ctx, 'INP')
         --ImGui.TableSetupColumn(ctx, 'TYP')
         ImGui.TableHeadersRow(ctx)
-        for p_id = 0, r.TrackFX_GetNumParams(TRACK, PM_INSPECTOR_FXID) do
-            local _, p_name = r.TrackFX_GetParamName(TRACK, PM_INSPECTOR_FXID, p_id)
-            local _, mod = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.active")
-            local _, mod_vis = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.visible")
-            local _, acs = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".acs.active")
-            local _, lfo = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.active")
-            local _, lfo_speed = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.speed")
-            local _, lfo_shape = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.shape")
-            local _, lfo_temposync = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID,"param." .. p_id .. ".lfo.temposync")
-            local _, plink = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".plink.active")
-            local fx_env = r.GetFXEnvelope(TRACK, PM_INSPECTOR_FXID, p_id, false)
+        for p_id = 0, API.GetNumParams(TARGET, PM_INSPECTOR_FXID) do
+            local _, p_name = API.GetParamName(TARGET, PM_INSPECTOR_FXID, p_id)
+            local _, mod = API.GetNamedConfigParm(TARGET, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.active")
+            local _, mod_vis = API.GetNamedConfigParm(TARGET, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.visible")
+            local _, acs = API.GetNamedConfigParm(TARGET, PM_INSPECTOR_FXID, "param." .. p_id .. ".acs.active")
+            local _, lfo = API.GetNamedConfigParm(TARGET, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.active")
+            local _, lfo_speed = API.GetNamedConfigParm(TARGET, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.speed")
+            local _, lfo_shape = API.GetNamedConfigParm(TARGET, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.shape")
+            local _, lfo_temposync = API.GetNamedConfigParm(TARGET, PM_INSPECTOR_FXID,"param." .. p_id .. ".lfo.temposync")
+            local _, plink = API.GetNamedConfigParm(TARGET, PM_INSPECTOR_FXID, "param." .. p_id .. ".plink.active")
+            local fx_env = API.GetFXEnvelope(TARGET, PM_INSPECTOR_FXID, p_id, false)
             local has_points = (fx_env and r.CountEnvelopePoints(fx_env) > 2)
             if mod == "1" or acs == "1" or lfo == "1" or has_points then
                 ImGui.TableNextRow(ctx)
@@ -691,15 +691,15 @@ local function PMTable()
                         if r.ImGui_Button(ctx, p_name, -FLT_MIN, 0.0) then
                             if ALT then
                                 r.Undo_BeginBlock()
-                                r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.active",
+                                API.SetNamedConfigParm(TARGET, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.active",
                                     "0")
-                                r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".acs.active",
+                                API.SetNamedConfigParm(TARGET, PM_INSPECTOR_FXID, "param." .. p_id .. ".acs.active",
                                     "0")
-                                r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.active",
+                                API.SetNamedConfigParm(TARGET, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.active",
                                     "0")
                                 EndUndoBlock("PARAMETER MODULATION UNSET FX ALL PARAMETERS")
                             else
-                                r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.visible",
+                                API.SetNamedConfigParm(TARGET, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.visible",
                                     mod_vis == "0" and "1" or "0")
                             end
                         end
@@ -709,18 +709,18 @@ local function PMTable()
                         r.ImGui_PopID(ctx)
                     elseif column == 1 then
                         if r.ImGui_Checkbox(ctx, "##PM" .. PM_INSPECTOR_FXID .. p_id, mod == "1") then
-                            r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.active",
+                            API.SetNamedConfigParm(TARGET, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.active",
                                 mod == "0" and "1" or "0")
                         end
                     elseif column == 2 then
                         if r.ImGui_Checkbox(ctx, "##ACS" .. PM_INSPECTOR_FXID .. p_id, acs == "1") then
-                            r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".acs.active",
+                            API.SetNamedConfigParm(TARGET, PM_INSPECTOR_FXID, "param." .. p_id .. ".acs.active",
                                 acs == "0" and "1" or "0")
-                            local _, acs_ch = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID,
+                            local _, acs_ch = API.GetNamedConfigParm(TARGET, PM_INSPECTOR_FXID,
                                 "param." .. p_id .. ".acs.chan")
                             --! IF NO CHANNELS HAVE BEEN ASSIGNED SET DEFAULT TO 1/2
                             if acs_ch == "-1" then
-                                r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".acs.chan",
+                                API.SetNamedConfigParm(TARGET, PM_INSPECTOR_FXID, "param." .. p_id .. ".acs.chan",
                                     "2")
                             end
                         end
@@ -736,7 +736,7 @@ local function PMTable()
                         end
                     elseif column == 3 then
                         if r.ImGui_Checkbox(ctx, "##LFO" .. PM_INSPECTOR_FXID .. p_id, lfo == "1") then
-                            r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.active",
+                            API.SetNamedConfigParm(TARGET, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.active",
                                 lfo == "0" and "1" or "0")
                         end
                         DNDLFO_SRC(p_id)
@@ -779,7 +779,7 @@ local function PMTable()
                             r.ImGui_PushStyleColor(ctx, r.ImGui_Col_FrameBg(), 0x49cc8588)
                         end
                         if r.ImGui_Checkbox(ctx, "##ENV_new" .. PM_INSPECTOR_FXID .. p_id, is_visible) then
-                            r.GetFXEnvelope(TRACK, PM_INSPECTOR_FXID, p_id, true)
+                            API.GetFXEnvelope(TARGET, PM_INSPECTOR_FXID, p_id, true)
                             if env_chunk then
                                 local vis = env_chunk:match("VIS (%d+)")
                                 if vis == "1" then
@@ -806,9 +806,9 @@ local function PMTable()
                         -- elseif column == 5 then
                         --     if r.ImGui_Checkbox(ctx, "##PLINK" .. PM_INSPECTOR_FXID .. p_id, plink == "1") then
                         --         if plink == "1" then
-                        --             r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".plink.active", "")
-                        --             r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".plink.effect", "")
-                        --             r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".plink.param", "")
+                        --             API.SetNamedConfigParm(TARGET, PM_INSPECTOR_FXID, "param." .. p_id .. ".plink.active", "")
+                        --             API.SetNamedConfigParm(TARGET, PM_INSPECTOR_FXID, "param." .. p_id .. ".plink.effect", "")
+                        --             API.SetNamedConfigParm(TARGET, PM_INSPECTOR_FXID, "param." .. p_id .. ".plink.param", "")
                         --         end
                         --     end
                     end
@@ -820,7 +820,7 @@ local function PMTable()
 end
 
 function DrawPMInspector()
-    if not TRACK then return end
+    if not TARGET then return end
     if not PM_INSPECTOR_FXID then return end
     local WX, WY = r.ImGui_GetWindowPos(ctx)
 
@@ -829,7 +829,7 @@ function DrawPMInspector()
     local total_columns = 2
     if r.ImGui_BeginChild(ctx, "PM_INSPECTOR", 350, 400, true) then
         INSPECTOR_HOVERED = r.ImGui_IsWindowHovered(ctx)
-        local retval, buf = r.TrackFX_GetFXName(TRACK, PM_INSPECTOR_FXID)
+        local retval, buf = API.GetFXName(TARGET, PM_INSPECTOR_FXID)
         local aw = r.ImGui_GetContentRegionAvail(ctx)
         r.ImGui_Text(ctx, "PARAMETER INSPECTOR")
         r.ImGui_SameLine(ctx, aw - s_frame_x)
@@ -847,7 +847,7 @@ function DrawPMInspector()
             r.ImGui_HoveredFlags_ChildWindows() |  r.ImGui_HoveredFlags_AllowWhenBlockedByPopup() |
             r.ImGui_HoveredFlags_AllowWhenBlockedByActiveItem())
         if LASTTOUCH_FX_ID and LASTTOUCH_FX_ID == PM_INSPECTOR_FXID and LASTTOUCH_P_ID then
-            local rv, p_name = r.TrackFX_GetParamName(TRACK, LASTTOUCH_FX_ID, LASTTOUCH_P_ID)
+            local rv, p_name = API.GetParamName(TARGET, LASTTOUCH_FX_ID, LASTTOUCH_P_ID)
             if rv then
                 if ImGui.BeginTable(ctx, 'LAST_TOUCHED_PARAMETER', total_columns, tbl_flags) then
                     ImGui.TableSetupColumn(ctx, 'LAST TOUCHED', r.ImGui_TableColumnFlags_WidthStretch())
@@ -859,32 +859,32 @@ function DrawPMInspector()
                         ImGui.TableSetColumnIndex(ctx, column)
                         if column == 0 then
                             if r.ImGui_Button(ctx, p_name, -FLT_MIN) then
-                                r.TrackFX_SetNamedConfigParm(TRACK, LASTTOUCH_FX_ID,
+                                API.SetNamedConfigParm(TARGET, LASTTOUCH_FX_ID,
                                     "param." .. LASTTOUCH_P_ID .. ".mod.visible", "1")
                             end
                         elseif column == 1 then
                             if r.ImGui_Button(ctx, "SET##ALL", -FLT_MIN, 0) then
                                 r.Undo_BeginBlock()
-                                r.TrackFX_SetNamedConfigParm(TRACK, LASTTOUCH_FX_ID,
+                                API.SetNamedConfigParm(TARGET, LASTTOUCH_FX_ID,
                                     "param." .. LASTTOUCH_P_ID .. ".mod.visible", "1")
-                                r.TrackFX_SetNamedConfigParm(TRACK, LASTTOUCH_FX_ID,
+                                API.SetNamedConfigParm(TARGET, LASTTOUCH_FX_ID,
                                     "param." .. LASTTOUCH_P_ID .. ".mod.active", "1")
-                                r.TrackFX_SetNamedConfigParm(TRACK, LASTTOUCH_FX_ID,
+                                API.SetNamedConfigParm(TARGET, LASTTOUCH_FX_ID,
                                     "param." .. LASTTOUCH_P_ID .. ".acs.active", "1")
-                                r.TrackFX_SetNamedConfigParm(TRACK, LASTTOUCH_FX_ID,
+                                API.SetNamedConfigParm(TARGET, LASTTOUCH_FX_ID,
                                     "param." .. LASTTOUCH_P_ID .. ".acs.chan", "2")
-                                r.TrackFX_SetNamedConfigParm(TRACK, LASTTOUCH_FX_ID,
+                                API.SetNamedConfigParm(TARGET, LASTTOUCH_FX_ID,
                                     "param." .. LASTTOUCH_P_ID .. ".lfo.active", "1")
                                 EndUndoBlock("SET ALL PARAMETER")
                             end
                         elseif column == 2 then
                             if PM_INSPECTOR_FXID == LASTTOUCH_FX_ID then
                                 if r.ImGui_Button(ctx, "SHOW##ENV") then
-                                    local fx_env = r.GetFXEnvelope(TRACK, PM_INSPECTOR_FXID, LASTTOUCH_FX_ID, false)
+                                    local fx_env = API.GetFXEnvelope(TARGET, PM_INSPECTOR_FXID, LASTTOUCH_FX_ID, false)
 
                                     local retval, env_chunk, is_visible
                                     if not fx_env then
-                                        fx_env = r.GetFXEnvelope(TRACK, PM_INSPECTOR_FXID, LASTTOUCH_FX_ID, true)
+                                        fx_env = API.GetFXEnvelope(TARGET, PM_INSPECTOR_FXID, LASTTOUCH_FX_ID, true)
                                     else
                                         retval, env_chunk = r.GetEnvelopeStateChunk(fx_env, "", true)
                                         -- is_visible = env_chunk:find("VIS 1", nil, true) and true or false
@@ -909,12 +909,12 @@ function DrawPMInspector()
             end
         end
         if r.ImGui_BeginMenu(ctx, "PARAMETER LIST") then
-            for p_id = 0, r.TrackFX_GetNumParams(TRACK, PM_INSPECTOR_FXID) do
-                local rv, p_name = r.TrackFX_GetParamName(TRACK, PM_INSPECTOR_FXID, p_id)
-                local _, mod = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.active")
-                local _, acs = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".acs.active")
-                local _, lfo = r.TrackFX_GetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.active")
-                local fx_env = r.GetFXEnvelope(TRACK, PM_INSPECTOR_FXID, p_id, false)
+            for p_id = 0, API.GetNumParams(TARGET, PM_INSPECTOR_FXID) do
+                local rv, p_name = API.GetParamName(TARGET, PM_INSPECTOR_FXID, p_id)
+                local _, mod = API.GetNamedConfigParm(TARGET, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.active")
+                local _, acs = API.GetNamedConfigParm(TARGET, PM_INSPECTOR_FXID, "param." .. p_id .. ".acs.active")
+                local _, lfo = API.GetNamedConfigParm(TARGET, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.active")
+                local fx_env = API.GetFXEnvelope(TARGET, PM_INSPECTOR_FXID, p_id, false)
                 local has_points = (fx_env and r.CountEnvelopePoints(fx_env) > 2)
                 local is_there = mod == "1" or acs == "1" or lfo == "1" or has_points
                 if rv and #p_name ~= 0 then
@@ -926,18 +926,18 @@ function DrawPMInspector()
                     if r.ImGui_Selectable(ctx, p_name, is_there, r.ImGui_SelectableFlags_DontClosePopups()) then
                         if ALT then
                             r.Undo_BeginBlock()
-                            r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.active",
+                            API.SetNamedConfigParm(TARGET, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.active",
                                 "0")
-                            r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".acs.active",
+                            API.SetNamedConfigParm(TARGET, PM_INSPECTOR_FXID, "param." .. p_id .. ".acs.active",
                                 "0")
-                            r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.active",
+                            API.SetNamedConfigParm(TARGET, PM_INSPECTOR_FXID, "param." .. p_id .. ".lfo.active",
                                 "0")
                             EndUndoBlock("PARAMETER MODULATION UNSET FX ALL PARAMETERS")
                         else
                             r.Undo_BeginBlock()
 
                             local toggle = mod == "1" and "0"
-                            r.TrackFX_SetNamedConfigParm(TRACK, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.active",
+                            API.SetNamedConfigParm(TARGET, PM_INSPECTOR_FXID, "param." .. p_id .. ".mod.active",
                                 toggle or "1")
                             EndUndoBlock("TOGGLE FX PARAMETER")
                         end
@@ -1190,13 +1190,19 @@ end
 local sin = math.sin
 local m_wheel_i = 1
 function UI()
-    if not TRACK then return end
-    r.ImGui_SetCursorPos(ctx, 5, r.ImGui_IsWindowDocked(ctx) and 5 or 25)
+    if not TARGET then return end
+    local top_tabs_offset = 23
+    r.ImGui_SetCursorPos(ctx, 5, r.ImGui_IsWindowDocked(ctx) and 5 + top_tabs_offset or 25 + top_tabs_offset)
     -- NIFTY HACK FOR COMMENT BOX NOT OVERLAP UI BUTTONS
     if not r.ImGui_BeginChild(ctx, 'toolbars', -FLT_MIN, -FLT_MIN, false, r.ImGui_WindowFlags_NoInputs()) then return end
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x000000EE)
 
-    local retval, tr_ID = r.GetTrackName(TRACK)
+    local retval, tr_ID
+    if MODE == "TRACK" then
+        retval, tr_ID = r.GetTrackName(TARGET)
+    else
+        tr_ID = r.GetTakeName(TARGET)
+    end
     local tr_name_w = CalculateItemWH({ name = tr_ID })
     if r.ImGui_BeginChild(ctx, "TopButtons", 170 + tr_name_w + 40, def_btn_h + (s_window_y * 2), true) then
         UI_HOVERED = r.ImGui_IsWindowHovered(ctx)
@@ -1255,15 +1261,15 @@ function UI()
         local pin_color = PIN and 0x49cc85FF or 0xff
         local pin_icon = PIN and "L" or "M"
         if r.ImGui_InvisibleButton(ctx, "M", 22, def_btn_h) then
-            SEL_LIST_TRACK = TRACK
+            SEL_LIST_TRACK = TARGET
             PIN = not PIN
         end
         DrawListButton2(pin_icon, pin_color, r.ImGui_IsItemHovered(ctx), true)
         TooltipUI(
-            "LOCKS TO SELECTED TRACK\nMULTIPLE SCRIPTS CAN HAVE DIFFERENT SELECTIONS\nCAN BE CHANGED VIA TRACKLIST")
+            "LOCKS TO SELECTED TARGET\nMULTIPLE SCRIPTS CAN HAVE DIFFERENT SELECTIONS\nCAN BE CHANGED VIA TRACKLIST")
 
         r.ImGui_SameLine(ctx)
-        -- TRACK LIST
+        -- TARGET LIST
         --! NEED TO FIX OFFSET
         local vertical_mw = r.ImGui_GetMouseWheel(ctx)
         local mwheel_val
@@ -1271,17 +1277,17 @@ function UI()
             for i = 0, r.CountTracks(0) do
                 local track = i == 0 and r.GetMasterTrack(0) or r.GetTrack(0, i - 1)
                 if not mwheel_val then
-                    mwheel_val = track == TRACK and i
+                    mwheel_val = track == TARGET and i
                 end
                 local _, track_id = r.GetTrackName(track)
-                if r.ImGui_Selectable(ctx, track_id, track == TRACK) then
+                if r.ImGui_Selectable(ctx, track_id, track == TARGET) then
                     if PIN then
                         SEL_LIST_TRACK = track
                     else
                         r.SetOnlyTrackSelected(track)
                     end
                 end
-                -- if i > 0 and track ~= TRACK then
+                -- if i > 0 and track ~= TARGET then
                 --     DragAndDropSidechainSource(track, track_id)
                 -- end
             end
@@ -1321,7 +1327,7 @@ function CheckStaleData()
 end
 
 function CanvasLoop()
-    if not TRACK then return end
+    if not TARGET then return end
     CheckKeys()
     Popups()
 end

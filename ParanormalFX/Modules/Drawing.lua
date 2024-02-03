@@ -218,11 +218,11 @@ local function FindBlackListedFX(name)
     end
 end
 
-function CalculateInsertContainerPosFromBlacklist(track)
-    local tr = track and track or TRACK
+function CalculateInsertContainerPosFromBlacklist()
+    local tr = TARGET
     local cont_pos = 0
-    for i = 1, r.TrackFX_GetCount(tr) do
-        local ret, org_fx_name = r.TrackFX_GetNamedConfigParm(tr, i - 1, "fx_name")
+    for i = 1, API.GetCount(tr) do
+        local ret, org_fx_name = API.GetNamedConfigParm(tr, i - 1, "fx_name")
         for j = 1, #BLACKLIST do
             if org_fx_name:find(BLACKLIST[j]) then
                 cont_pos = cont_pos + 1
@@ -279,10 +279,10 @@ s_spacing_x, S_SPACING_Y = def_s_spacing_x, ITEM_SPACING_VERTICAL and ITEM_SPACI
 s_window_x, s_window_y = def_s_window_x, def_s_window_y
 
 local function SwapParallelInfo(src, dst)
-    local _, src_p = r.TrackFX_GetNamedConfigParm(TRACK, src, "parallel")
-    local _, dst_p = r.TrackFX_GetNamedConfigParm(TRACK, dst, "parallel")
-    r.TrackFX_SetNamedConfigParm(TRACK, src, "parallel", dst_p)
-    r.TrackFX_SetNamedConfigParm(TRACK, dst, "parallel", src_p)
+    local _, src_p = API.GetNamedConfigParm(TARGET, src, "parallel")
+    local _, dst_p = API.GetNamedConfigParm(TARGET, dst, "parallel")
+    API.SetNamedConfigParm(TARGET, src, "parallel", dst_p)
+    API.SetNamedConfigParm(TARGET, dst, "parallel", src_p)
 end
 
 local function Swap(src_parrent_guid, prev_src_id, dst_guid)
@@ -297,14 +297,14 @@ local function Swap(src_parrent_guid, prev_src_id, dst_guid)
     local dst_parrent = GetParentContainerByGuid(dst_fx)
     local dst_item_id = CalcFxID(dst_parrent, dst_fx.IDX)
 
-    r.TrackFX_CopyToTrack(TRACK, dst_item_id, TRACK, src_item_id, true)
+    API.CopyToTrack(TARGET, dst_item_id, TARGET, src_item_id, true)
 end
 
 function CheckNextItemParallel(i, parrent_container)
     local src = CalcFxID(parrent_container, i)
     local dst = CalcFxID(parrent_container, i + 1)
-    if not r.TrackFX_GetFXGUID(TRACK, dst) then return end
-    local _, para = r.TrackFX_GetNamedConfigParm(TRACK, dst, "parallel")
+    if not API.GetFXGUID(TARGET, dst) then return end
+    local _, para = API.GetNamedConfigParm(TARGET, dst, "parallel")
     if (para == "1" or para == "2") then SwapParallelInfo(src, dst) end
 end
 
@@ -318,16 +318,16 @@ function CheckSourceNextItemParallel(i, P_TYPE, P_DIFF, P_ID, track)
     end
 
     local function SwapSrcParallelInfo(src, dst, tr)
-        local _, src_p = r.TrackFX_GetNamedConfigParm(tr, src, "parallel")
-        local _, dst_p = r.TrackFX_GetNamedConfigParm(tr, dst, "parallel")
-        r.TrackFX_SetNamedConfigParm(tr, src, "parallel", dst_p)
-        r.TrackFX_SetNamedConfigParm(tr, dst, "parallel", src_p)
+        local _, src_p = API.GetNamedConfigParm(tr, src, "parallel")
+        local _, dst_p = API.GetNamedConfigParm(tr, dst, "parallel")
+        API.SetNamedConfigParm(tr, src, "parallel", dst_p)
+        API.SetNamedConfigParm(tr, dst, "parallel", src_p)
     end
 
     local src = CalcSrcID(P_TYPE, P_DIFF, P_ID, i)
     local dst = CalcSrcID(P_TYPE, P_DIFF, P_ID, i + 1)
-    if not r.TrackFX_GetFXGUID(track, dst) then return end
-    local _, para = r.TrackFX_GetNamedConfigParm(track, dst, "parallel")
+    if not API.GetFXGUID(track, dst) then return end
+    local _, para = API.GetNamedConfigParm(track, dst, "parallel")
     if para ~= "0" then SwapSrcParallelInfo(src, dst, track) end
 end
 
@@ -550,14 +550,14 @@ local function DndMoveFX_TARGET_SERIAL_PARALLEL(tbl, i, parallel, serial_insert_
                 -- SWAP INFO WITH NEXT FX TO KEEP PLUGINS IN PLACE
                 CheckNextItemParallel(src_i, src_parrent)
                 -- SET SOURCE FX TO PARALLEL OR SERIAL
-                r.TrackFX_SetNamedConfigParm(TRACK, src_item_id, "parallel", parallel and DEF_PARALLEL or "0")
+                API.SetNamedConfigParm(TARGET, src_item_id, "parallel", parallel and DEF_PARALLEL or "0")
                 -- MOVE
-                r.TrackFX_CopyToTrack(TRACK, src_item_id, TRACK, dst_item_id, true)
+                API.CopyToTrack(TARGET, src_item_id, TARGET, dst_item_id, true)
             else
                 -- CRTL DRAG COPY TO DESTINATION
-                r.TrackFX_CopyToTrack(TRACK, src_item_id, TRACK, dst_item_id, false)
+                API.CopyToTrack(TARGET, src_item_id, TARGET, dst_item_id, false)
                 -- SET DESTINATION INFO TO PARALLEL OR SERIAL
-                r.TrackFX_SetNamedConfigParm(TRACK, dst_item_id, "parallel", parallel and DEF_PARALLEL or "0")
+                API.SetNamedConfigParm(TARGET, dst_item_id, "parallel", parallel and DEF_PARALLEL or "0")
 
                 --! IF COPYING CONTAINER TRANSFER COLLAPSE STATE
                 AddCollapseData(src_fx, dst_item_id)
@@ -602,7 +602,7 @@ local function DndMoveFX_TARGET_SWAP(tbl, i)
             -- SWAP PARALLEL INFO WITH TARGET
             SwapParallelInfo(src_item_id, dst_item_id)
             -- MOVE SOURCE TO DESTINATION
-            r.TrackFX_CopyToTrack(TRACK, src_item_id, TRACK, dst_item_id, true)
+            API.CopyToTrack(TARGET, src_item_id, TARGET, dst_item_id, true)
             -- MOVE DESTINATION TO SOURCE
             Swap(src_parrent.guid, src_i, dst_guid)
             r.PreventUIRefresh(-1)
@@ -676,9 +676,9 @@ end
 local function LoadTemplate(template, replace)
     local track_template_path = r.GetResourcePath() .. "/TrackTemplates" .. template
     if replace then
-        if not TRACK then return end
+        if not TARGET then return end
         local chunk = GetFileContext(track_template_path)
-        r.SetTrackStateChunk(TRACK, chunk, true)
+        r.SetTrackStateChunk(TARGET, chunk, true)
     else
         r.Main_openProject(track_template_path)
     end
@@ -698,7 +698,7 @@ local function DrawTrackTemplates(tbl, path)
         if type(tbl[i]) ~= "table" then
             if r.ImGui_Selectable(ctx, tbl[i]) then
                 local template_str = table.concat({ path, os_separator, tbl[i], extension })
-                LoadTemplate(template_str) -- ADD NEW TRACK FROM TEMPLATE
+                LoadTemplate(template_str) -- ADD NEW TARGET FROM TEMPLATE
             end
         end
     end
@@ -740,7 +740,7 @@ function DrawFXList()
                 if r.ImGui_BeginMenu(ctx, CAT[i].name) then
                     if CAT[i].name == "FX CHAINS" then
                         DrawFxChains(CAT[i].list)
-                        --elseif CAT[i].name == "TRACK TEMPLATES" then
+                        --elseif CAT[i].name == "TARGET TEMPLATES" then
                         --    DrawTrackTemplates(CAT[i].list)
                     else
                         DrawItems(CAT[i].list, CAT[i].name)
@@ -1012,7 +1012,7 @@ local function HelperWidth(tbl, width)
     elseif tbl.name == "TIME DELAY" then
         width = width + name_margin * 2
     elseif tbl.name == "SAIKE SPLITTER" then
-        local cuts = r.TrackFX_GetParam(TRACK, tbl.FX_ID, 0) -- NUMBER OF CUTS
+        local cuts = API.GetParam(TARGET, tbl.FX_ID, 0) -- NUMBER OF CUTS
         width = (width + 80) + (name_margin + 5) * (cuts)
     elseif tbl.name:find("3-Band Splitter", nil, true) then
         width = width + name_margin * 2
@@ -1168,7 +1168,7 @@ end
 
 local sub = string.sub
 local function IterateContainer(depth, track, container_id, parent_fx_count, previous_diff, container_guid, target)
-    local c_ok, container_fx_count = r.TrackFX_GetNamedConfigParm(track, 0x2000000 + container_id, "container_count")
+    local c_ok, container_fx_count = API.GetNamedConfigParm(track, 0x2000000 + container_id, "container_count")
     local row = 1
     local child_fx = {
         [0] = {
@@ -1185,17 +1185,17 @@ local function IterateContainer(depth, track, container_id, parent_fx_count, pre
     local diff = depth == 0 and parent_fx_count + 1 or (parent_fx_count + 1) * previous_diff
 
     -- CALCULATER DEFAULT WIDTH
-    local _, parrent_cont_name = r.TrackFX_GetFXName(track, 0x2000000 + container_id)
+    local _, parrent_cont_name = API.GetFXName(track, 0x2000000 + container_id)
     local total_w, name_h = CalculateItemWH({ name = parrent_cont_name })
     total_w = total_w + collapse_btn_size + name_margin
     -- CALCULATER DEFAULT WIDTH
     if not c_ok then return child_fx, total_w + mute + volume + name_margin, name_h + (def_s_window_y * 2) end
     for i = 1, container_fx_count do
         local fx_id = container_id + (diff * i)
-        local fx_guid = r.TrackFX_GetFXGUID(TRACK, 0x2000000 + fx_id)
-        local _, fx_name = r.TrackFX_GetFXName(track, 0x2000000 + fx_id)
-        local _, original_fx_name = r.TrackFX_GetNamedConfigParm(track, 0x2000000 + fx_id, "fx_name")
-        local _, fx_type = r.TrackFX_GetNamedConfigParm(track, 0x2000000 + fx_id, "fx_type")
+        local fx_guid = API.GetFXGUID(TARGET, 0x2000000 + fx_id)
+        local _, fx_name = API.GetFXName(track, 0x2000000 + fx_id)
+        local _, original_fx_name = API.GetNamedConfigParm(track, 0x2000000 + fx_id, "fx_name")
+        local _, fx_type = API.GetNamedConfigParm(track, 0x2000000 + fx_id, "fx_type")
 
         local is_helper
         if fx_type ~= "Container" then
@@ -1215,11 +1215,11 @@ local function IterateContainer(depth, track, container_id, parent_fx_count, pre
             stripped_names[fx_name] = new_name
         end
 
-        local _, para = r.TrackFX_GetNamedConfigParm(track, 0x2000000 + fx_id, "parallel")
-        local wetparam = r.TrackFX_GetParamFromIdent(track, 0x2000000 + fx_id, ":wet")
-        local wet_val = r.TrackFX_GetParam(track, 0x2000000 + fx_id, wetparam)
-        local bypass = r.TrackFX_GetEnabled(track, 0x2000000 + fx_id)
-        local offline = r.TrackFX_GetOffline(track, 0x2000000 + fx_id)
+        local _, para = API.GetNamedConfigParm(track, 0x2000000 + fx_id, "parallel")
+        local wetparam = API.GetParamFromIdent(track, 0x2000000 + fx_id, ":wet")
+        local wet_val = API.GetParam(track, 0x2000000 + fx_id, wetparam)
+        local bypass = API.GetEnabled(track, 0x2000000 + fx_id)
+        local offline = API.GetOffline(track, 0x2000000 + fx_id)
 
         --local sc_tracks, sc_channels = GetActiveSideChain(0x2000000 + fx_id)
         para = i == 1 and "0" or para -- MAKE FIRST ITEMS ALWAYS SERIAL (FIRST ITEMS ARE SAME IF IN PARALELL OR SERIAL)
@@ -1284,9 +1284,9 @@ local function IterateContainer(depth, track, container_id, parent_fx_count, pre
     return child_fx, total_w, C_H
 end
 
-local function GenerateFXData(target)
+local function GenerateFXData()
     PLUGINS = {}
-    local track = TRACK
+    local track = TARGET
     PLUGINS[0] = {
         FX_ID = -1,
         name = "FX CHAIN",
@@ -1300,12 +1300,12 @@ local function GenerateFXData(target)
     }
 
     local row = 1
-    local total_fx_count = r.TrackFX_GetCount(track)
+    local total_fx_count = API.GetCount(track)
     for i = 1, total_fx_count do
-        local fx_guid = r.TrackFX_GetFXGUID(TRACK, i - 1)
-        local _, fx_type = r.TrackFX_GetNamedConfigParm(track, i - 1, "fx_type")
-        local _, fx_name = r.TrackFX_GetFXName(track, i - 1)
-        local _, original_fx_name = r.TrackFX_GetNamedConfigParm(track, i - 1, "fx_name")
+        local fx_guid = API.GetFXGUID(TARGET, i - 1)
+        local _, fx_type = API.GetNamedConfigParm(track, i - 1, "fx_type")
+        local _, fx_name = API.GetFXName(track, i - 1)
+        local _, original_fx_name = API.GetNamedConfigParm(track, i - 1, "fx_name")
 
         local is_helper
         if fx_type ~= "Container" then
@@ -1326,11 +1326,11 @@ local function GenerateFXData(target)
             stripped_names[fx_name] = new_name
         end
 
-        local _, para = r.TrackFX_GetNamedConfigParm(track, i - 1, "parallel")
-        local wetparam = r.TrackFX_GetParamFromIdent(track, i - 1, ":wet")
-        local wet_val = r.TrackFX_GetParam(track, i - 1, wetparam)
-        local bypass = r.TrackFX_GetEnabled(track, i - 1)
-        local offline = r.TrackFX_GetOffline(track, i - 1)
+        local _, para = API.GetNamedConfigParm(track, i - 1, "parallel")
+        local wetparam = API.GetParamFromIdent(track, i - 1, ":wet")
+        local wet_val = API.GetParam(track, i - 1, wetparam)
+        local bypass = API.GetEnabled(track, i - 1)
+        local offline = API.GetOffline(track, i - 1)
 
 
         --local sc_tracks, sc_channels = GetActiveSideChain(i - 1)
@@ -1366,7 +1366,7 @@ local function GenerateFXData(target)
 
 
         if fx_type == "Container" then
-            local sub_plugins, W, H = IterateContainer(0, track, i, total_fx_count, 0, fx_guid, target)
+            local sub_plugins, W, H = IterateContainer(0, track, i, total_fx_count, 0, fx_guid)
             if sub_plugins then
                 PLUGINS[#PLUGINS].sub = sub_plugins
                 PLUGINS[#PLUGINS].depth = 0
@@ -1426,9 +1426,9 @@ local function SoloInLane(parrent, cur_fx_id, cur_tbl, cur_i)
 
     for i = first, last do
         local id = CalcFxID(parrent, i)
-        r.TrackFX_SetEnabled(TRACK, id, false)
+        API.SetEnabled(TARGET, id, false)
     end
-    r.TrackFX_SetEnabled(TRACK, cur_fx_id, true)
+    API.SetEnabled(TARGET, cur_fx_id, true)
 end
 
 local ROUND_FLAG = {
@@ -1851,7 +1851,7 @@ local function ButtonAction(tbl, i)
             r.Undo_BeginBlock()
             r.PreventUIRefresh(1)
             CheckNextItemParallel(i, parrent_container)
-            r.TrackFX_Delete(TRACK, item_id)
+            API.Delete(TARGET, item_id)
             r.PreventUIRefresh(-1)
             EndUndoBlock("DELETE FX: " .. tbl[i].name)
         end
@@ -1880,31 +1880,31 @@ local function DrawHelper(tbl, i, w)
     if not DrawPreviewHideOriginal(tbl[i].guid) then return end
     local btn_hover, new_width
     if tbl[i].name:find("VOL - PAN", nil, true) then
-        local vol_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 0) -- 0 IS VOL IDENTIFIER
+        local vol_val = API.GetParam(TARGET, tbl[i].FX_ID, 0) -- 0 IS VOL IDENTIFIER
         r.ImGui_SameLine(ctx, -FLT_MIN, (mute * 2) * CANVAS.scale)
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_vol")
         local rvh_v, v = MyKnob("", "arc", vol_val, -60, 12, "vol")
         if rvh_v then
-            r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 0, v)
+            API.SetParam(TARGET, tbl[i].FX_ID, 0, v)
         end
         local vol_hover = r.ImGui_IsItemHovered(ctx)
         if not btn_hover then
             btn_hover = vol_hover
         end
         if vol_hover and r.ImGui_IsMouseDoubleClicked(ctx, 0) then
-            r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 0, 0)
+            API.SetParam(TARGET, tbl[i].FX_ID, 0, 0)
         end
         r.ImGui_PopID(ctx)
         r.ImGui_SameLine(ctx, -FLT_MIN, (w - (mute * 3)) * CANVAS.scale)
-        local pan_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 1) -- 1 IS PAN IDENTIFIER
+        local pan_val = API.GetParam(TARGET, tbl[i].FX_ID, 1) -- 1 IS PAN IDENTIFIER
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_pan")
         local rvh_p, p = MyKnob("", "knob", pan_val, -100, 100, "pan")
         if rvh_p then
-            r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 1, p)
+            API.SetParam(TARGET, tbl[i].FX_ID, 1, p)
         end
         local pan_hover = r.ImGui_IsItemHovered(ctx)
         if pan_hover and r.ImGui_IsMouseDoubleClicked(ctx, 0) then
-            r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 1, 0)
+            API.SetParam(TARGET, tbl[i].FX_ID, 1, 0)
         end
         if not btn_hover then
             btn_hover = pan_hover
@@ -1914,10 +1914,10 @@ local function DrawHelper(tbl, i, w)
     elseif tbl[i].name:find("POLARITY", nil, true) then
         r.ImGui_SameLine(ctx, -FLT_MIN, (w - (mute * 2) - (mute / 2)) * CANVAS.scale)
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_phase")
-        local phase_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 0) -- 0 POLARITY NORMAL
+        local phase_val = API.GetParam(TARGET, tbl[i].FX_ID, 0) -- 0 POLARITY NORMAL
         local pos = { r.ImGui_GetCursorScreenPos(ctx) }
         if r.ImGui_InvisibleButton(ctx, "PHASE", mute * CANVAS.scale, mute * CANVAS.scale) then
-            r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 0, phase_val == 0 and 3 or 0)
+            API.SetParam(TARGET, tbl[i].FX_ID, 0, phase_val == 0 and 3 or 0)
         end
         Tooltip(phase_val == 0 and "NORMAL" or "INVERTED")
         local phase_hover = r.ImGui_IsItemHovered(ctx)
@@ -1931,31 +1931,31 @@ local function DrawHelper(tbl, i, w)
             btn_hover = phase_hover
         end
     elseif tbl[i].name:find("TIME", nil, true) then
-        local vol_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 0) -- 0 POLARITY NORMAL
+        local vol_val = API.GetParam(TARGET, tbl[i].FX_ID, 0) -- 0 POLARITY NORMAL
         r.ImGui_SameLine(ctx, -FLT_MIN, (mute * 2) * CANVAS.scale)
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_time")
         local rvh_v, v = MyKnob("", "arc", vol_val, -1000, 1000, "ms")
         if rvh_v then
-            r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 0, v)
+            API.SetParam(TARGET, tbl[i].FX_ID, 0, v)
         end
         local vol_hover = r.ImGui_IsItemHovered(ctx)
         if vol_hover and r.ImGui_IsMouseDoubleClicked(ctx, 0) then
-            r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 0, 0)
+            API.SetParam(TARGET, tbl[i].FX_ID, 0, 0)
         end
         if not btn_hover then
             btn_hover = vol_hover
         end
         r.ImGui_PopID(ctx)
         r.ImGui_SameLine(ctx, -FLT_MIN, (w - (mute * 3)) * CANVAS.scale)
-        local pan_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 3) -- 3 IS POLARITY INVERT
+        local pan_val = API.GetParam(TARGET, tbl[i].FX_ID, 3) -- 3 IS POLARITY INVERT
         r.ImGui_PushID(ctx, tbl[i].guid .. "helper_time2")
         local rvh_p, p = MyKnob("", "knob", pan_val, -40000, 40000, "sample")
         if rvh_p then
-            r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 3, p) -- 3 IS POLARITY INVERT
+            API.SetParam(TARGET, tbl[i].FX_ID, 3, p) -- 3 IS POLARITY INVERT
         end
         local pan_hover = r.ImGui_IsItemHovered(ctx)
         if pan_hover and r.ImGui_IsMouseDoubleClicked(ctx, 0) then
-            r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 3, 0)
+            API.SetParam(TARGET, tbl[i].FX_ID, 3, 0)
         end
         if not btn_hover then
             btn_hover = pan_hover
@@ -1963,31 +1963,31 @@ local function DrawHelper(tbl, i, w)
         r.ImGui_PopID(ctx)
     elseif tbl[i].name:find("SAIKE SPLITTER", nil, true) then
         new_width = true
-        local cuts = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 0) -- NUMBER OF CUTS
+        local cuts = API.GetParam(TARGET, tbl[i].FX_ID, 0) -- NUMBER OF CUTS
         for c = 1, cuts do
             r.ImGui_SameLine(ctx, 0, (mute / 3) * CANVAS.scale)
 
             r.ImGui_PushID(ctx, tbl[i].guid .. "saike" .. c)
-            local cf, minf, maxf = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, c) -- SLIDERS
+            local cf, minf, maxf = API.GetParam(TARGET, tbl[i].FX_ID, c) -- SLIDERS
             local prev_v, next_v
 
-            prev_v = c > 1 and r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, c - 1) or 0
-            next_v = c < cuts and r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, c + 1) or 1
+            prev_v = c > 1 and API.GetParam(TARGET, tbl[i].FX_ID, c - 1) or 0
+            next_v = c < cuts and API.GetParam(TARGET, tbl[i].FX_ID, c + 1) or 1
 
             local val = Clamp(cf, prev_v, next_v)
 
             local rvc, freq = MyKnob("", "knob", val, minf, maxf, "freq")
             if rvc then
-                r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, c, freq)
+                API.SetParam(TARGET, tbl[i].FX_ID, c, freq)
             end
             r.ImGui_PopID(ctx)
             if not btn_hover then btn_hover = r.ImGui_IsItemHovered(ctx) end
         end
         r.ImGui_SameLine(ctx, 0, (mute / 3) * CANVAS.scale)
-        local fir_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 13) -- NUMBER OF FIR
+        local fir_val = API.GetParam(TARGET, tbl[i].FX_ID, 13) -- NUMBER OF FIR
         r.ImGui_PushID(ctx, tbl[i].guid .. "saike" .. "FIR_IIR")
         if r.ImGui_InvisibleButton(ctx, fir_val == 1 and "FIR" or "IIR", (mute + 10) * CANVAS.scale, mute * CANVAS.scale) then
-            r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 13, fir_val == 1 and 0 or 1)
+            API.SetParam(TARGET, tbl[i].FX_ID, 13, fir_val == 1 and 0 or 1)
         end
         r.ImGui_PopID(ctx)
 
@@ -1998,11 +1998,11 @@ local function DrawHelper(tbl, i, w)
 
         r.ImGui_SameLine(ctx, 0, (mute / 3) * CANVAS.scale)
 
-        local pole_val = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 15) -- NUMBER OF FIR
+        local pole_val = API.GetParam(TARGET, tbl[i].FX_ID, 15) -- NUMBER OF FIR
         local pol_name = pole_val == 1 and "12dB" or "24dB"
         r.ImGui_PushID(ctx, tbl[i].guid .. "saike" .. "12_24")
         if r.ImGui_InvisibleButton(ctx, pol_name, (mute + 15) * CANVAS.scale, mute * CANVAS.scale) then
-            r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, 15, pole_val == 1 and 0 or 1)
+            API.SetParam(TARGET, tbl[i].FX_ID, 15, pole_val == 1 and 0 or 1)
         end
         r.ImGui_PopID(ctx)
 
@@ -2015,11 +2015,11 @@ local function DrawHelper(tbl, i, w)
             r.ImGui_SameLine(ctx, 0, (mute / 3) * CANVAS.scale)
 
             r.ImGui_PushID(ctx, tbl[i].guid .. "3band_splitter" .. c)
-            local cf, minf, maxf = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, c - 1) -- SLIDERS
+            local cf, minf, maxf = API.GetParam(TARGET, tbl[i].FX_ID, c - 1) -- SLIDERS
 
             local rvc, freq = MyKnob("", "knob", cf, minf, maxf, "freq3")
             if rvc then
-                r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, c - 1, freq)
+                API.SetParam(TARGET, tbl[i].FX_ID, c - 1, freq)
             end
             r.ImGui_PopID(ctx)
             if not btn_hover then btn_hover = r.ImGui_IsItemHovered(ctx) end
@@ -2031,11 +2031,11 @@ local function DrawHelper(tbl, i, w)
             r.ImGui_SameLine(ctx, 0, (mute / 3) * CANVAS.scale)
 
             r.ImGui_PushID(ctx, tbl[i].guid .. "3band_splitter" .. c)
-            local cf, minf, maxf = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, c - 1) -- SLIDERS
+            local cf, minf, maxf = API.GetParam(TARGET, tbl[i].FX_ID, c - 1) -- SLIDERS
 
             local rvc, freq = MyKnob("", "knob", cf, minf, maxf, "freq3")
             if rvc then
-                r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, c - 1, freq)
+                API.SetParam(TARGET, tbl[i].FX_ID, c - 1, freq)
             end
             r.ImGui_PopID(ctx)
             if not btn_hover then btn_hover = r.ImGui_IsItemHovered(ctx) end
@@ -2047,11 +2047,11 @@ local function DrawHelper(tbl, i, w)
             r.ImGui_SameLine(ctx, 0, (mute / 3) * CANVAS.scale)
 
             r.ImGui_PushID(ctx, tbl[i].guid .. "3band_splitter" .. c)
-            local cf, minf, maxf = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, c - 1) -- SLIDERS
+            local cf, minf, maxf = API.GetParam(TARGET, tbl[i].FX_ID, c - 1) -- SLIDERS
 
             local rvc, freq = MyKnob("", "knob", cf, minf, maxf, "freq3")
             if rvc then
-                r.TrackFX_SetParam(TRACK, tbl[i].FX_ID, c - 1, freq)
+                API.SetParam(TARGET, tbl[i].FX_ID, c - 1, freq)
             end
             r.ImGui_PopID(ctx)
             if not btn_hover then btn_hover = r.ImGui_IsItemHovered(ctx) end
@@ -2060,9 +2060,9 @@ local function DrawHelper(tbl, i, w)
     elseif tbl[i].name:find("LFO", nil, true) then
         new_width = true
         local xx, yy = r.ImGui_GetCursorScreenPos(ctx)
-        local x = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 27)        -- x
-        local y = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 23)        -- y
-        local lfo_shape = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 2) -- shape
+        local x = API.GetParam(TARGET, tbl[i].FX_ID, 27)        -- x
+        local y = API.GetParam(TARGET, tbl[i].FX_ID, 23)        -- y
+        local lfo_shape = API.GetParam(TARGET, tbl[i].FX_ID, 2) -- shape
         xx = xx + (mute * 2)
         r.ImGui_DrawList_AddCircleFilled(draw_list, xx + (x * (w / 6)), yy + def_btn_h / 2 + (-y * (def_btn_h / 3)), 4,
             0xFF0000FF)
@@ -2083,25 +2083,25 @@ local function DrawHelper(tbl, i, w)
         r.ImGui_PushID(ctx, tbl[i].guid .. "LINK")
         if r.ImGui_Button(ctx, "LINK", 0, def_btn_h) then
             local src_param = 23 -- LFO MODULATOR
-            local src_fx_id, buf = MapToParents(TRACK, tbl[i].FX_ID, src_param)
+            local src_fx_id, buf = MapToParents(TARGET, tbl[i].FX_ID, src_param)
             if buf then
                 -- LFO IN CONTAINER
-                LinkLastTouched(TRACK, src_fx_id, buf)
+                LinkLastTouched(TARGET, src_fx_id, buf)
             else
                 -- LFO OUTSIDE CONTAINER
-                local cur_fx_id_target, buf_target = MapToParents(TRACK, LASTTOUCH_FX_ID, LASTTOUCH_P_ID)
+                local cur_fx_id_target, buf_target = MapToParents(TARGET, LASTTOUCH_FX_ID, LASTTOUCH_P_ID)
                 if buf_target then
                     -- FX IN CONTAINER
-                    r.TrackFX_SetNamedConfigParm(TRACK, cur_fx_id_target, "param." .. buf_target .. ".plink.active", 1)
-                    r.TrackFX_SetNamedConfigParm(TRACK, cur_fx_id_target, "param." .. buf_target .. ".plink.effect",
+                    API.SetNamedConfigParm(TARGET, cur_fx_id_target, "param." .. buf_target .. ".plink.active", 1)
+                    API.SetNamedConfigParm(TARGET, cur_fx_id_target, "param." .. buf_target .. ".plink.effect",
                         tbl[i].FX_ID)
-                    r.TrackFX_SetNamedConfigParm(TRACK, cur_fx_id_target, "param." .. buf_target .. ".plink.param",
+                    API.SetNamedConfigParm(TARGET, cur_fx_id_target, "param." .. buf_target .. ".plink.param",
                         src_param)
                 else
-                    r.TrackFX_SetNamedConfigParm(TRACK, LASTTOUCH_FX_ID, "param." .. LASTTOUCH_P_ID .. ".plink.active", 1)
-                    r.TrackFX_SetNamedConfigParm(TRACK, LASTTOUCH_FX_ID, "param." .. LASTTOUCH_P_ID .. ".plink.effect",
+                    API.SetNamedConfigParm(TARGET, LASTTOUCH_FX_ID, "param." .. LASTTOUCH_P_ID .. ".plink.active", 1)
+                    API.SetNamedConfigParm(TARGET, LASTTOUCH_FX_ID, "param." .. LASTTOUCH_P_ID .. ".plink.effect",
                         tbl[i].FX_ID)
-                    r.TrackFX_SetNamedConfigParm(TRACK, LASTTOUCH_FX_ID, "param." .. LASTTOUCH_P_ID .. ".plink.param",
+                    API.SetNamedConfigParm(TARGET, LASTTOUCH_FX_ID, "param." .. LASTTOUCH_P_ID .. ".plink.param",
                         src_param)
                 end
             end
@@ -2159,10 +2159,10 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color, cx, cy)
         local parrent_container = GetParentContainerByGuid(tbl[i])
         local item_id = CalcFxID(parrent_container, i)
         if tbl[i].type == "ROOT" then
-            r.SetMediaTrackInfo_Value(TRACK, "I_FXEN", tbl[i].bypass and 0 or 1)
+            r.SetMediaTrackInfo_Value(TARGET, "I_FXEN", tbl[i].bypass and 0 or 1)
         else
             if tbl[i].offline then
-                r.TrackFX_SetOffline(TRACK, item_id, not tbl[i].offline)
+                API.SetOffline(TARGET, item_id, not tbl[i].offline)
             else
                 if SHIFT and not CTRL then
                     --! TOGGLE SOLO IN LANE
@@ -2175,22 +2175,22 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color, cx, cy)
 
                         for j = first_idx_in_row, last_idx_in_row do
                             local solo_item_id = CalcFxID(parrent_container, j)
-                            r.TrackFX_SetEnabled(TRACK, solo_item_id, true)
+                            API.SetEnabled(TARGET, solo_item_id, true)
                         end
                         PREV_SOLO_LANE_ID = nil
                     end
                 elseif CTRL and not SHIFT then
-                    r.TrackFX_SetOffline(TRACK, item_id, not tbl[i].offline)
+                    API.SetOffline(TARGET, item_id, not tbl[i].offline)
                 elseif ALT then
                     local _, first_idx_in_row = FindNextPrevRow(tbl, i, -1)
                     local _, last_idx_in_row = FindNextPrevRow(tbl, i, 1)
 
                     for j = first_idx_in_row, last_idx_in_row do
                         local solo_item_id = CalcFxID(parrent_container, j)
-                        r.TrackFX_SetEnabled(TRACK, solo_item_id, true)
+                        API.SetEnabled(TARGET, solo_item_id, true)
                     end
                 else
-                    r.TrackFX_SetEnabled(TRACK, item_id, not tbl[i].bypass)
+                    API.SetEnabled(TARGET, item_id, not tbl[i].bypass)
                 end
             end
         end
@@ -2250,16 +2250,16 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color, cx, cy)
         r.ImGui_SameLine(ctx, -FLT_MIN, (width - mute) * CANVAS.scale)
         r.ImGui_PushID(ctx, tbl[i].guid .. "enclose")
         if r.ImGui_InvisibleButton(ctx, "e", para_btn_size * CANVAS.scale, def_btn_h * CANVAS.scale) then
-            if r.TrackFX_GetCount(TRACK) ~= 0 then
+            if API.GetCount(TARGET) ~= 0 then
                 r.PreventUIRefresh(1)
                 r.Undo_BeginBlock()
                 --! CHECK ITS POSITION WITH BLACKLISTED FX (MELODYNE AND SIMILAR NEED TO BE IN SLOT 1 AND CANNOT BE IN CONTAINER)
                 --! CREATE CONTAINER IN POSITION ABOVE BLACKLISTED FX
                 local cont_insert_id = CalculateInsertContainerPosFromBlacklist()
-                local cont_id = r.TrackFX_AddByName(TRACK, "Container", false, cont_insert_id)
-                for j = r.TrackFX_GetCount(TRACK), cont_id + 1, -1 do
-                    local id = 0x2000000 + cont_id + 1 + (r.TrackFX_GetCount(TRACK) + 1)
-                    r.TrackFX_CopyToTrack(TRACK, j, TRACK, id, true)
+                local cont_id = API.AddByName(TARGET, "Container", MODE == "ITEM" and cont_insert_id or false, cont_insert_id)
+                for j = API.GetCount(TARGET), cont_id + 1, -1 do
+                    local id = 0x2000000 + cont_id + 1 + (API.GetCount(TARGET) + 1)
+                    API.CopyToTrack(TARGET, j, TARGET, id, true)
                 end
                 EndUndoBlock("ENCLOSE ALL INTO CONTAINER")
                 r.PreventUIRefresh(-1)
@@ -2322,12 +2322,12 @@ local function DrawButton(tbl, i, name, width, fade, parrent_color, cx, cy)
             if rv then
                 local parrent_container = GetParentContainerByGuid(tbl[i])
                 local item_id = CalcFxID(parrent_container, i)
-                r.TrackFX_SetParam(TRACK, item_id, tbl[i].wetparam, v / 100)
+                API.SetParam(TARGET, item_id, tbl[i].wetparam, v / 100)
             end
             if r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseDoubleClicked(ctx, 0) then
                 local parrent_container = GetParentContainerByGuid(tbl[i])
                 local item_id = CalcFxID(parrent_container, i)
-                r.TrackFX_SetParam(TRACK, item_id, tbl[i].wetparam, 1)
+                API.SetParam(TARGET, item_id, tbl[i].wetparam, 1)
             end
             r.ImGui_PopID(ctx)
         end
@@ -2720,7 +2720,7 @@ end
 function Draw()
     PEAK_INTO_TOOLTIP = false
     LINE_POINTS = {}
-    if not TRACK then return end
+    if not TARGET then return end
     GenerateFXData()
     CheckDNDType()
     r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing(), def_s_spacing_x * CANVAS.scale,
