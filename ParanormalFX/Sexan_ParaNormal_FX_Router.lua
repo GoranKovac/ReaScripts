@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.36.0
+-- @version 1.36.1
 -- @changelog
---  Use user font for all menus
+--  Rename FX LFO to SNJUK2 LFO
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
