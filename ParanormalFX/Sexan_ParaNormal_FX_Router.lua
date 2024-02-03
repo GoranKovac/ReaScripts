@@ -357,14 +357,14 @@ end
 
 local function UpdateTarget()
     if MODE == "ITEM" then
-        if ITEM then
-            TRACK =  r.GetMediaItem_Track( ITEM )
-            TARGET = TAKE
-        end
+       -- if ITEM then
+            TRACK =  ITEM and r.GetMediaItem_Track( ITEM )
+            TARGET = ITEM and TAKE
+        --end
     else
-        if TRACK then
+        --if TRACK then
             TARGET = TRACK
-        end
+        --end
     end
 end
 
