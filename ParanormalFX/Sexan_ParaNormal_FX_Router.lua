@@ -3,7 +3,8 @@
 -- @license GPL v3
 -- @version 1.36.1
 -- @changelog
---  Rename FX LFO to SNJUK2 LFO
+--  Store Take Canvas to per take P_EXT
+--  Changing TAB MODE load previous P_EXT
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -159,6 +160,7 @@ V_LAYOUT                = true
 OPEN_PM_INSPECTOR       = false
 
 MODE = "TRACK"
+LAST_MODE = MODE
 
 -- profiler = dofile(reaper.GetResourcePath() ..
 --   '/Scripts/ReaTeam Scripts/Development/cfillion_Lua profiler.lua')
@@ -237,28 +239,38 @@ local function pdefer(func)
     end)
 end
 
-function StoreToPEXT(last_track)
-    if not last_track then return end
+function StoreToPEXT(last_target)
+    if not last_target then return end
     local storedTable = {}
-    if r.ValidatePtr(last_track, "MediaTrack*") then
+    if r.ValidatePtr(last_target, "MediaTrack*") then
+        storedTable.CANVAS = CANVAS
+        storedTable.CONTAINERS = GetTRContainerData()
+    elseif r.ValidatePtr(last_target, "MediaItem_Take*") then
         storedTable.CANVAS = CANVAS
         storedTable.CONTAINERS = GetTRContainerData()
     end
     local serialized = tableToString(storedTable)
-    if r.ValidatePtr(last_track, "MediaTrack*") then
-        r.GetSetMediaTrackInfo_String(last_track, "P_EXT:PARANORMAL_FX2", serialized, true)
+    if r.ValidatePtr(last_target, "MediaTrack*")then
+        r.GetSetMediaTrackInfo_String(last_target, "P_EXT:PARANORMAL_FX2", serialized, true)
+    elseif r.ValidatePtr(last_target, "MediaItem_Take*") then
+        r.GetSetMediaItemTakeInfo_String(last_target, "P_EXT:PARANORMAL_FX2", serialized, true )
     end
 end
 
 function RestoreFromPEXT()
     local rv, stored
-    if r.ValidatePtr(TRACK, "MediaTrack*") then
+    if MODE == "TRACK" and r.ValidatePtr(TRACK, "MediaTrack*") then
         rv, stored = r.GetSetMediaTrackInfo_String(TRACK, "P_EXT:PARANORMAL_FX2", "", false)
+    elseif MODE == "ITEM" and r.ValidatePtr(TAKE, "MediaItem_Take*") then
+        rv, stored = r.GetSetMediaItemTakeInfo_String(TAKE, "P_EXT:PARANORMAL_FX2", "", false )
     end
     if rv == true and stored ~= nil then
         local storedTable = stringToTable(stored)
         if storedTable ~= nil then
-            if r.ValidatePtr(TRACK, "MediaTrack*") then
+            if MODE == "TRACK" and r.ValidatePtr(TRACK, "MediaTrack*") then
+                CANVAS = storedTable.CANVAS
+                SetTRContainerData(storedTable.CONTAINERS)
+            elseif MODE == "ITEM" and r.ValidatePtr(TAKE, "MediaItem_Take*") then
                 CANVAS = storedTable.CANVAS
                 SetTRContainerData(storedTable.CONTAINERS)
             end
@@ -357,14 +369,31 @@ end
 
 local function UpdateTarget()
     if MODE == "ITEM" then
-       -- if ITEM then
-            TRACK =  ITEM and r.GetMediaItem_Track( ITEM )
-            TARGET = ITEM and TAKE
-        --end
+        TARGET = ITEM and TAKE
     else
-        --if TRACK then
-            TARGET = TRACK
-        --end
+        TARGET = TRACK
+    end
+end
+
+local function UpdateLastTargetCanvas()
+    if MODE == "TRACK" and LAST_TRACK ~= TRACK then
+        ResetStrippedNames()
+        StoreToPEXT(LAST_TRACK)
+        LAST_TRACK = TRACK
+        LASTTOUCH_RV, LASTTOUCH_TR_NUM, LASTTOUCH_FX_ID, LASTTOUCH_P_ID = nil, nil, nil, nil
+        if not RestoreFromPEXT() then
+            CANVAS = InitCanvas()
+            InitTrackContainers()
+        end
+    elseif MODE == "ITEM" and LAST_TAKE ~= TAKE then
+        ResetStrippedNames()
+        StoreToPEXT(LAST_TAKE)
+        LAST_TAKE = TAKE
+        LASTTOUCH_RV, LASTTOUCH_TR_NUM, LASTTOUCH_FX_ID, LASTTOUCH_P_ID = nil, nil, nil, nil
+        if not RestoreFromPEXT() then
+            CANVAS = InitCanvas()
+            InitTrackContainers()
+        end
     end
 end
 
@@ -379,30 +408,9 @@ local function Main()
     TRACK = PIN and SEL_LIST_TRACK or r.GetSelectedTrack2(0, 0, true)
     ITEM =  r.GetSelectedMediaItem( 0, 0 )
     TAKE = ITEM and r.GetActiveTake( ITEM ) or nil
-    --TARGET = MODE == "TRACK" and TRACK or TAKE
+    
     UpdateTarget()
-    if LAST_TRACK ~= TRACK then
-        ResetStrippedNames()
-        StoreToPEXT(LAST_TRACK)
-        LAST_TRACK = TRACK
-        LASTTOUCH_RV, LASTTOUCH_TR_NUM, LASTTOUCH_FX_ID, LASTTOUCH_P_ID = nil, nil, nil, nil
-        if not RestoreFromPEXT() then
-            CANVAS = InitCanvas()
-            InitTrackContainers()
-        end
-    end
-    -- if REAPER_DND then
-    --     ImGui.SetNextWindowSizeConstraints(ctx, 500, 500, FLT_MAX, FLT_MAX)
-    --     ImGui.SetNextWindowSize(ctx, 150, 150, ImGui.Cond_FirstUseEver())
-    --     r.ImGui_SetNextWindowPos(ctx, mx-25, my-25)
-    --     if r.ImGui_Begin(ctx, 'REAPERDND', false, r.ImGui_WindowFlags_NoInputs() | r.ImGui_WindowFlags_NoDecoration() |  r.ImGui_WindowFlags_NoBackground() |  r.ImGui_WindowFlags_AlwaysAutoResize() | r.ImGui_WindowFlags_NoMove()) then
-    --             if r.ImGui_IsMouseDown(ctx,0) then
-    --                 r.ShowConsoleMsg("DOWN")
-    --             end
-    --             r.ImGui_Image( ctx, img, 182//3, 125//3 )
-    --         ImGui.End(ctx)
-    --     end
-    -- end
+    UpdateLastTargetCanvas()
 
     ImGui.PushStyleColor(ctx, ImGui.Col_WindowBg(), 0x111111FF)
     ImGui.SetNextWindowSizeConstraints(ctx, 500, 500, FLT_MAX, FLT_MAX)
@@ -412,21 +420,23 @@ local function Main()
 
     ImGui.PopStyleColor(ctx)
     if visible then
-        if r.ImGui_BeginTabBar(ctx, "GLOBAL TABS") then
+        if r.ImGui_BeginTabBar(ctx, "GLOBAL TABS") then            
             r.ImGui_PushStyleColor( ctx, r.ImGui_Col_TabActive(), 0x00FF88AA )
             if r.ImGui_BeginTabItem(ctx, "TRACK", false) then
                 MODE = "TRACK"
-                UpdateTarget()
                 API = track_api
                 r.ImGui_EndTabItem(ctx)
             end
             if r.ImGui_BeginTabItem(ctx, "ITEM", false) then
                 MODE = "ITEM"
-                UpdateTarget()
                 API = take_api
                 r.ImGui_EndTabItem(ctx)
             end
-            r.ImGui_PopStyleColor(ctx)
+            if LAST_MODE ~= MODE then
+                LAST_MODE = MODE
+                UpdateTarget()
+            end
+            r.ImGui_PopStyleColor(ctx)      
             r.ImGui_EndTabBar(ctx)
         end
         MonitorLastTouchedFX()
@@ -491,7 +501,11 @@ function Exit()
     if CLIPBOARD.tbl and CLIPBOARD.track == TRACK then
         ClearExtState()
     end
-    StoreToPEXT(LAST_TRACK)
+    if MODE == "TRACK" then
+        StoreToPEXT(LAST_TRACK)
+    elseif MODE == "ITEM" then
+        StoreToPEXT(LAST_TAKE)
+    end
 end
 
 r.atexit(Exit)
