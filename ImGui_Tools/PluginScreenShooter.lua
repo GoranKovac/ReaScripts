@@ -63,7 +63,7 @@ function main()
     end
     if pluginName then
       -- REPLACE SYMBOLS WITH _ FOR FILE WRITING
-      local pluginName_strip = pluginName:gsub("[-:_/%s>]", "_")
+      local pluginName_strip = pluginName:gsub("[-:_/%s><]", "_")
       path = folder .. pluginName_strip  .. '.png'
       -- IF FILE EXIST SKIP IT
       if not r.file_exists( path ) then
