@@ -57,7 +57,10 @@ end
 function main()
     --r.ShowConsoleMsg(i.."\n")
     retval, pluginName, ident = r.EnumInstalledFX(i)
-    if not retval then DONE = true end
+    if not retval then
+        START = false
+        DONE = true
+    end
     if pluginName then
       -- REPLACE SYMBOLS WITH _ FOR FILE WRITING
       local pluginName_strip = pluginName:gsub("[-:_/%s>]", "_")
@@ -95,7 +98,7 @@ local function gui()
         r.ImGui_SameLine(ctx)
        
         if START then main() end
-        r.ImGui_Text(ctx, "PROCESSING : ID " .. i .. " - " .. (pluginName or ""))
+        r.ImGui_Text(ctx, DONE and "FINISHED" or ("PROCESSING : ID " .. i .. " - " .. (pluginName or "")))
         r.ImGui_End(ctx)
     end
 
