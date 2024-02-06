@@ -119,7 +119,7 @@ local HELPERS = {
         fx = "JS:LFO",
         fx_name = "SNJUK2 LFO",
         name = "LFO",
-        alt_name = "LFO.jsfx",
+        alt_name = "ReaTeam JSFX/Modulation/snjuk2_LFO.jsfx",
         helper = "SNJUK2 LFO"
     },
     ----------------------------------------
@@ -1196,17 +1196,22 @@ local function IterateContainer(depth, track, container_id, parent_fx_count, pre
         local _, fx_name = r.TrackFX_GetFXName(track, 0x2000000 + fx_id)
         local _, original_fx_name = r.TrackFX_GetNamedConfigParm(track, 0x2000000 + fx_id, "fx_name")
         local _, fx_type = r.TrackFX_GetNamedConfigParm(track, 0x2000000 + fx_id, "fx_type")
+        local _, fx_ident = r.TrackFX_GetNamedConfigParm( track, 0x2000000 + fx_id, "fx_ident" )
 
         local is_helper
         if fx_type ~= "Container" then
             for h = 1, #HELPERS do
-                if fx_name:find(HELPERS[h].name, nil, true) then
-                    fx_name = HELPERS[h].helper or fx_name
-                    is_helper = true
-                elseif HELPERS[h].alt_name and fx_name:find(HELPERS[h].alt_name, nil, true) then
+                if HELPERS[h].alt_name == fx_ident then
                     fx_name = HELPERS[h].helper or fx_name
                     is_helper = true
                 end
+                -- if fx_name:find(HELPERS[h].name, nil, true) then
+                --     fx_name = HELPERS[h].helper or fx_name
+                --     is_helper = true
+                -- elseif HELPERS[h].alt_name and fx_name:find(HELPERS[h].alt_name, nil, true) then
+                --     fx_name = HELPERS[h].helper or fx_name
+                --     is_helper = true
+                -- end
             end
         end
         if not stripped_names[fx_name] then
@@ -1306,17 +1311,23 @@ local function GenerateFXData(target)
         local _, fx_type = r.TrackFX_GetNamedConfigParm(track, i - 1, "fx_type")
         local _, fx_name = r.TrackFX_GetFXName(track, i - 1)
         local _, original_fx_name = r.TrackFX_GetNamedConfigParm(track, i - 1, "fx_name")
+        local _, fx_ident = r.TrackFX_GetNamedConfigParm( track, i - 1, "fx_ident" )
+
 
         local is_helper
         if fx_type ~= "Container" then
             for h = 1, #HELPERS do
-                if fx_name:find(HELPERS[h].name, nil, true) then
-                    fx_name = HELPERS[h].helper or fx_name
-                    is_helper = true
-                elseif HELPERS[h].alt_name and fx_name:find(HELPERS[h].alt_name, nil, true) then
+                if HELPERS[h].alt_name == fx_ident then
                     fx_name = HELPERS[h].helper or fx_name
                     is_helper = true
                 end
+                -- if fx_name:find(HELPERS[h].name, nil, true) then
+                --     fx_name = HELPERS[h].helper or fx_name
+                --     is_helper = true
+                -- elseif HELPERS[h].alt_name and fx_name:find(HELPERS[h].alt_name, nil, true) then
+                --     fx_name = HELPERS[h].helper or fx_name
+                --     is_helper = true
+                -- end
             end
         end
 
@@ -2063,8 +2074,11 @@ local function DrawHelper(tbl, i, w)
         local x = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 27)        -- x
         local y = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 23)        -- y
         local lfo_shape = r.TrackFX_GetParam(TRACK, tbl[i].FX_ID, 2) -- shape
-        xx = xx + (mute * 2)
-        r.ImGui_DrawList_AddCircleFilled(draw_list, xx + (x * (w / 6)), yy + def_btn_h / 2 + (-y * (def_btn_h / 3)), 4,
+        xx = xx + (mute * 2)*CANVAS.scale
+        r.ImGui_DrawList_AddCircleFilled(draw_list,
+            xx + (x * (w / 6))*CANVAS.scale,
+            yy + (def_btn_h / 2)*CANVAS.scale + (-y * (def_btn_h / 3))*CANVAS.scale,
+            4*CANVAS.scale,
             0xFF0000FF)
         local aw = w / 6
 
@@ -2079,9 +2093,9 @@ local function DrawHelper(tbl, i, w)
                 r.ImGui_DrawList_AddPolyline(draw_list, points2, 0xFFFFFF88, 0, 1)
             end
         end
-        r.ImGui_SameLine(ctx, 0, 50)
+        r.ImGui_SameLine(ctx, 0, 50*CANVAS.scale)
         r.ImGui_PushID(ctx, tbl[i].guid .. "LINK")
-        if r.ImGui_Button(ctx, "LINK", 0, def_btn_h) then
+        if r.ImGui_Button(ctx, "LINK", 0, def_btn_h*CANVAS.scale) and (tbl[i].FX_ID ~= LASTTOUCH_FX_ID) then
             local src_param = 23 -- LFO MODULATOR
             local src_fx_id, buf = MapToParents(TRACK, tbl[i].FX_ID, src_param)
             if buf then

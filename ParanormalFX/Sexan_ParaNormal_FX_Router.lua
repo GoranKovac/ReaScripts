@@ -1,9 +1,13 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.36.1
+-- @version 1.36.2
 -- @changelog
---  Rename FX LFO to SNJUK2 LFO
+--  Add static font for context menus and fx browser (non zooming)
+--  Fix broken font when zooming (context menu update)
+--  Track Helper JSFX by identifier rather than matching fx_name
+--  Don't allow LFO to link to itself
+--  Fix LFO Preview zoomed coordinates
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -382,12 +386,13 @@ local function Main()
         AW, AH = r.ImGui_GetContentRegionAvail(ctx)
         WX, WY = r.ImGui_GetWindowPos(ctx)
         MX, MY = r.ImGui_GetMousePos(ctx)
-        --r.ImGui_PushFont(ctx, SELECTED_FONT)
         r.ImGui_PushFont(ctx, CUSTOM_FONT and SYSTEM_FONT_FACTORY or DEFAULT_FONT_FACTORY)
         CanvasLoop()
+        r.ImGui_PopFont(ctx)
         CollectFxData()
+        r.ImGui_PushFont(ctx, SELECTED_FONT)
         Draw()
-        --r.ImGui_PopFont(ctx)
+        r.ImGui_PopFont(ctx)
         UI()
         if OPEN_SETTINGS then
             DrawUserSettings()
@@ -398,7 +403,7 @@ local function Main()
         else
             if PM_INSPECTOR_FXID then PM_INSPECTOR_FXID = nil end
         end
-        r.ImGui_PopFont(ctx)
+        --r.ImGui_PopFont(ctx)
         ClipBoard()
         --if OPEN_SLOTS then SlotsMenu() end
         if not IS_DRAGGING_RIGHT_CANVAS and r.ImGui_IsMouseReleased(ctx, 1) and

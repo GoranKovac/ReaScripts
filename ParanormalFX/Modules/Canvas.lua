@@ -484,9 +484,9 @@ local function Popups()
     end
 
     if r.ImGui_BeginPopup(ctx, "FX LIST", r.ImGui_WindowFlags_NoMove()) then
-        r.ImGui_PushFont(ctx, SELECTED_FONT)
+        --r.ImGui_PushFont(ctx, SELECTED_FONT)
         DrawFXList()
-        r.ImGui_PopFont(ctx)
+       --r.ImGui_PopFont(ctx)
         r.ImGui_EndPopup(ctx)
     end
 

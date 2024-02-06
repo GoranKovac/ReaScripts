@@ -59,8 +59,8 @@ function GetWaveType(shape, t, x, y, w, h, inv)
         for i = 1, w, 2 do
             local t2 = 1 / w
             local yval = Sine(t2 * i, h / 2 - 2, 1)
-            points[#points + 1] = x + i
-            points[#points + 1] = y + yval + (h / 2)
+            points[#points + 1] = x + (i*CANVAS.scale)
+            points[#points + 1] = y + (yval + (h / 2))*CANVAS.scale
         end
         return r.new_array(points, #points), Sine(t, h / 2, 1)
     elseif shape == 1 then
