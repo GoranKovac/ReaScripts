@@ -1,13 +1,10 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.36.2
+-- @version 1.36.3
 -- @changelog
---  Add static font for context menus and fx browser (non zooming)
---  Fix broken font when zooming (context menu update)
---  Track Helper JSFX by identifier rather than matching fx_name
---  Don't allow LFO to link to itself
---  Fix LFO Preview zoomed coordinates
+--  Move V_LAYOUT check to if statement instead of ternary
+--  Fixes loading stored layout
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -171,7 +168,10 @@ if r.HasExtState("PARANORMALFX2", "SETTINGS") then
         if storedTable ~= nil then
             local COLOR = GetColorTbl()
             -- SETTINGS
-            V_LAYOUT = storedTable.v_layout ~= nil and storedTable.v_layout or V_LAYOUT
+            --V_LAYOUT = storedTable.v_layout ~= nil and storedTable.v_layout or V_LAYOUT
+            if storedTable.v_layout ~= nil then
+                V_LAYOUT = storedTable.v_layout
+            end
             SHOW_C_CONTENT_TOOLTIP = storedTable.show_c_content_tooltips ~= nil and storedTable.show_c_content_tooltips
             TOOLTIPS = storedTable.tooltips ~= nil and storedTable.tooltips
             ANIMATED_HIGLIGHT = storedTable.animated_highlight
