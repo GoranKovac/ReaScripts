@@ -1,3 +1,5 @@
+-- Credits nihilboy for idea
+
 local r = reaper
 local deps = {}
 
