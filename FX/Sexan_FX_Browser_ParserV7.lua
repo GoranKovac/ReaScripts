@@ -1,9 +1,9 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.27
+-- @version 1.28
 -- @changelog
---  Fix TRACK TEMPLATES making double table
+--  Revert Instrument suffix (VSTi, VST3i, AUi, CLAPi, LV2i) since reaper got this fixed
 
 local r                                = reaper
 local os                               = r.GetOS()
@@ -200,14 +200,14 @@ local function ParseVST(name, ident)
         name = name:gsub("%s", "", 1)
         VST[#VST + 1] = name
     elseif name:match("VSTi: ") then
-        name = name:gsub("VSTi:", "VST:"):gsub("%s", "", 1)
+        name = name:gsub("%s", "", 1)
         VSTi[#VSTi + 1] = name
         INSTRUMENTS[#INSTRUMENTS + 1] = name
     elseif name:match("VST3: ") then
         name = name:gsub("%s", "", 1)
         VST3[#VST3 + 1] = name
     elseif name:match("VST3i: ") then
-        name = name:gsub("VST3i:", "VST3:"):gsub("%s", "", 1)
+        name = name:gsub("%s", "", 1)
         VST3i[#VST3 + 1] = name
         INSTRUMENTS[#INSTRUMENTS + 1] = name
     end
@@ -234,7 +234,7 @@ local function ParseAU(name, ident)
         name = name:gsub("%s", "", 1)
         AU[#AU + 1] = name
     elseif name:match("AUi: ") then
-        name = name:gsub("AUi:", "AU:"):gsub("%s", "", 1)
+        name = name:gsub("%s", "", 1)
         AUi[#AUi + 1] = name
         INSTRUMENTS[#INSTRUMENTS + 1] = name
     end
@@ -249,7 +249,7 @@ local function ParseCLAP(name, ident)
         name = name:gsub("%s", "", 1)
         CLAP[#CLAP + 1] = name
     elseif name:match("CLAPi: ") then
-        name = name:gsub("CLAPi:", "CLAP:"):gsub("%s", "", 1)
+        name = name:gsub("%s", "", 1)
         CLAPi[#CLAPi + 1] = name
         INSTRUMENTS[#INSTRUMENTS + 1] = name
     end
@@ -264,7 +264,7 @@ local function ParseLV2(name, ident)
         name = name:gsub("%s", "", 1)
         LV2[#LV2 + 1] = name
     elseif name:match("LV2i: ") then
-        name = name:gsub("LV2i:", "LV2:"):gsub("%s", "", 1)
+        name = name:gsub("%s", "", 1)
         LV2i[#LV2i + 1] = name
         INSTRUMENTS[#INSTRUMENTS + 1] = name
     end
