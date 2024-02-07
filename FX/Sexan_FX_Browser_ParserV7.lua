@@ -1,9 +1,9 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.26
+-- @version 1.27
 -- @changelog
---  Allow only files with provided extension when iterating files and folders
+--  Fix TRACK TEMPLATES making double table
 
 local r                                = reaper
 local os                               = r.GetOS()
@@ -540,10 +540,10 @@ local function ParseTrackTemplates()
     local trackTemplatesFolder = r.GetResourcePath() .. "/TrackTemplates"
     local TRACK_TEMPLATES = {}
     GetDirFilesRecursive(trackTemplatesFolder, TRACK_TEMPLATES, ".RTrackTemplate")
-    if #TRACK_TEMPLATES ~= 0 then
-        --table.sort(FX_CHAINS, function(a, b) if a and b then return a:lower() < b:lower() end end)
-        CAT[#CAT + 1] = { name = "TRACK TEMPLATES", list = TRACK_TEMPLATES }
-    end
+    -- if #TRACK_TEMPLATES ~= 0 then
+    --     --table.sort(FX_CHAINS, function(a, b) if a and b then return a:lower() < b:lower() end end)
+    --     CAT[#CAT + 1] = { name = "TRACK TEMPLATES", list = TRACK_TEMPLATES }
+    -- end
     return TRACK_TEMPLATES
 end
 
@@ -602,7 +602,7 @@ function GenerateFxList()
     end
     local TRACK_TEMPLATES = ParseTrackTemplates()
     if #TRACK_TEMPLATES ~= 0 then
-        CAT[#CAT + 1] = { name = "TRACK TEMPLATES", list = TRACK_TEMPLATES }
+       CAT[#CAT + 1] = { name = "TRACK TEMPLATES", list = TRACK_TEMPLATES }
     end
     AllPluginsCategory()
 
