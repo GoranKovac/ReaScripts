@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="5ddc5896fa26d8630cf536821ca19efdb7c5107c" name="Sexan_Scripts">
+<index version="1" commit="be3e4ec52f34cd2abfed342877983c7af92bd340" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -643,6 +643,10 @@ Found FX is added last to list then flags get deleted to ensure numeric key orde
       <version name="1.28" author="Sexan" time="2024-02-07T21:17:03Z">
         <changelog><![CDATA[Revert Instrument suffix (VSTi, VST3i, AUi, CLAPi, LV2i) since reaper got this fixed]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/5ddc5896fa26d8630cf536821ca19efdb7c5107c/FX/Sexan_FX_Browser_ParserV7.lua</source>
+      </version>
+      <version name="1.29" author="Sexan" time="2024-02-08T13:06:31Z">
+        <changelog><![CDATA[Fix VST3i table]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/be3e4ec52f34cd2abfed342877983c7af92bd340/FX/Sexan_FX_Browser_ParserV7.lua</source>
       </version>
     </reapack>
   </category>
