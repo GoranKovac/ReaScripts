@@ -1,9 +1,9 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.28
+-- @version 1.29
 -- @changelog
---  Revert Instrument suffix (VSTi, VST3i, AUi, CLAPi, LV2i) since reaper got this fixed
+--  Fix VST3i table
 
 local r                                = reaper
 local os                               = r.GetOS()
@@ -208,7 +208,7 @@ local function ParseVST(name, ident)
         VST3[#VST3 + 1] = name
     elseif name:match("VST3i: ") then
         name = name:gsub("%s", "", 1)
-        VST3i[#VST3 + 1] = name
+        VST3i[#VST3i + 1] = name
         INSTRUMENTS[#INSTRUMENTS + 1] = name
     end
     -- WE NEED TO EXTRACT ONLY DLL WITHOUT PATH SO REVERSE IT FOR EASIER MATCH TO FIRST "/"" AFTER DLL
