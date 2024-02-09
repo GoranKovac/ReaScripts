@@ -1,9 +1,9 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.29
+-- @version 1.30
 -- @changelog
---  Fix VST3i table
+--  Remove stripping whitespace between prefix and fx name (fixed in reaper now)
 
 local r                                = reaper
 local os                               = r.GetOS()
@@ -197,17 +197,17 @@ local function ParseVST(name, ident)
     if not name:match("^VST") then return end
 
     if name:match("VST: ") then
-        name = name:gsub("%s", "", 1)
+        --name = name:gsub("%s", "", 1)
         VST[#VST + 1] = name
     elseif name:match("VSTi: ") then
-        name = name:gsub("%s", "", 1)
+        --name = name:gsub("%s", "", 1)
         VSTi[#VSTi + 1] = name
         INSTRUMENTS[#INSTRUMENTS + 1] = name
     elseif name:match("VST3: ") then
-        name = name:gsub("%s", "", 1)
+        --name = name:gsub("%s", "", 1)
         VST3[#VST3 + 1] = name
     elseif name:match("VST3i: ") then
-        name = name:gsub("%s", "", 1)
+        --name = name:gsub("%s", "", 1)
         VST3i[#VST3i + 1] = name
         INSTRUMENTS[#INSTRUMENTS + 1] = name
     end
@@ -221,7 +221,7 @@ end
 
 local function ParseJSFX(name, ident)
     if not name:match("^JS:") then return end
-    name                          = name:gsub("%s", "", 1)
+    --name                          = name:gsub("%s", "", 1)
     JS[#JS + 1]                   = name
     JS_INFO[#JS_INFO + 1]         = { id = ident, name = name }
     PLUGIN_LIST[#PLUGIN_LIST + 1] = name
@@ -231,10 +231,10 @@ local function ParseAU(name, ident)
     if not name:match("^AU") then return end
 
     if name:match("AU: ") then
-        name = name:gsub("%s", "", 1)
+        --name = name:gsub("%s", "", 1)
         AU[#AU + 1] = name
     elseif name:match("AUi: ") then
-        name = name:gsub("%s", "", 1)
+        --name = name:gsub("%s", "", 1)
         AUi[#AUi + 1] = name
         INSTRUMENTS[#INSTRUMENTS + 1] = name
     end
@@ -246,10 +246,10 @@ local function ParseCLAP(name, ident)
     if not name:match("^CLAP") then return end
 
     if name:match("CLAP: ") then
-        name = name:gsub("%s", "", 1)
+        --name = name:gsub("%s", "", 1)
         CLAP[#CLAP + 1] = name
     elseif name:match("CLAPi: ") then
-        name = name:gsub("%s", "", 1)
+        --name = name:gsub("%s", "", 1)
         CLAPi[#CLAPi + 1] = name
         INSTRUMENTS[#INSTRUMENTS + 1] = name
     end
@@ -261,10 +261,10 @@ local function ParseLV2(name, ident)
     if not name:match("^LV2") then return end
 
     if name:match("LV2: ") then
-        name = name:gsub("%s", "", 1)
+        --name = name:gsub("%s", "", 1)
         LV2[#LV2 + 1] = name
     elseif name:match("LV2i: ") then
-        name = name:gsub("%s", "", 1)
+        --name = name:gsub("%s", "", 1)
         LV2i[#LV2i + 1] = name
         INSTRUMENTS[#INSTRUMENTS + 1] = name
     end
