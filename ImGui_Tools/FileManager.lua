@@ -1,9 +1,9 @@
 -- @description Sexan ImGui FileManager
 -- @author Sexan
 -- @license GPL v3
--- @version 1.01
+-- @version 1.02
 -- @changelog
---  Fix doubleclick to save tries to load
+--  Allow prenaming
 
 local r = reaper
 local os_separator = package.config:sub(1, 1)
@@ -70,7 +70,7 @@ local function DrawEntries(entries, is_dir)
         if r.ImGui_Selectable(ctx, entry, filelist.current == entry, r.ImGui_SelectableFlags_AllowDoubleClick()) then
             filelist.current = entry
             filelist.current_is_dir = is_dir
-            filelist.current_text_input = is_dir and entry or
+            current_text_input = is_dir and entry or
                 entry:reverse():match("%.(.+)"):reverse() -- REMOVE EXTENSTION FROM SELECTED ENTRY IF NOT FOLDER
             if r.ImGui_IsMouseDoubleClicked(ctx, 0) then
                 if is_dir then
@@ -155,19 +155,18 @@ local function PathButtons()
     return #path_buttons
 end
 
-function Init_FM_database()
+function Init_FM_database(name)
     path = FM_MAIN_PATH
     filelist = {}
-    filelist.current_text_input = ""
-
+    current_text_input = name or ""
     RemoveLastPathComponent()
     filelist = GetFileList()
 end
 
 function DoSave()
     if not CAN_SAVE then return end
-    --local save_extension = filelist.current_text_input:match(exstension) and filelist.current_text_input or        filelist.current_text_input .. exstensions_preview[1]
-    local save_file = filelist.current_text_input .. exstensions[1] -- APPEND EXTENSION TO FILE NAME
+    --local save_extension = current_text_input:match(exstension) and current_text_input or        current_text_input .. exstensions_preview[1]
+    local save_file = current_text_input .. exstensions[1] -- APPEND EXTENSION TO FILE NAME
     local save_path = path .. os_separator .. save_file
     local file = io.open(save_path, "r")
     if file ~= nil then
@@ -229,8 +228,8 @@ function File_dialog()
     if FM_TYPE == "LOAD" then r.ImGui_BeginDisabled(ctx, true) end
     r.ImGui_SetNextItemWidth(ctx, -203)
     if r.ImGui_IsWindowAppearing(ctx) then r.ImGui_SetKeyboardFocusHere(ctx) end
-    _, filelist.current_text_input = r.ImGui_InputText(ctx, "##text", filelist.current_text_input)
-    CAN_LOAD = #filelist.current_text_input ~= 0
+    _, current_text_input = r.ImGui_InputText(ctx, "##text", current_text_input)
+    CAN_LOAD = #current_text_input ~= 0
     r.ImGui_SameLine(ctx)
     if FM_TYPE == "LOAD" then r.ImGui_EndDisabled(ctx) end
 
@@ -254,7 +253,7 @@ function File_dialog()
     if FM_TYPE == "SAVE" then
         r.ImGui_SameLine(ctx)
         CAN_SAVE = true
-        if not filelist.current_text_input or Ltrim(filelist.current_text_input) == "" then
+        if not current_text_input or Ltrim(current_text_input) == "" then
             r.ImGui_BeginDisabled(ctx, true)
             CAN_SAVE = false
         end
@@ -264,7 +263,7 @@ function File_dialog()
         if r.ImGui_IsKeyPressed(ctx, r.ImGui_Key_Enter(), false) and not OVERWRITE_OPEN then
             DoSave()
         end
-        if not filelist.current_text_input or Ltrim(filelist.current_text_input) == "" then
+        if not current_text_input or Ltrim(current_text_input) == "" then
             r.ImGui_EndDisabled(ctx)
         end
     end
@@ -307,9 +306,9 @@ function SaveToFIle(save_path)
 end
 
 local function DoOverwrite()
-    --local save_extension = filelist.current_text_input:match(exstension) and filelist.current_text_input or
-    --    filelist.current_text_input .. exstensions_preview[1]
-    local save_file = filelist.current_text_input .. exstensions[1] -- APPEND EXTENSION TO FILE NAME
+    --local save_extension = current_text_input:match(exstension) and current_text_input or
+    --    current_text_input .. exstensions_preview[1]
+    local save_file = current_text_input .. exstensions[1] -- APPEND EXTENSION TO FILE NAME
     local save_path = path .. os_separator .. save_file
     SaveToFIle(save_path)
     r.ImGui_CloseCurrentPopup(ctx)
@@ -326,7 +325,7 @@ function FM_Modal_POPUP()
     r.ImGui_SetNextWindowPos(ctx, center[1], center[2], r.ImGui_Cond_Appearing(), 0.5, 0.5)
     if r.ImGui_BeginPopupModal(ctx, 'Overwrite', nil, r.ImGui_WindowFlags_AlwaysAutoResize()) then
         OVERWRITE_OPEN = true
-        r.ImGui_Text(ctx, filelist.current_text_input .. ' - already exists.\nOverwrite file ?\n\n')
+        r.ImGui_Text(ctx, current_text_input .. ' - already exists.\nOverwrite file ?\n\n')
         r.ImGui_Separator(ctx)
         if r.ImGui_Button(ctx, 'OK', 120, 0) then
             DoOverwrite()
