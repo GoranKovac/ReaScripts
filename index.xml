@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="cd7b5d52665b3446b7af070531fffb597df38847" name="Sexan_Scripts">
+<index version="1" commit="08dea01cffb72382710673b4650a8ba6cda92435" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -663,6 +663,10 @@ Found FX is added last to list then flags get deleted to ensure numeric key orde
       <version name="1.01" author="Sexan" time="2023-11-03T16:14:18Z">
         <changelog><![CDATA[Fix doubleclick to save tries to load]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/ee336a8c316e3e69b93346dfc0d7f5a3c6e4e7aa/ImGui_Tools/FileManager.lua</source>
+      </version>
+      <version name="1.02" author="Sexan" time="2024-02-10T17:21:26Z">
+        <changelog><![CDATA[Allow prenaming]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/08dea01cffb72382710673b4650a8ba6cda92435/ImGui_Tools/FileManager.lua</source>
       </version>
     </reapack>
     <reapack name="Sexan_Chunk_Viewer.lua" type="script" desc="Sexan ChunkViewer Imgui">
