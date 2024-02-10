@@ -313,9 +313,11 @@ local function RightClickMenu()
     if RC_DATA.type == "ROOT" or RC_DATA.type == "Container" then
         r.ImGui_Separator(ctx)
         if r.ImGui_MenuItem(ctx, 'SAVE AS CHAIN') then
+            --SAVE_NAME = RC_DATA.tbl[RC_DATA.i].name
             OPEN_FM = true
             FM_TYPE = "SAVE"
-            Init_FM_database()
+            local pre_name = RC_DATA.type == "Container" and RC_DATA.tbl[RC_DATA.i].name or nil
+            Init_FM_database(pre_name)
             if RC_DATA.type == "ROOT" then
                 CreateFxChain()
             else

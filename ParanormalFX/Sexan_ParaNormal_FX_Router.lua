@@ -1,10 +1,10 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.36.3
+-- @version 1.36.4
 -- @changelog
---  Move V_LAYOUT check to if statement instead of ternary
---  Fixes loading stored layout
+--  Hopefully fixed hard bug in parsing container chunk
+--  Saving Container chain automatically uses container name for fxchain name
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -40,7 +40,8 @@ local lfos_path = reaper_path .. "/Effects/ReaTeam JSFX/Modulation/snjuk2_LFO.js
 local splitters_path = reaper_path .. "/Effects/Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_frequency_splitter.jsfx"
 
 
---local fx_browser_script_path = "C:/Users/Gokily/Documents/ReaGit/ReaScripts/FX/Sexan_FX_Browser_ParserV7.lua"
+--local fx_browser_script_path = "C:/Users/Gokily/Documents/ReaGit/ReaScripts/FX/Sexan_FX_Browser_ParserV7.lua" -- DEV
+--local fm_script_path         = "C:/Users/Gokily/Documents/ReaGit/ReaScripts/ImGui_Tools/FileManager.lua" -- DEV
 local fx_browser_script_path = reaper_path .. "/Scripts/Sexan_Scripts/FX/Sexan_FX_Browser_ParserV7.lua"
 local fm_script_path         = reaper_path .. "/Scripts/Sexan_Scripts/ImGui_Tools/FileManager.lua"
 

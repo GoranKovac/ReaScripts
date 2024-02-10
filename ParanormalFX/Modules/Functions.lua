@@ -161,9 +161,40 @@ function ExtractContainer(chunk, guid)
     local r_chunk = chunk:reverse()
     local r_guid = guid:reverse()
     local s1 = find(r_chunk, r_guid, 1, true)
+    if s1 then
+        local s = s1
+        local indent, op, cl = nil, nil, nil
+        while (not indent or indent > 0) do
+            if not indent then indent = 0 end
+            cl = find(r_chunk, ('<\n'), s + 1, true) + 1 
+            op = find(r_chunk, ('>\n'), s + 1, true)
+            if op ~= nil then
+                op = op + 1
+                if op <= cl then
+                    indent = indent + 1
+                    s = op
+                else
+                    indent = indent - 1
+                    s = cl
+                end
+            else
+                indent = indent - 1
+                s = cl
+            end 
+        end
+        local chain_chunk = string.sub(r_chunk, s1, cl):reverse()
+        local cont_fx_chunk = "BYPASS 0 0 0" .. chain_chunk .. "\nWAK 0 0"
+        return cont_fx_chunk
+    end
+end
+
+function ExtractContainer_BUGGY(chunk, guid)
+    local r_chunk = chunk:reverse()
+    local r_guid = guid:reverse()
+    local s1 = find(r_chunk, r_guid, 1, true)
     --r.ShowConsoleMsg(guid.."\n\n\n\n")
     --r.ShowConsoleMsg(guid.."\n")
-    --r.ShowConsoleMsg(chunk.."\n")
+    --r.ShowConsoleMsg(r_chunk.."\n")
 
     if s1 then
         local s = s1
@@ -234,6 +265,7 @@ function GetFXChainChunk(chunk)
 end
 
 function CreateFxChain(guid)
+    --r.ShowConsoleMsg(tostring(TRACK))
     local _, chunk = r.GetTrackStateChunk(TRACK, "")
 
     local chain_chunk, s1, cl
