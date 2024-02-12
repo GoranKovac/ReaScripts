@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="29fc0489c44ed9c943d946ff041b2e344d27f997" name="Sexan_Scripts">
+<index version="1" commit="d88663bde34447f21fea4e6be94c1ed3730bce69" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -655,6 +655,10 @@ Found FX is added last to list then flags get deleted to ensure numeric key orde
       <version name="1.31" author="Sexan" time="2024-02-12T12:10:50Z">
         <changelog><![CDATA[Fix updating chains and templates if initial table does not exist]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/b1fcac25238b09880f3e0e959bf48f1f5f1b7f60/FX/Sexan_FX_Browser_ParserV7.lua</source>
+      </version>
+      <version name="1.32" author="Sexan" time="2024-02-12T12:20:05Z">
+        <changelog><![CDATA[One more fix (I've set the same table for both chains and templates...)]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/d88663bde34447f21fea4e6be94c1ed3730bce69/FX/Sexan_FX_Browser_ParserV7.lua</source>
       </version>
     </reapack>
   </category>
