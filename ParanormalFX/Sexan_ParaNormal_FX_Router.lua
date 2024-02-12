@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.36.5
+-- @version 1.36.6
 -- @changelog
---  Fix Lewloiwc 2 Band-Notch setup (inverted containers)
+--  Refresh Chains on script startup
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -273,6 +273,8 @@ end
 function RescanFxList()
     FX_LIST, CAT = MakeFXFiles()
 end
+
+UpdateChainsTrackTemplates(CAT)
 
 -- local function CheckReaperIODnd()
 --     M_TEST()
