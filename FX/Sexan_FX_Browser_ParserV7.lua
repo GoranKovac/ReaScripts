@@ -1,9 +1,9 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.30
+-- @version 1.31
 -- @changelog
---  Remove stripping whitespace between prefix and fx name (fixed in reaper now)
+--  Fix updating chains and templates if initial table does not exist
 
 local r                                = reaper
 local os                               = r.GetOS()
@@ -641,12 +641,22 @@ function UpdateChainsTrackTemplates(cat_tbl)
     if not cat_tbl then return end
     local FX_CHAINS = ParseFXChains()
     local TRACK_TEMPLATES = ParseTrackTemplates()
+    local chain_found, template_found
     for i = 1, #cat_tbl do
         if cat_tbl[i].name == "FX CHAINS" then
             cat_tbl[i].list = FX_CHAINS
-        elseif cat_tbl[i].name == "TRACK TEMPLATES" then
-            cat_tbl[i].list = TRACK_TEMPLATES
+            chain_found = true
         end
+        if cat_tbl[i].name == "TRACK TEMPLATES" then
+            cat_tbl[i].list = TRACK_TEMPLATES
+            template_found = true
+        end
+    end
+    if not chain_found then
+        cat_tbl[#cat_tbl+1] = {name = "FX CHAINS", list = FX_CHAINS}
+    end
+    if not template_found then
+        cat_tbl[#cat_tbl+1] = {name = "TRACK TEMPLATES", list = FX_CHAINS}
     end
 end
 
