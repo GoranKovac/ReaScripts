@@ -1,10 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.36.4
+-- @version 1.36.5
 -- @changelog
---  Hopefully fixed hard bug in parsing container chunk
---  Saving Container chain automatically uses container name for fxchain name
+--  Fix Lewloiwc 2 Band-Notch setup (inverted containers)
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf

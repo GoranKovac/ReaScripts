@@ -25,6 +25,8 @@ BYPASS 0 0 0
   <CONTAINER Container LOW
     CONTAINER_CFG 2 2 2 0
     <IN_PINS
+      PIN 0 2
+      PIN 1 3
     >
     <OUT_PINS
     >
@@ -37,8 +39,6 @@ BYPASS 0 0 0
   <CONTAINER Container HIGH
     CONTAINER_CFG 2 2 2 0
     <IN_PINS
-      PIN 0 2
-      PIN 1 3
     >
     <OUT_PINS
     >
