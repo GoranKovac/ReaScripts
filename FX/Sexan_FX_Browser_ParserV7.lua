@@ -1,9 +1,9 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.31
+-- @version 1.32
 -- @changelog
---  Fix updating chains and templates if initial table does not exist
+--  One more fix (I've set the same table for both chains and templates...)
 
 local r                                = reaper
 local os                               = r.GetOS()
@@ -656,7 +656,7 @@ function UpdateChainsTrackTemplates(cat_tbl)
         cat_tbl[#cat_tbl+1] = {name = "FX CHAINS", list = FX_CHAINS}
     end
     if not template_found then
-        cat_tbl[#cat_tbl+1] = {name = "TRACK TEMPLATES", list = FX_CHAINS}
+        cat_tbl[#cat_tbl+1] = {name = "TRACK TEMPLATES", list = TRACK_TEMPLATES}
     end
 end
 
