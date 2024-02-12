@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="ce570c3565d25e4f2f2badafd2cd19ec4d221d86" name="Sexan_Scripts">
+<index version="1" commit="b1fcac25238b09880f3e0e959bf48f1f5f1b7f60" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -651,6 +651,10 @@ Found FX is added last to list then flags get deleted to ensure numeric key orde
       <version name="1.30" author="Sexan" time="2024-02-09T18:12:32Z">
         <changelog><![CDATA[Remove stripping whitespace between prefix and fx name (fixed in reaper now)]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/cd7b5d52665b3446b7af070531fffb597df38847/FX/Sexan_FX_Browser_ParserV7.lua</source>
+      </version>
+      <version name="1.31" author="Sexan" time="2024-02-12T12:10:50Z">
+        <changelog><![CDATA[Fix updating chains and templates if initial table does not exist]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/b1fcac25238b09880f3e0e959bf48f1f5f1b7f60/FX/Sexan_FX_Browser_ParserV7.lua</source>
       </version>
     </reapack>
   </category>
