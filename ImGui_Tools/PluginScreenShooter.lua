@@ -126,7 +126,7 @@ function Main()
     if not retval then
         START = false
         DONE = true
-        WriteFxData()
+        --WriteFxData()
         return
     end
     if pluginName and pluginName:match("Cockos") then
