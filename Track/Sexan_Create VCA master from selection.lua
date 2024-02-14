@@ -1,5 +1,5 @@
 
--- @description Create VCA Master from selection.lua
+-- @description Create VCA Master from selection
 -- @author SeXan
 -- @about Script creates Master VCA for selected tracks and makes them VCA Slave.Also Mute and SOLO flags are added
 -- @license GPL v3
