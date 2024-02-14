@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="d88663bde34447f21fea4e6be94c1ed3730bce69" name="Sexan_Scripts">
+<index version="1" commit="3ca782b6e78966cc5d3497d8e23feea4435bc6f8" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -4779,16 +4779,7 @@ Refresh Library on export]]></changelog>
     </reapack>
   </category>
   <category name="Track">
-    <reapack name="Sexan_Create VCA master from selection.lua" type="script" desc="Create VCA Master from selection.lua">
-      <metadata>
-        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
-{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
-\widowctrl\hyphauto
-
-{\pard \ql \f0 \sa180 \li0 \fi0 Script creates Master VCA for selected tracks and makes them VCA Slave.Also Mute and SOLO flags are added\par}
-}
-]]></description>
-      </metadata>
+    <reapack name="Sexan_Create VCA master from selection.lua" type="script" desc="Create VCA Master from selection">
       <version name="1.6" author="SeXan" time="2018-02-17T15:25:50Z">
         <changelog><![CDATA[+ Better code, added option to add VCA above selected track, 64 groups support]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/95d575f1aab44503b28296efe1b3ff9585b718cb/Track/Sexan_Create%20VCA%20master%20from%20selection.lua</source>
@@ -4804,6 +4795,10 @@ Refresh Library on export]]></changelog>
       <version name="1.710" author="SeXan" time="2018-03-03T10:54:50Z">
         <changelog><![CDATA[+ fixed bug when creating groups from 32 to 64]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/19b951b409f63e7b1f8eb3d89a01924aeda332f9/Track/Sexan_Create%20VCA%20master%20from%20selection.lua</source>
+      </version>
+      <version name="1.711" author="SeXan" time="2024-02-14T12:42:43Z">
+        <changelog><![CDATA[Name groups by provided name or (VCA:x)]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/3ca782b6e78966cc5d3497d8e23feea4435bc6f8/Track/Sexan_Create%20VCA%20master%20from%20selection.lua</source>
       </version>
     </reapack>
     <reapack name="Sexan_Folder record monitor arming childs.lua" type="script" desc="Folder record monitor arming childs">
