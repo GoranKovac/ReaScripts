@@ -734,7 +734,7 @@ function DrawFXList()
     local search = FilterBox()
     if search then return end
     for i = 1, #CAT do
-        if CAT[i].name ~= "TARGET TEMPLATES" then
+        if CAT[i].name ~= "TRACK TEMPLATES" then
             if #CAT[i].list ~= 0 then
                 if r.ImGui_BeginMenu(ctx, CAT[i].name) then
                     if CAT[i].name == "FX CHAINS" then

@@ -1,11 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.36.7
+-- @version 1.36.8
 -- @changelog
---  Added support for items
---  Check reaper for minimal version support 7.11
---  Fix track dropdown list font in menu to follow user settings
+--  Fix track templates crashing script (my bad with global replace in vscode)
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
