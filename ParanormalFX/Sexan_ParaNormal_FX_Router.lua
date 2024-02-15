@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.36.8
+-- @version 1.36.9
 -- @changelog
---  Fix track templates crashing script (my bad with global replace in vscode)
+--  Fixed font everywhere
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -440,6 +440,8 @@ local function Main()
 
     ImGui.PopStyleColor(ctx)
     if visible then
+        r.ImGui_PushFont(ctx, CUSTOM_FONT and SYSTEM_FONT_FACTORY or DEFAULT_FONT_FACTORY)
+
         r.ImGui_Text(ctx, "MODE -")
         r.ImGui_SameLine(ctx)
 
@@ -465,7 +467,7 @@ local function Main()
         AW, AH = r.ImGui_GetContentRegionAvail(ctx)
         WX, WY = r.ImGui_GetWindowPos(ctx)
         MX, MY = r.ImGui_GetMousePos(ctx)
-        r.ImGui_PushFont(ctx, CUSTOM_FONT and SYSTEM_FONT_FACTORY or DEFAULT_FONT_FACTORY)
+        --r.ImGui_PushFont(ctx, CUSTOM_FONT and SYSTEM_FONT_FACTORY or DEFAULT_FONT_FACTORY)
         CanvasLoop()
         r.ImGui_PopFont(ctx)
         CollectFxData()
@@ -473,7 +475,9 @@ local function Main()
         Draw()
         r.ImGui_PopFont(ctx)
         UI()
+        r.ImGui_PushFont(ctx, CUSTOM_FONT and SYSTEM_FONT_FACTORY or DEFAULT_FONT_FACTORY)
         if OPEN_SETTINGS then
+
             DrawUserSettings()
             if OPEN_PM_INSPECTOR then OPEN_PM_INSPECTOR = nil end
         end
@@ -482,8 +486,10 @@ local function Main()
         else
             if PM_INSPECTOR_FXID then PM_INSPECTOR_FXID = nil end
         end
+        
         --r.ImGui_PopFont(ctx)
         ClipBoard()
+        r.ImGui_PopFont(ctx)
         --if OPEN_SLOTS then SlotsMenu() end
         if not IS_DRAGGING_RIGHT_CANVAS and r.ImGui_IsMouseReleased(ctx, 1) and
             not r.ImGui_IsAnyItemHovered(ctx) and
