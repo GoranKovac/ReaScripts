@@ -27,16 +27,17 @@ FX_CAT_FILE       = script_path .. "/FX_CAT_FILE.txt"
 FX_DEV_LIST_FILE  = script_path .. "/FX_DEV_LIST_FILE.txt"
 
 package.path      = script_path .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
-
+if DBG then dofile("C:/Users/Gokily/Documents/ReaGit/ReaScripts/Debug/LoadDebug.lua") end
 if not r.GetAppVersion():match("^7%.") then
     r.ShowMessageBox("This script requires Reaper V7", "WRONG REAPER VERSION", 0)
     return
 end
 
 -- JSFX paths
-local saike_splitter_path    = reaper_path .. "/Effects/Saike Tools/Basics/BandSplitter.jsfx"
-local lfos_path = reaper_path .. "/Effects/ReaTeam JSFX/Modulation/snjuk2_LFO.jsfx"
-local splitters_path = reaper_path .. "/Effects/Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_frequency_splitter.jsfx"
+local saike_splitter_path = reaper_path .. "/Effects/Saike Tools/Basics/BandSplitter.jsfx"
+local lfos_path           = reaper_path .. "/Effects/ReaTeam JSFX/Modulation/snjuk2_LFO.jsfx"
+local splitters_path      = reaper_path ..
+"/Effects/Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_frequency_splitter.jsfx"
 
 
 --local fx_browser_script_path = "C:/Users/Gokily/Documents/ReaGit/ReaScripts/FX/Sexan_FX_Browser_ParserV7.lua" -- DEV
@@ -47,7 +48,7 @@ local fm_script_path         = reaper_path .. "/Scripts/Sexan_Scripts/ImGui_Tool
 function ThirdPartyDeps()
     local reapack_process
     local repos = {
-        { name = "Saike Tools", url = 'https://raw.githubusercontent.com/JoepVanlier/JSFX/master/index.xml' },
+        { name = "Saike Tools",    url = 'https://raw.githubusercontent.com/JoepVanlier/JSFX/master/index.xml' },
         { name = "Suzuki Scripts", url = "https://github.com/Suzuki-Re/Suzuki-Scripts/raw/master/index.xml" },
     }
 
@@ -199,7 +200,6 @@ if r.HasExtState("PARANORMALFX2", "SETTINGS") then
 end
 
 SELECTED_FONT = CUSTOM_FONT and SYSTEM_FONT or DEFAULT_FONT
-
 
 local function pdefer(func)
     reaper.defer(function()
@@ -428,9 +428,13 @@ local function Main()
         ImGui.End(ctx)
     end
     if ESC and ESC_CLOSE then open = nil end
-   
+
     if open then
-        pdefer(Main)
+        if DBG then
+            MOBDEBUG.defer(Main)
+        else
+            pdefer(Main)
+        end
     end
 
     if FONT_UPDATE then FONT_UPDATE = nil end
@@ -451,7 +455,12 @@ function Exit()
 end
 
 r.atexit(Exit)
-pdefer(Main)
+
+if DBG then
+    MOBDEBUG.defer(Main)
+else
+    pdefer(Main)
+end
 
 -- profiler.attachToWorld() -- after all functions have been defined
 -- profiler.run()
