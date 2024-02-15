@@ -9,7 +9,10 @@
                 "-nonewinst",
                 "${file}"
             ],
-            "problemMatcher": []
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "never"
+            }
         },
         {
             "label": "Debug Script",
@@ -20,7 +23,7 @@
             "dependsOrder": "parallel",
             "dependsOn": [
                 "Debug Script",
-                "Run Script"
+                "Run Reaper Script"
             ],
             "problemMatcher": []
         }
