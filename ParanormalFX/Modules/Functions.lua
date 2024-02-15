@@ -89,12 +89,12 @@ function MapToParents(track, fx_id, p_id)
     local cont_idx, new_idx
     local cur_fx = fx_id
     while has_parent do -- to get root parent container id
-        has_parent, new_idx = r.TrackFX_GetNamedConfigParm(track, cur_fx, "parent_container")
+        has_parent, new_idx = API.GetNamedConfigParm(track, cur_fx, "parent_container")
         cur_fx = new_idx
         if #new_idx ~= 0 then cont_idx = new_idx end
     end
     if cont_idx then
-        local _, buf = r.TrackFX_GetNamedConfigParm(track, cont_idx, "container_map.add." .. fx_id .. "." .. p_id)
+        local _, buf = API.GetNamedConfigParm(track, cont_idx, "container_map.add." .. fx_id .. "." .. p_id)
         return cont_idx, buf
     end
 end
@@ -104,20 +104,20 @@ function LinkLastTouched(track, src_fx_id, src_p_id)
     -- TARGET IN CONTAINER
     if buf then
         -- TARGET IN CONTAINER
-        r.TrackFX_SetNamedConfigParm(track, cur_fx_id, "param." .. buf .. ".plink.active", 1)
-        r.TrackFX_SetNamedConfigParm(track, cur_fx_id, "param." .. buf .. ".plink.effect", src_fx_id)
-        r.TrackFX_SetNamedConfigParm(track, cur_fx_id, "param." .. buf .. ".plink.param", src_p_id)
+        API.SetNamedConfigParm(track, cur_fx_id, "param." .. buf .. ".plink.active", 1)
+        API.SetNamedConfigParm(track, cur_fx_id, "param." .. buf .. ".plink.effect", src_fx_id)
+        API.SetNamedConfigParm(track, cur_fx_id, "param." .. buf .. ".plink.param", src_p_id)
     else
-        r.TrackFX_SetNamedConfigParm(track, LASTTOUCH_FX_ID, "param." .. LASTTOUCH_P_ID .. ".plink.active", 1)
-        r.TrackFX_SetNamedConfigParm(track, LASTTOUCH_FX_ID, "param." .. LASTTOUCH_P_ID .. ".plink.effect", src_fx_id)
-        r.TrackFX_SetNamedConfigParm(track, LASTTOUCH_FX_ID, "param." .. LASTTOUCH_P_ID .. ".plink.param", src_p_id)
+        API.SetNamedConfigParm(track, LASTTOUCH_FX_ID, "param." .. LASTTOUCH_P_ID .. ".plink.active", 1)
+        API.SetNamedConfigParm(track, LASTTOUCH_FX_ID, "param." .. LASTTOUCH_P_ID .. ".plink.effect", src_fx_id)
+        API.SetNamedConfigParm(track, LASTTOUCH_FX_ID, "param." .. LASTTOUCH_P_ID .. ".plink.param", src_p_id)
     end
 end
 
 function OpenFX(id)
     r.Undo_BeginBlock()
-    local open = r.TrackFX_GetFloatingWindow(TRACK, id)
-    r.TrackFX_Show(TRACK, id, open and 2 or 3)
+    local open = API.GetFloatingWindow(TARGET, id)
+    API.Show(TARGET, id, open and 2 or 3)
     EndUndoBlock("OPEN FX UI")
 end
 
@@ -265,8 +265,8 @@ function GetFXChainChunk(chunk)
 end
 
 function CreateFxChain(guid)
-    --r.ShowConsoleMsg(tostring(TRACK))
-    local _, chunk = r.GetTrackStateChunk(TRACK, "")
+    --r.ShowConsoleMsg(tostring(TARGET))
+    local _, chunk = r.GetTrackStateChunk(TARGET, "")
 
     local chain_chunk, s1, cl
     if not guid then
@@ -285,18 +285,18 @@ end
 SLOTS = {}
 
 function StoreSlot(x)
-    local _, chunk = r.GetTrackStateChunk(TRACK, "")
+    local _, chunk = r.GetTrackStateChunk(TARGET, "")
     local chain_chunk = Chunk_GetFXChainSection(chunk)
     SLOTS[x] = chain_chunk
 end
 
 function LoadSlot(x)
     if #SLOTS[x] == 0 then return end
-    local _, track_chunk = r.GetTrackStateChunk(TRACK, "")
+    local _, track_chunk = r.GetTrackStateChunk(TARGET, "")
     local chain_chunk = Chunk_GetFXChainSection(track_chunk)
     local slot_chunk = Literalize(SLOTS[x])
     local new_chunk = string.gsub(track_chunk, chain_chunk, slot_chunk)
-    r.SetTrackStateChunk(TRACK, new_chunk, false)
+    r.SetTrackStateChunk(TARGET, new_chunk, false)
 end
 
 local min = math.min
@@ -368,11 +368,11 @@ end
 
 function CheckPMActive(fx_id)
     local found = false
-    for p_id = 0, r.TrackFX_GetNumParams(TRACK, fx_id) do
-        local rv, mod = r.TrackFX_GetNamedConfigParm(TRACK, fx_id, "param." .. p_id .. ".mod.active")
-        local rv, acs = r.TrackFX_GetNamedConfigParm(TRACK, fx_id, "param." .. p_id .. ".acs.active")
-        local rv, lfo = r.TrackFX_GetNamedConfigParm(TRACK, fx_id, "param." .. p_id .. ".lfo.active")
-        local fx_env = r.GetFXEnvelope(TRACK, fx_id, p_id, false)
+    for p_id = 0, API.GetNumParams(TARGET, fx_id) do
+        local rv, mod = API.GetNamedConfigParm(TARGET, fx_id, "param." .. p_id .. ".mod.active")
+        local rv, acs = API.GetNamedConfigParm(TARGET, fx_id, "param." .. p_id .. ".acs.active")
+        local rv, lfo = API.GetNamedConfigParm(TARGET, fx_id, "param." .. p_id .. ".lfo.active")
+        local fx_env = API.GetFXEnvelope(TARGET, fx_id, p_id, false)
         local has_points = (fx_env and r.CountEnvelopePoints(fx_env) > 2)
         if mod == "1" or lfo == "1" or acs == "1" or has_points then found = true end
     end
@@ -384,7 +384,7 @@ function MonitorLastTouchedFX()
 end
 
 function AddFX(name, id, parallel)
-    if not TRACK then return end
+    if not TARGET then return end
 
     r.Undo_BeginBlock()
     if INSERT_FX_ENCLOSE_POS then
@@ -398,13 +398,13 @@ function AddFX(name, id, parallel)
         if not id then return end
 
         local idx = id > 0x2000000 and id or -1000 - id
-        r.TrackFX_AddByName(TRACK, name, false, idx)
+        API.AddByName(TARGET, name, MODE == "ITEM" and idx or false, idx)
 
         local is_parallel = parallel
         is_parallel = INSERT_FX_PARALLEL_POS or is_parallel
         is_parallel = (REPLACE_FX_POS and REPLACE_FX_POS.tbl[REPLACE_FX_POS.i].p > 0) or is_parallel
         --! PREPARE THIS FOR MIDIMERGE
-        if is_parallel then r.TrackFX_SetNamedConfigParm(TRACK, id, "parallel", DEF_PARALLEL) end
+        if is_parallel then API.SetNamedConfigParm(TARGET, id, "parallel", DEF_PARALLEL) end
 
         INSERT_FX_SERIAL_POS, INSERT_FX_PARALLEL_POS = nil, nil
     end
@@ -413,7 +413,7 @@ function AddFX(name, id, parallel)
         local parrent_container = GetParentContainerByGuid(REPLACE_FX_POS.tbl[REPLACE_FX_POS.i])
         parrent_container = GetFx(parrent_container.guid)
         local del_id = CalcFxID(parrent_container, REPLACE_FX_POS.i + 1)
-        r.TrackFX_Delete(TRACK, del_id)
+        API.Delete(TARGET, del_id)
         REPLACE_FX_POS = nil
         replaced = true
     end
@@ -426,8 +426,8 @@ end
 function RemoveAllFX()
     r.PreventUIRefresh(1)
     r.Undo_BeginBlock()
-    for i = r.TrackFX_GetCount(TRACK), 1, -1 do
-        r.TrackFX_Delete(TRACK, i - 1)
+    for i = API.GetCount(TARGET), 1, -1 do
+        API.Delete(TARGET, i - 1)
     end
     EndUndoBlock("DELETE ALL FX IN CHAIN")
     r.PreventUIRefresh(-1)
@@ -435,9 +435,21 @@ end
 
 function SetFXSlot(tbl, num)
     local chunk = tbl.fx[num].chunk
-    local _, track_chunk = r.GetTrackStateChunk(TRACK, "", false)
+    local _, track_chunk = r.GetTrackStateChunk(TARGET, "", false)
     local fx_slot_chunk = get_fx_chunk(tbl.guid)
     local fx_chunk = Literalize(fx_slot_chunk)
     local new_chunk = string.gsub(track_chunk, fx_chunk, chunk)
-    r.SetTrackStateChunk(TRACK, new_chunk, false)
+    r.SetTrackStateChunk(TARGET, new_chunk, false)
+end
+
+function SetOnlyItemSelected(target_take)
+    r.PreventUIRefresh(-1)
+    for i = 1,  r.CountTrackMediaItems( TRACK ) do
+        local item =  r.GetTrackMediaItem( TRACK, i-1 )
+        r.SetMediaItemSelected( item, false )
+    end
+    local target_item = r.GetMediaItemTake_Item( target_take )
+    r.SetMediaItemSelected( target_item, true )
+    r.PreventUIRefresh(1)
+    r.UpdateArrange()
 end

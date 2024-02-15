@@ -143,6 +143,7 @@ end
 function ClearExtState()
     r.DeleteExtState("PARANORMALFX2", "COPY_BUFFER", false)
     r.DeleteExtState("PARANORMALFX2", "COPY_BUFFER_ID", false)
+    CLIPBOARD = {}
 end
 
 function Deepcopy(orig)

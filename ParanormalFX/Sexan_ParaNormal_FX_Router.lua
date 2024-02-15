@@ -1,9 +1,11 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.36.6
+-- @version 1.36.7
 -- @changelog
---  Refresh Chains on script startup
+--  Added support for items
+--  Check reaper for minimal version support 7.11
+--  Fix track dropdown list font in menu to follow user settings
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -11,13 +13,28 @@
 --   FXChains/*.RfxChain
 --   [effect] JSFX/*.jsfx
 
-local r     = reaper
-local ImGui = {}
+local r         = reaper
+local ImGui     = {}
+local track_api = {}
+local take_api  = {}
+for name, func in pairs(r) do
+    local track_name = name:match('^TrackFX_(.+)$')
+    local take_name = name:match('^TakeFX_(.+)$')
+    if track_name then track_api[track_name] = func end
+    if take_name then take_api[take_name] = func end
+end
+
+take_api["CopyToTrack"] = r.TakeFX_CopyToTake
+take_api["GetFXEnvelope"] = r.TakeFX_GetEnvelope
+track_api["GetFXEnvelope"] = r.GetFXEnvelope
+
+API = track_api
 
 for name, func in pairs(reaper) do
     name = name:match('^ImGui_(.+)$')
     if name then ImGui[name] = func end
 end
+
 os_separator      = package.config:sub(1, 1)
 script_path       = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]]
 local reaper_path = r.GetResourcePath()
@@ -31,13 +48,18 @@ if DBG then dofile("C:/Users/Gokily/Documents/ReaGit/ReaScripts/Debug/LoadDebug.
 if not r.GetAppVersion():match("^7%.") then
     r.ShowMessageBox("This script requires Reaper V7", "WRONG REAPER VERSION", 0)
     return
+else
+    if r.GetAppVersion():match("%.(%d+)") < "11" then
+        r.ShowMessageBox("Reaper version V7.11 is minimal requirement.\n", "UPDATE REAPER", 0)
+        return
+    end
 end
 
 -- JSFX paths
 local saike_splitter_path = reaper_path .. "/Effects/Saike Tools/Basics/BandSplitter.jsfx"
 local lfos_path           = reaper_path .. "/Effects/ReaTeam JSFX/Modulation/snjuk2_LFO.jsfx"
 local splitters_path      = reaper_path ..
-"/Effects/Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_frequency_splitter.jsfx"
+    "/Effects/Suzuki Scripts/lewloiwc's Splitter Suite/lewloiwc_frequency_splitter.jsfx"
 
 
 --local fx_browser_script_path = "C:/Users/Gokily/Documents/ReaGit/ReaScripts/FX/Sexan_FX_Browser_ParserV7.lua" -- DEV
@@ -143,6 +165,7 @@ SHOW_C_CONTENT_TOOLTIP  = true
 V_LAYOUT                = true
 
 OPEN_PM_INSPECTOR       = false
+MODE                    = "TRACK"
 
 -- profiler = dofile(reaper.GetResourcePath() ..
 --   '/Scripts/ReaTeam Scripts/Development/cfillion_Lua profiler.lua')
@@ -223,28 +246,38 @@ local function pdefer(func)
     end)
 end
 
-function StoreToPEXT(last_track)
-    if not last_track then return end
+function StoreToPEXT(last_target)
+    if not last_target then return end
     local storedTable = {}
-    if r.ValidatePtr(last_track, "MediaTrack*") then
+    if r.ValidatePtr(last_target, "MediaTrack*") then
+        storedTable.CANVAS = CANVAS
+        storedTable.CONTAINERS = GetTRContainerData()
+    elseif r.ValidatePtr(last_target, "MediaItem_Take*") then
         storedTable.CANVAS = CANVAS
         storedTable.CONTAINERS = GetTRContainerData()
     end
     local serialized = tableToString(storedTable)
-    if r.ValidatePtr(last_track, "MediaTrack*") then
-        r.GetSetMediaTrackInfo_String(last_track, "P_EXT:PARANORMAL_FX2", serialized, true)
+    if r.ValidatePtr(last_target, "MediaTrack*") then
+        r.GetSetMediaTrackInfo_String(last_target, "P_EXT:PARANORMAL_FX2", serialized, true)
+    elseif r.ValidatePtr(last_target, "MediaItem_Take*") then
+        r.GetSetMediaItemTakeInfo_String(last_target, "P_EXT:PARANORMAL_FX2", serialized, true)
     end
 end
 
-function RestoreFromPEXT()
+function RestoreFromPEXT(mode)
     local rv, stored
-    if r.ValidatePtr(TRACK, "MediaTrack*") then
+    if mode == "TRACK" and r.ValidatePtr(TRACK, "MediaTrack*") then
         rv, stored = r.GetSetMediaTrackInfo_String(TRACK, "P_EXT:PARANORMAL_FX2", "", false)
+    elseif mode == "ITEM" and r.ValidatePtr(TAKE, "MediaItem_Take*") then
+        rv, stored = r.GetSetMediaItemTakeInfo_String(TAKE, "P_EXT:PARANORMAL_FX2", "", false)
     end
     if rv == true and stored ~= nil then
         local storedTable = stringToTable(stored)
         if storedTable ~= nil then
-            if r.ValidatePtr(TRACK, "MediaTrack*") then
+            if mode == "TRACK" and r.ValidatePtr(TRACK, "MediaTrack*") then
+                CANVAS = storedTable.CANVAS
+                SetTRContainerData(storedTable.CONTAINERS)
+            elseif mode == "ITEM" and r.ValidatePtr(TAKE, "MediaItem_Take*") then
                 CANVAS = storedTable.CANVAS
                 SetTRContainerData(storedTable.CONTAINERS)
             end
@@ -343,6 +376,37 @@ function test()
     if TMP then TMP = nil end
 end
 
+local function UpdateTarget()
+    if MODE == "ITEM" then
+        TARGET = TAKE
+        TRACK = TARGET and r.GetMediaItemTake_Track(TARGET)
+    else
+        TARGET = TRACK
+    end
+end
+
+local function UpdateLastTargetCanvas()
+    if MODE == "TRACK" and LAST_TRACK ~= TRACK then
+        ResetStrippedNames()
+        StoreToPEXT(LAST_TRACK)
+        LAST_TRACK = TRACK
+        LASTTOUCH_RV, LASTTOUCH_TR_NUM, LASTTOUCH_FX_ID, LASTTOUCH_P_ID = nil, nil, nil, nil
+        if not RestoreFromPEXT(MODE) then
+            CANVAS = InitCanvas()
+            InitTrackContainers()
+        end
+    elseif MODE == "ITEM" and LAST_TAKE ~= TAKE then
+        ResetStrippedNames()
+        StoreToPEXT(LAST_TAKE)
+        LAST_TAKE = TAKE
+        LASTTOUCH_RV, LASTTOUCH_TR_NUM, LASTTOUCH_FX_ID, LASTTOUCH_P_ID = nil, nil, nil, nil
+        if not RestoreFromPEXT(MODE) then
+            CANVAS = InitCanvas()
+            InitTrackContainers()
+        end
+    end
+end
+
 local function Main()
     UpdateDeltaTime()
     UpdateZoomFont()
@@ -352,17 +416,11 @@ local function Main()
     end
 
     TRACK = PIN and SEL_LIST_TRACK or r.GetSelectedTrack2(0, 0, true)
+    ITEM = r.GetSelectedMediaItem(0, 0)
+    TAKE = PIN and SEL_LIST_TAKE or (ITEM and r.GetActiveTake(ITEM))
+    UpdateTarget()
+    UpdateLastTargetCanvas()
 
-    if LAST_TRACK ~= TRACK then
-        ResetStrippedNames()
-        StoreToPEXT(LAST_TRACK)
-        LAST_TRACK = TRACK
-        LASTTOUCH_RV, LASTTOUCH_TR_NUM, LASTTOUCH_FX_ID, LASTTOUCH_P_ID = nil, nil, nil, nil
-        if not RestoreFromPEXT() then
-            CANVAS = InitCanvas()
-            InitTrackContainers()
-        end
-    end
     -- if REAPER_DND then
     --     ImGui.SetNextWindowSizeConstraints(ctx, 500, 500, FLT_MAX, FLT_MAX)
     --     ImGui.SetNextWindowSize(ctx, 150, 150, ImGui.Cond_FirstUseEver())
@@ -384,6 +442,27 @@ local function Main()
 
     ImGui.PopStyleColor(ctx)
     if visible then
+        r.ImGui_Text(ctx, "MODE -")
+        r.ImGui_SameLine(ctx)
+
+        if r.ImGui_Checkbox(ctx, "TRACK", MODE == "TRACK") then
+            StoreToPEXT(TAKE)
+            MODE = "TRACK"
+            API = track_api
+            ClearExtState()
+            UpdateTarget()
+            RestoreFromPEXT(MODE)
+        end
+        r.ImGui_SameLine(ctx)
+        if r.ImGui_Checkbox(ctx, "ITEMS", MODE == "ITEM") then
+            StoreToPEXT(TRACK)
+            MODE = "ITEM"
+            API = take_api
+            ClearExtState()
+            UpdateTarget()
+            RestoreFromPEXT(MODE)
+        end
+
         MonitorLastTouchedFX()
         AW, AH = r.ImGui_GetContentRegionAvail(ctx)
         WX, WY = r.ImGui_GetWindowPos(ctx)
@@ -431,7 +510,7 @@ local function Main()
 
     if open then
         if DBG then
-            MOBDEBUG.defer(Main)
+            DEBUG.defer(Main)
         else
             pdefer(Main)
         end
@@ -451,13 +530,17 @@ function Exit()
     if CLIPBOARD.tbl and CLIPBOARD.track == TRACK then
         ClearExtState()
     end
-    StoreToPEXT(LAST_TRACK)
+    if MODE == "TRACK" then
+        StoreToPEXT(LAST_TRACK)
+    else
+        StoreToPEXT(LAST_TAKE)
+    end
 end
 
 r.atexit(Exit)
 
 if DBG then
-    MOBDEBUG.defer(Main)
+    DEBUG.defer(Main)
 else
     pdefer(Main)
 end
