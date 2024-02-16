@@ -1,9 +1,10 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.37.1
+-- @version 1.37.2
 -- @changelog
---  Fix type in color settings Animated Highlight
+--  Fix crash when deleting active take
+--  Check and validate if take exist after deleting
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -442,7 +443,7 @@ local function Main()
     if visible then
         r.ImGui_PushFont(ctx, CUSTOM_FONT and SYSTEM_FONT_FACTORY or DEFAULT_FONT_FACTORY)
 
-        r.ImGui_Text(ctx, "MODE -")
+        r.ImGui_Text(ctx, "MODE ")
         r.ImGui_SameLine(ctx)
 
         if r.ImGui_Checkbox(ctx, "TRACK", MODE == "TRACK") then

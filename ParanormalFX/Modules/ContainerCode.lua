@@ -597,7 +597,7 @@ function ClipBoard()
     end
 
     if CLIPBOARD.tbl then
-        if CLIPBOARD.track and r.ValidatePtr(CLIPBOARD.track, "MediaTrack*") then
+        if CLIPBOARD.track and r.ValidatePtr(CLIPBOARD.track, "MediaTrack*") or CLIPBOARD.take and r.ValidatePtr(CLIPBOARD.take, "MediaItem_Take*")  then
             local size = CalculateItemWH({ name = CLIPBOARD.tbl[CLIPBOARD.i].name }) + 190
             if r.ImGui_BeginChild(ctx, "CLIPBOARD", size, def_btn_h + s_window_y, 1) then
                 if r.HasExtState("PARANORMALFX2", "COPY_BUFFER") then
