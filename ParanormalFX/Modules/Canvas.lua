@@ -1073,7 +1073,7 @@ function DrawUserSettings()
                 r.ImGui_ColorEditFlags_NoInputs())
             _, COLOR["knob_drywet"] = r.ImGui_ColorEdit4(ctx, "KNOB DRY/WET", COLOR["knob_drywet"],
                 r.ImGui_ColorEditFlags_NoInputs())
-            _, COLOR["sine_anim"] = r.ImGui_ColorEdit4(ctx, "ANIMATED HIGLIGHT", COLOR["sine_anim"],
+            _, COLOR["sine_anim"] = r.ImGui_ColorEdit4(ctx, "ANIMATED HIGHLIGHT", COLOR["sine_anim"],
                 r.ImGui_ColorEditFlags_NoInputs())
         end
         --r.ImGui_SeparatorText(ctx, "BEHAVIORS")
