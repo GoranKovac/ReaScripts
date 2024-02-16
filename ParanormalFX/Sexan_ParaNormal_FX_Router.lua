@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.36.9
+-- @version 1.37.0
 -- @changelog
---  Fixed font everywhere
+--  Fix Clipboard naming when in item mode
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf

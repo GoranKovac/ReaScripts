@@ -602,7 +602,12 @@ function ClipBoard()
             if r.ImGui_BeginChild(ctx, "CLIPBOARD", size, def_btn_h + s_window_y, 1) then
                 if r.HasExtState("PARANORMALFX2", "COPY_BUFFER") then
                     if CLIPBOARD.tbl then
-                        local rv, name = r.GetTrackName(CLIPBOARD.track)
+                        local rv, name
+                        if MODE == "TRACK" then
+                            rv, name  = r.GetTrackName(CLIPBOARD.track)
+                        else
+                            name = r.GetTakeName( CLIPBOARD.take )
+                        end
                         r.ImGui_Text(ctx, "CLIPBOARD: " .. name .. " - FX: " .. CLIPBOARD.tbl[CLIPBOARD.i].name)
                     end
                 else
