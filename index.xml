@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="49f48d3bd6392e4228156874e78ca4c1c6ac8151" name="Sexan_Scripts">
+<index version="1" commit="46089be2f00ab3fa0b344e7d74ebfaf7ec27bbc2" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -3281,6 +3281,46 @@ Check and validate if take exist after deleting]]></changelog>
         <source file="FXChains/SAIKE_5_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/49f48d3bd6392e4228156874e78ca4c1c6ac8151/ParanormalFX/FXChains/SAIKE_5_SETUP.RfxChain</source>
         <source type="effect" file="JSFX/MSMidFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/49f48d3bd6392e4228156874e78ca4c1c6ac8151/ParanormalFX/JSFX/MSMidFX.jsfx</source>
         <source type="effect" file="JSFX/MSSideFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/49f48d3bd6392e4228156874e78ca4c1c6ac8151/ParanormalFX/JSFX/MSSideFX.jsfx</source>
+      </version>
+      <version name="1.37.3" author="Sexan" time="2024-02-18T11:58:30Z">
+        <changelog><![CDATA[Marquee select
+Marquee + Shift adds to selection
+Click selection (Shift, Ctrl)
+Shift click - Adds to selection
+Ctrl click - Adds/Removes to selection (toggle)
+Click in empty area removes selection
+Supports Delete (Delete key or ALT click), Bypass, Offline
+Not Supported: Move,Copy
+Disabled many UI elements while Marquee has over 2 selections
+Added warning at top for MOVE/COPY not supported]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/46089be2f00ab3fa0b344e7d74ebfaf7ec27bbc2/ParanormalFX/Sexan_ParaNormal_FX_Router.lua</source>
+        <source file="Modules/Canvas.lua">https://github.com/GoranKovac/ReaScripts/raw/46089be2f00ab3fa0b344e7d74ebfaf7ec27bbc2/ParanormalFX/Modules/Canvas.lua</source>
+        <source file="Modules/ContainerCode.lua">https://github.com/GoranKovac/ReaScripts/raw/46089be2f00ab3fa0b344e7d74ebfaf7ec27bbc2/ParanormalFX/Modules/ContainerCode.lua</source>
+        <source file="Modules/Drawing.lua">https://github.com/GoranKovac/ReaScripts/raw/46089be2f00ab3fa0b344e7d74ebfaf7ec27bbc2/ParanormalFX/Modules/Drawing.lua</source>
+        <source file="Modules/Functions.lua">https://github.com/GoranKovac/ReaScripts/raw/46089be2f00ab3fa0b344e7d74ebfaf7ec27bbc2/ParanormalFX/Modules/Functions.lua</source>
+        <source file="Modules/Utils.lua">https://github.com/GoranKovac/ReaScripts/raw/46089be2f00ab3fa0b344e7d74ebfaf7ec27bbc2/ParanormalFX/Modules/Utils.lua</source>
+        <source file="Modules/flux.lua">https://github.com/GoranKovac/ReaScripts/raw/46089be2f00ab3fa0b344e7d74ebfaf7ec27bbc2/ParanormalFX/Modules/flux.lua</source>
+        <source file="Fonts/Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/46089be2f00ab3fa0b344e7d74ebfaf7ec27bbc2/ParanormalFX/Fonts/Icons.ttf</source>
+        <source file="Fonts/ProggyClean.ttf">https://github.com/GoranKovac/ReaScripts/raw/46089be2f00ab3fa0b344e7d74ebfaf7ec27bbc2/ParanormalFX/Fonts/ProggyClean.ttf</source>
+        <source file="JSFX/MSMidFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/46089be2f00ab3fa0b344e7d74ebfaf7ec27bbc2/ParanormalFX/JSFX/MSMidFX.jsfx</source>
+        <source file="JSFX/MSSideFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/46089be2f00ab3fa0b344e7d74ebfaf7ec27bbc2/ParanormalFX/JSFX/MSSideFX.jsfx</source>
+        <source file="FXChains/3BANDSTOCK.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/46089be2f00ab3fa0b344e7d74ebfaf7ec27bbc2/ParanormalFX/FXChains/3BANDSTOCK.RfxChain</source>
+        <source file="FXChains/4BANDSTOCK.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/46089be2f00ab3fa0b344e7d74ebfaf7ec27bbc2/ParanormalFX/FXChains/4BANDSTOCK.RfxChain</source>
+        <source file="FXChains/5BANDSTOCK.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/46089be2f00ab3fa0b344e7d74ebfaf7ec27bbc2/ParanormalFX/FXChains/5BANDSTOCK.RfxChain</source>
+        <source file="FXChains/LEWLOIWC_2_4_MODE_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/46089be2f00ab3fa0b344e7d74ebfaf7ec27bbc2/ParanormalFX/FXChains/LEWLOIWC_2_4_MODE_SETUP.RfxChain</source>
+        <source file="FXChains/LEWLOIWC_2_BANDNOTCH_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/46089be2f00ab3fa0b344e7d74ebfaf7ec27bbc2/ParanormalFX/FXChains/LEWLOIWC_2_BANDNOTCH_SETUP.RfxChain</source>
+        <source file="FXChains/LEWLOIWC_2_COMBPHASE_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/46089be2f00ab3fa0b344e7d74ebfaf7ec27bbc2/ParanormalFX/FXChains/LEWLOIWC_2_COMBPHASE_SETUP.RfxChain</source>
+        <source file="FXChains/LEWLOIWC_3_MIN_PHASE_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/46089be2f00ab3fa0b344e7d74ebfaf7ec27bbc2/ParanormalFX/FXChains/LEWLOIWC_3_MIN_PHASE_SETUP.RfxChain</source>
+        <source file="FXChains/LEWLOIWC_ENVELOPE_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/46089be2f00ab3fa0b344e7d74ebfaf7ec27bbc2/ParanormalFX/FXChains/LEWLOIWC_ENVELOPE_SETUP.RfxChain</source>
+        <source file="FXChains/LEWLOIWC_GATE_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/46089be2f00ab3fa0b344e7d74ebfaf7ec27bbc2/ParanormalFX/FXChains/LEWLOIWC_GATE_SETUP.RfxChain</source>
+        <source file="FXChains/LEWLOIWC_TRANSIENT_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/46089be2f00ab3fa0b344e7d74ebfaf7ec27bbc2/ParanormalFX/FXChains/LEWLOIWC_TRANSIENT_SETUP.RfxChain</source>
+        <source file="FXChains/MS_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/46089be2f00ab3fa0b344e7d74ebfaf7ec27bbc2/ParanormalFX/FXChains/MS_SETUP.RfxChain</source>
+        <source file="FXChains/SAIKE_2_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/46089be2f00ab3fa0b344e7d74ebfaf7ec27bbc2/ParanormalFX/FXChains/SAIKE_2_SETUP.RfxChain</source>
+        <source file="FXChains/SAIKE_3_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/46089be2f00ab3fa0b344e7d74ebfaf7ec27bbc2/ParanormalFX/FXChains/SAIKE_3_SETUP.RfxChain</source>
+        <source file="FXChains/SAIKE_4_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/46089be2f00ab3fa0b344e7d74ebfaf7ec27bbc2/ParanormalFX/FXChains/SAIKE_4_SETUP.RfxChain</source>
+        <source file="FXChains/SAIKE_5_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/46089be2f00ab3fa0b344e7d74ebfaf7ec27bbc2/ParanormalFX/FXChains/SAIKE_5_SETUP.RfxChain</source>
+        <source type="effect" file="JSFX/MSMidFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/46089be2f00ab3fa0b344e7d74ebfaf7ec27bbc2/ParanormalFX/JSFX/MSMidFX.jsfx</source>
+        <source type="effect" file="JSFX/MSSideFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/46089be2f00ab3fa0b344e7d74ebfaf7ec27bbc2/ParanormalFX/JSFX/MSSideFX.jsfx</source>
       </version>
     </reapack>
   </category>
