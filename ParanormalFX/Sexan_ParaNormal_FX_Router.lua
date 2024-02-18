@@ -1,10 +1,18 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.37.2
+-- @version 1.37.3
 -- @changelog
---  Fix crash when deleting active take
---  Check and validate if take exist after deleting
+--  Marquee select
+--  Marquee + Shift adds to selection
+--  Click selection (Shift, Ctrl)
+--  Shift click - Adds to selection
+--  Ctrl click - Adds/Removes to selection (toggle)
+--  Click in empty area removes selection
+--  Supports Delete (Delete key or ALT click), Bypass, Offline
+--  Not Supported: Move,Copy
+--  Disabled many UI elements while Marquee has over 2 selections
+--  Added warning at top for MOVE/COPY not supported
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -468,6 +476,7 @@ local function Main()
         AW, AH = r.ImGui_GetContentRegionAvail(ctx)
         WX, WY = r.ImGui_GetWindowPos(ctx)
         MX, MY = r.ImGui_GetMousePos(ctx)
+        DRAGX, DRAGY = r.ImGui_GetMouseDragDelta(ctx, nil, nil, 0)
         --r.ImGui_PushFont(ctx, CUSTOM_FONT and SYSTEM_FONT_FACTORY or DEFAULT_FONT_FACTORY)
         CanvasLoop()
         r.ImGui_PopFont(ctx)
@@ -487,8 +496,12 @@ local function Main()
         else
             if PM_INSPECTOR_FXID then PM_INSPECTOR_FXID = nil end
         end
+
+        if HasMultiple(SEL_TBL)then
+            r.ImGui_SetCursorPos(ctx,270,25)
+            r.ImGui_Button(ctx, "MARQUEE MOVE/COPY IS NOT SUPPORTED")
+        end
         
-        --r.ImGui_PopFont(ctx)
         ClipBoard()
         r.ImGui_PopFont(ctx)
         --if OPEN_SLOTS then SlotsMenu() end

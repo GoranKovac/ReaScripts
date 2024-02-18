@@ -431,6 +431,7 @@ function RemoveAllFX()
     end
     EndUndoBlock("DELETE ALL FX IN CHAIN")
     r.PreventUIRefresh(-1)
+    SEL_TBL = {}
 end
 
 function SetFXSlot(tbl, num)

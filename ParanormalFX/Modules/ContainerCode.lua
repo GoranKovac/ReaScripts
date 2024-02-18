@@ -94,6 +94,7 @@ function InitTrackContainers()
 end
 
 function GetParentContainerByGuid(tbl)
+    if not tbl then return end
     return tbl.type == "ROOT" and tbl or GetFx(tbl.pid)
 end
 

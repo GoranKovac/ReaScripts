@@ -161,6 +161,16 @@ function Deepcopy(orig)
     return copy
 end
 
+function HasMultiple(tbl)
+    local cnt = 0
+    for _ in pairs(tbl) do
+        cnt = cnt + 1
+        if cnt == 2 then return true end
+    end
+    --return count
+  end
+  
+
 function M_CLICK() return r.JS_Mouse_GetState(95) &1 == 1 end
 
 function M_TEST()

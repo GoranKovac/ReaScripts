@@ -82,7 +82,28 @@ local function CheckKeys()
     Z = ImGui.IsKeyPressed(ctx, ImGui.Key_Z())
     C = ImGui.IsKeyPressed(ctx, ImGui.Key_C())
 
+    DEL = ImGui.IsKeyPressed(ctx, ImGui.Key_Delete())
+
     if HOME then ResetView() end
+
+    if DEL then
+        if TARGET then
+            r.PreventUIRefresh(-1)
+            r.Undo_BeginBlock()
+            for k in pairs(SEL_TBL) do
+                UpdateFxData()
+                local updated_fx = GetFx(k)
+                local parrent_container = GetParentContainerByGuid(updated_fx)
+                local item_id = CalcFxID(parrent_container, updated_fx.IDX)
+                CheckNextItemParallel(updated_fx.IDX, parrent_container)
+                API.Delete(TARGET, item_id)
+            end
+            SEL_TBL = {}
+            ValidateClipboardFX()
+            r.PreventUIRefresh(1)
+            EndUndoBlock("DELETE SELECTED FX")
+        end
+    end
 
     if CTRL and Z then
         r.Main_OnCommand(40029, 0)
@@ -230,22 +251,25 @@ local function InsertPointsMenu()
 end
 
 local function RightClickMenu()
+    local disabled
+    if SEL_TBL[RC_DATA.tbl[RC_DATA.i].guid] ~= nil then
+        disabled = HasMultiple(SEL_TBL)
+    end
     if RC_DATA.type ~= "ROOT" then
-        if r.ImGui_MenuItem(ctx, 'RENAME') then
+        if r.ImGui_MenuItem(ctx, 'RENAME', nil, nil, not disabled) then
             RENAME_DATA = { tbl = RC_DATA.tbl, i = RC_DATA.i }
             OPEN_RENAME = true
         end
 
         if not RC_DATA.tbl[RC_DATA.i].exclude_ara then
-            if r.ImGui_MenuItem(ctx, 'REPLACE') then
+            if r.ImGui_MenuItem(ctx, 'REPLACE', nil, nil, not disabled) then
                 local parrent_container = GetParentContainerByGuid(RC_DATA.tbl[RC_DATA.i])
                 local item_add_id = CalcFxID(parrent_container, RC_DATA.i)
                 REPLACE_FX_POS = { tbl = RC_DATA.tbl, i = RC_DATA.i, id = item_add_id }
                 OPEN_FX_LIST = true
             end
             r.ImGui_Separator(ctx)
-
-            if r.ImGui_MenuItem(ctx, 'ENCLOSE INTO CONTAINER') then
+            if r.ImGui_MenuItem(ctx, 'ENCLOSE INTO CONTAINER', nil, nil, not disabled) then
                 r.Undo_BeginBlock()
                 r.PreventUIRefresh(1)
                 MoveTargetsToNewContainer(RC_DATA.tbl, RC_DATA.i)
@@ -256,7 +280,7 @@ local function RightClickMenu()
                 local can_explode = CheckIfSafeToExplode(RC_DATA.tbl, RC_DATA.i)
                 local no_childs = #RC_DATA.tbl[RC_DATA.i].sub == 0
                 if not can_explode or no_childs then r.ImGui_BeginDisabled(ctx, true) end
-                if r.ImGui_MenuItem(ctx, can_explode and 'EXPLODE CONTAINER' or "EXPLODE (NOT SUPPORTED)") then
+                if r.ImGui_MenuItem(ctx, can_explode and 'EXPLODE CONTAINER' or "EXPLODE (NOT SUPPORTED)", nil, nil, not disabled) then
                     ExplodeContainer(RC_DATA.tbl, RC_DATA.i)
                 end
                 if not can_explode or no_childs then r.ImGui_EndDisabled(ctx) end
@@ -264,7 +288,7 @@ local function RightClickMenu()
         end
         r.ImGui_Separator(ctx)
 
-        if r.ImGui_BeginMenu(ctx, "FX SETTINGS") then
+        if r.ImGui_BeginMenu(ctx, "FX SETTINGS", not disabled) then
             if r.ImGui_BeginMenu(ctx, "OVERSAMPLING") then
                 local parrent_container = GetParentContainerByGuid(RC_DATA.tbl[RC_DATA.i])
                 local item_id = CalcFxID(parrent_container, RC_DATA.i)
@@ -297,23 +321,43 @@ local function RightClickMenu()
     end
 
     if r.ImGui_MenuItem(ctx, 'DELETE') then
-        if RC_DATA.type == "ROOT" then
-            RemoveAllFX()
+        if SEL_TBL[RC_DATA.tbl[RC_DATA.i].guid] then
+            if next(SEL_TBL) then
+                r.Undo_BeginBlock()
+                r.PreventUIRefresh(1)
+                for k in pairs(SEL_TBL) do
+                    UpdateFxData()
+                    local updated_fx = GetFx(k)
+                    local parrent_container_sel = GetParentContainerByGuid(updated_fx)
+                    local item_id_sel = CalcFxID(parrent_container_sel, updated_fx.IDX)
+                    CheckNextItemParallel(updated_fx.IDX, parrent_container_sel)
+                    API.Delete(TARGET, item_id_sel)
+                end
+                r.PreventUIRefresh(-1)
+
+                EndUndoBlock("DELETE SELECTED FX")
+                SEL_TBL = {}
+            end
+
         else
-            r.PreventUIRefresh(1)
-            r.Undo_BeginBlock()
-            local parrent_container = GetParentContainerByGuid(RC_DATA.tbl[RC_DATA.i])
-            local item_id = CalcFxID(parrent_container, RC_DATA.i)
-            CheckNextItemParallel(RC_DATA.i, parrent_container)
-            API.Delete(TARGET, item_id)
-            EndUndoBlock("DELETE FX:" .. RC_DATA.tbl[RC_DATA.i].name)
-            r.PreventUIRefresh(-1)
+            if RC_DATA.type == "ROOT" then
+                RemoveAllFX()
+            else
+                r.PreventUIRefresh(1)
+                r.Undo_BeginBlock()
+                local parrent_container = GetParentContainerByGuid(RC_DATA.tbl[RC_DATA.i])
+                local item_id = CalcFxID(parrent_container, RC_DATA.i)
+                CheckNextItemParallel(RC_DATA.i, parrent_container)
+                API.Delete(TARGET, item_id)
+                EndUndoBlock("DELETE FX:" .. RC_DATA.tbl[RC_DATA.i].name)
+                r.PreventUIRefresh(-1)
+            end
         end
         ValidateClipboardFX()
     end
     if RC_DATA.type == "ROOT" or RC_DATA.type == "Container" then
         r.ImGui_Separator(ctx)
-        if r.ImGui_MenuItem(ctx, 'SAVE AS CHAIN') then
+        if r.ImGui_MenuItem(ctx, 'SAVE AS CHAIN', nil, nil, not disabled) then
             --SAVE_NAME = RC_DATA.tbl[RC_DATA.i].name
             OPEN_FM = true
             FM_TYPE = "SAVE"
@@ -328,7 +372,7 @@ local function RightClickMenu()
     end
     if RC_DATA.type ~= "ROOT" and not RC_DATA.tbl[RC_DATA.i].exclude_ara then
         r.ImGui_Separator(ctx)
-        if r.ImGui_MenuItem(ctx, 'COPY') then
+        if r.ImGui_MenuItem(ctx, 'COPY', nil, nil, not disabled) then
             local parrent_container = GetParentContainerByGuid(RC_DATA.tbl[RC_DATA.i])
             local item_id = CalcFxID(parrent_container, RC_DATA.i)
             local is_collapsed = CheckCollapse(RC_DATA.tbl[RC_DATA.i], 1, 1)
@@ -351,7 +395,7 @@ local function RightClickMenu()
             r.SetExtState("PARANORMALFX2", "COPY_BUFFER", data, false)
             r.SetExtState("PARANORMALFX2", "COPY_BUFFER_ID", r.genGuid(), false)
         end
-        if r.ImGui_MenuItem(ctx, 'CUT') then
+        if r.ImGui_MenuItem(ctx, 'CUT', nil, nil, not disabled) then
             local parrent_container = GetParentContainerByGuid(RC_DATA.tbl[RC_DATA.i])
             local item_id = CalcFxID(parrent_container, RC_DATA.i)
             local is_collapsed = CheckCollapse(RC_DATA.tbl[RC_DATA.i], 1, 1)
@@ -382,7 +426,7 @@ local function RightClickMenu()
         -- SHOW ONLY WHEN CLIPBOARD IS AVAILABLE
         if CLIPBOARD.tbl and CLIPBOARD.guid ~= RC_DATA.tbl[RC_DATA.i].guid then
             --! DO NOT ALLOW PASTING ON SELF
-            if r.ImGui_MenuItem(ctx, 'PASTE-REPLACE') then
+            if r.ImGui_MenuItem(ctx, 'PASTE-REPLACE', nil, nil, not disabled) then
                 Paste(true, RC_DATA.tbl[RC_DATA.i].p > 0, RC_DATA.tbl[RC_DATA.i].p == 0)
             end
         end
@@ -1252,10 +1296,19 @@ function UI()
             if PIN then
                 r.SetTrackUIMute(SEL_LIST_TRACK, -1, 0)
             else
-                r.SetTrackUIMute(TRACK, -1, 0)
+                if MODE == "TRACK" then
+                    r.SetTrackUIMute(TRACK, -1, 0)
+                else
+                    if TARGET then
+                        local is_mute = r.GetMediaItemInfo_Value(ITEM, "B_MUTE")
+                        r.SetMediaItemInfo_Value(ITEM, "B_MUTE", is_mute == 1 and 0 or 1)
+                        r.UpdateArrange()
+                    end
+                end
             end
         end
-        local mute_color = r.GetMediaTrackInfo_Value(PIN and SEL_LIST_TRACK or TRACK, "B_MUTE")
+        local mute_color = MODE == "TRACK" and r.GetMediaTrackInfo_Value(PIN and SEL_LIST_TRACK or TRACK, "B_MUTE") or 0
+        mute_color = (MODE == "ITEM" and TARGET) and r.GetMediaItemInfo_Value(ITEM, "B_MUTE") or 0
         DrawListButton2("O", mute_color == 0 and 0xff or 0xff2222ff, r.ImGui_IsItemHovered(ctx), true)
 
         r.ImGui_SameLine(ctx, 0, 3)
@@ -1264,7 +1317,11 @@ function UI()
             if PIN then
                 r.SetTrackUISolo(SEL_LIST_TRACK, -1, 0)
             else
-                r.SetTrackUISolo(TRACK, -1, 0)
+                if MODE == "TRACK" then
+                    r.SetTrackUISolo(TRACK, -1, 0)
+                else
+                    if TARGET then r.Main_OnCommand(41557, 0) end
+                end
             end
         end
         local solo_color = r.GetMediaTrackInfo_Value(PIN and SEL_LIST_TRACK or TRACK, "I_SOLO")
@@ -1310,7 +1367,7 @@ function UI()
                 else
                     target_name = r.GetTakeName(target)
                 end
-                r.ImGui_PushID(ctx,target_name..i)
+                r.ImGui_PushID(ctx, target_name .. i)
                 if r.ImGui_Selectable(ctx, target_name, target == TARGET) then
                     if PIN then
                         if MODE == "TRACK" then
@@ -1369,6 +1426,59 @@ function UI()
     end
     r.ImGui_PopStyleColor(ctx)
     r.ImGui_EndChild(ctx)
+end
+
+function CheckOverlap(tbl, i)
+    if not MARQUEE then return end
+    if tbl.type == "ROOT" then return end
+    local function Get_Node_Screen_position(n)
+        local x, y = CANVAS.view_x + CANVAS.off_x, CANVAS.view_y + CANVAS.off_y
+        local n_x, n_y = x + (n.x * CANVAS.scale), y + (n.y * CANVAS.scale)
+        local n_w, n_h = n.w * CANVAS.scale, n.h * CANVAS.scale
+        return n_x, n_y, n_x + n_w, n_y + n_h, n_w, n_h
+    end
+    local xs, ys = r.ImGui_GetItemRectMin(ctx)
+    local xe, ye = r.ImGui_GetItemRectMax(ctx)
+
+    local MXS, MYS, MXE, MYE = Get_Node_Screen_position(MARQUEE)
+
+    local overlap = MXS < xe and MXE > xs and MYS < ye and MYE > ys
+    --if overlap then
+    if SHIFT or CTRL then
+        if overlap then
+            SEL_TBL[tbl.guid] = tbl
+        end
+    else
+        SEL_TBL[tbl.guid] = overlap and tbl or nil
+    end
+
+    --end
+
+    --return MXS < xe and MXE > xs and MYS < ye and MYE > ys
+end
+
+local min, abs = math.min, math.abs
+function Draw_MARQUEE()
+    if not r.ImGui_IsWindowHovered(ctx) and not MARQUEE then return end
+    if (r.ImGui_IsAnyItemHovered(ctx) and r.ImGui_IsAnyItemActive(ctx)) then return end
+
+    if r.ImGui_IsMouseDragging(ctx, 0) then
+        local mpx, mpy = r.ImGui_GetMouseClickedPos(ctx, 0)
+        local MQ_dx, MQ_dy = r.ImGui_GetMouseDragDelta(ctx, mpx, mpy, 0)
+        MARQUEE = {
+            x = (min(mpx, mpx + MQ_dx) - (CANVAS.view_x + CANVAS.off_x)) / CANVAS.scale,
+            y = (min(mpy, mpy + MQ_dy) - (CANVAS.view_y + CANVAS.off_y)) / CANVAS.scale,
+            w = abs(MQ_dx) / CANVAS.scale,
+            h = abs(MQ_dy) / CANVAS.scale,
+        }
+        r.ImGui_DrawList_AddRectFilled(draw_list, mpx, mpy, mpx + MQ_dx, mpy + MQ_dy, 0xFFFFFF11)
+        r.ImGui_DrawList_AddRect(draw_list, mpx, mpy, mpx + MQ_dx, mpy + MQ_dy, 0x607EAAAA)
+    else
+        if r.ImGui_IsMouseReleased(ctx, 0) and MARQUEE then
+            MARQUEE = nil
+            MARQUEE_SHIFT = nil
+        end
+    end
 end
 
 function CheckStaleData()
