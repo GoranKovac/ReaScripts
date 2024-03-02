@@ -1,9 +1,9 @@
 -- @description Lil Item Homie
 -- @author Sexan
 -- @license GPL v3
--- @version 1.22
+-- @version 1.23
 -- @changelog
---   + cleanup
+--   Removed AttachFont for new Imgui
 
 local reaper = reaper
 
@@ -44,7 +44,7 @@ end
 local ctx = reaper.ImGui_CreateContext('My script', reaper.ImGui_ConfigFlags_NoSavedSettings())
 local size = reaper.GetAppVersion():match('OSX') and 12 or 14
 local font = reaper.ImGui_CreateFont('sans-serif', size)
-reaper.ImGui_AttachFont(ctx, font)
+reaper.ImGui_Attach(ctx, font)
 
 local dB_step = 0.2
 
