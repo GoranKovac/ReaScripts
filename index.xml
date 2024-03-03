@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="9e3cc983de31a9acc85f2b2b0bab5d55e15a9ab7" name="Sexan_Scripts">
+<index version="1" commit="2671fd34e728037f50e82bc15dc9a4e2fa4f863b" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -787,6 +787,10 @@ Found FX is added last to list then flags get deleted to ensure numeric key orde
       <version name="1.23" author="Sexan" time="2024-03-02T20:04:16Z">
         <changelog><![CDATA[Removed AttachFont for new Imgui]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/9e3cc983de31a9acc85f2b2b0bab5d55e15a9ab7/Lil_Series/Lil_Item_Homie.lua</source>
+      </version>
+      <version name="1.24" author="Sexan" time="2024-03-03T21:30:45Z">
+        <changelog><![CDATA[Fixed button width]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/2671fd34e728037f50e82bc15dc9a4e2fa4f863b/Lil_Series/Lil_Item_Homie.lua</source>
       </version>
     </reapack>
     <reapack name="Lil_Track_Homie.lua" type="script" desc="Lil Track Homie">
