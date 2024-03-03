@@ -1,9 +1,9 @@
 -- @description Lil Item Homie
 -- @author Sexan
 -- @license GPL v3
--- @version 1.23
+-- @version 1.24
 -- @changelog
---   Removed AttachFont for new Imgui
+--   Fixed button width
 
 local reaper = reaper
 
@@ -340,13 +340,13 @@ function GUI()
         if lock == 1 then Draw_Color_Rect("lock") end
         reaper.ImGui_SameLine(ctx)
         local fx_vis = reaper.TakeFX_GetChainVisible(takeM)
-        if reaper.ImGui_Button(ctx, "FX", 20, 20) then
+        if reaper.ImGui_Button(ctx, "FX", 25, 20) then
             local toggle_fx_open = fx_vis == (-1 or 0) and 1 or 0
             reaper.TakeFX_Show(takeM, 0, toggle_fx_open)
         end
         reaper.ImGui_SameLine(ctx)
         local preserve_p = reaper.GetMediaItemTakeInfo_Value(takeM, "B_PPITCH")
-        if reaper.ImGui_Button(ctx, "PP", 20, 20) then
+        if reaper.ImGui_Button(ctx, "PP", 25, 20) then
             local toggle_pp = preserve_p == 1 and 0 or 1
             for i = 1, #items do
                 local take = reaper.GetActiveTake(items[i])
