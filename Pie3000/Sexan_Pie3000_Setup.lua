@@ -1,3 +1,5 @@
+--@noindex
+--NoIndex: true
 local r = reaper
 
 local info = debug.getinfo(1, 'S');

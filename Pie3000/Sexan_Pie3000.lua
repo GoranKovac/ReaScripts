@@ -6,8 +6,8 @@
 --  Pie Script
 --  Pie SetupScript
 -- @provides
+--   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
---   Sexan_Pie3000_Setup.lua
 --   PieUtils.lua
 --   fontello1.ttf
 
