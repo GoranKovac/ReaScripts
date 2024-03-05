@@ -1,7 +1,7 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.1.1
+-- @version 0.1.2
 -- @changelog
 --  Pie Script
 --  Pie SetupScript

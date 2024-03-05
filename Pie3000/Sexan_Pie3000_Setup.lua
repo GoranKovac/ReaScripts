@@ -38,8 +38,6 @@ local SELECTED = {
     ["item"] = {}
 }
 
-local awesomefont = r.ImGui_CreateFont(script_path .. 'PieICONS.ttf', 12)
-r.ImGui_Attach(ctx, awesomefont)
 local draw_list = r.ImGui_GetWindowDrawList(ctx)
 
 local pi, max, floor, cos, sin, atan, ceil, abs = math.pi, math.max, math.floor, math.cos, math.sin, math.atan, math
@@ -594,7 +592,7 @@ function MakePieFile()
 end
 
 local function Main()
-    local visible, open = r.ImGui_Begin(ctx, 'Pie 3000 Setup', true, flags)
+    local visible, open = r.ImGui_Begin(ctx, '##Pie3000Setup', true, flags)
     if visible then
         CheckKeys()
         Tabs()
