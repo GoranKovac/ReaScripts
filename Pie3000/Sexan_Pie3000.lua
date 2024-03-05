@@ -1,10 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.1.2
+-- @version 0.1.3
 -- @changelog
---  Pie Script
---  Pie SetupScript
+--  fixeeeeesss
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
@@ -86,7 +85,7 @@ end
 local function Init()
     PIES = ReadFromFile(pie_file)
     if not PIES then
-        dofile(script_path .. 'PieSetupNew.lua')
+        dofile(script_path .. 'Sexan_Pie3000_Setup.lua')
         return "ERROR"
     end
     CUR_PREF = r.SNM_GetIntConfigVar("alwaysallowkb", 1)
