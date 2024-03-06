@@ -11,6 +11,22 @@ if CheckDeps() then return end
 local ctx = r.ImGui_CreateContext('PIE 3000 SETUP')
 r.ImGui_SetConfigVar(ctx, r.ImGui_ConfigVar_WindowsMoveFromTitleBarOnly(), 1)
 
+ANIMATION = true
+ACTIVATE_ON_CLOSE = true
+HOLD_TO_OPEN = true
+
+if r.HasExtState("PIE3000", "SETTINGS") then
+    local stored = r.GetExtState("PIE3000", "SETTINGS")
+    if stored ~= nil then
+        local save_data = StringToTable(stored)
+        if save_data ~= nil then
+            ANIMATION = save_data.animation
+            ACTIVATE_ON_CLOSE = save_data.activate_on_close
+            HOLD_TO_OPEN = save_data.hold_to_open
+        end
+    end
+end
+
 local FONT_SIZE = 15
 local FONT_LARGE = 16
 local ICON_FONT_SMALL_SIZE = 25
@@ -66,8 +82,8 @@ local function LinkMenus(tbl)
             if type(v[i]) == "table" then
                 local parent = InTbl(MENUS, v[i].guid)
                 if parent then
-                     v[i] = parent
-                     LinkMenus(v[i])
+                    v[i] = parent
+                    LinkMenus(v[i])
                 end
             end
         end
@@ -80,12 +96,12 @@ local CUR_TAB = "arrange"
 local CUR_PIE = PIES[CUR_TAB]
 
 local function LinkPieMenusWithSrcMenus(tbl)
-    for k,v in pairs(tbl) do
+    for k, v in pairs(tbl) do
         for i = 1, #v do
-            if v[i].menu then       
+            if v[i].menu then
                 local parent = InTbl(MENUS, v[i].guid)
                 if parent then
-                   -- AAA = parent
+                    -- AAA = parent
                     v[i] = parent
                 end
             end
@@ -138,7 +154,7 @@ local ACTIONS_TBL = GetActions()
 local FILTERED_TBL = ACTIONS_TBL
 local FILTER = ''
 
-local function FilterBox()    
+local function FilterBox()
     rv_f, FILTER = r.ImGui_InputTextWithHint(ctx, "##input", "Search Actions", FILTER)
     if rv_f then
         FILTERED_TBL = FilterActions(ACTIONS_TBL, FILTER)
@@ -210,24 +226,25 @@ local function ActionsTab()
                 FilterBox()
                 r.ImGui_SameLine(ctx)
                 if r.ImGui_Button(ctx, '+') then
-                    MENUS[#MENUS+1] = { guid = r.genGuid(), RADIUS = 150, icon = "", name = "MENU " .. #MENUS, col = def_color, menu = "is_menu" }
+                    MENUS[#MENUS + 1] = { guid = r.genGuid(), RADIUS = 150, icon = "", name = "MENU " .. #MENUS, col =
+                    def_color, menu = "is_menu" }
                 end
                 if r.ImGui_BeginListBox(ctx, "##Menu List", 500, -1) then
                     for i = 1, #MENUS do
-                        r.ImGui_PushID(ctx,i)
+                        r.ImGui_PushID(ctx, i)
                         if r.ImGui_Selectable(ctx, MENUS[i].name, LAST_MENU_SEL == i, r.ImGui_SelectableFlags_AllowDoubleClick()) then
                         end
-                            if r.ImGui_IsItemHovered(ctx) and  r.ImGui_IsMouseDoubleClicked(ctx,0) then
+                        if r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseDoubleClicked(ctx, 0) then
+                            LAST_MENU_SEL = i
+                            TAB_MENU = true
+                            CUR_PIE = MENUS[i]
+                        elseif r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseClicked(ctx, 0) then
+                            if ALT then
+                                DEL = { MENUS, i }
+                            else
                                 LAST_MENU_SEL = i
-                                TAB_MENU = true
-                                CUR_PIE = MENUS[i]
-                            elseif r.ImGui_IsItemHovered(ctx) and  r.ImGui_IsMouseClicked( ctx, 0 ) then
-                                if ALT then
-                                    DEL = {MENUS, i}
-                                else
-                                    LAST_MENU_SEL = i
-                                end
                             end
+                        end
                         DndSourceMenu(MENUS[i], i)
                         r.ImGui_PopID(ctx)
                     end
@@ -307,7 +324,7 @@ local function DrawFlyButton(pie, selected, hovered, center)
     local button_center = { x = xs + (w / 2), y = ys + (h / 2) }
 
     local name, color = pie.name, pie.col
-    
+
     local icon = #pie.icon ~= 0 and pie.icon or nil
 
     local icon_col = 0xffffffff
@@ -340,7 +357,7 @@ local function DrawFlyButton(pie, selected, hovered, center)
     r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 0)
     if pie.menu then
         local item_arc_span = (2 * pi) / #pie --.menu
-        for i = 1, #pie do--.menu do
+        for i = 1, #pie do                    --.menu do
             local cur_angle = (item_arc_span * (i - 1) + START_ANG) % (2 * pi)
             local button_pos = {
                 x = button_center.x + (button_radius - 2) * cos(cur_angle),
@@ -384,7 +401,7 @@ local function StyleFly(pie, center, drag_angle, active)
     local arc_col = ARC_COLOR
 
     for i = 1, #pie do
-       -- local ang_min = (item_arc_span) * (i - (0.5)) + START_ANG
+        -- local ang_min = (item_arc_span) * (i - (0.5)) + START_ANG
         --local ang_max = (item_arc_span) * (i + (0.5)) + START_ANG
         local angle = item_arc_span * i
 
@@ -404,7 +421,7 @@ local function StyleFly(pie, center, drag_angle, active)
             end
         end
         if pie[i].menu then
-            if r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseDoubleClicked( ctx, 0 ) then
+            if r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseDoubleClicked(ctx, 0) then
                 local src_menu, menu_id = InTbl(MENUS, pie[i].guid)
                 if src_menu then
                     --CUR_PIE = src_menu
@@ -468,7 +485,7 @@ local function DrawPie(tbl)
     r.ImGui_DrawListSplitter_Split(SPLITTER, 3)
     local drag_angle, active = DrawCenter(tbl, center)
     StyleFly(tbl, center, drag_angle, active)
-   
+
     r.ImGui_DrawListSplitter_Merge(SPLITTER)
 end
 
@@ -542,7 +559,7 @@ local function ButtonInfo(pie)
     RADIUS_ACTIVE = r.ImGui_IsItemActive(ctx)
 
     if CUR_PIE.menu then
-        RV_MI, CUR_PIE.name = r.ImGui_InputTextWithHint( ctx, "Menu Name", "Menu name", CUR_PIE.name)     
+        RV_MI, CUR_PIE.name = r.ImGui_InputTextWithHint(ctx, "Menu Name", "Menu name", CUR_PIE.name)
     end
     -- if r.ImGui_Button(ctx, "ADD BUTTON") then
     --     table.insert(pie,#pie~= 0 and #pie or 1,{ icon = "", name = "EMPTY ", cmd = "", cmd_name = "", col = def_color })
@@ -573,6 +590,7 @@ local function ButtonInfo(pie)
 end
 
 local function Tabs()
+    USER_SETTINGS = false
     if r.ImGui_BeginTabBar(ctx, "MAIN TAB") then
         if r.ImGui_BeginTabItem(ctx, "ARRANGE") then
             CUR_TAB = "arrange"
@@ -594,9 +612,35 @@ local function Tabs()
             CUR_TAB = "item"
             r.ImGui_EndTabItem(ctx)
         end
-        if r.ImGui_BeginTabItem(ctx, "CUSTOM MENU", true , TAB_MENU and r.ImGui_TabItemFlags_SetSelected()) then
+        if r.ImGui_BeginTabItem(ctx, "CUSTOM MENU", true, TAB_MENU and r.ImGui_TabItemFlags_SetSelected()) then
             TAB_MENU = nil
             CUR_TAB = "menu"
+            r.ImGui_EndTabItem(ctx)
+        end
+        if r.ImGui_BeginTabItem(ctx, "USER_SETTINGS", true) then
+            USER_SETTINGS = true
+            if r.ImGui_Checkbox(ctx, "HOLD TO OPEN", HOLD_TO_OPEN) then
+                HOLD_TO_OPEN = not HOLD_TO_OPEN
+                WANT_SAVE = true
+            end
+            if r.ImGui_Checkbox(ctx, "ACTIVATE ON CLOSE", ACTIVATE_ON_CLOSE) then
+                ACTIVATE_ON_CLOSE = not ACTIVATE_ON_CLOSE
+                WANT_SAVE = true
+            end
+            if r.ImGui_Checkbox(ctx, "ANIMATION", ANIMATION) then
+                ANIMATION = not ANIMATION
+                WANT_SAVE = true
+            end
+            if WANT_SAVE then
+                local data = TableToString(
+                {
+                    animation = ANIMATION,
+                    hold_to_open = HOLD_TO_OPEN,
+                    activate_on_close = ACTIVATE_ON_CLOSE
+                }    )
+                r.SetExtState("PIE3000", "SETTINGS", data, true)
+                WANT_SAVE = nil
+            end
             r.ImGui_EndTabItem(ctx)
         end
         if CUR_TAB ~= LAST_TAB then
@@ -627,28 +671,30 @@ function MakePieFile()
 end
 
 local function Main()
-    r.ImGui_SetNextWindowBgAlpha( ctx, 1 )
+    r.ImGui_SetNextWindowBgAlpha(ctx, 1)
     local visible, open = r.ImGui_Begin(ctx, 'Pie 3000 Setup', true, flags)
     if visible then
         CheckKeys()
         Tabs()
-        ActionsTab()
-        r.ImGui_SameLine(ctx)
-        if r.ImGui_BeginChild(ctx, "##PIEDRAW", 0, 0) then
-            if CUR_PIE then
-                ButtonInfo(CUR_PIE)
-                DrawPie(CUR_PIE)
+        if not USER_SETTINGS then
+            ActionsTab()
+            r.ImGui_SameLine(ctx)
+            if r.ImGui_BeginChild(ctx, "##PIEDRAW", 0, 0) then
+                if CUR_PIE then
+                    ButtonInfo(CUR_PIE)
+                    DrawPie(CUR_PIE)
+                end
+                r.ImGui_EndChild(ctx)
             end
-            r.ImGui_EndChild(ctx)
-        end
-        DndAddTargetAction()
-        DndAddTargetMenu()
-        if DEL then
-            if DEL[1].selected and DEL[1].selected == DEL[2] then
-                DEL[1].selected = nil
+            DndAddTargetAction()
+            DndAddTargetMenu()
+            if DEL then
+                if DEL[1].selected and DEL[1].selected == DEL[2] then
+                    DEL[1].selected = nil
+                end
+                table.remove(DEL[1], DEL[2])
+                DEL = nil
             end
-            table.remove(DEL[1], DEL[2])
-            DEL = nil
         end
         r.ImGui_End(ctx)
     end

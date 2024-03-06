@@ -1,10 +1,10 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.1.35
+-- @version 0.1.36
 -- @changelog
---  No transparent BG
---  ESC closes the script
+--  Added user settings
+--  Toggle open, animation, activate on close
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
@@ -24,6 +24,19 @@ local easingFunctions = require("easing")
 
 ANIMATION = true
 ACTIVATE_ON_CLOSE = true
+HOLD_TO_OPEN = true
+
+if r.HasExtState("PIE3000", "SETTINGS") then
+    local stored = r.GetExtState("PIE3000", "SETTINGS")
+    if stored ~= nil then
+        local save_data = StringToTable(stored)
+        if save_data ~= nil then
+            ANIMATION = save_data.animation
+            ACTIVATE_ON_CLOSE = save_data.activate_on_close
+            HOLD_TO_OPEN = save_data.hold_to_open
+        end
+    end
+end
 
 local PIE_LIST = {}
 
@@ -35,7 +48,7 @@ local START_ANG = (3 * pi) / 2
 local function Release()
     if not KEY then return end
     r.JS_VKeys_Intercept(KEY, -1)
-   -- r.SNM_SetIntConfigVar("alwaysallowkb", CUR_PREF)
+    -- r.SNM_SetIntConfigVar("alwaysallowkb", CUR_PREF)
 end
 
 local SCRIPT_START_TIME = r.time_precise()
@@ -96,6 +109,7 @@ local function Init()
     MOUSE_INFO = GetMouseContext()
     if not MOUSE_INFO then return "ERROR" end
     if #PIES[MOUSE_INFO] == 0 then return "ERROR" end
+    --if HOLD_TO_OPEN then
     local key_state = r.JS_VKeys_GetState(START_TIME - 2)
     for i = 1, 255 do
         if key_state:byte(i) ~= 0 then
@@ -105,8 +119,8 @@ local function Init()
         end
     end
     if not KEY then return "ERROR" end
-
-   -- r.SNM_SetIntConfigVar("alwaysallowkb", 1)
+    --end
+    -- r.SNM_SetIntConfigVar("alwaysallowkb", 1)
     GUI_Init()
 end
 
@@ -427,7 +441,8 @@ local function StyleFly(pie, center, drag_angle)
 
         if pie.selected then
             r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 0)
-            r.ImGui_DrawList_PathArcTo(draw_list, WX + center_x, WY + center_y, (RADIUS - RADIUS_MIN) + 100, ang_min, ang_max, 12)
+            r.ImGui_DrawList_PathArcTo(draw_list, WX + center_x, WY + center_y, (RADIUS - RADIUS_MIN) + 100, ang_min,
+                ang_max, 12)
             r.ImGui_DrawList_PathArcTo(draw_list, WX + center_x, WY + center_y, RADIUS_MIN - 1.5, ang_max, ang_min, 12)
             r.ImGui_DrawList_PathFillConvex(draw_list, ARC_COLOR)
         end
@@ -466,12 +481,12 @@ local function DrawCenter(center)
     local drag_angle = (atan(drag_delta[2], drag_delta[1])) % (pi * 2)
 
     local main_color = #PIE_LIST ~= 0 and
-    IncreaseDecreaseBrightness(PIE_LIST[#PIE_LIST].col == 255 and 0x25283eFF or PIE_LIST[#PIE_LIST].col, 20) or
-    0x25283eFF
+        IncreaseDecreaseBrightness(PIE_LIST[#PIE_LIST].col == 255 and 0x25283eFF or PIE_LIST[#PIE_LIST].col, 20) or
+        0x25283eFF
 
     PIE_MENU.cv = ANIMATION and
-    EasingAnim(0, PIE_MENU.RADIUS, PIE_MENU.cv, 0.3, easingFunctions.inOutCubic,
-        CLOSE and START_TIME or SCRIPT_START_TIME, nil, nil, CLOSE)
+        EasingAnim(0, PIE_MENU.RADIUS, PIE_MENU.cv, 0.3, easingFunctions.inOutCubic,
+            CLOSE and START_TIME or SCRIPT_START_TIME, nil, nil, CLOSE)
     PROG = ANIMATION and max(0, PIE_MENU.cv / PIE_MENU.RADIUS) or 1
 
     local RADIUS = ANIMATION and PIE_MENU.cv or PIE_MENU.RADIUS
@@ -521,17 +536,45 @@ local function DrawPie(pie, center)
     StyleFly(pie, center, drag_ang)
     r.ImGui_DrawListSplitter_Merge(SPLITTER)
 end
+local function CheckKeys()
+    ALT = r.ImGui_GetKeyMods(ctx) == r.ImGui_Mod_Alt()
+    CTRL = r.ImGui_GetKeyMods(ctx) == r.ImGui_Mod_Shortcut()
+    SHIFT = r.ImGui_GetKeyMods(ctx) == r.ImGui_Mod_Shift()
+    DEL_KEY = r.ImGui_IsKeyPressed(ctx, r.ImGui_Key_Delete())
+    ESC = r.ImGui_IsKeyPressed(ctx, r.ImGui_Key_Escape())
+end
 
-local function Main()
-    if not KeyHeld() then
-        if not CLOSE then
-            START_TIME = r.time_precise()
-            CLOSE = true
-            FLAGS = FLAGS | r.ImGui_WindowFlags_NoInputs()
-            if not ANIMATION then DONE = true end
+local function CloseScript()
+    if not CLOSE then
+        START_TIME = r.time_precise()
+        CLOSE = true
+        FLAGS = FLAGS | r.ImGui_WindowFlags_NoInputs()
+        if not ANIMATION then DONE = true end
+    end
+end
+
+local function TrackShortcutKey()
+    if HOLD_TO_OPEN then
+        if not KeyHeld() then
+            CloseScript()
+        end
+    else
+        if not KeyHeld() then
+            if not KEY_START_STATE then
+                KEY_START_STATE = true
+            end
+        else
+            if KEY_START_STATE then
+                if KeyHeld() == KEY_START_STATE then
+                    CloseScript()
+                end
+            end
         end
     end
+end
 
+local function Main()
+    TrackShortcutKey()
     if SWITCH_PIE then
         PIE_MENU = SWITCH_PIE
         r.JS_Mouse_SetPosition(START_X, START_Y)
@@ -542,6 +585,7 @@ local function Main()
 
     r.ImGui_SetNextWindowSize(ctx, 5000, 5000)
     if r.ImGui_Begin(ctx, 'PIE 3000', false, FLAGS) then
+        CheckKeys()
         WX, WY = r.ImGui_GetWindowPos(ctx)
         MX, MY = r.ImGui_PointConvertNative(ctx, r.GetMousePosition())
         --AccessibilityMode()

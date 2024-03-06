@@ -64,7 +64,7 @@ function StringToTable(str)
     return f ~= nil and f() or nil
 end
 
-local function SerializeTable(val, name, skipnewlines, depth)
+function serializeTable(val, name, skipnewlines, depth)
     skipnewlines = skipnewlines or false
     depth = depth or 0
     local tmp = string.rep(" ", depth)
@@ -78,10 +78,10 @@ local function SerializeTable(val, name, skipnewlines, depth)
         tmp = tmp .. name .. " = "
     end
     if type(val) == "table" then
-        tmp = tmp .. "{" .. (not skipnewlines and "\n" or "")
+        tmp = tmp .. "{"
         for k, v in pairs(val) do
             if k ~= "selected" then
-                tmp = tmp .. SerializeTable(v, k, skipnewlines, depth + 1) .. "," .. (not skipnewlines and "\n" or "")
+                tmp = tmp .. serializeTable(v, k, skipnewlines, depth + 1) .. ","
             end
         end
         tmp = tmp .. string.rep(" ", depth) .. "}"
@@ -98,6 +98,6 @@ local function SerializeTable(val, name, skipnewlines, depth)
 end
 
 function TableToString(table)
-    local str = SerializeTable(table)
+    local str = serializeTable(table)
     return str
 end
