@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.1.32
+-- @version 0.1.34
 -- @changelog
---  Add ReaPack check for Imgui and JS_API
+--  Fix window names
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
@@ -540,7 +540,7 @@ local function Main()
     end
 
     r.ImGui_SetNextWindowSize(ctx, 5000, 5000)
-    if r.ImGui_Begin(ctx, '##PIE 3000', false, FLAGS) then
+    if r.ImGui_Begin(ctx, 'PIE 3000', false, FLAGS) then
         WX, WY = r.ImGui_GetWindowPos(ctx)
         MX, MY = r.ImGui_PointConvertNative(ctx, r.GetMousePosition())
         --AccessibilityMode()

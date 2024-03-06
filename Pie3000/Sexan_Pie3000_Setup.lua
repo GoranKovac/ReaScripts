@@ -625,7 +625,7 @@ function MakePieFile()
 end
 
 local function Main()
-    local visible, open = r.ImGui_Begin(ctx, '##Pie3000Setup', true, flags)
+    local visible, open = r.ImGui_Begin(ctx, 'Pie 3000 Setup', true, flags)
     if visible then
         CheckKeys()
         Tabs()
