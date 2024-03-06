@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="8029f04414b53eb5a70e65e12301e3e23bf754ca" name="Sexan_Scripts">
+<index version="1" commit="f925a53ae99ae3822f6b57082920270c00e15b8d" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -3436,6 +3436,14 @@ Fixed serialization for data and extstate]]></changelog>
         <source file="easing.lua">https://github.com/GoranKovac/ReaScripts/raw/8029f04414b53eb5a70e65e12301e3e23bf754ca/Pie3000/easing.lua</source>
         <source file="PieUtils.lua">https://github.com/GoranKovac/ReaScripts/raw/8029f04414b53eb5a70e65e12301e3e23bf754ca/Pie3000/PieUtils.lua</source>
         <source file="fontello1.ttf">https://github.com/GoranKovac/ReaScripts/raw/8029f04414b53eb5a70e65e12301e3e23bf754ca/Pie3000/fontello1.ttf</source>
+      </version>
+      <version name="0.1.4" author="Sexan" time="2024-03-06T19:26:45Z">
+        <changelog><![CDATA[fix crash when randomly trying to open/close script a million times a second]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/f925a53ae99ae3822f6b57082920270c00e15b8d/Pie3000/Sexan_Pie3000.lua</source>
+        <source main="main" file="Sexan_Pie3000_Setup.lua">https://github.com/GoranKovac/ReaScripts/raw/f925a53ae99ae3822f6b57082920270c00e15b8d/Pie3000/Sexan_Pie3000_Setup.lua</source>
+        <source file="easing.lua">https://github.com/GoranKovac/ReaScripts/raw/f925a53ae99ae3822f6b57082920270c00e15b8d/Pie3000/easing.lua</source>
+        <source file="PieUtils.lua">https://github.com/GoranKovac/ReaScripts/raw/f925a53ae99ae3822f6b57082920270c00e15b8d/Pie3000/PieUtils.lua</source>
+        <source file="fontello1.ttf">https://github.com/GoranKovac/ReaScripts/raw/f925a53ae99ae3822f6b57082920270c00e15b8d/Pie3000/fontello1.ttf</source>
       </version>
     </reapack>
   </category>
