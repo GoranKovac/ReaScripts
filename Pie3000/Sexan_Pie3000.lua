@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.1.38
+-- @version 0.1.39
 -- @changelog
---  Small fix for pie freeze
+--  Kill on ESC
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
@@ -624,6 +624,8 @@ local function TrackShortcutKey()
 end
 
 local function Main()
+   -- r.ShowConsoleMsg(r.JS_VKeys_GetState(SCRIPT_START_TIME - 2):byte(KEY) .. "\n")
+    --if r.JS_Window_FindEx(nil, nil, "#32768", "") then return end -- context menu detected
     TrackShortcutKey()
     if SWITCH_PIE then
         PIE_MENU = SWITCH_PIE
@@ -636,6 +638,7 @@ local function Main()
     r.ImGui_SetNextWindowSize(ctx, 5000, 5000)
     if r.ImGui_Begin(ctx, 'PIE 3000', false, FLAGS) then
         CheckKeys()
+        if ESC then DONE = true end
         WX, WY = r.ImGui_GetWindowPos(ctx)
         MX, MY = r.ImGui_PointConvertNative(ctx, r.GetMousePosition())
         --AccessibilityMode()
@@ -646,6 +649,7 @@ local function Main()
     if not DONE then
         pdefer(Main)
     end
+    --SCRIPT_START_TIME = r.time_precise()
 end
 
 r.atexit(Release)
