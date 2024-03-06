@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.1.41
+-- @version 0.1.42
 -- @changelog
---  fix crash when randomly trying to open/close script a million times a second
+--  Terminate script immediatly if button is tapped (not held over 150ms)
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
@@ -58,7 +58,9 @@ local function Release()
 end
 
 local SCRIPT_START_TIME = r.time_precise()
-local function KeyHeld() return r.JS_VKeys_GetState(SCRIPT_START_TIME - 1):byte(KEY) == 1 end
+local function KeyHeld() 
+    return r.JS_VKeys_GetState(SCRIPT_START_TIME-1):byte(KEY) == 1 
+end
 
 local function GetMouseContext()
     local x, y = r.GetMousePosition()
@@ -601,7 +603,11 @@ local function CloseScript()
         CLOSE = true
         FLAGS = FLAGS | r.ImGui_WindowFlags_NoInputs()
         DONE = not ANIMATION and true
-        if not ANIMATION then DONE = true end
+        -- TERMINATE IMMEDIATLY IF BUTON WAS HELD UNDER 150MS (TAPPED)
+        if START_TIME - SCRIPT_START_TIME < 0.2 then
+            TERMINATE = true
+        end
+       -- if not ANIMATION then DONE = true end
     end
 end
 
@@ -627,8 +633,9 @@ end
 
 local function Main()
    -- r.ShowConsoleMsg(r.JS_VKeys_GetState(SCRIPT_START_TIME - 2):byte(KEY) .. "\n")
-    if r.JS_Window_FindEx(nil, nil, "#32768", "") then DONE = true end -- context menu detected
+    if r.JS_Window_FindEx(nil, nil, "#32768", "") then return end -- context menu detected
     TrackShortcutKey()
+    if TERMINATE then return end
     if SWITCH_PIE then
         PIE_MENU = SWITCH_PIE
         r.JS_Mouse_SetPosition(START_X, START_Y)
@@ -637,6 +644,7 @@ local function Main()
         SWAP = nil
     end
 
+    r.ImGui_SetNextWindowFocus( ctx )
     r.ImGui_SetNextWindowSize(ctx, 5000, 5000)
     if r.ImGui_Begin(ctx, 'PIE 3000', false, FLAGS) then
         CheckKeys()
@@ -650,9 +658,7 @@ local function Main()
     end
     if not DONE then
         pdefer(Main)
-    end
-    --SCRIPT_START_TIME = r.time_precise()
+    end    
 end
-
 r.atexit(Release)
 pdefer(Main)
