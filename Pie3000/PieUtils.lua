@@ -12,7 +12,7 @@ end
 function InTbl(tbl, val)
     for i = 1, #tbl do
         if tbl[i].guid == val then
-            return tbl, i
+            return tbl[i], i
         end
     end
 end

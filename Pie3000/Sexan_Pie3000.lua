@@ -1,9 +1,10 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.1.3
+-- @version 0.1.31
 -- @changelog
---  fixeeeeesss
+--  Recusively link SubMenus with Menu sources (SETUP)
+--  Recusively link pie tables with menu sources (SETUP)
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua

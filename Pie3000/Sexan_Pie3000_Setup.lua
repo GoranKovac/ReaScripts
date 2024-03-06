@@ -58,8 +58,40 @@ local PIES = ReadFromFile(pie_file) or {
 
 local MENUS = ReadFromFile(menu_file) or {}
 
+local function LinkMenus(tbl)
+    for k, v in ipairs(tbl) do
+        for i = 1, #v do
+            if type(v[i]) == "table" then
+                local parent = InTbl(MENUS, v[i].guid)
+                if parent then
+                     v[i] = parent
+                     LinkMenus(v[i])
+                end
+            end
+        end
+    end
+end
+
+LinkMenus(MENUS)
+
 local CUR_TAB = "arrange"
 local CUR_PIE = PIES[CUR_TAB]
+
+local function LinkPieMenusWithSrcMenus(tbl)
+    for k,v in pairs(tbl) do
+        for i = 1, #v do
+            if v[i].menu then       
+                local parent = InTbl(MENUS, v[i].guid)
+                if parent then
+                   -- AAA = parent
+                    v[i] = parent
+                end
+            end
+        end
+    end
+end
+
+LinkPieMenusWithSrcMenus(PIES)
 
 local function IterateActions(sectionID)
     local i = 0
@@ -147,7 +179,7 @@ local function DndAddTargetMenu()
         r.ImGui_EndDragDropTarget(ctx)
         if ret then
             local insert_pos = #CUR_PIE ~= 0 and #CUR_PIE or 1
-            table.insert(CUR_PIE, insert_pos, Deepcopy(MENUS[menu_id]))
+            table.insert(CUR_PIE, insert_pos, MENUS[menu_id])
             CUR_PIE.selected = insert_pos
         end
     end
@@ -273,6 +305,7 @@ local function DrawFlyButton(pie, selected, hovered, center)
     local button_center = { x = xs + (w / 2), y = ys + (h / 2) }
 
     local name, color = pie.name, pie.col
+    
     local icon = #pie.icon ~= 0 and pie.icon or nil
 
     local icon_col = 0xffffffff
@@ -382,7 +415,6 @@ local function StyleFly(pie, center, drag_angle, active)
         r.ImGui_PopID(ctx)
         DNDSwapSRC(pie, i)
         DNDSwapDST(pie, i, pie[i])
-
         DrawFlyButton(pie[i], pie.selected == i, r.ImGui_IsItemHovered(ctx), center)
     end
 end
