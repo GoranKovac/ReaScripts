@@ -1,9 +1,10 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.1.34
+-- @version 0.1.35
 -- @changelog
---  Fix window names
+--  No transparent BG
+--  ESC closes the script
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua

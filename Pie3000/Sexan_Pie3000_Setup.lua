@@ -9,6 +9,7 @@ package.path = script_path .. "?.lua;"
 require('PieUtils')
 if CheckDeps() then return end
 local ctx = r.ImGui_CreateContext('PIE 3000 SETUP')
+r.ImGui_SetConfigVar(ctx, r.ImGui_ConfigVar_WindowsMoveFromTitleBarOnly(), 1)
 
 local FONT_SIZE = 15
 local FONT_LARGE = 16
@@ -615,6 +616,7 @@ local function CheckKeys()
     CTRL = r.ImGui_GetKeyMods(ctx) == r.ImGui_Mod_Shortcut()
     SHIFT = r.ImGui_GetKeyMods(ctx) == r.ImGui_Mod_Shift()
     DEL_KEY = r.ImGui_IsKeyPressed(ctx, r.ImGui_Key_Delete())
+    ESC = r.ImGui_IsKeyPressed(ctx, r.ImGui_Key_Escape())
 end
 
 function MakePieFile()
@@ -625,6 +627,7 @@ function MakePieFile()
 end
 
 local function Main()
+    r.ImGui_SetNextWindowBgAlpha( ctx, 1 )
     local visible, open = r.ImGui_Begin(ctx, 'Pie 3000 Setup', true, flags)
     if visible then
         CheckKeys()
@@ -650,6 +653,7 @@ local function Main()
         r.ImGui_End(ctx)
     end
 
+    if ESC then open = nil end
     if open then
         r.defer(Main)
     else
