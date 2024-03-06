@@ -1,7 +1,7 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.1.4
+-- @version 0.1.41
 -- @changelog
 --  fix crash when randomly trying to open/close script a million times a second
 -- @provides
@@ -583,6 +583,7 @@ local function DrawPie(pie, center)
     SPLITTER = r.ImGui_CreateDrawListSplitter(draw_list)
     r.ImGui_DrawListSplitter_Split(SPLITTER, 3)
     local drag_ang = DrawCenter(center)
+    if DONE then return end
     StyleFly(pie, center, drag_ang)
     r.ImGui_DrawListSplitter_Merge(SPLITTER)
 end
