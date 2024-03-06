@@ -1,10 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.1.37
+-- @version 0.1.38
 -- @changelog
---  Added shortcuts for menus or actions
---  Fixed serialization for data and extstate
+--  Small fix for pie freeze
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
@@ -409,7 +408,7 @@ local function StyleFly(pie, center, drag_angle)
     local prog = ANIMATION and max(0, pie.cv / pie.RADIUS) or 1
 
     local main_clicked = (r.ImGui_IsMouseDown(ctx, 0) and not pie.active and #PIE_LIST ~= 0)
-
+    
     if not pie.active then
         if #PIE_LIST ~= 0 then
             r.ImGui_PushFont(ctx, SYSTEM_FONT2)
@@ -417,7 +416,6 @@ local function StyleFly(pie, center, drag_angle)
             r.ImGui_DrawList_AddTextEx(draw_list, nil, FONT_LARGE * PROG, WX + center_x - (txt_w / 2) * PROG,
                 WY + center_y - (txt_h * 1.8) * PROG, LerpAlpha(0xFFFFFFFF, PROG), PIE_LIST[#PIE_LIST].name)
             r.ImGui_PopFont(ctx)
-
 
             r.ImGui_PushFont(ctx, main_clicked and ICON_FONT_CLICKED or ICON_FONT_LARGE)
             local txt_w, txt_h = r.ImGui_CalcTextSize(ctx, utf8.char(143))
@@ -600,6 +598,7 @@ local function CloseScript()
         START_TIME = r.time_precise()
         CLOSE = true
         FLAGS = FLAGS | r.ImGui_WindowFlags_NoInputs()
+        DONE = not ANIMATION and true
         if not ANIMATION then DONE = true end
     end
 end
@@ -641,7 +640,7 @@ local function Main()
         MX, MY = r.ImGui_PointConvertNative(ctx, r.GetMousePosition())
         --AccessibilityMode()
         local center = { x = r.ImGui_GetWindowWidth(ctx) / 2, y = r.ImGui_GetWindowHeight(ctx) / 2 }
-        DrawPie(PIE_MENU, center)
+        if not DONE then DrawPie(PIE_MENU, center) end
         r.ImGui_End(ctx)
     end
     if not DONE then
