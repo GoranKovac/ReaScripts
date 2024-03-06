@@ -1,5 +1,22 @@
 --@noindex
 --NoIndex: true
+local r = reaper
+function CheckDeps()
+    local deps = {}
+    if not r.ImGui_GetVersion then
+        deps[#deps + 1] = '"Dear Imgui"'
+    end
+    if not r.JS_VKeys_Intercept then
+        deps[#deps + 1] = '"js_ReaScriptAPI"'
+    end
+
+    if #deps ~= 0 then
+        r.ShowMessageBox("Need Additional Packages.\nPlease Install it in next window", "MISSING DEPENDENCIES", 0)
+        r.ReaPack_BrowsePackages(table.concat(deps, " OR "))
+        return true
+    end
+end
+
 function SaveToFile(data, fn)
     local file
     file = io.open(fn, "w")

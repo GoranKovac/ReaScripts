@@ -1,10 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.1.31
+-- @version 0.1.32
 -- @changelog
---  Recusively link SubMenus with Menu sources (SETUP)
---  Recusively link pie tables with menu sources (SETUP)
+--  Add ReaPack check for Imgui and JS_API
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
@@ -18,6 +17,8 @@ local script_path = getinfo.source:match [[^@?(.*[\/])[^\/]-$]];
 package.path = script_path .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 local pie_file = script_path .. "pie_file.txt"
 require('PieUtils')
+
+if CheckDeps() then return end
 local easingFunctions = require("easing")
 
 ANIMATION = true

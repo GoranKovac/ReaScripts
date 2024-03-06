@@ -7,6 +7,7 @@ local script_path = info.source:match [[^@?(.*[\/])[^\/]-$]]
 package.path = script_path .. "?.lua;"
 
 require('PieUtils')
+if CheckDeps() then return end
 local ctx = r.ImGui_CreateContext('PIE 3000 SETUP')
 
 local FONT_SIZE = 15
