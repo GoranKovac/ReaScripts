@@ -78,10 +78,10 @@ function serializeTable(val, name, skipnewlines, depth)
         tmp = tmp .. name .. " = "
     end
     if type(val) == "table" then
-        tmp = tmp .. "{"
+        tmp = tmp .. "{" .. (not skipnewlines and "\n" or "")
         for k, v in pairs(val) do
             if k ~= "selected" then
-                tmp = tmp .. serializeTable(v, k, skipnewlines, depth + 1) .. ","
+                tmp = tmp .. serializeTable(v, k, skipnewlines, depth + 1) .. "," .. (not skipnewlines and "\n" or "")
             end
         end
         tmp = tmp .. string.rep(" ", depth) .. "}"
@@ -97,7 +97,7 @@ function serializeTable(val, name, skipnewlines, depth)
     return tmp
 end
 
-function TableToString(table)
-    local str = serializeTable(table)
+function TableToString(table, new_line)
+    local str = serializeTable(table,nil, new_line)
     return str
 end

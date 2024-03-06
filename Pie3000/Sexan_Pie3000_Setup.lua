@@ -15,6 +15,15 @@ ANIMATION = true
 ACTIVATE_ON_CLOSE = true
 HOLD_TO_OPEN = true
 
+local KEYS = {""}
+for name in pairs(r) do
+    name = name:match('^ImGui_Key_(.+)$')
+    if name then KEYS[#KEYS+1] = name end
+end
+table.sort(KEYS)
+
+local keys_str = table.concat(KEYS, "\0") .. "\0"
+
 if r.HasExtState("PIE3000", "SETTINGS") then
     local stored = r.GetExtState("PIE3000", "SETTINGS")
     if stored ~= nil then
@@ -579,6 +588,9 @@ local function ButtonInfo(pie)
         pie[pie.selected].icon = icon
     end
     r.ImGui_SameLine(ctx)
+    r.ImGui_SetNextItemWidth(ctx,50)
+    rv_k, pie[pie.selected].key = r.ImGui_Combo( ctx, "Key", tonumber(pie[pie.selected].key), keys_str, 5 )
+    r.ImGui_SameLine(ctx)
     rv_i, pie[pie.selected].name = r.ImGui_InputTextWithHint(ctx, "##ButtonName", "Button name", pie[pie.selected].name)
     if pie[pie.selected].cmd then
         r.ImGui_BeginDisabled(ctx, true)
@@ -637,7 +649,7 @@ local function Tabs()
                     animation = ANIMATION,
                     hold_to_open = HOLD_TO_OPEN,
                     activate_on_close = ACTIVATE_ON_CLOSE
-                }    )
+                }, true    )
                 r.SetExtState("PIE3000", "SETTINGS", data, true)
                 WANT_SAVE = nil
             end

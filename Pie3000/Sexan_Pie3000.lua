@@ -1,10 +1,10 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.1.36
+-- @version 0.1.37
 -- @changelog
---  Added user settings
---  Toggle open, animation, activate on close
+--  Added shortcuts for menus or actions
+--  Fixed serialization for data and extstate
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
@@ -39,6 +39,13 @@ if r.HasExtState("PIE3000", "SETTINGS") then
 end
 
 local PIE_LIST = {}
+
+local KEYS = {}
+for name, func in pairs(r) do
+    name = name:match('^ImGui_Key_(.+)$')
+    if name then KEYS[#KEYS+1] = {name = name , func = func} end
+end
+table.sort(KEYS, function(a,b) return a.name < b.name end)
 
 local pi, max, min, floor, cos, sin, atan, ceil, abs = math.pi, math.max, math.min, math.floor, math.cos, math.sin,
     math.atan, math.ceil, math.abs
@@ -271,7 +278,7 @@ local function ExecuteAction(action, name)
     end
 end
 
-local function DrawFlyButton(pie, hovered, prog, center)
+local function DrawFlyButton(pie, hovered, prog, center, key)
     local xs, ys = r.ImGui_GetItemRectMin(ctx)
     local xe, ye = r.ImGui_GetItemRectMax(ctx)
     local w = xe - xs
@@ -295,6 +302,10 @@ local function DrawFlyButton(pie, hovered, prog, center)
 
     --local button_radius = hovered and 35 or 25
     local col = hovered and IncreaseDecreaseBrightness(color, 30) or color
+    local has_key = (pie.key and pie.key ~= 0)
+    -- if has_key and r.ImGui_IsKeyDown( ctx, KEYS[pie.key].func() ) then
+    --     hovered = true
+    -- end
 
     if hovered then
         if not pie.hover then
@@ -348,6 +359,19 @@ local function DrawFlyButton(pie, hovered, prog, center)
             r.ImGui_DrawList_AddCircleFilled(draw_list, button_pos.x, button_pos.y, menu_preview_radius * PROG,
                 LerpAlpha(menu_preview_color, PROG), 0)
         end
+    end
+
+    if has_key then
+        r.ImGui_DrawList_AddCircleFilled(draw_list, WX + key.kx, WY + key.ky, (button_radius - 12)* PROG,
+                LerpAlpha(menu_preview_color, PROG), 0)
+                r.ImGui_DrawList_AddCircle(draw_list,WX + key.kx, WY + key.ky, (button_radius - 13)* PROG,
+        LerpAlpha(0xffffff55, PROG), 128, 3)
+        r.ImGui_PushFont(ctx, SYSTEM_FONT)
+        local txt_w, txt_h = r.ImGui_CalcTextSize(ctx, KEYS[pie.key].name:upper())
+        r.ImGui_DrawList_AddTextEx(draw_list, nil, FONT_SIZE, WX + key.kx - txt_w / 2, WY + key.ky - txt_h / 2,
+        LerpAlpha(0xffffffff,PROG),
+            KEYS[pie.key].name:upper())
+        r.ImGui_PopFont(ctx)
     end
 
     r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 2)
@@ -417,16 +441,20 @@ local function StyleFly(pie, center, drag_angle)
     end
 
     for i = 1, #pie do
+        local has_key = pie[i].key and pie[i].key ~= 0
+
         local ang_min = (item_arc_span) * (i - (0.5)) + START_ANG
         local ang_max = (item_arc_span) * (i + (0.5)) + START_ANG
         local angle = item_arc_span * i
 
-        pie.hovered = AngleInRange(drag_angle, ang_min, ang_max)
-        pie.selected = (pie.hovered and pie.active)
+        pie.hovered = AngleInRange(drag_angle, ang_min, ang_max) or (has_key and r.ImGui_IsKeyDown( ctx, KEYS[pie[i].key].func() ))
+        pie.selected = (pie.hovered and pie.active) or (has_key and r.ImGui_IsKeyDown( ctx, KEYS[pie[i].key].func() ))
 
         local button_pos = {
             x = center_x + (RADIUS_MIN + 50) * cos(angle + START_ANG) - 15,
             y = center_y + (RADIUS_MIN + 50) * sin(angle + START_ANG) - 15,
+            kx = center_x + (RADIUS_MIN + 50 + (pie.selected and 62 or 43)+ (pie[i].menu and 5 or 0)) * cos(angle + START_ANG),
+            ky = center_y + (RADIUS_MIN + 50+ (pie.selected and 62 or 43)+ (pie[i].menu and 5 or 0)) * sin(angle + START_ANG),
         }
 
         -- local prev_x = (#PIE_LIST ~= 0 and not CLOSE ) and
@@ -447,10 +475,33 @@ local function StyleFly(pie, center, drag_angle)
             r.ImGui_DrawList_PathFillConvex(draw_list, ARC_COLOR)
         end
 
-        DrawFlyButton(pie[i], pie.selected, prog, center)
+        DrawFlyButton(pie[i], pie.selected, prog, center, button_pos)
 
         if pie.selected then
             ExecuteAction(pie[i].cmd, pie[i].name)
+        end
+
+        if pie[i].key and pie[i].key ~= 0 then
+            if r.ImGui_IsKeyReleased( ctx, KEYS[pie[i].key].func() ) then
+                if pie[i].cmd then
+                    r.Main_OnCommand(pie[i].cmd, 0)
+                elseif pie[i].menu then
+                    table.insert(PIE_LIST, {
+                        col = pie[i].col,
+                        icon = pie[i].icon,
+                        name = pie[i].name,
+                        pid = pie,
+                        prev_i = i,
+                        cx = button_pos.x,
+                        cy = button_pos.y,
+                    })
+                    SWAP_TIME = r.time_precise()
+                    SWITCH_PIE = pie[i]
+                    r.JS_Mouse_SetPosition(START_X, START_Y)
+                    break
+                end
+               -- r.ShowConsoleMsg(KEYS[pie[i].key].name .."\n")
+            end
         end
 
         if pie.selected and pie[i].menu and not CLOSE then
