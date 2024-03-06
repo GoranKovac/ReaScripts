@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.1.39
+-- @version 0.1.4
 -- @changelog
---  Kill on ESC
+--  fix crash when randomly trying to open/close script a million times a second
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
@@ -58,7 +58,7 @@ local function Release()
 end
 
 local SCRIPT_START_TIME = r.time_precise()
-local function KeyHeld() return r.JS_VKeys_GetState(SCRIPT_START_TIME - 2):byte(KEY) == 1 end
+local function KeyHeld() return r.JS_VKeys_GetState(SCRIPT_START_TIME - 1):byte(KEY) == 1 end
 
 local function GetMouseContext()
     local x, y = r.GetMousePosition()
@@ -166,6 +166,7 @@ local function EasingAnim(begin_val, end_val, cur_val, duration_in_sec, ease_fun
     end
     local time = max(r.time_precise() - call_time, 0.01) - (delay and delay or 0)
     if time <= 0 then return begin_val end
+    if not begin_val then return 0 end
     local change = end_val - begin_val
     if time >= duration_in_sec then
         DONE = (CLOSE and close) and true
@@ -625,7 +626,7 @@ end
 
 local function Main()
    -- r.ShowConsoleMsg(r.JS_VKeys_GetState(SCRIPT_START_TIME - 2):byte(KEY) .. "\n")
-    --if r.JS_Window_FindEx(nil, nil, "#32768", "") then return end -- context menu detected
+    if r.JS_Window_FindEx(nil, nil, "#32768", "") then DONE = true end -- context menu detected
     TrackShortcutKey()
     if SWITCH_PIE then
         PIE_MENU = SWITCH_PIE
