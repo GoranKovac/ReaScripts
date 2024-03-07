@@ -1,9 +1,10 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.1.45
+-- @version 0.1.46
 -- @changelog
---  Use SWS from Reapack
+--  Dont allow inserting menu on itself
+--  Dont allow inserting other menus if it already contains target menu (stackoverflow)
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua

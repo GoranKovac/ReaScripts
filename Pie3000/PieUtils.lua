@@ -84,7 +84,7 @@ function serializeTable(val, name, skipnewlines, depth)
     if type(val) == "table" then
         tmp = tmp .. "{" .. (not skipnewlines and "\n" or "")
         for k, v in pairs(val) do
-            if k ~= "selected" then
+            if k ~= "selected" and k ~= "guid_list" then
                 tmp = tmp .. serializeTable(v, k, skipnewlines, depth + 1) .. "," .. (not skipnewlines and "\n" or "")
             end
         end
@@ -102,6 +102,6 @@ function serializeTable(val, name, skipnewlines, depth)
 end
 
 function TableToString(table, new_line)
-    local str = serializeTable(table,nil, new_line)
+    local str = serializeTable(table, nil, new_line)
     return str
 end

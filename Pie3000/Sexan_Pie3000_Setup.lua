@@ -83,17 +83,36 @@ local PIES = ReadFromFile(pie_file) or {
     ["item"] = { RADIUS = RADIUS, name = "ITEM", guid = r.genGuid() }
 }
 
-local MENUS = ReadFromFile(menu_file) or {}
+MENUS = ReadFromFile(menu_file) or {}
 
 local function LinkMenus(tbl)
     for k, v in ipairs(tbl) do
+        tbl[k].guid_list = {}
         for i = 1, #v do
             if type(v[i]) == "table" then
                 local parent = InTbl(MENUS, v[i].guid)
                 if parent then
+                    table.insert(tbl[k].guid_list, v[i].guid)
                     v[i] = parent
                     LinkMenus(v[i])
                 end
+            end
+        end
+    end
+end
+
+
+local function HasMenus(tbl, val)
+    for k, v in ipairs(tbl) do
+        for i = 1, #v do
+            if type(v[i]) == "table" then
+                local parent = InTbl(MENUS, val)                
+                if parent then
+                    return "ERROR"
+                    --LinkMenus(v[i])
+                end
+                local has_val = HasMenus(v[i],val)
+                if has_val then return "ERROR" end
             end
         end
     end
@@ -205,9 +224,20 @@ local function DndAddTargetMenu()
         local menu_id = tonumber(payload)
         r.ImGui_EndDragDropTarget(ctx)
         if ret then
-            local insert_pos = #CUR_PIE ~= 0 and #CUR_PIE or 1
-            table.insert(CUR_PIE, insert_pos, MENUS[menu_id])
-            CUR_PIE.selected = insert_pos
+            if CUR_PIE ~= MENUS[menu_id] then
+                for i = 1, #MENUS[menu_id].guid_list do
+                    if MENUS[menu_id].guid_list[i] == CUR_PIE.guid then
+                        CROSS_MENU = true
+                    end
+                end 
+                if not CROSS_MENU then
+                    local insert_pos = #CUR_PIE ~= 0 and #CUR_PIE or 1
+                    table.insert(CUR_PIE, insert_pos, MENUS[menu_id])
+                    CUR_PIE.selected = insert_pos
+                end
+            else
+                SELF_INSERT = true
+            end
         end
     end
 end
@@ -242,6 +272,11 @@ local function ActionsTab()
                     for i = 1, #MENUS do
                         r.ImGui_PushID(ctx, i)
                         if r.ImGui_Selectable(ctx, MENUS[i].name, LAST_MENU_SEL == i, r.ImGui_SelectableFlags_AllowDoubleClick()) then
+                        end
+                        if CUR_PIE.guid == MENUS[i]. guid then
+                            local xs, ys = r.ImGui_GetItemRectMin(ctx)
+                            local xe, ye = r.ImGui_GetItemRectMax(ctx)
+                            r.ImGui_DrawList_AddRectFilled( draw_list, xs, ys, xe, ye, 0x22FF2255 )
                         end
                         if r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseDoubleClicked(ctx, 0) then
                             LAST_MENU_SEL = i
@@ -682,6 +717,27 @@ function MakePieFile()
     SaveToFile(menus, menu_file)
 end
 
+local function Popups()
+    if SELF_INSERT then
+        SELF_INSERT = nil
+        r.ImGui_OpenPopup(ctx, "SELF_INSERT")
+    end
+
+    if CROSS_MENU then
+        CROSS_MENU = nil
+        r.ImGui_OpenPopup(ctx, "CROSS_INSERT")
+    end
+    if r.ImGui_BeginPopup(ctx, "SELF_INSERT") then
+        r.ImGui_Text(ctx, "\n\t\tCANNOT INSERT MENU ON ITSELF\t\t\n\n")
+        r.ImGui_EndPopup(ctx)
+    end
+
+    if r.ImGui_BeginPopup(ctx, "CROSS_INSERT") then
+        r.ImGui_Text(ctx, "\n\t\t\t\tCANNOT INSERT MENU\n\t\tMENU ALREADY REFERENCES TARGET MENU\t\t\n\n")
+        r.ImGui_EndPopup(ctx)
+    end
+end
+
 local function Main()
     r.ImGui_SetNextWindowBgAlpha(ctx, 1)
     local visible, open = r.ImGui_Begin(ctx, 'Pie 3000 Setup', true, flags)
@@ -708,6 +764,7 @@ local function Main()
                 DEL = nil
             end
         end
+        Popups()
         r.ImGui_End(ctx)
     end
 
