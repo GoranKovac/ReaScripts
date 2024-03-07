@@ -101,18 +101,30 @@ local function LinkMenus(tbl)
     end
 end
 
+local function HasReference(tbl, guid, remove)
+    if not tbl.guid_list then return end
+    for i = #tbl.guid_list,1,-1 do
+        if tbl.guid_list[i] == guid then
+            if remove then
+                table.remove(tbl.guid_list,i)
+            else
+                return i
+            end
+        end
+    end 
+end
 
-local function HasMenus(tbl, val)
+local function ClearMenusAfterDelete(guid, tbl)
     for k, v in ipairs(tbl) do
-        for i = 1, #v do
+        for i = #v, 1, -1 do
+            HasReference(v[i], guid, true)
             if type(v[i]) == "table" then
-                local parent = InTbl(MENUS, val)                
+                local parent = v[i].guid == guid
                 if parent then
-                    return "ERROR"
-                    --LinkMenus(v[i])
+                    v.selected = nil
+                    table.remove(v,i)
                 end
-                local has_val = HasMenus(v[i],val)
-                if has_val then return "ERROR" end
+                ClearMenusAfterDelete(v[i], guid)
             end
         end
     end
@@ -225,14 +237,16 @@ local function DndAddTargetMenu()
         r.ImGui_EndDragDropTarget(ctx)
         if ret then
             if CUR_PIE ~= MENUS[menu_id] then
-                for i = 1, #MENUS[menu_id].guid_list do
-                    if MENUS[menu_id].guid_list[i] == CUR_PIE.guid then
-                        CROSS_MENU = true
-                    end
-                end 
+                CROSS_MENU = HasReference(MENUS[menu_id], CUR_PIE.guid)
+                -- for i = 1, #MENUS[menu_id].guid_list do
+                --     if MENUS[menu_id].guid_list[i] == CUR_PIE.guid then
+                --         CROSS_MENU = true
+                --     end
+                -- end 
                 if not CROSS_MENU then
                     local insert_pos = #CUR_PIE ~= 0 and #CUR_PIE or 1
                     table.insert(CUR_PIE, insert_pos, MENUS[menu_id])
+                    table.insert(CUR_PIE.guid_list, MENUS[menu_id].guid)
                     CUR_PIE.selected = insert_pos
                 end
             else
@@ -266,14 +280,14 @@ local function ActionsTab()
                 r.ImGui_SameLine(ctx)
                 if r.ImGui_Button(ctx, '+') then
                     MENUS[#MENUS + 1] = { guid = r.genGuid(), RADIUS = 150, icon = "", name = "MENU " .. #MENUS, col =
-                    def_color, menu = "is_menu" }
+                    def_color, menu = "is_menu", guid_list = {}}
                 end
                 if r.ImGui_BeginListBox(ctx, "##Menu List", 500, -1) then
                     for i = 1, #MENUS do
                         r.ImGui_PushID(ctx, i)
                         if r.ImGui_Selectable(ctx, MENUS[i].name, LAST_MENU_SEL == i, r.ImGui_SelectableFlags_AllowDoubleClick()) then
                         end
-                        if CUR_PIE.guid == MENUS[i]. guid then
+                        if CUR_PIE and CUR_PIE.guid == MENUS[i]. guid then
                             local xs, ys = r.ImGui_GetItemRectMin(ctx)
                             local xe, ye = r.ImGui_GetItemRectMax(ctx)
                             r.ImGui_DrawList_AddRectFilled( draw_list, xs, ys, xe, ye, 0x22FF2255 )
@@ -284,7 +298,7 @@ local function ActionsTab()
                             CUR_PIE = MENUS[i]
                         elseif r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseClicked(ctx, 0) then
                             if ALT then
-                                DEL = { MENUS, i }
+                                DEL = { MENUS, i, true }
                             else
                                 LAST_MENU_SEL = i
                             end
@@ -459,7 +473,7 @@ local function StyleFly(pie, center, drag_angle, active)
         r.ImGui_InvisibleButton(ctx, "##AAA", 45, 45)
         if r.ImGui_IsItemClicked(ctx, 0) then
             if ALT then
-                DEL = { pie, i }
+                DEL = { pie, i, nil, pie[i].menu }
             else
                 pie.selected = i
             end
@@ -759,6 +773,19 @@ local function Main()
             if DEL then
                 if DEL[1].selected and DEL[1].selected == DEL[2] then
                     DEL[1].selected = nil
+                end
+                -- is menu
+                if DEL[3] then
+                    --  DELETE MENU EVERYWHERE
+                    ClearMenusAfterDelete(DEL[1][DEL[2]].guid, MENUS)
+                    ClearMenusAfterDelete(DEL[1][DEL[2]].guid, PIES)
+                end
+
+                if DEL[4] then
+                    -- CLEAR REFERENCES ONLY
+                    HasReference(DEL[1], DEL[1][DEL[2]].guid, true)
+                    --ClearMenusAfterDelete(DEL[1][DEL[2]].guid, MENUS, true)
+                    --ClearMenusAfterDelete(DEL[1][DEL[2]].guid, PIES)
                 end
                 table.remove(DEL[1], DEL[2])
                 DEL = nil

@@ -1,10 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.1.46
+-- @version 0.1.47
 -- @changelog
---  Dont allow inserting menu on itself
---  Dont allow inserting other menus if it already contains target menu (stackoverflow)
+--  Properly handle menu references when adding, deleting menus
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
