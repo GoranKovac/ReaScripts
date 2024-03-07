@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.1.50
+-- @version 0.1.51
 -- @changelog
---  Added empty contexts
+--  Create empty context for now (not to break files)
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua

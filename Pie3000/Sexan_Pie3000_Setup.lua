@@ -695,6 +695,9 @@ local function Tabs()
             r.ImGui_EndTabItem(ctx)
         end
         if r.ImGui_BeginTabItem(ctx, "ARRANGE EMPTY") then
+            if not PIES["arrangeempty"] then 
+                PIES["arrangeempty"] = { RADIUS = RADIUS, name = "ARRANGE EMPTY", guid = r.genGuid() }
+            end
             CUR_TAB = "arrangeempty"
             r.ImGui_EndTabItem(ctx)
         end
@@ -703,6 +706,9 @@ local function Tabs()
             r.ImGui_EndTabItem(ctx)
         end
         if r.ImGui_BeginTabItem(ctx, "TCP EMPTY") then
+            if not PIES["tcpempty"] then
+                PIES["tcpempty"] = { RADIUS = RADIUS, name = "TCP EMPTY", guid = r.genGuid() }
+            end    
             CUR_TAB = "tcpempty"
             r.ImGui_EndTabItem(ctx)
         end
@@ -711,10 +717,16 @@ local function Tabs()
             r.ImGui_EndTabItem(ctx)
         end
         if r.ImGui_BeginTabItem(ctx, "MCP EMPTY") then
+            if not PIES["mcpempty"] then
+                PIES["mcpempty"] = { RADIUS = RADIUS, name = "MCP EMPTY", guid = r.genGuid() }
+            end
             CUR_TAB = "mcpempty"
             r.ImGui_EndTabItem(ctx)
         end
         if r.ImGui_BeginTabItem(ctx, "ENV CP") then
+            if not PIES["envcp"] then
+                PIES["envcp"] = { RADIUS = RADIUS, name = "ENV CP", guid = r.genGuid() }
+            end
             CUR_TAB = "envcp"
             r.ImGui_EndTabItem(ctx)
         end
@@ -727,6 +739,10 @@ local function Tabs()
             r.ImGui_EndTabItem(ctx)
         end
         if r.ImGui_BeginTabItem(ctx, "TRANSPORT") then
+            if not PIES["trans"] then
+                PIES["trans"] = { RADIUS = RADIUS, name = "TRANSPORT", guid = r.genGuid() }
+            end
+
             CUR_TAB = "trans"
             r.ImGui_EndTabItem(ctx)
         end
