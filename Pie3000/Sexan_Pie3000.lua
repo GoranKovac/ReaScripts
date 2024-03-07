@@ -1,9 +1,10 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.1.48
+-- @version 0.1.49
 -- @changelog
---  fixed little upsi when adding to main menus
+--  Disable drag and drop menus that have reference inside current menu
+--  Read ThemeBG color to automatically adjust pie bg color
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
@@ -28,6 +29,24 @@ local easingFunctions = require("easing")
 ANIMATION = true
 ACTIVATE_ON_CLOSE = true
 HOLD_TO_OPEN = true
+
+local def_color = 0x43465cff 
+
+local function CalculateThemeColor(org_color)
+    local alpha = org_color & 0xFF
+    local blue = (org_color >> 8) & 0xFF
+    local green = (org_color >> 16) & 0xFF
+    local red = (org_color >> 24) & 0xFF
+    
+    local luminance = (0.299 * red + 0.587 * green + 0.114 * blue) / 255
+    return luminance > 0.5 and 0x434455ff or 0x959dceff
+end
+
+local function GetThemeBG()
+    return r.GetThemeColor("col_tr1_bg", 0)
+end
+
+def_color = CalculateThemeColor(GetThemeBG())
 
 if r.HasExtState("PIE3000", "SETTINGS") then
     local stored = r.GetExtState("PIE3000", "SETTINGS")
@@ -292,7 +311,7 @@ local function DrawFlyButton(pie, hovered, prog, center, key)
     local button_center = { x = xs + (w / 2), y = ys + (h / 2) }
 
     local name, color = pie.name, pie.col
-    color = color == 255 and 0x25283eff or color
+    color = color == 0x43465cff and def_color or color
     local icon = #pie.icon ~= 0 and pie.icon or nil
 
     local icon_col = LerpAlpha(0xffffffff, prog)
@@ -535,9 +554,10 @@ local function DrawCenter(center)
     local drag_dist = (drag_delta[1] ^ 2) + (drag_delta[2] ^ 2)
     local drag_angle = (atan(drag_delta[2], drag_delta[1])) % (pi * 2)
 
-    local main_color = #PIE_LIST ~= 0 and
-        IncreaseDecreaseBrightness(PIE_LIST[#PIE_LIST].col == 255 and 0x25283eFF or PIE_LIST[#PIE_LIST].col, 20) or
-        0x25283eFF
+    local main_color = def_color
+    if #PIE_LIST ~= 0 then
+        main_color = PIE_LIST[#PIE_LIST].col == 0x43465cff and def_color or PIE_LIST[#PIE_LIST].col
+    end
 
     PIE_MENU.cv = ANIMATION and
         EasingAnim(0, PIE_MENU.RADIUS, PIE_MENU.cv, 0.3, easingFunctions.inOutCubic,

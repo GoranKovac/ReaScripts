@@ -72,7 +72,7 @@ local pi, max, floor, cos, sin, atan, ceil, abs = math.pi, math.max, math.floor,
 
 local START_ANG = (3 * pi) / 2
 local RADIUS = 150
-local def_color = 0x25283eFF
+local def_color = 0x43465cff --0x25283eFF
 local ARC_COLOR = 0x11AAFF88
 
 local PIES = ReadFromFile(pie_file) or {
@@ -150,6 +150,23 @@ local function LinkPieMenusWithSrcMenus(tbl)
 end
 
 LinkPieMenusWithSrcMenus(PIES)
+
+local function CalculateThemeColor(org_color)
+    local alpha = org_color & 0xFF
+    local blue = (org_color >> 8) & 0xFF
+    local green = (org_color >> 16) & 0xFF
+    local red = (org_color >> 24) & 0xFF
+    
+    local luminance = (0.299 * red + 0.587 * green + 0.114 * blue) / 255
+    return luminance > 0.5 and 0x43465cff or 0x959dceff
+end
+
+local function GetThemeBG()
+    return r.GetThemeColor("col_tr1_bg", 0)
+    --col2 = r.GetThemeColor("col_tr2_bg", 0)
+end
+
+def_color = CalculateThemeColor(GetThemeBG())
 
 local function IterateActions(sectionID)
     local i = 0
@@ -286,13 +303,19 @@ local function ActionsTab()
                 end
                 if r.ImGui_BeginListBox(ctx, "##Menu List", 500, -1) then
                     for i = 1, #MENUS do
+                        local CROSS_MENU = HasReference(MENUS[i], CUR_PIE.guid)
                         r.ImGui_PushID(ctx, i)
-                        if r.ImGui_Selectable(ctx, MENUS[i].name, LAST_MENU_SEL == i, r.ImGui_SelectableFlags_AllowDoubleClick()) then
+                        if r.ImGui_Selectable(ctx, MENUS[i].name .. (CROSS_MENU and " - CANNOT ADD HAS REFERENCE" or ""), LAST_MENU_SEL == i, r.ImGui_SelectableFlags_AllowDoubleClick()) then
                         end
+                        local xs, ys = r.ImGui_GetItemRectMin(ctx)
+                        local xe, ye = r.ImGui_GetItemRectMax(ctx)
+                        -- SELECTED
                         if CUR_PIE and CUR_PIE.guid == MENUS[i]. guid then
-                            local xs, ys = r.ImGui_GetItemRectMin(ctx)
-                            local xe, ye = r.ImGui_GetItemRectMax(ctx)
                             r.ImGui_DrawList_AddRectFilled( draw_list, xs, ys, xe, ye, 0x22FF2255 )
+                        end
+                        -- ALREADY HAS REFERENCE                      
+                        if CROSS_MENU then
+                            r.ImGui_DrawList_AddRectFilled( draw_list, xs, ys, xe, ye, 0xFF222255 )
                         end
                         if r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseDoubleClicked(ctx, 0) then
                             LAST_MENU_SEL = i
@@ -305,7 +328,9 @@ local function ActionsTab()
                                 LAST_MENU_SEL = i
                             end
                         end
-                        DndSourceMenu(MENUS[i], i)
+                        if not CROSS_MENU then
+                            DndSourceMenu(MENUS[i], i)
+                        end
                         r.ImGui_PopID(ctx)
                     end
                     r.ImGui_EndListBox(ctx)
@@ -398,7 +423,7 @@ local function DrawFlyButton(pie, selected, hovered, center)
     local state_spinner_col = 0xff0000ff
 
     local col = active and IncreaseDecreaseBrightness(color, 30) or color
-    col = (hovered and ALT) and 0xff2222FF or col
+    col = (hovered and ALT) and def_color or col
 
 
     local button_radius = active and 35 or 25
