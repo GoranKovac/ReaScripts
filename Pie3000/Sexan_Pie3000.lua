@@ -1,9 +1,10 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.1.42
+-- @version 0.1.43
 -- @changelog
---  Terminate script immediatly if button is tapped (not held over 150ms)
+--  Allways allow keyboard input via SNM_SetIntConfigVar
+--  Removed some JS_API window checks
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
@@ -54,7 +55,7 @@ local START_ANG = (3 * pi) / 2
 local function Release()
     if not KEY then return end
     r.JS_VKeys_Intercept(KEY, -1)
-    -- r.SNM_SetIntConfigVar("alwaysallowkb", CUR_PREF)
+    r.SNM_SetIntConfigVar("alwaysallowkb", CUR_PREF)
 end
 
 local SCRIPT_START_TIME = r.time_precise()
@@ -128,7 +129,7 @@ local function Init()
     end
     if not KEY then return "ERROR" end
     --end
-    -- r.SNM_SetIntConfigVar("alwaysallowkb", 1)
+    r.SNM_SetIntConfigVar("alwaysallowkb", 1)
     GUI_Init()
 end
 
@@ -604,7 +605,7 @@ local function CloseScript()
         FLAGS = FLAGS | r.ImGui_WindowFlags_NoInputs()
         DONE = not ANIMATION and true
         -- TERMINATE IMMEDIATLY IF BUTON WAS HELD UNDER 150MS (TAPPED)
-        if START_TIME - SCRIPT_START_TIME < 0.2 then
+        if HOLD_TO_OPEN and (START_TIME - SCRIPT_START_TIME) < 0.2 then
             TERMINATE = true
         end
        -- if not ANIMATION then DONE = true end
@@ -632,11 +633,10 @@ local function TrackShortcutKey()
 end
 
 local function Main()
-   -- r.ShowConsoleMsg(r.JS_VKeys_GetState(SCRIPT_START_TIME - 2):byte(KEY) .. "\n")
-    if r.JS_Window_FindEx(nil, nil, "#32768", "") then return end -- context menu detected
+   
     TrackShortcutKey()
-    if TERMINATE then return end
-    if SWITCH_PIE then
+    if TERMINATE then Release() return end
+    if SWITCH_PIE and not DONE then
         PIE_MENU = SWITCH_PIE
         r.JS_Mouse_SetPosition(START_X, START_Y)
         START_TIME = r.time_precise()
@@ -644,7 +644,6 @@ local function Main()
         SWAP = nil
     end
 
-    r.ImGui_SetNextWindowFocus( ctx )
     r.ImGui_SetNextWindowSize(ctx, 5000, 5000)
     if r.ImGui_Begin(ctx, 'PIE 3000', false, FLAGS) then
         CheckKeys()

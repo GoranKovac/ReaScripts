@@ -15,6 +15,10 @@ function CheckDeps()
         r.ReaPack_BrowsePackages(table.concat(deps, " OR "))
         return true
     end
+
+    if not r.SNM_SetIntConfigVar then
+        r.ShowMessageBox("SWS Extenstion is needed please download on 'https://www.sws-extension.org/'", "MISSING DEPENDENCIES", 0)
+    end
 end
 
 function SaveToFile(data, fn)
