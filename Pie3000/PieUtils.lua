@@ -9,6 +9,9 @@ function CheckDeps()
     if not r.JS_VKeys_Intercept then
         deps[#deps + 1] = '"js_ReaScriptAPI"'
     end
+    if not r.SNM_SetIntConfigVar then
+        deps[#deps + 1] = '"SWS/S&M"'
+    end
 
     if #deps ~= 0 then
         r.ShowMessageBox("Need Additional Packages.\nPlease Install it in next window", "MISSING DEPENDENCIES", 0)
@@ -16,9 +19,6 @@ function CheckDeps()
         return true
     end
 
-    if not r.SNM_SetIntConfigVar then
-        r.ShowMessageBox("SWS Extenstion is needed please download on 'https://www.sws-extension.org/'", "MISSING DEPENDENCIES", 0)
-    end
 end
 
 function SaveToFile(data, fn)

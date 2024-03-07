@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.1.44
+-- @version 0.1.45
 -- @changelog
---  Use monitor resolution for ImGui size instead of fixed numbers
+--  Use SWS from Reapack
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
