@@ -59,10 +59,15 @@ local pie_file = script_path .. "pie_file.txt"
 local menu_file = script_path .. "menu_file.txt"
 local SELECTED = {
     ["arrange"] = {},
+    ["arrangeempty"] = {},
     ["tcp"] = {},
+    ["tcpempty"] = {},
     ["mcp"] = {},
+    ["mcpempty"] = {},
     ["envelope"] = {},
-    ["item"] = {}
+    ["envcp"] = {},
+    ["item"] = {},
+    ["trans"] = {},
 }
 
 local draw_list = r.ImGui_GetWindowDrawList(ctx)
@@ -77,10 +82,15 @@ local ARC_COLOR = 0x11AAFF88
 
 local PIES = ReadFromFile(pie_file) or {
     ["arrange"] = { RADIUS = RADIUS, name = "ARRANGE", guid = r.genGuid() },
+    ["arrangeempty"] = { RADIUS = RADIUS, name = "ARRANGE EMPTY", guid = r.genGuid() },
     ["tcp"] = { RADIUS = RADIUS, name = "TCP", guid = r.genGuid() },
+    ["tcpempty"] = { RADIUS = RADIUS, name = "TCP EMPTY", guid = r.genGuid() },
     ["mcp"] = { RADIUS = RADIUS, name = "MCP", guid = r.genGuid() },
+    ["mcpempty"] = { RADIUS = RADIUS, name = "MCP EMPTY", guid = r.genGuid() },
     ["envelope"] = { RADIUS = RADIUS, name = "ENVELOPE", guid = r.genGuid() },
-    ["item"] = { RADIUS = RADIUS, name = "ITEM", guid = r.genGuid() }
+    ["envcp"] = { RADIUS = RADIUS, name = "ENV CP", guid = r.genGuid() },
+    ["item"] = { RADIUS = RADIUS, name = "ITEM", guid = r.genGuid() },
+    ["trans"] = { RADIUS = RADIUS, name = "TRANSPORT", guid = r.genGuid() },
 }
 
 MENUS = ReadFromFile(menu_file) or {}
@@ -303,7 +313,7 @@ local function ActionsTab()
                 end
                 if r.ImGui_BeginListBox(ctx, "##Menu List", 500, -1) then
                     for i = 1, #MENUS do
-                        local CROSS_MENU = HasReference(MENUS[i], CUR_PIE.guid)
+                        local CROSS_MENU = CUR_PIE and HasReference(MENUS[i], CUR_PIE.guid) or nil
                         r.ImGui_PushID(ctx, i)
                         if r.ImGui_Selectable(ctx, MENUS[i].name .. (CROSS_MENU and " - CANNOT ADD HAS REFERENCE" or ""), LAST_MENU_SEL == i, r.ImGui_SelectableFlags_AllowDoubleClick()) then
                         end
@@ -684,12 +694,28 @@ local function Tabs()
             CUR_TAB = "arrange"
             r.ImGui_EndTabItem(ctx)
         end
+        if r.ImGui_BeginTabItem(ctx, "ARRANGE EMPTY") then
+            CUR_TAB = "arrangeempty"
+            r.ImGui_EndTabItem(ctx)
+        end
         if r.ImGui_BeginTabItem(ctx, "TCP") then
             CUR_TAB = "tcp"
             r.ImGui_EndTabItem(ctx)
         end
+        if r.ImGui_BeginTabItem(ctx, "TCP EMPTY") then
+            CUR_TAB = "tcpempty"
+            r.ImGui_EndTabItem(ctx)
+        end
         if r.ImGui_BeginTabItem(ctx, "MCP") then
             CUR_TAB = "mcp"
+            r.ImGui_EndTabItem(ctx)
+        end
+        if r.ImGui_BeginTabItem(ctx, "MCP EMPTY") then
+            CUR_TAB = "mcpempty"
+            r.ImGui_EndTabItem(ctx)
+        end
+        if r.ImGui_BeginTabItem(ctx, "ENV CP") then
+            CUR_TAB = "envcp"
             r.ImGui_EndTabItem(ctx)
         end
         if r.ImGui_BeginTabItem(ctx, "ENVELOPE") then
@@ -698,6 +724,10 @@ local function Tabs()
         end
         if r.ImGui_BeginTabItem(ctx, "ITEM") then
             CUR_TAB = "item"
+            r.ImGui_EndTabItem(ctx)
+        end
+        if r.ImGui_BeginTabItem(ctx, "TRANSPORT") then
+            CUR_TAB = "trans"
             r.ImGui_EndTabItem(ctx)
         end
         if r.ImGui_BeginTabItem(ctx, "CUSTOM MENU", true, TAB_MENU and r.ImGui_TabItemFlags_SetSelected()) then

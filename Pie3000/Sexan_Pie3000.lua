@@ -1,10 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.1.49
+-- @version 0.1.50
 -- @changelog
---  Disable drag and drop menus that have reference inside current menu
---  Read ThemeBG color to automatically adjust pie bg color
+--  Added empty contexts
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
@@ -88,12 +87,27 @@ end
 local function GetMouseContext()
     local x, y = r.GetMousePosition()
     local track, info = r.GetThingFromPoint(x, y)
-    if #info == 0 then return end
-    --! TRANSPORT
-    if info:match("trans") then return end
-    local item, take = r.GetItemFromPoint(x, y, true)
-    if info:match("envelope") or info:match("envcp") then info = "envelope" end
+    local cur_hwnd =   r.JS_Window_FromPoint( x, y )
+    local class_name = r.JS_Window_GetClassName( cur_hwnd )
+    if #info == 0 then --return end
+        if not class_name then return end
+        if class_name == "REAPERTCPDisplay" then
+            info = "tcpempty"
+        elseif class_name == "REAPERMCPDisplay" then
+            info = "mcpempty"
+        elseif class_name == "REAPERTrackListWindow" then
+            info = "arrangeempty"
+        end
+    end
+    --if info:match("trans") then return end
+    if info:match("envelope") then
+        info = "envelope"
+    elseif info:match("envcp") then
+        info = "envcp"
+    end
+    
     info = info:match('^([^%.]+)')
+    local item, take = r.GetItemFromPoint(x, y, true)
     if item then info = "item" end
 
     return info
