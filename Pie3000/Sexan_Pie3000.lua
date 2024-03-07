@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.1.47
+-- @version 0.1.48
 -- @changelog
---  Properly handle menu references when adding, deleting menus
+--  fixed little upsi when adding to main menus
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua

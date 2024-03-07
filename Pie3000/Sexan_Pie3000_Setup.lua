@@ -246,7 +246,9 @@ local function DndAddTargetMenu()
                 if not CROSS_MENU then
                     local insert_pos = #CUR_PIE ~= 0 and #CUR_PIE or 1
                     table.insert(CUR_PIE, insert_pos, MENUS[menu_id])
-                    table.insert(CUR_PIE.guid_list, MENUS[menu_id].guid)
+                    if CUR_PIE.guid_list then
+                        table.insert(CUR_PIE.guid_list, MENUS[menu_id].guid)
+                    end
                     CUR_PIE.selected = insert_pos
                 end
             else
