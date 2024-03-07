@@ -1,10 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.1.43
+-- @version 0.1.44
 -- @changelog
---  Allways allow keyboard input via SNM_SetIntConfigVar
---  Removed some JS_API window checks
+--  Use monitor resolution for ImGui size instead of fixed numbers
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
@@ -12,6 +11,10 @@
 --   fontello1.ttf
 
 local r = reaper
+local osname = r.GetOS()
+if osname:find("OSX") or osname:find("macOS") then
+  apple = true
+end
 
 local getinfo = debug.getinfo(1, 'S');
 local script_path = getinfo.source:match [[^@?(.*[\/])[^\/]-$]];
@@ -79,7 +82,6 @@ end
 local FLAGS =
     r.ImGui_WindowFlags_NoBackground() |
     r.ImGui_WindowFlags_NoDecoration() |
-    r.ImGui_WindowFlags_AlwaysAutoResize() |
     r.ImGui_WindowFlags_NoMove()
 
 local FONT_SIZE = 15
@@ -104,7 +106,7 @@ local function GUI_Init()
     r.ImGui_Attach(ctx, ICON_FONT_LARGE)
     r.ImGui_Attach(ctx, ICON_FONT_CLICKED)
     START_X, START_Y = r.ImGui_PointConvertNative(ctx, r.GetMousePosition())
-    r.ImGui_SetNextWindowPos(ctx, START_X - 2500, START_Y - 2500)
+    r.ImGui_SetNextWindowPos(ctx, 0,0)
 end
 
 local function Init()
@@ -632,8 +634,14 @@ local function TrackShortcutKey()
     end
 end
 
+local screen_left, screen_top, screen_right, screen_bottom = r.JS_Window_MonitorFromRect(0, 0, 0, 0, false)
+
+if apple then
+    screen_bottom, screen_top = screen_top, screen_bottom
+end
+
+r.ImGui_SetNextWindowSizeConstraints( ctx, screen_right, screen_bottom, screen_right, screen_bottom )
 local function Main()
-   
     TrackShortcutKey()
     if TERMINATE then Release() return end
     if SWITCH_PIE and not DONE then
@@ -643,15 +651,16 @@ local function Main()
         SWITCH_PIE = nil
         SWAP = nil
     end
-
-    r.ImGui_SetNextWindowSize(ctx, 5000, 5000)
+    
+    --r.ImGui_SetNextWindowSize(ctx, screen_right, screen_bottom)
     if r.ImGui_Begin(ctx, 'PIE 3000', false, FLAGS) then
         CheckKeys()
         if ESC then DONE = true end
-        WX, WY = r.ImGui_GetWindowPos(ctx)
+        WX, WY = 0,0--,r.ImGui_GetWindowPos(ctx)
         MX, MY = r.ImGui_PointConvertNative(ctx, r.GetMousePosition())
         --AccessibilityMode()
-        local center = { x = r.ImGui_GetWindowWidth(ctx) / 2, y = r.ImGui_GetWindowHeight(ctx) / 2 }
+       -- local center = { x = r.ImGui_GetWindowWidth(ctx) / 2, y = r.ImGui_GetWindowHeight(ctx) / 2 }
+        local center = { x = START_X, y = START_Y }
         if not DONE then DrawPie(PIE_MENU, center) end
         r.ImGui_End(ctx)
     end
