@@ -795,7 +795,7 @@ end
 local function PngDisplay(tbl, png, button_size)
     local rv
     r.ImGui_PushID(ctx, "PNG")
-    if #png ~= 0 then
+    if png and #png ~= 0 then
         if not r.ImGui_ValidatePtr(btn_prev_image, 'ImGui_Image*') then
             btn_prev_image = r.ImGui_CreateImage(png)
         end
