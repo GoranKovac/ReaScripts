@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.1.53
+-- @version 0.1.54
 -- @changelog
---  fix Circle aliasing
+--  fick click color radius, my bad
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
@@ -378,7 +378,7 @@ local function DrawFlyButton(pie, hovered, prog, center, key)
         icon_font = ICON_FONT_CLICKED
         icon_font_size = ICON_FONT_CLICKED_SIZE
         r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 2)
-        r.ImGui_DrawList_AddCircle(draw_list, button_center.x, button_center.y, (button_radius + 2), 0xffffff77, 16, 128)
+        r.ImGui_DrawList_AddCircle(draw_list, button_center.x, button_center.y, (button_radius + 2), 0xffffff77, 128, 20)
         col = IncreaseDecreaseBrightness(col, 20)
     end
 
