@@ -832,7 +832,7 @@ local function ButtonInfo(pie)
 
     if r.ImGui_BeginChild(ctx, "##buttons#", nil, 65) then
         r.ImGui_SetNextItemWidth(ctx, 200)
-        RV_R, pie.RADIUS = r.ImGui_SliderInt(ctx, "RADIUS", pie.RADIUS, 100, 270)
+        RV_R, pie.RADIUS = r.ImGui_SliderInt(ctx, "RADIUS", pie.RADIUS, 50, 270)
         RADIUS_ACTIVE = r.ImGui_IsItemActive(ctx)
 
         if CUR_PIE.menu then

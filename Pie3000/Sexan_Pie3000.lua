@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.1.562
+-- @version 0.1.563
 -- @changelog
---  osx path
+--  Added smaller radius
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
