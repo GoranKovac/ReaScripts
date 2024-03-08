@@ -11,7 +11,7 @@ if CheckDeps() then return end
 local ctx = r.ImGui_CreateContext('PIE 3000 SETUP')
 r.ImGui_SetConfigVar(ctx, r.ImGui_ConfigVar_WindowsMoveFromTitleBarOnly(), 1)
 
-local png_path = r.GetResourcePath() .. "\\Data\\toolbar_icons\\150\\"
+local png_path = r.GetResourcePath() .. "/Data/toolbar_icons/150/"
 
 local ANIMATION = true
 local ACTIVATE_ON_CLOSE = true
