@@ -11,14 +11,42 @@ if CheckDeps() then return end
 local ctx = r.ImGui_CreateContext('PIE 3000 SETUP')
 r.ImGui_SetConfigVar(ctx, r.ImGui_ConfigVar_WindowsMoveFromTitleBarOnly(), 1)
 
-ANIMATION = true
-ACTIVATE_ON_CLOSE = true
-HOLD_TO_OPEN = true
+local ANIMATION = true
+local ACTIVATE_ON_CLOSE = true
+local HOLD_TO_OPEN = true
 
-local KEYS = {""}
+local def_color_dark = 0x414141ff --0x353535ff
+local def_out_ring = 0x2a2a2aff
+local def_menu_prev = 0x212121ff
+local ARC_COLOR = 0x11AAFF88
+local def_color = def_color_dark
+
+local function CalculateThemeColor(org_color)
+    local alpha = org_color & 0xFF
+    local blue = (org_color >> 8) & 0xFF
+    local green = (org_color >> 16) & 0xFF
+    local red = (org_color >> 24) & 0xFF
+
+    local luminance = (0.299 * red + 0.587 * green + 0.114 * blue) / 255
+    return luminance < 0.5 and true or false
+end
+
+local function GetThemeBG()
+    return r.GetThemeColor("col_tr1_bg", 0)
+end
+
+local light_theme = CalculateThemeColor(GetThemeBG())
+if light_theme then
+    local def_light = def_color_dark --0x9ca2a2ff
+    def_out_ring = 0x818989ff
+    def_menu_prev = def_light
+    def_color = def_light
+end
+
+local KEYS = { "" }
 for name in pairs(r) do
     name = name:match('^ImGui_Key_(.+)$')
-    if name then KEYS[#KEYS+1] = name end
+    if name then KEYS[#KEYS + 1] = name end
 end
 table.sort(KEYS)
 
@@ -32,6 +60,11 @@ if r.HasExtState("PIE3000", "SETTINGS") then
             ANIMATION = save_data.animation
             ACTIVATE_ON_CLOSE = save_data.activate_on_close
             HOLD_TO_OPEN = save_data.hold_to_open
+            --ADJUST_TO_THEME = save_data.adjust_to_theme
+            --def_color_dark = save_data.def_color_dark
+            --def_color_light = save_data.def_color_light
+            --ARC_COLOR = save_data.arc_color
+            --DEFAULT_COLOR = save_data.default_color
         end
     end
 end
@@ -77,8 +110,6 @@ local pi, max, floor, cos, sin, atan, ceil, abs = math.pi, math.max, math.floor,
 
 local START_ANG = (3 * pi) / 2
 local RADIUS = 150
-local def_color = 0x43465cff --0x25283eFF
-local ARC_COLOR = 0x11AAFF88
 
 local PIES = ReadFromFile(pie_file) or {
     ["arrange"] = { RADIUS = RADIUS, name = "ARRANGE", guid = r.genGuid() },
@@ -113,15 +144,15 @@ end
 
 local function HasReference(tbl, guid, remove)
     if not tbl.guid_list then return end
-    for i = #tbl.guid_list,1,-1 do
+    for i = #tbl.guid_list, 1, -1 do
         if tbl.guid_list[i] == guid then
             if remove then
-                table.remove(tbl.guid_list,i)
+                table.remove(tbl.guid_list, i)
             else
                 return i
             end
         end
-    end 
+    end
 end
 
 local function ClearMenusAfterDelete(guid, tbl)
@@ -132,7 +163,7 @@ local function ClearMenusAfterDelete(guid, tbl)
                 local parent = v[i].guid == guid
                 if parent then
                     v.selected = nil
-                    table.remove(v,i)
+                    table.remove(v, i)
                 end
                 ClearMenusAfterDelete(v[i], guid)
             end
@@ -161,22 +192,21 @@ end
 
 LinkPieMenusWithSrcMenus(PIES)
 
-local function CalculateThemeColor(org_color)
-    local alpha = org_color & 0xFF
-    local blue = (org_color >> 8) & 0xFF
-    local green = (org_color >> 16) & 0xFF
-    local red = (org_color >> 24) & 0xFF
-    
-    local luminance = (0.299 * red + 0.587 * green + 0.114 * blue) / 255
-    return luminance > 0.5 and 0x43465cff or 0x959dceff
-end
+-- local function CalculateThemeColor(org_color)
+--     local alpha = org_color & 0xFF
+--     local blue = (org_color >> 8) & 0xFF
+--     local green = (org_color >> 16) & 0xFF
+--     local red = (org_color >> 24) & 0xFF
 
-local function GetThemeBG()
-    return r.GetThemeColor("col_tr1_bg", 0)
-    --col2 = r.GetThemeColor("col_tr2_bg", 0)
-end
+--     local luminance = (0.299 * red + 0.587 * green + 0.114 * blue) / 255
+--     return luminance > 0.5 and def_color_dark or def_color_light
+-- end
 
-def_color = CalculateThemeColor(GetThemeBG())
+-- local function GetThemeBG()
+--     return r.GetThemeColor("col_tr1_bg", 0)
+-- end
+
+--local def_color = ADJUST_TO_THEME and CalculateThemeColor(GetThemeBG()) or DEFAULT_COLOR
 
 local function IterateActions(sectionID)
     local i = 0
@@ -251,7 +281,7 @@ local function DndAddTargetAction()
         r.ImGui_EndDragDropTarget(ctx)
         if ret then
             local insert_pos = #CUR_PIE ~= 0 and #CUR_PIE or 1
-            table.insert(CUR_PIE, insert_pos, { icon = "", name = "EMPTY", cmd = cmd, cmd_name = name, col = def_color })
+            table.insert(CUR_PIE, insert_pos, { icon = "", name = "EMPTY", cmd = cmd, cmd_name = name, col = 0xff })
             CUR_PIE.selected = insert_pos
         end
     end
@@ -269,7 +299,7 @@ local function DndAddTargetMenu()
                 --     if MENUS[menu_id].guid_list[i] == CUR_PIE.guid then
                 --         CROSS_MENU = true
                 --     end
-                -- end 
+                -- end
                 if not CROSS_MENU then
                     local insert_pos = #CUR_PIE ~= 0 and #CUR_PIE or 1
                     table.insert(CUR_PIE, insert_pos, MENUS[menu_id])
@@ -308,8 +338,16 @@ local function ActionsTab()
                 FilterBox()
                 r.ImGui_SameLine(ctx)
                 if r.ImGui_Button(ctx, '+') then
-                    MENUS[#MENUS + 1] = { guid = r.genGuid(), RADIUS = 150, icon = "", name = "MENU " .. #MENUS, col =
-                    def_color, menu = "is_menu", guid_list = {}}
+                    MENUS[#MENUS + 1] = {
+                        guid = r.genGuid(),
+                        RADIUS = 150,
+                        icon = "",
+                        name = "MENU " .. #MENUS,
+                        col = 0xff,
+                        menu =
+                        "is_menu",
+                        guid_list = {}
+                    }
                 end
                 if r.ImGui_BeginListBox(ctx, "##Menu List", 500, -1) then
                     for i = 1, #MENUS do
@@ -320,12 +358,12 @@ local function ActionsTab()
                         local xs, ys = r.ImGui_GetItemRectMin(ctx)
                         local xe, ye = r.ImGui_GetItemRectMax(ctx)
                         -- SELECTED
-                        if CUR_PIE and CUR_PIE.guid == MENUS[i]. guid then
-                            r.ImGui_DrawList_AddRectFilled( draw_list, xs, ys, xe, ye, 0x22FF2255 )
+                        if CUR_PIE and CUR_PIE.guid == MENUS[i].guid then
+                            r.ImGui_DrawList_AddRectFilled(draw_list, xs, ys, xe, ye, 0x22FF2255)
                         end
-                        -- ALREADY HAS REFERENCE                      
+                        -- ALREADY HAS REFERENCE
                         if CROSS_MENU then
-                            r.ImGui_DrawList_AddRectFilled( draw_list, xs, ys, xe, ye, 0xFF222255 )
+                            r.ImGui_DrawList_AddRectFilled(draw_list, xs, ys, xe, ye, 0xFF222255)
                         end
                         if r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseDoubleClicked(ctx, 0) then
                             LAST_MENU_SEL = i
@@ -418,7 +456,7 @@ local function DrawFlyButton(pie, selected, hovered, center)
 
     local button_center = { x = xs + (w / 2), y = ys + (h / 2) }
 
-    local name, color = pie.name, pie.col
+    local name, color = pie.name, pie.col == 0xff and def_color or pie.col
 
     local icon = #pie.icon ~= 0 and pie.icon or nil
 
@@ -426,27 +464,30 @@ local function DrawFlyButton(pie, selected, hovered, center)
     local icon_font = active and ICON_FONT_LARGE or ICON_FONT_SMALL
     local icon_font_size = active and ICON_FONT_LARGE_SIZE or ICON_FONT_SMALL_SIZE
 
-    local button_edge_col = 0x25283eff
+    --local button_edge_col = 0x060912ff --IncreaseDecreaseBrightness(def_color, -30)--0x25283eff
 
-    local menu_preview_radius = 7
-    local menu_preview_color = 0x25283eff
+    local menu_preview_radius = 8
+    --local menu_preview_color = def_color --0x25283eff
     local state_spinner_col = 0xff0000ff
 
-    local col = active and IncreaseDecreaseBrightness(color, 30) or color
-    col = (hovered and ALT) and def_color or col
+    --local col = active and IncreaseDecreaseBrightness(color, 30) or color
+    --col = (hovered and ALT) and def_color or col
 
 
     local button_radius = active and 35 or 25
 
     if hovered and r.ImGui_IsMouseDown(ctx, 0) then
-        r.ImGui_DrawList_AddCircle(draw_list, button_center.x, button_center.y, (button_radius), 0xffffff77, 128, 14)
+        r.ImGui_DrawList_AddCircle(draw_list, button_center.x, button_center.y, (button_radius + 4), 0xffffff77, 128, 14)
     end
 
     r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 1)
     -- BG
-    r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x, button_center.y, button_radius, col, 128)
-    -- EDGE
-    r.ImGui_DrawList_AddCircle(draw_list, button_center.x, button_center.y, (button_radius - 1), button_edge_col, 128, 3)
+    r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x, button_center.y, button_radius+4, def_out_ring, 128)
+
+    r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x, button_center.y, button_radius, def_color, 128)
+
+    -- CUSTOM BG
+    r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x, button_center.y, button_radius-4, color, 128)
 
     -- DRAW MENU ITEMS PREVIEW
     r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 0)
@@ -455,11 +496,11 @@ local function DrawFlyButton(pie, selected, hovered, center)
         for i = 1, #pie do                    --.menu do
             local cur_angle = (item_arc_span * (i - 1) + START_ANG) % (2 * pi)
             local button_pos = {
-                x = button_center.x + (button_radius - 2) * cos(cur_angle),
-                y = button_center.y + (button_radius - 2) * sin(cur_angle),
+                x = button_center.x + (button_radius +2) * cos(cur_angle),
+                y = button_center.y + (button_radius +2) * sin(cur_angle),
             }
             r.ImGui_DrawList_AddCircleFilled(draw_list, button_pos.x, button_pos.y, menu_preview_radius,
-                menu_preview_color, 0)
+                def_menu_prev, 0)
         end
     end
 
@@ -468,17 +509,18 @@ local function DrawFlyButton(pie, selected, hovered, center)
     if selected then
         r.ImGui_PushFont(ctx, SYSTEM_FONT)
         local txt_w, txt_h = r.ImGui_CalcTextSize(ctx, name:upper())
-        r.ImGui_DrawList_AddTextEx(draw_list, nil, FONT_SIZE, WX + center.x - txt_w / 2, WY + center.y - txt_h / 2,
-            0xffffffff,
-            name:upper())
+        local t_x, t_y = WX + center.x - txt_w / 2, WY + center.y - txt_h / 2
+        r.ImGui_DrawList_AddTextEx(draw_list, nil, FONT_SIZE, t_x+1, t_y+1,0xaa, name:upper())
+        r.ImGui_DrawList_AddTextEx(draw_list, nil, FONT_SIZE, t_x, t_y,0xffffffff, name:upper())
         r.ImGui_PopFont(ctx)
     end
 
     if icon then
         r.ImGui_PushFont(ctx, icon_font)
         local icon_w, icon_h = r.ImGui_CalcTextSize(ctx, icon)
-        r.ImGui_DrawList_AddTextEx(draw_list, nil, icon_font_size, button_center.x - icon_w / 2,
-            button_center.y - icon_h / 2, icon_col, icon)
+        local i_x, i_y = button_center.x - icon_w / 2,     button_center.y - icon_h / 2
+        r.ImGui_DrawList_AddTextEx(draw_list, nil, icon_font_size, i_x+2, i_y+2, 0xaa, icon)
+        r.ImGui_DrawList_AddTextEx(draw_list, nil, icon_font_size, i_x, i_y, icon_col, icon)
         r.ImGui_PopFont(ctx)
     end
 end
@@ -493,7 +535,7 @@ local function StyleFly(pie, center, drag_angle, active)
     local RADIUS = pie.RADIUS
     local RADIUS_MIN = RADIUS / 2.2
 
-    local arc_col = ARC_COLOR
+    --local arc_col = ARC_COLOR
 
     for i = 1, #pie do
         -- local ang_min = (item_arc_span) * (i - (0.5)) + START_ANG
@@ -545,8 +587,10 @@ local function DrawCenter(pie, center)
 
     local main_clicked = (r.ImGui_IsMouseDown(ctx, 0) and not active)
 
+    r.ImGui_DrawList_AddCircleFilled(draw_list, WX + center.x, WY + center.y, RADIUS_MIN - 6, def_out_ring, 64)
     r.ImGui_DrawList_AddCircleFilled(draw_list, WX + center.x, WY + center.y, RADIUS_MIN - 10, def_color, 64)
-    r.ImGui_DrawList_AddCircle(draw_list, WX + center.x, WY + center.y, RADIUS_MIN - 10, 0x25283eff, 0, 4)
+    --r.ImGui_DrawList_AddCircle(draw_list, WX + center.x, WY + center.y, RADIUS_MIN - 10,
+    --    IncreaseDecreaseBrightness(def_color, -30), 0, 4)
 
     if main_clicked then
         r.ImGui_DrawList_AddCircle(draw_list, WX + center.x, WY + center.y, (RADIUS_MIN - 10), 0xffffff77, 128, 14)
@@ -570,8 +614,11 @@ local function DrawCenter(pie, center)
 end
 
 local function DrawPie(tbl)
-    local x = r.ImGui_GetContentRegionAvail(ctx)
-    local center = { x = x / 2, y = 360 }
+    r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), (GetThemeBG() << 8) | 0xFF)
+
+    if r.ImGui_BeginChild(ctx,"##PIEDRAW") then
+    local x,y = r.ImGui_GetContentRegionAvail(ctx)
+    local center = { x = x / 2, y = y/2}
 
     WX, WY = r.ImGui_GetWindowPos(ctx)
     MX, MY = r.ImGui_PointConvertNative(ctx, r.GetMousePosition())
@@ -582,6 +629,10 @@ local function DrawPie(tbl)
     StyleFly(tbl, center, drag_angle, active)
 
     r.ImGui_DrawListSplitter_Merge(SPLITTER)
+    r.ImGui_EndChild(ctx)
+    end
+    r.ImGui_PopStyleColor(ctx)
+
 end
 
 ICON = ''
@@ -649,42 +700,50 @@ local function IconFrame(pie)
 end
 
 local function ButtonInfo(pie)
-    r.ImGui_SetNextItemWidth(ctx, 200)
-    RV_R, pie.RADIUS = r.ImGui_SliderInt(ctx, "RADIUS", pie.RADIUS, 100, 270)
-    RADIUS_ACTIVE = r.ImGui_IsItemActive(ctx)
+  --  r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0xff)
 
-    if CUR_PIE.menu then
-        RV_MI, CUR_PIE.name = r.ImGui_InputTextWithHint(ctx, "Menu Name", "Menu name", CUR_PIE.name)
+    if r.ImGui_BeginChild(ctx, "##buttons#",nil,65) then
+        r.ImGui_SetNextItemWidth(ctx, 200)
+        RV_R, pie.RADIUS = r.ImGui_SliderInt(ctx, "RADIUS", pie.RADIUS, 100, 270)
+        RADIUS_ACTIVE = r.ImGui_IsItemActive(ctx)
+
+        if CUR_PIE.menu then
+            RV_MI, CUR_PIE.name = r.ImGui_InputTextWithHint(ctx, "Menu Name", "Menu name", CUR_PIE.name)
+        end
+        -- if r.ImGui_Button(ctx, "ADD BUTTON") then
+        --     table.insert(pie,#pie~= 0 and #pie or 1,{ icon = "", name = "EMPTY ", cmd = "", cmd_name = "", col = def_color })
+        --   --  pie[#pie + 1] = { icon = "", name = "EMPTY ", cmd = "", cmd_name = "", col = def_color }
+        -- end
+        -- r.ImGui_SameLine(ctx)
+        -- if r.ImGui_Button(ctx, "ADD MENU") then
+        --     pie[#pie + 1] = { guid = r.genGuid(), icon = "", name = "MENU ", col = def_color, menu = { pid = pie.guid, guid = r.genGuid(), RADIUS = 150 } }
+        -- end
+        if pie.selected then
+            r.ImGui_BeginGroup(ctx)
+            RV_COL, pie[pie.selected].col = r.ImGui_ColorEdit4(ctx, 'MyColor##3', pie[pie.selected].col,
+                r.ImGui_ColorEditFlags_NoInputs() | r.ImGui_ColorEditFlags_NoLabel())
+            r.ImGui_SameLine(ctx)
+            local rv_i, icon = IconFrame(pie)
+            if rv_i then
+                pie[pie.selected].icon = icon
+            end
+            r.ImGui_SameLine(ctx)
+            r.ImGui_SetNextItemWidth(ctx, 50)
+            rv_k, pie[pie.selected].key = r.ImGui_Combo(ctx, "Key", tonumber(pie[pie.selected].key), keys_str, 5)
+            r.ImGui_SameLine(ctx)
+            rv_i, pie[pie.selected].name = r.ImGui_InputTextWithHint(ctx, "##ButtonName", "Button name",
+                pie[pie.selected].name)
+            if pie[pie.selected].cmd then
+                r.ImGui_BeginDisabled(ctx, true)
+                rv_c, pie[pie.selected].cmd_name = r.ImGui_InputTextWithHint(ctx, "Action Name", "NO ACTION ASSIGNED",
+                    pie[pie.selected].cmd_name)
+                r.ImGui_EndDisabled(ctx)
+            end
+            r.ImGui_EndGroup(ctx)
+        end
+        r.ImGui_EndChild(ctx)
     end
-    -- if r.ImGui_Button(ctx, "ADD BUTTON") then
-    --     table.insert(pie,#pie~= 0 and #pie or 1,{ icon = "", name = "EMPTY ", cmd = "", cmd_name = "", col = def_color })
-    --   --  pie[#pie + 1] = { icon = "", name = "EMPTY ", cmd = "", cmd_name = "", col = def_color }
-    -- end
-    -- r.ImGui_SameLine(ctx)
-    -- if r.ImGui_Button(ctx, "ADD MENU") then
-    --     pie[#pie + 1] = { guid = r.genGuid(), icon = "", name = "MENU ", col = def_color, menu = { pid = pie.guid, guid = r.genGuid(), RADIUS = 150 } }
-    -- end
-    if not pie.selected then return end
-    r.ImGui_BeginGroup(ctx)
-    RV_COL, pie[pie.selected].col = r.ImGui_ColorEdit4(ctx, 'MyColor##3', pie[pie.selected].col,
-        r.ImGui_ColorEditFlags_NoInputs() | r.ImGui_ColorEditFlags_NoLabel())
-    r.ImGui_SameLine(ctx)
-    local rv_i, icon = IconFrame(pie)
-    if rv_i then
-        pie[pie.selected].icon = icon
-    end
-    r.ImGui_SameLine(ctx)
-    r.ImGui_SetNextItemWidth(ctx,50)
-    rv_k, pie[pie.selected].key = r.ImGui_Combo( ctx, "Key", tonumber(pie[pie.selected].key), keys_str, 5 )
-    r.ImGui_SameLine(ctx)
-    rv_i, pie[pie.selected].name = r.ImGui_InputTextWithHint(ctx, "##ButtonName", "Button name", pie[pie.selected].name)
-    if pie[pie.selected].cmd then
-        r.ImGui_BeginDisabled(ctx, true)
-        rv_c, pie[pie.selected].cmd_name = r.ImGui_InputTextWithHint(ctx, "Action Name", "NO ACTION ASSIGNED",
-            pie[pie.selected].cmd_name)
-        r.ImGui_EndDisabled(ctx)
-    end
-    r.ImGui_EndGroup(ctx)
+   -- r.ImGui_PopStyleColor(ctx)
 end
 
 local function Tabs()
@@ -695,7 +754,7 @@ local function Tabs()
             r.ImGui_EndTabItem(ctx)
         end
         if r.ImGui_BeginTabItem(ctx, "ARRANGE EMPTY") then
-            if not PIES["arrangeempty"] then 
+            if not PIES["arrangeempty"] then
                 PIES["arrangeempty"] = { RADIUS = RADIUS, name = "ARRANGE EMPTY", guid = r.genGuid() }
             end
             CUR_TAB = "arrangeempty"
@@ -708,7 +767,7 @@ local function Tabs()
         if r.ImGui_BeginTabItem(ctx, "TCP EMPTY") then
             if not PIES["tcpempty"] then
                 PIES["tcpempty"] = { RADIUS = RADIUS, name = "TCP EMPTY", guid = r.genGuid() }
-            end    
+            end
             CUR_TAB = "tcpempty"
             r.ImGui_EndTabItem(ctx)
         end
@@ -746,13 +805,15 @@ local function Tabs()
             CUR_TAB = "trans"
             r.ImGui_EndTabItem(ctx)
         end
-        if r.ImGui_BeginTabItem(ctx, "CUSTOM MENU", true, TAB_MENU and r.ImGui_TabItemFlags_SetSelected()) then
+        if r.ImGui_BeginTabItem(ctx, "CUSTOM MENU", nil, TAB_MENU and r.ImGui_TabItemFlags_SetSelected()) then
             TAB_MENU = nil
             CUR_TAB = "menu"
             r.ImGui_EndTabItem(ctx)
         end
-        if r.ImGui_BeginTabItem(ctx, "USER_SETTINGS", true) then
+        if r.ImGui_BeginTabItem(ctx, "USER SETTINGS") then
+            r.ImGui_BeginGroup(ctx)
             USER_SETTINGS = true
+
             if r.ImGui_Checkbox(ctx, "HOLD TO OPEN", HOLD_TO_OPEN) then
                 HOLD_TO_OPEN = not HOLD_TO_OPEN
                 WANT_SAVE = true
@@ -765,16 +826,62 @@ local function Tabs()
                 ANIMATION = not ANIMATION
                 WANT_SAVE = true
             end
+
+            -- if r.ImGui_Checkbox(ctx, "ADJUST TO THEME", ADJUST_TO_THEME) then
+            --     ADJUST_TO_THEME = not ADJUST_TO_THEME
+            --     WANT_SAVE = true
+            --     def_update = true
+            -- end
+
+            -- rv_bbg, def_color_dark = r.ImGui_ColorEdit4(ctx, "DARK THEME", def_color_dark,
+            --     r.ImGui_ColorEditFlags_NoInputs())
+            -- if rv_bbg then def_update = true end
+
+            -- r.ImGui_SameLine(ctx)
+            -- if r.ImGui_Checkbox(ctx, "##DEFAULT", DARK) then
+            --     DEFAULT_COLOR = def_color_dark
+            --     DARK = true
+            --     LIGHT = false
+            --     WANT_SAVE = true
+            --     def_update = true
+            -- end
+            -- rv_lbg, def_color_light = r.ImGui_ColorEdit4(ctx, "LIGHT THEME", def_color_light,
+            --     r.ImGui_ColorEditFlags_NoInputs())
+            -- if lgb then def_update = true end
+            -- r.ImGui_SameLine(ctx)
+            -- if r.ImGui_Checkbox(ctx, "##DEFAULT2", LIGHT) then
+            --     DEFAULT_COLOR = def_color_light
+            --     LIGHT = true
+            --     DARK = false
+            --     WANT_SAVE = true
+            --     def_update = true
+            -- end
+            --rv_arccol, ARC_COLOR = r.ImGui_ColorEdit4(ctx, "ARC COLOR", ARC_COLOR, r.ImGui_ColorEditFlags_NoInputs())
+            --if rv_bbg or rv_lbg or rv_arccol or def_update then
+                --DEFAULT_COLOR = DARK and def_color_dark or DEFAULT_COLOR
+                --DEFAULT_COLOR = LIGHT and def_color_light or DEFAULT_COLOR
+                --def_color = ADJUST_TO_THEME and CalculateThemeColor(GetThemeBG()) or DEFAULT_COLOR
+               -- WANT_SAVE = true
+                --def_update = nil
+            --end
             if WANT_SAVE then
                 local data = TableToString(
-                {
-                    animation = ANIMATION,
-                    hold_to_open = HOLD_TO_OPEN,
-                    activate_on_close = ACTIVATE_ON_CLOSE
-                }, true    )
+                    {
+                        animation = ANIMATION,
+                        hold_to_open = HOLD_TO_OPEN,
+                        activate_on_close = ACTIVATE_ON_CLOSE,
+                        --def_color_dark = def_color_dark,
+                        --def_color_light = def_color_light,
+                        --adjust_to_theme = ADJUST_TO_THEME,
+                        --arc_color = ARC_COLOR,
+                        --default_color = DEFAULT_COLOR,
+
+                    }, true)
                 r.SetExtState("PIE3000", "SETTINGS", data, true)
                 WANT_SAVE = nil
             end
+            r.ImGui_EndGroup(ctx)
+            r.ImGui_SameLine(ctx)
             r.ImGui_EndTabItem(ctx)
         end
         if CUR_TAB ~= LAST_TAB then
@@ -827,13 +934,17 @@ end
 
 local function Main()
     r.ImGui_SetNextWindowBgAlpha(ctx, 1)
-    local visible, open = r.ImGui_Begin(ctx, 'Pie 3000 Setup', true, flags)
+    -- r.ImGui_PushStyleColor( ctx, r.ImGui_Col_WindowBg(),  (GetThemeBG() << 8 ) | 0xFF )
+    r.ImGui_SetNextWindowSizeConstraints( ctx, 1000, 600, 9999, 9999 )
+    local visible, open = r.ImGui_Begin(ctx, 'Pie 3000 Setup', true)
+    --r.ImGui_PopStyleColor(ctx)
     if visible then
         CheckKeys()
         Tabs()
         if not USER_SETTINGS then
             ActionsTab()
             r.ImGui_SameLine(ctx)
+           -- r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), (GetThemeBG() << 8) | 0xFF)
             if r.ImGui_BeginChild(ctx, "##PIEDRAW", 0, 0) then
                 if CUR_PIE then
                     ButtonInfo(CUR_PIE)
@@ -841,6 +952,8 @@ local function Main()
                 end
                 r.ImGui_EndChild(ctx)
             end
+           -- r.ImGui_PopStyleColor(ctx)
+
             DndAddTargetAction()
             DndAddTargetMenu()
             if DEL then
@@ -862,6 +975,10 @@ local function Main()
                 end
                 table.remove(DEL[1], DEL[2])
                 DEL = nil
+            end
+        else
+            if CUR_PIE then
+                DrawPie(CUR_PIE)
             end
         end
         Popups()

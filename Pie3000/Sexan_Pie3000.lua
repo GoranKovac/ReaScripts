@@ -1,9 +1,11 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.1.51
+-- @version 0.1.52
 -- @changelog
---  Create empty context for now (not to break files)
+--  Made it prettier
+--  Dark and Light variant
+--  Depending on theme bg color script will use appropriate variant
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
@@ -13,7 +15,7 @@
 local r = reaper
 local osname = r.GetOS()
 if osname:find("OSX") or osname:find("macOS") then
-  apple = true
+    apple = true
 end
 
 local getinfo = debug.getinfo(1, 'S');
@@ -25,48 +27,65 @@ require('PieUtils')
 if CheckDeps() then return end
 local easingFunctions = require("easing")
 
-ANIMATION = true
-ACTIVATE_ON_CLOSE = true
-HOLD_TO_OPEN = true
+local ANIMATION = true
+local ACTIVATE_ON_CLOSE = true
+local HOLD_TO_OPEN = true
+--local ADJUST_TO_THEME = true
 
-local def_color = 0x43465cff 
+local def_color_dark = 0x414141ff --0x353535ff
+local def_out_ring = 0x2a2a2aff
+local def_menu_prev = 0x212121ff
+local ARC_COLOR = 0x11AAFF88
+local def_color = def_color_dark
 
 local function CalculateThemeColor(org_color)
     local alpha = org_color & 0xFF
     local blue = (org_color >> 8) & 0xFF
     local green = (org_color >> 16) & 0xFF
     local red = (org_color >> 24) & 0xFF
-    
+
     local luminance = (0.299 * red + 0.587 * green + 0.114 * blue) / 255
-    return luminance > 0.5 and 0x434455ff or 0x959dceff
+    return luminance < 0.5 and true or false
 end
 
 local function GetThemeBG()
     return r.GetThemeColor("col_tr1_bg", 0)
 end
 
-def_color = CalculateThemeColor(GetThemeBG())
-
+local light_theme = CalculateThemeColor(GetThemeBG())
+if light_theme then
+    local def_light = def_color_dark --0x9ca2a2ff
+    def_out_ring = 0x818989ff
+    def_menu_prev = def_light
+    def_color = def_light
+end
 if r.HasExtState("PIE3000", "SETTINGS") then
     local stored = r.GetExtState("PIE3000", "SETTINGS")
     if stored ~= nil then
         local save_data = StringToTable(stored)
         if save_data ~= nil then
-            ANIMATION = save_data.animation
-            ACTIVATE_ON_CLOSE = save_data.activate_on_close
-            HOLD_TO_OPEN = save_data.hold_to_open
+            ANIMATION = save_data.animation                 -- or ANIMATION
+            ACTIVATE_ON_CLOSE = save_data.activate_on_close -- or ACTIVATE_ON_CLOSE
+            HOLD_TO_OPEN = save_data.hold_to_open           -- or HOLD_TO_OPEN
+            --ADJUST_TO_THEME = save_data.adjust_to_theme     -- or ADJUST_TO_THEME
+            -- def_color_dark = save_data.def_color_dark-- or def_color_dark
+            --def_color_light = save_data.def_color_light-- or def_color_light
+            --ARC_COLOR = save_data.arc_color -- or ARC_COLOR
+            --DEFAULT_COLOR = save_data.default_color-- or DEFAULT_COLOR
         end
     end
 end
+
+--local def_color = ADJUST_TO_THEME and CalculateThemeColor(GetThemeBG()) or DEFAULT_COLOR
 
 local PIE_LIST = {}
 
 local KEYS = {}
 for name, func in pairs(r) do
     name = name:match('^ImGui_Key_(.+)$')
-    if name then KEYS[#KEYS+1] = {name = name , func = func} end
+    if name then KEYS[#KEYS + 1] = { name = name, func = func } end
 end
-table.sort(KEYS, function(a,b) return a.name < b.name end)
+table.sort(KEYS, function(a, b) return a.name < b.name end)
 
 local pi, max, min, floor, cos, sin, atan, ceil, abs = math.pi, math.max, math.min, math.floor, math.cos, math.sin,
     math.atan, math.ceil, math.abs
@@ -80,15 +99,15 @@ local function Release()
 end
 
 local SCRIPT_START_TIME = r.time_precise()
-local function KeyHeld() 
-    return r.JS_VKeys_GetState(SCRIPT_START_TIME-1):byte(KEY) == 1 
+local function KeyHeld()
+    return r.JS_VKeys_GetState(SCRIPT_START_TIME - 1):byte(KEY) == 1
 end
 
 local function GetMouseContext()
     local x, y = r.GetMousePosition()
     local track, info = r.GetThingFromPoint(x, y)
-    local cur_hwnd =   r.JS_Window_FromPoint( x, y )
-    local class_name = r.JS_Window_GetClassName( cur_hwnd )
+    local cur_hwnd = r.JS_Window_FromPoint(x, y)
+    local class_name = r.JS_Window_GetClassName(cur_hwnd)
     if #info == 0 then --return end
         if not class_name then return end
         if class_name == "REAPERTCPDisplay" then
@@ -105,7 +124,7 @@ local function GetMouseContext()
     elseif info:match("envcp") then
         info = "envcp"
     end
-    
+
     info = info:match('^([^%.]+)')
     local item, take = r.GetItemFromPoint(x, y, true)
     if item then info = "item" end
@@ -123,8 +142,6 @@ local ICON_FONT_SMALL_SIZE = 25
 local ICON_FONT_LARGE_SIZE = 40
 local ICON_FONT_CLICKED_SIZE = 32
 
-local ARC_COLOR = 0x11AAFF88
-
 local function GUI_Init()
     ctx = r.ImGui_CreateContext('Pie 3000', r.ImGui_ConfigFlags_NoSavedSettings())
     draw_list = r.ImGui_GetWindowDrawList(ctx)
@@ -139,7 +156,7 @@ local function GUI_Init()
     r.ImGui_Attach(ctx, ICON_FONT_LARGE)
     r.ImGui_Attach(ctx, ICON_FONT_CLICKED)
     START_X, START_Y = r.ImGui_PointConvertNative(ctx, r.GetMousePosition())
-    r.ImGui_SetNextWindowPos(ctx, 0,0)
+    r.ImGui_SetNextWindowPos(ctx, 0, 0)
 end
 
 local function Init()
@@ -325,17 +342,14 @@ local function DrawFlyButton(pie, hovered, prog, center, key)
     local button_center = { x = xs + (w / 2), y = ys + (h / 2) }
 
     local name, color = pie.name, pie.col
-    color = color == 0x43465cff and def_color or color
+    color = color == 0xff and def_color or color
     local icon = #pie.icon ~= 0 and pie.icon or nil
 
     local icon_col = LerpAlpha(0xffffffff, prog)
     local icon_font = hovered and ICON_FONT_LARGE or ICON_FONT_SMALL
     local icon_font_size = hovered and ICON_FONT_LARGE_SIZE or ICON_FONT_SMALL_SIZE
 
-    local button_edge_col = 0x25283eff
-
-    local menu_preview_radius = 7
-    local menu_preview_color = 0x25283eff
+    local menu_preview_radius = 8
     local state_spinner_col = 0xff0000ff
 
     --local button_radius = hovered and 35 or 25
@@ -365,21 +379,31 @@ local function DrawFlyButton(pie, hovered, prog, center, key)
         button_radius = button_radius - 5
         icon_font = ICON_FONT_CLICKED
         icon_font_size = ICON_FONT_CLICKED_SIZE
-        r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 0)
-        r.ImGui_DrawList_AddCircle(draw_list, button_center.x, button_center.y, (button_radius), 0xffffff77, 128, 14)
+        r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 2)
+        r.ImGui_DrawList_AddCircle(draw_list, button_center.x, button_center.y, (button_radius + 2), 0xffffff77, 16, 16)
         col = IncreaseDecreaseBrightness(col, 20)
     end
 
     col = LerpAlpha(col, PROG)
 
     r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 1)
+    -- SHADOW TEST
+    r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x + 1, button_center.y + 1, (button_radius + 6) * PROG,
+        LerpAlpha(0x44, PROG), 16)
+
+    r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x, button_center.y, (button_radius+5.5) * PROG,
+        LerpAlpha(light_theme and def_out_ring or def_color, PROG), 0)
+
+    r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x, button_center.y, (button_radius + 4) * PROG,
+        LerpAlpha(def_out_ring, PROG), 16)
     -- BG
     r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x, button_center.y, (button_radius) * PROG,
-        LerpAlpha(col, PROG), 123)
-    -- EDGE
-    r.ImGui_DrawList_AddCircle(draw_list, button_center.x, button_center.y, (button_radius - 1) * PROG,
-        LerpAlpha(button_edge_col, PROG), 128, 3)
+        LerpAlpha(def_color, PROG), 16)
 
+    -- custom bg
+    r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x, button_center.y, (button_radius - 4) * PROG,
+        LerpAlpha(col, PROG), 16)
+   
     if (tonumber(pie.cmd) and r.GetToggleCommandState(pie.cmd) == 1) then
         StateSpinner(button_center.x, button_center.y, LerpAlpha(state_spinner_col, PROG), button_radius * PROG)
     end
@@ -391,23 +415,27 @@ local function DrawFlyButton(pie, hovered, prog, center, key)
         for i = 1, #pie do
             local cur_angle = (item_arc_span * (i - 1) + START_ANG) % (2 * pi)
             local button_pos = {
-                x = button_center.x + ((button_radius - 2) * PROG) * cos(cur_angle),
-                y = button_center.y + ((button_radius - 2) * PROG) * sin(cur_angle),
+                x = button_center.x + ((button_radius + 2) * PROG) * cos(cur_angle),
+                y = button_center.y + ((button_radius + 2) * PROG) * sin(cur_angle),
             }
+            --if light_theme then
+                r.ImGui_DrawList_AddCircleFilled(draw_list, button_pos.x, button_pos.y, menu_preview_radius + 1.5 * PROG,
+                    LerpAlpha(light_theme and def_out_ring or def_color, PROG), 0)
+           -- end
             r.ImGui_DrawList_AddCircleFilled(draw_list, button_pos.x, button_pos.y, menu_preview_radius * PROG,
-                LerpAlpha(menu_preview_color, PROG), 0)
+                LerpAlpha(def_menu_prev, PROG), 0)
         end
     end
 
     if has_key then
-        r.ImGui_DrawList_AddCircleFilled(draw_list, WX + key.kx, WY + key.ky, (button_radius - 12)* PROG,
-                LerpAlpha(menu_preview_color, PROG), 0)
-                r.ImGui_DrawList_AddCircle(draw_list,WX + key.kx, WY + key.ky, (button_radius - 13)* PROG,
-        LerpAlpha(0xffffff55, PROG), 128, 3)
+        r.ImGui_DrawList_AddCircleFilled(draw_list, WX + key.kx, WY + key.ky, (button_radius - 12) * PROG,
+            LerpAlpha(def_menu_prev, PROG), 0)
+        r.ImGui_DrawList_AddCircle(draw_list, WX + key.kx, WY + key.ky, (button_radius - 13) * PROG,
+            LerpAlpha(0xffffff55, PROG), 16, 3)
         r.ImGui_PushFont(ctx, SYSTEM_FONT)
         local txt_w, txt_h = r.ImGui_CalcTextSize(ctx, KEYS[pie.key].name:upper())
         r.ImGui_DrawList_AddTextEx(draw_list, nil, FONT_SIZE, WX + key.kx - txt_w / 2, WY + key.ky - txt_h / 2,
-        LerpAlpha(0xffffffff,PROG),
+            LerpAlpha(0xffffffff, PROG),
             KEYS[pie.key].name:upper())
         r.ImGui_PopFont(ctx)
     end
@@ -426,8 +454,9 @@ local function DrawFlyButton(pie, hovered, prog, center, key)
     if icon then
         r.ImGui_PushFont(ctx, icon_font)
         local icon_w, icon_h = r.ImGui_CalcTextSize(ctx, icon)
-        r.ImGui_DrawList_AddTextEx(draw_list, nil, icon_font_size * PROG, button_center.x - icon_w / 2,
-            button_center.y - icon_h / 2, icon_col, icon)
+        local i_x, i_y = button_center.x - icon_w / 2, button_center.y - icon_h / 2
+        r.ImGui_DrawList_AddTextEx(draw_list, nil, icon_font_size * PROG, i_x + 2, i_y + 2, 0xaa, icon)
+        r.ImGui_DrawList_AddTextEx(draw_list, nil, icon_font_size * PROG, i_x, i_y, icon_col, icon)
         r.ImGui_PopFont(ctx)
     end
 end
@@ -447,7 +476,7 @@ local function StyleFly(pie, center, drag_angle)
     local prog = ANIMATION and max(0, pie.cv / pie.RADIUS) or 1
 
     local main_clicked = (r.ImGui_IsMouseDown(ctx, 0) and not pie.active and #PIE_LIST ~= 0)
-    
+
     if not pie.active then
         if #PIE_LIST ~= 0 then
             r.ImGui_PushFont(ctx, SYSTEM_FONT2)
@@ -484,14 +513,17 @@ local function StyleFly(pie, center, drag_angle)
         local ang_max = (item_arc_span) * (i + (0.5)) + START_ANG
         local angle = item_arc_span * i
 
-        pie.hovered = AngleInRange(drag_angle, ang_min, ang_max) or (has_key and r.ImGui_IsKeyDown( ctx, KEYS[pie[i].key].func() ))
-        pie.selected = (pie.hovered and pie.active) or (has_key and r.ImGui_IsKeyDown( ctx, KEYS[pie[i].key].func() ))
+        pie.hovered = AngleInRange(drag_angle, ang_min, ang_max) or
+        (has_key and r.ImGui_IsKeyDown(ctx, KEYS[pie[i].key].func()))
+        pie.selected = (pie.hovered and pie.active) or (has_key and r.ImGui_IsKeyDown(ctx, KEYS[pie[i].key].func()))
 
         local button_pos = {
             x = center_x + (RADIUS_MIN + 50) * cos(angle + START_ANG) - 15,
             y = center_y + (RADIUS_MIN + 50) * sin(angle + START_ANG) - 15,
-            kx = center_x + (RADIUS_MIN + 50 + (pie.selected and 62 or 43)+ (pie[i].menu and 5 or 0)) * cos(angle + START_ANG),
-            ky = center_y + (RADIUS_MIN + 50+ (pie.selected and 62 or 43)+ (pie[i].menu and 5 or 0)) * sin(angle + START_ANG),
+            kx = center_x +
+            (RADIUS_MIN + 50 + (pie.selected and 62 or 43) + (pie[i].menu and 5 or 0)) * cos(angle + START_ANG),
+            ky = center_y +
+            (RADIUS_MIN + 50 + (pie.selected and 62 or 43) + (pie[i].menu and 5 or 0)) * sin(angle + START_ANG),
         }
 
         -- local prev_x = (#PIE_LIST ~= 0 and not CLOSE ) and
@@ -508,7 +540,7 @@ local function StyleFly(pie, center, drag_angle)
             r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 0)
             r.ImGui_DrawList_PathArcTo(draw_list, WX + center_x, WY + center_y, (RADIUS - RADIUS_MIN) + 100, ang_min,
                 ang_max, 12)
-            r.ImGui_DrawList_PathArcTo(draw_list, WX + center_x, WY + center_y, RADIUS_MIN - 1.5, ang_max, ang_min, 12)
+            r.ImGui_DrawList_PathArcTo(draw_list, WX + center_x, WY + center_y, RADIUS_MIN, ang_max, ang_min, 12)
             r.ImGui_DrawList_PathFillConvex(draw_list, ARC_COLOR)
         end
 
@@ -519,7 +551,7 @@ local function StyleFly(pie, center, drag_angle)
         end
 
         if pie[i].key and pie[i].key ~= 0 then
-            if r.ImGui_IsKeyReleased( ctx, KEYS[pie[i].key].func() ) then
+            if r.ImGui_IsKeyReleased(ctx, KEYS[pie[i].key].func()) then
                 if pie[i].cmd then
                     r.Main_OnCommand(pie[i].cmd, 0)
                 elseif pie[i].menu then
@@ -537,7 +569,6 @@ local function StyleFly(pie, center, drag_angle)
                     r.JS_Mouse_SetPosition(START_X, START_Y)
                     break
                 end
-               -- r.ShowConsoleMsg(KEYS[pie[i].key].name .."\n")
             end
         end
 
@@ -570,7 +601,7 @@ local function DrawCenter(center)
 
     local main_color = def_color
     if #PIE_LIST ~= 0 then
-        main_color = PIE_LIST[#PIE_LIST].col == 0x43465cff and def_color or PIE_LIST[#PIE_LIST].col
+        main_color = PIE_LIST[#PIE_LIST].col == 0xff and def_color or PIE_LIST[#PIE_LIST].col
     end
 
     PIE_MENU.cv = ANIMATION and
@@ -586,14 +617,18 @@ local function DrawCenter(center)
     local main_clicked = (r.ImGui_IsMouseDown(ctx, 0) and not PIE_MENU.active and #PIE_LIST ~= 0)
     r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 2)
 
+    -- SHADOW
+    r.ImGui_DrawList_AddCircleFilled(draw_list, WX + center.x + 1, WY + center.y + 1,
+        RADIUS_MIN - 4 - (main_clicked and 5 or 0),
+        LerpAlpha(0x44, PROG), 64)
+
+    r.ImGui_DrawList_AddCircleFilled(draw_list, WX + center.x, WY + center.y, RADIUS_MIN - 6 - (main_clicked and 5 or 0),
+        LerpAlpha(def_out_ring, PROG), 64)
     r.ImGui_DrawList_AddCircleFilled(draw_list, WX + center.x, WY + center.y, RADIUS_MIN - 10 - (main_clicked and 5 or 0),
         LerpAlpha(main_color, PROG), 64)
-    r.ImGui_DrawList_AddCircle(draw_list, WX + center.x, WY + center.y, RADIUS_MIN - 10 - (main_clicked and 5 or 0),
-        LerpAlpha(0x25283eff, PROG), 0,
-        4)
-
+  
     if main_clicked then
-        r.ImGui_DrawList_AddCircle(draw_list, WX + center.x, WY + center.y, (RADIUS_MIN - 10), 0xffffff77, 128, 14)
+        r.ImGui_DrawList_AddCircle(draw_list, WX + center.x, WY + center.y, (RADIUS_MIN - 10), 0xffffff77, 16, 20)
     end
 
     r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 0)
@@ -605,11 +640,15 @@ local function DrawCenter(center)
         for i = 1, #prev_pie do
             local cur_angle = (item_arc_span * (i) + START_ANG) % (2 * pi)
             local button_pos = {
-                x = WX + center.x + ((RADIUS_MIN - 12 - (main_clicked and 5 or 0)) * PROG) * cos(cur_angle),
-                y = WY + center.y + ((RADIUS_MIN - 12 - (main_clicked and 5 or 0)) * PROG) * sin(cur_angle),
+                x = WX + center.x + ((RADIUS_MIN - 10 - (main_clicked and 5 or 0)) * PROG) * cos(cur_angle),
+                y = WY + center.y + ((RADIUS_MIN - 10 - (main_clicked and 5 or 0)) * PROG) * sin(cur_angle),
             }
+            if light_theme then
+                r.ImGui_DrawList_AddCircleFilled(draw_list, button_pos.x, button_pos.y, mini_rad + 1.5 * PROG,
+                    LerpAlpha(def_out_ring, PROG), 0)
+            end
             r.ImGui_DrawList_AddCircleFilled(draw_list, button_pos.x, button_pos.y,
-                prev_i == i and mini_rad * PROG or mini_rad * PROG, prev_i == i and 0x23EE9cff or 0x25283eEE, 0)
+                prev_i == i and mini_rad * PROG or mini_rad * PROG, prev_i == i and 0x23EE9cff or def_menu_prev, 0)
             if prev_i == i then
                 r.ImGui_DrawList_AddCircle(draw_list, button_pos.x, button_pos.y, mini_rad * PROG, 0x25283eEE, 0, 2)
             end
@@ -644,7 +683,7 @@ local function CloseScript()
         if HOLD_TO_OPEN and (START_TIME - SCRIPT_START_TIME) < 0.2 then
             TERMINATE = true
         end
-       -- if not ANIMATION then DONE = true end
+        -- if not ANIMATION then DONE = true end
     end
 end
 
@@ -674,10 +713,13 @@ if apple then
     screen_bottom, screen_top = screen_top, screen_bottom
 end
 
-r.ImGui_SetNextWindowSizeConstraints( ctx, screen_right, screen_bottom, screen_right, screen_bottom )
+r.ImGui_SetNextWindowSizeConstraints(ctx, screen_right, screen_bottom, screen_right, screen_bottom)
 local function Main()
     TrackShortcutKey()
-    if TERMINATE then Release() return end
+    if TERMINATE then
+        Release()
+        return
+    end
     if SWITCH_PIE and not DONE then
         PIE_MENU = SWITCH_PIE
         r.JS_Mouse_SetPosition(START_X, START_Y)
@@ -685,22 +727,22 @@ local function Main()
         SWITCH_PIE = nil
         SWAP = nil
     end
-    
+
     --r.ImGui_SetNextWindowSize(ctx, screen_right, screen_bottom)
     if r.ImGui_Begin(ctx, 'PIE 3000', false, FLAGS) then
         CheckKeys()
         if ESC then DONE = true end
-        WX, WY = 0,0--,r.ImGui_GetWindowPos(ctx)
+        WX, WY = 0, 0 --,r.ImGui_GetWindowPos(ctx)
         MX, MY = r.ImGui_PointConvertNative(ctx, r.GetMousePosition())
         --AccessibilityMode()
-       -- local center = { x = r.ImGui_GetWindowWidth(ctx) / 2, y = r.ImGui_GetWindowHeight(ctx) / 2 }
+        -- local center = { x = r.ImGui_GetWindowWidth(ctx) / 2, y = r.ImGui_GetWindowHeight(ctx) / 2 }
         local center = { x = START_X, y = START_Y }
         if not DONE then DrawPie(PIE_MENU, center) end
         r.ImGui_End(ctx)
     end
     if not DONE then
         pdefer(Main)
-    end    
+    end
 end
 r.atexit(Release)
 pdefer(Main)
