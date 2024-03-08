@@ -1,11 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.1.52
+-- @version 0.1.53
 -- @changelog
---  Made it prettier
---  Dark and Light variant
---  Depending on theme bg color script will use appropriate variant
+--  fix Circle aliasing
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
@@ -380,7 +378,7 @@ local function DrawFlyButton(pie, hovered, prog, center, key)
         icon_font = ICON_FONT_CLICKED
         icon_font_size = ICON_FONT_CLICKED_SIZE
         r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 2)
-        r.ImGui_DrawList_AddCircle(draw_list, button_center.x, button_center.y, (button_radius + 2), 0xffffff77, 16, 16)
+        r.ImGui_DrawList_AddCircle(draw_list, button_center.x, button_center.y, (button_radius + 2), 0xffffff77, 16, 128)
         col = IncreaseDecreaseBrightness(col, 20)
     end
 
@@ -389,20 +387,20 @@ local function DrawFlyButton(pie, hovered, prog, center, key)
     r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 1)
     -- SHADOW TEST
     r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x + 1, button_center.y + 1, (button_radius + 6) * PROG,
-        LerpAlpha(0x44, PROG), 16)
+        LerpAlpha(0x44, PROG), 128)
 
     r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x, button_center.y, (button_radius+5.5) * PROG,
-        LerpAlpha(light_theme and def_out_ring or def_color, PROG), 0)
+        LerpAlpha(light_theme and def_out_ring or def_color, PROG), 128)
 
     r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x, button_center.y, (button_radius + 4) * PROG,
-        LerpAlpha(def_out_ring, PROG), 16)
+        LerpAlpha(def_out_ring, PROG), 128)
     -- BG
     r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x, button_center.y, (button_radius) * PROG,
-        LerpAlpha(def_color, PROG), 16)
+        LerpAlpha(def_color, PROG), 128)
 
     -- custom bg
     r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x, button_center.y, (button_radius - 4) * PROG,
-        LerpAlpha(col, PROG), 16)
+        LerpAlpha(col, PROG), 128)
    
     if (tonumber(pie.cmd) and r.GetToggleCommandState(pie.cmd) == 1) then
         StateSpinner(button_center.x, button_center.y, LerpAlpha(state_spinner_col, PROG), button_radius * PROG)
@@ -420,18 +418,18 @@ local function DrawFlyButton(pie, hovered, prog, center, key)
             }
             --if light_theme then
                 r.ImGui_DrawList_AddCircleFilled(draw_list, button_pos.x, button_pos.y, menu_preview_radius + 1.5 * PROG,
-                    LerpAlpha(light_theme and def_out_ring or def_color, PROG), 0)
+                    LerpAlpha(light_theme and def_out_ring or def_color, PROG), 128)
            -- end
             r.ImGui_DrawList_AddCircleFilled(draw_list, button_pos.x, button_pos.y, menu_preview_radius * PROG,
-                LerpAlpha(def_menu_prev, PROG), 0)
+                LerpAlpha(def_menu_prev, PROG), 128)
         end
     end
 
     if has_key then
         r.ImGui_DrawList_AddCircleFilled(draw_list, WX + key.kx, WY + key.ky, (button_radius - 12) * PROG,
-            LerpAlpha(def_menu_prev, PROG), 0)
+            LerpAlpha(def_menu_prev, PROG), 128)
         r.ImGui_DrawList_AddCircle(draw_list, WX + key.kx, WY + key.ky, (button_radius - 13) * PROG,
-            LerpAlpha(0xffffff55, PROG), 16, 3)
+            LerpAlpha(0xffffff55, PROG), 128, 3)
         r.ImGui_PushFont(ctx, SYSTEM_FONT)
         local txt_w, txt_h = r.ImGui_CalcTextSize(ctx, KEYS[pie.key].name:upper())
         r.ImGui_DrawList_AddTextEx(draw_list, nil, FONT_SIZE, WX + key.kx - txt_w / 2, WY + key.ky - txt_h / 2,
@@ -628,7 +626,7 @@ local function DrawCenter(center)
         LerpAlpha(main_color, PROG), 64)
   
     if main_clicked then
-        r.ImGui_DrawList_AddCircle(draw_list, WX + center.x, WY + center.y, (RADIUS_MIN - 10), 0xffffff77, 16, 20)
+        r.ImGui_DrawList_AddCircle(draw_list, WX + center.x, WY + center.y, (RADIUS_MIN - 10), 0xffffff77, 128, 20)
     end
 
     r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 0)
