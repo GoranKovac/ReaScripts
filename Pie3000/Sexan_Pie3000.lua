@@ -1,10 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.1.55
+-- @version 0.1.56
 -- @changelog
---  Added png support
---  For now only default Toolbar icons (data/toolbar_icons/150) are used
+--  break test
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
@@ -363,7 +362,7 @@ local function DrawFlyButton(pie, hovered, prog, center, key)
     local name, color = pie.name, pie.col
     color = color == 0xff and def_color or color
     local icon = #pie.icon ~= 0 and pie.icon or nil
-    local png = #pie.png ~= 0 and pie.png or nil
+    local png = (pie.png and #pie.png ~= 0 and pie.png) or nil
 
     if png then 
         color = def_color
