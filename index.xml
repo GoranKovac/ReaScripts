@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="9246447210b207dd528aff542471f0335ee3e45d" name="Sexan_Scripts">
+<index version="1" commit="4d7a5e8defa9a6c0db876c1f56afb703ddc31079" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -3586,6 +3586,14 @@ For now only default Toolbar icons (data/toolbar_icons/150) are used]]></changel
         <source file="easing.lua">https://github.com/GoranKovac/ReaScripts/raw/9246447210b207dd528aff542471f0335ee3e45d/Pie3000/easing.lua</source>
         <source file="PieUtils.lua">https://github.com/GoranKovac/ReaScripts/raw/9246447210b207dd528aff542471f0335ee3e45d/Pie3000/PieUtils.lua</source>
         <source file="fontello1.ttf">https://github.com/GoranKovac/ReaScripts/raw/9246447210b207dd528aff542471f0335ee3e45d/Pie3000/fontello1.ttf</source>
+      </version>
+      <version name="0.1.562" author="Sexan" time="2024-03-08T20:21:05Z">
+        <changelog><![CDATA[osx path]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/4d7a5e8defa9a6c0db876c1f56afb703ddc31079/Pie3000/Sexan_Pie3000.lua</source>
+        <source main="main" file="Sexan_Pie3000_Setup.lua">https://github.com/GoranKovac/ReaScripts/raw/4d7a5e8defa9a6c0db876c1f56afb703ddc31079/Pie3000/Sexan_Pie3000_Setup.lua</source>
+        <source file="easing.lua">https://github.com/GoranKovac/ReaScripts/raw/4d7a5e8defa9a6c0db876c1f56afb703ddc31079/Pie3000/easing.lua</source>
+        <source file="PieUtils.lua">https://github.com/GoranKovac/ReaScripts/raw/4d7a5e8defa9a6c0db876c1f56afb703ddc31079/Pie3000/PieUtils.lua</source>
+        <source file="fontello1.ttf">https://github.com/GoranKovac/ReaScripts/raw/4d7a5e8defa9a6c0db876c1f56afb703ddc31079/Pie3000/fontello1.ttf</source>
       </version>
     </reapack>
   </category>
