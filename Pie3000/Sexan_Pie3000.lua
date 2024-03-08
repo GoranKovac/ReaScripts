@@ -1,9 +1,10 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.1.54
+-- @version 0.1.55
 -- @changelog
---  fick click color radius, my bad
+--  Added png support
+--  For now only default Toolbar icons (data/toolbar_icons/150) are used
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
@@ -50,13 +51,14 @@ local function GetThemeBG()
     return r.GetThemeColor("col_tr1_bg", 0)
 end
 
-local light_theme = CalculateThemeColor(GetThemeBG())
-if light_theme then
+local dark_theme = CalculateThemeColor(GetThemeBG())
+if dark_theme then
     local def_light = def_color_dark --0x9ca2a2ff
     def_out_ring = 0x818989ff
     def_menu_prev = def_light
     def_color = def_light
 end
+--if PNG then def_color = 0x202020ff end
 if r.HasExtState("PIE3000", "SETTINGS") then
     local stored = r.GetExtState("PIE3000", "SETTINGS")
     if stored ~= nil then
@@ -210,6 +212,30 @@ local function pdefer(func)
     end)
 end
 
+local function LerpAlpha(col, prog)
+    local rr, gg, bb, aa = r.ImGui_ColorConvertU32ToDouble4(col)
+    return r.ImGui_ColorConvertDouble4ToU32(rr, gg, bb, aa * prog)
+end
+
+local function ImageUVOffset(img_obj, cols, rows, frame, x, y, prog)
+    local w, h = r.ImGui_Image_GetSize(img_obj)
+
+    local xs, ys = x - (w / cols) / 2, y - (h / rows) / 2
+    local xe, ye = w / cols + xs, h / rows + ys
+
+    local uv_step_x, uv_step_y = 1 / cols, 1 / rows
+
+    local col_frame = frame --frame % cols
+    local row_frame = (frame / cols) // 1
+
+    local uv_xs = col_frame * uv_step_x
+    local uv_ys = row_frame * uv_step_y
+    local uv_xe = uv_xs + uv_step_x
+    local uv_ye = uv_ys + uv_step_y
+
+    r.ImGui_DrawList_AddImage(draw_list, img_obj, xs, ys, xe, ye, uv_xs, uv_ys, uv_xe, uv_ye, LerpAlpha(0xffffffff, prog))
+end
+
 local function EasingAnim(begin_val, end_val, cur_val, duration_in_sec, ease_function, call_time, delay, open, close)
     begin_val = begin_val or 0
     if close then
@@ -227,11 +253,6 @@ local function EasingAnim(begin_val, end_val, cur_val, duration_in_sec, ease_fun
     end
     local new_val = max(ease_function(time, begin_val, change, duration_in_sec))
     return new_val
-end
-
-local function LerpAlpha(col, prog)
-    local rr, gg, bb, aa = r.ImGui_ColorConvertU32ToDouble4(col)
-    return r.ImGui_ColorConvertDouble4ToU32(rr, gg, bb, aa * prog)
 end
 
 local function IncreaseDecreaseBrightness(color, amt, no_alpha)
@@ -342,6 +363,13 @@ local function DrawFlyButton(pie, hovered, prog, center, key)
     local name, color = pie.name, pie.col
     color = color == 0xff and def_color or color
     local icon = #pie.icon ~= 0 and pie.icon or nil
+    local png = #pie.png ~= 0 and pie.png or nil
+
+    if png then 
+        color = def_color
+        --def_color = 0x202020ff
+        --color = def_color
+    end
 
     local icon_col = LerpAlpha(0xffffffff, prog)
     local icon_font = hovered and ICON_FONT_LARGE or ICON_FONT_SMALL
@@ -371,6 +399,8 @@ local function DrawFlyButton(pie, hovered, prog, center, key)
 
     local button_radius = hovered and
         EasingAnim(25, 35, 25, 0.15, easingFunctions.outCubic, pie.hover_time, nil, pie.hover) or 25
+
+        button_radius = png and button_radius + 5 or button_radius
     --local button_prog = ANIMATION and max(0, button_radius / (hovered and 35 or 25)) or 1
 
     if hovered and r.ImGui_IsMouseDown(ctx, 0) then
@@ -378,7 +408,7 @@ local function DrawFlyButton(pie, hovered, prog, center, key)
         icon_font = ICON_FONT_CLICKED
         icon_font_size = ICON_FONT_CLICKED_SIZE
         r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 2)
-        r.ImGui_DrawList_AddCircle(draw_list, button_center.x, button_center.y, (button_radius + 2), 0xffffff77, 128, 20)
+        r.ImGui_DrawList_AddCircle(draw_list, button_center.x, button_center.y, (button_radius + 6), 0xffffff77, 128, 12)
         col = IncreaseDecreaseBrightness(col, 20)
     end
 
@@ -388,15 +418,20 @@ local function DrawFlyButton(pie, hovered, prog, center, key)
     -- SHADOW TEST
     r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x + 1, button_center.y + 1, (button_radius + 6) * PROG,
         LerpAlpha(0x44, PROG), 128)
+       
 
-    r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x, button_center.y, (button_radius+5.5) * PROG,
-        LerpAlpha(light_theme and def_out_ring or def_color, PROG), 128)
+   -- r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x, button_center.y, (button_radius+5.5) * PROG,
+    --    LerpAlpha(dark_theme and def_out_ring or def_color, PROG), 128)
 
     r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x, button_center.y, (button_radius + 4) * PROG,
         LerpAlpha(def_out_ring, PROG), 128)
     -- BG
     r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x, button_center.y, (button_radius) * PROG,
         LerpAlpha(def_color, PROG), 128)
+
+    if png then
+        r.ImGui_DrawList_AddCircle(draw_list, button_center.x, button_center.y, (button_radius-1.5) * PROG, LerpAlpha(pie.col == 0xff and def_color or pie.col,PROG), 128, 2.5)
+    end
 
     -- custom bg
     r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x, button_center.y, (button_radius - 4) * PROG,
@@ -417,8 +452,8 @@ local function DrawFlyButton(pie, hovered, prog, center, key)
                 y = button_center.y + ((button_radius + 2) * PROG) * sin(cur_angle),
             }
             --if light_theme then
-                r.ImGui_DrawList_AddCircleFilled(draw_list, button_pos.x, button_pos.y, menu_preview_radius + 1.5 * PROG,
-                    LerpAlpha(light_theme and def_out_ring or def_color, PROG), 128)
+                r.ImGui_DrawList_AddCircleFilled(draw_list, button_pos.x, button_pos.y, (menu_preview_radius + 1.5) * PROG,
+                    LerpAlpha(dark_theme and def_out_ring or def_color, PROG), 128)
            -- end
             r.ImGui_DrawList_AddCircleFilled(draw_list, button_pos.x, button_pos.y, menu_preview_radius * PROG,
                 LerpAlpha(def_menu_prev, PROG), 128)
@@ -449,13 +484,20 @@ local function DrawFlyButton(pie, hovered, prog, center, key)
         r.ImGui_PopFont(ctx)
     end
 
-    if icon then
+    if icon and not png then
         r.ImGui_PushFont(ctx, icon_font)
         local icon_w, icon_h = r.ImGui_CalcTextSize(ctx, icon)
         local i_x, i_y = button_center.x - icon_w / 2, button_center.y - icon_h / 2
         r.ImGui_DrawList_AddTextEx(draw_list, nil, icon_font_size * PROG, i_x + 2, i_y + 2, 0xaa, icon)
         r.ImGui_DrawList_AddTextEx(draw_list, nil, icon_font_size * PROG, i_x, i_y, icon_col, icon)
         r.ImGui_PopFont(ctx)
+    end
+
+     if png then
+        if not r.ImGui_ValidatePtr(pie.img_obj, 'ImGui_Image*') then
+            pie.img_obj = r.ImGui_CreateImage(png)
+        end
+        ImageUVOffset(pie.img_obj, 3, 1, hovered and 2 or 0, button_center.x, button_center.y, PROG)
     end
 end
 
@@ -641,7 +683,7 @@ local function DrawCenter(center)
                 x = WX + center.x + ((RADIUS_MIN - 10 - (main_clicked and 5 or 0)) * PROG) * cos(cur_angle),
                 y = WY + center.y + ((RADIUS_MIN - 10 - (main_clicked and 5 or 0)) * PROG) * sin(cur_angle),
             }
-            if light_theme then
+            if dark_theme then
                 r.ImGui_DrawList_AddCircleFilled(draw_list, button_pos.x, button_pos.y, mini_rad + 1.5 * PROG,
                     LerpAlpha(def_out_ring, PROG), 0)
             end

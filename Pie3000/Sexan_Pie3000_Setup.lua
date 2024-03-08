@@ -11,6 +11,8 @@ if CheckDeps() then return end
 local ctx = r.ImGui_CreateContext('PIE 3000 SETUP')
 r.ImGui_SetConfigVar(ctx, r.ImGui_ConfigVar_WindowsMoveFromTitleBarOnly(), 1)
 
+local png_path = r.GetResourcePath() .. "\\Data\\toolbar_icons\\150\\"
+
 local ANIMATION = true
 local ACTIVATE_ON_CLOSE = true
 local HOLD_TO_OPEN = true
@@ -208,6 +210,20 @@ LinkPieMenusWithSrcMenus(PIES)
 
 --local def_color = ADJUST_TO_THEME and CalculateThemeColor(GetThemeBG()) or DEFAULT_COLOR
 
+local function IterateFiles(dir)
+    local tbl = {}
+    for index = 0, math.huge do
+        local file = r.EnumerateFiles(dir, index)
+        if not file then break end
+        if file:find(".png", nil, true) and not file:match("animation")then
+            tbl[#tbl + 1] = { name = dir .. file }
+        end
+    end
+    return tbl
+end
+
+local PNG_TBL = IterateFiles(png_path)
+
 local function IterateActions(sectionID)
     local i = 0
     return function()
@@ -281,7 +297,8 @@ local function DndAddTargetAction()
         r.ImGui_EndDragDropTarget(ctx)
         if ret then
             local insert_pos = #CUR_PIE ~= 0 and #CUR_PIE or 1
-            table.insert(CUR_PIE, insert_pos, { icon = "", name = "EMPTY", cmd = cmd, cmd_name = name, col = 0xff })
+            table.insert(CUR_PIE, insert_pos,
+                { png = "", icon = "", name = "EMPTY", cmd = cmd, cmd_name = name, col = 0xff })
             CUR_PIE.selected = insert_pos
         end
     end
@@ -341,6 +358,7 @@ local function ActionsTab()
                     MENUS[#MENUS + 1] = {
                         guid = r.genGuid(),
                         RADIUS = 150,
+                        png = "",
                         icon = "",
                         name = "MENU " .. #MENUS,
                         col = 0xff,
@@ -447,6 +465,29 @@ local function DNDSwapDST(tbl, k, v)
     end
 end
 
+local function ImageUVOffset(img_obj, cols, rows, frame, x, y, need_single_frame)
+    local w, h = r.ImGui_Image_GetSize(img_obj)
+
+    local xs, ys = x - (w / cols) / 2, y - (h / rows) / 2
+    local xe, ye = w / cols + xs, h / rows + ys
+
+    local uv_step_x, uv_step_y = 1 / cols, 1 / rows
+
+    local col_frame = frame --frame % cols
+    local row_frame = (frame / cols) // 1
+
+    local uv_xs = col_frame * uv_step_x
+    local uv_ys = row_frame * uv_step_y
+    local uv_xe = uv_xs + uv_step_x
+    local uv_ye = uv_ys + uv_step_y
+
+    if need_single_frame then
+        return {xe - xs, ye-ys,uv_xs,uv_ys,uv_xe,uv_ye}
+    else
+        r.ImGui_DrawList_AddImage(draw_list, img_obj, xs, ys, xe, ye, uv_xs, uv_ys, uv_xe, uv_ye)
+    end
+end
+
 local function DrawFlyButton(pie, selected, hovered, center)
     local active = hovered or selected
     local xs, ys = r.ImGui_GetItemRectMin(ctx)
@@ -459,6 +500,12 @@ local function DrawFlyButton(pie, selected, hovered, center)
     local name, color = pie.name, pie.col == 0xff and def_color or pie.col
 
     local icon = #pie.icon ~= 0 and pie.icon or nil
+    local png = (pie.png and #pie.png ~= 0) and pie.png or nil
+
+    if png then 
+        --def_color = 0x202020ff
+        color = def_color
+    end
 
     local icon_col = 0xffffffff
     local icon_font = active and ICON_FONT_LARGE or ICON_FONT_SMALL
@@ -482,12 +529,16 @@ local function DrawFlyButton(pie, selected, hovered, center)
 
     r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 1)
     -- BG
-    r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x, button_center.y, button_radius+4, def_out_ring, 128)
+    r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x, button_center.y, button_radius + 4, def_out_ring, 128)
 
     r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x, button_center.y, button_radius, def_color, 128)
 
+    if png then
+        r.ImGui_DrawList_AddCircle(draw_list, button_center.x, button_center.y, button_radius-1.5, pie.col == 0xff and def_color or pie.col, 128, 2.5)
+    end
+
     -- CUSTOM BG
-    r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x, button_center.y, button_radius-4, color, 128)
+    r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x, button_center.y, button_radius - 4, color, 128)
 
     -- DRAW MENU ITEMS PREVIEW
     r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 0)
@@ -496,8 +547,8 @@ local function DrawFlyButton(pie, selected, hovered, center)
         for i = 1, #pie do                    --.menu do
             local cur_angle = (item_arc_span * (i - 1) + START_ANG) % (2 * pi)
             local button_pos = {
-                x = button_center.x + (button_radius +2) * cos(cur_angle),
-                y = button_center.y + (button_radius +2) * sin(cur_angle),
+                x = button_center.x + (button_radius + 2) * cos(cur_angle),
+                y = button_center.y + (button_radius + 2) * sin(cur_angle),
             }
             r.ImGui_DrawList_AddCircleFilled(draw_list, button_pos.x, button_pos.y, menu_preview_radius,
                 def_menu_prev, 0)
@@ -510,18 +561,25 @@ local function DrawFlyButton(pie, selected, hovered, center)
         r.ImGui_PushFont(ctx, SYSTEM_FONT)
         local txt_w, txt_h = r.ImGui_CalcTextSize(ctx, name:upper())
         local t_x, t_y = WX + center.x - txt_w / 2, WY + center.y - txt_h / 2
-        r.ImGui_DrawList_AddTextEx(draw_list, nil, FONT_SIZE, t_x+1, t_y+1,0xaa, name:upper())
-        r.ImGui_DrawList_AddTextEx(draw_list, nil, FONT_SIZE, t_x, t_y,0xffffffff, name:upper())
+        r.ImGui_DrawList_AddTextEx(draw_list, nil, FONT_SIZE, t_x + 1, t_y + 1, 0xaa, name:upper())
+        r.ImGui_DrawList_AddTextEx(draw_list, nil, FONT_SIZE, t_x, t_y, 0xffffffff, name:upper())
         r.ImGui_PopFont(ctx)
     end
 
-    if icon then
+    if icon and not png then
         r.ImGui_PushFont(ctx, icon_font)
         local icon_w, icon_h = r.ImGui_CalcTextSize(ctx, icon)
-        local i_x, i_y = button_center.x - icon_w / 2,     button_center.y - icon_h / 2
-        r.ImGui_DrawList_AddTextEx(draw_list, nil, icon_font_size, i_x+2, i_y+2, 0xaa, icon)
+        local i_x, i_y = button_center.x - icon_w / 2, button_center.y - icon_h / 2
+        r.ImGui_DrawList_AddTextEx(draw_list, nil, icon_font_size, i_x + 2, i_y + 2, 0xaa, icon)
         r.ImGui_DrawList_AddTextEx(draw_list, nil, icon_font_size, i_x, i_y, icon_col, icon)
         r.ImGui_PopFont(ctx)
+    end
+
+    if png then
+        if not r.ImGui_ValidatePtr(pie.img_obj, 'ImGui_Image*') then
+            pie.img_obj = r.ImGui_CreateImage(png)
+        end
+        ImageUVOffset(pie.img_obj, 3, 1, hovered and 2 or 0, button_center.x, button_center.y)
     end
 end
 
@@ -616,23 +674,22 @@ end
 local function DrawPie(tbl)
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), (GetThemeBG() << 8) | 0xFF)
 
-    if r.ImGui_BeginChild(ctx,"##PIEDRAW") then
-    local x,y = r.ImGui_GetContentRegionAvail(ctx)
-    local center = { x = x / 2, y = y/2}
+    if r.ImGui_BeginChild(ctx, "##PIEDRAW") then
+        local x, y = r.ImGui_GetContentRegionAvail(ctx)
+        local center = { x = x / 2, y = y / 2 }
 
-    WX, WY = r.ImGui_GetWindowPos(ctx)
-    MX, MY = r.ImGui_PointConvertNative(ctx, r.GetMousePosition())
+        WX, WY = r.ImGui_GetWindowPos(ctx)
+        MX, MY = r.ImGui_PointConvertNative(ctx, r.GetMousePosition())
 
-    SPLITTER = r.ImGui_CreateDrawListSplitter(draw_list)
-    r.ImGui_DrawListSplitter_Split(SPLITTER, 3)
-    local drag_angle, active = DrawCenter(tbl, center)
-    StyleFly(tbl, center, drag_angle, active)
+        SPLITTER = r.ImGui_CreateDrawListSplitter(draw_list)
+        r.ImGui_DrawListSplitter_Split(SPLITTER, 3)
+        local drag_angle, active = DrawCenter(tbl, center)
+        StyleFly(tbl, center, drag_angle, active)
 
-    r.ImGui_DrawListSplitter_Merge(SPLITTER)
-    r.ImGui_EndChild(ctx)
+        r.ImGui_DrawListSplitter_Merge(SPLITTER)
+        r.ImGui_EndChild(ctx)
     end
     r.ImGui_PopStyleColor(ctx)
-
 end
 
 ICON = ''
@@ -699,10 +756,81 @@ local function IconFrame(pie)
     return rv, icon
 end
 
-local function ButtonInfo(pie)
-  --  r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0xff)
+local function PngSelector(button_size)
+    local ret, png = false, nil
+    local x, y = r.ImGui_GetCursorScreenPos(ctx)
+    r.ImGui_SetNextWindowPos(ctx, x - 26, y + 23)
+    r.ImGui_SetNextWindowSize(ctx, 265, 310)
+    if r.ImGui_BeginPopup(ctx, "Png Selector") then
+        local item_spacing_x, item_spacing_y = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing())
+        item_spacing_x = item_spacing_y
+        r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing(), item_spacing_y, item_spacing_y)
+        local buttons_count = #letters
+        local window_visible_x2 = ({ r.ImGui_GetWindowPos(ctx) })[1] + ({ r.ImGui_GetWindowContentRegionMax(ctx) })[1]
+        for n = 0, #PNG_TBL - 1 do
+            local image = PNG_TBL[n + 1].name
+            r.ImGui_PushID(ctx, n)
+            if not r.ImGui_ValidatePtr(PNG_TBL[n + 1].img_obj, 'ImGui_Image*') then
+                PNG_TBL[n + 1].img_obj = r.ImGui_CreateImage(image)
+                --PNG_TBL[n + 1].wh = { r.ImGui_Image_GetSize(PNG_TBL[n + 1].img_obj) }
+            end
+            local uv = ImageUVOffset(PNG_TBL[n + 1].img_obj, 3, 1, 0, 0, 0, true)
+            if r.ImGui_ImageButton(ctx, "aaa", PNG_TBL[n + 1].img_obj, uv[1], uv[2], uv[3], uv[4], uv[5], uv[6]) then
+                ret, png = true, image
+                r.ImGui_CloseCurrentPopup(ctx)
+            end
+            local last_button_x2 = r.ImGui_GetItemRectMax(ctx)
+            local next_button_x2 = last_button_x2 + item_spacing_x + button_size
+            if n + 1 < buttons_count and next_button_x2 < window_visible_x2 then
+                r.ImGui_SameLine(ctx)
+            end
+            r.ImGui_PopID(ctx)
+        end
+        r.ImGui_PopStyleVar(ctx)
+        r.ImGui_EndPopup(ctx)
+    end
+    return ret, png
+end
 
-    if r.ImGui_BeginChild(ctx, "##buttons#",nil,65) then
+local function PngDisplay(tbl, png, button_size)
+    local rv
+    r.ImGui_PushID(ctx, "PNG")
+    if #png ~= 0 then
+        if not r.ImGui_ValidatePtr(btn_prev_image, 'ImGui_Image*') then
+            btn_prev_image = r.ImGui_CreateImage(png)
+        end
+        local uv = ImageUVOffset(btn_prev_image, 3, 1, 0, 0, 0, true)
+        if r.ImGui_ImageButton(ctx, "##prev_png", btn_prev_image, uv[1]/2, uv[2]/3.2, uv[3], uv[4], uv[5], uv[6]) then
+            if not ALT then
+                rv = true
+            else
+                tbl.png = ""
+                tbl.img_obj = nil
+                btn_prev_image = nil
+            end
+        end
+    else
+        if r.ImGui_Button(ctx, "##prev_png_empty", button_size + 10, button_size) then
+            rv = true
+        end
+    end
+    r.ImGui_PopID(ctx)
+    r.ImGui_SameLine(ctx)
+    return rv
+end
+
+local function PngFrame(pie)
+    if PngDisplay(pie[pie.selected], pie[pie.selected].png, 20) then
+        r.ImGui_OpenPopup(ctx, 'Png Selector')
+    end
+    local rv, png = PngSelector(30)
+    return rv, png
+end
+
+local function ButtonInfo(pie)
+    --  r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0xff)
+
+    if r.ImGui_BeginChild(ctx, "##buttons#", nil, 65) then
         r.ImGui_SetNextItemWidth(ctx, 200)
         RV_R, pie.RADIUS = r.ImGui_SliderInt(ctx, "RADIUS", pie.RADIUS, 100, 270)
         RADIUS_ACTIVE = r.ImGui_IsItemActive(ctx)
@@ -728,6 +856,11 @@ local function ButtonInfo(pie)
                 pie[pie.selected].icon = icon
             end
             r.ImGui_SameLine(ctx)
+            local rv_png, png = PngFrame(pie)
+            if rv_png then
+                pie[pie.selected].png = png
+            end
+            r.ImGui_SameLine(ctx)
             r.ImGui_SetNextItemWidth(ctx, 50)
             rv_k, pie[pie.selected].key = r.ImGui_Combo(ctx, "Key", tonumber(pie[pie.selected].key), keys_str, 5)
             r.ImGui_SameLine(ctx)
@@ -743,7 +876,7 @@ local function ButtonInfo(pie)
         end
         r.ImGui_EndChild(ctx)
     end
-   -- r.ImGui_PopStyleColor(ctx)
+    -- r.ImGui_PopStyleColor(ctx)
 end
 
 local function Tabs()
@@ -858,11 +991,11 @@ local function Tabs()
             -- end
             --rv_arccol, ARC_COLOR = r.ImGui_ColorEdit4(ctx, "ARC COLOR", ARC_COLOR, r.ImGui_ColorEditFlags_NoInputs())
             --if rv_bbg or rv_lbg or rv_arccol or def_update then
-                --DEFAULT_COLOR = DARK and def_color_dark or DEFAULT_COLOR
-                --DEFAULT_COLOR = LIGHT and def_color_light or DEFAULT_COLOR
-                --def_color = ADJUST_TO_THEME and CalculateThemeColor(GetThemeBG()) or DEFAULT_COLOR
-               -- WANT_SAVE = true
-                --def_update = nil
+            --DEFAULT_COLOR = DARK and def_color_dark or DEFAULT_COLOR
+            --DEFAULT_COLOR = LIGHT and def_color_light or DEFAULT_COLOR
+            --def_color = ADJUST_TO_THEME and CalculateThemeColor(GetThemeBG()) or DEFAULT_COLOR
+            -- WANT_SAVE = true
+            --def_update = nil
             --end
             if WANT_SAVE then
                 local data = TableToString(
@@ -935,7 +1068,7 @@ end
 local function Main()
     r.ImGui_SetNextWindowBgAlpha(ctx, 1)
     -- r.ImGui_PushStyleColor( ctx, r.ImGui_Col_WindowBg(),  (GetThemeBG() << 8 ) | 0xFF )
-    r.ImGui_SetNextWindowSizeConstraints( ctx, 1000, 600, 9999, 9999 )
+    r.ImGui_SetNextWindowSizeConstraints(ctx, 1000, 600, 9999, 9999)
     local visible, open = r.ImGui_Begin(ctx, 'Pie 3000 Setup', true)
     --r.ImGui_PopStyleColor(ctx)
     if visible then
@@ -944,7 +1077,7 @@ local function Main()
         if not USER_SETTINGS then
             ActionsTab()
             r.ImGui_SameLine(ctx)
-           -- r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), (GetThemeBG() << 8) | 0xFF)
+            -- r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), (GetThemeBG() << 8) | 0xFF)
             if r.ImGui_BeginChild(ctx, "##PIEDRAW", 0, 0) then
                 if CUR_PIE then
                     ButtonInfo(CUR_PIE)
@@ -952,7 +1085,7 @@ local function Main()
                 end
                 r.ImGui_EndChild(ctx)
             end
-           -- r.ImGui_PopStyleColor(ctx)
+            -- r.ImGui_PopStyleColor(ctx)
 
             DndAddTargetAction()
             DndAddTargetMenu()
@@ -977,9 +1110,9 @@ local function Main()
                 DEL = nil
             end
         else
-            if CUR_PIE then
-                DrawPie(CUR_PIE)
-            end
+            -- if CUR_PIE then
+            --     DrawPie(CUR_PIE)
+            -- end
         end
         Popups()
         r.ImGui_End(ctx)
