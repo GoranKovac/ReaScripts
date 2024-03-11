@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="43abbe27738ca921a948d6c4cf0bb957b476be92" name="Sexan_Scripts">
+<index version="1" commit="bc2976c4f3caec20743f32f47c137e0a0072c290" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -3602,6 +3602,23 @@ For now only default Toolbar icons (data/toolbar_icons/150) are used]]></changel
         <source file="easing.lua">https://github.com/GoranKovac/ReaScripts/raw/43abbe27738ca921a948d6c4cf0bb957b476be92/Pie3000/easing.lua</source>
         <source file="PieUtils.lua">https://github.com/GoranKovac/ReaScripts/raw/43abbe27738ca921a948d6c4cf0bb957b476be92/Pie3000/PieUtils.lua</source>
         <source file="fontello1.ttf">https://github.com/GoranKovac/ReaScripts/raw/43abbe27738ca921a948d6c4cf0bb957b476be92/Pie3000/fontello1.ttf</source>
+      </version>
+      <version name="0.2" author="Sexan" time="2024-03-11T20:03:02Z">
+        <changelog><![CDATA[Optimized actions filtering (SETUP)
+Optimized png drawing  (SETUP)
+Fixed png changing (SETUP)
+Added menu searching
+Fixed focus while chaining color,icon,png
+Improved text drawing in main script
+Fix arc when there are less than 6 items in pie (workaround)
+Added text wrapping
+Added warning before clearing context
+Fixed crash when hovering over spacer]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/bc2976c4f3caec20743f32f47c137e0a0072c290/Pie3000/Sexan_Pie3000.lua</source>
+        <source main="main" file="Sexan_Pie3000_Setup.lua">https://github.com/GoranKovac/ReaScripts/raw/bc2976c4f3caec20743f32f47c137e0a0072c290/Pie3000/Sexan_Pie3000_Setup.lua</source>
+        <source file="easing.lua">https://github.com/GoranKovac/ReaScripts/raw/bc2976c4f3caec20743f32f47c137e0a0072c290/Pie3000/easing.lua</source>
+        <source file="PieUtils.lua">https://github.com/GoranKovac/ReaScripts/raw/bc2976c4f3caec20743f32f47c137e0a0072c290/Pie3000/PieUtils.lua</source>
+        <source file="fontello1.ttf">https://github.com/GoranKovac/ReaScripts/raw/bc2976c4f3caec20743f32f47c137e0a0072c290/Pie3000/fontello1.ttf</source>
       </version>
     </reapack>
   </category>
