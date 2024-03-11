@@ -1,18 +1,10 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.2
+-- @version 0.21
 -- @changelog
---  Optimized actions filtering (SETUP)
---  Optimized png drawing  (SETUP)
---  Fixed png changing (SETUP)
---  Added menu searching
---  Fixed focus while chaining color,icon,png
---  Improved text drawing in main script
---  Fix arc when there are less than 6 items in pie (workaround)
---  Added text wrapping
---  Added warning before clearing context
---  Fixed crash when hovering over spacer
+--  Open Script if both data files exist
+--  Disabled Custom Menu Editor while in WIP
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
@@ -192,7 +184,7 @@ local function Init()
     START_TIME = r.time_precise()
     MOUSE_INFO = GetMouseContext()
     if not MOUSE_INFO then return "ERROR" end
-    if #PIES[MOUSE_INFO] == 0 then return "ERROR" end
+    --if #PIES[MOUSE_INFO] == 0 then return "ERROR" end
     --if HOLD_TO_OPEN then
     local key_state = r.JS_VKeys_GetState(START_TIME - 2)
     for i = 1, 255 do

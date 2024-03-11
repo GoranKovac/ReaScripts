@@ -1512,26 +1512,26 @@ local function Main2()
                 r.ImGui_EndGroup(ctx)
                 r.ImGui_EndTabItem(ctx)
             end
-            if r.ImGui_BeginTabItem(ctx, "Custom Menu Editor") then
-                if not EDITOR then EDITOR = true end
-                if SWITCH_PIE then
-                    CUR_MENU_PIE = SWITCH_PIE
-                    SWITCH_PIE = nil
-                end
-                DrawPie(CUR_MENU_PIE, 258)
-                DndAddTargetAction(CUR_MENU_PIE)
-                DndAddTargetMenu(CUR_MENU_PIE)
-                r.ImGui_SameLine(ctx)
-                MenuEditList(CUR_MENU_PIE)
-                r.ImGui_SameLine(ctx)
-                r.ImGui_BeginGroup(ctx)
-                r.ImGui_SeparatorText(ctx, "Button Properties")
-                NewProperties(CUR_MENU_PIE)
-                r.ImGui_SeparatorText(ctx, "Drag'n'Drop into Pie Window")
-                Properties(CUR_MENU_PIE)
-                r.ImGui_EndGroup(ctx)
-                r.ImGui_EndTabItem(ctx)
-            end
+            -- if r.ImGui_BeginTabItem(ctx, "Custom Menu Editor") then
+            --     if not EDITOR then EDITOR = true end
+            --     if SWITCH_PIE then
+            --         CUR_MENU_PIE = SWITCH_PIE
+            --         SWITCH_PIE = nil
+            --     end
+            --     DrawPie(CUR_MENU_PIE, 258)
+            --     DndAddTargetAction(CUR_MENU_PIE)
+            --     DndAddTargetMenu(CUR_MENU_PIE)
+            --     r.ImGui_SameLine(ctx)
+            --     MenuEditList(CUR_MENU_PIE)
+            --     r.ImGui_SameLine(ctx)
+            --     r.ImGui_BeginGroup(ctx)
+            --     r.ImGui_SeparatorText(ctx, "Button Properties")
+            --     NewProperties(CUR_MENU_PIE)
+            --     r.ImGui_SeparatorText(ctx, "Drag'n'Drop into Pie Window")
+            --     Properties(CUR_MENU_PIE)
+            --     r.ImGui_EndGroup(ctx)
+            --     r.ImGui_EndTabItem(ctx)
+            -- end
             if r.ImGui_BeginTabItem(ctx, "Settings") then
                 if r.ImGui_Checkbox(ctx, "Hold to OPEN", HOLD_TO_OPEN) then
                     HOLD_TO_OPEN = not HOLD_TO_OPEN
