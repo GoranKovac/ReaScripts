@@ -1,10 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.21
+-- @version 0.21.1
 -- @changelog
---  Open Script if both data files exist
---  Disabled Custom Menu Editor while in WIP
+--  Fixed Activate on close when animation is off
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
@@ -576,7 +575,8 @@ local function StyleFly(pie, center, drag_angle)
         DrawFlyButton(pie[i], pie.selected, prog, center, button_pos)
 
         if pie.selected then
-            ExecuteAction(pie[i].cmd, pie[i].name)
+            LAST_ACTION = {cmd = pie[i].cmd, name = pie[i].name}
+            --ExecuteAction(pie[i].cmd, pie[i].name)
         end
 
         if pie[i].key and pie[i].key ~= 0 then
@@ -696,6 +696,8 @@ local function DrawCenter(center)
 
     
     PIE_MENU.active = ((drag_dist >= RADIUS_MIN ^ 2) and PROG > 0.8)
+
+    if not PIE_MENU.active then LAST_ACTION = nil end
     
     local main_clicked = (r.ImGui_IsMouseDown(ctx, 0) and not PIE_MENU.active and #PIE_LIST ~= 0)
 
@@ -868,7 +870,7 @@ local function Main()
         SWITCH_PIE = nil
         SWAP = nil
     end
-
+    
     --r.ImGui_SetNextWindowSize(ctx, screen_right, screen_bottom)
     if r.ImGui_Begin(ctx, 'PIE 3000', false, FLAGS) then
         CheckKeys()
@@ -878,8 +880,13 @@ local function Main()
         --AccessibilityMode()
         local center = { x = r.ImGui_GetWindowWidth(ctx) / 2, y = r.ImGui_GetWindowHeight(ctx) / 2 }
         --local center = { x = START_X, y = START_Y }
-        if not DONE then DrawPie(PIE_MENU, center) end
+        --if not DONE then DrawPie(PIE_MENU, center) end
+        DrawPie(PIE_MENU, center)
         r.ImGui_End(ctx)
+    end
+    
+    if LAST_ACTION then
+        ExecuteAction(LAST_ACTION.cmd, LAST_ACTION.name)
     end
     if not DONE then
         if DBG then
