@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.21.1
+-- @version 0.21.2
 -- @changelog
---  Fixed Activate on close when animation is off
+--  Fixed text wrapper crash on empty menu
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
@@ -562,7 +562,7 @@ local function StyleFly(pie, center, drag_angle)
                 new_max = (new_max + step / (splits - 1))
             end
         else
-             --! REMOVE SPLITTING ARC WHEN IMGUI GETS UPDATE
+            --! REMOVE SPLITTING ARC WHEN IMGUI GETS UPDATE
             if pie.selected then
                 r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 0)
                 r.ImGui_DrawList_PathArcTo(draw_list, WX + center_x, WY + center_y, (RADIUS - RADIUS_MIN) + 100, ang_min,
@@ -575,7 +575,7 @@ local function StyleFly(pie, center, drag_angle)
         DrawFlyButton(pie[i], pie.selected, prog, center, button_pos)
 
         if pie.selected then
-            LAST_ACTION = {cmd = pie[i].cmd, name = pie[i].name}
+            LAST_ACTION = { cmd = pie[i].cmd, name = pie[i].name }
             --ExecuteAction(pie[i].cmd, pie[i].name)
         end
 
@@ -623,7 +623,7 @@ local function StyleFly(pie, center, drag_angle)
     end
 end
 
-local function TextSplitByWidth(text, width ,height)
+local function TextSplitByWidth(text, width, height)
     local str_tbl = {}
     local str = {}
     local total = 0
@@ -655,17 +655,17 @@ local function TextSplitByWidth(text, width ,height)
 
     local h_cnt = 0
     for i = 1, #str_tbl do
-        if (txt_h *i) < height-2 then
+        if (txt_h * i) < height - 2 then
             h_cnt = h_cnt + 1
         end
     end
     for i = 1, #str_tbl do
         local str_w = r.ImGui_CalcTextSize(ctx, str_tbl[i])
-        r.ImGui_SetCursorScreenPos(ctx, xs + bw / 2 - str_w / 2,
-            ys + (bh / 2) - (txt_h * (h_cnt - (i - 1))) + (h_cnt * txt_h) / 2)
-            if (txt_h * i-1) + f_size < height then
-                r.ImGui_Text(ctx, str_tbl[i])
-            end
+        if (txt_h * i - 1) + f_size < height then
+            r.ImGui_SetCursorScreenPos(ctx, xs + bw / 2 - str_w / 2,
+                ys + (bh / 2) - (txt_h * (h_cnt - (i - 1))) + (h_cnt * txt_h) / 2)
+            r.ImGui_Text(ctx, str_tbl[i])
+        end
     end
     r.ImGui_PopClipRect(ctx)
 end
@@ -694,27 +694,30 @@ local function DrawCenter(center)
 
     local button_wh = (((RADIUS_MIN) / math.sqrt(2)) * 2)
 
-    
+
     PIE_MENU.active = ((drag_dist >= RADIUS_MIN ^ 2) and PROG > 0.8)
 
     if not PIE_MENU.active then LAST_ACTION = nil end
-    
+
     local main_clicked = (r.ImGui_IsMouseDown(ctx, 0) and not PIE_MENU.active and #PIE_LIST ~= 0)
 
-    
+
     if PROG > 0.2 then
-        r.ImGui_SetCursorScreenPos(ctx, WX + center.x - (button_wh / 2), WY + center.y - (button_wh / 2))        
-        r.ImGui_InvisibleButton(ctx, "##CENTER", button_wh < 2 and 2 or button_wh,  button_wh < 2 and 2 or button_wh)
+        r.ImGui_SetCursorScreenPos(ctx, WX + center.x - (button_wh / 2), WY + center.y - (button_wh / 2))
+        r.ImGui_InvisibleButton(ctx, "##CENTER", button_wh < 2 and 2 or button_wh, button_wh < 2 and 2 or button_wh)
     end
 
     r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 2)
 
     -- SHADOW
-    r.ImGui_DrawList_AddCircleFilled(draw_list, WX + center.x + 1, WY + center.y + 1, RADIUS_MIN + 2 - (main_clicked and 5 or 0),        LerpAlpha(0x44, PROG), 64)
+    r.ImGui_DrawList_AddCircleFilled(draw_list, WX + center.x + 1, WY + center.y + 1,
+        RADIUS_MIN + 2 - (main_clicked and 5 or 0), LerpAlpha(0x44, PROG), 64)
 
-    r.ImGui_DrawList_AddCircleFilled(draw_list, WX + center.x, WY + center.y, RADIUS_MIN - (main_clicked and 5 or 0),        LerpAlpha(def_out_ring, PROG), 64)
+    r.ImGui_DrawList_AddCircleFilled(draw_list, WX + center.x, WY + center.y, RADIUS_MIN - (main_clicked and 5 or 0),
+        LerpAlpha(def_out_ring, PROG), 64)
 
-    r.ImGui_DrawList_AddCircleFilled(draw_list, WX + center.x, WY + center.y, RADIUS_MIN - 4 - (main_clicked and 5 or 0),        LerpAlpha(main_color, PROG), 64)
+    r.ImGui_DrawList_AddCircleFilled(draw_list, WX + center.x, WY + center.y, RADIUS_MIN - 4 - (main_clicked and 5 or 0),
+        LerpAlpha(main_color, PROG), 64)
     if PIE_MENU.png then
         r.ImGui_DrawList_AddCircle(draw_list, WX + center.x, WY + center.y, (RADIUS_MIN - 11) * PROG,
             LerpAlpha(PIE_MENU.col == 0xff and def_color or PIE_MENU.col, PROG), 128, 2.5)
@@ -761,8 +764,8 @@ local function DrawCenter(center)
         if #PIE_LIST ~= 0 then
             LAST_MSG = PIE_LIST[#PIE_LIST].name
             --LAST_FONT = SYSTEM_FONT2
-           -- LAST_FONT_SIZE = FONT_LARGE
-           -- LAST_MSG_Y = 20
+            -- LAST_FONT_SIZE = FONT_LARGE
+            -- LAST_MSG_Y = 20
 
             r.ImGui_PushFont(ctx, main_clicked and ICON_FONT_CLICKED or ICON_FONT_LARGE)
             local txt_w, txt_h = r.ImGui_CalcTextSize(ctx, utf8.char(143))
@@ -870,7 +873,7 @@ local function Main()
         SWITCH_PIE = nil
         SWAP = nil
     end
-    
+
     --r.ImGui_SetNextWindowSize(ctx, screen_right, screen_bottom)
     if r.ImGui_Begin(ctx, 'PIE 3000', false, FLAGS) then
         CheckKeys()
@@ -884,7 +887,7 @@ local function Main()
         DrawPie(PIE_MENU, center)
         r.ImGui_End(ctx)
     end
-    
+
     if LAST_ACTION then
         ExecuteAction(LAST_ACTION.cmd, LAST_ACTION.name)
     end
