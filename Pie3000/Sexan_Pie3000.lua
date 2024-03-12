@@ -1,14 +1,16 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.21.2
+-- @version 0.21.3
 -- @changelog
---  Fixed text wrapper crash on empty menu
+--  Fixed crash on master context
+--  Added script to delete files
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
 --   PieUtils.lua
 --   fontello1.ttf
+--   [main] Sexan_PieCleanFiles.lua
 
 local r = reaper
 local osname = r.GetOS()
@@ -115,6 +117,7 @@ local function GetMouseContext()
     local class_name = r.JS_Window_GetClassName(cur_hwnd)
 
     if info:match("spacer") then return end
+    if info:match("master") then return end
     if #info == 0 then --return end
         if not class_name then return end
         if class_name == "REAPERTCPDisplay" then
