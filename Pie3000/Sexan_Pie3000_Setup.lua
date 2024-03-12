@@ -14,7 +14,9 @@ local ctx = r.ImGui_CreateContext('PIE 3000 SETUP')
 r.ImGui_SetConfigVar(ctx, r.ImGui_ConfigVar_WindowsMoveFromTitleBarOnly(), 1)
 local FLT_MIN, FLT_MAX = r.ImGui_NumericLimits_Float()
 
-local png_path = r.GetResourcePath() .. "/Data/toolbar_icons/150/"
+local png_path = r.GetResourcePath() .. "/Data/toolbar_icons/"
+local png_path_150 = r.GetResourcePath() .. "/Data/toolbar_icons/150/"
+local png_path_200 = r.GetResourcePath() .. "/Data/toolbar_icons/200/"
 
 local PIE_LIST = {}
 
@@ -246,6 +248,8 @@ local function IterateFiles(dir)
 end
 
 local PNG_TBL = IterateFiles(png_path)
+local PNG_TBL_150 = IterateFiles(png_path_150)
+local PNG_TBL_200 = IterateFiles(png_path_200)
 
 local function IterateActions(sectionID)
     local i = 0
@@ -392,7 +396,7 @@ local function ActionsTab(pie)
             end
             r.ImGui_SetNextItemWidth(ctx, -FLT_MIN)
             FilterBox(ACTIONS_TBL, "action")
-            if r.ImGui_BeginChild(ctx, "##CLIPPER_ACTION", 500) then
+            if r.ImGui_BeginChild(ctx, "##CLIPPER_ACTION", 0) then
                 if not r.ImGui_ValidatePtr(ACTION_CLIPPER, 'ImGui_ListClipper*') then
                     ACTION_CLIPPER = r.ImGui_CreateListClipper(ctx)
                 end
@@ -433,7 +437,7 @@ local function ActionsTab(pie)
             --     }
             --     update_filter = true
             -- end
-            if r.ImGui_BeginListBox(ctx, "##Menu List", 500, -1) then
+            if r.ImGui_BeginListBox(ctx, "##Menu List", -FLT_MIN, -FLT_MIN) then
                 for i = 1, #FILTERED_MENU_TBL do
                     local CROSS_MENU = pie and HasReference(FILTERED_MENU_TBL[i], pie.guid) or nil
                     local SAME_MENU = pie == FILTERED_MENU_TBL[i]
@@ -606,7 +610,7 @@ local function DrawFlyButton(pie, selected, hovered, center)
     --col = (hovered and ALT) and def_color or col
 
 
-    local button_radius = active and 35 or 25
+    local button_radius = active and (w/2)+10 or w/2
 
     if hovered and r.ImGui_IsMouseDown(ctx, 0) then
         r.ImGui_DrawList_AddCircle(draw_list, button_center.x, button_center.y, (button_radius + 4), 0xffffff77, 128, 14)
@@ -615,6 +619,7 @@ local function DrawFlyButton(pie, selected, hovered, center)
     r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 1)
 
     if selected then
+        r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 2)
         local scale = (sin(r.time_precise() * 5) * 0.05) + 1.01
         r.ImGui_DrawList_AddCircle(draw_list, button_center.x, button_center.y,
             (pie.menu and button_radius + 15 or button_radius + 8) * scale,
@@ -699,21 +704,28 @@ local function StyleFly(pie, center, drag_angle, active)
     local RADIUS = pie.RADIUS
     local RADIUS_MIN = RADIUS / 2.2
 
-    --local arc_col = ARC_COLOR
-
     for i = 1, #pie do
-        -- local ang_min = (item_arc_span) * (i - (0.5)) + START_ANG
-        --local ang_max = (item_arc_span) * (i + (0.5)) + START_ANG
+        local button_w, button_h = 45, 45
+        local png = pie[i].png
+        if png then
+            if not r.ImGui_ValidatePtr(pie[i].img_obj, 'ImGui_Image*') then
+                pie[i].img_obj = r.ImGui_CreateImage(png)
+            end
+            local img_data = ImageUVOffset(pie[i].img_obj, 3, 1, 0,0,0, true)
+            button_w = math.sqrt(2) * img_data[1]
+        end
+
+
         local angle = item_arc_span * i
 
         local button_pos = {
-            x = center_x + (RADIUS_MIN + 60) * cos(angle + START_ANG) - 22,
-            y = center_y + (RADIUS_MIN + 60) * sin(angle + START_ANG) - 22,
+            x = center_x + (RADIUS_MIN + 50 + button_w/5) * cos(angle + START_ANG) - button_w/2,
+            y = center_y + (RADIUS_MIN + 50 + button_w/5) * sin(angle + START_ANG) - button_w/2,
         }
 
         r.ImGui_SetCursorPos(ctx, button_pos.x, button_pos.y)
         r.ImGui_PushID(ctx, i)
-        r.ImGui_InvisibleButton(ctx, "##AAA", 45, 45)
+        r.ImGui_InvisibleButton(ctx, "##AAA", button_w, button_w)
         if r.ImGui_IsItemClicked(ctx, 0) then
             if ALT then
                 DEL = { pie, i, nil, pie[i].menu }
@@ -745,24 +757,24 @@ local function StyleFly(pie, center, drag_angle, active)
     end
 end
 
-local function WrappText(txt, center)
-    local bw, bh = r.ImGui_GetItemRectSize(ctx)
-    local xs, ys = r.ImGui_GetItemRectMin(ctx)
-    local xe, ye = r.ImGui_GetItemRectMax(ctx)
+-- local function WrappText(txt, center)
+--     local bw, bh = r.ImGui_GetItemRectSize(ctx)
+--     local xs, ys = r.ImGui_GetItemRectMin(ctx)
+--     local xe, ye = r.ImGui_GetItemRectMax(ctx)
 
-    r.ImGui_PushTextWrapPos(ctx, center.x + bw / 2)
-    r.ImGui_SetCursorScreenPos(ctx, xs, ys + (bh / 2) - (LAST_TXT_H and (LAST_TXT_H / 2) or 0))
+--     r.ImGui_PushTextWrapPos(ctx, center.x + bw / 2)
+--     r.ImGui_SetCursorScreenPos(ctx, xs, ys + (bh / 2) - (LAST_TXT_H and (LAST_TXT_H / 2) or 0))
 
-    r.ImGui_PushClipRect(ctx, xs, ys, xe, ye, false)
-    r.ImGui_Text(ctx, txt)
-    r.ImGui_PopClipRect(ctx)
+--     r.ImGui_PushClipRect(ctx, xs, ys, xe, ye, false)
+--     r.ImGui_Text(ctx, txt)
+--     r.ImGui_PopClipRect(ctx)
 
-    local w, h = r.ImGui_GetItemRectSize(ctx)
-    LAST_TXT_H = h <= bh and h or bh
-    r.ImGui_PopTextWrapPos(ctx)
-end
+--     local w, h = r.ImGui_GetItemRectSize(ctx)
+--     LAST_TXT_H = h <= bh and h or bh
+--     r.ImGui_PopTextWrapPos(ctx)
+-- end
 
-local function TextSplitByWidth(text, width , height)
+local function TextSplitByWidth(text, width, height)
     local str_tbl = {}
     local str = {}
     local total = 0
@@ -788,11 +800,11 @@ local function TextSplitByWidth(text, width , height)
     local xe, ye = r.ImGui_GetItemRectMax(ctx)
 
     local _, txt_h = r.ImGui_CalcTextSize(ctx, text)
-    r.ImGui_PushClipRect(ctx, xs, ys, xe, ye, false)
+    -- r.ImGui_PushClipRect(ctx, xs, ys, xe, ye, false)
     local f_size = r.ImGui_GetFontSize(ctx)
     local h_cnt = 0
     for i = 1, #str_tbl do
-        if (txt_h *i) < height-2 then
+        if (txt_h * i) < height - 2 then
             h_cnt = h_cnt + 1
         end
     end
@@ -800,11 +812,11 @@ local function TextSplitByWidth(text, width , height)
         local str_w = r.ImGui_CalcTextSize(ctx, str_tbl[i])
         r.ImGui_SetCursorScreenPos(ctx, xs + bw / 2 - str_w / 2,
             ys + (bh / 2) - (txt_h * (h_cnt - (i - 1))) + (h_cnt * txt_h) / 2)
-            if (txt_h * i-1) + f_size < height then
-                r.ImGui_Text(ctx, str_tbl[i])
-            end
+        if (txt_h * i - 1) + f_size < height then
+            r.ImGui_Text(ctx, str_tbl[i])
+        end
     end
-    r.ImGui_PopClipRect(ctx)
+    --r.ImGui_PopClipRect(ctx)
 end
 
 -- local function TextSplitByWidth2(text, width)
@@ -894,7 +906,7 @@ local function DrawCenter(pie, center)
     --     ImageUVOffset(pie.img_obj, 3, 1, 0, WX + center.x, WY + center.y)
     -- end
 
-    r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 0)
+    --r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 0)
     LAST_MSG = nil
     return drag_angle, active
 end
@@ -951,7 +963,7 @@ end
 
 local function DrawPie(tbl, pos)
     local WW, WH = r.ImGui_GetWindowSize(ctx)
-    if r.ImGui_BeginChild(ctx, "##PIEDRAW", WW - 535 - pos, 0, true) then
+    if r.ImGui_BeginChild(ctx, "##PIEDRAW", WW - 650 - pos, 0, true) then
         r.ImGui_SameLine(ctx)
         r.ImGui_SetNextItemWidth(ctx, 110)
         if not EDITOR then
@@ -1125,7 +1137,14 @@ end
 --     return ret
 -- end
 
+local function RefreshImgObj(tbl)
+    for i = 1, #tbl do
+        tbl[i].img_obj = nil
+    end
+end
+
 local PNG_FILTER = ''
+local png_tbl = PNG_TBL
 local function PngSelector(pie, button_size)
     local ret, png = false, nil
     local x, y = r.ImGui_GetCursorScreenPos(ctx)
@@ -1133,42 +1152,63 @@ local function PngSelector(pie, button_size)
     r.ImGui_SetNextWindowSize(ctx, 500, 400)
     r.ImGui_SetNextWindowBgAlpha(ctx, 1)
     if r.ImGui_BeginPopup(ctx, "Png Selector") then
-        r.ImGui_SetNextItemWidth(ctx, -FLT_MIN)
-        rv_f, PNG_FILTER = r.ImGui_InputTextWithHint(ctx, "##input2", "Search PNG", PNG_FILTER)
-        FILTERED_PNG = FilterActions(PNG_TBL, PNG_FILTER)
-        local item_spacing_x, item_spacing_y = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing())
-        item_spacing_x = item_spacing_y
-        r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing(), item_spacing_y, item_spacing_y)
-        local buttons_count = #FILTERED_PNG
-        local window_visible_x2 = ({ r.ImGui_GetWindowPos(ctx) })[1] + ({ r.ImGui_GetWindowContentRegionMax(ctx) })[1]
-        if r.ImGui_BeginChild(ctx, "filtered_pngs_list", 0, 0) then
-            for n = 0, #FILTERED_PNG - 1 do
-                local image = FILTERED_PNG[n + 1].name
-                r.ImGui_PushID(ctx, n)
-                -- if DrawImageButtonList(button_size, 0x333333ff, PNG_TBL[n + 1]) then
-                --     pie.img_obj = nil
-                --     ret, png = true, image
-                --     r.ImGui_CloseCurrentPopup(ctx)
-                -- end
-                if not r.ImGui_ValidatePtr(FILTERED_PNG[n + 1].img_obj, 'ImGui_Image*') then
-                    FILTERED_PNG[n + 1].img_obj = r.ImGui_CreateImage(image)
-                end
-                local uv = ImageUVOffset(FILTERED_PNG[n + 1].img_obj, 3, 1, 0, 0, 0, true)
-                if r.ImGui_ImageButton(ctx, "##png_select", FILTERED_PNG[n + 1].img_obj, button_size, button_size, uv[3], uv[4], uv[5], uv[6]) then
-                    pie.img_obj = nil
-                    ret, png = true, image
-                    r.ImGui_CloseCurrentPopup(ctx)
-                end
-                local last_button_x2 = r.ImGui_GetItemRectMax(ctx)
-                local next_button_x2 = last_button_x2 + item_spacing_x + button_size
-                if n + 1 < buttons_count and next_button_x2 < window_visible_x2 then
-                    r.ImGui_SameLine(ctx)
-                end
-                r.ImGui_PopID(ctx)
+        if r.ImGui_BeginTabBar(ctx, "png_folder_select") then
+            r.ImGui_BeginGroup(ctx)
+            if r.ImGui_Checkbox( ctx, "100", png_tbl == PNG_TBL) then
+                RefreshImgObj(PNG_TBL)
+                png_tbl = PNG_TBL
             end
-            r.ImGui_EndChild(ctx)
+            r.ImGui_SameLine(ctx)
+            if r.ImGui_Checkbox( ctx, "150", png_tbl == PNG_TBL_150 ) then
+                RefreshImgObj(PNG_TBL_150)
+                png_tbl = PNG_TBL_150
+            end            
+            r.ImGui_SameLine(ctx)
+            if r.ImGui_Checkbox( ctx, "200", png_tbl == PNG_TBL_200 ) then
+                RefreshImgObj(PNG_TBL_200)
+                png_tbl = PNG_TBL_200
+            end
+            r.ImGui_EndGroup(ctx)
+           
+            r.ImGui_SetNextItemWidth(ctx, -FLT_MIN)
+            rv_f, PNG_FILTER = r.ImGui_InputTextWithHint(ctx, "##input2", "Search PNG", PNG_FILTER)
+            FILTERED_PNG = FilterActions(png_tbl, PNG_FILTER)
+            local item_spacing_x, item_spacing_y = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing())
+            item_spacing_x = item_spacing_y
+            r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing(), item_spacing_y, item_spacing_y)
+            local buttons_count = #FILTERED_PNG
+            local window_visible_x2 = ({ r.ImGui_GetWindowPos(ctx) })[1] +
+            ({ r.ImGui_GetWindowContentRegionMax(ctx) })[1]
+            if r.ImGui_BeginChild(ctx, "filtered_pngs_list", 0, 0) then
+                for n = 0, #FILTERED_PNG - 1 do
+                    local image = FILTERED_PNG[n + 1].name
+                    r.ImGui_PushID(ctx, n)
+                    -- if DrawImageButtonList(button_size, 0x333333ff, PNG_TBL[n + 1]) then
+                    --     pie.img_obj = nil
+                    --     ret, png = true, image
+                    --     r.ImGui_CloseCurrentPopup(ctx)
+                    -- end
+                    if not r.ImGui_ValidatePtr(FILTERED_PNG[n + 1].img_obj, 'ImGui_Image*') then
+                        FILTERED_PNG[n + 1].img_obj = r.ImGui_CreateImage(image)
+                    end
+                    local uv = ImageUVOffset(FILTERED_PNG[n + 1].img_obj, 3, 1, 0, 0, 0, true)
+                    if r.ImGui_ImageButton(ctx, "##png_select", FILTERED_PNG[n + 1].img_obj, button_size, button_size, uv[3], uv[4], uv[5], uv[6]) then
+                        pie.img_obj = nil
+                        ret, png = true, image
+                        r.ImGui_CloseCurrentPopup(ctx)
+                    end
+                    local last_button_x2 = r.ImGui_GetItemRectMax(ctx)
+                    local next_button_x2 = last_button_x2 + item_spacing_x + button_size
+                    if n + 1 < buttons_count and next_button_x2 < window_visible_x2 then
+                        r.ImGui_SameLine(ctx)
+                    end
+                    r.ImGui_PopID(ctx)
+                end
+                r.ImGui_EndChild(ctx)
+            end
+            r.ImGui_PopStyleVar(ctx)
+            r.ImGui_EndTabBar(ctx)
         end
-        r.ImGui_PopStyleVar(ctx)
         r.ImGui_EndPopup(ctx)
     end
     return ret, png
@@ -1343,11 +1383,18 @@ local function NewProperties(pie)
             local rv_i, icon = IconFrame(pie, 50)
             if rv_i then
                 pie[pie.selected].icon = icon
+                if pie[pie.selected].png then
+                    pie[pie.selected].png = nil
+                    pie[pie.selected].img_obj = nil
+                end
             end
             r.ImGui_SameLine(ctx)
             local rv_png, png = PngFrame(pie, 50)
             if rv_png then
                 pie[pie.selected].png = png
+                if pie[pie.selected].icon then
+                    pie[pie.selected].icon = nil
+                end
             end
             r.ImGui_SameLine(ctx)
             if r.ImGui_Button(ctx, "CLEAR", 50, 50) then

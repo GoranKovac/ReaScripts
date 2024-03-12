@@ -1,10 +1,13 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.21.3
+-- @version 0.21.4
 -- @changelog
---  Fixed crash on master context
---  Added script to delete files
+--  Choose only icon or png
+--  Fix main context menu name in circle
+--  Draw active button in front
+--  Added 100,150,200 png folders
+--  Autoadjust button radius to match png size
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
@@ -234,7 +237,7 @@ local function LerpAlpha(col, prog)
     return r.ImGui_ColorConvertDouble4ToU32(rr, gg, bb, aa * prog)
 end
 
-local function ImageUVOffset(img_obj, cols, rows, frame, x, y, prog)
+local function ImageUVOffset(img_obj, cols, rows, frame, x, y, prog, need_single_frame)
     local w, h = r.ImGui_Image_GetSize(img_obj)
 
     local xs, ys = x - (w / cols) / 2, y - (h / rows) / 2
@@ -249,8 +252,11 @@ local function ImageUVOffset(img_obj, cols, rows, frame, x, y, prog)
     local uv_ys = row_frame * uv_step_y
     local uv_xe = uv_xs + uv_step_x
     local uv_ye = uv_ys + uv_step_y
-
-    r.ImGui_DrawList_AddImage(draw_list, img_obj, xs, ys, xe, ye, uv_xs, uv_ys, uv_xe, uv_ye, LerpAlpha(0xffffffff, prog))
+    if need_single_frame then
+        return { xe - xs, ye - ys, uv_xs, uv_ys, uv_xe, uv_ye }
+    else
+        r.ImGui_DrawList_AddImage(draw_list, img_obj, xs, ys, xe, ye, uv_xs, uv_ys, uv_xe, uv_ye, LerpAlpha(0xffffffff, prog))
+    end
 end
 
 local function EasingAnim(begin_val, end_val, cur_val, duration_in_sec, ease_function, call_time, delay, open, close)
@@ -411,9 +417,9 @@ local function DrawFlyButton(pie, hovered, prog, center, key)
     end
 
     local button_radius = hovered and
-        EasingAnim(25, 35, 25, 0.15, easingFunctions.outCubic, pie.hover_time, nil, pie.hover) or 25
+        EasingAnim(w/2, (w/2)+10, w/2, 0.15, easingFunctions.outCubic, pie.hover_time, nil, pie.hover) or w/2
 
-    button_radius = png and button_radius + 5 or button_radius
+    --button_radius = png and button_radius + 5 or button_radius
     if hovered and r.ImGui_IsMouseDown(ctx, 0) then
         button_radius = button_radius - 5
         icon_font = ICON_FONT_CLICKED
@@ -520,6 +526,15 @@ local function StyleFly(pie, center, drag_angle)
 
     for i = 1, #pie do
         local has_key = pie[i].key
+        local button_w, button_h = 45,45
+        local png = pie[i].png
+        if png then
+            if not r.ImGui_ValidatePtr(pie[i].img_obj, 'ImGui_Image*') then
+                pie[i].img_obj = r.ImGui_CreateImage(png)
+            end
+            local img_data = ImageUVOffset(pie[i].img_obj, 3, 1, 0,0, 0, 0, true)
+            button_w = math.sqrt(2) * img_data[1]
+        end
 
         local ang_min = (item_arc_span) * (i - (0.5)) + START_ANG
         local ang_max = (item_arc_span) * (i + (0.5)) + START_ANG
@@ -529,17 +544,17 @@ local function StyleFly(pie, center, drag_angle)
         pie.selected = (pie.hovered and pie.active) or (has_key and r.ImGui_IsKeyDown(ctx, pie[i].key))
 
         local button_pos = {
-            x = center_x + (RADIUS_MIN + 50) * cos(angle + START_ANG) - 15,
-            y = center_y + (RADIUS_MIN + 50) * sin(angle + START_ANG) - 15,
+            x = center_x + (RADIUS_MIN + 50 + button_w/5) * cos(angle + START_ANG) - button_w/2,
+            y = center_y + (RADIUS_MIN + 50 + button_w/5) * sin(angle + START_ANG) - button_w/2,
             kx = center_x +
-                (RADIUS_MIN + 50 + (pie.selected and 62 or 43) + (pie[i].menu and 5 or 0)) * cos(angle + START_ANG),
+                (RADIUS_MIN + 50 + button_w/5 + (pie.selected and 20 or 0) + (pie[i].menu and 5 or 0)) * cos(angle + START_ANG),
             ky = center_y +
-                (RADIUS_MIN + 50 + (pie.selected and 62 or 43) + (pie[i].menu and 5 or 0)) * sin(angle + START_ANG),
+                (RADIUS_MIN + 50 + button_w/5 + (pie.selected and 20 or 0) + (pie[i].menu and 5 or 0)) * sin(angle + START_ANG),
         }
 
         r.ImGui_SetCursorPos(ctx, button_pos.x, button_pos.y)
         r.ImGui_PushID(ctx, i)
-        r.ImGui_InvisibleButton(ctx, "##AAA", 30, 30)
+        r.ImGui_InvisibleButton(ctx, "##AAA", button_w, button_w)
         r.ImGui_PopID(ctx)
 
         --! REMOVE SPLITTING ARC WHEN IMGUI GETS UPDATE
@@ -553,9 +568,9 @@ local function StyleFly(pie, center, drag_angle)
             for _ = 1, splits do
                 if pie.selected then
                     if new_min >= ang_min and new_max <= ang_max + 0.002 then
-                        r.ImGui_DrawList_PathArcTo(draw_list, WX + center_x, WY + center_y, RADIUS + 30, new_min,
+                        r.ImGui_DrawList_PathArcTo(draw_list, WX + center_x, WY + center_y, RADIUS + 55, new_min,
                             new_max + off, 12)
-                        r.ImGui_DrawList_PathArcTo(draw_list, WX + center_x, WY + center_y, RADIUS_MIN - 1.5,
+                        r.ImGui_DrawList_PathArcTo(draw_list, WX + center_x, WY + center_y, RADIUS_MIN + 5,
                             new_max + off,
                             new_min, 12)
                         r.ImGui_DrawList_PathFillConvex(draw_list, 0x11AAFF88)
@@ -570,7 +585,7 @@ local function StyleFly(pie, center, drag_angle)
                 r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 0)
                 r.ImGui_DrawList_PathArcTo(draw_list, WX + center_x, WY + center_y, (RADIUS - RADIUS_MIN) + 100, ang_min,
                     ang_max, 12)
-                r.ImGui_DrawList_PathArcTo(draw_list, WX + center_x, WY + center_y, RADIUS_MIN, ang_max, ang_min, 12)
+                r.ImGui_DrawList_PathArcTo(draw_list, WX + center_x, WY + center_y, RADIUS_MIN + 5 , ang_max, ang_min, 12)
                 r.ImGui_DrawList_PathFillConvex(draw_list, ARC_COLOR)
             end
         end
@@ -654,7 +669,7 @@ local function TextSplitByWidth(text, width, height)
     local _, txt_h = r.ImGui_CalcTextSize(ctx, text)
     local f_size = r.ImGui_GetFontSize(ctx)
 
-    r.ImGui_PushClipRect(ctx, xs, ys, xe, ye, false)
+    --r.ImGui_PushClipRect(ctx, xs, ys, xe, ye, false)
 
     local h_cnt = 0
     for i = 1, #str_tbl do
@@ -670,7 +685,7 @@ local function TextSplitByWidth(text, width, height)
             r.ImGui_Text(ctx, str_tbl[i])
         end
     end
-    r.ImGui_PopClipRect(ctx)
+   -- r.ImGui_PopClipRect(ctx)
 end
 
 local function DrawCenter(center)
@@ -780,10 +795,9 @@ local function DrawCenter(center)
             if r.ImGui_IsMouseReleased(ctx, 0) and not CLOSE then
                 SWITCH_PIE = PIE_LIST[#PIE_LIST].pid
                 table.remove(PIE_LIST, #PIE_LIST)
-                --return
             end
         else
-            LAST_MSG = MOUSE_INFO:upper()
+            LAST_MSG = PIE_MENU.name
             --LAST_FONT = SYSTEM_FONT2
             --LAST_FONT_SIZE = FONT_LARGE
         end
