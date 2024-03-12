@@ -1474,7 +1474,9 @@ local function NewProperties(pie)
                         CLEAR_MENU_PIE = pie
                         CLEAR_MENU_PIE_ID = LAST_MENU_SEL
                     end
+                    if not EDITOR then
                     r.ImGui_SameLine(ctx)
+                    
                     if r.ImGui_Button(ctx, "Show in Editor") then
                         for i = 1, #MENUS do
                             if MENUS[i].guid == pie.guid then
@@ -1484,6 +1486,7 @@ local function NewProperties(pie)
                             end
                         end
                     end
+                end
                 end
             end
         end

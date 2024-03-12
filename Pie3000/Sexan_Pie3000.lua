@@ -1,10 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.21.5
+-- @version 0.21.6
 -- @changelog
---  Re-enable custom menu editor
---  fixed various stuff
+--  Remove show in editor button while in editor
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
