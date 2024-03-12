@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.21.6
+-- @version 0.21.7
 -- @changelog
---  Remove show in editor button while in editor
+--  Refresh image objects when switching menus
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
@@ -689,6 +689,8 @@ local function TextSplitByWidth(text, width, height)
     -- r.ImGui_PopClipRect(ctx)
 end
 
+
+
 local function DrawCenter(center)
     local drag_delta = { MX - (WX + center.x), MY - (WY + center.y) }
     local drag_dist = (drag_delta[1] ^ 2) + (drag_delta[2] ^ 2)
@@ -870,13 +872,15 @@ local function TrackShortcutKey()
     end
 end
 
---local screen_left, screen_top, screen_right, screen_bottom = r.JS_Window_MonitorFromRect(0, 0, 0, 0, false)
--- local screen_left, screen_top, screen_right, screen_bottom = r.my_getViewport(0, 0, 0, 0, 0, 0, 0, 0, 0)
--- if apple then
---     screen_bottom, screen_top = screen_top, screen_bottom
--- end
 
---r.ImGui_SetNextWindowSizeConstraints(ctx, screen_right, screen_bottom, screen_right, screen_bottom)
+local function RefreshImgObj(tbl)
+    for i = 1, #tbl do
+        if tbl[i].png then
+            tbl[i].img_obj = nil
+        end
+    end
+end
+
 r.ImGui_SetNextWindowSize(ctx, 1500, 1500)
 local function Main()
     TrackShortcutKey()
@@ -890,6 +894,7 @@ local function Main()
         START_TIME = r.time_precise()
         SWITCH_PIE = nil
         SWAP = nil
+        RefreshImgObj(PIE_MENU)
     end
 
     --r.ImGui_SetNextWindowSize(ctx, screen_right, screen_bottom)
