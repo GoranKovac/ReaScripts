@@ -730,11 +730,12 @@ local function StyleFly(pie, center, drag_angle, active)
                 local src_menu, menu_id = InTbl(MENUS, pie[i].guid)
                 if src_menu then
                     LAST_MENU_SEL = menu_id
-                    TAB_MENU = true
                 end
-                table.insert(PIE_LIST, {
-                    src_menu
-                })
+                if not EDITOR then
+                    table.insert(PIE_LIST, {
+                        src_menu
+                    })
+                end
                 cur_menu_item = #PIE_LIST
                 SWITCH_PIE = src_menu
             end
@@ -1475,18 +1476,18 @@ local function NewProperties(pie)
                         CLEAR_MENU_PIE_ID = LAST_MENU_SEL
                     end
                     if not EDITOR then
-                    r.ImGui_SameLine(ctx)
-                    
-                    if r.ImGui_Button(ctx, "Show in Editor") then
-                        for i = 1, #MENUS do
-                            if MENUS[i].guid == pie.guid then
-                                LAST_MENU_SEL = i
-                                CUR_MENU_PIE = MENUS[i]
-                                FOCUS_MENU = true
+                        r.ImGui_SameLine(ctx)
+
+                        if r.ImGui_Button(ctx, "Show in Editor") then
+                            for i = 1, #MENUS do
+                                if MENUS[i].guid == pie.guid then
+                                    LAST_MENU_SEL = i
+                                    CUR_MENU_PIE = MENUS[i]
+                                    FOCUS_MENU = true
+                                end
                             end
                         end
                     end
-                end
                 end
             end
         end
@@ -1574,7 +1575,7 @@ local function Main2()
                 r.ImGui_EndGroup(ctx)
                 r.ImGui_EndTabItem(ctx)
             end
-            if r.ImGui_BeginTabItem(ctx, "Custom Menu Editor",nil, FOCUS_MENU and  r.ImGui_TabItemFlags_SetSelected()) then
+            if r.ImGui_BeginTabItem(ctx, "Custom Menu Editor", nil, FOCUS_MENU and r.ImGui_TabItemFlags_SetSelected()) then
                 if FOCUS_MENU then FOCUS_MENU = nil end
                 if not EDITOR then EDITOR = true end
                 if SWITCH_PIE then

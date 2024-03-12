@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.21.7
+-- @version 0.21.8
 -- @changelog
---  Refresh image objects when switching menus
+--  dont create Breadcrumb when doubleclicking menus in editor
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
