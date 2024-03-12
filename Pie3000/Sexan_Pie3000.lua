@@ -1,13 +1,10 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.21.4
+-- @version 0.21.5
 -- @changelog
---  Choose only icon or png
---  Fix main context menu name in circle
---  Draw active button in front
---  Added 100,150,200 png folders
---  Autoadjust button radius to match png size
+--  Re-enable custom menu editor
+--  fixed various stuff
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
@@ -255,7 +252,8 @@ local function ImageUVOffset(img_obj, cols, rows, frame, x, y, prog, need_single
     if need_single_frame then
         return { xe - xs, ye - ys, uv_xs, uv_ys, uv_xe, uv_ye }
     else
-        r.ImGui_DrawList_AddImage(draw_list, img_obj, xs, ys, xe, ye, uv_xs, uv_ys, uv_xe, uv_ye, LerpAlpha(0xffffffff, prog))
+        r.ImGui_DrawList_AddImage(draw_list, img_obj, xs, ys, xe, ye, uv_xs, uv_ys, uv_xe, uv_ye,
+            LerpAlpha(0xffffffff, prog))
     end
 end
 
@@ -417,7 +415,7 @@ local function DrawFlyButton(pie, hovered, prog, center, key)
     end
 
     local button_radius = hovered and
-        EasingAnim(w/2, (w/2)+10, w/2, 0.15, easingFunctions.outCubic, pie.hover_time, nil, pie.hover) or w/2
+        EasingAnim(w / 2, (w / 2) + (png and 10 or 15), w / 2, 0.15, easingFunctions.outCubic, pie.hover_time, nil, pie.hover) or w / 2
 
     --button_radius = png and button_radius + 5 or button_radius
     if hovered and r.ImGui_IsMouseDown(ctx, 0) then
@@ -473,9 +471,9 @@ local function DrawFlyButton(pie, hovered, prog, center, key)
     end
 
     if has_key then
-        r.ImGui_DrawList_AddCircleFilled(draw_list, WX + key.kx, WY + key.ky, (button_radius - 12) * PROG,
+        r.ImGui_DrawList_AddCircleFilled(draw_list, WX + key.kx, WY + key.ky, (10) * PROG,
             LerpAlpha(def_menu_prev, PROG), 128)
-        r.ImGui_DrawList_AddCircle(draw_list, WX + key.kx, WY + key.ky, (button_radius - 13) * PROG,
+        r.ImGui_DrawList_AddCircle(draw_list, WX + key.kx, WY + key.ky, (10) * PROG,
             LerpAlpha(0xffffff55, PROG), 128, 3)
         r.ImGui_PushFont(ctx, SYSTEM_FONT)
         local txt_w, txt_h = r.ImGui_CalcTextSize(ctx, KEYS[pie.key])
@@ -526,13 +524,13 @@ local function StyleFly(pie, center, drag_angle)
 
     for i = 1, #pie do
         local has_key = pie[i].key
-        local button_w, button_h = 45,45
+        local button_w, button_h = 50, 50
         local png = pie[i].png
         if png then
             if not r.ImGui_ValidatePtr(pie[i].img_obj, 'ImGui_Image*') then
                 pie[i].img_obj = r.ImGui_CreateImage(png)
             end
-            local img_data = ImageUVOffset(pie[i].img_obj, 3, 1, 0,0, 0, 0, true)
+            local img_data = ImageUVOffset(pie[i].img_obj, 3, 1, 0, 0, 0, 0, true)
             button_w = math.sqrt(2) * img_data[1]
         end
 
@@ -544,12 +542,16 @@ local function StyleFly(pie, center, drag_angle)
         pie.selected = (pie.hovered and pie.active) or (has_key and r.ImGui_IsKeyDown(ctx, pie[i].key))
 
         local button_pos = {
-            x = center_x + (RADIUS_MIN + 50 + button_w/5) * cos(angle + START_ANG) - button_w/2,
-            y = center_y + (RADIUS_MIN + 50 + button_w/5) * sin(angle + START_ANG) - button_w/2,
+            x = center_x + (RADIUS_MIN + 50 + button_w / 5) * cos(angle + START_ANG) - button_w / 2,
+            y = center_y + (RADIUS_MIN + 50 + button_w / 5) * sin(angle + START_ANG) - button_w / 2,
             kx = center_x +
-                (RADIUS_MIN + 50 + button_w/5 + (pie.selected and 20 or 0) + (pie[i].menu and 5 or 0)) * cos(angle + START_ANG),
+                (RADIUS_MIN + 50 + (button_w / 5) + (button_w/2) + (pie[i].menu and 5 or 0)) *                cos(angle + START_ANG + 0.2),
             ky = center_y +
-                (RADIUS_MIN + 50 + button_w/5 + (pie.selected and 20 or 0) + (pie[i].menu and 5 or 0)) * sin(angle + START_ANG),
+                (RADIUS_MIN + 50 + (button_w / 5) + (button_w/2) + (pie[i].menu and 5 or 0)) *                sin(angle + START_ANG + 0.2),
+            -- kx = center_x +
+            --     (RADIUS_MIN + 50 + button_w/5 + (pie.selected and 65 or 45) + (pie[i].menu and 5 or 0)) * cos(angle + START_ANG),
+            -- ky = center_y +
+            --     (RADIUS_MIN + 50 + button_w/5 + (pie.selected and 65 or 45) + (pie[i].menu and 5 or 0)) * sin(angle + START_ANG) ,
         }
 
         r.ImGui_SetCursorPos(ctx, button_pos.x, button_pos.y)
@@ -585,7 +587,7 @@ local function StyleFly(pie, center, drag_angle)
                 r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 0)
                 r.ImGui_DrawList_PathArcTo(draw_list, WX + center_x, WY + center_y, (RADIUS - RADIUS_MIN) + 100, ang_min,
                     ang_max, 12)
-                r.ImGui_DrawList_PathArcTo(draw_list, WX + center_x, WY + center_y, RADIUS_MIN + 5 , ang_max, ang_min, 12)
+                r.ImGui_DrawList_PathArcTo(draw_list, WX + center_x, WY + center_y, RADIUS_MIN + 5, ang_max, ang_min, 12)
                 r.ImGui_DrawList_PathFillConvex(draw_list, ARC_COLOR)
             end
         end
@@ -685,7 +687,7 @@ local function TextSplitByWidth(text, width, height)
             r.ImGui_Text(ctx, str_tbl[i])
         end
     end
-   -- r.ImGui_PopClipRect(ctx)
+    -- r.ImGui_PopClipRect(ctx)
 end
 
 local function DrawCenter(center)
