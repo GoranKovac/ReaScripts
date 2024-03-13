@@ -281,10 +281,21 @@ local PNG_TBL = IterateFiles(png_path)
 local PNG_TBL_150 = IterateFiles(png_path_150)
 local PNG_TBL_200 = IterateFiles(png_path_200)
 
-local function IterateActions(sectionID)
+local function IterateActions2(sectionID)
     local i = 0
     return function()
         local retval, name = r.CF_EnumerateActions(sectionID, i, '')
+        if retval > 0 then
+            i = i + 1
+            return retval, name
+        end
+    end
+end
+
+local function IterateActions(sectionID)
+    local i = 0
+    return function()
+        local retval, name = r.kbd_enumerateActions(0, i )
         if retval > 0 then
             i = i + 1
             return retval, name

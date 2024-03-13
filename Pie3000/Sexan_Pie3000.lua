@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.21.8
+-- @version 0.21.9
 -- @changelog
---  dont create Breadcrumb when doubleclicking menus in editor
+--  different action enumeration
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
