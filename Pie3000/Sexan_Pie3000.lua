@@ -1,7 +1,7 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.22.3
+-- @version 0.22.31
 -- @changelog
 --  Revert to making fullscreen window
 -- @provides
