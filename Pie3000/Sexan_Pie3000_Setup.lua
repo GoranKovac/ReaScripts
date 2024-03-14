@@ -1554,9 +1554,10 @@ end
 
 local function Delete()
     if DEL then
-        if DEL[1].selected and DEL[1].selected == DEL[2] then
-            DEL[1].selected = nil
-        end
+       -- if DEL[1].selected and DEL[1].selected == DEL[2] then
+
+       -- end
+        DEL[1].selected = nil
         table.remove(DEL[1], DEL[2])
         DEL = nil
     end

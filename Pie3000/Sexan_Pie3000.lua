@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.22.1
+-- @version 0.22.2
 -- @changelog
---  Quick fix for alt delete
+--  Quick fix for alt delete 2
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
