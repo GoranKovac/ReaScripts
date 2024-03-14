@@ -8,6 +8,9 @@ package.path = script_path .. "?.lua;"
 
 if DBG then dofile("C:/Users/Gokily/Documents/ReaGit/ReaScripts/Debug/LoadDebug.lua") end
 
+-- local profiler = dofile(reaper.GetResourcePath() ..
+--     '/Scripts/ReaTeam Scripts/Development/cfillion_Lua profiler.lua')
+
 require('PieUtils')
 if CheckDeps() then return end
 
@@ -24,6 +27,11 @@ local PIE_LIST = {}
 local ANIMATION = true
 local ACTIVATE_ON_CLOSE = true
 local HOLD_TO_OPEN = true
+local LIMIT_MOUSE = false
+local RESET_POSITION = true
+local REVERT_TO_START = false
+
+local bg_col = 0x1d1f27ff
 
 local def_color_dark = 0x414141ff --0x353535ff
 local def_out_ring = 0x2a2a2aff
@@ -45,7 +53,7 @@ local function GetThemeBG()
     return r.GetThemeColor("col_tr1_bg", 0)
 end
 
-local dark_theme = CalculateThemeColor(GetThemeBG())
+local dark_theme = true              --,CalculateThemeColor(GetThemeBG())
 if dark_theme then
     local def_light = def_color_dark --0x9ca2a2ff
     def_out_ring = 0x818989ff
@@ -70,6 +78,9 @@ if r.HasExtState("PIE3000", "SETTINGS") then
             ANIMATION = save_data.animation
             ACTIVATE_ON_CLOSE = save_data.activate_on_close
             HOLD_TO_OPEN = save_data.hold_to_open
+            LIMIT_MOUSE = save_data.limit_mouse
+            RESET_POSITION = save_data.reset_position
+            REVERT_TO_START = save_data.revert_to_start
             --ADJUST_TO_THEME = save_data.adjust_to_theme
             --def_color_dark = save_data.def_color_dark
             --def_color_light = save_data.def_color_light
@@ -86,17 +97,24 @@ local ICON_FONT_LARGE_SIZE = 40
 local ICON_FONT_CLICKED_SIZE = 32
 local ICON_FONT_PREVIEW_SIZE = 16
 
+local GUI_FONT_SIZE = 14
+
 ICON_FONT_SMALL = r.ImGui_CreateFont(script_path .. 'fontello1.ttf', ICON_FONT_SMALL_SIZE)
 ICON_FONT_LARGE = r.ImGui_CreateFont(script_path .. 'fontello1.ttf', ICON_FONT_LARGE_SIZE)
 ICON_FONT_PREVIEW = r.ImGui_CreateFont(script_path .. 'fontello1.ttf', ICON_FONT_PREVIEW_SIZE)
 SYSTEM_FONT = r.ImGui_CreateFont('sans-serif', FONT_SIZE, r.ImGui_FontFlags_Bold())
 SYSTEM_FONT2 = r.ImGui_CreateFont('sans-serif', FONT_LARGE, r.ImGui_FontFlags_Bold())
 
+GUI_FONT = r.ImGui_CreateFont(script_path .. "Roboto-Medium.ttf", GUI_FONT_SIZE)
+--GUI_FONT = r.ImGui_CreateFont(script_path .. "DroidSans.ttf", GUI_FONT_SIZE)
+--GUI_FONT = r.ImGui_CreateFont(script_path .. "Karla-Regular.ttf", GUI_FONT_SIZE)
+
 r.ImGui_Attach(ctx, SYSTEM_FONT)
 r.ImGui_Attach(ctx, SYSTEM_FONT2)
 r.ImGui_Attach(ctx, ICON_FONT_SMALL)
 r.ImGui_Attach(ctx, ICON_FONT_LARGE)
 r.ImGui_Attach(ctx, ICON_FONT_PREVIEW)
+r.ImGui_Attach(ctx, GUI_FONT)
 
 local pie_file = script_path .. "pie_file.txt"
 local menu_file = script_path .. "menu_file.txt"
@@ -137,19 +155,19 @@ local DEFAULT_PIE = {
 
 local PIES = ReadFromFile(pie_file) or Deepcopy(DEFAULT_PIE)
 
-local context_cur_item = 0
-local cur_menu_item = 0
+local context_cur_item = 1
+--local cur_menu_item = 1
 local menu_items = {
-    "arrange",
-    "arrangeempty",
-    "tcp",
-    "tcpempty",
-    "mcp",
-    "mcpempty",
-    "envelope",
-    "envcp",
-    "item",
-    "trans",
+    { "arrange",      "ARRANGE" },
+    { "arrangeempty", "ARRANGE EMPTY" },
+    { "tcp",          "TCP" },
+    { "tcpempty",     "TCP EMPTY" },
+    { "mcp",          "MCP" },
+    { "mcpempty",     "MCP EMPTY" },
+    { "envelope",     "ENVELOPE" },
+    { "envcp",        "ECP" },
+    { "item",         "ITEM" },
+    { "trans",        "TRANSPORT" },
 }
 
 
@@ -197,7 +215,7 @@ local TEMP_MENU = {
     "is_menu"
 }
 local CUR_MENU_PIE = MENUS[1] or TEMP_MENU
-
+LAST_MENU_SEL = MENUS[1] and 1 or nil
 
 function DeleteMenu(tbl, guid)
     for i = #tbl, 1, -1 do
@@ -228,9 +246,9 @@ local function DeleteMenuFromPie(guid, tbl)
     end
     if #PIE_LIST ~= 0 then
         CUR_PIE = PIE_LIST[#PIE_LIST][1]
-        cur_menu_item = #PIE_LIST
+      --  cur_menu_item = #PIE_LIST
     else
-        CUR_PIE = PIES[menu_items[context_cur_item + 1]]
+        CUR_PIE = PIES[menu_items[context_cur_item][1]]
     end
 end
 
@@ -295,8 +313,8 @@ end
 local function IterateActions(sectionID)
     local i = 0
     return function()
-        local retval, name = r.kbd_enumerateActions(0, i )
-        if retval > 0 then
+        local retval, name = r.kbd_enumerateActions(sectionID, i)
+        if #name ~= 0 then
             i = i + 1
             return retval, name
         end
@@ -336,6 +354,7 @@ local FILTERED_TBL = ACTIONS_TBL
 local FILTERED_MENU_TBL = MENUS
 local ACTION_FILTER = ''
 local MENU_FILTER = ''
+local EDITOR_MENU_FILTER = ''
 
 local FILTERED_PNG = PNG_TBL
 
@@ -343,13 +362,17 @@ local function FilterBox(tbl, f_type)
     if f_type == "action" then
         rv_f, ACTION_FILTER = r.ImGui_InputTextWithHint(ctx, "##input", "Search Actions", ACTION_FILTER)
     else
-        rv_f, MENU_FILTER = r.ImGui_InputTextWithHint(ctx, "##input", "Search Menus", MENU_FILTER)
+        if EDITOR then
+            rv_f, EDITOR_MENU_FILTER = r.ImGui_InputTextWithHint(ctx, "##input", "Search Menus", EDITOR_MENU_FILTER)
+        else
+            rv_f, MENU_FILTER = r.ImGui_InputTextWithHint(ctx, "##input", "Search Menus", MENU_FILTER)
+        end
     end
     if rv_f or update_filter then
         if f_type == "action" then
             FILTERED_TBL = FilterActions(tbl, ACTION_FILTER)
         elseif f_type == "menu" then
-            FILTERED_MENU_TBL = FilterActions(tbl, MENU_FILTER)
+            FILTERED_MENU_TBL = FilterActions(tbl, EDITOR and EDITOR_MENU_FILTER or MENU_FILTER)
         end
     end
     if update_filter then update_filter = nil end
@@ -433,13 +456,14 @@ end
 local function ActionsTab(pie)
     if r.ImGui_BeginTabBar(ctx, "ACTIONS MENUS TAB") then
         if r.ImGui_BeginTabItem(ctx, "Actions") then
-            if prev_search ~= "action" then
+            if ACTION_FILTER ~= PREV_ACTION_FILTER then
                 update_filter = true
-                prev_search = "action"
+                PREV_ACTION_FILTER = ACTION_FILTER
+                --prev_search = "action"
             end
             r.ImGui_SetNextItemWidth(ctx, -FLT_MIN)
             FilterBox(ACTIONS_TBL, "action")
-            if r.ImGui_BeginChild(ctx, "##CLIPPER_ACTION", 0) then
+            if r.ImGui_BeginChild(ctx, "##CLIPPER_ACTION", nil, nil, nil, r.ImGui_WindowFlags_AlwaysHorizontalScrollbar()) then
                 if not r.ImGui_ValidatePtr(ACTION_CLIPPER, 'ImGui_ListClipper*') then
                     ACTION_CLIPPER = r.ImGui_CreateListClipper(ctx)
                 end
@@ -458,35 +482,67 @@ local function ActionsTab(pie)
             r.ImGui_EndTabItem(ctx)
         end
         if not EDITOR and r.ImGui_BeginTabItem(ctx, "Menus") then
-            if prev_search ~= "menu" then
+            if MENU_FILTER ~= PREV_MENU_FILTER then
+                PREV_MENU_FILTER = MENU_FILTER
+                --if prev_search ~= "menu" then
                 update_filter = true
-                prev_search = "menu"
+                --prev_search = "menu"
             end
             r.ImGui_SetNextItemWidth(ctx, -FLT_MIN)
             FilterBox(MENUS, "menu")
-            if r.ImGui_BeginListBox(ctx, "##Menu List", -FLT_MIN, -FLT_MIN) then
-                for i = 1, #FILTERED_MENU_TBL do
-                    local CROSS_MENU = pie and HasReference(FILTERED_MENU_TBL[i], pie.guid) or nil
-                    local SAME_MENU = pie == FILTERED_MENU_TBL[i]
-                    r.ImGui_PushID(ctx, i)
-                    if r.ImGui_Selectable(ctx, FILTERED_MENU_TBL[i].name .. (CROSS_MENU and " - CANNOT ADD HAS REFERENCE" or ""), LAST_MENU_SEL == i, r.ImGui_SelectableFlags_AllowDoubleClick()) then
-                    end
-                    local xs, ys = r.ImGui_GetItemRectMin(ctx)
-                    local xe, ye = r.ImGui_GetItemRectMax(ctx)
-                    -- SELECTED
-                    if pie and pie.guid == FILTERED_MENU_TBL[i].guid then
-                        r.ImGui_DrawList_AddRectFilled(draw_list, xs, ys, xe, ye, 0x22FF2255)
-                    end
-                    -- ALREADY HAS REFERENCE
-                    if CROSS_MENU then
-                        r.ImGui_DrawList_AddRectFilled(draw_list, xs, ys, xe, ye, 0xFF222255)
-                    end
-                    if not CROSS_MENU and not SAME_MENU then
-                        DndSourceMenu(FILTERED_MENU_TBL[i], i)
-                    end
-                    r.ImGui_PopID(ctx)
+            if r.ImGui_BeginChild(ctx, "##CLIPPER_MENUS") then
+                if not r.ImGui_ValidatePtr(MENU_CLIPPER, 'ImGui_ListClipper*') then
+                    MENU_CLIPPER = r.ImGui_CreateListClipper(ctx)
                 end
-                r.ImGui_EndListBox(ctx)
+                r.ImGui_ListClipper_Begin(MENU_CLIPPER, #FILTERED_MENU_TBL)
+                while r.ImGui_ListClipper_Step(MENU_CLIPPER) do
+                    local display_start, display_end = r.ImGui_ListClipper_GetDisplayRange(MENU_CLIPPER)
+                    for i = display_start, display_end - 1 do
+                        local CROSS_MENU = pie and HasReference(FILTERED_MENU_TBL[i + 1], pie.guid) or nil
+                        local SAME_MENU = pie == FILTERED_MENU_TBL[i + 1]
+                        r.ImGui_PushID(ctx, i)
+                        if r.ImGui_Selectable(ctx, FILTERED_MENU_TBL[i + 1].name .. (CROSS_MENU and " - CANNOT ADD HAS REFERENCE" or ""), LAST_MENU_SEL == i + 1, r.ImGui_SelectableFlags_AllowDoubleClick()) then
+                        end
+                        r.ImGui_PopID(ctx)
+                        local xs, ys = r.ImGui_GetItemRectMin(ctx)
+                        local xe, ye = r.ImGui_GetItemRectMax(ctx)
+                        -- SELECTED
+                        if pie and pie.guid == FILTERED_MENU_TBL[i + 1].guid then
+                            r.ImGui_DrawList_AddRectFilled(draw_list, xs, ys, xe, ye, 0x22FF2255)
+                        end
+                        -- ALREADY HAS REFERENCE
+                        if CROSS_MENU then
+                            r.ImGui_DrawList_AddRectFilled(draw_list, xs, ys, xe, ye, 0xFF222255)
+                        end
+                        if not CROSS_MENU and not SAME_MENU then
+                            DndSourceMenu(FILTERED_MENU_TBL[i + 1], i + 1)
+                        end
+                    end
+                end
+                r.ImGui_EndChild(ctx)
+                --if r.ImGui_BeginListBox(ctx, "##Menu List", -FLT_MIN, -FLT_MIN) then
+                -- for i = 1, #FILTERED_MENU_TBL do
+                --     local CROSS_MENU = pie and HasReference(FILTERED_MENU_TBL[i], pie.guid) or nil
+                --     local SAME_MENU = pie == FILTERED_MENU_TBL[i]
+                --     r.ImGui_PushID(ctx, i)
+                --     if r.ImGui_Selectable(ctx, FILTERED_MENU_TBL[i].name .. (CROSS_MENU and " - CANNOT ADD HAS REFERENCE" or ""), LAST_MENU_SEL == i, r.ImGui_SelectableFlags_AllowDoubleClick()) then
+                --     end
+                --     local xs, ys = r.ImGui_GetItemRectMin(ctx)
+                --     local xe, ye = r.ImGui_GetItemRectMax(ctx)
+                --     -- SELECTED
+                --     if pie and pie.guid == FILTERED_MENU_TBL[i].guid then
+                --         r.ImGui_DrawList_AddRectFilled(draw_list, xs, ys, xe, ye, 0x22FF2255)
+                --     end
+                --     -- ALREADY HAS REFERENCE
+                --     if CROSS_MENU then
+                --         r.ImGui_DrawList_AddRectFilled(draw_list, xs, ys, xe, ye, 0xFF222255)
+                --     end
+                --     if not CROSS_MENU and not SAME_MENU then
+                --         DndSourceMenu(FILTERED_MENU_TBL[i], i)
+                --     end
+                --     r.ImGui_PopID(ctx)
+                -- end
+                -- r.ImGui_EndListBox(ctx)
             end
             r.ImGui_EndTabItem(ctx)
         end
@@ -598,6 +654,8 @@ local function DrawFlyButton(pie, selected, hovered, center)
         --def_color = 0x202020ff
         color = def_color
     end
+
+    color = hovered and ALT and 0xff0000ff or color
 
     local icon_col = 0xffffffff
     local icon_font = active and ICON_FONT_LARGE or ICON_FONT_SMALL
@@ -739,15 +797,16 @@ local function StyleFly(pie, center, drag_angle, active)
         if pie[i].menu then
             if r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseDoubleClicked(ctx, 0) then
                 local src_menu, menu_id = InTbl(MENUS, pie[i].guid)
-                if src_menu then
-                    LAST_MENU_SEL = menu_id
-                end
                 if not EDITOR then
                     table.insert(PIE_LIST, {
                         src_menu
                     })
+                else
+                    if src_menu then
+                        LAST_MENU_SEL = menu_id
+                    end
+                    --cur_menu_item = #PIE_LIST
                 end
-                cur_menu_item = #PIE_LIST
                 SWITCH_PIE = src_menu
             end
             DndAddTargetMenu(pie, pie[i])
@@ -758,6 +817,10 @@ local function StyleFly(pie, center, drag_angle, active)
         DNDSwapSRC(pie, i)
         DNDSwapDST(pie, i, pie[i])
         DrawFlyButton(pie[i], pie.selected == i, r.ImGui_IsItemHovered(ctx), center)
+
+        if ALT and pie.selected then
+            DEL = { pie, pie.selected }
+        end
     end
 end
 
@@ -899,7 +962,7 @@ local function DrawCenter(pie, center)
     --    WY + center.y - (txt_h / 2) - (#PIE_LIST ~= 0 and 30 or 0),        0xffffffff,        msg)
     r.ImGui_PopFont(ctx)
     --end
-    if not active and r.ImGui_IsMouseReleased(ctx, 0) then
+    if not active and r.ImGui_IsMouseClicked(ctx, 0) then
         pie.selected = nil
     end
 
@@ -965,42 +1028,160 @@ function DrawListButton(name, color, hover, active)
     r.ImGui_PopFont(ctx)
 end
 
+local function BreadCrumbs(tbl)
+    if not r.ImGui_ValidatePtr(SPLITTER_BC, 'ImGui_DrawListSplitter*') then
+        SPLITTER_BC = r.ImGui_CreateDrawListSplitter(draw_list)
+    end
+    r.ImGui_DrawListSplitter_Split(SPLITTER_BC, 20)
+    r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing(), 0, 0)
+
+    for j = 0, #tbl do
+        local color = j == #tbl and r.ImGui_GetStyleColor(ctx, r.ImGui_Col_ButtonActive()) or
+        r.ImGui_GetStyleColor(ctx, r.ImGui_Col_Button())
+
+        local txt_w, txt_h = r.ImGui_CalcTextSize(ctx, j == 0 and "H" or PIE_LIST[j][1].name)
+        r.ImGui_PushID(ctx, "btn_bx" .. j)
+        if r.ImGui_InvisibleButton(ctx, "##BC", txt_w + (j == 0 and 18 or 30), 20) then
+            if j == 0 then
+                SWITCH_PIE = PIES[menu_items[context_cur_item][1]]
+                CLEAR_PIE_LIST = 0
+            else
+                CLEAR_PIE_LIST = j
+                SWITCH_PIE = PIE_LIST[j][1]
+            end
+        end
+        color = r.ImGui_IsItemHovered(ctx) and r.ImGui_GetStyleColor(ctx, r.ImGui_Col_ButtonHovered()) or color
+        r.ImGui_PopID(ctx)
+        local xs, ys = r.ImGui_GetItemRectMin(ctx)
+        local xe, ye = r.ImGui_GetItemRectMax(ctx)
+        local w, h = r.ImGui_GetItemRectSize(ctx)
+
+        local off = 4
+        r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER_BC, #tbl - j)
+        for i = 1, 0, -1 do
+            r.ImGui_DrawList_PathLineTo(draw_list, xs + (off * i), ys)
+            r.ImGui_DrawList_PathLineTo(draw_list, xe + (off * i), (ye - h))
+            if j < #tbl then
+                r.ImGui_DrawList_PathLineTo(draw_list, (xe + 10) + (off * i), (ye - h + h / 2))
+            end
+            r.ImGui_DrawList_PathLineTo(draw_list, xe + (off * i), ye)
+            r.ImGui_DrawList_PathLineTo(draw_list, xe + (off * i), ye)
+            r.ImGui_DrawList_PathLineTo(draw_list, xs + (off * i), ys + h)
+            r.ImGui_DrawList_PathFillConvex(draw_list, i == 0 and color or bg_col)
+        end
+        local txt_x = xs + (w / 2) - (txt_w / 2) + (j == 0 and -3 or 5)
+        local txt_y = ys + (h / 2) - (txt_h / 2)
+        if j == 0 then
+            r.ImGui_PushFont(ctx, ICON_FONT_PREVIEW)
+        end
+        r.ImGui_DrawList_AddTextEx(draw_list, nil, j == 0 and ICON_FONT_PREVIEW_SIZE or GUI_FONT_SIZE, txt_x, txt_y,
+            0xffffffff, j == 0 and "H" or PIE_LIST[j][1].name)
+        if j == 0 then
+            r.ImGui_PopFont(ctx)
+        end
+        r.ImGui_SameLine(ctx)
+    end
+    r.ImGui_DrawListSplitter_Merge(SPLITTER_BC)
+    r.ImGui_PopStyleVar(ctx)
+end
+
+
+local function ContextSelector()
+    local w, h = r.ImGui_GetItemRectSize(ctx)
+    local x, y = r.ImGui_GetCursorScreenPos(ctx)
+    r.ImGui_SetNextWindowPos(ctx, x, y)
+    r.ImGui_SetNextWindowSize(ctx, w, 200)
+    r.ImGui_SetNextWindowBgAlpha(ctx, 1)
+    r.ImGui_PushStyleColor(ctx, r.ImGui_Col_PopupBg(), bg_col)
+    if r.ImGui_BeginPopup(ctx, "Context Selector") then
+        r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Button(), bg_col)
+        r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing(), 0, 0)
+        for i = 1, #menu_items do
+            if r.ImGui_Button(ctx, menu_items[i][2], -FLT_MIN) then
+                SWITCH_PIE = PIES[menu_items[i][1]]
+                PIE_LIST = {}
+                context_cur_item = i
+                r.ImGui_CloseCurrentPopup(ctx)
+            end
+        end
+        r.ImGui_PopStyleVar(ctx)
+        r.ImGui_PopStyleColor(ctx)
+        r.ImGui_EndPopup(ctx)
+    end
+    r.ImGui_PopStyleColor(ctx)
+end
+
+local function CustomDropDown()
+    if r.ImGui_Button(ctx, menu_items[context_cur_item][2], -FLT_MIN) then
+        r.ImGui_OpenPopup(ctx, 'Context Selector')
+    end
+    ContextSelector()
+end
+
 local function DrawPie(tbl, pos)
     local WW, WH = r.ImGui_GetWindowSize(ctx)
-    if r.ImGui_BeginChild(ctx, "##PIEDRAW", WW - 650 - pos, 0, true) then
-        r.ImGui_SameLine(ctx)
-        r.ImGui_SetNextItemWidth(ctx, 110)
+    r.ImGui_BeginGroup(ctx)
+    if not EDITOR then
+        r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_WindowPadding(), 0, 0)
+        if r.ImGui_BeginChild(ctx, "##PIEDRAWTOP", WW - 450 - pos, 20, true) then
+            CustomDropDown()
+            -- r.ImGui_SetNextItemWidth(ctx, -1)
+            --     rv_menu, context_cur_item = r.ImGui_Combo(ctx, "Context", context_cur_item,
+            --         table.concat(menu_items, "\0") .. "\0",
+            --         100)
+            --     if rv_menu then
+            --         SWITCH_PIE = PIES[menu_items[context_cur_item + 1]]
+            --         PIE_LIST = {}
+            --     end
+            r.ImGui_EndChild(ctx)
+        end
+        r.ImGui_PopStyleVar(ctx)
+    end
+    if r.ImGui_BeginChild(ctx, "##PIEDRAW", WW - 450 - pos, 0, true) then
+        local x, y = r.ImGui_GetContentRegionMax(ctx)
+
+        --r.ImGui_SameLine(ctx)
         if not EDITOR then
-            rv_menu, context_cur_item = r.ImGui_Combo(ctx, "##Context", context_cur_item,
-                table.concat(menu_items, "\0") .. "\0",
-                100)
-            if rv_menu then
-                SWITCH_PIE = PIES[menu_items[context_cur_item + 1]]
-                PIE_LIST = {}
-            end
-            for i = 0, #PIE_LIST do
-                r.ImGui_SameLine(ctx)
-                r.ImGui_PushID(ctx, "##menu_btn" .. i)
-                local txt_w = r.ImGui_CalcTextSize(ctx, i == 0 and "MAIN" or PIE_LIST[i][1].name)
-                if i == 0 then
-                    if r.ImGui_InvisibleButton(ctx, "MAIN", txt_w + 25, 20) then
-                        SWITCH_PIE = PIES[menu_items[context_cur_item + 1]]
-                        cur_menu_item = 0
-                        CLEAR_PIE_LIST = 0
-                    end
-                else
-                    r.ImGui_Text(ctx, ">")
-                    r.ImGui_SameLine(ctx)
-                    if r.ImGui_InvisibleButton(ctx, PIE_LIST[i][1].name, txt_w + 25, 20) then
-                        cur_menu_item = i
-                        CLEAR_PIE_LIST = i
-                        SWITCH_PIE = PIE_LIST[i][1]
-                    end
-                end
-                DrawListButton(i == 0 and "MAIN" or PIE_LIST[i][1].name, 0x294a7aff, r.ImGui_IsItemHovered(ctx),
-                    cur_menu_item == i)
-                r.ImGui_PopID(ctx)
-            end
+            -- r.ImGui_SetNextItemWidth(ctx, 110)
+            -- rv_menu, context_cur_item = r.ImGui_Combo(ctx, "##Context", context_cur_item,
+            --     table.concat(menu_items, "\0") .. "\0",
+            --     100)
+            -- if rv_menu then
+            --     SWITCH_PIE = PIES[menu_items[context_cur_item + 1]]
+            --     PIE_LIST = {}
+            -- end
+            r.ImGui_SameLine(ctx, 0, 3)
+            --r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing(), 3, 0)
+            BreadCrumbs(PIE_LIST)
+            -- for i = 0, #PIE_LIST do
+            --     r.ImGui_PushID(ctx, "##menu_btn" .. i)
+            --     --local txt_w = r.ImGui_CalcTextSize(ctx, i == 0 and "MAIN" or PIE_LIST[i][1].name)
+            --     if i == 0 then
+            --         --if r.ImGui_InvisibleButton(ctx, "MAIN", txt_w + 25, 20) then
+            --         if r.ImGui_Button(ctx, "MAIN") then
+            --             SWITCH_PIE = PIES[menu_items[context_cur_item + 1]]
+            --             -- cur_menu_item = 0
+            --             CLEAR_PIE_LIST = 0
+            --         end
+            --         -- r.ImGui_SameLine(ctx)
+            --     else
+            --         r.ImGui_Text(ctx, ">")
+            --         r.ImGui_SameLine(ctx)
+            --         --if r.ImGui_InvisibleButton(ctx, PIE_LIST[i][1].name, txt_w + 25, 20) then
+            --         if r.ImGui_Button(ctx, PIE_LIST[i][1].name) then
+            --             --cur_menu_item = i
+            --             CLEAR_PIE_LIST = i
+            --             SWITCH_PIE = PIE_LIST[i][1]
+            --         end
+            --     end
+            --     if i < #PIE_LIST then
+            --         r.ImGui_SameLine(ctx)
+            --     end
+            --     --DrawListButton(i == 0 and "MAIN" or PIE_LIST[i][1].name, 0x294a7aff, r.ImGui_IsItemHovered(ctx),
+            --     --    cur_menu_item == i)
+            --     r.ImGui_PopID(ctx)
+            -- end
+            -- r.ImGui_PopStyleVar(ctx)
             if CLEAR_PIE_LIST then
                 for i = #PIE_LIST, 1, -1 do
                     if i > CLEAR_PIE_LIST then table.remove(PIE_LIST, i) end
@@ -1008,7 +1189,7 @@ local function DrawPie(tbl, pos)
                 CLEAR_PIE_LIST = nil
             end
 
-            r.ImGui_SameLine(ctx)
+            r.ImGui_SameLine(ctx, 0, 3)
             if r.ImGui_Button(ctx, '+') then
                 MENUS[#MENUS + 1] = {
                     guid = r.genGuid(),
@@ -1023,17 +1204,22 @@ local function DrawPie(tbl, pos)
                 update_filter = true
             end
         end
-        if not EDITOR then
-            if not r.ImGui_ValidatePtr(SPLITTER_PIE, 'ImGui_DrawListSplitter*') then
-                SPLITTER_PIE = r.ImGui_CreateDrawListSplitter(draw_list)
-            end
-        else
-            if not r.ImGui_ValidatePtr(SPLITTER_EDITOR, 'ImGui_DrawListSplitter*') then
-                SPLITTER_EDITOR = r.ImGui_CreateDrawListSplitter(draw_list)
-            end
+        -- if not EDITOR then
+        --     if not r.ImGui_ValidatePtr(SPLITTER_PIE, 'ImGui_DrawListSplitter*') then
+        --         SPLITTER_PIE = r.ImGui_CreateDrawListSplitter(draw_list)
+        --     end
+        -- else
+        --     if not r.ImGui_ValidatePtr(SPLITTER_EDITOR, 'ImGui_DrawListSplitter*') then
+        --         SPLITTER_EDITOR = r.ImGui_CreateDrawListSplitter(draw_list)
+        --     end
+        -- end
+        -- SPLITTER = EDITOR and SPLITTER_EDITOR or SPLITTER_PIE
+        if not r.ImGui_ValidatePtr(SPLITTER, 'ImGui_DrawListSplitter*') then
+            SPLITTER = r.ImGui_CreateDrawListSplitter(draw_list)
         end
-        SPLITTER = EDITOR and SPLITTER_EDITOR or SPLITTER_PIE
-        local x, y = r.ImGui_GetContentRegionAvail(ctx)
+        --local x, y = r.ImGui_GetContentRegionAvail(ctx)
+        --local x, y = r.ImGui_GetContentRegionMax( ctx )
+        --local x, y = r.ImGui_GetWindowSize(ctx)
         local center = { x = x / 2, y = y / 1.7 }
 
         WX, WY = r.ImGui_GetWindowPos(ctx)
@@ -1045,14 +1231,15 @@ local function DrawPie(tbl, pos)
 
         r.ImGui_DrawListSplitter_Merge(SPLITTER)
 
-        if not EDITOR then
-            r.ImGui_SetCursorPosY(ctx, WH - 85)
-            if r.ImGui_Button(ctx, "Apply Changes") then
-                MakePieFile()
-            end
-        end
+        -- if not EDITOR then
+        --     r.ImGui_SetCursorPosY(ctx, WH - 101)
+        --     if r.ImGui_Button(ctx, "Apply Changes") then
+        --         MakePieFile()
+        --     end
+        -- end
         r.ImGui_EndChild(ctx)
     end
+    r.ImGui_EndGroup(ctx)
 end
 
 ICON = ''
@@ -1065,6 +1252,7 @@ local function IconSelector(font, button_size)
     r.ImGui_SetNextWindowPos(ctx, x - 3, y + 5)
     r.ImGui_SetNextWindowSize(ctx, 500, 470)
     r.ImGui_SetNextWindowBgAlpha(ctx, 1)
+    r.ImGui_PushStyleColor(ctx, r.ImGui_Col_PopupBg(), bg_col)
     if r.ImGui_BeginPopup(ctx, "Icon Selector") then
         r.ImGui_PushFont(ctx, font)
         local item_spacing_x, item_spacing_y = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing())
@@ -1091,11 +1279,12 @@ local function IconSelector(font, button_size)
         r.ImGui_PopStyleVar(ctx)
         r.ImGui_EndPopup(ctx)
     end
+    r.ImGui_PopStyleColor(ctx)
     return ret, icon
 end
 
 local function IconDisplay(font, tbl, icon, button_size)
-    r.ImGui_PushFont(ctx, icon and font or nil)
+    r.ImGui_PushFont(ctx, icon and font or GUI_FONT)
     r.ImGui_PushID(ctx, "ICON")
     local rv
     if r.ImGui_Button(ctx, icon or "ICON", button_size, button_size) then
@@ -1156,66 +1345,70 @@ local function PngSelector(pie, button_size)
     r.ImGui_SetNextWindowPos(ctx, x - 3, y + 5)
     r.ImGui_SetNextWindowSize(ctx, 500, 400)
     r.ImGui_SetNextWindowBgAlpha(ctx, 1)
+    r.ImGui_PushStyleColor(ctx, r.ImGui_Col_PopupBg(), bg_col)
     if r.ImGui_BeginPopup(ctx, "Png Selector") then
-        if r.ImGui_BeginTabBar(ctx, "png_folder_select") then
-            r.ImGui_BeginGroup(ctx)
-            if r.ImGui_Checkbox(ctx, "100", png_tbl == PNG_TBL) then
-                RefreshImgObj(PNG_TBL)
-                png_tbl = PNG_TBL
-            end
-            r.ImGui_SameLine(ctx)
-            if r.ImGui_Checkbox(ctx, "150", png_tbl == PNG_TBL_150) then
-                RefreshImgObj(PNG_TBL_150)
-                png_tbl = PNG_TBL_150
-            end
-            r.ImGui_SameLine(ctx)
-            if r.ImGui_Checkbox(ctx, "200", png_tbl == PNG_TBL_200) then
-                RefreshImgObj(PNG_TBL_200)
-                png_tbl = PNG_TBL_200
-            end
-            r.ImGui_EndGroup(ctx)
-
-            r.ImGui_SetNextItemWidth(ctx, -FLT_MIN)
-            rv_f, PNG_FILTER = r.ImGui_InputTextWithHint(ctx, "##input2", "Search PNG", PNG_FILTER)
-            FILTERED_PNG = FilterActions(png_tbl, PNG_FILTER)
-            local item_spacing_x, item_spacing_y = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing())
-            item_spacing_x = item_spacing_y
-            r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing(), item_spacing_y, item_spacing_y)
-            local buttons_count = #FILTERED_PNG
-            local window_visible_x2 = ({ r.ImGui_GetWindowPos(ctx) })[1] +
-                ({ r.ImGui_GetWindowContentRegionMax(ctx) })[1]
-            if r.ImGui_BeginChild(ctx, "filtered_pngs_list", 0, 0) then
-                for n = 0, #FILTERED_PNG - 1 do
-                    local image = FILTERED_PNG[n + 1].name
-                    r.ImGui_PushID(ctx, n)
-                    -- if DrawImageButtonList(button_size, 0x333333ff, PNG_TBL[n + 1]) then
-                    --     pie.img_obj = nil
-                    --     ret, png = true, image
-                    --     r.ImGui_CloseCurrentPopup(ctx)
-                    -- end
-                    if not r.ImGui_ValidatePtr(FILTERED_PNG[n + 1].img_obj, 'ImGui_Image*') then
-                        FILTERED_PNG[n + 1].img_obj = r.ImGui_CreateImage(image)
-                    end
-                    local uv = ImageUVOffset(FILTERED_PNG[n + 1].img_obj, 3, 1, 0, 0, 0, true)
-                    if r.ImGui_ImageButton(ctx, "##png_select", FILTERED_PNG[n + 1].img_obj, button_size, button_size, uv[3], uv[4], uv[5], uv[6]) then
-                        pie.img_obj = nil
-                        ret, png = true, image
-                        r.ImGui_CloseCurrentPopup(ctx)
-                    end
-                    local last_button_x2 = r.ImGui_GetItemRectMax(ctx)
-                    local next_button_x2 = last_button_x2 + item_spacing_x + button_size
-                    if n + 1 < buttons_count and next_button_x2 < window_visible_x2 then
-                        r.ImGui_SameLine(ctx)
-                    end
-                    r.ImGui_PopID(ctx)
-                end
-                r.ImGui_EndChild(ctx)
-            end
-            r.ImGui_PopStyleVar(ctx)
-            r.ImGui_EndTabBar(ctx)
+        --if r.ImGui_BeginTabBar(ctx, "png_folder_select") then
+        r.ImGui_BeginGroup(ctx)
+        r.ImGui_Text(ctx, "PNG Size")
+        r.ImGui_SameLine(ctx)
+        if r.ImGui_Checkbox(ctx, "100", png_tbl == PNG_TBL) then
+            RefreshImgObj(PNG_TBL)
+            png_tbl = PNG_TBL
         end
+        r.ImGui_SameLine(ctx)
+        if r.ImGui_Checkbox(ctx, "150", png_tbl == PNG_TBL_150) then
+            RefreshImgObj(PNG_TBL_150)
+            png_tbl = PNG_TBL_150
+        end
+        r.ImGui_SameLine(ctx)
+        if r.ImGui_Checkbox(ctx, "200", png_tbl == PNG_TBL_200) then
+            RefreshImgObj(PNG_TBL_200)
+            png_tbl = PNG_TBL_200
+        end
+        r.ImGui_EndGroup(ctx)
+
+        r.ImGui_SetNextItemWidth(ctx, -FLT_MIN)
+        rv_f, PNG_FILTER = r.ImGui_InputTextWithHint(ctx, "##input2", "Search PNG", PNG_FILTER)
+        FILTERED_PNG = FilterActions(png_tbl, PNG_FILTER)
+        local item_spacing_x, item_spacing_y = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing())
+        item_spacing_x = item_spacing_y
+        r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing(), item_spacing_y, item_spacing_y)
+        local buttons_count = #FILTERED_PNG
+        local window_visible_x2 = ({ r.ImGui_GetWindowPos(ctx) })[1] +
+            ({ r.ImGui_GetWindowContentRegionMax(ctx) })[1]
+        if r.ImGui_BeginChild(ctx, "filtered_pngs_list", 0, 0) then
+            for n = 0, #FILTERED_PNG - 1 do
+                local image = FILTERED_PNG[n + 1].name
+                r.ImGui_PushID(ctx, n)
+                -- if DrawImageButtonList(button_size, 0x333333ff, PNG_TBL[n + 1]) then
+                --     pie.img_obj = nil
+                --     ret, png = true, image
+                --     r.ImGui_CloseCurrentPopup(ctx)
+                -- end
+                if not r.ImGui_ValidatePtr(FILTERED_PNG[n + 1].img_obj, 'ImGui_Image*') then
+                    FILTERED_PNG[n + 1].img_obj = r.ImGui_CreateImage(image)
+                end
+                local uv = ImageUVOffset(FILTERED_PNG[n + 1].img_obj, 3, 1, 0, 0, 0, true)
+                if r.ImGui_ImageButton(ctx, "##png_select", FILTERED_PNG[n + 1].img_obj, button_size, button_size, uv[3], uv[4], uv[5], uv[6]) then
+                    pie.img_obj = nil
+                    ret, png = true, image
+                    r.ImGui_CloseCurrentPopup(ctx)
+                end
+                local last_button_x2 = r.ImGui_GetItemRectMax(ctx)
+                local next_button_x2 = last_button_x2 + item_spacing_x + button_size
+                if n + 1 < buttons_count and next_button_x2 < window_visible_x2 then
+                    r.ImGui_SameLine(ctx)
+                end
+                r.ImGui_PopID(ctx)
+            end
+            r.ImGui_EndChild(ctx)
+        end
+        r.ImGui_PopStyleVar(ctx)
+        -- r.ImGui_EndTabBar(ctx)
+        -- end
         r.ImGui_EndPopup(ctx)
     end
+    r.ImGui_PopStyleColor(ctx)
     return ret, png
 end
 
@@ -1263,6 +1456,7 @@ local function CheckKeys()
     SHIFT = r.ImGui_GetKeyMods(ctx) == r.ImGui_Mod_Shift()
     DEL_KEY = r.ImGui_IsKeyPressed(ctx, r.ImGui_Key_Delete())
     ESC = r.ImGui_IsKeyPressed(ctx, r.ImGui_Key_Escape())
+    DELETE = r.ImGui_IsKeyPressed(ctx, r.ImGui_Key_Delete())
 end
 
 function MakePieFile()
@@ -1295,8 +1489,7 @@ end
 
 local txt = "PRESS KEY"
 local function DetectShortcut(pie)
-    local center = { r.ImGui_Viewport_GetCenter(r.ImGui_GetWindowViewport(ctx)) }
-    r.ImGui_SetNextWindowPos(ctx, center[1], center[2], nil, 0.5, 0.5)
+    r.ImGui_SetNextWindowPos(ctx, vp_center[1], vp_center[2], nil, 0.5, 0.5)
     local close
     if r.ImGui_BeginPopup(ctx, "DETECT_SHORTCUT") then
         for k, v in pairs(KEYS) do
@@ -1332,9 +1525,9 @@ end
 
 function ModalWarning(is_menu)
     local rv
-    local center = { r.ImGui_Viewport_GetCenter(r.ImGui_GetWindowViewport(ctx)) }
-    r.ImGui_SetNextWindowPos(ctx, center[1], center[2], r.ImGui_Cond_Appearing(), 0.5, 0.5)
-    if r.ImGui_BeginPopupModal(ctx, 'WARNING', nil, r.ImGui_WindowFlags_AlwaysAutoResize()) then
+    -- local center = { r.ImGui_Viewport_GetCenter(r.ImGui_GetWindowViewport(ctx)) }
+    r.ImGui_SetNextWindowPos(ctx, vp_center[1], vp_center[2], nil, 0.5, 0.5)
+    if r.ImGui_BeginPopupModal(ctx, 'WARNING', nil, r.ImGui_WindowFlags_AlwaysAutoResize() | r.ImGui_WindowFlags_NoMove()) then
         if is_menu then
             r.ImGui_Text(ctx, "This will DELETE Menu from all used Contexts/Submenus.\n\t\t\t\tAre you sure?")
         else
@@ -1390,14 +1583,20 @@ local function Delete()
             end
             CLEAR_MENU_PIE = nil
             CLEAR_MENU_PIE_ID = nil
+            update_filter = true
         end
     end
 end
 
 local function NewProperties(pie)
-    if r.ImGui_BeginChild(ctx, "PROPERTIES", 0, 185, true) then
+    if r.ImGui_BeginChild(ctx, "PROPERTIES", 0, 140, true) then
         if pie.selected then
-            r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Button(), 0)
+            -- if not pie[pie.selected].menu then
+            r.ImGui_Text(ctx, pie[pie.selected].menu and pie[pie.selected].name or pie[pie.selected].cmd_name)
+            r.ImGui_Separator(ctx)
+            -- end
+            r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Button(), bg_col)
+            r.ImGui_SetCursorPosX(ctx, 120)
             local rv_i, icon = IconFrame(pie, 50)
             if rv_i then
                 pie[pie.selected].icon = icon
@@ -1423,10 +1622,12 @@ local function NewProperties(pie)
             r.ImGui_PopStyleColor(ctx)
             -- ICON / PNG
             r.ImGui_PushID(ctx, "col_remove")
-            r.ImGui_SeparatorText(ctx, "NAME / COLOR")
-            if not pie[pie.selected].menu then
-                r.ImGui_Text(ctx, pie[pie.selected].cmd_name)
-            end
+            r.ImGui_Separator(ctx)
+            --r.ImGui_SeparatorText(ctx, "NAME / COLOR")
+            -- if not pie[pie.selected].menu then
+            --     r.ImGui_Text(ctx, pie[pie.selected].cmd_name)
+            --     r.ImGui_Separator(ctx)
+            -- end
 
             if r.ImGui_Button(ctx, "X") then pie[pie.selected].col = 0xff end
             r.ImGui_PopID(ctx)
@@ -1445,10 +1646,10 @@ local function NewProperties(pie)
             if r.ImGui_Button(ctx, pie[pie.selected].key and "Key " .. KEYS[pie[pie.selected].key] or "ASSIGN KEY", -FLT_MIN) then
                 r.ImGui_OpenPopup(ctx, "DETECT_SHORTCUT")
             end
-            r.ImGui_Separator(ctx)
-            if r.ImGui_Button(ctx, "Delete Button") then
-                DEL = { pie, pie.selected, nil, pie[pie.selected].menu }
-            end
+            --r.ImGui_Separator(ctx)
+            -- if r.ImGui_Button(ctx, "Delete Button") then
+            --     DEL = { pie, pie.selected, nil, pie[pie.selected].menu }
+            -- end
             if pie[pie.selected].menu and not EDITOR then
                 r.ImGui_SameLine(ctx)
                 if r.ImGui_Button(ctx, "Show in Editor") then
@@ -1459,13 +1660,18 @@ local function NewProperties(pie)
                             FOCUS_MENU = true
                         end
                     end
+                    EDITOR = true
                 end
             end
             DetectShortcut(pie)
         else
-            r.ImGui_SeparatorText(ctx, "RADIUS")
-            r.ImGui_SetNextItemWidth(ctx, -FLT_MIN)
-            RV_R, pie.RADIUS = r.ImGui_SliderInt(ctx, "##RADIUS", pie.RADIUS, 50, 270)
+            --r.ImGui_SeparatorText(ctx, "RADIUS")
+            if LAST_MENU_SEL then
+                r.ImGui_Text(ctx, "Radius")
+                r.ImGui_SameLine(ctx)
+                r.ImGui_SetNextItemWidth(ctx, -FLT_MIN)
+                RV_R, pie.RADIUS = r.ImGui_SliderInt(ctx, "##RADIUS", pie.RADIUS, 50, 270)
+            end
             if not EDITOR and #PIE_LIST == 0 then
                 if pie.name == "ARRANGE" or pie.name == "TCP" or pie.name == "MCP" then
                     if r.ImGui_Checkbox(ctx, "USE AS EMPTY CONTEXT", pie.sync) then
@@ -1478,10 +1684,13 @@ local function NewProperties(pie)
                 end
             else
                 if pie and pie.guid ~= "TEMP" then
-                    r.ImGui_SeparatorText(ctx, "Menu name")
+                    --r.ImGui_SeparatorText(ctx, "Menu name")
+                    r.ImGui_Text(ctx, "Name  ")
+                    r.ImGui_SameLine(ctx)
                     r.ImGui_SetNextItemWidth(ctx, -FLT_MIN)
                     rv_i, pie.name = r.ImGui_InputTextWithHint(ctx, "##ButtonName", "Button name", pie.name)
-                    if r.ImGui_Button(ctx, "Delete Menu") then
+                    ---if r.ImGui_Button(ctx, "Delete Menu") and LAST_MENU_SEL then
+                    if r.ImGui_Button(ctx, "Delete Menu") and LAST_MENU_SEL then
                         OPEN_MENU_WARNING = true
                         CLEAR_MENU_PIE = pie
                         CLEAR_MENU_PIE_ID = LAST_MENU_SEL
@@ -1497,6 +1706,7 @@ local function NewProperties(pie)
                                     FOCUS_MENU = true
                                 end
                             end
+                            EDITOR = true
                         end
                     end
                 end
@@ -1506,12 +1716,32 @@ local function NewProperties(pie)
     end
 end
 
-local function MenuEditList(pie)
-    if r.ImGui_BeginChild(ctx, "EDITMENULIST", 250, 0, true) then
-        if prev_search ~= "menu" then
-            update_filter = true
-            prev_search = "menu"
+local function HasMenu(tbl)
+    local nested = {}
+    if not tbl then return nested end
+    for j = 1, #tbl do
+        if tbl[j].menu then
+            for i = 1, #MENUS do
+                if MENUS[i] == tbl[j] then
+                    --r.ShowConsoleMsg(MENUS[i].name .. "\n")
+                    --return MENUS[i]
+                    nested[tbl[j]] = true
+                end
+            end
         end
+    end
+    return nested
+end
+
+local function MenuEditList(pie)
+    if r.ImGui_BeginChild(ctx, "EDITMENULIST", 180, 0, true) then
+        if EDITOR_MENU_FILTER ~= PREV_EDITOR_MENU_FILTER then
+            PREV_EDITOR_MENU_FILTER = EDITOR_MENU_FILTER
+            --update_filter = true
+        end
+        --if prev_search ~= "menu" then
+        --prev_search = "menu"
+        --end
 
         if r.ImGui_Button(ctx, 'Create New Menu', -FLT_MIN, 0) then
             MENUS[#MENUS + 1] = {
@@ -1529,51 +1759,149 @@ local function MenuEditList(pie)
         end
         r.ImGui_SetNextItemWidth(ctx, -FLT_MIN)
         FilterBox(MENUS, "menu")
-        if r.ImGui_BeginListBox(ctx, "##Menu List", 500, -1) then
-            for i = 1, #FILTERED_MENU_TBL do
-                local CROSS_MENU = pie and HasReference(FILTERED_MENU_TBL[i], pie.guid) or nil
-                local SAME_MENU = pie == FILTERED_MENU_TBL[i]
-                r.ImGui_PushID(ctx, i)
-                if r.ImGui_Selectable(ctx, FILTERED_MENU_TBL[i].name .. (CROSS_MENU and " - HAS REFERENCE" or ""), LAST_MENU_SEL == i, r.ImGui_SelectableFlags_AllowDoubleClick()) then
-                    LAST_MENU_SEL = i
-                    SWITCH_PIE = FILTERED_MENU_TBL[i]
+        --if r.ImGui_BeginChild(ctx, "##CLIPPER_EDITOR",0,0,true) then
+        --if r.ImGui_BeginListBox(ctx, "##Menu List", 500, -1) then
+        if not r.ImGui_ValidatePtr(MENU_EDIT_CLIPPER, 'ImGui_ListClipper*') then
+            MENU_EDIT_CLIPPER = r.ImGui_CreateListClipper(ctx)
+        end
+        r.ImGui_ListClipper_Begin(MENU_EDIT_CLIPPER, #FILTERED_MENU_TBL)
+        while r.ImGui_ListClipper_Step(MENU_EDIT_CLIPPER) do
+            local display_start, display_end = r.ImGui_ListClipper_GetDisplayRange(MENU_EDIT_CLIPPER)
+            for i = display_start, display_end - 1 do
+                --for j = 1, #FILTERED_MENU_TBL[i + 1] do
+                --if FILTERED_MENU_TBL[i + 1][j].menu then
+                --r.ShowConsoleMsg(FILTERED_MENU_TBL[i + 1][j].name)
+                --if LAST_MENU_SEL then
+                local aaa = HasMenu(FILTERED_MENU_TBL[LAST_MENU_SEL])
+                -- end
+                --end
+                --if aaa then break end
+                --end
+                --for i = 1, #FILTERED_MENU_TBL do
+                local CROSS_MENU = pie and HasReference(FILTERED_MENU_TBL[i + 1], pie.guid) or nil
+                local SAME_MENU = pie == FILTERED_MENU_TBL[i + 1]
+                r.ImGui_PushID(ctx, i + 1)
+                if r.ImGui_Selectable(ctx, (aaa[FILTERED_MENU_TBL[i + 1]] and " - " or "") .. FILTERED_MENU_TBL[i + 1].name .. (CROSS_MENU and " - HAS REFERENCE" or ""), LAST_MENU_SEL == i + 1) then
+                    LAST_MENU_SEL = i + 1
+                    SWITCH_PIE = FILTERED_MENU_TBL[i + 1]
                 end
+                r.ImGui_PopID(ctx)
                 local xs, ys = r.ImGui_GetItemRectMin(ctx)
                 local xe, ye = r.ImGui_GetItemRectMax(ctx)
                 -- SELECTED
-                if pie and pie.guid == FILTERED_MENU_TBL[i].guid then
+                if pie and pie.guid == FILTERED_MENU_TBL[i + 1].guid then
                     r.ImGui_DrawList_AddRectFilled(draw_list, xs, ys, xe, ye, 0x22FF2255)
                 end
                 -- ALREADY HAS REFERENCE
                 if CROSS_MENU then
                     r.ImGui_DrawList_AddRectFilled(draw_list, xs, ys, xe, ye, 0xFF222255)
                 end
-                if not CROSS_MENU and not SAME_MENU then
-                    DndSourceMenu(FILTERED_MENU_TBL[i], i)
+                if aaa[FILTERED_MENU_TBL[i + 1]] then
+                    r.ImGui_DrawList_AddRectFilled(draw_list, xs, ys, xe, ye, 0x8cbef944)
                 end
-                r.ImGui_PopID(ctx)
+                if not CROSS_MENU and not SAME_MENU then
+                    DndSourceMenu(FILTERED_MENU_TBL[i + 1], i + 1)
+                end
             end
-            r.ImGui_EndListBox(ctx)
         end
+        -- r.ImGui_EndChild(ctx)
+        -- r.ImGui_EndListBox(ctx)
+        --end
         r.ImGui_EndChild(ctx)
     end
 end
 
+local ROUNDING = {
+    ["L"] = r.ImGui_DrawFlags_RoundCornersLeft(),
+    ["R"] = r.ImGui_DrawFlags_RoundCornersRight(),
+    ["A"] = r.ImGui_DrawFlags_RoundCornersAll(),
+}
+
+local function GeneralDrawlistButton(name, active, round_side)
+    local xs, ys = r.ImGui_GetItemRectMin(ctx)
+    local xe, ye = r.ImGui_GetItemRectMax(ctx)
+    local w = xe - xs
+    local h = ye - ys
+
+    local color = active and r.ImGui_GetStyleColor(ctx, r.ImGui_Col_ButtonActive()) or
+        r.ImGui_GetStyleColor(ctx, r.ImGui_Col_Button())
+    color = r.ImGui_IsItemHovered(ctx) and r.ImGui_GetStyleColor(ctx, r.ImGui_Col_ButtonHovered()) or color
+    r.ImGui_DrawList_AddRectFilled(draw_list, xs, ys, xe, ye,
+        r.ImGui_GetColorEx(ctx, color), ROUNDING[round_side] and 5 or nil, ROUNDING[round_side] or nil)
+
+    local label_size = r.ImGui_CalcTextSize(ctx, name)
+    local font_size = r.ImGui_GetFontSize(ctx)
+    --local font_color = CalculateFontColor(color)
+
+    local txt_x = xs + (w / 2) - (label_size / 2)
+    local txt_y = ys + (h / 2) - (font_size / 2)
+    r.ImGui_DrawList_AddTextEx(draw_list, nil, font_size, txt_x, txt_y, 0xffffffff, name)
+end
+
+local function TabButtons()
+    r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_WindowPadding(), 0, 2)
+    if r.ImGui_BeginChild(ctx, "custom_tab", nil, 30) then
+        r.ImGui_SetCursorPosX(ctx, 30)
+        if r.ImGui_InvisibleButton(ctx, "APPLY", 100, 26) then
+            MakePieFile()
+            --EDITOR = nil; SETTINGS = nil
+            --update_filter = true
+        end
+        GeneralDrawlistButton("APPLY", nil, "A")
+        r.ImGui_SameLine(ctx)
+
+        r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing(), 0, 0)
+        r.ImGui_SetCursorPosX(ctx, math.floor(r.ImGui_GetContentRegionAvail(ctx) / 2) - 130)
+        if r.ImGui_InvisibleButton(ctx, "Pie", 100, 26) then
+            EDITOR = nil; SETTINGS = nil
+            update_filter = true
+        end
+        GeneralDrawlistButton("Pie", (EDITOR == nil and SETTINGS == nil), "L")
+        r.ImGui_SameLine(ctx)
+        if r.ImGui_InvisibleButton(ctx, "Menu Editor", 100, 26) then
+            EDITOR = true; SETTINGS = nil
+            update_filter = true
+        end
+        GeneralDrawlistButton("Menu Editor", EDITOR ~= nil)
+
+        r.ImGui_SameLine(ctx)
+        if r.ImGui_InvisibleButton(ctx, "Settings", 100, 26) then
+            SETTINGS = true; EDITOR = nil
+        end
+        GeneralDrawlistButton("Settings", SETTINGS ~= nil, "R")
+
+        r.ImGui_PopStyleVar(ctx)
+        r.ImGui_EndChild(ctx)
+    end
+    r.ImGui_PopStyleVar(ctx)
+    r.ImGui_Separator(ctx)
+end
+
 local function Main2()
     r.ImGui_SetNextWindowBgAlpha(ctx, 1)
+    r.ImGui_PushStyleColor(ctx, r.ImGui_Col_WindowBg(), bg_col)
+    r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ScrollbarBg(), bg_col)
     r.ImGui_SetNextWindowSizeConstraints(ctx, 900, 500, FLT_MAX, FLT_MAX)
+    if SWITCH_PIE then
+        if EDITOR then
+            CUR_MENU_PIE = SWITCH_PIE
+        else
+            CUR_PIE = SWITCH_PIE
+        end
+        SWITCH_PIE = nil
+    end
 
     local visible, open = r.ImGui_Begin(ctx, 'Pie 3000 Setup', true)
+    vp_center = { r.ImGui_Viewport_GetCenter(r.ImGui_GetWindowViewport(ctx)) }
+    -- center = { r.ImGui_GetWindowPos(ctx) }
+    -- size = {r.ImGui_GetWindowSize( ctx )}
     if visible then
+        r.ImGui_PushFont(ctx, GUI_FONT)
         WX, WY = r.ImGui_GetWindowPos(ctx)
         CheckKeys()
-        if r.ImGui_BeginTabBar(ctx, "MAIN_TAB_BAR") then
-            if r.ImGui_BeginTabItem(ctx, "Pie") then
-                if EDITOR then EDITOR = nil end
-                if SWITCH_PIE then
-                    CUR_PIE = SWITCH_PIE
-                    SWITCH_PIE = nil
-                end
+        TabButtons()
+        if not SETTINGS then
+            if not EDITOR then
                 DrawPie(CUR_PIE, 0)
                 DndAddTargetAction(CUR_PIE)
                 DndAddTargetMenu(CUR_PIE)
@@ -1581,63 +1909,139 @@ local function Main2()
                 r.ImGui_BeginGroup(ctx)
                 r.ImGui_SeparatorText(ctx, "Button Properties")
                 NewProperties(CUR_PIE)
-                r.ImGui_SeparatorText(ctx, "Drag'n'Drop into Pie Window")
+                -- r.ImGui_SeparatorText(ctx, "Drag'n'Drop into Pie Window")
                 Properties(CUR_PIE)
                 r.ImGui_EndGroup(ctx)
-                r.ImGui_EndTabItem(ctx)
-            end
-            if r.ImGui_BeginTabItem(ctx, "Custom Menu Editor", nil, FOCUS_MENU and r.ImGui_TabItemFlags_SetSelected()) then
-                if FOCUS_MENU then FOCUS_MENU = nil end
-                if not EDITOR then EDITOR = true end
-                if SWITCH_PIE then
-                    CUR_MENU_PIE = SWITCH_PIE
-                    SWITCH_PIE = nil
-                end
-                DrawPie(CUR_MENU_PIE, 258)
+            else
+                MenuEditList(CUR_MENU_PIE)
+                r.ImGui_SameLine(ctx)
+                DrawPie(CUR_MENU_PIE, 188) --188
                 DndAddTargetAction(CUR_MENU_PIE)
                 DndAddTargetMenu(CUR_MENU_PIE)
-                r.ImGui_SameLine(ctx)
-                MenuEditList(CUR_MENU_PIE)
                 r.ImGui_SameLine(ctx)
                 r.ImGui_BeginGroup(ctx)
                 r.ImGui_SeparatorText(ctx, "Button Properties")
                 NewProperties(CUR_MENU_PIE)
-                r.ImGui_SeparatorText(ctx, "Drag'n'Drop into Pie Window")
+                --r.ImGui_SeparatorText(ctx, "Drag'n'Drop into Pie Window")
                 Properties(CUR_MENU_PIE)
                 r.ImGui_EndGroup(ctx)
-                r.ImGui_EndTabItem(ctx)
             end
-            if r.ImGui_BeginTabItem(ctx, "Settings") then
-                if r.ImGui_Checkbox(ctx, "Hold to OPEN", HOLD_TO_OPEN) then
-                    HOLD_TO_OPEN = not HOLD_TO_OPEN
-                    WANT_SAVE = true
-                end
-                if r.ImGui_Checkbox(ctx, "Activate Action on Close", ACTIVATE_ON_CLOSE) then
-                    ACTIVATE_ON_CLOSE = not ACTIVATE_ON_CLOSE
-                    WANT_SAVE = true
-                end
-                if r.ImGui_Checkbox(ctx, "Animation", ANIMATION) then
-                    ANIMATION = not ANIMATION
-                    WANT_SAVE = true
-                end
-                if WANT_SAVE then
-                    local data = TableToString(
-                        {
-                            animation = ANIMATION,
-                            hold_to_open = HOLD_TO_OPEN,
-                            activate_on_close = ACTIVATE_ON_CLOSE,
-
-                        }, true)
-                    r.SetExtState("PIE3000", "SETTINGS", data, true)
-                    WANT_SAVE = nil
-                end
-                r.ImGui_EndTabItem(ctx)
+        else
+            if r.ImGui_Checkbox(ctx, "Hold to OPEN", HOLD_TO_OPEN) then
+                HOLD_TO_OPEN = not HOLD_TO_OPEN
+                WANT_SAVE = true
+            end
+            if r.ImGui_Checkbox(ctx, "Activate Action on Close", ACTIVATE_ON_CLOSE) then
+                ACTIVATE_ON_CLOSE = not ACTIVATE_ON_CLOSE
+                WANT_SAVE = true
+            end
+            if r.ImGui_Checkbox(ctx, "Animation", ANIMATION) then
+                ANIMATION = not ANIMATION
+                WANT_SAVE = true
+            end
+            if r.ImGui_Checkbox(ctx, "Limit mouse movement to radius", LIMIT_MOUSE) then
+                LIMIT_MOUSE = not LIMIT_MOUSE
+                WANT_SAVE = true
+            end
+            if r.ImGui_Checkbox(ctx, "Re-Center mouse position on menu open", RESET_POSITION) then
+                RESET_POSITION = not RESET_POSITION
+                WANT_SAVE = true
+            end
+            if r.ImGui_Checkbox(ctx, "Revert mouse position to starting position on close", REVERT_TO_START) then
+                REVERT_TO_START = not REVERT_TO_START
+                WANT_SAVE = true
             end
 
-            r.ImGui_EndTabBar(ctx)
+            if WANT_SAVE then
+                local data = TableToString(
+                    {
+                        animation = ANIMATION,
+                        hold_to_open = HOLD_TO_OPEN,
+                        activate_on_close = ACTIVATE_ON_CLOSE,
+                        limit_mouse = LIMIT_MOUSE,
+                        reset_position = RESET_POSITION,
+                        revert_to_start = REVERT_TO_START,
+
+                    }, true)
+                r.SetExtState("PIE3000", "SETTINGS", data, true)
+                WANT_SAVE = nil
+            end
         end
+
+
+        -- if r.ImGui_BeginTabBar(ctx, "MAIN_TAB_BAR") then
+        --     if r.ImGui_BeginTabItem(ctx, "Pie") then
+        --         if EDITOR then EDITOR = nil end
+        --         if SWITCH_PIE then
+        --             CUR_PIE = SWITCH_PIE
+        --             SWITCH_PIE = nil
+        --         end
+        --         DrawPie(CUR_PIE, 0)
+        --         DndAddTargetAction(CUR_PIE)
+        --         DndAddTargetMenu(CUR_PIE)
+        --         r.ImGui_SameLine(ctx)
+        --         r.ImGui_BeginGroup(ctx)
+        --         r.ImGui_SeparatorText(ctx, "Button Properties")
+        --         NewProperties(CUR_PIE)
+        --         r.ImGui_SeparatorText(ctx, "Drag'n'Drop into Pie Window")
+        --         Properties(CUR_PIE)
+        --         r.ImGui_EndGroup(ctx)
+        --         r.ImGui_EndTabItem(ctx)
+        --     end
+        --     if r.ImGui_BeginTabItem(ctx, "Custom Menu Editor", nil, FOCUS_MENU and r.ImGui_TabItemFlags_SetSelected()) then
+        --         if FOCUS_MENU then FOCUS_MENU = nil end
+        --         if not EDITOR then EDITOR = true end
+        --         if SWITCH_PIE then
+        --             CUR_MENU_PIE = SWITCH_PIE
+        --             SWITCH_PIE = nil
+        --         end
+        --         MenuEditList(CUR_MENU_PIE)
+        --         r.ImGui_SameLine(ctx)
+        --         DrawPie(CUR_MENU_PIE, 188) --188
+        --         DndAddTargetAction(CUR_MENU_PIE)
+        --         DndAddTargetMenu(CUR_MENU_PIE)
+        --         r.ImGui_SameLine(ctx)
+        --         r.ImGui_BeginGroup(ctx)
+        --         r.ImGui_SeparatorText(ctx, "Button Properties")
+        --         NewProperties(CUR_MENU_PIE)
+        --         r.ImGui_SeparatorText(ctx, "Drag'n'Drop into Pie Window")
+        --         Properties(CUR_MENU_PIE)
+        --         r.ImGui_EndGroup(ctx)
+        --         r.ImGui_EndTabItem(ctx)
+        --     end
+        --     if r.ImGui_BeginTabItem(ctx, "Settings") then
+        --         if r.ImGui_Checkbox(ctx, "Hold to OPEN", HOLD_TO_OPEN) then
+        --             HOLD_TO_OPEN = not HOLD_TO_OPEN
+        --             WANT_SAVE = true
+        --         end
+        --         if r.ImGui_Checkbox(ctx, "Activate Action on Close", ACTIVATE_ON_CLOSE) then
+        --             ACTIVATE_ON_CLOSE = not ACTIVATE_ON_CLOSE
+        --             WANT_SAVE = true
+        --         end
+        --         if r.ImGui_Checkbox(ctx, "Animation", ANIMATION) then
+        --             ANIMATION = not ANIMATION
+        --             WANT_SAVE = true
+        --         end
+        --         if WANT_SAVE then
+        --             local data = TableToString(
+        --                 {
+        --                     animation = ANIMATION,
+        --                     hold_to_open = HOLD_TO_OPEN,
+        --                     activate_on_close = ACTIVATE_ON_CLOSE,
+
+        --                 }, true)
+        --             r.SetExtState("PIE3000", "SETTINGS", data, true)
+        --             WANT_SAVE = nil
+        --         end
+        --         r.ImGui_EndTabItem(ctx)
+        --     end
+
+        --     r.ImGui_EndTabBar(ctx)
+        -- end
+        r.ImGui_PopFont(ctx)
         r.ImGui_End(ctx)
     end
+    r.ImGui_PopStyleColor(ctx, 2)
     if OPEN_WARNING then
         OPEN_WARNING = nil
         r.ImGui_OpenPopup(ctx, "WARNING")
@@ -1658,6 +2062,10 @@ local function Main2()
         MakePieFile()
     end
 end
+
+-- pdefer = profiler.defer
+-- profiler.attachToWorld() -- after all functions have been defined
+-- profiler.run()
 
 if DBG then
     DEBUG.defer(Main2)

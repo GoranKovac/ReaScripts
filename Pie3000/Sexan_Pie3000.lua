@@ -1,14 +1,20 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.21.9
+-- @version 0.22
 -- @changelog
---  different action enumeration
+--  ACTIVATE ON CLOSE - Dont trigger same action again if it was clicked
+--  Revert mouse to starting position on script close
+--  Option Limit mouse to radius of the pie
+--  Option Reset mouse position on menu open
+--  Option Revert mouse to starting position on close
+--  Potentially fix issue with custom actions dll not showing any actions
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
 --   PieUtils.lua
 --   fontello1.ttf
+--   Roboto-Medium.ttf
 --   [main] Sexan_PieCleanFiles.lua
 
 local r = reaper
@@ -31,6 +37,12 @@ local easingFunctions = require("easing")
 local ANIMATION = true
 local ACTIVATE_ON_CLOSE = true
 local HOLD_TO_OPEN = true
+local RESET_POSITION = true
+local LIMIT_MOUSE = false
+local REVERT_TO_START = false
+
+local DRAW_CURSOR = true
+local DRAW_CIRCLE_CURSOR = false
 --local ADJUST_TO_THEME = true
 
 local def_color_dark = 0x414141ff --0x353535ff
@@ -39,6 +51,7 @@ local def_menu_prev = 0x212121ff
 local ARC_COLOR = 0x11AAFF88
 local def_color = def_color_dark
 local def_font_col = 0xd7d9d9ff
+
 
 
 local function CalculateThemeColor(org_color)
@@ -72,6 +85,10 @@ if r.HasExtState("PIE3000", "SETTINGS") then
             ANIMATION = save_data.animation                 -- or ANIMATION
             ACTIVATE_ON_CLOSE = save_data.activate_on_close -- or ACTIVATE_ON_CLOSE
             HOLD_TO_OPEN = save_data.hold_to_open           -- or HOLD_TO_OPEN
+            LIMIT_MOUSE = save_data.limit_mouse
+            RESET_POSITION = save_data.reset_position
+            REVERT_TO_START = save_data.revert_to_start
+
             --ADJUST_TO_THEME = save_data.adjust_to_theme     -- or ADJUST_TO_THEME
             -- def_color_dark = save_data.def_color_dark-- or def_color_dark
             --def_color_light = save_data.def_color_light-- or def_color_light
@@ -361,12 +378,15 @@ local function ExecuteAction(action, name)
     if action then
         if type(action) == "string" then action = r.NamedCommandLookup(action) end
         if CLOSE and ACTIVATE_ON_CLOSE then
-            if not triggered then
+            --if not triggered then
+            if LAST_TRIGGERED ~= action then
                 r.Main_OnCommand(action, 0)
-                triggered = true
+                LAST_TRIGGERED = action
+                --triggered = true
             end
         end
         if r.ImGui_IsMouseReleased(ctx, 0) then
+            LAST_TRIGGERED = action
             r.Main_OnCommand(action, 0)
         end
     end
@@ -634,7 +654,7 @@ local function StyleFly(pie, center, drag_angle)
                     })
                     SWAP_TIME = r.time_precise()
                     SWITCH_PIE = pie[i]
-                    r.JS_Mouse_SetPosition(START_X, START_Y)
+                   -- r.JS_Mouse_SetPosition(START_X, START_Y)
                     break
                 end
             end
@@ -824,7 +844,13 @@ end
 
 local function DrawPie(pie, center)
     SPLITTER = r.ImGui_CreateDrawListSplitter(draw_list)
-    r.ImGui_DrawListSplitter_Split(SPLITTER, 3)
+    r.ImGui_DrawListSplitter_Split(SPLITTER, 4)
+    if not CLOSE and DRAW_CIRCLE_CURSOR then
+        r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 3)
+        r.ImGui_DrawList_AddCircle(draw_list,LIMITED_CX,LIMITED_CY,14,0xff0000ff,64,5)
+        r.ImGui_DrawList_AddCircle(draw_list,LIMITED_CX,LIMITED_CY,10,0xff,64,5)
+        r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 0)
+    end
     local drag_ang = DrawCenter(center)
     if DONE then return end
     StyleFly(pie, center, drag_ang)
@@ -839,7 +865,7 @@ local function CheckKeys()
 end
 
 local function CloseScript()
-    if not CLOSE then
+    if not CLOSE then 
         START_TIME = r.time_precise()
         CLOSE = true
         FLAGS = FLAGS | r.ImGui_WindowFlags_NoInputs()
@@ -881,6 +907,25 @@ local function RefreshImgObj(tbl)
     end
 end
 
+r.JS_WindowMessage_Intercept(intercept_window, "WM_SETCURSOR", false)
+local function LimitMouseToRadius()
+    local MOUSE_RANGE = 200
+    -- if not DRAW_CURSOR then
+    --     r.JS_Mouse_SetCursor(nil)
+    -- end
+   -- local mx,my = r.GetMousePosition()
+    local drag_delta = { MX - (START_X), MY - (START_Y) }
+    local drag_dist = (drag_delta[1] ^ 2) + (drag_delta[2] ^ 2)
+    local drag_angle = (atan(drag_delta[2], drag_delta[1])) % (pi * 2)
+
+    if drag_dist > (MOUSE_RANGE ^ 2) then
+        MX = (START_X + (MOUSE_RANGE) * cos(drag_angle)) // 1
+        MY = (START_Y + (MOUSE_RANGE) * sin(drag_angle)) // 1
+        r.JS_Mouse_SetPosition(MX, MY)
+    end
+    LIMITED_CX, LIMITED_CY = r.ImGui_PointConvertNative(ctx,MX, MY)
+end
+
 r.ImGui_SetNextWindowSize(ctx, 1500, 1500)
 local function Main()
     TrackShortcutKey()
@@ -890,21 +935,30 @@ local function Main()
     end
     if SWITCH_PIE and not DONE then
         PIE_MENU = SWITCH_PIE
-        r.JS_Mouse_SetPosition(START_X, START_Y)
+        if RESET_POSITION then
+           r.JS_Mouse_SetPosition(START_X, START_Y)
+        end
         START_TIME = r.time_precise()
         SWITCH_PIE = nil
         SWAP = nil
         RefreshImgObj(PIE_MENU)
     end
-
+    
     --r.ImGui_SetNextWindowSize(ctx, screen_right, screen_bottom)
     if r.ImGui_Begin(ctx, 'PIE 3000', false, FLAGS) then
-        CheckKeys()
-        if ESC then DONE = true end
         WX, WY = r.ImGui_GetWindowPos(ctx)
         MX, MY = r.ImGui_PointConvertNative(ctx, r.GetMousePosition())
-        --AccessibilityMode()
+        if LIMIT_MOUSE then
+            LimitMouseToRadius()
+        end
+        if not DRAW_CURSOR then
+            r.ImGui_SetMouseCursor( ctx, r.ImGui_MouseCursor_None() )
+        end
         local center = { x = r.ImGui_GetWindowWidth(ctx) / 2, y = r.ImGui_GetWindowHeight(ctx) / 2 }
+        CheckKeys()
+        if ESC then DONE = true end
+        
+        --AccessibilityMode()
         --local center = { x = START_X, y = START_Y }
         --if not DONE then DrawPie(PIE_MENU, center) end
         DrawPie(PIE_MENU, center)
@@ -913,6 +967,10 @@ local function Main()
 
     if LAST_ACTION then
         ExecuteAction(LAST_ACTION.cmd, LAST_ACTION.name)
+    end
+    if REVERT_TO_START and CLOSE and not REVERT_MOUSE then
+        REVERT_MOUSE = true
+        r.JS_Mouse_SetPosition(START_X, START_Y)
     end
     if not DONE then
         if DBG then
