@@ -818,9 +818,9 @@ local function StyleFly(pie, center, drag_angle, active)
         DNDSwapDST(pie, i, pie[i])
         DrawFlyButton(pie[i], pie.selected == i, r.ImGui_IsItemHovered(ctx), center)
 
-        if ALT and pie.selected then
-            DEL = { pie, pie.selected }
-        end
+        --if ALT and pie.selected then
+        --    DEL = { pie, pie.selected }
+        --end
     end
 end
 

@@ -1,14 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.22
+-- @version 0.22.1
 -- @changelog
---  ACTIVATE ON CLOSE - Dont trigger same action again if it was clicked
---  Revert mouse to starting position on script close
---  Option Limit mouse to radius of the pie
---  Option Reset mouse position on menu open
---  Option Revert mouse to starting position on close
---  Potentially fix issue with custom actions dll not showing any actions
+--  Quick fix for alt delete
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
