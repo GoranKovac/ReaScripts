@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.22.2
+-- @version 0.22.3
 -- @changelog
---  Quick fix for alt delete 2
+--  Revert to making fullscreen window
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
@@ -179,7 +179,8 @@ local function GUI_Init()
     r.ImGui_Attach(ctx, ICON_FONT_LARGE)
     r.ImGui_Attach(ctx, ICON_FONT_CLICKED)
     START_X, START_Y = r.ImGui_PointConvertNative(ctx, r.GetMousePosition())
-    r.ImGui_SetNextWindowPos(ctx, START_X - 750, START_Y - 750)
+    --r.ImGui_SetNextWindowPos(ctx, START_X - 750, START_Y - 750)
+    r.ImGui_SetNextWindowPos(ctx, 1, 1)
 end
 
 local function Init()
@@ -902,7 +903,7 @@ local function RefreshImgObj(tbl)
     end
 end
 
-r.JS_WindowMessage_Intercept(intercept_window, "WM_SETCURSOR", false)
+--r.JS_WindowMessage_Intercept(intercept_window, "WM_SETCURSOR", false)
 local function LimitMouseToRadius()
     local MOUSE_RANGE = 200
     -- if not DRAW_CURSOR then
@@ -920,8 +921,13 @@ local function LimitMouseToRadius()
     end
     LIMITED_CX, LIMITED_CY = r.ImGui_PointConvertNative(ctx,MX, MY)
 end
+local screen_left, screen_top, screen_right, screen_bottom = r.my_getViewport(0, 0, 0, 0, 0, 0, 0, 0, true)
 
-r.ImGui_SetNextWindowSize(ctx, 1500, 1500)
+if apple then
+    screen_bottom, screen_top = screen_top, screen_bottom
+end
+
+r.ImGui_SetNextWindowSize(ctx, screen_right-1, screen_bottom-1)
 local function Main()
     TrackShortcutKey()
     if TERMINATE then
@@ -941,7 +947,7 @@ local function Main()
     
     --r.ImGui_SetNextWindowSize(ctx, screen_right, screen_bottom)
     if r.ImGui_Begin(ctx, 'PIE 3000', false, FLAGS) then
-        WX, WY = r.ImGui_GetWindowPos(ctx)
+        WX, WY = 0,0--r.ImGui_GetWindowPos(ctx)
         MX, MY = r.ImGui_PointConvertNative(ctx, r.GetMousePosition())
         if LIMIT_MOUSE then
             LimitMouseToRadius()
@@ -949,12 +955,12 @@ local function Main()
         if not DRAW_CURSOR then
             r.ImGui_SetMouseCursor( ctx, r.ImGui_MouseCursor_None() )
         end
-        local center = { x = r.ImGui_GetWindowWidth(ctx) / 2, y = r.ImGui_GetWindowHeight(ctx) / 2 }
+        --local center = { x = r.ImGui_GetWindowWidth(ctx) / 2, y = r.ImGui_GetWindowHeight(ctx) / 2 }
         CheckKeys()
         if ESC then DONE = true end
         
         --AccessibilityMode()
-        --local center = { x = START_X, y = START_Y }
+        local center = { x = START_X, y = START_Y }
         --if not DONE then DrawPie(PIE_MENU, center) end
         DrawPie(PIE_MENU, center)
         r.ImGui_End(ctx)
