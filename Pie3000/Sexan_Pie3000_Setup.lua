@@ -30,6 +30,9 @@ local HOLD_TO_OPEN = true
 local LIMIT_MOUSE = false
 local RESET_POSITION = true
 local REVERT_TO_START = false
+local SWIPE = false
+local SWIPE_TRESHOLD = 45
+local SWIPE_CONFIRM = 0.05
 
 local bg_col = 0x1d1f27ff
 
@@ -81,6 +84,10 @@ if r.HasExtState("PIE3000", "SETTINGS") then
             LIMIT_MOUSE = save_data.limit_mouse
             RESET_POSITION = save_data.reset_position
             REVERT_TO_START = save_data.revert_to_start
+            SWIPE = save_data.swipe
+            SWIPE_TRESHOLD = save_data.swipe_treshold
+            SWIPE_CONFIRM = save_data.swipe_confirm
+
             --ADJUST_TO_THEME = save_data.adjust_to_theme
             --def_color_dark = save_data.def_color_dark
             --def_color_light = save_data.def_color_light
@@ -1952,6 +1959,17 @@ local function Main2()
                 REVERT_TO_START = not REVERT_TO_START
                 WANT_SAVE = true
             end
+            if r.ImGui_Checkbox(ctx, "SWIPE", SWIPE) then
+                SWIPE = not SWIPE
+                WANT_SAVE = true
+            end
+            if SWIPE then
+                RV_SW, SWIPE_TRESHOLD = r.ImGui_SliderInt( ctx, "Threshold in Pixel (Move speed)", SWIPE_TRESHOLD, 20, 100 )
+                RV_SWC, SWIPE_CONFIRM = r.ImGui_SliderInt( ctx, "Confirm Delay MS", SWIPE_CONFIRM, 20, 150 )
+                if RV_SW or RV_SWC then
+                    WANT_SAVE = true
+                end
+            end
 
             if WANT_SAVE then
                 local data = TableToString(
@@ -1962,6 +1980,9 @@ local function Main2()
                         limit_mouse = LIMIT_MOUSE,
                         reset_position = RESET_POSITION,
                         revert_to_start = REVERT_TO_START,
+                        swipe = SWIPE,
+                        swipe_treshold = SWIPE_TRESHOLD,
+                        swipe_confirm = SWIPE_CONFIRM,
 
                     }, true)
                 r.SetExtState("PIE3000", "SETTINGS", data, true)

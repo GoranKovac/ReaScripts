@@ -1,9 +1,10 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.22.33
+-- @version 0.22.4
 -- @changelog
---  The return of the alpha background
+--  Added swiping support for menus
+--  Options SWIPE,SWIPE TRESHOLD, SWIPE CONFIRM DELAY
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
@@ -35,6 +36,9 @@ local HOLD_TO_OPEN = true
 local RESET_POSITION = true
 local LIMIT_MOUSE = false
 local REVERT_TO_START = false
+local SWIPE_TRESHOLD = 45
+local SWIPE = false
+local SWIPE_CONFIRM = 0.05
 
 local DRAW_CURSOR = true
 local DRAW_CIRCLE_CURSOR = false
@@ -83,6 +87,9 @@ if r.HasExtState("PIE3000", "SETTINGS") then
             LIMIT_MOUSE = save_data.limit_mouse
             RESET_POSITION = save_data.reset_position
             REVERT_TO_START = save_data.revert_to_start
+            SWIPE = save_data.swipe
+            SWIPE_TRESHOLD = save_data.swipe_treshold
+            SWIPE_CONFIRM = save_data.swipe_confirm
 
             --ADJUST_TO_THEME = save_data.adjust_to_theme     -- or ADJUST_TO_THEME
             -- def_color_dark = save_data.def_color_dark-- or def_color_dark
@@ -167,6 +174,10 @@ local ICON_FONT_CLICKED_SIZE = 32
 
 local screen_left, screen_top, screen_right, screen_bottom = r.my_getViewport(0, 0, 0, 0, 0, 0, 0, 0, true)
 
+if apple then
+    screen_bottom, screen_top = screen_top, screen_bottom
+end
+
 local function GUI_Init()
     ctx = r.ImGui_CreateContext('Pie 3000', r.ImGui_ConfigFlags_NoSavedSettings())
     draw_list = r.ImGui_GetWindowDrawList(ctx)
@@ -183,6 +194,7 @@ local function GUI_Init()
     START_X, START_Y = r.ImGui_PointConvertNative(ctx, r.GetMousePosition())
     --r.ImGui_SetNextWindowPos(ctx, START_X - 750, START_Y - 750)
     r.ImGui_SetNextWindowPos(ctx, screen_left+1, screen_top+1)
+    r.ImGui_SetNextWindowSize(ctx, screen_right-2, screen_bottom-2)
 end
 
 local function Init()
@@ -368,6 +380,24 @@ local function AccessibilityMode()
         if SET then
             SET = nil
             r.JS_Mouse_SetPosition(START_X, START_Y)
+        end
+    end
+end
+
+local SWIPE_TRIGGERED
+local function Swipe()
+    if not SWIPE then return end
+    local dx,dy = r.ImGui_GetMouseDelta(ctx)
+    local swipe = abs(dx+dy)
+    if swipe > SWIPE_TRESHOLD then
+        SWIPE_TRIGGERED = r.time_precise()
+    end
+
+    if SWIPE_TRIGGERED then
+       -- r.ShowConsoleMsg(r.time_precise() - SWIPE_TRIGGERED.."\n")
+        if r.time_precise() - SWIPE_TRIGGERED > (SWIPE_CONFIRM / 1000)then
+            SWIPE_TRIGGERED = nil
+            return true
         end
     end
 end
@@ -639,7 +669,7 @@ local function StyleFly(pie, center, drag_angle)
         end
 
         if pie.selected and pie[i].menu and not CLOSE then
-            if r.ImGui_IsMouseReleased(ctx, 0) then
+            if r.ImGui_IsMouseReleased(ctx, 0) or Swipe() then
                 if pie[i].guid ~= "MAIN" then
                     table.insert(PIE_LIST, {
                         col = pie[i].col,
@@ -924,11 +954,6 @@ local function LimitMouseToRadius()
     LIMITED_CX, LIMITED_CY = r.ImGui_PointConvertNative(ctx,MX, MY)
 end
 
-if apple then
-    screen_bottom, screen_top = screen_top, screen_bottom
-end
-
-r.ImGui_SetNextWindowSize(ctx, screen_right-2, screen_bottom-2)
 local function Main()
     TrackShortcutKey()
     if TERMINATE then
