@@ -1,10 +1,10 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.22.4
+-- @version 0.22.41
 -- @changelog
 --  Added swiping support for menus
---  Options SWIPE,SWIPE TRESHOLD, SWIPE CONFIRM DELAY
+--  Options SWIPE ,SWIPE TRESHOLD PX, SWIPE CONFIRM DELAY MS
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
@@ -38,7 +38,7 @@ local LIMIT_MOUSE = false
 local REVERT_TO_START = false
 local SWIPE_TRESHOLD = 45
 local SWIPE = false
-local SWIPE_CONFIRM = 0.05
+local SWIPE_CONFIRM = 50
 
 local DRAW_CURSOR = true
 local DRAW_CIRCLE_CURSOR = false

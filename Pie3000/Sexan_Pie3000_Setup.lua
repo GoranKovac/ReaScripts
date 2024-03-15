@@ -32,7 +32,7 @@ local RESET_POSITION = true
 local REVERT_TO_START = false
 local SWIPE = false
 local SWIPE_TRESHOLD = 45
-local SWIPE_CONFIRM = 0.05
+local SWIPE_CONFIRM = 50
 
 local bg_col = 0x1d1f27ff
 
