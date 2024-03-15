@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.22.32
+-- @version 0.22.33
 -- @changelog
---  Create window from viewport work size
+--  The return of the alpha background
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
@@ -155,7 +155,7 @@ local function GetMouseContext()
     return info
 end
 local FLAGS =
-    --r.ImGui_WindowFlags_NoBackground() |
+    r.ImGui_WindowFlags_NoBackground() |
     r.ImGui_WindowFlags_NoDecoration() |
     r.ImGui_WindowFlags_NoMove()
 
