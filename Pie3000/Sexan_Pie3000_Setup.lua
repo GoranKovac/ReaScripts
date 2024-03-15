@@ -684,17 +684,17 @@ local function DrawFlyButton(pie, selected, hovered, center)
         r.ImGui_DrawList_AddCircle(draw_list, button_center.x, button_center.y, (button_radius + 4), 0xffffff77, 128, 14)
     end
 
-    r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 1)
+   -- r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 1)
 
     if selected then
-        r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 2)
+        r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 3)
         local scale = (sin(r.time_precise() * 5) * 0.05) + 1.01
         r.ImGui_DrawList_AddCircle(draw_list, button_center.x, button_center.y,
             (pie.menu and button_radius + 15 or button_radius + 8) * scale,
             LerpAlpha(0xffffffaa, (sin(r.time_precise() * 5) * 0.5) + 0.7),
             128, 2.5)
     end
-
+    r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, (selected or hovered) and 3 or 1)
     -- BG
     r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x, button_center.y, button_radius + 4, def_out_ring, 128)
 
@@ -709,7 +709,7 @@ local function DrawFlyButton(pie, selected, hovered, center)
     r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x, button_center.y, button_radius - 4, color, 128)
 
     -- DRAW MENU ITEMS PREVIEW
-    r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 0)
+    r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, (selected or hovered) and 2 or 0)
     if pie.menu then
         local menu_num = #pie == 0 and 12 or #pie
         local item_arc_span = (2 * pi) / menu_num --.menu
@@ -733,7 +733,7 @@ local function DrawFlyButton(pie, selected, hovered, center)
         end
     end
 
-    r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 2)
+    r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER,  (selected or hovered) and 3 or 1)
 
     if selected then
         LAST_MSG = name
@@ -1232,7 +1232,7 @@ local function DrawPie(tbl, pos)
         WX, WY = r.ImGui_GetWindowPos(ctx)
         MX, MY = r.ImGui_PointConvertNative(ctx, r.GetMousePosition())
 
-        r.ImGui_DrawListSplitter_Split(SPLITTER, 3)
+        r.ImGui_DrawListSplitter_Split(SPLITTER, 4)
         local drag_angle, active = DrawCenter(tbl, center)
         StyleFly(tbl, center, drag_angle, active)
 
@@ -1846,6 +1846,43 @@ local function GeneralDrawlistButton(name, active, round_side)
     r.ImGui_DrawList_AddTextEx(draw_list, nil, font_size, txt_x, txt_y, 0xffffffff, name)
 end
 
+local function ExportToLuaFile(guid, name)
+    local lua_string = 
+[=[    
+local r = reaper
+local script_path = r.GetResourcePath() .. "/Scripts/Sexan_Scripts/Pie3000/"
+package.path = script_path .. "?.lua;"
+
+require('PieUtils')
+
+local menu_file = script_path .. "menu_file.txt"
+
+local MENUS = ReadFromFile(menu_file) or {}
+for i = 1, #MENUS do
+    if MENUS[i].guid == "%s" then
+        STANDALONE_PIE = MENUS[i]
+        break
+    end
+end
+if STANDALONE_PIE then
+    require('Sexan_Pie3000')
+else
+    r.ShowConsoleMsg("Menu does not exist")
+end
+]=]    
+    local folder = r.GetResourcePath() .. "/Scripts/"
+    local path = folder .. "Pie3000_" .. name:gsub("%s","_") .. ".lua"
+    local file = io.open(path, "w")
+    if file then
+        file:write(lua_string:format(guid))
+        file:close()
+        local ret = r.AddRemoveReaScript(true, 0, path, 1)
+        if ret then
+            ADDED_TO_ACTIONS = true
+        end
+    end
+end
+
 local function TabButtons()
     r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_WindowPadding(), 0, 2)
     if r.ImGui_BeginChild(ctx, "custom_tab", nil, 30) then
@@ -1877,6 +1914,14 @@ local function TabButtons()
             SETTINGS = true; EDITOR = nil
         end
         GeneralDrawlistButton("Settings", SETTINGS ~= nil, "R")
+
+        if EDITOR and CUR_MENU_PIE.guid ~= "TEMP" then
+            r.ImGui_SameLine(ctx, nil, 100)
+            if r.ImGui_InvisibleButton(ctx, "Export to Action", 100, 26) then
+                ExportToLuaFile(CUR_MENU_PIE.guid, CUR_MENU_PIE.name)
+            end
+            GeneralDrawlistButton("Export to Action", SETTINGS ~= nil, "A")
+        end
 
         r.ImGui_PopStyleVar(ctx)
         r.ImGui_EndChild(ctx)
@@ -2072,6 +2117,17 @@ local function Main2()
         OPEN_MENU_WARNING = nil
         r.ImGui_OpenPopup(ctx, "WARNING")
     end
+
+    if ADDED_TO_ACTIONS then
+        r.ImGui_OpenPopup(ctx, "ADDED TO ACTIONS")
+        ADDED_TO_ACTIONS = nil
+    end
+    r.ImGui_SetNextWindowPos(ctx, vp_center[1], vp_center[2], nil, 0.5, 0.5)
+    if r.ImGui_BeginPopup(ctx, "ADDED TO ACTIONS") then
+        r.ImGui_Text(ctx, "\n\t\tADDED " .. "Pie3000_" .. CUR_MENU_PIE.name .. " TO ACTION LIST\t\t\n\n")
+        r.ImGui_EndPopup(ctx)
+    end
+
     Delete()
 
     if open then

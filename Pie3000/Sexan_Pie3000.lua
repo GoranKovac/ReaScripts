@@ -1,10 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.22.41
+-- @version 0.22.5
 -- @changelog
---  Added swiping support for menus
---  Options SWIPE ,SWIPE TRESHOLD PX, SWIPE CONFIRM DELAY MS
+--  Export Menus to standalone pies
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
@@ -193,8 +192,8 @@ local function GUI_Init()
     r.ImGui_Attach(ctx, ICON_FONT_CLICKED)
     START_X, START_Y = r.ImGui_PointConvertNative(ctx, r.GetMousePosition())
     --r.ImGui_SetNextWindowPos(ctx, START_X - 750, START_Y - 750)
-    r.ImGui_SetNextWindowPos(ctx, screen_left+1, screen_top+1)
-    r.ImGui_SetNextWindowSize(ctx, screen_right-2, screen_bottom-2)
+    r.ImGui_SetNextWindowPos(ctx, screen_left + 1, screen_top + 1)
+    r.ImGui_SetNextWindowSize(ctx, screen_right - 2, screen_bottom - 2)
 end
 
 local function Init()
@@ -210,10 +209,10 @@ local function Init()
     end
     CUR_PREF = r.SNM_GetIntConfigVar("alwaysallowkb", 1)
     START_TIME = r.time_precise()
-    MOUSE_INFO = GetMouseContext()
-    if not MOUSE_INFO then return "ERROR" end
-    --if #PIES[MOUSE_INFO] == 0 then return "ERROR" end
-    --if HOLD_TO_OPEN then
+    if not STANDALONE_PIE then
+        MOUSE_INFO = GetMouseContext()
+        if not MOUSE_INFO then return "ERROR" end
+    end
     local key_state = r.JS_VKeys_GetState(START_TIME - 2)
     for i = 1, 255 do
         if key_state:byte(i) ~= 0 then
@@ -223,15 +222,14 @@ local function Init()
         end
     end
     if not KEY then return "ERROR" end
-    --end
+
     r.SNM_SetIntConfigVar("alwaysallowkb", 1)
     GUI_Init()
 end
 
 if Init() == "ERROR" then return end
 
-PIE_MENU = PIES[MOUSE_INFO]
-PIE_LIST[0] = PIE_MENU
+PIE_MENU = STANDALONE_PIE or PIES[MOUSE_INFO]
 
 local function pdefer(func)
     r.defer(function()
@@ -384,18 +382,38 @@ local function AccessibilityMode()
     end
 end
 
+function Clamp(x, v_min, v_max)
+    return max(min(x, v_max), v_min)
+end
+
 local SWIPE_TRIGGERED
+local LAST_SW_VAL = 0
 local function Swipe()
     if not SWIPE then return end
-    local dx,dy = r.ImGui_GetMouseDelta(ctx)
-    local swipe = abs(dx+dy)
-    if swipe > SWIPE_TRESHOLD then
+    local dx, dy = r.ImGui_GetMouseDelta(ctx)
+    local swipe_val = abs(dx + dy)
+
+    local swipe_cur_val = Clamp(swipe_val, 0, SWIPE_TRESHOLD)
+    local AAA = swipe_cur_val / SWIPE_TRESHOLD
+    if swipe_val > SWIPE_TRESHOLD then
         SWIPE_TRIGGERED = r.time_precise()
+    end
+    if swipe_cur_val ~= 0 and LAST_SW_VAL <= AAA then
+        LAST_SW_VAL = AAA
+        RELAX_TIME = r.time_precise()
+    end
+
+    if RELAX_TIME then
+        SWIPE_ANIM = EasingAnim(LAST_SW_VAL, 0, 0, 1, easingFunctions.linear, RELAX_TIME)
+        if SWIPE_ANIM == 0 then
+            LAST_SW_VAL = 0
+            RELAX_TIME = nil
+        end
     end
 
     if SWIPE_TRIGGERED then
-       -- r.ShowConsoleMsg(r.time_precise() - SWIPE_TRIGGERED.."\n")
-        if r.time_precise() - SWIPE_TRIGGERED > (SWIPE_CONFIRM / 1000)then
+        -- r.ShowConsoleMsg(r.time_precise() - SWIPE_TRIGGERED.."\n")
+        if r.time_precise() - SWIPE_TRIGGERED > (SWIPE_CONFIRM / 1000) then
             SWIPE_TRIGGERED = nil
             return true
         end
@@ -462,7 +480,9 @@ local function DrawFlyButton(pie, hovered, prog, center, key)
     end
 
     local button_radius = hovered and
-        EasingAnim(w / 2, (w / 2) + (png and 10 or 15), w / 2, 0.15, easingFunctions.outCubic, pie.hover_time, nil, pie.hover) or w / 2
+        EasingAnim(w / 2, (w / 2) + (png and 10 or 15), w / 2, 0.15, easingFunctions.outCubic, pie.hover_time, nil,
+            pie.hover) or w / 2
+
 
     --button_radius = png and button_radius + 5 or button_radius
     if hovered and r.ImGui_IsMouseDown(ctx, 0) then
@@ -476,7 +496,7 @@ local function DrawFlyButton(pie, hovered, prog, center, key)
 
     col = LerpAlpha(col, PROG)
 
-    r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 1)
+    r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, hovered and 3 or 1)
     -- SHADOW TEST
     r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x + 1, button_center.y + 1, (button_radius + 6) * PROG,
         LerpAlpha(0x44, PROG), 128)
@@ -501,7 +521,7 @@ local function DrawFlyButton(pie, hovered, prog, center, key)
     end
 
     -- DRAW MENU ITEMS PREVIEW
-    r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 0)
+    r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, hovered and 2 or 0)
     if pie.menu then
         local item_arc_span = (2 * pi) / #pie
         for i = 1, #pie do
@@ -530,7 +550,7 @@ local function DrawFlyButton(pie, hovered, prog, center, key)
         r.ImGui_PopFont(ctx)
     end
 
-    r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 2)
+    r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, hovered and 3 or 1)
 
     if hovered then
         LAST_MSG = name
@@ -592,9 +612,11 @@ local function StyleFly(pie, center, drag_angle)
             x = center_x + (RADIUS_MIN + 50 + button_w / 5) * cos(angle + START_ANG) - button_w / 2,
             y = center_y + (RADIUS_MIN + 50 + button_w / 5) * sin(angle + START_ANG) - button_w / 2,
             kx = center_x +
-                (RADIUS_MIN + 50 + (button_w / 5) + (button_w/2) + (pie[i].menu and 5 or 0)) *                cos(angle + START_ANG + 0.2),
+                (RADIUS_MIN + 50 + (button_w / 5) + (button_w / 2) + (pie[i].menu and 5 or 0)) *
+                cos(angle + START_ANG + 0.2),
             ky = center_y +
-                (RADIUS_MIN + 50 + (button_w / 5) + (button_w/2) + (pie[i].menu and 5 or 0)) *                sin(angle + START_ANG + 0.2),
+                (RADIUS_MIN + 50 + (button_w / 5) + (button_w / 2) + (pie[i].menu and 5 or 0)) *
+                sin(angle + START_ANG + 0.2),
             -- kx = center_x +
             --     (RADIUS_MIN + 50 + button_w/5 + (pie.selected and 65 or 45) + (pie[i].menu and 5 or 0)) * cos(angle + START_ANG),
             -- ky = center_y +
@@ -613,6 +635,9 @@ local function StyleFly(pie, center, drag_angle)
         local new_max = ang_max - step
         local new_min = ang_min
         r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 0)
+        --local arc_color = ARC_COLOR
+        --arc_color = SWIPE_TRIGGERED and 0xff0000AA or arc_color
+        --arc_color = pie[i].menu and lerpRGBA(ARC_COLOR, 0xff0000AA, SWIPE_ANIM or 0) or arc_color
         if #pie < 6 then
             for _ = 1, splits do
                 if pie.selected then
@@ -622,7 +647,7 @@ local function StyleFly(pie, center, drag_angle)
                         r.ImGui_DrawList_PathArcTo(draw_list, WX + center_x, WY + center_y, RADIUS_MIN + 5,
                             new_max + off,
                             new_min, 12)
-                        r.ImGui_DrawList_PathFillConvex(draw_list, 0x11AAFF88)
+                        r.ImGui_DrawList_PathFillConvex(draw_list, ARC_COLOR)
                     end
                 end
                 new_min = (new_min + step / (splits - 1))
@@ -631,6 +656,10 @@ local function StyleFly(pie, center, drag_angle)
         else
             --! REMOVE SPLITTING ARC WHEN IMGUI GETS UPDATE
             if pie.selected then
+                --local color = pie[i].menu and lerpRGBA(ARC_COLOR, 0xff000088, SWIPE_ANIM or 0) or ARC_COLOR
+                --color = SWIPE_TRIGGERED and 0xff0000AA or color
+
+                --!AAA
                 r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 0)
                 r.ImGui_DrawList_PathArcTo(draw_list, WX + center_x, WY + center_y, (RADIUS - RADIUS_MIN) + 100, ang_min,
                     ang_max, 12)
@@ -682,10 +711,12 @@ local function StyleFly(pie, center, drag_angle)
                     })
                     SWAP_TIME = r.time_precise()
                     SWITCH_PIE = pie[i]
-                   -- r.JS_Mouse_SetPosition(START_X, START_Y)
+                    -- r.JS_Mouse_SetPosition(START_X, START_Y)
                     break
                 end
             end
+        elseif pie.selected and not pie[i].menu then
+            SWIPE_ANIM = 0
         end
     end
 end
@@ -875,8 +906,8 @@ local function DrawPie(pie, center)
     r.ImGui_DrawListSplitter_Split(SPLITTER, 4)
     if not CLOSE and DRAW_CIRCLE_CURSOR then
         r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 3)
-        r.ImGui_DrawList_AddCircle(draw_list,LIMITED_CX,LIMITED_CY,14,0xff0000ff,64,5)
-        r.ImGui_DrawList_AddCircle(draw_list,LIMITED_CX,LIMITED_CY,10,0xff,64,5)
+        r.ImGui_DrawList_AddCircle(draw_list, LIMITED_CX, LIMITED_CY, 14, 0xff0000ff, 64, 5)
+        r.ImGui_DrawList_AddCircle(draw_list, LIMITED_CX, LIMITED_CY, 10, 0xff, 64, 5)
         r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 0)
     end
     local drag_ang = DrawCenter(center)
@@ -893,7 +924,7 @@ local function CheckKeys()
 end
 
 local function CloseScript()
-    if not CLOSE then 
+    if not CLOSE then
         START_TIME = r.time_precise()
         CLOSE = true
         FLAGS = FLAGS | r.ImGui_WindowFlags_NoInputs()
@@ -941,7 +972,7 @@ local function LimitMouseToRadius()
     -- if not DRAW_CURSOR then
     --     r.JS_Mouse_SetCursor(nil)
     -- end
-   -- local mx,my = r.GetMousePosition()
+    -- local mx,my = r.GetMousePosition()
     local drag_delta = { MX - (START_X), MY - (START_Y) }
     local drag_dist = (drag_delta[1] ^ 2) + (drag_delta[2] ^ 2)
     local drag_angle = (atan(drag_delta[2], drag_delta[1])) % (pi * 2)
@@ -951,7 +982,7 @@ local function LimitMouseToRadius()
         MY = (START_Y + (MOUSE_RANGE) * sin(drag_angle)) // 1
         r.JS_Mouse_SetPosition(MX, MY)
     end
-    LIMITED_CX, LIMITED_CY = r.ImGui_PointConvertNative(ctx,MX, MY)
+    LIMITED_CX, LIMITED_CY = r.ImGui_PointConvertNative(ctx, MX, MY)
 end
 
 local function Main()
@@ -963,28 +994,30 @@ local function Main()
     if SWITCH_PIE and not DONE then
         PIE_MENU = SWITCH_PIE
         if RESET_POSITION then
-           r.JS_Mouse_SetPosition(START_X, START_Y)
+            r.JS_Mouse_SetPosition(START_X, START_Y)
         end
+        SWIPE_ANIM = 0
+        LAST_SW_VAL = 0
         START_TIME = r.time_precise()
         SWITCH_PIE = nil
         SWAP = nil
         RefreshImgObj(PIE_MENU)
     end
-    
+
     --r.ImGui_SetNextWindowSize(ctx, screen_right, screen_bottom)
     if r.ImGui_Begin(ctx, 'PIE 3000', false, FLAGS) then
-        WX, WY = 0,0--r.ImGui_GetWindowPos(ctx)
+        WX, WY = 0, 0 --r.ImGui_GetWindowPos(ctx)
         MX, MY = r.ImGui_PointConvertNative(ctx, r.GetMousePosition())
         if LIMIT_MOUSE then
             LimitMouseToRadius()
         end
         if not DRAW_CURSOR then
-            r.ImGui_SetMouseCursor( ctx, r.ImGui_MouseCursor_None() )
+            r.ImGui_SetMouseCursor(ctx, r.ImGui_MouseCursor_None())
         end
         --local center = { x = r.ImGui_GetWindowWidth(ctx) / 2, y = r.ImGui_GetWindowHeight(ctx) / 2 }
         CheckKeys()
         if ESC then DONE = true end
-        
+
         --AccessibilityMode()
         local center = { x = START_X, y = START_Y }
         --if not DONE then DrawPie(PIE_MENU, center) end
