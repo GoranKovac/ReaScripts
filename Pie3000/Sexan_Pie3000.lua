@@ -1,7 +1,7 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.22.5
+-- @version 0.22.51
 -- @changelog
 --  Export Menus to standalone pies
 -- @provides
