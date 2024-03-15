@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.22.31
+-- @version 0.22.32
 -- @changelog
---  Revert to making fullscreen window
+--  Create window from viewport work size
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
@@ -155,7 +155,7 @@ local function GetMouseContext()
     return info
 end
 local FLAGS =
-    r.ImGui_WindowFlags_NoBackground() |
+    --r.ImGui_WindowFlags_NoBackground() |
     r.ImGui_WindowFlags_NoDecoration() |
     r.ImGui_WindowFlags_NoMove()
 
@@ -164,6 +164,8 @@ local FONT_LARGE = 16
 local ICON_FONT_SMALL_SIZE = 25
 local ICON_FONT_LARGE_SIZE = 40
 local ICON_FONT_CLICKED_SIZE = 32
+
+local screen_left, screen_top, screen_right, screen_bottom = r.my_getViewport(0, 0, 0, 0, 0, 0, 0, 0, true)
 
 local function GUI_Init()
     ctx = r.ImGui_CreateContext('Pie 3000', r.ImGui_ConfigFlags_NoSavedSettings())
@@ -180,7 +182,7 @@ local function GUI_Init()
     r.ImGui_Attach(ctx, ICON_FONT_CLICKED)
     START_X, START_Y = r.ImGui_PointConvertNative(ctx, r.GetMousePosition())
     --r.ImGui_SetNextWindowPos(ctx, START_X - 750, START_Y - 750)
-    r.ImGui_SetNextWindowPos(ctx, 1, 1)
+    r.ImGui_SetNextWindowPos(ctx, screen_left+1, screen_top+1)
 end
 
 local function Init()
@@ -569,7 +571,7 @@ local function StyleFly(pie, center, drag_angle)
             --     (RADIUS_MIN + 50 + button_w/5 + (pie.selected and 65 or 45) + (pie[i].menu and 5 or 0)) * sin(angle + START_ANG) ,
         }
 
-        r.ImGui_SetCursorPos(ctx, button_pos.x, button_pos.y)
+        r.ImGui_SetCursorScreenPos(ctx, button_pos.x, button_pos.y)
         r.ImGui_PushID(ctx, i)
         r.ImGui_InvisibleButton(ctx, "##AAA", button_w, button_w)
         r.ImGui_PopID(ctx)
@@ -921,13 +923,12 @@ local function LimitMouseToRadius()
     end
     LIMITED_CX, LIMITED_CY = r.ImGui_PointConvertNative(ctx,MX, MY)
 end
-local screen_left, screen_top, screen_right, screen_bottom = r.my_getViewport(0, 0, 0, 0, 0, 0, 0, 0, true)
 
 if apple then
     screen_bottom, screen_top = screen_top, screen_bottom
 end
 
-r.ImGui_SetNextWindowSize(ctx, screen_right-1, screen_bottom-1)
+r.ImGui_SetNextWindowSize(ctx, screen_right-2, screen_bottom-2)
 local function Main()
     TrackShortcutKey()
     if TERMINATE then
