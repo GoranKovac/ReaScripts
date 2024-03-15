@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="ddc7169f94d3516aeda1879ef32492ceb6ff233e" name="Sexan_Scripts">
+<index version="1" commit="0b7e632f44c5faf370553e093719285bd1613f09" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -3788,6 +3788,28 @@ Potentially fix issue with custom actions dll not showing any actions]]></change
         <source file="fontello1.ttf">https://github.com/GoranKovac/ReaScripts/raw/ddc7169f94d3516aeda1879ef32492ceb6ff233e/Pie3000/fontello1.ttf</source>
         <source file="Roboto-Medium.ttf">https://github.com/GoranKovac/ReaScripts/raw/ddc7169f94d3516aeda1879ef32492ceb6ff233e/Pie3000/Roboto-Medium.ttf</source>
         <source main="main" file="Sexan_PieCleanFiles.lua">https://github.com/GoranKovac/ReaScripts/raw/ddc7169f94d3516aeda1879ef32492ceb6ff233e/Pie3000/Sexan_PieCleanFiles.lua</source>
+      </version>
+      <version name="0.22.4" author="Sexan" time="2024-03-15T11:27:49Z">
+        <changelog><![CDATA[Added swiping support for menus
+Options SWIPE,SWIPE TRESHOLD, SWIPE CONFIRM DELAY]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/bb331ec59ff3576d4c3c7583fc2fc397229c3d36/Pie3000/Sexan_Pie3000.lua</source>
+        <source main="main" file="Sexan_Pie3000_Setup.lua">https://github.com/GoranKovac/ReaScripts/raw/bb331ec59ff3576d4c3c7583fc2fc397229c3d36/Pie3000/Sexan_Pie3000_Setup.lua</source>
+        <source file="easing.lua">https://github.com/GoranKovac/ReaScripts/raw/bb331ec59ff3576d4c3c7583fc2fc397229c3d36/Pie3000/easing.lua</source>
+        <source file="PieUtils.lua">https://github.com/GoranKovac/ReaScripts/raw/bb331ec59ff3576d4c3c7583fc2fc397229c3d36/Pie3000/PieUtils.lua</source>
+        <source file="fontello1.ttf">https://github.com/GoranKovac/ReaScripts/raw/bb331ec59ff3576d4c3c7583fc2fc397229c3d36/Pie3000/fontello1.ttf</source>
+        <source file="Roboto-Medium.ttf">https://github.com/GoranKovac/ReaScripts/raw/bb331ec59ff3576d4c3c7583fc2fc397229c3d36/Pie3000/Roboto-Medium.ttf</source>
+        <source main="main" file="Sexan_PieCleanFiles.lua">https://github.com/GoranKovac/ReaScripts/raw/bb331ec59ff3576d4c3c7583fc2fc397229c3d36/Pie3000/Sexan_PieCleanFiles.lua</source>
+      </version>
+      <version name="0.22.41" author="Sexan" time="2024-03-15T11:28:55Z">
+        <changelog><![CDATA[Added swiping support for menus
+Options SWIPE ,SWIPE TRESHOLD PX, SWIPE CONFIRM DELAY MS]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/0b7e632f44c5faf370553e093719285bd1613f09/Pie3000/Sexan_Pie3000.lua</source>
+        <source main="main" file="Sexan_Pie3000_Setup.lua">https://github.com/GoranKovac/ReaScripts/raw/0b7e632f44c5faf370553e093719285bd1613f09/Pie3000/Sexan_Pie3000_Setup.lua</source>
+        <source file="easing.lua">https://github.com/GoranKovac/ReaScripts/raw/0b7e632f44c5faf370553e093719285bd1613f09/Pie3000/easing.lua</source>
+        <source file="PieUtils.lua">https://github.com/GoranKovac/ReaScripts/raw/0b7e632f44c5faf370553e093719285bd1613f09/Pie3000/PieUtils.lua</source>
+        <source file="fontello1.ttf">https://github.com/GoranKovac/ReaScripts/raw/0b7e632f44c5faf370553e093719285bd1613f09/Pie3000/fontello1.ttf</source>
+        <source file="Roboto-Medium.ttf">https://github.com/GoranKovac/ReaScripts/raw/0b7e632f44c5faf370553e093719285bd1613f09/Pie3000/Roboto-Medium.ttf</source>
+        <source main="main" file="Sexan_PieCleanFiles.lua">https://github.com/GoranKovac/ReaScripts/raw/0b7e632f44c5faf370553e093719285bd1613f09/Pie3000/Sexan_PieCleanFiles.lua</source>
       </version>
     </reapack>
   </category>
