@@ -1,11 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.31.3
+-- @version 0.31.4
 -- @changelog
---  Create ImGui window on monitor where cursor is (needs targeting any Reaper Window)
---  Tweak AdjustNearEdge function to properly work on multimonitor setup
---  Tested on Gnome (Linux)
+--  Export Context to Menu
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua

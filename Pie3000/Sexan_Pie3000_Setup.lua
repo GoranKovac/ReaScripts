@@ -719,6 +719,20 @@ local function NewProperties(pie)
                         OPEN_WARNING = true
                         CLEAR_PIE = pie
                     end
+                    r.ImGui_SameLine(ctx)
+                    if r.ImGui_Button(ctx, "Create Menu from Context") then
+                        MENUS[#MENUS + 1] = {
+                            guid = r.genGuid(),
+                            RADIUS = 150,
+                            name = CUR_PIE.name .. "CONTEXT MENU",
+                            col = 0xff,
+                            menu = true,
+                            guid_list = {}
+                        }
+                        for i = 1, #CUR_PIE do
+                            MENUS[#MENUS][i] = Deepcopy(CUR_PIE[i])
+                        end
+                    end
                 else
                     -- r.ImGui_SameLine(ctx)
                     -- if r.ImGui_Button(ctx, "Show in Editor") then
@@ -1125,7 +1139,7 @@ local function Pie()
                     RADIUS = 150,
                     name = "MENU " .. #MENUS,
                     col = 0xff,
-                    menu = "is_menu",
+                    menu = true,
                     guid_list = {}
                 }
                 table.insert(CUR_PIE, MENUS[#MENUS])
