@@ -1,9 +1,10 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.31.1
+-- @version 0.31.2
 -- @changelog
---  Disable DND Context on menus
+--  Added center button slight highlight
+--  Don't allow clicking center button if its not submenu
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua

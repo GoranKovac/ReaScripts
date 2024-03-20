@@ -292,9 +292,10 @@ local function TextSplitByWidth(text, width, height)
     for i = 1, #str_tbl do
         local str_w = r.ImGui_CalcTextSize(ctx, str_tbl[i])
         if (txt_h * i - 1) + f_size < height then
-            r.ImGui_SetCursorScreenPos(ctx, xs + bw / 2 - str_w / 2,
-                ys + (bh / 2) - (txt_h * (h_cnt - (i - 1))) + (h_cnt * txt_h) / 2)
-            r.ImGui_Text(ctx, str_tbl[i])
+            r.ImGui_DrawList_AddTextEx( draw_list, nil, FONT_SIZE, xs + bw / 2 - str_w / 2, ys + (bh / 2) - (txt_h * (h_cnt - (i - 1))) + (h_cnt * txt_h) / 2, LerpAlpha(0xffffffff, CENTER_BTN_PROG), str_tbl[i])
+           -- r.ImGui_SetCursorScreenPos(ctx, xs + bw / 2 - str_w / 2,
+           --     ys + (bh / 2) - (txt_h * (h_cnt - (i - 1))) + (h_cnt * txt_h) / 2)
+          --  r.ImGui_Text(ctx, str_tbl[i])
         end
     end
     r.ImGui_PopFont(ctx)
@@ -450,6 +451,7 @@ local function PieButtonDrawlist(pie, button_radius, selected, hovered, button_p
     r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x, button_center.y, (button_radius + 4) * CENTER_BTN_PROG,
         LerpAlpha(ring_col, CENTER_BTN_PROG), 128)
     -- MAIN
+    
     r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x, button_center.y, (button_radius) * CENTER_BTN_PROG,
         LerpAlpha(def_color, CENTER_BTN_PROG), 128)
 
@@ -565,7 +567,7 @@ local function DrawButtons(pie, center)
             y = CENTER.y + (RADIUS_MIN + ((RADIUS - RADIUS_MIN) / 1.3) * MAIN_PROG) * sin(angle + START_ANG) -
                 (button_wh / 2),
             kx = pie[i].key and CENTER.x + (RADIUS_MIN + ((RADIUS - RADIUS_MIN) / 1.3) * MAIN_PROG) * cos(angle + START_ANG),
-            ky = pie[i].key and CENTER.y - (button_wh+25) - ((pie.selected == i and (SETUP and 5 or 15) or 0) * BUTTON_PROG) + (RADIUS_MIN + ((RADIUS - RADIUS_MIN) / 1.3) * MAIN_PROG) * sin(angle + START_ANG),
+            ky = pie[i].key and CENTER.y - (button_wh+ (pie[i].menu and 32 or 25))- ((pie.selected == i and (SETUP and 5 or 15) or 0) * BUTTON_PROG) + (RADIUS_MIN + ((RADIUS - RADIUS_MIN) / 1.3) * MAIN_PROG) * sin(angle + START_ANG),
         }
 
 
@@ -659,6 +661,7 @@ local function DrawCenter(pie, center)
     else
         pie.active = CX and (CUR_DRAG_DIST >= RADIUS_MIN ^ 2) 
     end
+    
     if not pie.active then
         if not SETUP then
             LAST_ACTION = nil
@@ -672,6 +675,13 @@ local function DrawCenter(pie, center)
         end
     end
 
+    local col
+    if SETUP then
+        col = (not pie.selected) and IncreaseDecreaseBrightness(main_color, 15) or main_color
+    else
+        col = (not pie.active) and IncreaseDecreaseBrightness(main_color, 15) or main_color
+    end
+    
     if SETUP and not pie.selected then
         local scale = (sin(r.time_precise() * 5) * 0.05) + 1.01
         r.ImGui_DrawList_AddCircle(draw_list, CENTER.x, CENTER.y, (RADIUS_MIN + 5) * scale,
@@ -685,7 +695,7 @@ local function DrawCenter(pie, center)
         DndAddAsContext(pie)
     end
     local center_pressed = (r.ImGui_IsMouseDown(ctx, 0) and not pie.active and r.ImGui_IsWindowFocused(ctx))
-
+    center_pressed = #PIE_LIST > 0 and center_pressed
     if center_pressed then
         r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 4)
         r.ImGui_DrawList_AddCircle(draw_list, CENTER.x, CENTER.y, (RADIUS_MIN - 5), 0xffffff77, 128, 24)
@@ -706,6 +716,10 @@ local function DrawCenter(pie, center)
     r.ImGui_DrawList_AddCircleFilled(draw_list, CENTER.x, CENTER.y, RADIUS_MIN - 4 - (center_pressed and 5 or 0),
         LerpAlpha(main_color, CENTER_BTN_PROG), 64)
 
+        -- COLOR BG
+    r.ImGui_DrawList_AddCircleFilled(draw_list, CENTER.x, CENTER.y, RADIUS_MIN - 8 - (center_pressed and 5 or 0),
+        LerpAlpha(col, CENTER_BTN_PROG), 64)
+
     -- DRAW CENTER CIRCLE -------------------------------------------------
 
     TextSplitByWidth(LAST_MSG, button_wh, button_wh)
@@ -725,7 +739,7 @@ local function DrawCenter(pie, center)
             }
 
             -- SHADOW
-            r.ImGui_DrawList_AddCircleFilled(draw_list, button_pos.x + 1, button_pos.y + 1,
+            r.ImGui_DrawList_AddCircleFilled(draw_list, button_pos.x + 1.5, button_pos.y + 1.5,
                 (mini_rad + 2) * CENTER_BTN_PROG,
                 LerpAlpha(0x44, MAIN_PROG), 128)
 
