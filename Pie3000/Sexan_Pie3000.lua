@@ -1,10 +1,11 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.31.2
+-- @version 0.31.3
 -- @changelog
---  Added center button slight highlight
---  Don't allow clicking center button if its not submenu
+--  Create ImGui window on monitor where cursor is (needs targeting any Reaper Window)
+--  Tweak AdjustNearEdge function to properly work on multimonitor setup
+--  Tested on Gnome (Linux)
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
@@ -37,10 +38,18 @@ PIE_LIST = {}
 
 local SCRIPT_START_TIME = r.time_precise()
 
+local function GetMonitorFromPoint()
+    local x,y = r.GetMousePosition()
+    AL, AT, AR, AB = r.my_getViewport(x, y, x, y, x, y, x, y, true)
+    LEFT, TOP = r.ImGui_PointConvertNative(ctx, AL, AT)
+    RIGHT, BOT = r.ImGui_PointConvertNative(ctx, AR, AB)
+end
+
 local function Init()
     START_TIME = r.time_precise()
     ALLOW_KB_VAR = r.SNM_GetIntConfigVar("alwaysallowkb", 1)
     START_X, START_Y = r.ImGui_PointConvertNative(ctx, r.GetMousePosition())
+    GetMonitorFromPoint()
     CENTER = { x = START_X, y = START_Y }
 
     PIES = ReadFromFile(pie_file)
@@ -126,28 +135,27 @@ end
 
 local function NearEdge()
     PREV_X, PREV_Y = START_X, START_Y
-    local viewport        = r.ImGui_GetMainViewport(ctx)
-    local getViewportPos  = use_work_area and r.ImGui_Viewport_GetWorkPos or r.ImGui_Viewport_GetPos
-    local getViewportSize = use_work_area and r.ImGui_Viewport_GetWorkSize or r.ImGui_Viewport_GetSize
+    --local viewport        =  r.ImGui_GetWindowViewport( ctx ) --r.ImGui_GetMainViewport(ctx)
+    --local getViewportPos  =  r.ImGui_Viewport_GetPos
+    --local getViewportSize =  r.ImGui_Viewport_GetSize
     
-    local X, Y = getViewportPos(viewport)
-    local W, H = getViewportSize(viewport)
-
-    local offset = 40
-    if START_X - (PIE_MENU.RADIUS + offset) < X then
-        START_X = PIE_MENU.RADIUS * 1.2
+    --local X, Y = getViewportPos(viewport)
+    --local W, H = getViewportSize(viewport)
+    local len = ((PIE_MENU.RADIUS / math.sqrt(2)) * 2)//1
+    if START_X - len < LEFT then
+        START_X = LEFT + len
         OUT_SCREEN = true
     end
-    if START_X + (PIE_MENU.RADIUS + offset)> W then
-        START_X = W - (PIE_MENU.RADIUS * 1.3)
+    if START_X + len > RIGHT then
+        START_X = RIGHT - len
         OUT_SCREEN = true
     end
-    if START_Y - (PIE_MENU.RADIUS + offset)< Y then
-        START_Y = PIE_MENU.RADIUS * 1.5
+    if START_Y - len < TOP then
+        START_Y = TOP + len
         OUT_SCREEN = true
     end
-    if START_Y + (PIE_MENU.RADIUS + offset)> H then
-        START_Y = H - (PIE_MENU.RADIUS)
+    if START_Y + len > BOT then
+        START_Y = BOT - len
         OUT_SCREEN = true
     end
 
@@ -169,11 +177,15 @@ local FLAGS =
     r.ImGui_WindowFlags_NoMove()
 
 local function DoFullScreen()
-    local viewport        = r.ImGui_GetMainViewport(ctx)
-    local getViewportPos  = use_work_area and r.ImGui_Viewport_GetWorkPos or r.ImGui_Viewport_GetPos
-    local getViewportSize = use_work_area and r.ImGui_Viewport_GetWorkSize or r.ImGui_Viewport_GetSize
-    r.ImGui_SetNextWindowPos(ctx, getViewportPos(viewport))
-    r.ImGui_SetNextWindowSize(ctx, getViewportSize(viewport))
+    r.ImGui_SetNextWindowPos(ctx, LEFT, TOP)
+    r.ImGui_SetNextWindowSize(ctx, RIGHT-LEFT, BOT - TOP)
+    VP_CENTER = { r.ImGui_Viewport_GetCenter( r.ImGui_GetWindowViewport( ctx ) ) }
+end
+
+local function DoFullScreen2()
+    local viewport        = r.ImGui_GetWindowViewport( ctx )r.ImGui_GetMainViewport(ctx)
+    r.ImGui_SetNextWindowPos(ctx, r.ImGui_Viewport_GetPos(viewport))
+    r.ImGui_SetNextWindowSize(ctx, r.ImGui_Viewport_GetSize(viewport))
     VP_CENTER = { r.ImGui_Viewport_GetCenter(viewport) }
 end
 

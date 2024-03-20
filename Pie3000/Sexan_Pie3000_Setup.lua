@@ -913,6 +913,26 @@ local function BreadCrumbs(tbl)
     r.ImGui_PopStyleVar(ctx)
 end
 
+function DNDSwapSRC(tbl, k)
+    if r.ImGui_BeginDragDropSource(ctx) then
+        r.ImGui_SetDragDropPayload(ctx, 'DND_SWAP', tostring(k))
+        r.ImGui_Text(ctx, tbl[k].name)
+        r.ImGui_EndDragDropSource(ctx)
+    end
+end
+
+function DNDSwapDST(tbl, k, v)
+    if r.ImGui_BeginDragDropTarget(ctx) then
+        RV_P, PAYLOAD = r.ImGui_AcceptDragDropPayload(ctx, 'DND_SWAP')
+        if RV_P then
+            local payload_n = tonumber(PAYLOAD)
+            tbl[k] = tbl[payload_n]
+            tbl[payload_n] = v
+        end
+        r.ImGui_EndDragDropTarget(ctx)
+    end
+end
+
 local function DndSourceAction(tbl)
     if r.ImGui_BeginDragDropSource(ctx, r.ImGui_DragDropFlags_AcceptBeforeDelivery()) then
         r.ImGui_SetDragDropPayload(ctx, 'DND ACTION', tbl.name .. "|" .. tbl.cmd)

@@ -585,6 +585,8 @@ local function DrawButtons(pie, center)
             end
             boundry_hovered = r.ImGui_IsItemHovered(ctx)
             r.ImGui_PopID(ctx)
+            DNDSwapSRC(pie, i)
+            DNDSwapDST(pie, i, pie[i])
             if not pie[i].menu then
                 DndAddTargetAction(pie, pie[i])
             else
@@ -610,7 +612,6 @@ local function DrawButtons(pie, center)
         r.ImGui_PushID(ctx, "pie_btn" .. i)
         r.ImGui_InvisibleButton(ctx, i, button_wh, button_wh)
         r.ImGui_PopID(ctx)
-
         if pie.hovered and pie[i].name ~= LAST_MSG then
             if not SETUP then
                 LAST_MSG = pie[i].name
