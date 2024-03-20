@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.31
+-- @version 0.31.1
 -- @changelog
---  fix ruler context
+--  Disable DND Context on menus
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua

@@ -681,7 +681,7 @@ local function DrawCenter(pie, center)
 
     r.ImGui_SetCursorScreenPos(ctx, CENTER.x - (button_wh / 2), CENTER.y - (button_wh / 2))
     r.ImGui_InvisibleButton(ctx, "##CENTER", button_wh, button_wh)
-    if SETUP then
+    if SETUP and #PIE_LIST == 0 then
         DndAddAsContext(pie)
     end
     local center_pressed = (r.ImGui_IsMouseDown(ctx, 0) and not pie.active and r.ImGui_IsWindowFocused(ctx))
