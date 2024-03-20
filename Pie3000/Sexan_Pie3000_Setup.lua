@@ -724,7 +724,7 @@ local function NewProperties(pie)
                         MENUS[#MENUS + 1] = {
                             guid = r.genGuid(),
                             RADIUS = 150,
-                            name = CUR_PIE.name .. "CONTEXT MENU",
+                            name = CUR_PIE.name .. " CONTEXT MENU",
                             col = 0xff,
                             menu = true,
                             guid_list = {}

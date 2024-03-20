@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.31.4
+-- @version 0.31.5
 -- @changelog
---  Export Context to Menu
+--  Export Context to Menu fix missing whitespace between names
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
