@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="8ff88bfc929258a0210262a201257fdc02796b4c" name="Sexan_Scripts">
+<index version="1" commit="d8671e42433dcafec2009f219b16254de8aff050" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -3868,6 +3868,31 @@ Added option to Show/Hide shortcut keys on pie]]></changelog>
         <source file="fontello1.ttf">https://github.com/GoranKovac/ReaScripts/raw/8ff88bfc929258a0210262a201257fdc02796b4c/Pie3000/fontello1.ttf</source>
         <source file="Roboto-Medium.ttf">https://github.com/GoranKovac/ReaScripts/raw/8ff88bfc929258a0210262a201257fdc02796b4c/Pie3000/Roboto-Medium.ttf</source>
         <source main="main" file="Sexan_PieCleanFiles.lua">https://github.com/GoranKovac/ReaScripts/raw/8ff88bfc929258a0210262a201257fdc02796b4c/Pie3000/Sexan_PieCleanFiles.lua</source>
+      </version>
+      <version name="0.31.2" author="Sexan" time="2024-03-20T13:39:42Z">
+        <changelog><![CDATA[Added center button slight highlight
+Don't allow clicking center button if its not submenu]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/afb7f908a2ddbf8a6f67a3b32d1fafc74f2ae93e/Pie3000/Sexan_Pie3000.lua</source>
+        <source main="main" file="Sexan_Pie3000_Setup.lua">https://github.com/GoranKovac/ReaScripts/raw/afb7f908a2ddbf8a6f67a3b32d1fafc74f2ae93e/Pie3000/Sexan_Pie3000_Setup.lua</source>
+        <source file="easing.lua">https://github.com/GoranKovac/ReaScripts/raw/afb7f908a2ddbf8a6f67a3b32d1fafc74f2ae93e/Pie3000/easing.lua</source>
+        <source file="Common.lua">https://github.com/GoranKovac/ReaScripts/raw/afb7f908a2ddbf8a6f67a3b32d1fafc74f2ae93e/Pie3000/Common.lua</source>
+        <source file="PieUtils.lua">https://github.com/GoranKovac/ReaScripts/raw/afb7f908a2ddbf8a6f67a3b32d1fafc74f2ae93e/Pie3000/PieUtils.lua</source>
+        <source file="fontello1.ttf">https://github.com/GoranKovac/ReaScripts/raw/afb7f908a2ddbf8a6f67a3b32d1fafc74f2ae93e/Pie3000/fontello1.ttf</source>
+        <source file="Roboto-Medium.ttf">https://github.com/GoranKovac/ReaScripts/raw/afb7f908a2ddbf8a6f67a3b32d1fafc74f2ae93e/Pie3000/Roboto-Medium.ttf</source>
+        <source main="main" file="Sexan_PieCleanFiles.lua">https://github.com/GoranKovac/ReaScripts/raw/afb7f908a2ddbf8a6f67a3b32d1fafc74f2ae93e/Pie3000/Sexan_PieCleanFiles.lua</source>
+      </version>
+      <version name="0.31.3" author="Sexan" time="2024-03-20T19:19:20Z">
+        <changelog><![CDATA[Create ImGui window on monitor where cursor is (needs targeting any Reaper Window)
+Tweak AdjustNearEdge function to properly work on multimonitor setup
+Tested on Gnome (Linux)]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/d8671e42433dcafec2009f219b16254de8aff050/Pie3000/Sexan_Pie3000.lua</source>
+        <source main="main" file="Sexan_Pie3000_Setup.lua">https://github.com/GoranKovac/ReaScripts/raw/d8671e42433dcafec2009f219b16254de8aff050/Pie3000/Sexan_Pie3000_Setup.lua</source>
+        <source file="easing.lua">https://github.com/GoranKovac/ReaScripts/raw/d8671e42433dcafec2009f219b16254de8aff050/Pie3000/easing.lua</source>
+        <source file="Common.lua">https://github.com/GoranKovac/ReaScripts/raw/d8671e42433dcafec2009f219b16254de8aff050/Pie3000/Common.lua</source>
+        <source file="PieUtils.lua">https://github.com/GoranKovac/ReaScripts/raw/d8671e42433dcafec2009f219b16254de8aff050/Pie3000/PieUtils.lua</source>
+        <source file="fontello1.ttf">https://github.com/GoranKovac/ReaScripts/raw/d8671e42433dcafec2009f219b16254de8aff050/Pie3000/fontello1.ttf</source>
+        <source file="Roboto-Medium.ttf">https://github.com/GoranKovac/ReaScripts/raw/d8671e42433dcafec2009f219b16254de8aff050/Pie3000/Roboto-Medium.ttf</source>
+        <source main="main" file="Sexan_PieCleanFiles.lua">https://github.com/GoranKovac/ReaScripts/raw/d8671e42433dcafec2009f219b16254de8aff050/Pie3000/Sexan_PieCleanFiles.lua</source>
       </version>
     </reapack>
   </category>
