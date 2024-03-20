@@ -1,14 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.30
+-- @version 0.31
 -- @changelog
---  Refactor both scripts
---  Share drawing and behaviors across scripts
---  Menus can be applied to context
---  Added option to select thing under cursor
---  Added option to Readjust pie position when near edges
---  Added option to Show/Hide shortcut keys on pie
+--  fix ruler context
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua

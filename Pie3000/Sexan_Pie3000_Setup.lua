@@ -54,6 +54,11 @@ local menu_items = {
 }
 
 local PIES = ReadFromFile(pie_file) or Deepcopy(DEFAULT_PIE)
+
+if not PIES["ruler"] then
+    PIES["ruler"] = { RADIUS = RADIUS_START, name = "RULLER", guid = r.genGuid() }
+end
+
 local MENUS = ReadFromFile(menu_file) or {}
 
 function GetMenus()
