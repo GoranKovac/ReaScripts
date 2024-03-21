@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="f43162f38b0854c62983a917d16ba8eb81b5000d" name="Sexan_Scripts">
+<index version="1" commit="267814ec02e7dfe951e717cb9cef608c44b8b36e" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -3915,6 +3915,26 @@ Tested on Gnome (Linux)]]></changelog>
         <source file="fontello1.ttf">https://github.com/GoranKovac/ReaScripts/raw/f43162f38b0854c62983a917d16ba8eb81b5000d/Pie3000/fontello1.ttf</source>
         <source file="Roboto-Medium.ttf">https://github.com/GoranKovac/ReaScripts/raw/f43162f38b0854c62983a917d16ba8eb81b5000d/Pie3000/Roboto-Medium.ttf</source>
         <source main="main" file="Sexan_PieCleanFiles.lua">https://github.com/GoranKovac/ReaScripts/raw/f43162f38b0854c62983a917d16ba8eb81b5000d/Pie3000/Sexan_PieCleanFiles.lua</source>
+      </version>
+      <version name="0.31.7" author="Sexan" time="2024-03-21T18:31:19Z">
+        <changelog><![CDATA[Call setup script from actions to avoid crash when no data files are yet created
+Fix data png path to relative (needs to be removed on final release)
+Creating Menu from Context references menus instead deepcopy
+Applying Menu to Context references menus instead deepcopy
+Make sure png file path exist before creating Img Object (avoid crashing if for some reason image does not exits)
+Remove NamedCommandLookup for actions (not neccessary)
+Fix draw order for shortcuts when hovered/selected
+Trim script names when adding them as actions
+Create Popup instead of ImguiBegin (solves problems with stuck keys/script when OS modal window pops up)
+Added support for track icons]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/267814ec02e7dfe951e717cb9cef608c44b8b36e/Pie3000/Sexan_Pie3000.lua</source>
+        <source main="main" file="Sexan_Pie3000_Setup.lua">https://github.com/GoranKovac/ReaScripts/raw/267814ec02e7dfe951e717cb9cef608c44b8b36e/Pie3000/Sexan_Pie3000_Setup.lua</source>
+        <source file="easing.lua">https://github.com/GoranKovac/ReaScripts/raw/267814ec02e7dfe951e717cb9cef608c44b8b36e/Pie3000/easing.lua</source>
+        <source file="Common.lua">https://github.com/GoranKovac/ReaScripts/raw/267814ec02e7dfe951e717cb9cef608c44b8b36e/Pie3000/Common.lua</source>
+        <source file="PieUtils.lua">https://github.com/GoranKovac/ReaScripts/raw/267814ec02e7dfe951e717cb9cef608c44b8b36e/Pie3000/PieUtils.lua</source>
+        <source file="fontello1.ttf">https://github.com/GoranKovac/ReaScripts/raw/267814ec02e7dfe951e717cb9cef608c44b8b36e/Pie3000/fontello1.ttf</source>
+        <source file="Roboto-Medium.ttf">https://github.com/GoranKovac/ReaScripts/raw/267814ec02e7dfe951e717cb9cef608c44b8b36e/Pie3000/Roboto-Medium.ttf</source>
+        <source main="main" file="Sexan_PieCleanFiles.lua">https://github.com/GoranKovac/ReaScripts/raw/267814ec02e7dfe951e717cb9cef608c44b8b36e/Pie3000/Sexan_PieCleanFiles.lua</source>
       </version>
     </reapack>
   </category>
