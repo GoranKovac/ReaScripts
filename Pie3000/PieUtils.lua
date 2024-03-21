@@ -1,6 +1,11 @@
 --@noindex
 --NoIndex: true
 local r = reaper
+
+local getinfo = debug.getinfo(1, 'S');
+local script_path = getinfo.source:match [[^@?(.*[\/])[^\/]-$]];
+package.path = script_path .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
+
 function CheckDeps()
     local deps = {}
     if not r.ImGui_GetVersion then
@@ -35,6 +40,19 @@ function InTbl(tbl, val)
         if tbl[i].guid == val then
             return tbl[i], i
         end
+    end
+end
+
+function PngToRelative(fn)
+    local file = io.open(fn, "r")
+    if not file then return end
+    local content = file:read("a")
+    if content == "" then return end
+    content = content:gsub('png = "(.-)/Data', 'png = "/Data')
+    file = io.open(fn, "w")
+    if file then
+        file:write(content)
+        file:close()
     end
 end
 
@@ -104,4 +122,13 @@ end
 function TableToString(table, new_line)
     local str = serializeTable(table, nil, new_line)
     return str
+end
+
+if not r.HasExtState("PIE3000", "RELATIVE_PNG") then
+--! REMOVE THIS AFTER A WHILE (THIS IS CURRENT SILENT PNG RELATIVE PATH FIX)
+    local menu_file = script_path .. "menu_file.txt"
+    local pie_file = script_path .. "pie_file.txt"
+    PngToRelative(pie_file)
+    PngToRelative(menu_file)
+    r.SetExtState("PIE3000", "RELATIVE_PNG", "fix", true)
 end

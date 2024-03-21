@@ -1,7 +1,7 @@
 --@noindex
 --NoIndex: true
 local r = reaper
-
+reaper_path = r.GetResourcePath()
 local info = debug.getinfo(1, 'S');
 local script_path = info.source:match [[^@?(.*[\/])[^\/]-$]]
 package.path = script_path .. "?.lua;"
@@ -18,9 +18,10 @@ FLT_MIN, FLT_MAX = r.ImGui_NumericLimits_Float()
 
 menu_file = script_path .. "menu_file.txt"
 pie_file = script_path .. "pie_file.txt"
-png_path = r.GetResourcePath() .. "/Data/toolbar_icons/"
-png_path_150 = r.GetResourcePath() .. "/Data/toolbar_icons/150/"
-png_path_200 = r.GetResourcePath() .. "/Data/toolbar_icons/200/"
+png_path = "/Data/toolbar_icons/"
+png_path_150 = "/Data/toolbar_icons/150/"
+png_path_200 = "/Data/toolbar_icons/200/"
+png_path_track_icons = "/Data/track_icons/"
 
 ANIMATION = true
 ACTIVATE_ON_CLOSE = true
@@ -183,9 +184,9 @@ local function lerpRGBA(color1, color2, t)
     return r.ImGui_ColorConvertDouble4ToU32(rn, gn, bn, an);
 end
 
-function ImageUVOffset(img_obj, cols, rows, frame, x, y, prog, need_single_frame)
+function ImageUVOffset(img_obj, resize, cols, rows, frame, x, y, prog, need_single_frame)
     local w, h = r.ImGui_Image_GetSize(img_obj)
-
+    w,h = w/resize, h/resize
     local xs, ys = x - (w / cols) / 2, y - (h / rows) / 2
     local xe, ye = w / cols + xs, h / rows + ys
 
@@ -292,10 +293,12 @@ local function TextSplitByWidth(text, width, height)
     for i = 1, #str_tbl do
         local str_w = r.ImGui_CalcTextSize(ctx, str_tbl[i])
         if (txt_h * i - 1) + f_size < height then
-            r.ImGui_DrawList_AddTextEx( draw_list, nil, FONT_SIZE, xs + bw / 2 - str_w / 2, ys + (bh / 2) - (txt_h * (h_cnt - (i - 1))) + (h_cnt * txt_h) / 2, LerpAlpha(0xffffffff, CENTER_BTN_PROG), str_tbl[i])
-           -- r.ImGui_SetCursorScreenPos(ctx, xs + bw / 2 - str_w / 2,
-           --     ys + (bh / 2) - (txt_h * (h_cnt - (i - 1))) + (h_cnt * txt_h) / 2)
-          --  r.ImGui_Text(ctx, str_tbl[i])
+            r.ImGui_DrawList_AddTextEx(draw_list, nil, FONT_SIZE, xs + bw / 2 - str_w / 2,
+                ys + (bh / 2) - (txt_h * (h_cnt - (i - 1))) + (h_cnt * txt_h) / 2, LerpAlpha(0xffffffff, CENTER_BTN_PROG),
+                str_tbl[i])
+            -- r.ImGui_SetCursorScreenPos(ctx, xs + bw / 2 - str_w / 2,
+            --     ys + (bh / 2) - (txt_h * (h_cnt - (i - 1))) + (h_cnt * txt_h) / 2)
+            --  r.ImGui_Text(ctx, str_tbl[i])
         end
     end
     r.ImGui_PopFont(ctx)
@@ -366,26 +369,31 @@ local function DrawArc(pie, center, item_arc_span, ang_min, ang_max, RADIUS, RAD
     end
 end
 
-local function DrawShortcut(pie, button_pos)
-    r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, selected and 3 or 0)
+local function DrawShortcut(pie, button_pos, selected)
+    r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, selected and 3 or 1)
     r.ImGui_PushFont(ctx, GUI_FONT)
-    local key_w, key_h = r.ImGui_CalcTextSize( ctx, KEYS[pie.key])
-    r.ImGui_SetCursorScreenPos(ctx, button_pos.kx - ((key_w + 15)/2), button_pos.ky)
+    local key_w, key_h = r.ImGui_CalcTextSize(ctx, KEYS[pie.key])
+    r.ImGui_SetCursorScreenPos(ctx, button_pos.kx - ((key_w + 15) / 2), button_pos.ky)
     r.ImGui_InvisibleButton(ctx, KEYS[pie.key], (key_w + 15), key_h + 2)
-    local xs, ys = r.ImGui_GetItemRectMin( ctx )
-    local xe, ye = r.ImGui_GetItemRectMax( ctx )
+    local xs, ys = r.ImGui_GetItemRectMin(ctx)
+    local xe, ye = r.ImGui_GetItemRectMax(ctx)
     -- SHADOW
-    r.ImGui_DrawList_AddRectFilled( draw_list, xs, ys, xe+4, ye+4, LerpAlpha(0x44, CENTER_BTN_PROG), 7,  r.ImGui_DrawFlags_RoundCornersAll() )            
+    r.ImGui_DrawList_AddRectFilled(draw_list, xs, ys, xe + 4, ye + 4, LerpAlpha(0x44, CENTER_BTN_PROG), 7,
+        r.ImGui_DrawFlags_RoundCornersAll())
     -- RING
-    r.ImGui_DrawList_AddRectFilled( draw_list, xs-2, ys-2, xe+2, ye+2, LerpAlpha(def_out_ring, CENTER_BTN_PROG), 7,  r.ImGui_DrawFlags_RoundCornersAll() )
+    r.ImGui_DrawList_AddRectFilled(draw_list, xs - 2, ys - 2, xe + 2, ye + 2, LerpAlpha(def_out_ring, CENTER_BTN_PROG), 7,
+        r.ImGui_DrawFlags_RoundCornersAll())
     -- MAIN
-    r.ImGui_DrawList_AddRectFilled( draw_list, xs, ys, xe, ye, LerpAlpha(def_color, CENTER_BTN_PROG), 5,  r.ImGui_DrawFlags_RoundCornersAll() )
+    r.ImGui_DrawList_AddRectFilled(draw_list, xs, ys, xe, ye, LerpAlpha(def_color, CENTER_BTN_PROG), 5,
+        r.ImGui_DrawFlags_RoundCornersAll())
     -- SHADOW
-    r.ImGui_DrawList_AddTextEx(draw_list, nil, GUI_FONT_SIZE * CENTER_BTN_PROG, (button_pos.kx - key_w/2)+1, button_pos.ky+1, LerpAlpha(0xFF, CENTER_BTN_PROG), KEYS[pie.key])
+    r.ImGui_DrawList_AddTextEx(draw_list, nil, GUI_FONT_SIZE * CENTER_BTN_PROG, (button_pos.kx - key_w / 2) + 1,
+        button_pos.ky + 1, LerpAlpha(0xFF, CENTER_BTN_PROG), KEYS[pie.key])
     -- MAIN
-    r.ImGui_DrawList_AddTextEx(draw_list, nil, GUI_FONT_SIZE * CENTER_BTN_PROG, button_pos.kx - key_w/2, button_pos.ky, LerpAlpha(0xFFFFFFFF, CENTER_BTN_PROG), KEYS[pie.key])            
+    r.ImGui_DrawList_AddTextEx(draw_list, nil, GUI_FONT_SIZE * CENTER_BTN_PROG, button_pos.kx - key_w / 2, button_pos.ky,
+        LerpAlpha(0xFFFFFFFF, CENTER_BTN_PROG), KEYS[pie.key])
     r.ImGui_PopFont(ctx)
-end 
+end
 
 local function PieButtonDrawlist(pie, button_radius, selected, hovered, button_pos)
     local xs, ys = r.ImGui_GetItemRectMin(ctx)
@@ -396,7 +404,7 @@ local function PieButtonDrawlist(pie, button_radius, selected, hovered, button_p
     local button_center = { x = xs + (w / 2), y = ys + (h / 2) }
 
     if not SETUP then
-        button_radius = selected and button_radius + (15 * BUTTON_PROG) or button_radius
+        button_radius = selected and button_radius + (10 * BUTTON_PROG) or button_radius
         button_radius = (pie.key and r.ImGui_IsKeyDown(ctx, pie.key)) and button_radius + (15 * 0.8) or button_radius
     else
         button_radius = hovered and button_radius + (5 * BUTTON_PROG) or button_radius
@@ -407,7 +415,7 @@ local function PieButtonDrawlist(pie, button_radius, selected, hovered, button_p
     local color, icon, png = pie.col, pie.icon, pie.png
     local ring_col = (hovered and ALT) and 0xff0000ff or def_out_ring
     color = color == 0xff and def_color or color
-    
+
     -- USE DEFAULT BG BUTTON WHEN PNG IS USED
     if png then color = def_color end
     color = hovered and ALT and 0xff0000ff or color
@@ -451,7 +459,7 @@ local function PieButtonDrawlist(pie, button_radius, selected, hovered, button_p
     r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x, button_center.y, (button_radius + 4) * CENTER_BTN_PROG,
         LerpAlpha(ring_col, CENTER_BTN_PROG), 128)
     -- MAIN
-    
+
     r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x, button_center.y, (button_radius) * CENTER_BTN_PROG,
         LerpAlpha(def_color, CENTER_BTN_PROG), 128)
 
@@ -508,7 +516,7 @@ local function PieButtonDrawlist(pie, button_radius, selected, hovered, button_p
     -- KEY CIRCLE   -----------------------------------------------------------
     if SHOW_SHORTCUT then
         if pie.key then
-            DrawShortcut(pie, button_pos)
+            DrawShortcut(pie, button_pos, selected)
         end
     end
     -- KEY CIRCLE   -----------------------------------------------------------
@@ -525,11 +533,12 @@ local function PieButtonDrawlist(pie, button_radius, selected, hovered, button_p
         r.ImGui_PopFont(ctx)
     end
 
-    if png and r.file_exists(png) then
+    if png and r.file_exists(reaper_path .. png) then
         if not r.ImGui_ValidatePtr(pie.img_obj, 'ImGui_Image*') then
-            pie.img_obj = r.ImGui_CreateImage(png)
+            pie.img_obj = r.ImGui_CreateImage(reaper_path .. png)
         end
-        ImageUVOffset(pie.img_obj, 3, 1, selected and 2 or 0, button_center.x, button_center.y, CENTER_BTN_PROG)
+        local is_track_icon = png:find("track_icons")
+        ImageUVOffset(pie.img_obj, is_track_icon and 1.2 or 1, is_track_icon and 1 or 3, 1, is_track_icon and 0 or (selected and 2 or 0), button_center.x, button_center.y, CENTER_BTN_PROG)
     end
 end
 
@@ -542,12 +551,11 @@ local function DrawButtons(pie, center)
 
     for i = 1, #pie do
         local button_wh = 25
-        local png = pie[i].png
-        if pie[i].png then
+        if pie[i].png and r.file_exists(reaper_path .. pie[i].png) then
             if not r.ImGui_ValidatePtr(pie[i].img_obj, 'ImGui_Image*') then
-                pie[i].img_obj = r.ImGui_CreateImage(png)
+                pie[i].img_obj = r.ImGui_CreateImage(reaper_path .. pie[i].png)
             end
-            local img_data = ImageUVOffset(pie[i].img_obj, 3, 1, 0, 0, 0, 0, true)
+            local img_data = ImageUVOffset(pie[i].img_obj, pie[i].png:find("track_icons") and  1.2 or 1,pie[i].png:find("track_icons") and 1 or 3, 1, 0, 0, 0, 0, true)
             button_wh = (sqrt(2) * img_data[1]) // 2
         end
 
@@ -566,8 +574,12 @@ local function DrawButtons(pie, center)
                 (button_wh / 2),
             y = CENTER.y + (RADIUS_MIN + ((RADIUS - RADIUS_MIN) / 1.3) * MAIN_PROG) * sin(angle + START_ANG) -
                 (button_wh / 2),
-            kx = pie[i].key and CENTER.x + (RADIUS_MIN + ((RADIUS - RADIUS_MIN) / 1.3) * MAIN_PROG) * cos(angle + START_ANG),
-            ky = pie[i].key and CENTER.y - (button_wh+ (pie[i].menu and 32 or 25))- ((pie.selected == i and (SETUP and 5 or 15) or 0) * BUTTON_PROG) + (RADIUS_MIN + ((RADIUS - RADIUS_MIN) / 1.3) * MAIN_PROG) * sin(angle + START_ANG),
+            kx = pie[i].key and
+                CENTER.x + (RADIUS_MIN + ((RADIUS - RADIUS_MIN) / 1.3) * MAIN_PROG) * cos(angle + START_ANG),
+            ky = pie[i].key and
+                CENTER.y - (button_wh + (pie[i].menu and 32 or 25)) -
+                ((pie.selected == i and (SETUP and 5 or 15) or 0) * BUTTON_PROG) +
+                (RADIUS_MIN + ((RADIUS - RADIUS_MIN) / 1.3) * MAIN_PROG) * sin(angle + START_ANG),
         }
 
 
@@ -636,7 +648,7 @@ end
 
 local function GetMouseDelta()
     local drag_delta = { MX - CENTER.x, MY - CENTER.y }
-    if r.ImGui_IsMouseDown(ctx,0) then
+    if r.ImGui_IsMouseDown(ctx, 0) then
         if not CX then
             CX, CY = MX, MY
         end
@@ -658,11 +670,11 @@ local function DrawCenter(pie, center)
     local button_wh = (RADIUS_MIN / sqrt(2)) * 2
 
     if not SETUP then
-        pie.active = ((DRAG_DIST >= RADIUS_MIN ^ 2) and CENTER_BTN_PROG > 0.8)    
+        pie.active = ((DRAG_DIST >= RADIUS_MIN ^ 2) and CENTER_BTN_PROG > 0.8)
     else
-        pie.active = CX and (CUR_DRAG_DIST >= RADIUS_MIN ^ 2) 
+        pie.active = CX and (CUR_DRAG_DIST >= RADIUS_MIN ^ 2)
     end
-    
+
     if not pie.active then
         if not SETUP then
             LAST_ACTION = nil
@@ -682,7 +694,7 @@ local function DrawCenter(pie, center)
     else
         col = (not pie.active) and IncreaseDecreaseBrightness(main_color, 15) or main_color
     end
-    
+
     if SETUP and not pie.selected then
         local scale = (sin(r.time_precise() * 5) * 0.05) + 1.01
         r.ImGui_DrawList_AddCircle(draw_list, CENTER.x, CENTER.y, (RADIUS_MIN + 5) * scale,
@@ -717,7 +729,7 @@ local function DrawCenter(pie, center)
     r.ImGui_DrawList_AddCircleFilled(draw_list, CENTER.x, CENTER.y, RADIUS_MIN - 4 - (center_pressed and 5 or 0),
         LerpAlpha(main_color, CENTER_BTN_PROG), 64)
 
-        -- COLOR BG
+    -- COLOR BG
     r.ImGui_DrawList_AddCircleFilled(draw_list, CENTER.x, CENTER.y, RADIUS_MIN - 8 - (center_pressed and 5 or 0),
         LerpAlpha(col, CENTER_BTN_PROG), 64)
 
@@ -785,7 +797,7 @@ function DrawPie(pie, center)
     DrawButtons(pie, center)
     r.ImGui_DrawListSplitter_Merge(SPLITTER)
 
-    if r.ImGui_IsMouseReleased(ctx,0) then
+    if r.ImGui_IsMouseReleased(ctx, 0) then
         if CX then
             CX, CY = nil, nil
             CUR_POS_DELTA, CUR_DRAG_DIST = nil, nil

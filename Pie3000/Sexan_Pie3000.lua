@@ -1,9 +1,18 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.31.5
+-- @version 0.31.7
 -- @changelog
---  Export Context to Menu fix missing whitespace between names
+--  Call setup script from actions to avoid crash when no data files are yet created
+--  Fix data png path to relative (needs to be removed on final release)
+--  Creating Menu from Context references menus instead deepcopy
+--  Applying Menu to Context references menus instead deepcopy
+--  Make sure png file path exist before creating Img Object (avoid crashing if for some reason image does not exits)
+--  Remove NamedCommandLookup for actions (not neccessary)
+--  Fix draw order for shortcuts when hovered/selected
+--  Trim script names when adding them as actions
+--  Create Popup instead of ImguiBegin (solves problems with stuck keys/script when OS modal window pops up)
+--  Added support for track icons
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
@@ -52,7 +61,9 @@ local function Init()
 
     PIES = ReadFromFile(pie_file)
     if not PIES then
-        dofile(script_path .. 'Sexan_Pie3000_Setup.lua')
+        local setup_script = r.NamedCommandLookup("_RS3ad3111ef0e763a1cb125b100b70bc3e50072453")
+        r.Main_OnCommand(setup_script,0)
+        --dofile(script_path .. 'Sexan_Pie3000_Setup.lua')
         return "ERROR"
     end
 
@@ -236,7 +247,7 @@ end
 
 local function ExecuteAction(action)
     if action then
-        if type(action) == "string" then action = r.NamedCommandLookup(action) end
+       -- if type(action) == "string" then action = r.NamedCommandLookup(action) end
         if CLOSE and ACTIVATE_ON_CLOSE then
             if LAST_TRIGGERED ~= action then
                 LAST_TRIGGERED = action
@@ -294,7 +305,13 @@ local function Main()
     end
 
     DoFullScreen()
-    if r.ImGui_Begin(ctx, 'PIE XYZ', false, FLAGS) then
+    if r.ImGui_IsWindowAppearing(ctx) then
+        r.ImGui_OpenPopup(ctx, 'My Pie')
+    end
+
+    r.ImGui_PushStyleColor( ctx, r.ImGui_Col_PopupBg(), 0x00000000)
+    --if r.ImGui_Begin(ctx, 'PIE XYZ', false, FLAGS) then
+    if r.ImGui_BeginPopup(ctx, 'My Pie',  r.ImGui_WindowFlags_NoMove()) then
         draw_list = r.ImGui_GetWindowDrawList(ctx)
         MX, MY = r.ImGui_PointConvertNative(ctx, r.GetMousePosition())
         CheckKeys()
@@ -302,11 +319,15 @@ local function Main()
         if ANIMATION then AnimationProgress() end
         if LIMIT_MOUSE then LimitMouseToRadius() end
         if LAST_ACTION then DoAction() end
-        r.ImGui_End(ctx)
+        --r.ImGui_End(ctx)
+        r.ImGui_EndPopup(ctx)
+        if not DONE then
+            DeferLoop(Main)
+        end
     end
-
+    r.ImGui_PopStyleColor(ctx)
     if not DONE then
-        DeferLoop(Main)
+      --  DeferLoop(Main)
     else
         if REVERT_TO_START then 
             r.JS_Mouse_SetPosition(OUT_SCREEN and PREV_X or START_X, OUT_SCREEN and PREV_Y or START_Y)

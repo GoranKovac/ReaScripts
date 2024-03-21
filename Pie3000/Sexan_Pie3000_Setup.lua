@@ -61,6 +61,7 @@ end
 
 local MENUS = ReadFromFile(menu_file) or {}
 
+
 function GetMenus()
     return MENUS
 end
@@ -119,7 +120,7 @@ end
 local function IterateFiles(dir)
     local tbl = {}
     for index = 0, math.huge do
-        local file = r.EnumerateFiles(dir, index)
+        local file = r.EnumerateFiles(reaper_path .. dir, index)
         if not file then break end
         if file:find(".png", nil, true) and not file:match("animation") then
             tbl[#tbl + 1] = { name = dir .. file }
@@ -131,6 +132,7 @@ end
 local PNG_TBL = IterateFiles(png_path)
 local PNG_TBL_150 = IterateFiles(png_path_150)
 local PNG_TBL_200 = IterateFiles(png_path_200)
+local PNG_TBL_TRACK_ICONS = IterateFiles(png_path_track_icons)
 
 local function ExportToLuaFile(guid, name)
     local lua_string =
@@ -324,10 +326,6 @@ local function DeleteMenuFromPie(guid, tbl)
 end
 
 local function Popups()
-    -- if MENU_CONTEXT then
-    --     MENU_CONTEXT = nil
-    --     r.ImGui_OpenPopup(ctx, "MENU CONTEXT")
-    -- end
 
     if OPEN_WARNING then
         OPEN_WARNING = nil
@@ -343,14 +341,6 @@ local function Popups()
         r.ImGui_Text(ctx, "\n\t\tADDED " .. "Pie3000_" .. CUR_MENU_PIE.name .. " TO ACTION LIST\t\t\n\n")
         r.ImGui_EndPopup(ctx)
     end
-
-    -- if r.ImGui_BeginPopup(ctx, "MENU CONTEXT") then
-    --     if r.ImGui_MenuItem( ctx, "USE AS CONTEXT") then
-    --         CONTEXT_APPLY_WARNING = true
-    --         r.ImGui_OpenPopup(ctx, "CONTEXT APPLY WARNING")
-    --     end
-    --     r.ImGui_EndPopup(ctx)
-    -- end
 
     if CONTEXT_APPLY_WARNING then
         CONTEXT_APPLY_WARNING = nil
@@ -369,7 +359,7 @@ local function Popups()
                 cur_context[i] = nil
             end
             for i = 1, #MENU_CONTEXT_TBL do
-                cur_context[i] = Deepcopy(MENU_CONTEXT_TBL[i])
+                cur_context[i] = MENU_CONTEXT_TBL[i].menu and MENU_CONTEXT_TBL[i] or Deepcopy(MENU_CONTEXT_TBL[i])
             end
             MENU_CONTEXT_TBL = nil
             r.ImGui_CloseCurrentPopup(ctx)
@@ -485,6 +475,11 @@ local function PngSelector(pie, button_size)
             RefreshImgObj(PNG_TBL_200)
             png_tbl = PNG_TBL_200
         end
+        r.ImGui_SameLine(ctx)
+        if r.ImGui_Checkbox(ctx, "Track Icons", png_tbl == PNG_TBL_TRACK_ICONS) then
+            RefreshImgObj(PNG_TBL_TRACK_ICONS)
+            png_tbl = PNG_TBL_TRACK_ICONS
+        end
         r.ImGui_EndGroup(ctx)
 
         r.ImGui_SetNextItemWidth(ctx, -FLT_MIN)
@@ -501,9 +496,9 @@ local function PngSelector(pie, button_size)
                 local image = FILTERED_PNG[n + 1].name
                 r.ImGui_PushID(ctx, n)
                 if not r.ImGui_ValidatePtr(FILTERED_PNG[n + 1].img_obj, 'ImGui_Image*') then
-                    FILTERED_PNG[n + 1].img_obj = r.ImGui_CreateImage(image)
+                    FILTERED_PNG[n + 1].img_obj = r.ImGui_CreateImage(reaper_path .. image)
                 end
-                local uv = ImageUVOffset(FILTERED_PNG[n + 1].img_obj, 3, 1, 0, 0, 0, 1, true)
+                local uv = ImageUVOffset(FILTERED_PNG[n + 1].img_obj, image:find("track_icons") and 1.2 or 1, image:find("track_icons") and 1 or 3, 1, 0, 0, 0, 1, true)
                 if r.ImGui_ImageButton(ctx, "##png_select", FILTERED_PNG[n + 1].img_obj, button_size, button_size, uv[3], uv[4], uv[5], uv[6]) then
                     pie.img_obj = nil
                     ret, png = true, image
@@ -529,11 +524,11 @@ local function PngDisplay(tbl, img_obj, button_size)
     local rv
     r.ImGui_PushID(ctx, "PNG")
 
-    if img_obj then
+    if img_obj and r.file_exists(reaper_path .. tbl.png) then
         if not r.ImGui_ValidatePtr(img_obj, 'ImGui_Image*') then
-            img_obj = r.ImGui_CreateImage(tbl.png)
+            img_obj = r.ImGui_CreateImage(reaper_path .. tbl.png)
         end
-        local uv = ImageUVOffset(img_obj, 3, 1, 0, 0, 0, 1, true)
+        local uv = ImageUVOffset(img_obj, tbl.png:find("track_icons") and 1.2 or 1,tbl.png:find("track_icons") and 1 or 3, 1, 0, 0, 0, 1, true)
         if r.ImGui_ImageButton(ctx, "##prev_png", img_obj, button_size - 6, button_size - 6, uv[3], uv[4], uv[5], uv[6]) then
             if not ALT then
                 rv = true
@@ -730,7 +725,7 @@ local function NewProperties(pie)
                             guid_list = {}
                         }
                         for i = 1, #CUR_PIE do
-                            MENUS[#MENUS][i] = Deepcopy(CUR_PIE[i])
+                            MENUS[#MENUS][i] = CUR_PIE[i].menu and CUR_PIE[i] or Deepcopy(CUR_PIE[i])
                         end
                     end
                 else
@@ -963,6 +958,17 @@ local function DndSourceMenu(tbl, i)
     end
 end
 
+
+local pattern = {".lua", "Script: "}
+local function NameStrip(name)
+    local new_name = name
+    for i = 1, #pattern do
+        new_name = new_name:gsub(pattern[i], "")
+    end
+    new_name = new_name:gsub("_", " ")
+    return new_name
+end
+
 function DndAddTargetAction(pie, button)
     if pie.guid == "TEMP" then return end
     if r.ImGui_BeginDragDropTarget(ctx) then
@@ -970,15 +976,16 @@ function DndAddTargetAction(pie, button)
         local name, cmd = payload:match("(.+)|(.+)")
         r.ImGui_EndDragDropTarget(ctx)
         if ret then
+            local new_name = NameStrip(name)
             if not button then
                 local insert_pos = #pie ~= 0 and #pie or 1
                 table.insert(pie, insert_pos,
-                    { name = name, cmd = cmd, cmd_name = name, col = 0xff })
+                    { name = new_name, cmd = cmd, cmd_name = name, col = 0xff })
                 pie.selected = insert_pos
             else
                 button.cmd = cmd
                 button.cmd_name = name
-                button.name = name
+                button.name = new_name
             end
         end
     end
