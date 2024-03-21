@@ -1,18 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.31.7
+-- @version 0.31.8
 -- @changelog
---  Call setup script from actions to avoid crash when no data files are yet created
---  Fix data png path to relative (needs to be removed on final release)
---  Creating Menu from Context references menus instead deepcopy
---  Applying Menu to Context references menus instead deepcopy
---  Make sure png file path exist before creating Img Object (avoid crashing if for some reason image does not exits)
---  Remove NamedCommandLookup for actions (not neccessary)
---  Fix draw order for shortcuts when hovered/selected
---  Trim script names when adding them as actions
---  Create Popup instead of ImguiBegin (solves problems with stuck keys/script when OS modal window pops up)
---  Added support for track icons
+--  Refresh ImgObjects on menu switch
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
@@ -302,6 +293,7 @@ local function Main()
             r.JS_Mouse_SetPosition(START_X, START_Y)
         end
         SWITCH_PIE = nil
+        RefreshImgObj(PIE_MENU)
     end
 
     DoFullScreen()
