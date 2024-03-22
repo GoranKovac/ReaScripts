@@ -50,6 +50,7 @@ local menu_items = {
     { "envcp",        "ECP" },
     { "item",         "ITEM" },
     { "trans",        "TRANSPORT" },
+    { "midi",        "MIDI" },
     { "ruler",        "RULER" },
 }
 
@@ -687,11 +688,7 @@ local function NewProperties(pie)
             r.ImGui_Separator(ctx)
             if r.ImGui_Button(ctx, "X") then pie[pie.selected].name = "" end
             r.ImGui_PopID(ctx)
-
-            r.ImGui_SameLine(ctx)
-            --RV_COL, pie[pie.selected].col = r.ImGui_ColorEdit4(ctx, 'MyColor##3', pie[pie.selected].col,
-            --    r.ImGui_ColorEditFlags_NoInputs() | r.ImGui_ColorEditFlags_NoLabel())
-            --r.ImGui_SameLine(ctx)
+            r.ImGui_SameLine(ctx)        
             r.ImGui_SetNextItemWidth(ctx, -FLT_MIN)
             rv_i, pie[pie.selected].name = r.ImGui_InputTextWithHint(ctx, "##ButtonName", "Button name",
                 pie[pie.selected].name)
@@ -734,19 +731,6 @@ local function NewProperties(pie)
                             MENUS[#MENUS][i] = CUR_PIE[i].menu and CUR_PIE[i] or Deepcopy(CUR_PIE[i])
                         end
                     end
-                else
-                    -- r.ImGui_SameLine(ctx)
-                    -- if r.ImGui_Button(ctx, "Show in Editor") then
-                    --     for i = 1, #MENUS do
-                    --         if MENUS[i].guid == pie.guid then
-                    --             LAST_MENU_SEL = i
-                    --             CUR_MENU_PIE = MENUS[i]
-                    --             FOCUS_MENU = true
-                    --         end
-                    --     end
-                    --     STATE = "EDITOR"
-                    --     UPDATE_FILTER = true
-                    -- end
                 end
             else
                 if pie and pie.guid ~= "TEMP" then
@@ -842,7 +826,7 @@ local function ContextSelector()
     local w, h = r.ImGui_GetItemRectSize(ctx)
     local x, y = r.ImGui_GetCursorScreenPos(ctx)
     r.ImGui_SetNextWindowPos(ctx, x, y)
-    r.ImGui_SetNextWindowSize(ctx, w, 220)
+    r.ImGui_SetNextWindowSize(ctx, w, 240)
     r.ImGui_SetNextWindowBgAlpha(ctx, 1)
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_PopupBg(), bg_col)
     if r.ImGui_BeginPopup(ctx, "Context Selector") then
@@ -1067,11 +1051,7 @@ local FILTERED_EDIT_MENU_TBL = MENUS
 local EDITOR_MENU_FILTER = ''
 
 local function MenuEditList(pie)
-    if r.ImGui_BeginChild(ctx, "EDITMENULIST", 180, 0, true) then
-        -- if EDITOR_MENU_FILTER ~= PREV_EDITOR_MENU_FILTER then
-        --     PREV_EDITOR_MENU_FILTER = EDITOR_MENU_FILTER
-        --     UPDATE_FILTER = true
-        -- end
+    if r.ImGui_BeginChild(ctx, "EDITMENULIST", 180, 0, true) then    
         if r.ImGui_Button(ctx, 'Create New Menu', -FLT_MIN, 0) then
             MENUS[#MENUS + 1] = {
                 guid = r.genGuid(),
@@ -1199,11 +1179,7 @@ local MENU_FILTER = ''
 
 local function ActionsTab(pie)
     if r.ImGui_BeginTabBar(ctx, "ACTIONS MENUS TAB") then
-        if r.ImGui_BeginTabItem(ctx, "Actions") then
-            -- if ACTION_FILTER ~= PREV_ACTION_FILTER then
-            --     UPDATE_FILTER = true
-            --     PREV_ACTION_FILTER = ACTION_FILTER
-            -- end
+        if r.ImGui_BeginTabItem(ctx, "Actions") then          
             r.ImGui_SetNextItemWidth(ctx, -FLT_MIN)
             rv_af, ACTION_FILTER = r.ImGui_InputTextWithHint(ctx, "##inputA", "Search Actions", ACTION_FILTER)
             if rv_af or UPDATE_FILTER then
@@ -1230,10 +1206,7 @@ local function ActionsTab(pie)
         end
         if STATE == "PIE" then
             if r.ImGui_BeginTabItem(ctx, "Menus") then
-                -- if MENU_FILTER ~= PREV_MENU_FILTER then
-                --     PREV_MENU_FILTER = MENU_FILTER
-                --     UPDATE_FILTER = true
-                -- end
+              
                 r.ImGui_SetNextItemWidth(ctx, -FLT_MIN)
                 rv_mf, MENU_FILTER = r.ImGui_InputTextWithHint(ctx, "##inputM", "Search Menus", MENU_FILTER)
                 if rv_mf or UPDATE_FILTER then
@@ -1254,17 +1227,7 @@ local function ActionsTab(pie)
                             if r.ImGui_Selectable(ctx, FILTERED_MENU_TBL[i + 1].name .. (CROSS_MENU and " - CANNOT ADD HAS REFERENCE" or ""), ((LAST_MENU_SEL == i + 1) or MENU_CONTEXT_TBL == FILTERED_MENU_TBL[i + 1]), r.ImGui_SelectableFlags_AllowDoubleClick()) then
                             end                            
                             r.ImGui_PopID(ctx)
-
-                            -- if not DRAW_PREVIEW then                                
-                            --     if r.ImGui_IsItemHovered(ctx,0) then
-                            --         DRAW_PREVIEW = FILTERED_MENU_TBL[i + 1]
-                            --     end
-                            -- end
-
-                            -- if r.ImGui_IsItemHovered(ctx,0) and r.ImGui_IsMouseReleased(ctx,1) then
-                            --     MENU_CONTEXT = true
-                            --     MENU_CONTEXT_TBL = FILTERED_MENU_TBL[i + 1]
-                            -- end
+                         
                             local xs, ys = r.ImGui_GetItemRectMin(ctx)
                             local xe, ye = r.ImGui_GetItemRectMax(ctx)
                             -- SELECTED

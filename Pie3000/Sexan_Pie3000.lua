@@ -1,17 +1,14 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.31.9
+-- @version 0.32.0
 -- @changelog
---  Fix png filtering
---  Fix screen coordinates for OSX
---  RefreshImgObj when changing tabs in setup
---  Set Re-Adjust pie near edges default setting to off
---  Fix menu preview outer rings in setup script
---  Revert to start position sooner when script tries to close
---  Radioboxes for image selection instead checkboxes
+--  Revert back to creating Imgui window (problems with focus terminating script while holding down key spawns nothing)
+--  Expose midi editor
+--  Add scripts to midi section
 -- @provides
---   [main] Sexan_Pie3000_Setup.lua
+--   [main=main,midi_editor] .
+--   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
 --   easing.lua
 --   Common.lua
 --   PieUtils.lua
@@ -19,7 +16,7 @@
 --   Roboto-Medium.ttf
 --   [main] Sexan_PieCleanFiles.lua
 local r = reaper
-
+local SCRIPT_START_TIME = r.time_precise()
 local getinfo = debug.getinfo(1, 'S');
 local script_path = getinfo.source:match [[^@?(.*[\/])[^\/]-$]];
 package.path = script_path .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
@@ -42,7 +39,6 @@ DeferLoop = DBG and DEBUG.defer or PDefer
 
 PIE_LIST = {}
 
-local SCRIPT_START_TIME = r.time_precise()
 
 local function GetMonitorFromPoint()
     local x, y = r.GetMousePosition()
@@ -69,7 +65,7 @@ local function Init()
         end
     end
 
-    local key_state = r.JS_VKeys_GetState(SCRIPT_START_TIME - 2)
+    local key_state = r.JS_VKeys_GetState(SCRIPT_START_TIME - 1)
     for i = 1, 255 do
         if key_state:byte(i) ~= 0 then
             r.JS_VKeys_Intercept(i, 1)
@@ -173,7 +169,7 @@ end
 if ADJUST_PIE_NEAR_EDGE then NearEdge() end
 
 local function KeyHeld()
-    return r.JS_VKeys_GetState(SCRIPT_START_TIME - 1):byte(KEY) == 1
+    return r.JS_VKeys_GetState(SCRIPT_START_TIME-1):byte(KEY) == 1
 end
 
 local function LimitMouseToRadius()
@@ -247,7 +243,6 @@ end
 
 local function ExecuteAction(action)
     if action then
-        -- if type(action) == "string" then action = r.NamedCommandLookup(action) end
         if CLOSE and ACTIVATE_ON_CLOSE then
             if LAST_TRIGGERED ~= action then
                 LAST_TRIGGERED = action
@@ -255,8 +250,16 @@ local function ExecuteAction(action)
             end
         end
         if r.ImGui_IsMouseReleased(ctx, 0) then
+            local START_ACTION_TIME = r.time_precise()
             LAST_TRIGGERED = action
             r.Main_OnCommand(action, 0)
+            local AFTER_ACTION_TIME = r.time_precise()
+
+           -- r.ShowConsoleMsg(START_ACTION_TIME .. " - " .. AFTER_ACTION_TIME .. "\n")
+           -- r.ShowConsoleMsg(AFTER_ACTION_TIME - START_ACTION_TIME .. "\n")
+            if AFTER_ACTION_TIME - START_ACTION_TIME > 0.1 then
+               r.JS_WindowMessage_Post( r.GetMainHwnd(), "WM_KEYUP", KEY, 0, 0, 0)
+            end
         elseif KEY_TRIGGER then
             LAST_TRIGGERED = action
             r.Main_OnCommand(action, 0)
@@ -283,6 +286,7 @@ local function DoAction()
     end
 end
 
+
 local function Main()
     TrackShortcutKey()
     if TERMINATE then
@@ -304,28 +308,25 @@ local function Main()
         SWITCH_PIE = nil
         RefreshImgObj(PIE_MENU)
     end
-
+    if LAST_ACTION then DoAction() end
     DoFullScreen()
-    if r.ImGui_IsWindowAppearing(ctx) then
-        r.ImGui_OpenPopup(ctx, 'My Pie')
-    end
 
-    if r.ImGui_BeginPopup(ctx, 'My Pie', FLAGS) then
+    SCRIPT_WND = r.JS_Window_Find( 'PIE XYZ', true )
+
+    if r.ImGui_Begin(ctx, 'PIE XYZ', false, FLAGS) then
         draw_list = r.ImGui_GetWindowDrawList(ctx)
         MX, MY = r.ImGui_PointConvertNative(ctx, r.GetMousePosition())
         CheckKeys()
         DrawPie(PIE_MENU)
         if ANIMATION then AnimationProgress() end
         if LIMIT_MOUSE then LimitMouseToRadius() end
-        if LAST_ACTION then DoAction() end
-        r.ImGui_EndPopup(ctx)
-        if not DONE then
-            DeferLoop(Main)
-        end
+        r.ImGui_End(ctx)
+    end
+    if not DONE then
+        DeferLoop(Main)
     end
 
-    --if DONE then
-    if CLOSE then
+    if DONE then
         if REVERT_TO_START then
             local org_mouse_x, org_mouse_y = OUT_SCREEN and PREV_X or START_X, OUT_SCREEN and PREV_Y or START_Y
             ConvertAndSetCursor(org_mouse_x, org_mouse_y)
