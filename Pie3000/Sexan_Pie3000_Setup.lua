@@ -838,6 +838,7 @@ local function ContextSelector()
                 PIE_LIST = {}
                 context_cur_item = i
                 r.ImGui_CloseCurrentPopup(ctx)
+                UPDATE_FILTER = true
             end
         end
         r.ImGui_PopStyleVar(ctx)
@@ -1162,16 +1163,17 @@ local function IterateActions(sectionID)
     end
 end
 
-local function GetActions()
+local function GetActions(s)
     local actions = {}
-    for cmd, name in IterateActions(0) do
+    for cmd, name in IterateActions(s) do
         table.insert(actions, { cmd = cmd, name = name })
     end
     table.sort(actions, function(a, b) return a.name < b.name end)
     return actions
 end
 
-local ACTIONS_TBL = GetActions()
+local ACTIONS_TBL = GetActions(0)
+local MIDI_ACTIONS_TBL = GetActions(32060)
 local FILTERED_ACTION_TBL = ACTIONS_TBL
 local FILTERED_MENU_TBL = MENUS
 local ACTION_FILTER = ''
@@ -1184,7 +1186,7 @@ local function ActionsTab(pie)
             rv_af, ACTION_FILTER = r.ImGui_InputTextWithHint(ctx, "##inputA", "Search Actions", ACTION_FILTER)
             if rv_af or UPDATE_FILTER then
                 UPDATE_CNT = UPDATE_FILTER and UPDATE_CNT + 1 or UPDATE_CNT
-                FILTERED_ACTION_TBL = FilterActions(ACTIONS_TBL, ACTION_FILTER)
+                FILTERED_ACTION_TBL = FilterActions(CUR_PIE.name == "MIDI" and MIDI_ACTIONS_TBL or ACTIONS_TBL, ACTION_FILTER)
             end
             if r.ImGui_BeginChild(ctx, "##CLIPPER_ACTION", nil, nil, nil, r.ImGui_WindowFlags_AlwaysHorizontalScrollbar()) then
                 if not r.ImGui_ValidatePtr(ACTION_CLIPPER, 'ImGui_ListClipper*') then

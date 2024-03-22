@@ -1,11 +1,11 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.32.0
+-- @version 0.32.1
 -- @changelog
---  Revert back to creating Imgui window (problems with focus terminating script while holding down key spawns nothing)
---  Expose midi editor
---  Add scripts to midi section
+--  Workaround for halted script by OS
+--  Dont allow changing to other actions when script CLOSE is triggered
+--  Added MIDI actions when in MIDI context
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -16,7 +16,6 @@
 --   Roboto-Medium.ttf
 --   [main] Sexan_PieCleanFiles.lua
 local r = reaper
-local SCRIPT_START_TIME = r.time_precise()
 local getinfo = debug.getinfo(1, 'S');
 local script_path = getinfo.source:match [[^@?(.*[\/])[^\/]-$]];
 package.path = script_path .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
@@ -24,7 +23,7 @@ package.path = script_path .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 local sqrt, sin, cos = math.sqrt, math.sin, math.cos
 
 require('PieUtils')
-
+r.JS_WindowMessage_Post( r.GetMainHwnd(), "WM_KEYDOWN", -1, 0, 0, 0)
 if CheckDeps() then return end
 
 ctx = r.ImGui_CreateContext('Pie XYZ', r.ImGui_ConfigFlags_NoSavedSettings())
@@ -46,6 +45,8 @@ local function GetMonitorFromPoint()
 end
 
 local function Init()
+    SCRIPT_START_TIME = r.time_precise()
+
     START_TIME = r.time_precise()
     ALLOW_KB_VAR = r.SNM_GetIntConfigVar("alwaysallowkb", 1)
     START_X, START_Y = r.ImGui_PointConvertNative(ctx, r.GetMousePosition())
@@ -65,9 +66,10 @@ local function Init()
         end
     end
 
-    local key_state = r.JS_VKeys_GetState(SCRIPT_START_TIME - 1)
+    local key_state = r.JS_VKeys_GetState(SCRIPT_START_TIME-1)
+    local down_state = r.JS_VKeys_GetDown( SCRIPT_START_TIME )
     for i = 1, 255 do
-        if key_state:byte(i) ~= 0 then
+        if key_state:byte(i) ~= 0 or down_state:byte(i) ~= 0 then
             r.JS_VKeys_Intercept(i, 1)
             KEY = i
             break
@@ -246,23 +248,33 @@ local function ExecuteAction(action)
         if CLOSE and ACTIVATE_ON_CLOSE then
             if LAST_TRIGGERED ~= action then
                 LAST_TRIGGERED = action
-                r.Main_OnCommand(action, 0)
+                if  PIES[INFO].name == "MIDI" then
+                    r.MIDIEditor_OnCommand( r.MIDIEditor_GetActive(), action)   
+                else
+                    r.Main_OnCommand(action, 0)
+                end
             end
         end
         if r.ImGui_IsMouseReleased(ctx, 0) then
             local START_ACTION_TIME = r.time_precise()
             LAST_TRIGGERED = action
-            r.Main_OnCommand(action, 0)
+            if  PIES[INFO].name == "MIDI" then
+                r.MIDIEditor_OnCommand( r.MIDIEditor_GetActive(), action)   
+            else
+                r.Main_OnCommand(action, 0)
+            end
             local AFTER_ACTION_TIME = r.time_precise()
-
-           -- r.ShowConsoleMsg(START_ACTION_TIME .. " - " .. AFTER_ACTION_TIME .. "\n")
-           -- r.ShowConsoleMsg(AFTER_ACTION_TIME - START_ACTION_TIME .. "\n")
+       
             if AFTER_ACTION_TIME - START_ACTION_TIME > 0.1 then
-               r.JS_WindowMessage_Post( r.GetMainHwnd(), "WM_KEYUP", KEY, 0, 0, 0)
+                r.JS_WindowMessage_Post( SCRIPT_WND, "WM_KEYUP", KEY, 0, 0, 0)
             end
         elseif KEY_TRIGGER then
             LAST_TRIGGERED = action
-            r.Main_OnCommand(action, 0)
+            if  PIES[INFO].name == "MIDI" then
+                r.MIDIEditor_OnCommand( r.MIDIEditor_GetActive(), action)   
+            else
+                r.Main_OnCommand(action, 0)
+            end
             KEY_TRIGGER = nil
         end
     end
@@ -288,6 +300,7 @@ end
 
 
 local function Main()
+    SCRIPT_WND =  reaper.JS_Window_Find( "PIE XYZ", true )
     TrackShortcutKey()
     if TERMINATE then
         Release()

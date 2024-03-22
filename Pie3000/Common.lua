@@ -627,7 +627,7 @@ local function DrawButtons(pie, center)
             KEY_TRIGGER = true
         end
 
-        if pie.selected then
+        if pie.selected and not CLOSE then
             LAST_ACTION = i
         end
 
