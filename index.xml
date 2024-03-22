@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="ad39794c10ab06842b752249e02146a6f95ba0d0" name="Sexan_Scripts">
+<index version="1" commit="2da51dc1855c21bebb603a4ec4ed0c8477784b72" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -3963,6 +3963,19 @@ Radioboxes for image selection instead checkboxes]]></changelog>
         <source file="fontello1.ttf">https://github.com/GoranKovac/ReaScripts/raw/ad39794c10ab06842b752249e02146a6f95ba0d0/Pie3000/fontello1.ttf</source>
         <source file="Roboto-Medium.ttf">https://github.com/GoranKovac/ReaScripts/raw/ad39794c10ab06842b752249e02146a6f95ba0d0/Pie3000/Roboto-Medium.ttf</source>
         <source main="main" file="Sexan_PieCleanFiles.lua">https://github.com/GoranKovac/ReaScripts/raw/ad39794c10ab06842b752249e02146a6f95ba0d0/Pie3000/Sexan_PieCleanFiles.lua</source>
+      </version>
+      <version name="0.32.0" author="Sexan" time="2024-03-22T13:19:06Z">
+        <changelog><![CDATA[Revert back to creating Imgui window (problems with focus terminating script while holding down key spawns nothing)
+Expose midi editor
+Add scripts to midi section]]></changelog>
+        <source main="main midi_editor">https://github.com/GoranKovac/ReaScripts/raw/2da51dc1855c21bebb603a4ec4ed0c8477784b72/Pie3000/Sexan_Pie3000.lua</source>
+        <source main="main midi_editor" file="Sexan_Pie3000_Setup.lua">https://github.com/GoranKovac/ReaScripts/raw/2da51dc1855c21bebb603a4ec4ed0c8477784b72/Pie3000/Sexan_Pie3000_Setup.lua</source>
+        <source file="easing.lua">https://github.com/GoranKovac/ReaScripts/raw/2da51dc1855c21bebb603a4ec4ed0c8477784b72/Pie3000/easing.lua</source>
+        <source file="Common.lua">https://github.com/GoranKovac/ReaScripts/raw/2da51dc1855c21bebb603a4ec4ed0c8477784b72/Pie3000/Common.lua</source>
+        <source file="PieUtils.lua">https://github.com/GoranKovac/ReaScripts/raw/2da51dc1855c21bebb603a4ec4ed0c8477784b72/Pie3000/PieUtils.lua</source>
+        <source file="fontello1.ttf">https://github.com/GoranKovac/ReaScripts/raw/2da51dc1855c21bebb603a4ec4ed0c8477784b72/Pie3000/fontello1.ttf</source>
+        <source file="Roboto-Medium.ttf">https://github.com/GoranKovac/ReaScripts/raw/2da51dc1855c21bebb603a4ec4ed0c8477784b72/Pie3000/Roboto-Medium.ttf</source>
+        <source main="main" file="Sexan_PieCleanFiles.lua">https://github.com/GoranKovac/ReaScripts/raw/2da51dc1855c21bebb603a4ec4ed0c8477784b72/Pie3000/Sexan_PieCleanFiles.lua</source>
       </version>
     </reapack>
   </category>
