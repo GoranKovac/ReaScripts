@@ -3,7 +3,13 @@
 -- @license GPL v3
 -- @version 0.31.8
 -- @changelog
---  Refresh ImgObjects on menu switch
+--  Fix png filtering
+--  Fix screen coordinates for OSX
+--  RefreshImgObj when changing tabs in setup
+--  Set Re-Adjust pie near edges default setting to off
+--  Fix menu preview outer rings in setup script
+--  Revert to start position sooner when script tries to close
+--  Radioboxes for image selection instead checkboxes
 -- @provides
 --   [main] Sexan_Pie3000_Setup.lua
 --   easing.lua
@@ -17,6 +23,8 @@ local r = reaper
 local getinfo = debug.getinfo(1, 'S');
 local script_path = getinfo.source:match [[^@?(.*[\/])[^\/]-$]];
 package.path = script_path .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
+
+local sqrt, sin, cos = math.sqrt, math.sin, math.cos
 
 require('PieUtils')
 
@@ -37,10 +45,8 @@ PIE_LIST = {}
 local SCRIPT_START_TIME = r.time_precise()
 
 local function GetMonitorFromPoint()
-    local x,y = r.GetMousePosition()
-    AL, AT, AR, AB = r.my_getViewport(x, y, x, y, x, y, x, y, true)
-    LEFT, TOP = r.ImGui_PointConvertNative(ctx, AL, AT)
-    RIGHT, BOT = r.ImGui_PointConvertNative(ctx, AR, AB)
+    local x, y = r.GetMousePosition()
+    LEFT, TOP, RIGHT, BOT = r.my_getViewport(x, y, x, y, x, y, x, y, true)
 end
 
 local function Init()
@@ -53,8 +59,7 @@ local function Init()
     PIES = ReadFromFile(pie_file)
     if not PIES then
         local setup_script = r.NamedCommandLookup("_RS3ad3111ef0e763a1cb125b100b70bc3e50072453")
-        r.Main_OnCommand(setup_script,0)
-        --dofile(script_path .. 'Sexan_Pie3000_Setup.lua')
+        r.Main_OnCommand(setup_script, 0)
         return "ERROR"
     end
 
@@ -63,7 +68,7 @@ local function Init()
             PIES[k .. "empty"] = PIES[k]
         end
     end
-    
+
     local key_state = r.JS_VKeys_GetState(SCRIPT_START_TIME - 2)
     for i = 1, 255 do
         if key_state:byte(i) ~= 0 then
@@ -122,26 +127,26 @@ if not PIE_MENU then
     return
 end
 
+local function ConvertAndSetCursor(x, y)
+    local mouse_x, mouse_y = r.ImGui_PointConvertNative(ctx, x, y, true)
+    r.JS_Mouse_SetPosition(mouse_x, mouse_y)
+end
+
 if SELECT_THING_UNDER_MOUSE then
     if ITEM then
-        r.Main_OnCommand(40289,0) -- DESELECT ALL ITEMS
-        r.SetMediaItemSelected( ITEM, true )
+        r.Main_OnCommand(40289, 0) -- DESELECT ALL ITEMS
+        r.SetMediaItemSelected(ITEM, true)
         r.UpdateArrange()
     end
     if TRACK then
-        r.SetOnlyTrackSelected( TRACK )
+        r.SetOnlyTrackSelected(TRACK)
     end
 end
 
 local function NearEdge()
     PREV_X, PREV_Y = START_X, START_Y
-    --local viewport        =  r.ImGui_GetWindowViewport( ctx ) --r.ImGui_GetMainViewport(ctx)
-    --local getViewportPos  =  r.ImGui_Viewport_GetPos
-    --local getViewportSize =  r.ImGui_Viewport_GetSize
-    
-    --local X, Y = getViewportPos(viewport)
-    --local W, H = getViewportSize(viewport)
-    local len = ((PIE_MENU.RADIUS / math.sqrt(2)) * 2)//1
+
+    local len = ((PIE_MENU.RADIUS / sqrt(2)) * 2) // 1
     if START_X - len < LEFT then
         START_X = LEFT + len
         OUT_SCREEN = true
@@ -160,7 +165,7 @@ local function NearEdge()
     end
 
     if OUT_SCREEN then
-        r.JS_Mouse_SetPosition(START_X, START_Y)
+        ConvertAndSetCursor(START_X, START_Y)
         CENTER = { x = START_X, y = START_Y }
     end
 end
@@ -171,6 +176,17 @@ local function KeyHeld()
     return r.JS_VKeys_GetState(SCRIPT_START_TIME - 1):byte(KEY) == 1
 end
 
+local function LimitMouseToRadius()
+    local MOUSE_RANGE = ((PIE_MENU.RADIUS / sqrt(2)) * 2) // 1 --PIE_MENU.RADIUS * 2
+
+    if DRAG_DIST > (MOUSE_RANGE ^ 2) then
+        MX = (START_X + (MOUSE_RANGE) * cos(DRAG_ANGLE)) // 1
+        MY = (START_Y + (MOUSE_RANGE) * sin(DRAG_ANGLE)) // 1
+        ConvertAndSetCursor(MX, MY)
+        --r.JS_Mouse_SetPosition(MX, MY)
+    end
+end
+
 local FLAGS =
     r.ImGui_WindowFlags_NoBackground() |
     r.ImGui_WindowFlags_NoDecoration() |
@@ -178,15 +194,8 @@ local FLAGS =
 
 local function DoFullScreen()
     r.ImGui_SetNextWindowPos(ctx, LEFT, TOP)
-    r.ImGui_SetNextWindowSize(ctx, RIGHT-LEFT, BOT - TOP)
-    VP_CENTER = { r.ImGui_Viewport_GetCenter( r.ImGui_GetWindowViewport( ctx ) ) }
-end
-
-local function DoFullScreen2()
-    local viewport        = r.ImGui_GetWindowViewport( ctx )r.ImGui_GetMainViewport(ctx)
-    r.ImGui_SetNextWindowPos(ctx, r.ImGui_Viewport_GetPos(viewport))
-    r.ImGui_SetNextWindowSize(ctx, r.ImGui_Viewport_GetSize(viewport))
-    VP_CENTER = { r.ImGui_Viewport_GetCenter(viewport) }
+    r.ImGui_SetNextWindowSize(ctx, RIGHT - LEFT, BOT - TOP)
+    VP_CENTER = { r.ImGui_Viewport_GetCenter(r.ImGui_GetWindowViewport(ctx)) }
 end
 
 local function CloseScript()
@@ -238,7 +247,7 @@ end
 
 local function ExecuteAction(action)
     if action then
-       -- if type(action) == "string" then action = r.NamedCommandLookup(action) end
+        -- if type(action) == "string" then action = r.NamedCommandLookup(action) end
         if CLOSE and ACTIVATE_ON_CLOSE then
             if LAST_TRIGGERED ~= action then
                 LAST_TRIGGERED = action
@@ -290,7 +299,7 @@ local function Main()
         START_TIME = r.time_precise()
         PIE_MENU = SWITCH_PIE
         if RESET_POSITION then
-            r.JS_Mouse_SetPosition(START_X, START_Y)
+            ConvertAndSetCursor(START_X, START_Y)
         end
         SWITCH_PIE = nil
         RefreshImgObj(PIE_MENU)
@@ -301,9 +310,7 @@ local function Main()
         r.ImGui_OpenPopup(ctx, 'My Pie')
     end
 
-    r.ImGui_PushStyleColor( ctx, r.ImGui_Col_PopupBg(), 0x00000000)
-    --if r.ImGui_Begin(ctx, 'PIE XYZ', false, FLAGS) then
-    if r.ImGui_BeginPopup(ctx, 'My Pie',  r.ImGui_WindowFlags_NoMove()) then
+    if r.ImGui_BeginPopup(ctx, 'My Pie', FLAGS) then
         draw_list = r.ImGui_GetWindowDrawList(ctx)
         MX, MY = r.ImGui_PointConvertNative(ctx, r.GetMousePosition())
         CheckKeys()
@@ -311,18 +318,17 @@ local function Main()
         if ANIMATION then AnimationProgress() end
         if LIMIT_MOUSE then LimitMouseToRadius() end
         if LAST_ACTION then DoAction() end
-        --r.ImGui_End(ctx)
         r.ImGui_EndPopup(ctx)
         if not DONE then
             DeferLoop(Main)
         end
     end
-    r.ImGui_PopStyleColor(ctx)
-    if not DONE then
-      --  DeferLoop(Main)
-    else
-        if REVERT_TO_START then 
-            r.JS_Mouse_SetPosition(OUT_SCREEN and PREV_X or START_X, OUT_SCREEN and PREV_Y or START_Y)
+
+    --if DONE then
+    if CLOSE then
+        if REVERT_TO_START then
+            local org_mouse_x, org_mouse_y = OUT_SCREEN and PREV_X or START_X, OUT_SCREEN and PREV_Y or START_Y
+            ConvertAndSetCursor(org_mouse_x, org_mouse_y)
         end
     end
 end

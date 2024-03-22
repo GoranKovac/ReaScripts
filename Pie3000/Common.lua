@@ -32,13 +32,13 @@ REVERT_TO_START = false
 SWIPE_TRESHOLD = 45
 SWIPE = false
 SWIPE_CONFIRM = 50
-ADJUST_PIE_NEAR_EDGE = true
+ADJUST_PIE_NEAR_EDGE = false
 SHOW_SHORTCUT = true
 SELECT_THING_UNDER_MOUSE = false
 
 local def_color_dark = 0x414141ff
 local def_out_ring = 0x2a2a2aff
-local def_menu_prev = 0x212121ff
+local def_menu_prev = def_color_dark--0x212121ff
 local ARC_COLOR = 0x11AAFF88
 local def_color = def_color_dark
 local def_font_col = 0xd7d9d9ff
@@ -105,7 +105,7 @@ for name, func in pairs(r) do
 end
 
 function Release()
-    if not KEY then return end
+    --if not KEY then return end
     r.JS_VKeys_Intercept(KEY, -1)
     r.SNM_SetIntConfigVar("alwaysallowkb", ALLOW_KB_VAR)
 end
@@ -324,16 +324,6 @@ function RefreshImgObj(tbl)
     end
 end
 
-function LimitMouseToRadius()
-    local MOUSE_RANGE = PIE_MENU.RADIUS * 2
-
-    if DRAG_DIST > (MOUSE_RANGE ^ 2) then
-        MX = (START_X + (MOUSE_RANGE) * cos(DRAG_ANGLE)) // 1
-        MY = (START_Y + (MOUSE_RANGE) * sin(DRAG_ANGLE)) // 1
-        r.JS_Mouse_SetPosition(MX, MY)
-    end
-end
-
 local function DrawArc(pie, center, item_arc_span, ang_min, ang_max, RADIUS, RADIUS_MIN)
     if SETUP then return end
     local CENTER = center or CENTER
@@ -453,7 +443,7 @@ local function PieButtonDrawlist(pie, button_radius, selected, hovered, button_p
     -- SHADOW
     r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x + 1, button_center.y + 1,
         (button_radius + 6) * CENTER_BTN_PROG,
-        LerpAlpha(0x44, CENTER_BTN_PROG), 128)
+        LerpAlpha(dark_theme and 0x44 or 0x33, CENTER_BTN_PROG), 128)
 
     -- OUTER RING
     r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x, button_center.y, (button_radius + 4) * CENTER_BTN_PROG,
@@ -498,7 +488,7 @@ local function PieButtonDrawlist(pie, button_radius, selected, hovered, button_p
                 -- OUTER RING
                 r.ImGui_DrawList_AddCircleFilled(draw_list, button_pos.x, button_pos.y,
                     (menu_preview_radius + 1.5) * CENTER_BTN_PROG,
-                    LerpAlpha(dark_theme and ring_col or def_color, CENTER_BTN_PROG), 128)
+                    LerpAlpha(ring_col, CENTER_BTN_PROG), 128)
                 -- MAIN CIRCLE
                 r.ImGui_DrawList_AddCircleFilled(draw_list, button_pos.x, button_pos.y,
                     menu_preview_radius * CENTER_BTN_PROG,
@@ -507,7 +497,7 @@ local function PieButtonDrawlist(pie, button_radius, selected, hovered, button_p
                 -- DRAW EMPTY
                 r.ImGui_DrawList_AddCircle(draw_list, button_pos.x, button_pos.y,
                     (menu_preview_radius + 1.5) * CENTER_BTN_PROG,
-                    LerpAlpha(dark_theme and ring_col or def_color, CENTER_BTN_PROG), 128, 2)
+                    LerpAlpha(ring_col, CENTER_BTN_PROG), 128, 2)
             end
         end
     end
@@ -757,10 +747,10 @@ local function DrawCenter(pie, center)
                 LerpAlpha(0x44, MAIN_PROG), 128)
 
             -- OUTER RING
-            if dark_theme then
+            --if dark_theme or SETUP then
                 r.ImGui_DrawList_AddCircleFilled(draw_list, button_pos.x, button_pos.y, mini_rad + 1.5 * MAIN_PROG,
                     LerpAlpha(def_out_ring, MAIN_PROG), 64)
-            end
+            --end
             -- MAIN BG
             r.ImGui_DrawList_AddCircleFilled(draw_list, button_pos.x, button_pos.y, mini_rad * MAIN_PROG,
                 prev_i == i and 0x23EE9cff or def_menu_prev, 64)

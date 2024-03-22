@@ -122,7 +122,7 @@ local function IterateFiles(dir)
     for index = 0, math.huge do
         local file = r.EnumerateFiles(reaper_path .. dir, index)
         if not file then break end
-        if file:find(".png", nil, true) and not file:match("animation") then
+        if file:find("%.png$") and not file:match("animation") then
             tbl[#tbl + 1] = { name = dir .. file }
         end
     end
@@ -233,12 +233,14 @@ local function TabButtons()
         if r.ImGui_InvisibleButton(ctx, "Pie", 100, 26) then
             STATE = "PIE"
             UPDATE_FILTER = true
+            RefreshImgObj(CUR_PIE)
         end
         GeneralDrawlistButton("Pie", (STATE == "PIE"), "L")
         r.ImGui_SameLine(ctx)
         if r.ImGui_InvisibleButton(ctx, "Menu Editor", 100, 26) then
             STATE = "EDITOR"
             UPDATE_FILTER = true
+            RefreshImgObj(CUR_MENU_PIE)
         end
         GeneralDrawlistButton("Menu Editor", STATE == "EDITOR")
 
@@ -459,24 +461,28 @@ local function PngSelector(pie, button_size)
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_PopupBg(), bg_col)
     if r.ImGui_BeginPopup(ctx, "Png Selector") then
         r.ImGui_BeginGroup(ctx)
-        r.ImGui_Text(ctx, "PNG Size")
+        r.ImGui_Text(ctx, "Toolbar Icons")
         r.ImGui_SameLine(ctx)
-        if r.ImGui_Checkbox(ctx, "100", png_tbl == PNG_TBL) then
+
+        if r.ImGui_RadioButton( ctx, "100", png_tbl == PNG_TBL ) then
             RefreshImgObj(PNG_TBL)
             png_tbl = PNG_TBL
         end
+      
         r.ImGui_SameLine(ctx)
-        if r.ImGui_Checkbox(ctx, "150", png_tbl == PNG_TBL_150) then
+        if r.ImGui_RadioButton(ctx, "150", png_tbl == PNG_TBL_150) then
             RefreshImgObj(PNG_TBL_150)
             png_tbl = PNG_TBL_150
         end
         r.ImGui_SameLine(ctx)
-        if r.ImGui_Checkbox(ctx, "200", png_tbl == PNG_TBL_200) then
+        if r.ImGui_RadioButton(ctx, "200", png_tbl == PNG_TBL_200) then
             RefreshImgObj(PNG_TBL_200)
             png_tbl = PNG_TBL_200
         end
+        r.ImGui_Text(ctx, "Track Icons    ")
         r.ImGui_SameLine(ctx)
-        if r.ImGui_Checkbox(ctx, "Track Icons", png_tbl == PNG_TBL_TRACK_ICONS) then
+
+        if r.ImGui_RadioButton(ctx, "##ti", png_tbl == PNG_TBL_TRACK_ICONS) then
             RefreshImgObj(PNG_TBL_TRACK_ICONS)
             png_tbl = PNG_TBL_TRACK_ICONS
         end
