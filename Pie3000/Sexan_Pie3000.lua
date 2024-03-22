@@ -1,7 +1,7 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.31.8
+-- @version 0.31.9
 -- @changelog
 --  Fix png filtering
 --  Fix screen coordinates for OSX
