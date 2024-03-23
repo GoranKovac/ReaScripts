@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.32.2
+-- @version 0.32.3
 -- @changelog
---  Added Midi Contexts Ruler, Midi (notes), Lanes
+--  Fix a bubu in the code
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -21,7 +21,6 @@ package.path = script_path .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 local sqrt, sin, cos = math.sqrt, math.sin, math.cos
 
 require('PieUtils')
-r.JS_WindowMessage_Post( r.GetMainHwnd(), "WM_KEYDOWN", -1, 0, 0, 0)
 if CheckDeps() then return end
 
 ctx = r.ImGui_CreateContext('Pie XYZ', r.ImGui_ConfigFlags_NoSavedSettings())
