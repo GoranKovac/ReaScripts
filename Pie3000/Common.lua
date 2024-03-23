@@ -38,7 +38,7 @@ SELECT_THING_UNDER_MOUSE = false
 
 local def_color_dark = 0x414141ff
 local def_out_ring = 0x2a2a2aff
-local def_menu_prev = def_color_dark--0x212121ff
+local def_menu_prev = def_color_dark --0x212121ff
 local ARC_COLOR = 0x11AAFF88
 local def_color = def_color_dark
 local def_font_col = 0xd7d9d9ff
@@ -105,9 +105,90 @@ for name, func in pairs(r) do
 end
 
 function Release()
-    --if not KEY then return end
+    if not KEY then return end
     r.JS_VKeys_Intercept(KEY, -1)
     r.SNM_SetIntConfigVar("alwaysallowkb", ALLOW_KB_VAR)
+end
+
+local names = {
+    "midipianoview",
+    "midiview"
+}
+
+function DetectMIDIContext()
+    local function IsInside(left, top, right, bottom)
+        if START_X > left and START_X < right and START_Y > top and START_Y < bottom then
+            return true
+        end
+    end
+    local function CalculateLanes(bitmap, w, h)
+        local start_color
+        local top_px, bot_px
+       -- local LANES = {}
+        for i = 1, h do
+            local color = r.JS_LICE_GetPixel(bitmap, w - 1, i)
+            if not start_color then
+                start_color = color
+            end
+            if color ~= start_color then
+                if not top_px then
+                    top_px = i
+                end
+                if bot_px then
+                  --  LANES[#LANES + 1] = i
+                end
+            else
+                if top_px then
+                    if not bot_px then
+                        bot_px = i
+                        break
+                       -- LANES[#LANES + 1] = i
+                    end
+                end
+            end
+        end
+        --return LANES, bot_px
+        return bot_px
+    end
+
+    local function takeScreenshot(window)
+        local retval, left, top, right, bottom = r.JS_Window_GetRect(window)
+        local w, h = right - left, bottom - top
+        local LANES, bot_px
+        if retval then
+            local srcDC = r.JS_GDI_GetClientDC(window)
+            local destBmp = r.JS_LICE_CreateBitmap(true, w, h)
+            local destDC = r.JS_LICE_GetDC(destBmp)
+            r.JS_GDI_Blit(destDC, 0, 0, srcDC, 0, 0, w, h)
+            bot_px = CalculateLanes(destBmp, w, h)
+            r.JS_GDI_ReleaseDC(window, srcDC)
+            r.JS_LICE_DestroyBitmap(destBmp)
+        end
+        return bot_px
+    end
+
+    local HWND = r.MIDIEditor_GetActive()
+    local child = r.JS_Window_FindChild(HWND, "midipianoview", true)
+    local bot_px = takeScreenshot(child)
+
+    local MIDI_SIZE = {}
+    for n in ipairs(names) do
+        local child_hwnd = r.JS_Window_FindChild(HWND, names[n], true)
+        local retval, left, top, right, bottom = r.JS_Window_GetRect(child_hwnd)
+        local w, h = right - left, bottom - top
+        if IsInside(left, top + 63, right, top + bot_px - 2) then
+            return names[n] == "midiview" and "midi" or names[n]
+        end
+        MIDI_SIZE = { left, top, right, bottom }
+    end
+    -- RULLER
+    if IsInside(MIDI_SIZE[1], MIDI_SIZE[2], MIDI_SIZE[3], MIDI_SIZE[2] + 64) then
+        return "midiruler"
+    end
+
+    if IsInside(MIDI_SIZE[1], MIDI_SIZE[2] + bot_px, MIDI_SIZE[3], MIDI_SIZE[2] + MIDI_SIZE[4]) then
+        return "midilane"
+    end
 end
 
 function PDefer(func)
@@ -186,7 +267,7 @@ end
 
 function ImageUVOffset(img_obj, resize, cols, rows, frame, x, y, prog, need_single_frame)
     local w, h = r.ImGui_Image_GetSize(img_obj)
-    w,h = w/resize, h/resize
+    w, h = w / resize, h / resize
     local xs, ys = x - (w / cols) / 2, y - (h / rows) / 2
     local xe, ye = w / cols + xs, h / rows + ys
 
@@ -528,7 +609,8 @@ local function PieButtonDrawlist(pie, button_radius, selected, hovered, button_p
             pie.img_obj = r.ImGui_CreateImage(reaper_path .. png)
         end
         local is_track_icon = png:find("track_icons")
-        ImageUVOffset(pie.img_obj, is_track_icon and 1.2 or 1, is_track_icon and 1 or 3, 1, is_track_icon and 0 or (selected and 2 or 0), button_center.x, button_center.y, CENTER_BTN_PROG)
+        ImageUVOffset(pie.img_obj, is_track_icon and 1.2 or 1, is_track_icon and 1 or 3, 1,
+            is_track_icon and 0 or (selected and 2 or 0), button_center.x, button_center.y, CENTER_BTN_PROG)
     end
 end
 
@@ -545,7 +627,8 @@ local function DrawButtons(pie, center)
             if not r.ImGui_ValidatePtr(pie[i].img_obj, 'ImGui_Image*') then
                 pie[i].img_obj = r.ImGui_CreateImage(reaper_path .. pie[i].png)
             end
-            local img_data = ImageUVOffset(pie[i].img_obj, pie[i].png:find("track_icons") and  1.2 or 1,pie[i].png:find("track_icons") and 1 or 3, 1, 0, 0, 0, 0, true)
+            local img_data = ImageUVOffset(pie[i].img_obj, pie[i].png:find("track_icons") and 1.2 or 1,
+                pie[i].png:find("track_icons") and 1 or 3, 1, 0, 0, 0, 0, true)
             button_wh = (sqrt(2) * img_data[1]) // 2
         end
 
@@ -748,8 +831,8 @@ local function DrawCenter(pie, center)
 
             -- OUTER RING
             --if dark_theme or SETUP then
-                r.ImGui_DrawList_AddCircleFilled(draw_list, button_pos.x, button_pos.y, mini_rad + 1.5 * MAIN_PROG,
-                    LerpAlpha(def_out_ring, MAIN_PROG), 64)
+            r.ImGui_DrawList_AddCircleFilled(draw_list, button_pos.x, button_pos.y, mini_rad + 1.5 * MAIN_PROG,
+                LerpAlpha(def_out_ring, MAIN_PROG), 64)
             --end
             -- MAIN BG
             r.ImGui_DrawList_AddCircleFilled(draw_list, button_pos.x, button_pos.y, mini_rad * MAIN_PROG,

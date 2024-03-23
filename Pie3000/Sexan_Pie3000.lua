@@ -1,11 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.32.1
+-- @version 0.32.2
 -- @changelog
---  Workaround for halted script by OS
---  Dont allow changing to other actions when script CLOSE is triggered
---  Added MIDI actions when in MIDI context
+--  Added Midi Contexts Ruler, Midi (notes), Lanes
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -106,7 +104,7 @@ local function GetMouseContext()
         elseif class_name == "REAPERTrackListWindow" then
             info = "arrangeempty"
         elseif class_name == "MIDIWindow" then
-            info = "midi"
+            info = DetectMIDIContext()
         elseif class_name == "REAPERTimeDisplay" then
             info = "ruler"
         end

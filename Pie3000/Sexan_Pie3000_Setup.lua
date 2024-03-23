@@ -34,8 +34,10 @@ local DEFAULT_PIE = {
     ["envcp"] = { RADIUS = RADIUS_START, name = "ENV CP", guid = r.genGuid() },
     ["item"] = { RADIUS = RADIUS_START, name = "ITEM", guid = r.genGuid() },
     ["trans"] = { RADIUS = RADIUS_START, name = "TRANSPORT", guid = r.genGuid() },
-    ["midi"] = { RADIUS = RADIUS_START, name = "MIDI", guid = r.genGuid() },
     ["ruler"] = { RADIUS = RADIUS_START, name = "RULLER", guid = r.genGuid() },
+    ["midi"] = { RADIUS = RADIUS_START, name = "MIDI", guid = r.genGuid() },
+    ["midiruler"] = { RADIUS = RADIUS_START, name = "MIDI RULER", guid = r.genGuid() },
+    ["midilane"] = { RADIUS = RADIUS_START, name = "MIDI LANE", guid = r.genGuid() },
 }
 
 local context_cur_item = 1
@@ -50,8 +52,10 @@ local menu_items = {
     { "envcp",        "ECP" },
     { "item",         "ITEM" },
     { "trans",        "TRANSPORT" },
-    { "midi",        "MIDI" },
     { "ruler",        "RULER" },
+    { "midi",        "MIDI" },
+    { "midiruler",        "MIDI RULER" },
+    { "midilane",        "MIDI LANE" },
 }
 
 local PIES = ReadFromFile(pie_file) or Deepcopy(DEFAULT_PIE)
@@ -60,8 +64,12 @@ if not PIES["ruler"] then
     PIES["ruler"] = { RADIUS = RADIUS_START, name = "RULLER", guid = r.genGuid() }
 end
 
-local MENUS = ReadFromFile(menu_file) or {}
+if not PIES["midipianoview"] then
+    PIES["midiruler"] = { RADIUS = RADIUS_START, name = "MIDI RULER", guid = r.genGuid() }
+    PIES["midilane"] = { RADIUS = RADIUS_START, name = "MIDI LANE", guid = r.genGuid() }
+end
 
+local MENUS = ReadFromFile(menu_file) or {}
 
 function GetMenus()
     return MENUS
@@ -826,7 +834,7 @@ local function ContextSelector()
     local w, h = r.ImGui_GetItemRectSize(ctx)
     local x, y = r.ImGui_GetCursorScreenPos(ctx)
     r.ImGui_SetNextWindowPos(ctx, x, y)
-    r.ImGui_SetNextWindowSize(ctx, w, 240)
+    r.ImGui_SetNextWindowSize(ctx, w, 280)
     r.ImGui_SetNextWindowBgAlpha(ctx, 1)
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_PopupBg(), bg_col)
     if r.ImGui_BeginPopup(ctx, "Context Selector") then
@@ -1186,7 +1194,7 @@ local function ActionsTab(pie)
             rv_af, ACTION_FILTER = r.ImGui_InputTextWithHint(ctx, "##inputA", "Search Actions", ACTION_FILTER)
             if rv_af or UPDATE_FILTER then
                 UPDATE_CNT = UPDATE_FILTER and UPDATE_CNT + 1 or UPDATE_CNT
-                FILTERED_ACTION_TBL = FilterActions(CUR_PIE.name == "MIDI" and MIDI_ACTIONS_TBL or ACTIONS_TBL, ACTION_FILTER)
+                FILTERED_ACTION_TBL = FilterActions(CUR_PIE.name:find("MIDI") and MIDI_ACTIONS_TBL or ACTIONS_TBL, ACTION_FILTER)
             end
             if r.ImGui_BeginChild(ctx, "##CLIPPER_ACTION", nil, nil, nil, r.ImGui_WindowFlags_AlwaysHorizontalScrollbar()) then
                 if not r.ImGui_ValidatePtr(ACTION_CLIPPER, 'ImGui_ListClipper*') then
