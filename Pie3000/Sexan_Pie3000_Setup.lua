@@ -1281,6 +1281,14 @@ end
 
 local function Delete()
     if REMOVE then
+        if REMOVE.tbl[REMOVE.i].menu then
+            -- REMOVE GUID REFERENCE WHEN ALT CLICK MENU
+            for j = #REMOVE.tbl.guid_list,1 ,-1 do
+                if REMOVE.tbl.guid_list[j] == REMOVE.tbl[REMOVE.i].guid then
+                    table.remove(REMOVE.tbl.guid_list, j)
+                end
+            end
+        end
         table.remove(REMOVE.tbl, REMOVE.i)
         REMOVE.tbl.selected = nil
         REMOVE = nil

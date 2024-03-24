@@ -1,9 +1,11 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.32.3
+-- @version 0.32.4
 -- @changelog
---  Fix a bubu in the code
+--  Fix midi lanes section boundary (was off by 2 px)
+--  When Alt deleting menu remove its guid reference from parent menu
+--  Use window IDs instead of names to detect midi context (linux fix)
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua

@@ -110,11 +110,12 @@ function Release()
     r.SNM_SetIntConfigVar("alwaysallowkb", ALLOW_KB_VAR)
 end
 
-local names = {
-    "midipianoview",
-    "midiview"
+local MIDI_WND_IDS = {
+    { id = 0x000003EB, name = "midipianoview"},
+    { id = 0x000003E9, name = "midiview"},
 }
 
+local GetPixel = r.JS_LICE_GetPixel
 function DetectMIDIContext()
     local function IsInside(left, top, right, bottom)
         if START_X > left and START_X < right and START_Y > top and START_Y < bottom then
@@ -122,39 +123,30 @@ function DetectMIDIContext()
         end
     end
     local function CalculateLanes(bitmap, w, h)
-        local start_color
+        local start_color = GetPixel(bitmap, 1,1)
         local top_px, bot_px
-       -- local LANES = {}
         for i = 1, h do
-            local color = r.JS_LICE_GetPixel(bitmap, w - 1, i)
-            if not start_color then
-                start_color = color
-            end
+            local color = GetPixel(bitmap, w - 1, i)
             if color ~= start_color then
                 if not top_px then
                     top_px = i
-                end
-                if bot_px then
-                  --  LANES[#LANES + 1] = i
                 end
             else
                 if top_px then
                     if not bot_px then
                         bot_px = i
                         break
-                       -- LANES[#LANES + 1] = i
                     end
                 end
             end
         end
-        --return LANES, bot_px
         return bot_px
     end
 
     local function takeScreenshot(window)
         local retval, left, top, right, bottom = r.JS_Window_GetRect(window)
         local w, h = right - left, bottom - top
-        local LANES, bot_px
+        local bot_px
         if retval then
             local srcDC = r.JS_GDI_GetClientDC(window)
             local destBmp = r.JS_LICE_CreateBitmap(true, w, h)
@@ -168,16 +160,16 @@ function DetectMIDIContext()
     end
 
     local HWND = r.MIDIEditor_GetActive()
-    local child = r.JS_Window_FindChild(HWND, "midipianoview", true)
+    local child = r.JS_Window_FindChildByID(HWND, MIDI_WND_IDS[1].id)
     local bot_px = takeScreenshot(child)
 
     local MIDI_SIZE = {}
-    for n in ipairs(names) do
-        local child_hwnd = r.JS_Window_FindChild(HWND, names[n], true)
+    for n in ipairs(MIDI_WND_IDS) do
+        local child_hwnd = r.JS_Window_FindChildByID(HWND, MIDI_WND_IDS[n].id)
         local retval, left, top, right, bottom = r.JS_Window_GetRect(child_hwnd)
-        local w, h = right - left, bottom - top
+        --local w, h = right - left, bottom - top
         if IsInside(left, top + 63, right, top + bot_px - 2) then
-            return names[n] == "midiview" and "midi" or names[n]
+            return MIDI_WND_IDS[n].name == "midiview" and "midi" or MIDI_WND_IDS[n].name
         end
         MIDI_SIZE = { left, top, right, bottom }
     end
@@ -185,8 +177,8 @@ function DetectMIDIContext()
     if IsInside(MIDI_SIZE[1], MIDI_SIZE[2], MIDI_SIZE[3], MIDI_SIZE[2] + 64) then
         return "midiruler"
     end
-
-    if IsInside(MIDI_SIZE[1], MIDI_SIZE[2] + bot_px, MIDI_SIZE[3], MIDI_SIZE[2] + MIDI_SIZE[4]) then
+    -- LANES (WHOLE SECTION)
+    if IsInside(MIDI_SIZE[1], MIDI_SIZE[2] + bot_px - 2, MIDI_SIZE[3], MIDI_SIZE[2] + MIDI_SIZE[4]) then
         return "midilane"
     end
 end
