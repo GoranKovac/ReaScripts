@@ -1,11 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.32.4
+-- @version 0.32.5
 -- @changelog
---  Fix midi lanes section boundary (was off by 2 px)
---  When Alt deleting menu remove its guid reference from parent menu
---  Use window IDs instead of names to detect midi context (linux fix)
+--  Detect main window context by ID instead of names (linux/osx fix)
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -80,13 +78,21 @@ end
 
 if Init() == "ERROR" then return end
 
+local WND_IDS = {
+    { id = "userdata: 00000000000003E9", name = "midiview"},
+    { id = "userdata: 00000000000003EB", name = "midipianoview"},
+    { id = "userdata: 00000000000003E8", name = "REAPERTrackListWindow"},
+    { id = "userdata: 00000000000003ED", name = "REAPERTimeDisplay"},
+
+}
+
 local function GetMouseContext()
     local x, y = r.GetMousePosition()
     local track, info = r.GetThingFromPoint(x, y)
     local item, take = r.GetItemFromPoint(x, y, true)
     local cur_hwnd = r.JS_Window_FromPoint(x, y)
+    local id =  r.JS_Window_GetLongPtr( cur_hwnd, "ID" )
     local class_name = r.JS_Window_GetClassName(cur_hwnd)
-
     if info:match("spacer") then return end
     if info:match("master") then return end
 
@@ -97,18 +103,30 @@ local function GetMouseContext()
     end
 
     if #info == 0 then
-        if not class_name then return end
+        --if not id then return end
         if class_name == "REAPERTCPDisplay" then
             info = "tcpempty"
         elseif class_name == "REAPERMCPDisplay" then
             info = "mcpempty"
-        elseif class_name == "REAPERTrackListWindow" then
+        elseif tostring(id) == WND_IDS[3].id then
             info = "arrangeempty"
-        elseif class_name == "MIDIWindow" then
+        elseif tostring(id) == WND_IDS[1].id then
             info = DetectMIDIContext()
-        elseif class_name == "REAPERTimeDisplay" then
+        elseif tostring(id) == WND_IDS[4].id then
             info = "ruler"
         end
+        -- if not class_name then return end
+        -- if class_name == "REAPERTCPDisplay" then
+        --     info = "tcpempty"
+        -- elseif class_name == "REAPERMCPDisplay" then
+        --     info = "mcpempty"
+        -- elseif class_name == "REAPERTrackListWindow" then
+        --     info = "arrangeempty"
+        -- elseif class_name == "MIDIWindow" then
+        --     info = DetectMIDIContext()
+        -- elseif class_name == "REAPERTimeDisplay" then
+        --     info = "ruler"
+        -- end
     end
 
     if item then info = "item" end
