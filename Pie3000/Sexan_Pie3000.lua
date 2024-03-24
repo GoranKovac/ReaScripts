@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.32.5
+-- @version 0.32.51
 -- @changelog
---  Detect main window context by ID instead of names (linux/osx fix)
+--  Third attempt to fix windows IDs detection across all platforms
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -79,10 +79,10 @@ end
 if Init() == "ERROR" then return end
 
 local WND_IDS = {
-    { id = "userdata: 00000000000003E9", name = "midiview"},
-    { id = "userdata: 00000000000003EB", name = "midipianoview"},
-    { id = "userdata: 00000000000003E8", name = "REAPERTrackListWindow"},
-    { id = "userdata: 00000000000003ED", name = "REAPERTimeDisplay"},
+    { id = "3E9", name = "midiview"},
+    { id = "3EB", name = "midipianoview"},
+    { id = "3E8", name = "REAPERTrackListWindow"},
+    { id = "3ED", name = "REAPERTimeDisplay"},
 
 }
 
@@ -108,11 +108,11 @@ local function GetMouseContext()
             info = "tcpempty"
         elseif class_name == "REAPERMCPDisplay" then
             info = "mcpempty"
-        elseif tostring(id) == WND_IDS[3].id then
+        elseif tostring(id):find(WND_IDS[3].id) then
             info = "arrangeempty"
-        elseif tostring(id) == WND_IDS[1].id then
+        elseif tostring(id):find(WND_IDS[1].id) then
             info = DetectMIDIContext()
-        elseif tostring(id) == WND_IDS[4].id then
+        elseif tostring(id):find(WND_IDS[4].id) then
             info = "ruler"
         end
         -- if not class_name then return end
