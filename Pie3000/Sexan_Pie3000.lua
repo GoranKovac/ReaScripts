@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.32.52
+-- @version 0.32.53
 -- @changelog
---  For the love of god please start working on linux
+--  Fix attempt 8237512
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -108,11 +108,11 @@ local function GetMouseContext()
             info = "tcpempty"
         elseif class_name == "REAPERMCPDisplay" then
             info = "mcpempty"
-        elseif tostring(id):match(WND_IDS[3].id) then
+        elseif tostring(id):upper():match(WND_IDS[3].id) then
             info = "arrangeempty"
-        elseif tostring(id):match(WND_IDS[1].id) then
+        elseif tostring(id):upper():match(WND_IDS[1].id) then
             info = DetectMIDIContext()
-        elseif tostring(id):match(WND_IDS[4].id) then
+        elseif tostring(id):upper():match(WND_IDS[4].id) then
             info = "ruler"
         end
         -- if not class_name then return end
