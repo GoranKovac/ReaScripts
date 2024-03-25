@@ -1,9 +1,15 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.32.53
+-- @version 0.32.7
 -- @changelog
---  Fix attempt 8237512
+--  Remove JS_FindWindow from main script
+--  Be gentle with splitter creation (validate before creating)
+--  Increase performance with detecting midi lanes
+--  Fix midi context vertical and horizontal boundaries ofset (2px)
+--  Added option to toggle "Ignore FX chain keyboard shortcuts" in fx chains for Plugin context to work
+--  Add Plugin Context
+--  Add Midi item context
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -35,7 +41,6 @@ DeferLoop = DBG and DEBUG.defer or PDefer
 
 PIE_LIST = {}
 
-
 local function GetMonitorFromPoint()
     local x, y = r.GetMousePosition()
     LEFT, TOP, RIGHT, BOT = r.my_getViewport(x, y, x, y, x, y, x, y, true)
@@ -62,9 +67,8 @@ local function Init()
             PIES[k .. "empty"] = PIES[k]
         end
     end
-
-    local key_state = r.JS_VKeys_GetState(SCRIPT_START_TIME-1)
-    local down_state = r.JS_VKeys_GetDown( SCRIPT_START_TIME )
+    local key_state = r.JS_VKeys_GetState(SCRIPT_START_TIME - 1)
+    local down_state = r.JS_VKeys_GetDown(SCRIPT_START_TIME)
     for i = 1, 255 do
         if key_state:byte(i) ~= 0 or down_state:byte(i) ~= 0 then
             r.JS_VKeys_Intercept(i, 1)
@@ -79,10 +83,10 @@ end
 if Init() == "ERROR" then return end
 
 local WND_IDS = {
-    { id = "3E9", name = "midiview"},
-    { id = "3EB", name = "midipianoview"},
-    { id = "3E8", name = "REAPERTrackListWindow"},
-    { id = "3ED", name = "REAPERTimeDisplay"},
+    { id = "3E9", name = "midiview" },
+    { id = "3EB", name = "midipianoview" },
+    { id = "3E8", name = "REAPERTrackListWindow" },
+    { id = "3ED", name = "REAPERTimeDisplay" },
 
 }
 
@@ -91,8 +95,10 @@ local function GetMouseContext()
     local track, info = r.GetThingFromPoint(x, y)
     local item, take = r.GetItemFromPoint(x, y, true)
     local cur_hwnd = r.JS_Window_FromPoint(x, y)
-    local id =  r.JS_Window_GetLongPtr( cur_hwnd, "ID" )
+    local id = r.JS_Window_GetLongPtr(cur_hwnd, "ID")
     local class_name = r.JS_Window_GetClassName(cur_hwnd)
+
+    -- local is_plugin --= DetectPluginContext(cur_hwnd)
     if info:match("spacer") then return end
     if info:match("master") then return end
 
@@ -100,10 +106,11 @@ local function GetMouseContext()
         info = "envelope"
     elseif info:match("envcp") then
         info = "envcp"
+    elseif info:match("^fx_") then
+        info = "plugin"
     end
 
     if #info == 0 then
-        --if not id then return end
         if class_name == "REAPERTCPDisplay" then
             info = "tcpempty"
         elseif class_name == "REAPERMCPDisplay" then
@@ -111,25 +118,17 @@ local function GetMouseContext()
         elseif tostring(id):upper():match(WND_IDS[3].id) then
             info = "arrangeempty"
         elseif tostring(id):upper():match(WND_IDS[1].id) then
+           -- r.ShowConsoleMsg(tostring(id) .. "\n")
             info = DetectMIDIContext()
         elseif tostring(id):upper():match(WND_IDS[4].id) then
             info = "ruler"
         end
-        -- if not class_name then return end
-        -- if class_name == "REAPERTCPDisplay" then
-        --     info = "tcpempty"
-        -- elseif class_name == "REAPERMCPDisplay" then
-        --     info = "mcpempty"
-        -- elseif class_name == "REAPERTrackListWindow" then
-        --     info = "arrangeempty"
-        -- elseif class_name == "MIDIWindow" then
-        --     info = DetectMIDIContext()
-        -- elseif class_name == "REAPERTimeDisplay" then
-        --     info = "ruler"
-        -- end
     end
 
-    if item then info = "item" end
+    if item then
+        info = r.TakeIsMIDI(take) and "itemmidi" or "item"
+    end
+
     info = info:match('^([^%.]+)')
     return info, track, item
 end
@@ -140,6 +139,10 @@ PIE_MENU = STANDALONE_PIE or PIES[INFO]
 if not PIE_MENU then
     Release()
     return
+end
+
+if LANE_NAME then
+    PIE_MENU.name = LANE_NAME:upper()
 end
 
 local function ConvertAndSetCursor(x, y)
@@ -188,7 +191,7 @@ end
 if ADJUST_PIE_NEAR_EDGE then NearEdge() end
 
 local function KeyHeld()
-    return r.JS_VKeys_GetState(SCRIPT_START_TIME-1):byte(KEY) == 1
+    return r.JS_VKeys_GetState(SCRIPT_START_TIME - 1):byte(KEY) == 1
 end
 
 local function LimitMouseToRadius()
@@ -260,13 +263,15 @@ local function AnimationProgress()
     end
 end
 
+
+local MAIN_HWND = r.GetMainHwnd()
 local function ExecuteAction(action)
     if action then
         if CLOSE and ACTIVATE_ON_CLOSE then
             if LAST_TRIGGERED ~= action then
                 LAST_TRIGGERED = action
-                if  PIES[INFO].name == "MIDI" then
-                    r.MIDIEditor_OnCommand( r.MIDIEditor_GetActive(), action)   
+                if PIES[INFO].name == "MIDI" then
+                    r.MIDIEditor_OnCommand(r.MIDIEditor_GetActive(), action)
                 else
                     r.Main_OnCommand(action, 0)
                 end
@@ -275,20 +280,20 @@ local function ExecuteAction(action)
         if r.ImGui_IsMouseReleased(ctx, 0) then
             local START_ACTION_TIME = r.time_precise()
             LAST_TRIGGERED = action
-            if  PIES[INFO].name == "MIDI" then
-                r.MIDIEditor_OnCommand( r.MIDIEditor_GetActive(), action)   
+            if PIES[INFO].name == "MIDI" then
+                r.MIDIEditor_OnCommand(r.MIDIEditor_GetActive(), action)
             else
                 r.Main_OnCommand(action, 0)
             end
             local AFTER_ACTION_TIME = r.time_precise()
-       
+
             if AFTER_ACTION_TIME - START_ACTION_TIME > 0.1 then
-                r.JS_WindowMessage_Post( SCRIPT_WND, "WM_KEYUP", KEY, 0, 0, 0)
+                r.JS_WindowMessage_Post(MAIN_HWND, "WM_KEYUP", KEY, 0, 0, 0)
             end
         elseif KEY_TRIGGER then
             LAST_TRIGGERED = action
-            if  PIES[INFO].name == "MIDI" then
-                r.MIDIEditor_OnCommand( r.MIDIEditor_GetActive(), action)   
+            if PIES[INFO].name == "MIDI" then
+                r.MIDIEditor_OnCommand(r.MIDIEditor_GetActive(), action)
             else
                 r.Main_OnCommand(action, 0)
             end
@@ -317,7 +322,6 @@ end
 
 
 local function Main()
-    SCRIPT_WND =  reaper.JS_Window_Find( "PIE XYZ", true )
     TrackShortcutKey()
     if TERMINATE then
         Release()
@@ -340,8 +344,6 @@ local function Main()
     end
     if LAST_ACTION then DoAction() end
     DoFullScreen()
-
-    SCRIPT_WND = r.JS_Window_Find( 'PIE XYZ', true )
 
     if r.ImGui_Begin(ctx, 'PIE XYZ', false, FLAGS) then
         draw_list = r.ImGui_GetWindowDrawList(ctx)

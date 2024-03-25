@@ -33,11 +33,13 @@ local DEFAULT_PIE = {
     ["envelope"] = { RADIUS = RADIUS_START, name = "ENVELOPE", guid = r.genGuid() },
     ["envcp"] = { RADIUS = RADIUS_START, name = "ENV CP", guid = r.genGuid() },
     ["item"] = { RADIUS = RADIUS_START, name = "ITEM", guid = r.genGuid() },
+    ["itemmidi"] = { RADIUS = RADIUS_START, name = "MIDI ITEM", guid = r.genGuid() },
     ["trans"] = { RADIUS = RADIUS_START, name = "TRANSPORT", guid = r.genGuid() },
-    ["ruler"] = { RADIUS = RADIUS_START, name = "RULLER", guid = r.genGuid() },
+    ["ruler"] = { RADIUS = RADIUS_START, name = "RULER", guid = r.genGuid() },
     ["midi"] = { RADIUS = RADIUS_START, name = "MIDI", guid = r.genGuid() },
     ["midiruler"] = { RADIUS = RADIUS_START, name = "MIDI RULER", guid = r.genGuid() },
     ["midilane"] = { RADIUS = RADIUS_START, name = "MIDI LANE", guid = r.genGuid() },
+    ["plugin"] = { RADIUS = RADIUS_START, name = "PLUGIN", guid = r.genGuid() },
 }
 
 local context_cur_item = 1
@@ -51,22 +53,32 @@ local menu_items = {
     { "envelope",     "ENVELOPE" },
     { "envcp",        "ECP" },
     { "item",         "ITEM" },
+    { "itemmidi",      "MIDI ITEM" },
     { "trans",        "TRANSPORT" },
     { "ruler",        "RULER" },
-    { "midi",        "MIDI" },
-    { "midiruler",        "MIDI RULER" },
-    { "midilane",        "MIDI LANE" },
+    { "midi",         "MIDI" },
+    { "midiruler",    "MIDI RULER" },
+    { "midilane",     "MIDI LANE" },
+    { "plugin",       "PLUGIN" },
 }
 
 local PIES = ReadFromFile(pie_file) or Deepcopy(DEFAULT_PIE)
 
 if not PIES["ruler"] then
     PIES["ruler"] = { RADIUS = RADIUS_START, name = "RULLER", guid = r.genGuid() }
+else
+    if PIES["ruler"].name == "RULLER" then PIES["ruler"].name = "RULER" end
 end
-
 if not PIES["midipianoview"] then
     PIES["midiruler"] = { RADIUS = RADIUS_START, name = "MIDI RULER", guid = r.genGuid() }
     PIES["midilane"] = { RADIUS = RADIUS_START, name = "MIDI LANE", guid = r.genGuid() }
+end
+if not PIES["plugin"] then
+    PIES["plugin"] = { RADIUS = RADIUS_START, name = "PLUGIN", guid = r.genGuid() }
+end
+
+if not PIES["itemmidi"] then
+    PIES["itemmidi"] = { RADIUS = RADIUS_START, name = "MIDI ITEM", guid = r.genGuid() }
 end
 
 local MENUS = ReadFromFile(menu_file) or {}
@@ -337,7 +349,6 @@ local function DeleteMenuFromPie(guid, tbl)
 end
 
 local function Popups()
-
     if OPEN_WARNING then
         OPEN_WARNING = nil
         r.ImGui_OpenPopup(ctx, "WARNING")
@@ -357,12 +368,14 @@ local function Popups()
         CONTEXT_APPLY_WARNING = nil
         r.ImGui_OpenPopup(ctx, "CONTEXT APPLY WARNING")
     end
-    
+
 
     r.ImGui_SetNextWindowPos(ctx, vp_center[1], vp_center[2], nil, 0.5, 0.5)
     if r.ImGui_BeginPopupModal(ctx, 'CONTEXT APPLY WARNING', nil, r.ImGui_WindowFlags_AlwaysAutoResize() | r.ImGui_WindowFlags_NoMove()) then
-        r.ImGui_Text(ctx, "This will OVERWRITE ".. PIES[menu_items[context_cur_item][1]].name .. " context"..".\n\t\t\t\tAre you sure?")
-       
+        r.ImGui_Text(ctx,
+            "This will OVERWRITE " ..
+            PIES[menu_items[context_cur_item][1]].name .. " context" .. ".\n\t\t\t\tAre you sure?")
+
         r.ImGui_Separator(ctx)
         if r.ImGui_Button(ctx, 'OK', 120, 0) or r.ImGui_IsKeyPressed(ctx, r.ImGui_Key_Enter()) then
             local cur_context = PIES[menu_items[context_cur_item][1]]
@@ -382,7 +395,7 @@ local function Popups()
         end
         r.ImGui_EndPopup(ctx)
     end
-   
+
 
     if CLEAR_PIE or CLEAR_MENU_PIE then
         if ModalWarning(CLEAR_MENU_PIE) then
@@ -473,11 +486,11 @@ local function PngSelector(pie, button_size)
         r.ImGui_Text(ctx, "Toolbar Icons")
         r.ImGui_SameLine(ctx)
 
-        if r.ImGui_RadioButton( ctx, "100", png_tbl == PNG_TBL ) then
+        if r.ImGui_RadioButton(ctx, "100", png_tbl == PNG_TBL) then
             RefreshImgObj(PNG_TBL)
             png_tbl = PNG_TBL
         end
-      
+
         r.ImGui_SameLine(ctx)
         if r.ImGui_RadioButton(ctx, "150", png_tbl == PNG_TBL_150) then
             RefreshImgObj(PNG_TBL_150)
@@ -513,7 +526,8 @@ local function PngSelector(pie, button_size)
                 if not r.ImGui_ValidatePtr(FILTERED_PNG[n + 1].img_obj, 'ImGui_Image*') then
                     FILTERED_PNG[n + 1].img_obj = r.ImGui_CreateImage(reaper_path .. image)
                 end
-                local uv = ImageUVOffset(FILTERED_PNG[n + 1].img_obj, image:find("track_icons") and 1.2 or 1, image:find("track_icons") and 1 or 3, 1, 0, 0, 0, 1, true)
+                local uv = ImageUVOffset(FILTERED_PNG[n + 1].img_obj, image:find("track_icons") and 1.2 or 1,
+                    image:find("track_icons") and 1 or 3, 1, 0, 0, 0, 1, true)
                 if r.ImGui_ImageButton(ctx, "##png_select", FILTERED_PNG[n + 1].img_obj, button_size, button_size, uv[3], uv[4], uv[5], uv[6]) then
                     pie.img_obj = nil
                     ret, png = true, image
@@ -543,7 +557,8 @@ local function PngDisplay(tbl, img_obj, button_size)
         if not r.ImGui_ValidatePtr(img_obj, 'ImGui_Image*') then
             img_obj = r.ImGui_CreateImage(reaper_path .. tbl.png)
         end
-        local uv = ImageUVOffset(img_obj, tbl.png:find("track_icons") and 1.2 or 1,tbl.png:find("track_icons") and 1 or 3, 1, 0, 0, 0, 1, true)
+        local uv = ImageUVOffset(img_obj, tbl.png:find("track_icons") and 1.2 or 1,
+            tbl.png:find("track_icons") and 1 or 3, 1, 0, 0, 0, 1, true)
         if r.ImGui_ImageButton(ctx, "##prev_png", img_obj, button_size - 6, button_size - 6, uv[3], uv[4], uv[5], uv[6]) then
             if not ALT then
                 rv = true
@@ -696,7 +711,7 @@ local function NewProperties(pie)
             r.ImGui_Separator(ctx)
             if r.ImGui_Button(ctx, "X") then pie[pie.selected].name = "" end
             r.ImGui_PopID(ctx)
-            r.ImGui_SameLine(ctx)        
+            r.ImGui_SameLine(ctx)
             r.ImGui_SetNextItemWidth(ctx, -FLT_MIN)
             rv_i, pie[pie.selected].name = r.ImGui_InputTextWithHint(ctx, "##ButtonName", "Button name",
                 pie[pie.selected].name)
@@ -807,6 +822,13 @@ local function Settings()
             WANT_SAVE = true
         end
     end
+
+    r.ImGui_Separator(ctx)
+    local ALLOW_KB_FX =  r.SNM_GetIntConfigVar( "fxfloat_focus", 0 )
+    if r.ImGui_Checkbox(ctx, "Allow Keyboard in FX - Needs to be ON for detecting PLUGIN Context!!!!!!", ALLOW_KB_FX&4096 ~= 0 ) then
+        r.SNM_SetIntConfigVar( "fxfloat_focus", ALLOW_KB_FX~4096 )
+    end
+    r.ImGui_Separator(ctx)
 
     if WANT_SAVE then
         local data = TableToString(
@@ -958,7 +980,7 @@ local function DndSourceMenu(tbl, i)
 end
 
 
-local pattern = {".lua", "Script: "}
+local pattern = { ".lua", "Script: " }
 local function NameStrip(name)
     local new_name = name
     for i = 1, #pattern do
@@ -1060,7 +1082,7 @@ local FILTERED_EDIT_MENU_TBL = MENUS
 local EDITOR_MENU_FILTER = ''
 
 local function MenuEditList(pie)
-    if r.ImGui_BeginChild(ctx, "EDITMENULIST", 180, 0, true) then    
+    if r.ImGui_BeginChild(ctx, "EDITMENULIST", 180, 0, true) then
         if r.ImGui_Button(ctx, 'Create New Menu', -FLT_MIN, 0) then
             MENUS[#MENUS + 1] = {
                 guid = r.genGuid(),
@@ -1132,7 +1154,7 @@ local function Pie()
     end
     if STATE == "EDITOR" then MenuEditList(CUR_MENU_PIE) end
     if r.ImGui_BeginChild(ctx, "##PIEDRAW", -400, 0, true) then
-        if STATE == "PIE" then 
+        if STATE == "PIE" then
             BreadCrumbs(PIE_LIST)
             r.ImGui_SameLine(ctx, 0, 3)
             if r.ImGui_Button(ctx, '+') then
@@ -1189,12 +1211,13 @@ local MENU_FILTER = ''
 
 local function ActionsTab(pie)
     if r.ImGui_BeginTabBar(ctx, "ACTIONS MENUS TAB") then
-        if r.ImGui_BeginTabItem(ctx, "Actions") then          
+        if r.ImGui_BeginTabItem(ctx, "Actions") then
             r.ImGui_SetNextItemWidth(ctx, -FLT_MIN)
             rv_af, ACTION_FILTER = r.ImGui_InputTextWithHint(ctx, "##inputA", "Search Actions", ACTION_FILTER)
             if rv_af or UPDATE_FILTER then
                 UPDATE_CNT = UPDATE_FILTER and UPDATE_CNT + 1 or UPDATE_CNT
-                FILTERED_ACTION_TBL = FilterActions(CUR_PIE.name:find("MIDI") and MIDI_ACTIONS_TBL or ACTIONS_TBL, ACTION_FILTER)
+                FILTERED_ACTION_TBL = FilterActions(CUR_PIE.name:find("MIDI") and MIDI_ACTIONS_TBL or ACTIONS_TBL,
+                    ACTION_FILTER)
             end
             if r.ImGui_BeginChild(ctx, "##CLIPPER_ACTION", nil, nil, nil, r.ImGui_WindowFlags_AlwaysHorizontalScrollbar()) then
                 if not r.ImGui_ValidatePtr(ACTION_CLIPPER, 'ImGui_ListClipper*') then
@@ -1216,7 +1239,6 @@ local function ActionsTab(pie)
         end
         if STATE == "PIE" then
             if r.ImGui_BeginTabItem(ctx, "Menus") then
-              
                 r.ImGui_SetNextItemWidth(ctx, -FLT_MIN)
                 rv_mf, MENU_FILTER = r.ImGui_InputTextWithHint(ctx, "##inputM", "Search Menus", MENU_FILTER)
                 if rv_mf or UPDATE_FILTER then
@@ -1235,9 +1257,9 @@ local function ActionsTab(pie)
                             local SAME_MENU = pie == FILTERED_MENU_TBL[i + 1]
                             r.ImGui_PushID(ctx, i)
                             if r.ImGui_Selectable(ctx, FILTERED_MENU_TBL[i + 1].name .. (CROSS_MENU and " - CANNOT ADD HAS REFERENCE" or ""), ((LAST_MENU_SEL == i + 1) or MENU_CONTEXT_TBL == FILTERED_MENU_TBL[i + 1]), r.ImGui_SelectableFlags_AllowDoubleClick()) then
-                            end                            
+                            end
                             r.ImGui_PopID(ctx)
-                         
+
                             local xs, ys = r.ImGui_GetItemRectMin(ctx)
                             local xe, ye = r.ImGui_GetItemRectMax(ctx)
                             -- SELECTED
@@ -1283,7 +1305,7 @@ local function Delete()
     if REMOVE then
         if REMOVE.tbl[REMOVE.i].menu then
             -- REMOVE GUID REFERENCE WHEN ALT CLICK MENU
-            for j = #REMOVE.tbl.guid_list,1 ,-1 do
+            for j = #REMOVE.tbl.guid_list, 1, -1 do
                 if REMOVE.tbl.guid_list[j] == REMOVE.tbl[REMOVE.i].guid then
                     table.remove(REMOVE.tbl.guid_list, j)
                 end

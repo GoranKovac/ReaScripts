@@ -110,9 +110,43 @@ function Release()
     r.SNM_SetIntConfigVar("alwaysallowkb", ALLOW_KB_VAR)
 end
 
+local cc_lanes = {
+    [-1] = "default",
+    [0x200] = "velocity",
+    [0x201] = "pitch",
+    [0x202] = "program",
+    [0x203] = "channel pressure",
+    [0x204] = "bank/program select",
+    [0x205] = "text",
+    [0x206] = "sysex",
+    [0x207] = "off velocit",
+    [0x208] = "notation events",
+    [0x210] = "media item lane",
+}
+
+local function MidiLaneDetect(hwnd)
+    local mouse_wnd = r.JS_Window_FromPoint(r.GetMousePosition())
+    local x, y = r.JS_Window_ScreenToClient(mouse_wnd, r.GetMousePosition())
+    r.JS_WindowMessage_Send(mouse_wnd, "WM_LBUTTONDOWN", 1, 0, x, y)
+    r.JS_WindowMessage_Send(mouse_wnd, "WM_LBUTTONUP", 0, 0, x, y)
+    local lane = r.MIDIEditor_GetSetting_int(hwnd, "last_clicked_cc_lane")
+    local sel_lane = "default"
+
+    if cc_lanes[lane] then
+        sel_lane = cc_lanes[lane]
+    else
+        if lane < 128 then
+            sel_lane = "CC"
+        elseif lane > 255 then
+            sel_lane = "CC14"
+        end
+    end
+    return sel_lane
+end
+
 local MIDI_WND_IDS = {
-    { id = 0x000003EB, name = "midipianoview"},
-    { id = 0x000003E9, name = "midiview"},
+    { id = 0x000003EB, name = "midipianoview" },
+    { id = 0x000003E9, name = "midiview" },
 }
 
 local GetPixel = r.JS_LICE_GetPixel
@@ -122,8 +156,37 @@ function DetectMIDIContext()
             return true
         end
     end
+    -- FAST
+    local function FasterSearch(bmp, target, w, start_px)
+        local step = 20
+        local bot
+        local px_start = start_px
+        while not bot do
+            px_start = px_start + step
+            if GetPixel(bmp, w - 1, px_start) == target then
+                if GetPixel(bmp, w - 1, px_start - 1) ~= target and GetPixel(bmp, w - 1, px_start - 2) ~= target then
+                    bot = px_start
+                end
+                step = -1
+            end
+        end
+        return bot
+    end
+    -- EXTREMELLY FAST BUT BROKEN
+    local function BinaryPixelSearch(bmp, target, w, px_start, px_end)
+        local point = (px_start + px_end) // 2
+        if GetPixel(bmp, w - 1, point) == target then
+            if GetPixel(bmp, w - 1, point - 1) ~= target or GetPixel(bmp, w - 1, point + 1) ~= target then
+                return point
+            end
+            return BinaryPixelSearch(bmp, target, w, px_start, point)
+        else
+            return BinaryPixelSearch(bmp, target, w, point, px_end)
+        end
+    end
+    -- SLOW
     local function CalculateLanes(bitmap, w, h)
-        local start_color = GetPixel(bitmap, 1,1)
+        local start_color = GetPixel(bitmap, 1, 1)
         local top_px, bot_px
         for i = 1, h do
             local color = GetPixel(bitmap, w - 1, i)
@@ -152,7 +215,9 @@ function DetectMIDIContext()
             local destBmp = r.JS_LICE_CreateBitmap(true, w, h)
             local destDC = r.JS_LICE_GetDC(destBmp)
             r.JS_GDI_Blit(destDC, 0, 0, srcDC, 0, 0, w, h)
-            bot_px = CalculateLanes(destBmp, w, h)
+            bot_px = FasterSearch(destBmp, GetPixel( destBmp, 1, 1 ), w, 63)
+            --bot_px = BinaryPixelSearch(destBmp, GetPixel( destBmp, 1, 1 ), w, 63, h)
+            --bot_px = CalculateLanes(destBmp, w, h)
             r.JS_GDI_ReleaseDC(window, srcDC)
             r.JS_LICE_DestroyBitmap(destBmp)
         end
@@ -164,24 +229,33 @@ function DetectMIDIContext()
     local bot_px = takeScreenshot(child)
 
     local MIDI_SIZE = {}
-    for n in ipairs(MIDI_WND_IDS) do
-        local child_hwnd = r.JS_Window_FindChildByID(HWND, MIDI_WND_IDS[n].id)
-        local retval, left, top, right, bottom = r.JS_Window_GetRect(child_hwnd)
-        --local w, h = right - left, bottom - top
-        if IsInside(left, top + 63, right, top + bot_px - 2) then
-            return MIDI_WND_IDS[n].name == "midiview" and "midi" or MIDI_WND_IDS[n].name
-        end
-        MIDI_SIZE = { left, top, right, bottom }
+    --for n in ipairs(MIDI_WND_IDS) do
+    local child_hwnd = r.JS_Window_FindChildByID(HWND, MIDI_WND_IDS[2].id)
+    local retval, left, top, right, bottom = r.JS_Window_GetRect(child_hwnd)
+    if IsInside(left - 2, top + 63, right, top + bot_px - 2) then
+        --return MIDI_WND_IDS[n].name == "midiview" and "midi" or MIDI_WND_IDS[n].name
+        return "midi"
     end
+    MIDI_SIZE = { left - 2, top, right, bottom }
+    --end
     -- RULLER
     if IsInside(MIDI_SIZE[1], MIDI_SIZE[2], MIDI_SIZE[3], MIDI_SIZE[2] + 64) then
         return "midiruler"
     end
     -- LANES (WHOLE SECTION)
-    if IsInside(MIDI_SIZE[1], MIDI_SIZE[2] + bot_px - 2, MIDI_SIZE[3], MIDI_SIZE[2] + MIDI_SIZE[4]) then
+    if IsInside(MIDI_SIZE[1], MIDI_SIZE[2] + bot_px - 3, MIDI_SIZE[3], MIDI_SIZE[2] + MIDI_SIZE[4]) then
+        LANE_NAME = MidiLaneDetect(HWND)
         return "midilane"
     end
 end
+
+-- function DetectPluginContext(window)
+--     local par = r.JS_Window_GetParent(window)
+--     local par_class = r.JS_Window_GetClassName(par)
+--     if par_class == "#32770" or par_class == "reaperPluginHostWrapProc" then
+--        return "plugin"
+--     end
+-- end
 
 function PDefer(func)
     r.defer(function()
@@ -856,7 +930,9 @@ function DrawPie(pie, center)
         r.ImGui_DrawList_AddLine(draw_list, PREV_X, PREV_Y, START_X, START_Y, 0xff0000FF, 5)
     end
     GetMouseDelta()
-    SPLITTER = r.ImGui_CreateDrawListSplitter(draw_list)
+    if not r.ImGui_ValidatePtr(SPLITTER, "ImGui_DrawListSplitter*") then
+        SPLITTER = r.ImGui_CreateDrawListSplitter(draw_list)
+    end
     r.ImGui_DrawListSplitter_Split(SPLITTER, 5)
     DrawCenter(pie, center)
     DrawButtons(pie, center)
