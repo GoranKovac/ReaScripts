@@ -1,8 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.32.7
+-- @version 0.32.71
 -- @changelog
+--  ReaPack Adventures: The Return Of the Update
 --  Remove JS_FindWindow from main script
 --  Be gentle with splitter creation (validate before creating)
 --  Increase performance with detecting midi lanes

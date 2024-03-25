@@ -207,8 +207,7 @@ function DetectMIDIContext()
     end
 
     local function takeScreenshot(window)
-        local retval, left, top, right, bottom = r.JS_Window_GetRect(window)
-        local w, h = right - left, bottom - top
+        local retval, w, h = r.JS_Window_GetClientSize( window )
         local bot_px
         if retval then
             local srcDC = r.JS_GDI_GetClientDC(window)
