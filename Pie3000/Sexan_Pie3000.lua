@@ -1,9 +1,14 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.32.73
+-- @version 0.32.74
 -- @changelog
 --  Improve Midi Lane tracing for new target
+--  Potential small performance increase (GUI startup) in MIDI (removed one JS_Window_FindChildByID)
+--  Fix Crash when ALT deleting menu when created from + (PIE TAB)
+--  Added midi_cc_file.txt for MIDI CC PIES
+--  Added Midi CC context (Main ones only)
+--  Added option to MIDI LANE Context - "Use as Default for all CC Lane Context" to override all context
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -50,6 +55,7 @@ local function Init()
     CENTER = { x = START_X, y = START_Y }
 
     PIES = ReadFromFile(pie_file)
+    MIDI_PIES = ReadFromFile(midi_cc_file)
     if not PIES then
         local setup_script = r.NamedCommandLookup("_RS3ad3111ef0e763a1cb125b100b70bc3e50072453")
         r.Main_OnCommand(setup_script, 0)
@@ -112,7 +118,7 @@ local function GetMouseContext()
         elseif tostring(id):upper():match(WND_IDS[3].id) then
             info = "arrangeempty"
         elseif tostring(id):upper():match(WND_IDS[1].id) then
-           -- r.ShowConsoleMsg(tostring(id) .. "\n")
+            -- r.ShowConsoleMsg(tostring(id) .. "\n")
             info = DetectMIDIContext()
         elseif tostring(id):upper():match(WND_IDS[4].id) then
             info = "ruler"
@@ -130,17 +136,38 @@ end
 
 local INFO, TRACK, ITEM = GetMouseContext()
 
-if not INFO then Release() return end
+if not INFO then
+    Release()
+    return
+end
 
-PIE_MENU = STANDALONE_PIE or PIES[INFO]
+if not STANDALONE_PIE then
+    if MIDI_LANE_CONTEXT then
+        if PIES["midilane"].as_global == true then
+            PIE_MENU = PIES["midilane"]
+        else
+            -- OPEN DEFAULT MENU IF DOES NOT EXIST
+            PIE_MENU = MIDI_PIES[INFO] or PIES["midilane"]
+        end
+    else
+        PIE_MENU = PIES[INFO]
+    end
+else
+    PIE_MENU = STANDALONE_PIE
+end
+
+--if INFO == "midilane" then LANE_NAME = "global" end
+
+--PIE_MENU = STANDALONE_PIE or (MIDI_LANE_CONTEXT and MIDI_PIES[INFO] or PIES[INFO])
+--PIE_MENU = STANDALONE_PIE or (MIDI_LANE_CONTEXT and MIDI_PIES[INFO] or PIES[INFO])
 if not PIE_MENU then
     Release()
     return
 end
 
-if LANE_NAME then
-    PIE_MENU.name = LANE_NAME:upper()
-end
+--if LANE_NAME then
+-- PIE_MENU.name = LANE_NAME:upper()
+--end
 
 local function ConvertAndSetCursor(x, y)
     local mouse_x, mouse_y = r.ImGui_PointConvertNative(ctx, x, y, true)

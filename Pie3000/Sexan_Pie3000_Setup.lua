@@ -38,10 +38,24 @@ local DEFAULT_PIE = {
     ["ruler"] = { RADIUS = RADIUS_START, name = "RULER", guid = r.genGuid() },
     ["midi"] = { RADIUS = RADIUS_START, name = "MIDI", guid = r.genGuid() },
     ["midiruler"] = { RADIUS = RADIUS_START, name = "MIDI RULER", guid = r.genGuid() },
-    ["midilane"] = { RADIUS = RADIUS_START, name = "MIDI LANE", guid = r.genGuid() },
+    ["midilane"] = { RADIUS = RADIUS_START, name = "MIDI LANE", guid = r.genGuid(), as_global = true },
     ["plugin"] = { RADIUS = RADIUS_START, name = "PLUGIN", guid = r.genGuid() },
 }
 
+local DEFAULT_CC_PIE = {
+    ["velocity"] = { RADIUS = RADIUS_START, name = "VELOCITY", guid = r.genGuid() },
+    ["off velocity"] = { RADIUS = RADIUS_START, name = "OFF VELOCITY", guid = r.genGuid() },
+    ["pitch"] = { RADIUS = RADIUS_START, name = "PITCH", guid = r.genGuid() },
+    ["program"] = { RADIUS = RADIUS_START, name = "PROGRAM", guid = r.genGuid() },
+    ["channel pressure"] = { RADIUS = RADIUS_START, name = "CHANNEL PRESSURE", guid = r.genGuid() },
+    ["bank/program select"] = { RADIUS = RADIUS_START, name = "BANK/PROGRAM SELECT", guid = r.genGuid() },
+    ["text events"] = { RADIUS = RADIUS_START, name = "TEXT EVENTS", guid = r.genGuid() },
+    ["notation events"] = { RADIUS = RADIUS_START, name = "NOTATION EVENTS", guid = r.genGuid() },
+    ["sysex"] = { RADIUS = RADIUS_START, name = "SYSEX", guid = r.genGuid() },
+    ["media item lane"] = { RADIUS = RADIUS_START, name = "MEDIA ITEM LANE", guid = r.genGuid() },
+}
+
+local cur_cc_item = 0
 local context_cur_item = 1
 local menu_items = {
     { "arrange",      "ARRANGE" },
@@ -53,7 +67,7 @@ local menu_items = {
     { "envelope",     "ENVELOPE" },
     { "envcp",        "ECP" },
     { "item",         "ITEM" },
-    { "itemmidi",      "MIDI ITEM" },
+    { "itemmidi",     "MIDI ITEM" },
     { "trans",        "TRANSPORT" },
     { "ruler",        "RULER" },
     { "midi",         "MIDI" },
@@ -64,6 +78,7 @@ local menu_items = {
 
 local PIES = ReadFromFile(pie_file) or Deepcopy(DEFAULT_PIE)
 
+--! REMOVE THIS ON FINAL RELEASE, WAS WORKAROUND FOR ADDING STUFF NOT TO BREAK FILES 
 if not PIES["ruler"] then
     PIES["ruler"] = { RADIUS = RADIUS_START, name = "RULLER", guid = r.genGuid() }
 else
@@ -80,6 +95,11 @@ end
 if not PIES["itemmidi"] then
     PIES["itemmidi"] = { RADIUS = RADIUS_START, name = "MIDI ITEM", guid = r.genGuid() }
 end
+--! REMOVE THIS ON FINAL RELEASE, WAS WORKAROUND FOR ADDING STUFF NOT TO BREAK FILES 
+
+
+local MIDI_CC_PIES = ReadFromFile(midi_cc_file) or Deepcopy(DEFAULT_CC_PIE)
+
 
 local MENUS = ReadFromFile(menu_file) or {}
 
@@ -209,8 +229,10 @@ end
 local function MakePieFile()
     local pies = TableToString(PIES)
     local menus = TableToString(MENUS)
+    local midi_cc_pies = TableToString(MIDI_CC_PIES)
     SaveToFile(pies, pie_file)
     SaveToFile(menus, menu_file)
+    SaveToFile(midi_cc_pies, midi_cc_file)
 end
 
 local ROUNDING = {
@@ -754,6 +776,11 @@ local function NewProperties(pie)
                             MENUS[#MENUS][i] = CUR_PIE[i].menu and CUR_PIE[i] or Deepcopy(CUR_PIE[i])
                         end
                     end
+                    if pie.name == "MIDI LANE" then
+                        if r.ImGui_Checkbox(ctx, "Use as Default for all CC Lane Context", pie.as_global) then
+                            pie.as_global = not pie.as_global
+                        end    
+                    end
                 end
             else
                 if pie and pie.guid ~= "TEMP" then
@@ -824,9 +851,9 @@ local function Settings()
     end
 
     r.ImGui_Separator(ctx)
-    local ALLOW_KB_FX =  r.SNM_GetIntConfigVar( "fxfloat_focus", 0 )
-    if r.ImGui_Checkbox(ctx, "Allow Keyboard in FX - Needs to be ON for detecting PLUGIN Context!!!!!!", ALLOW_KB_FX&4096 ~= 0 ) then
-        r.SNM_SetIntConfigVar( "fxfloat_focus", ALLOW_KB_FX~4096 )
+    local ALLOW_KB_FX = r.SNM_GetIntConfigVar("fxfloat_focus", 0)
+    if r.ImGui_Checkbox(ctx, "Allow Keyboard in FX - Needs to be ON for detecting PLUGIN Context!!!!!!", ALLOW_KB_FX & 4096 ~= 0) then
+        r.SNM_SetIntConfigVar("fxfloat_focus", ALLOW_KB_FX ~ 4096)
     end
     r.ImGui_Separator(ctx)
 
@@ -856,7 +883,7 @@ local function ContextSelector()
     local w, h = r.ImGui_GetItemRectSize(ctx)
     local x, y = r.ImGui_GetCursorScreenPos(ctx)
     r.ImGui_SetNextWindowPos(ctx, x, y)
-    r.ImGui_SetNextWindowSize(ctx, w, 280)
+    r.ImGui_SetNextWindowSize(ctx, w, 320)
     r.ImGui_SetNextWindowBgAlpha(ctx, 1)
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_PopupBg(), bg_col)
     if r.ImGui_BeginPopup(ctx, "Context Selector") then
@@ -1141,6 +1168,287 @@ local function MenuEditList(pie)
     r.ImGui_SameLine(ctx)
 end
 
+-- local CC_DEFAULT = {
+--     [0] = "Global",
+--     [-1] = "Velocity",
+--     [-2] = "Off Velocity",
+--     [-3] = "Pitch",
+--     [-4] = "Program",
+--     [-5] = "Channel Pressure",
+--     [-6] = "Bank/Program Select",
+--     [-7] = "Text Events",
+--     [-8] = "Notation Events",
+--     [-9] = "Sysex",
+--     [-10] = "Media Item Lane",
+-- }
+
+local CC_LIST = {
+    [0] = "Global",
+    [-1] = "Velocity",
+    [-2] = "Off Velocity",
+    [-3] = "Pitch",
+    [-4] = "Program",
+    [-5] = "Channel Pressure",
+    [-6] = "Bank/Program Select",
+    [-7] = "Text Events",
+    [-8] = "Notation Events",
+    [-9] = "Sysex",
+    [-10] = "Media Item Lane",
+    ------------------------------------
+    "00 Bank Select MSB",
+    "01",
+    "Mod Wheel MSB",
+    "02 Breath MSB",
+    "03",
+    "04 Foot Pedal MSB",
+    "05 Portamento MSB",
+    "06 Data Entry MSB",
+    "07 Volume MSB",
+    "08 Balance MSB",
+    "09",
+    "10 Pan Position MSB",
+    "11 Expression MSB",
+    "12 Control 1 MSB",
+    "13 Control 2 MSB",
+    "14",
+    "15",
+    "16 GP Slider 1",
+    "17 GP Slider 2",
+    "18 GP Slider 3",
+    "19 GP Slider 4",
+    "20",
+    "21",
+    "22",
+    "23",
+    "24",
+    "25",
+    "26",
+    "27",
+    "28",
+    "29",
+    "30",
+    "31",
+    "32 Bank Select LSB",
+    "33 Mod Wheel LSB",
+    "34 Breath LSB",
+    "35",
+    "36 Foot Pedal LSB",
+    "37 Portamento LSB",
+    "38 Data Entry LSB",
+    "39 Volume LSB",
+    "40 Balance LSB",
+    "41",
+    "42 Pan Position LSB",
+    "43 Expression LSB",
+    "44 Control 1 LSB",
+    "45 Control 2 LSB",
+    "46",
+    "47",
+    "48",
+    "49",
+    "50",
+    "51",
+    "52",
+    "53",
+    "54",
+    "55",
+    "56",
+    "57",
+    "58",
+    "59",
+    "60",
+    "61",
+    "62",
+    "63",
+    "64 Hold Pedal (on/off)",
+    "65 Portamento (on/off)",
+    "66 Sostenuto (on/off)",
+    "67 Soft Pedal (on/off)",
+    "68 Legato Pedal (on/off)",
+    "69 Hold 2 Pedal (on/off)",
+    "70 Sound Variation",
+    "71 Timbre/Resonance",
+    "72 Sound Release",
+    "73 Sound Attack",
+    "74 Brightness/Cutoff Freq",
+    "75 Sound Control 6",
+    "76 Sound Control 7",
+    "77 Sound Control 8",
+    "78 Sound Control 9",
+    "79 Sound Control 10",
+    "80 GP Button 1 (on/off)",
+    "81 GP Button 2 (on/off)",
+    "82 GP Button 3 (on/off) 83 GP Button 4 (on/off)",
+    "83",
+    "84",
+    "85",
+    "86",
+    "87",
+    "88",
+    "89",
+    "90",
+    "91 Effects Level",
+    "92 Tremolo Level",
+    "93 Chorus Level",
+    "94 Celeste Level",
+    "95 Phaser Level",
+    "96 Data Button Inc",
+    "97 Data Button Dec",
+    "98 Non-Reg Parm LSB",
+    "99 Non-Reg Parm MSB 100 Reg Parm LSB",
+    "101 Reg Parm MSB",
+    "102",
+    "103",
+    "104",
+    "105",
+    "106",
+    "107",
+    "108",
+    "109",
+    "110",
+    "111",
+    "112",
+    "113",
+    "114",
+    "115",
+    "116",
+    "117",
+    "118",
+    "119",
+    ------
+    "00/32 Bank Select 14-bit 01/33 Mod Wheel 14-bit",
+    "02/34 Breath 14-bit",
+    "03/35 14-bit",
+    "04/36 Foot Pedal 14-bit",
+    "05/37 Portamento 14-bit",
+    "06/38 Data Entry 14-bit",
+    "07/39 Volume 14-bit",
+    "08/40 Balance 14-bit",
+    "09/41 14-bit",
+    "10/42 Pan Position 14-bit",
+    "11/43 Expression 14-bit",
+    "12/44 Control 1 14-bit",
+    "13/45 Control 2 14-bit",
+    "14/46 14-bit",
+    "15/47 14-bit",
+    "16/48 GP Slider 1 14-bit",
+    "17/49 GP Slider 2 14-bit",
+    "18/50 GP Slider 3 14-bit",
+    "19/51 GP Slider 4 14-bit",
+    "20/52 14-bit",
+    "21/53 14-bit",
+    "22/54 14-bit",
+    "23/55 14-bit",
+    "24/56 14-bit",
+    "25/57 14-bit",
+    "26/58 14-bit",
+    "27/59 14-bit",
+    "28/60 14-bit",
+    "29/61 14-bit",
+    "30/62 14-bit",
+    "31/63 14-bit",
+}
+
+-- local CC14_LIST = {
+--     "00/32 Bank Select 14-bit 01/33 Mod Wheel 14-bit",
+--     "02/34 Breath 14-bit",
+--     "03/35 14-bit",
+--     "04/36 Foot Pedal 14-bit",
+--     "05/37 Portamento 14-bit",
+--     "06/38 Data Entry 14-bit",
+--     "07/39 Volume 14-bit",
+--     "08/40 Balance 14-bit",
+--     "09/41 14-bit",
+--     "10/42 Pan Position 14-bit",
+--     "11/43 Expression 14-bit",
+--     "12/44 Control 1 14-bit",
+--     "13/45 Control 2 14-bit",
+--     "14/46 14-bit",
+--     "15/47 14-bit",
+--     "16/48 GP Slider 1 14-bit",
+--     "17/49 GP Slider 2 14-bit",
+--     "18/50 GP Slider 3 14-bit",
+--     "19/51 GP Slider 4 14-bit",
+--     "20/52 14-bit",
+--     "21/53 14-bit",
+--     "22/54 14-bit",
+--     "23/55 14-bit",
+--     "24/56 14-bit",
+--     "25/57 14-bit",
+--     "26/58 14-bit",
+--     "27/59 14-bit",
+--     "28/60 14-bit",
+--     "29/61 14-bit",
+--     "30/62 14-bit",
+--     "31/63 14-bit",
+-- }
+
+local function MidiLaneSelector()
+    local txt_w = r.ImGui_CalcTextSize(ctx, CC_LIST[cur_cc_item])
+    local w = txt_w + 25
+    if r.ImGui_BeginChild(ctx, "laneeeee", w, 25) then
+        if r.ImGui_BeginMenu(ctx, CC_LIST[cur_cc_item], true) then
+            for i = 0, -10, -1 do
+                if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
+                    cur_cc_item = i
+                    SWITCH_PIE = i == 0 and PIES["midilane"] or MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+                end
+                if i == 0 or i == -10 then r.ImGui_Separator(ctx) end
+            end
+            -- end
+            if r.ImGui_BeginMenu(ctx, "CC 0-30", true) then
+                for i = 1, 30 do
+                    if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
+                        cur_cc_item = i
+                        SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+                    end
+                end
+                r.ImGui_EndMenu(ctx)
+            end
+            if r.ImGui_BeginMenu(ctx, "CC 30-60", true) then
+                for i = 30, 60 do
+                    if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
+                        cur_cc_item = i
+                        SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+                    end
+                end
+                r.ImGui_EndMenu(ctx)
+            end
+            if r.ImGui_BeginMenu(ctx, "CC 60-90", true) then
+                for i = 60, 90 do
+                    if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
+                        cur_cc_item = i
+                        SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+
+                    end
+                end
+                r.ImGui_EndMenu(ctx)
+            end
+            if r.ImGui_BeginMenu(ctx, "CC 90-119", true) then
+                for i = 90, 119 do
+                    if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
+                        cur_cc_item = i
+                        SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+
+                    end
+                end
+                r.ImGui_EndMenu(ctx)
+            end
+            if r.ImGui_BeginMenu(ctx, "CC 14-Bit", true) then
+                for i = 120, #CC_LIST do
+                    if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
+                        cur_cc_item = i
+                        SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+                    end
+                end
+                r.ImGui_EndMenu(ctx)
+            end
+            r.ImGui_EndMenu(ctx)
+        end
+        r.ImGui_EndChild(ctx)
+    end
+end
+
 local function Pie()
     if STATE == "SETTINGS" then return end
     r.ImGui_BeginGroup(ctx)
@@ -1169,6 +1477,9 @@ local function Pie()
                 table.insert(CUR_PIE, MENUS[#MENUS])
                 CUR_PIE.selected = #CUR_PIE
                 UPDATE_FILTER = true
+            end
+            if menu_items[context_cur_item][2] == "MIDI LANE" then
+                MidiLaneSelector()
             end
         end
         local WW, WH = r.ImGui_GetWindowSize(ctx)
@@ -1305,11 +1616,13 @@ local function Delete()
     if REMOVE then
         if REMOVE.tbl[REMOVE.i].menu then
             -- REMOVE GUID REFERENCE WHEN ALT CLICK MENU
+            if REMOVE.tbl.guid_list then
             for j = #REMOVE.tbl.guid_list, 1, -1 do
                 if REMOVE.tbl.guid_list[j] == REMOVE.tbl[REMOVE.i].guid then
                     table.remove(REMOVE.tbl.guid_list, j)
                 end
             end
+        end
         end
         table.remove(REMOVE.tbl, REMOVE.i)
         REMOVE.tbl.selected = nil

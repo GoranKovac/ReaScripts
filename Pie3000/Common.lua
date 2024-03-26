@@ -18,6 +18,7 @@ FLT_MIN, FLT_MAX = r.ImGui_NumericLimits_Float()
 
 menu_file = script_path .. "menu_file.txt"
 pie_file = script_path .. "pie_file.txt"
+midi_cc_file = script_path .. "midi_cc_file.txt"
 png_path = "/Data/toolbar_icons/"
 png_path_150 = "/Data/toolbar_icons/150/"
 png_path_200 = "/Data/toolbar_icons/200/"
@@ -111,15 +112,15 @@ function Release()
 end
 
 local cc_lanes = {
-    [-1] = "default",
+    [-1]    = "global",
     [0x200] = "velocity",
     [0x201] = "pitch",
     [0x202] = "program",
     [0x203] = "channel pressure",
     [0x204] = "bank/program select",
-    [0x205] = "text",
+    [0x205] = "text events",
     [0x206] = "sysex",
-    [0x207] = "off velocit",
+    [0x207] = "off velocity",
     [0x208] = "notation events",
     [0x210] = "media item lane",
 }
@@ -130,7 +131,7 @@ local function MidiLaneDetect(hwnd)
     r.JS_WindowMessage_Send(mouse_wnd, "WM_LBUTTONDOWN", 1, 0, x, y)
     r.JS_WindowMessage_Send(mouse_wnd, "WM_LBUTTONUP", 0, 0, x, y)
     local lane = r.MIDIEditor_GetSetting_int(hwnd, "last_clicked_cc_lane")
-    local sel_lane = "default"
+    local sel_lane = "global"
 
     if cc_lanes[lane] then
         sel_lane = cc_lanes[lane]
@@ -209,16 +210,16 @@ function DetectMIDIContext()
     -- TAKE SCREENSHOT OF THE THE RIGHT SCROLLBAR
     local function takeScreenshot(window)
         --local retval, w, h = r.JS_Window_GetClientSize( window )
-        local retval, left, top, right, bottom = r.JS_Window_GetRect( window )
-        local w, h = right - left, bottom-top
+        local retval, left, top, right, bottom = r.JS_Window_GetRect(window)
+        local w, h = right - left, bottom - top
         local bot_px
         if retval then
-            --local srcDC = r.JS_GDI_GetClientDC(window)
-            local srcDC = r.JS_GDI_GetWindowDC( window )
+            local srcDC = r.JS_GDI_GetClientDC(window)
+            --local srcDC = r.JS_GDI_GetWindowDC( window )
             local destBmp = r.JS_LICE_CreateBitmap(true, 17, h)
             local destDC = r.JS_LICE_GetDC(destBmp)
-            r.JS_GDI_Blit(destDC, 0, 0, srcDC, w-17, 0, w-17, h)
-            bot_px = FasterSearch(destBmp, GetPixel( destBmp, 1, 64 ), 65)
+            r.JS_GDI_Blit(destDC, 0, 0, srcDC, w - 17, 0, w - 17, h)
+            bot_px = FasterSearch(destBmp, GetPixel(destBmp, 0, 64), 65)
             --bot_px = BinaryPixelSearch(destBmp, GetPixel( destBmp, 1, 1 ), w, 63, h)
             --bot_px = CalculateLanes(destBmp, w, h)
             r.JS_GDI_ReleaseDC(window, srcDC)
@@ -228,12 +229,12 @@ function DetectMIDIContext()
     end
 
     local HWND = r.MIDIEditor_GetActive()
-    local child = r.JS_Window_FindChildByID(HWND, MIDI_WND_IDS[2].id)
-    local bot_px = takeScreenshot(child)
+    local child_hwnd = r.JS_Window_FindChildByID(HWND, MIDI_WND_IDS[2].id)
+    local bot_px = takeScreenshot(child_hwnd)
 
     local MIDI_SIZE = {}
     --for n in ipairs(MIDI_WND_IDS) do
-    local child_hwnd = r.JS_Window_FindChildByID(HWND, MIDI_WND_IDS[2].id)
+    --local child_hwnd = r.JS_Window_FindChildByID(HWND, MIDI_WND_IDS[2].id)
     local retval, left, top, right, bottom = r.JS_Window_GetRect(child_hwnd)
     if IsInside(left - 2, top + 63, right, top + bot_px - 2) then
         --return MIDI_WND_IDS[n].name == "midiview" and "midi" or MIDI_WND_IDS[n].name
@@ -247,8 +248,10 @@ function DetectMIDIContext()
     end
     -- LANES (WHOLE SECTION)
     if IsInside(MIDI_SIZE[1], MIDI_SIZE[2] + bot_px - 3, MIDI_SIZE[3], MIDI_SIZE[2] + MIDI_SIZE[4]) then
-        LANE_NAME = MidiLaneDetect(HWND)
-        return "midilane"
+        MIDI_LANE_CONTEXT = true     
+        return MidiLaneDetect(HWND)
+        --r.ShowConsoleMsg(LANE_NAME .. "\n")
+        --return "midilane"
     end
 end
 
