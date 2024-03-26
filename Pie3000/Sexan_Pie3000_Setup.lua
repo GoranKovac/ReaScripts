@@ -55,173 +55,12 @@ local DEFAULT_CC_PIE = {
     ["media item lane"] = { RADIUS = RADIUS_START, name = "MEDIA ITEM LANE", guid = r.genGuid() , is_midi = true},
 }
 
-local CC_LIST = {
-    [0] = "Main",
-    [-1] = "Velocity",
-    [-2] = "Off Velocity",
-    [-3] = "Pitch",
-    [-4] = "Program",
-    [-5] = "Channel Pressure",
-    [-6] = "Bank/Program Select",
-    [-7] = "Text Events",
-    [-8] = "Notation Events",
-    [-9] = "Sysex",
-    [-10] = "Media Item Lane",
-    ------------------------------------
-    "00 Bank Select MSB",
-    "01",
-    "Mod Wheel MSB",
-    "02 Breath MSB",
-    "03",
-    "04 Foot Pedal MSB",
-    "05 Portamento MSB",
-    "06 Data Entry MSB",
-    "07 Volume MSB",
-    "08 Balance MSB",
-    "09",
-    "10 Pan Position MSB",
-    "11 Expression MSB",
-    "12 Control 1 MSB",
-    "13 Control 2 MSB",
-    "14",
-    "15",
-    "16 GP Slider 1",
-    "17 GP Slider 2",
-    "18 GP Slider 3",
-    "19 GP Slider 4",
-    "20",
-    "21",
-    "22",
-    "23",
-    "24",
-    "25",
-    "26",
-    "27",
-    "28",
-    "29",
-    "30",
-    "31",
-    "32 Bank Select LSB",
-    "33 Mod Wheel LSB",
-    "34 Breath LSB",
-    "35",
-    "36 Foot Pedal LSB",
-    "37 Portamento LSB",
-    "38 Data Entry LSB",
-    "39 Volume LSB",
-    "40 Balance LSB",
-    "41",
-    "42 Pan Position LSB",
-    "43 Expression LSB",
-    "44 Control 1 LSB",
-    "45 Control 2 LSB",
-    "46",
-    "47",
-    "48",
-    "49",
-    "50",
-    "51",
-    "52",
-    "53",
-    "54",
-    "55",
-    "56",
-    "57",
-    "58",
-    "59",
-    "60",
-    "61",
-    "62",
-    "63",
-    "64 Hold Pedal (on/off)",
-    "65 Portamento (on/off)",
-    "66 Sostenuto (on/off)",
-    "67 Soft Pedal (on/off)",
-    "68 Legato Pedal (on/off)",
-    "69 Hold 2 Pedal (on/off)",
-    "70 Sound Variation",
-    "71 Timbre/Resonance",
-    "72 Sound Release",
-    "73 Sound Attack",
-    "74 Brightness/Cutoff Freq",
-    "75 Sound Control 6",
-    "76 Sound Control 7",
-    "77 Sound Control 8",
-    "78 Sound Control 9",
-    "79 Sound Control 10",
-    "80 GP Button 1 (on/off)",
-    "81 GP Button 2 (on/off)",
-    "82 GP Button 3 (on/off) 83 GP Button 4 (on/off)",
-    "83",
-    "84",
-    "85",
-    "86",
-    "87",
-    "88",
-    "89",
-    "90",
-    "91 Effects Level",
-    "92 Tremolo Level",
-    "93 Chorus Level",
-    "94 Celeste Level",
-    "95 Phaser Level",
-    "96 Data Button Inc",
-    "97 Data Button Dec",
-    "98 Non-Reg Parm LSB",
-    "99 Non-Reg Parm MSB 100 Reg Parm LSB",
-    "101 Reg Parm MSB",
-    "102",
-    "103",
-    "104",
-    "105",
-    "106",
-    "107",
-    "108",
-    "109",
-    "110",
-    "111",
-    "112",
-    "113",
-    "114",
-    "115",
-    "116",
-    "117",
-    "118",
-    "119",
-    ------
-    "00/32 Bank Select 14-bit 01/33 Mod Wheel 14-bit",
-    "02/34 Breath 14-bit",
-    "03/35 14-bit",
-    "04/36 Foot Pedal 14-bit",
-    "05/37 Portamento 14-bit",
-    "06/38 Data Entry 14-bit",
-    "07/39 Volume 14-bit",
-    "08/40 Balance 14-bit",
-    "09/41 14-bit",
-    "10/42 Pan Position 14-bit",
-    "11/43 Expression 14-bit",
-    "12/44 Control 1 14-bit",
-    "13/45 Control 2 14-bit",
-    "14/46 14-bit",
-    "15/47 14-bit",
-    "16/48 GP Slider 1 14-bit",
-    "17/49 GP Slider 2 14-bit",
-    "18/50 GP Slider 3 14-bit",
-    "19/51 GP Slider 4 14-bit",
-    "20/52 14-bit",
-    "21/53 14-bit",
-    "22/54 14-bit",
-    "23/55 14-bit",
-    "24/56 14-bit",
-    "25/57 14-bit",
-    "26/58 14-bit",
-    "27/59 14-bit",
-    "28/60 14-bit",
-    "29/61 14-bit",
-    "30/62 14-bit",
-    "31/63 14-bit",
-}
+local CC_LIST = GetCCList()
 
+for i = 1, #CC_LIST do
+    local name = CC_LIST[i]
+    DEFAULT_CC_PIE[name:lower()] = { RADIUS = RADIUS_START, name = name:upper(), guid = r.genGuid(), is_midi = true}
+end
 
 local cur_cc_item = 0
 local context_cur_item = 1
@@ -268,6 +107,14 @@ end
 
 local MIDI_CC_PIES = ReadFromFile(midi_cc_file) or Deepcopy(DEFAULT_CC_PIE)
 
+--! REMOVE LATER
+if not MIDI_CC_PIES["00 Bank Select MSB"] then
+    for i = 1, #CC_LIST do
+        local name = CC_LIST[i]
+        MIDI_CC_PIES[name:lower()] = { RADIUS = RADIUS_START, name = name:upper(), guid = r.genGuid(), is_midi = true}
+    end
+end
+--! REMOVE LATER
 for k,v in pairs(MIDI_CC_PIES) do
     v.is_midi = true
 end
@@ -1345,58 +1192,13 @@ local function MenuEditList(pie)
     r.ImGui_SameLine(ctx)
 end
 
--- local CC_DEFAULT = {
---     [0] = "Global",
---     [-1] = "Velocity",
---     [-2] = "Off Velocity",
---     [-3] = "Pitch",
---     [-4] = "Program",
---     [-5] = "Channel Pressure",
---     [-6] = "Bank/Program Select",
---     [-7] = "Text Events",
---     [-8] = "Notation Events",
---     [-9] = "Sysex",
---     [-10] = "Media Item Lane",
--- }
-
--- local CC14_LIST = {
---     "00/32 Bank Select 14-bit 01/33 Mod Wheel 14-bit",
---     "02/34 Breath 14-bit",
---     "03/35 14-bit",
---     "04/36 Foot Pedal 14-bit",
---     "05/37 Portamento 14-bit",
---     "06/38 Data Entry 14-bit",
---     "07/39 Volume 14-bit",
---     "08/40 Balance 14-bit",
---     "09/41 14-bit",
---     "10/42 Pan Position 14-bit",
---     "11/43 Expression 14-bit",
---     "12/44 Control 1 14-bit",
---     "13/45 Control 2 14-bit",
---     "14/46 14-bit",
---     "15/47 14-bit",
---     "16/48 GP Slider 1 14-bit",
---     "17/49 GP Slider 2 14-bit",
---     "18/50 GP Slider 3 14-bit",
---     "19/51 GP Slider 4 14-bit",
---     "20/52 14-bit",
---     "21/53 14-bit",
---     "22/54 14-bit",
---     "23/55 14-bit",
---     "24/56 14-bit",
---     "25/57 14-bit",
---     "26/58 14-bit",
---     "27/59 14-bit",
---     "28/60 14-bit",
---     "29/61 14-bit",
---     "30/62 14-bit",
---     "31/63 14-bit",
--- }
-
 local function MidiLaneSelector()
     local txt_w = r.ImGui_CalcTextSize(ctx, CC_LIST[cur_cc_item])
     local w = txt_w + 25
     if r.ImGui_BeginChild(ctx, "laneeeee", w, 25) then
+        local child_hovered = r.ImGui_IsWindowHovered(ctx,
+            r.ImGui_HoveredFlags_ChildWindows() |  r.ImGui_HoveredFlags_AllowWhenBlockedByPopup() |
+            r.ImGui_HoveredFlags_AllowWhenBlockedByActiveItem())
         if r.ImGui_BeginMenu(ctx, CC_LIST[cur_cc_item], true) then
             for i = 0, -10, -1 do
                 if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
@@ -1405,53 +1207,56 @@ local function MidiLaneSelector()
                 end
                 if i == 0 or i == -10 then r.ImGui_Separator(ctx) end
             end
-            -- if r.ImGui_BeginMenu(ctx, "CC 0-30", true) then
-            --     for i = 1, 30 do
-            --         if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
-            --             cur_cc_item = i
-            --             SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
-            --         end
-            --     end
-            --     r.ImGui_EndMenu(ctx)
-            -- end
-            -- if r.ImGui_BeginMenu(ctx, "CC 30-60", true) then
-            --     for i = 30, 60 do
-            --         if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
-            --             cur_cc_item = i
-            --             SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
-            --         end
-            --     end
-            --     r.ImGui_EndMenu(ctx)
-            -- end
-            -- if r.ImGui_BeginMenu(ctx, "CC 60-90", true) then
-            --     for i = 60, 90 do
-            --         if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
-            --             cur_cc_item = i
-            --             SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+            if r.ImGui_BeginMenu(ctx, "CC 0-30", true) then
+                for i = 1, 30 do
+                    if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
+                        cur_cc_item = i
+                        SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+                    end
+                end
+                r.ImGui_EndMenu(ctx)
+            end
+            if r.ImGui_BeginMenu(ctx, "CC 30-60", true) then
+                for i = 30, 60 do
+                    if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
+                        cur_cc_item = i
+                        SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+                    end
+                end
+                r.ImGui_EndMenu(ctx)
+            end
+            if r.ImGui_BeginMenu(ctx, "CC 60-90", true) then
+                for i = 60, 90 do
+                    if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
+                        cur_cc_item = i
+                        SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
 
-            --         end
-            --     end
-            --     r.ImGui_EndMenu(ctx)
-            -- end
-            -- if r.ImGui_BeginMenu(ctx, "CC 90-119", true) then
-            --     for i = 90, 119 do
-            --         if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
-            --             cur_cc_item = i
-            --             SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+                    end
+                end
+                r.ImGui_EndMenu(ctx)
+            end
+            if r.ImGui_BeginMenu(ctx, "CC 90-119", true) then
+                for i = 90, 119 do
+                    if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
+                        cur_cc_item = i
+                        SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
 
-            --         end
-            --     end
-            --     r.ImGui_EndMenu(ctx)
-            -- end
-            -- if r.ImGui_BeginMenu(ctx, "CC 14-Bit", true) then
-            --     for i = 120, #CC_LIST do
-            --         if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
-            --             cur_cc_item = i
-            --             SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
-            --         end
-            --     end
-            --     r.ImGui_EndMenu(ctx)
-            -- end
+                    end
+                end
+                r.ImGui_EndMenu(ctx)
+            end
+            if r.ImGui_BeginMenu(ctx, "CC 14-Bit", true) then
+                for i = 120, #CC_LIST do
+                    if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
+                        cur_cc_item = i
+                        SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+                    end
+                end
+                r.ImGui_EndMenu(ctx)
+            end
+            if not child_hovered then
+                r.ImGui_CloseCurrentPopup(ctx)
+            end
             r.ImGui_EndMenu(ctx)
         end
         r.ImGui_EndChild(ctx)

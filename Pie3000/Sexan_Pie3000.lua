@@ -1,10 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.32.77
+-- @version 0.32.80
 -- @changelog
---  Link Menus with new MIDI_CC_PIES
---  Fix breadcrumbs in MIDI_LANES to go to new parent
+--  Add all 5000 remaining CC lanes
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
