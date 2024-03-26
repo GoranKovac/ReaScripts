@@ -1,14 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.32.75
+-- @version 0.32.76
 -- @changelog
---  Improve Midi Lane tracing for new target
---  Potential small performance increase (GUI startup) in MIDI (removed one JS_Window_FindChildByID)
---  Fix Crash when ALT deleting menu when created from + (PIE TAB)
---  Added midi_cc_file.txt for MIDI CC PIES
---  Added Midi CC context (Main ones only)
---  Added option to MIDI LANE Context - "Use as Default for all CC Lane Context" to override all context
+--  Write to all MIDI context is_midi flag (open/close setup script)
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -294,7 +289,7 @@ local function ExecuteAction(action)
         if CLOSE and ACTIVATE_ON_CLOSE then
             if LAST_TRIGGERED ~= action then
                 LAST_TRIGGERED = action
-                if PIES[INFO].name == "MIDI" then
+                if PIE_MENU.is_midi then
                     r.MIDIEditor_OnCommand(r.MIDIEditor_GetActive(), action)
                 else
                     r.Main_OnCommand(action, 0)
@@ -304,7 +299,7 @@ local function ExecuteAction(action)
         if r.ImGui_IsMouseReleased(ctx, 0) then
             local START_ACTION_TIME = r.time_precise()
             LAST_TRIGGERED = action
-            if PIES[INFO].name == "MIDI" then
+            if PIE_MENU.is_midi then
                 r.MIDIEditor_OnCommand(r.MIDIEditor_GetActive(), action)
             else
                 r.Main_OnCommand(action, 0)

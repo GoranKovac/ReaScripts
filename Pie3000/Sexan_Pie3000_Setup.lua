@@ -36,23 +36,23 @@ local DEFAULT_PIE = {
     ["itemmidi"] = { RADIUS = RADIUS_START, name = "MIDI ITEM", guid = r.genGuid() },
     ["trans"] = { RADIUS = RADIUS_START, name = "TRANSPORT", guid = r.genGuid() },
     ["ruler"] = { RADIUS = RADIUS_START, name = "RULER", guid = r.genGuid() },
-    ["midi"] = { RADIUS = RADIUS_START, name = "MIDI", guid = r.genGuid() },
-    ["midiruler"] = { RADIUS = RADIUS_START, name = "MIDI RULER", guid = r.genGuid() },
-    ["midilane"] = { RADIUS = RADIUS_START, name = "MIDI LANE", guid = r.genGuid(), as_global = true },
+    ["midi"] = { RADIUS = RADIUS_START, name = "MIDI", guid = r.genGuid(), is_midi = true},
+    ["midiruler"] = { RADIUS = RADIUS_START, name = "MIDI RULER", guid = r.genGuid(), is_midi = true},
+    ["midilane"] = { RADIUS = RADIUS_START, name = "MIDI LANE", guid = r.genGuid(), as_global = true,is_midi = true },
     ["plugin"] = { RADIUS = RADIUS_START, name = "PLUGIN", guid = r.genGuid() },
 }
 
 local DEFAULT_CC_PIE = {
-    ["velocity"] = { RADIUS = RADIUS_START, name = "VELOCITY", guid = r.genGuid() },
-    ["off velocity"] = { RADIUS = RADIUS_START, name = "OFF VELOCITY", guid = r.genGuid() },
-    ["pitch"] = { RADIUS = RADIUS_START, name = "PITCH", guid = r.genGuid() },
-    ["program"] = { RADIUS = RADIUS_START, name = "PROGRAM", guid = r.genGuid() },
-    ["channel pressure"] = { RADIUS = RADIUS_START, name = "CHANNEL PRESSURE", guid = r.genGuid() },
-    ["bank/program select"] = { RADIUS = RADIUS_START, name = "BANK/PROGRAM SELECT", guid = r.genGuid() },
+    ["velocity"] = { RADIUS = RADIUS_START, name = "VELOCITY", guid = r.genGuid(), is_midi = true},
+    ["off velocity"] = { RADIUS = RADIUS_START, name = "OFF VELOCITY", guid = r.genGuid() , is_midi = true},
+    ["pitch"] = { RADIUS = RADIUS_START, name = "PITCH", guid = r.genGuid(), is_midi = true },
+    ["program"] = { RADIUS = RADIUS_START, name = "PROGRAM", guid = r.genGuid() , is_midi = true},
+    ["channel pressure"] = { RADIUS = RADIUS_START, name = "CHANNEL PRESSURE", guid = r.genGuid() , is_midi = true},
+    ["bank/program select"] = { RADIUS = RADIUS_START, name = "BANK/PROGRAM SELECT", guid = r.genGuid() , is_midi = true},
     ["text events"] = { RADIUS = RADIUS_START, name = "TEXT EVENTS", guid = r.genGuid() },
-    ["notation events"] = { RADIUS = RADIUS_START, name = "NOTATION EVENTS", guid = r.genGuid() },
+    ["notation events"] = { RADIUS = RADIUS_START, name = "NOTATION EVENTS", guid = r.genGuid() , is_midi = true},
     ["sysex"] = { RADIUS = RADIUS_START, name = "SYSEX", guid = r.genGuid() },
-    ["media item lane"] = { RADIUS = RADIUS_START, name = "MEDIA ITEM LANE", guid = r.genGuid() },
+    ["media item lane"] = { RADIUS = RADIUS_START, name = "MEDIA ITEM LANE", guid = r.genGuid() , is_midi = true},
 }
 
 local cur_cc_item = 0
@@ -99,6 +99,13 @@ end
 
 
 local MIDI_CC_PIES = ReadFromFile(midi_cc_file) or Deepcopy(DEFAULT_CC_PIE)
+
+for k,v in pairs(MIDI_CC_PIES) do
+    v.is_midi = true
+end
+PIES["midi"].is_midi = true
+PIES["midiruler"].is_midi = true
+PIES["midilane"].is_midi = true
 
 
 local MENUS = ReadFromFile(menu_file) or {}
@@ -1183,7 +1190,7 @@ end
 -- }
 
 local CC_LIST = {
-    [0] = "Global",
+    [0] = "Main",
     [-1] = "Velocity",
     [-2] = "Off Velocity",
     [-3] = "Pitch",
