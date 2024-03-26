@@ -110,6 +110,7 @@ function Release()
     r.JS_VKeys_Intercept(KEY, -1)
     r.SNM_SetIntConfigVar("alwaysallowkb", ALLOW_KB_VAR)
 end
+
 local CC_LIST = {
     [0] = "Main",
     [-1] = "Velocity",
@@ -242,7 +243,7 @@ local CC_LIST = {
     "117",
     "118",
     "119",
-    ------ 
+    ------
     "00/32 Bank Select 14-bit",
     "01/33 Mod Wheel 14-bit",
     "02/34 Breath 14-bit",
@@ -419,7 +420,7 @@ function DetectMIDIContext()
     end
     -- LANES (WHOLE SECTION)
     if IsInside(MIDI_SIZE[1], MIDI_SIZE[2] + bot_px - 3, MIDI_SIZE[3], MIDI_SIZE[2] + MIDI_SIZE[4]) then
-        MIDI_LANE_CONTEXT = true     
+        MIDI_LANE_CONTEXT = true
         return MidiLaneDetect(HWND)
         --r.ShowConsoleMsg(LANE_NAME .. "\n")
         --return "midilane"

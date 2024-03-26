@@ -108,7 +108,7 @@ end
 local MIDI_CC_PIES = ReadFromFile(midi_cc_file) or Deepcopy(DEFAULT_CC_PIE)
 
 --! REMOVE LATER
-if not MIDI_CC_PIES["00 Bank Select MSB"] then
+if not MIDI_CC_PIES["00 bank select msb"] then
     for i = 1, #CC_LIST do
         local name = CC_LIST[i]
         MIDI_CC_PIES[name:lower()] = { RADIUS = RADIUS_START, name = name:upper(), guid = r.genGuid(), is_midi = true}

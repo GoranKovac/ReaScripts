@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.32.80
+-- @version 0.32.81
 -- @changelog
---  Add all 5000 remaining CC lanes
+--  Dont delete them... we just added them
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
