@@ -21,6 +21,7 @@ SEL_TBL = {}
 local stripped_names = {}
 
 local COLOR = {
+    ["bg"]           = 0x111111FF,
     ["n"]            = 0x315e94ff,
     ["Container"]    = 0x49cc85FF,
     ["enclose"]      = 0x192432ff,

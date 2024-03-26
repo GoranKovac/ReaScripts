@@ -592,6 +592,7 @@ local function StoreSettings()
             bypass_color = COLOR["bypass"],
             offline_color = COLOR["offline"],
             anim_color = COLOR["sine_anim"],
+            background = COLOR["bg"],
         }
     )
     r.SetExtState("PARANORMALFX2", "SETTINGS", data, true)
@@ -1031,7 +1032,7 @@ function DrawUserSettings()
         settings_min_h = settings_min_h + 157
     end
     if CLH_COLORING then
-        settings_min_h = settings_min_h + 207
+        settings_min_h = settings_min_h + 230
     end
     if CLH_BEHAVIORS then
         settings_min_h = settings_min_h + 157
@@ -1100,6 +1101,8 @@ function DrawUserSettings()
         if CLH_COLORING then
             --_, AUTO_COLORING = r.ImGui_Checkbox(ctx, "AUTO COLORING", AUTO_COLORING)
             --r.ImGui_Separator(ctx)
+            _, COLOR["bg"] = r.ImGui_ColorEdit4(ctx, "BG COLOR", COLOR["bg"], r.ImGui_ColorEditFlags_NoInputs())
+            --if AUTO_COLORING then r.ImGui_BeginDisabled(ctx, true) end
             _, COLOR["wire"] = r.ImGui_ColorEdit4(ctx, "WIRE COLOR", COLOR["wire"], r.ImGui_ColorEditFlags_NoInputs())
             --if AUTO_COLORING then r.ImGui_BeginDisabled(ctx, true) end
             _, COLOR["n"] = r.ImGui_ColorEdit4(ctx, "FX COLOR", COLOR["n"], r.ImGui_ColorEditFlags_NoInputs())
@@ -1163,6 +1166,7 @@ function DrawUserSettings()
             ADD_BTN_W = 55
             ADD_BTN_H = 14
             local NEW_COLOR = {
+                ["bg"]           = 0x111111FF,
                 ["n"]            = 0x315e94ff,
                 ["Container"]    = 0x49cc85FF,
                 ["enclose"]      = 0x192432ff,

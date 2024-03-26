@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.37.4
+-- @version 1.37.5
 -- @changelog
---  Check if CANVAS exists before drawing
+--  Added user color for BG
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -216,6 +216,7 @@ if r.HasExtState("PARANORMALFX2", "SETTINGS") then
             COLOR["knob_drywet"] = storedTable.drywet_color
             COLOR["sine_anim"] = storedTable.anim_color
             COLOR["offline"] = storedTable.offline_color and storedTable.offline_color or COLOR["offline"]
+            COLOR["bg"] = storedTable.background and storedTable.background or COLOR["bg"]
         end
     end
 end
@@ -432,7 +433,7 @@ local function Main()
     --     end
     -- end
 
-    ImGui.PushStyleColor(ctx, ImGui.Col_WindowBg(), 0x111111FF)
+    ImGui.PushStyleColor(ctx, ImGui.Col_WindowBg(), GetColorTbl()["bg"])
     ImGui.SetNextWindowSizeConstraints(ctx, 500, 500, FLT_MAX, FLT_MAX)
     ImGui.SetNextWindowSize(ctx, 500, 500, ImGui.Cond_FirstUseEver())
 
