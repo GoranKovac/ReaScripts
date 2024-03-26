@@ -1,7 +1,7 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.32.74
+-- @version 0.32.75
 -- @changelog
 --  Improve Midi Lane tracing for new target
 --  Potential small performance increase (GUI startup) in MIDI (removed one JS_Window_FindChildByID)

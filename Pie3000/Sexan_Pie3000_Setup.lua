@@ -1395,54 +1395,53 @@ local function MidiLaneSelector()
                 end
                 if i == 0 or i == -10 then r.ImGui_Separator(ctx) end
             end
+            -- if r.ImGui_BeginMenu(ctx, "CC 0-30", true) then
+            --     for i = 1, 30 do
+            --         if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
+            --             cur_cc_item = i
+            --             SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+            --         end
+            --     end
+            --     r.ImGui_EndMenu(ctx)
             -- end
-            if r.ImGui_BeginMenu(ctx, "CC 0-30", true) then
-                for i = 1, 30 do
-                    if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
-                        cur_cc_item = i
-                        SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
-                    end
-                end
-                r.ImGui_EndMenu(ctx)
-            end
-            if r.ImGui_BeginMenu(ctx, "CC 30-60", true) then
-                for i = 30, 60 do
-                    if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
-                        cur_cc_item = i
-                        SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
-                    end
-                end
-                r.ImGui_EndMenu(ctx)
-            end
-            if r.ImGui_BeginMenu(ctx, "CC 60-90", true) then
-                for i = 60, 90 do
-                    if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
-                        cur_cc_item = i
-                        SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+            -- if r.ImGui_BeginMenu(ctx, "CC 30-60", true) then
+            --     for i = 30, 60 do
+            --         if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
+            --             cur_cc_item = i
+            --             SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+            --         end
+            --     end
+            --     r.ImGui_EndMenu(ctx)
+            -- end
+            -- if r.ImGui_BeginMenu(ctx, "CC 60-90", true) then
+            --     for i = 60, 90 do
+            --         if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
+            --             cur_cc_item = i
+            --             SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
 
-                    end
-                end
-                r.ImGui_EndMenu(ctx)
-            end
-            if r.ImGui_BeginMenu(ctx, "CC 90-119", true) then
-                for i = 90, 119 do
-                    if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
-                        cur_cc_item = i
-                        SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+            --         end
+            --     end
+            --     r.ImGui_EndMenu(ctx)
+            -- end
+            -- if r.ImGui_BeginMenu(ctx, "CC 90-119", true) then
+            --     for i = 90, 119 do
+            --         if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
+            --             cur_cc_item = i
+            --             SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
 
-                    end
-                end
-                r.ImGui_EndMenu(ctx)
-            end
-            if r.ImGui_BeginMenu(ctx, "CC 14-Bit", true) then
-                for i = 120, #CC_LIST do
-                    if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
-                        cur_cc_item = i
-                        SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
-                    end
-                end
-                r.ImGui_EndMenu(ctx)
-            end
+            --         end
+            --     end
+            --     r.ImGui_EndMenu(ctx)
+            -- end
+            -- if r.ImGui_BeginMenu(ctx, "CC 14-Bit", true) then
+            --     for i = 120, #CC_LIST do
+            --         if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
+            --             cur_cc_item = i
+            --             SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+            --         end
+            --     end
+            --     r.ImGui_EndMenu(ctx)
+            -- end
             r.ImGui_EndMenu(ctx)
         end
         r.ImGui_EndChild(ctx)
