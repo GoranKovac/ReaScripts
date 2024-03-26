@@ -158,13 +158,13 @@ function DetectMIDIContext()
     end
     -- FAST
     local function FasterSearch(bmp, target, start_px)
-        local step = 20
+        local step = 10
         local bot
         local px_start = start_px
         while not bot do
             px_start = px_start + step
-            if GetPixel(bmp, 0, px_start) == target then
-                if GetPixel(bmp, 0, px_start - 1) ~= target then
+            if GetPixel(bmp, 0, px_start) ~= target then
+                if GetPixel(bmp, 0, px_start - 1) == target then
                     bot = px_start
                 end
                 step = -1
@@ -218,7 +218,7 @@ function DetectMIDIContext()
             local destBmp = r.JS_LICE_CreateBitmap(true, 17, h)
             local destDC = r.JS_LICE_GetDC(destBmp)
             r.JS_GDI_Blit(destDC, 0, 0, srcDC, w-17, 0, w-17, h)
-            bot_px = FasterSearch(destBmp, GetPixel( destBmp, 1, 1 ), 63)
+            bot_px = FasterSearch(destBmp, GetPixel( destBmp, 1, 64 ), 65)
             --bot_px = BinaryPixelSearch(destBmp, GetPixel( destBmp, 1, 1 ), w, 63, h)
             --bot_px = CalculateLanes(destBmp, w, h)
             r.JS_GDI_ReleaseDC(window, srcDC)

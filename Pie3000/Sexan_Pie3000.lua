@@ -1,10 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.32.72
+-- @version 0.32.73
 -- @changelog
---  Check if context info exist (prevents crashes on unknown data)
---  Fix Midi Lane tracing
+--  Improve Midi Lane tracing for new target
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
