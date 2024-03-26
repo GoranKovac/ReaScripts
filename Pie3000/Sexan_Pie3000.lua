@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.32.81
+-- @version 0.32.82
 -- @changelog
---  Dont delete them... we just added them
+--  Fix some missing ones and -1 order
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua

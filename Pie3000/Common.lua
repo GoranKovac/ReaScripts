@@ -223,7 +223,8 @@ local CC_LIST = {
     "96 Data Button Inc",
     "97 Data Button Dec",
     "98 Non-Reg Parm LSB",
-    "99 Non-Reg Parm MSB 100 Reg Parm LSB",
+    "99 Non-Reg Parm MSB",
+    "100 Reg Parm LSB",
     "101 Reg Parm MSB",
     "102",
     "103",
@@ -308,9 +309,9 @@ local function MidiLaneDetect(hwnd)
         sel_lane = cc_lanes[lane]
     else
         if lane < 128 then
-            sel_lane = CC_LIST[lane]:lower()
+            sel_lane = CC_LIST[lane+1]:lower()
         elseif lane > 255 then
-            local cc = lane - 0x100 + 120
+            local cc = lane - 0x100 + 121
             sel_lane = CC_LIST[cc]:lower()
         end
     end
