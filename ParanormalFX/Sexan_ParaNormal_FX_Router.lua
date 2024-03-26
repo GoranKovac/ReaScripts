@@ -1,18 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.37.3
+-- @version 1.37.4
 -- @changelog
---  Marquee select
---  Marquee + Shift adds to selection
---  Click selection (Shift, Ctrl)
---  Shift click - Adds to selection
---  Ctrl click - Adds/Removes to selection (toggle)
---  Click in empty area removes selection
---  Supports Delete (Delete key or ALT click), Bypass, Offline
---  Not Supported: Move,Copy
---  Disabled many UI elements while Marquee has over 2 selections
---  Added warning at top for MOVE/COPY not supported
+--  Check if CANVAS exists before drawing
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -482,7 +473,9 @@ local function Main()
         r.ImGui_PopFont(ctx)
         CollectFxData()
         r.ImGui_PushFont(ctx, SELECTED_FONT)
-        Draw()
+        if CANVAS then
+            Draw()
+        end
         r.ImGui_PopFont(ctx)
         UI()
         r.ImGui_PushFont(ctx, CUSTOM_FONT and SYSTEM_FONT_FACTORY or DEFAULT_FONT_FACTORY)
