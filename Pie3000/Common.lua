@@ -157,14 +157,14 @@ function DetectMIDIContext()
         end
     end
     -- FAST
-    local function FasterSearch(bmp, target, w, start_px)
+    local function FasterSearch(bmp, target, start_px)
         local step = 20
         local bot
         local px_start = start_px
         while not bot do
             px_start = px_start + step
-            if GetPixel(bmp, w - 1, px_start) == target then
-                if GetPixel(bmp, w - 1, px_start - 1) ~= target and GetPixel(bmp, w - 1, px_start - 2) ~= target then
+            if GetPixel(bmp, 0, px_start) == target then
+                if GetPixel(bmp, 0, px_start - 1) ~= target then
                     bot = px_start
                 end
                 step = -1
@@ -206,15 +206,19 @@ function DetectMIDIContext()
         return bot_px
     end
 
+    -- TAKE SCREENSHOT OF THE THE RIGHT SCROLLBAR
     local function takeScreenshot(window)
-        local retval, w, h = r.JS_Window_GetClientSize( window )
+        --local retval, w, h = r.JS_Window_GetClientSize( window )
+        local retval, left, top, right, bottom = r.JS_Window_GetRect( window )
+        local w, h = right - left, bottom-top
         local bot_px
         if retval then
-            local srcDC = r.JS_GDI_GetClientDC(window)
-            local destBmp = r.JS_LICE_CreateBitmap(true, w, h)
+            --local srcDC = r.JS_GDI_GetClientDC(window)
+            local srcDC = r.JS_GDI_GetWindowDC( window )
+            local destBmp = r.JS_LICE_CreateBitmap(true, 17, h)
             local destDC = r.JS_LICE_GetDC(destBmp)
-            r.JS_GDI_Blit(destDC, 0, 0, srcDC, 0, 0, w, h)
-            bot_px = FasterSearch(destBmp, GetPixel( destBmp, 1, 1 ), w, 63)
+            r.JS_GDI_Blit(destDC, 0, 0, srcDC, w-17, 0, w-17, h)
+            bot_px = FasterSearch(destBmp, GetPixel( destBmp, 1, 1 ), 63)
             --bot_px = BinaryPixelSearch(destBmp, GetPixel( destBmp, 1, 1 ), w, 63, h)
             --bot_px = CalculateLanes(destBmp, w, h)
             r.JS_GDI_ReleaseDC(window, srcDC)
@@ -224,7 +228,7 @@ function DetectMIDIContext()
     end
 
     local HWND = r.MIDIEditor_GetActive()
-    local child = r.JS_Window_FindChildByID(HWND, MIDI_WND_IDS[1].id)
+    local child = r.JS_Window_FindChildByID(HWND, MIDI_WND_IDS[2].id)
     local bot_px = takeScreenshot(child)
 
     local MIDI_SIZE = {}

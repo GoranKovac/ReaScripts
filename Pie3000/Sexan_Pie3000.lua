@@ -1,16 +1,10 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.32.71
+-- @version 0.32.72
 -- @changelog
---  ReaPack Adventures: The Return Of the Update
---  Remove JS_FindWindow from main script
---  Be gentle with splitter creation (validate before creating)
---  Increase performance with detecting midi lanes
---  Fix midi context vertical and horizontal boundaries ofset (2px)
---  Added option to toggle "Ignore FX chain keyboard shortcuts" in fx chains for Plugin context to work
---  Add Plugin Context
---  Add Midi item context
+--  Check if context info exist (prevents crashes on unknown data)
+--  Fix Midi Lane tracing
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -129,12 +123,15 @@ local function GetMouseContext()
     if item then
         info = r.TakeIsMIDI(take) and "itemmidi" or "item"
     end
-
-    info = info:match('^([^%.]+)')
-    return info, track, item
+    if info then
+        info = info:match('^([^%.]+)')
+        return info, track, item
+    end
 end
 
 local INFO, TRACK, ITEM = GetMouseContext()
+
+if not INFO then Release() return end
 
 PIE_MENU = STANDALONE_PIE or PIES[INFO]
 if not PIE_MENU then
