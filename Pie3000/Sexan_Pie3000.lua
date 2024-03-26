@@ -1,9 +1,10 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.32.76
+-- @version 0.32.77
 -- @changelog
---  Write to all MIDI context is_midi flag (open/close setup script)
+--  Link Menus with new MIDI_CC_PIES
+--  Fix breadcrumbs in MIDI_LANES to go to new parent
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
