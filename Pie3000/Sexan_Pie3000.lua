@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.32.86
+-- @version 0.32.87
 -- @changelog
---  Fix Midi lane tracing use windowDC instead of Client since on linux its not the same
+--  Trace only last pixel in midi window (to avoid DPI scaling errors)
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
