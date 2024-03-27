@@ -1,9 +1,10 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.32.82
+-- @version 0.32.83
 -- @changelog
---  Fix some missing ones and -1 order
+--  Add option to close on action activate
+--  Close on action activate only appears when Hold To Open is disabled
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -26,6 +27,8 @@ if CheckDeps() then return end
 ctx = r.ImGui_CreateContext('Pie XYZ', r.ImGui_ConfigFlags_NoSavedSettings())
 
 require('Common')
+
+--MENU = true
 
 MAIN_PROG = ANIMATION and 0.01 or 1
 CENTER_BTN_PROG = ANIMATION and 0.01 or 1
@@ -309,6 +312,11 @@ local function ExecuteAction(action)
             if AFTER_ACTION_TIME - START_ACTION_TIME > 0.1 then
                 r.JS_WindowMessage_Post(MAIN_HWND, "WM_KEYUP", KEY, 0, 0, 0)
             end
+            if not HOLD_TO_OPEN then
+                if CLOSE_ON_ACTIVATE then
+                    DONE = true
+                end
+            end
         elseif KEY_TRIGGER then
             LAST_TRIGGERED = action
             if PIES[INFO].name == "MIDI" then
@@ -317,6 +325,11 @@ local function ExecuteAction(action)
                 r.Main_OnCommand(action, 0)
             end
             KEY_TRIGGER = nil
+            if not HOLD_TO_OPEN then
+                if CLOSE_ON_ACTIVATE then
+                    DONE = true
+                end
+            end
         end
     end
 end

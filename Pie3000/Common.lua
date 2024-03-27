@@ -36,6 +36,7 @@ SWIPE_CONFIRM = 50
 ADJUST_PIE_NEAR_EDGE = false
 SHOW_SHORTCUT = true
 SELECT_THING_UNDER_MOUSE = false
+CLOSE_ON_ACTIVATE = false
 
 local def_color_dark = 0x414141ff
 local def_out_ring = 0x2a2a2aff
@@ -95,6 +96,7 @@ if r.HasExtState("PIE3000", "SETTINGS") then
             SHOW_SHORTCUT = save_data.show_shortcut
             SELECT_THING_UNDER_MOUSE = save_data.select_thing_under_mouse
             ADJUST_PIE_NEAR_EDGE = save_data.adjust_pie_near_edge
+            CLOSE_ON_ACTIVATE = save_data.close_on_activate
         end
     end
 end
@@ -309,7 +311,7 @@ local function MidiLaneDetect(hwnd)
         sel_lane = cc_lanes[lane]
     else
         if lane < 128 then
-            sel_lane = CC_LIST[lane+1]:lower()
+            sel_lane = CC_LIST[lane + 1]:lower()
         elseif lane > 255 then
             local cc = lane - 0x100 + 121
             sel_lane = CC_LIST[cc]:lower()
@@ -1103,6 +1105,26 @@ local function DrawCenter(pie, center)
     end
 end
 
+local function DrawDropDownMenu(pie)
+    r.ImGui_MenuItem(ctx, pie.name, nil, nil, false)
+    for i = 1, #pie do
+        if pie[i].menu then
+            if r.ImGui_BeginMenu(ctx, pie[i].name, true) then
+                DrawDropDownMenu(pie[i])
+                r.ImGui_EndMenu(ctx)
+            end
+        else
+            if r.ImGui_MenuItem(ctx, pie[i].name, nil, nil, true) then
+                if PIE_MENU.is_midi then
+                    r.MIDIEditor_OnCommand(r.MIDIEditor_GetActive(), pie[i].cmd)
+                else
+                    r.Main_OnCommand(pie[i].cmd, 0)
+                end
+            end
+        end
+    end
+end
+
 function DrawPie(pie, center)
     -- DRAW GUIDELINE WHERE MOUSE WAS BEFORE GUI WAS ADJUSTED TO BE IN THE SCREEN (ON EDGES)
     if OUT_SCREEN then
@@ -1113,8 +1135,22 @@ function DrawPie(pie, center)
         SPLITTER = r.ImGui_CreateDrawListSplitter(draw_list)
     end
     r.ImGui_DrawListSplitter_Split(SPLITTER, 5)
-    DrawCenter(pie, center)
-    DrawButtons(pie, center)
+    if not MENU then
+        DrawCenter(pie, center)
+        DrawButtons(pie, center)
+    else
+        if MENU then
+            if not TEST_MENU then
+                TEST_MENU = true
+                r.ImGui_OpenPopup(ctx, "TEST_MENU")
+            end
+        end
+        r.ImGui_SetNextWindowPos(ctx, START_X - 80, START_Y - 10)
+        if r.ImGui_BeginPopup(ctx, "TEST_MENU") then
+            DrawDropDownMenu(pie)
+            r.ImGui_EndPopup(ctx)
+        end
+    end
     r.ImGui_DrawListSplitter_Merge(SPLITTER)
 
     if r.ImGui_IsMouseReleased(ctx, 0) then

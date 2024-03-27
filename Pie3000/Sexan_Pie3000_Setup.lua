@@ -85,7 +85,8 @@ local menu_items = {
 
 local PIES = ReadFromFile(pie_file) or Deepcopy(DEFAULT_PIE)
 
---! REMOVE THIS ON FINAL RELEASE, WAS WORKAROUND FOR ADDING STUFF NOT TO BREAK FILES 
+local MIDI_CC_PIES = ReadFromFile(midi_cc_file) or Deepcopy(DEFAULT_CC_PIE)
+--! REMOVE THIS ON FINAL RELEASE, WAS WORKAROUND FOR ADDING STUFF NOT TO BREAK FILES  --------------------------------
 if not PIES["ruler"] then
     PIES["ruler"] = { RADIUS = RADIUS_START, name = "RULLER", guid = r.genGuid() }
 else
@@ -105,7 +106,6 @@ end
 --! REMOVE THIS ON FINAL RELEASE, WAS WORKAROUND FOR ADDING STUFF NOT TO BREAK FILES 
 
 
-local MIDI_CC_PIES = ReadFromFile(midi_cc_file) or Deepcopy(DEFAULT_CC_PIE)
 
 --! REMOVE LATER
 if not MIDI_CC_PIES["00 bank select msb"] then
@@ -114,7 +114,6 @@ if not MIDI_CC_PIES["00 bank select msb"] then
         MIDI_CC_PIES[name:lower()] = { RADIUS = RADIUS_START, name = name:upper(), guid = r.genGuid(), is_midi = true}
     end
 end
---! REMOVE LATER
 for k,v in pairs(MIDI_CC_PIES) do
     v.is_midi = true
 end
@@ -122,6 +121,7 @@ PIES["midi"].is_midi = true
 PIES["midiruler"].is_midi = true
 PIES["midilane"].is_midi = true
 
+--! REMOVE LATER ------------------------------------------------------------------------------------------------------------------------------------------
 
 local MENUS = ReadFromFile(menu_file) or {}
 
@@ -829,6 +829,15 @@ local function Settings()
         HOLD_TO_OPEN = not HOLD_TO_OPEN
         WANT_SAVE = true
     end
+    if not HOLD_TO_OPEN then
+        r.ImGui_Indent( ctx, 0 )
+        if r.ImGui_Checkbox(ctx, "Close on Action Activate", CLOSE_ON_ACTIVATE) then
+            CLOSE_ON_ACTIVATE = not CLOSE_ON_ACTIVATE
+            WANT_SAVE = true
+        end
+        r.ImGui_Unindent( ctx )
+    end
+   
     if r.ImGui_Checkbox(ctx, "Activate Action on Close", ACTIVATE_ON_CLOSE) then
         ACTIVATE_ON_CLOSE = not ACTIVATE_ON_CLOSE
         WANT_SAVE = true
@@ -866,11 +875,13 @@ local function Settings()
         WANT_SAVE = true
     end
     if SWIPE then
+        r.ImGui_Indent( ctx, 0 )
         RV_SW, SWIPE_TRESHOLD = r.ImGui_SliderInt(ctx, "Threshold in Pixel (Move speed)", SWIPE_TRESHOLD, 20, 100)
         RV_SWC, SWIPE_CONFIRM = r.ImGui_SliderInt(ctx, "Confirm Delay MS", SWIPE_CONFIRM, 20, 150)
         if RV_SW or RV_SWC then
             WANT_SAVE = true
         end
+        r.ImGui_Unindent( ctx )
     end
 
     r.ImGui_Separator(ctx)
@@ -895,6 +906,7 @@ local function Settings()
                 show_shortcut = SHOW_SHORTCUT,
                 select_thing_under_mouse = SELECT_THING_UNDER_MOUSE,
                 adjust_pie_near_edge = ADJUST_PIE_NEAR_EDGE,
+                close_on_activate = CLOSE_ON_ACTIVATE
 
             }, true)
         r.SetExtState("PIE3000", "SETTINGS", data, true)
