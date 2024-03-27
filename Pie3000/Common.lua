@@ -391,11 +391,11 @@ function DetectMIDIContext()
         local w, h = right - left, bottom - top
         local bot_px
         if retval then
-            local srcDC = r.JS_GDI_GetClientDC(window)
+            local srcDC = r.JS_GDI_GetWindowDC(window)
             --local srcDC = r.JS_GDI_GetWindowDC( window )
-            local destBmp = r.JS_LICE_CreateBitmap(true, 17, h)
+            local destBmp = r.JS_LICE_CreateBitmap(true, 16, h)
             local destDC = r.JS_LICE_GetDC(destBmp)
-            r.JS_GDI_Blit(destDC, 0, 0, srcDC, w - 17, 0, w - 17, h)
+            r.JS_GDI_Blit(destDC, 0, 0, srcDC, w - 16, 0, w - 16, h)
             bot_px = FasterSearch(destBmp, GetPixel(destBmp, 0, 64), 65)
             --bot_px = BinaryPixelSearch(destBmp, GetPixel( destBmp, 1, 1 ), w, 63, h)
             --bot_px = CalculateLanes(destBmp, w, h)

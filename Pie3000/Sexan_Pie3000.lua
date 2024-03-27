@@ -1,10 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.32.84
+-- @version 0.32.86
 -- @changelog
---  Fix Crash on Empty items
---  Option to open as DropDownMenu
+--  Fix Midi lane tracing use windowDC instead of Client since on linux its not the same
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
