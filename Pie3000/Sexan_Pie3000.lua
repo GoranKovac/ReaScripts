@@ -1,10 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.32.88
+-- @version 0.32.89
 -- @changelog
---  Highligh Menu entries when pressing shortcut (DropDownMenu Mode)
---  If midi_cc_file.txt does not exist open setup script immediately
+--  Remove dropdown highlight
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua

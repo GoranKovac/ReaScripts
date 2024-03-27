@@ -1139,9 +1139,9 @@ local function DrawDropDownMenu(pie, id, sel_tbl)
                 last_sel = down
             end
           
-            if LAST_HOLD_KEY == pie[i].name then r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Header(), 0x3b7eceff) end
-            local rv_sel = r.ImGui_Selectable(ctx, pie[i].name,  LAST_HOLD_KEY == pie[i].name)
-            if LAST_HOLD_KEY == pie[i].name then r.ImGui_PopStyleColor(ctx) end
+            --if LAST_HOLD_KEY == pie[i].name then r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Header(), 0x3b7eceff) end
+            local rv_sel = r.ImGui_Selectable(ctx, pie[i].name)
+            --if LAST_HOLD_KEY == pie[i].name then r.ImGui_PopStyleColor(ctx) end
             if rv_sel or (pie[i].key and r.ImGui_IsKeyReleased(ctx, pie[i].key) and not MENU_PRESS) then
                 LAST_DD_MENU_CMD = pie[i].cmd
                 TERMINATE = true
@@ -1167,7 +1167,7 @@ local function DropDownDo(pie)
     r.ImGui_SetNextWindowPos(ctx, START_X - 80, START_Y - 10)
     if r.ImGui_BeginPopup(ctx, "TEST_MENU") then
         local pressed = {}
-        LAST_HOLD_KEY = DrawDropDownMenu(pie, 0, pressed)
+        local LAST_HOLD_KEY = DrawDropDownMenu(pie, 0, pressed)
         if LAST_DD_MENU_CMD then
             if PIE_MENU.is_midi then
                 r.MIDIEditor_OnCommand(r.MIDIEditor_GetActive(), LAST_DD_MENU_CMD)
