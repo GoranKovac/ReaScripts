@@ -1,9 +1,10 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.32.87
+-- @version 0.32.88
 -- @changelog
---  Trace only last pixel in midi window (to avoid DPI scaling errors)
+--  Highligh Menu entries when pressing shortcut (DropDownMenu Mode)
+--  If midi_cc_file.txt does not exist open setup script immediately
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -56,7 +57,8 @@ local function Init()
 
     PIES = ReadFromFile(pie_file)
     MIDI_PIES = ReadFromFile(midi_cc_file)
-    if not PIES then
+
+    if not PIES or not MIDI_PIES then
         local setup_script = r.NamedCommandLookup("_RS3ad3111ef0e763a1cb125b100b70bc3e50072453")
         r.Main_OnCommand(setup_script, 0)
         return "ERROR"

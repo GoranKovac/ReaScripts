@@ -1107,19 +1107,21 @@ local function DrawCenter(pie, center)
     end
 end
 
-local function DrawDropDownMenu(pie, id)
+local function DrawDropDownMenu(pie, id, sel_tbl)
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Text(), 0x3aCCffff)
     r.ImGui_SeparatorText(ctx, pie.name)
     r.ImGui_PopStyleColor(ctx)
-    for i = 1, #pie do
-
-        local down = (pie[i].key and r.ImGui_IsKeyDown(ctx, pie[i].key)) and i
+    local last_sel
+    for i = 1, #pie do        
         if pie[i].menu then
             if r.ImGui_BeginMenu(ctx, pie[i].name, true) then
-                DrawDropDownMenu(pie[i], id + 1)
+                local prev_sel = DrawDropDownMenu(pie[i], id + 1, sel_tbl)
+                if prev_sel then
+                    last_sel = prev_sel
+                end
                 r.ImGui_EndMenu(ctx)
             end
-           
+            
             if not MENU_PRESS and not r.ImGui_IsPopupOpen( ctx, pie[i].name)  then
                 MENU_PRESS = (pie[i].key and r.ImGui_IsKeyDown(ctx, pie[i].key)) and i
             end
@@ -1132,13 +1134,17 @@ local function DrawDropDownMenu(pie, id)
                 MENU_PRESS = nil
             end
         else
-            down = not MENU_PRESS and down
-            --if down == i and last_hover_menu == id then r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Header(), 0x3b7eceff) end
-            local rv_sel = r.ImGui_Selectable(ctx, pie[i].name)
-            --if down == i and last_hover_menu == id then r.ImGui_PopStyleColor(ctx) end
+            local down = (pie[i].key and r.ImGui_IsKeyDown(ctx, pie[i].key)) and pie[i].name
+            if down and not MENU_PRESS then
+                last_sel = down
+            end
+          
+            if LAST_HOLD_KEY == pie[i].name then r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Header(), 0x3b7eceff) end
+            local rv_sel = r.ImGui_Selectable(ctx, pie[i].name,  LAST_HOLD_KEY == pie[i].name)
+            if LAST_HOLD_KEY == pie[i].name then r.ImGui_PopStyleColor(ctx) end
             if rv_sel or (pie[i].key and r.ImGui_IsKeyReleased(ctx, pie[i].key) and not MENU_PRESS) then
                 LAST_DD_MENU_CMD = pie[i].cmd
-                DONE = true
+                TERMINATE = true
             end
         end
         if pie[i].key then
@@ -1148,6 +1154,7 @@ local function DrawDropDownMenu(pie, id)
             r.ImGui_PopStyleColor(ctx)
         end
     end
+    return last_sel
 end
 
 local function DropDownDo(pie)
@@ -1159,7 +1166,8 @@ local function DropDownDo(pie)
     end
     r.ImGui_SetNextWindowPos(ctx, START_X - 80, START_Y - 10)
     if r.ImGui_BeginPopup(ctx, "TEST_MENU") then
-        DrawDropDownMenu(pie, 0)
+        local pressed = {}
+        LAST_HOLD_KEY = DrawDropDownMenu(pie, 0, pressed)
         if LAST_DD_MENU_CMD then
             if PIE_MENU.is_midi then
                 r.MIDIEditor_OnCommand(r.MIDIEditor_GetActive(), LAST_DD_MENU_CMD)
