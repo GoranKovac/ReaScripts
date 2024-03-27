@@ -37,6 +37,7 @@ ADJUST_PIE_NEAR_EDGE = false
 SHOW_SHORTCUT = true
 SELECT_THING_UNDER_MOUSE = false
 CLOSE_ON_ACTIVATE = false
+DROP_DOWN_MENU = false
 
 local def_color_dark = 0x414141ff
 local def_out_ring = 0x2a2a2aff
@@ -97,6 +98,7 @@ if r.HasExtState("PIE3000", "SETTINGS") then
             SELECT_THING_UNDER_MOUSE = save_data.select_thing_under_mouse
             ADJUST_PIE_NEAR_EDGE = save_data.adjust_pie_near_edge
             CLOSE_ON_ACTIVATE = save_data.close_on_activate
+            DROP_DOWN_MENU = save_data.drop_down_menu
         end
     end
 end
@@ -1105,24 +1107,71 @@ local function DrawCenter(pie, center)
     end
 end
 
-local function DrawDropDownMenu(pie)
-    r.ImGui_MenuItem(ctx, pie.name, nil, nil, false)
+local function DrawDropDownMenu(pie, id)
+    r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Text(), 0x3aCCffff)
+    r.ImGui_SeparatorText(ctx, pie.name)
+    r.ImGui_PopStyleColor(ctx)
     for i = 1, #pie do
+
+        local down = (pie[i].key and r.ImGui_IsKeyDown(ctx, pie[i].key)) and i
         if pie[i].menu then
             if r.ImGui_BeginMenu(ctx, pie[i].name, true) then
-                DrawDropDownMenu(pie[i])
+                DrawDropDownMenu(pie[i], id + 1)
                 r.ImGui_EndMenu(ctx)
             end
+           
+            if not MENU_PRESS and not r.ImGui_IsPopupOpen( ctx, pie[i].name)  then
+                MENU_PRESS = (pie[i].key and r.ImGui_IsKeyDown(ctx, pie[i].key)) and i
+            end
+            if MENU_PRESS == i and not r.ImGui_IsItemHovered(ctx) then
+                local menu_x, menu_y = r.ImGui_GetCursorScreenPos(ctx)
+                local w, h = r.ImGui_GetItemRectSize(ctx)
+                r.JS_Mouse_SetPosition(menu_x + w//2, menu_y - h//2)
+            end
+            if MENU_PRESS and pie[i].key and r.ImGui_IsKeyReleased(ctx, pie[i].key) then
+                MENU_PRESS = nil
+            end
         else
-            if r.ImGui_MenuItem(ctx, pie[i].name, nil, nil, true) then
-                if PIE_MENU.is_midi then
-                    r.MIDIEditor_OnCommand(r.MIDIEditor_GetActive(), pie[i].cmd)
-                else
-                    r.Main_OnCommand(pie[i].cmd, 0)
-                end
+            down = not MENU_PRESS and down
+            --if down == i and last_hover_menu == id then r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Header(), 0x3b7eceff) end
+            local rv_sel = r.ImGui_Selectable(ctx, pie[i].name)
+            --if down == i and last_hover_menu == id then r.ImGui_PopStyleColor(ctx) end
+            if rv_sel or (pie[i].key and r.ImGui_IsKeyReleased(ctx, pie[i].key) and not MENU_PRESS) then
+                LAST_DD_MENU_CMD = pie[i].cmd
+                DONE = true
             end
         end
+        if pie[i].key then
+            r.ImGui_SameLine(ctx)
+            r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Text(), 0x3aCCffff)
+            r.ImGui_Selectable(ctx, " - " .. KEYS[pie[i].key], false)
+            r.ImGui_PopStyleColor(ctx)
+        end
     end
+end
+
+local function DropDownDo(pie)
+    if DROP_DOWN_MENU then
+        if not OPEN_DD then
+            OPEN_DD = true
+            r.ImGui_OpenPopup(ctx, "TEST_MENU")
+        end
+    end
+    r.ImGui_SetNextWindowPos(ctx, START_X - 80, START_Y - 10)
+    if r.ImGui_BeginPopup(ctx, "TEST_MENU") then
+        DrawDropDownMenu(pie, 0)
+        if LAST_DD_MENU_CMD then
+            if PIE_MENU.is_midi then
+                r.MIDIEditor_OnCommand(r.MIDIEditor_GetActive(), LAST_DD_MENU_CMD)
+            else
+                r.Main_OnCommand(LAST_DD_MENU_CMD, 0)
+            end
+            LAST_DD_MENU_CMD = nil
+        end
+        r.ImGui_EndPopup(ctx)
+    end
+    if not r.ImGui_IsPopupOpen(ctx, "TEST_MENU") then DONE = true end
+    if ESC then DONE = true end
 end
 
 function DrawPie(pie, center)
@@ -1135,21 +1184,11 @@ function DrawPie(pie, center)
         SPLITTER = r.ImGui_CreateDrawListSplitter(draw_list)
     end
     r.ImGui_DrawListSplitter_Split(SPLITTER, 5)
-    if not MENU then
+    if SETUP or not DROP_DOWN_MENU then
         DrawCenter(pie, center)
         DrawButtons(pie, center)
-    else
-        if MENU then
-            if not TEST_MENU then
-                TEST_MENU = true
-                r.ImGui_OpenPopup(ctx, "TEST_MENU")
-            end
-        end
-        r.ImGui_SetNextWindowPos(ctx, START_X - 80, START_Y - 10)
-        if r.ImGui_BeginPopup(ctx, "TEST_MENU") then
-            DrawDropDownMenu(pie)
-            r.ImGui_EndPopup(ctx)
-        end
+    elseif DROP_DOWN_MENU then
+        DropDownDo(pie)
     end
     r.ImGui_DrawListSplitter_Merge(SPLITTER)
 

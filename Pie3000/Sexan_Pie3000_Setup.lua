@@ -825,6 +825,10 @@ end
 
 local function Settings()
     if STATE ~= "SETTINGS" then return end
+    if r.ImGui_Checkbox(ctx, "Open as DropDown Menu", DROP_DOWN_MENU) then
+        DROP_DOWN_MENU = not DROP_DOWN_MENU
+        WANT_SAVE = true
+    end
     if r.ImGui_Checkbox(ctx, "Hold to OPEN", HOLD_TO_OPEN) then
         HOLD_TO_OPEN = not HOLD_TO_OPEN
         WANT_SAVE = true
@@ -906,7 +910,8 @@ local function Settings()
                 show_shortcut = SHOW_SHORTCUT,
                 select_thing_under_mouse = SELECT_THING_UNDER_MOUSE,
                 adjust_pie_near_edge = ADJUST_PIE_NEAR_EDGE,
-                close_on_activate = CLOSE_ON_ACTIVATE
+                close_on_activate = CLOSE_ON_ACTIVATE,
+                drop_down_menu = DROP_DOWN_MENU,
 
             }, true)
         r.SetExtState("PIE3000", "SETTINGS", data, true)

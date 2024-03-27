@@ -1,10 +1,10 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.32.83
+-- @version 0.32.84
 -- @changelog
---  Add option to close on action activate
---  Close on action activate only appears when Hold To Open is disabled
+--  Fix Crash on Empty items
+--  Option to open as DropDownMenu
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -27,8 +27,11 @@ if CheckDeps() then return end
 ctx = r.ImGui_CreateContext('Pie XYZ', r.ImGui_ConfigFlags_NoSavedSettings())
 
 require('Common')
-
---MENU = true
+if DROP_DOWN_MENU then
+    ANIMATION = false
+    ADJUST_PIE_NEAR_EDGE = false
+    SWIPE = false
+end
 
 MAIN_PROG = ANIMATION and 0.01 or 1
 CENTER_BTN_PROG = ANIMATION and 0.01 or 1
@@ -124,7 +127,11 @@ local function GetMouseContext()
     end
 
     if item then
-        info = r.TakeIsMIDI(take) and "itemmidi" or "item"
+        if take then
+            info = r.TakeIsMIDI(take) and "itemmidi" or "item"
+        else
+            info = "item"
+        end
     end
     if info then
         info = info:match('^([^%.]+)')
