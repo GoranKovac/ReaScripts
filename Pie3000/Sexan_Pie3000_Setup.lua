@@ -36,33 +36,41 @@ local DEFAULT_PIE = {
     ["itemmidi"] = { RADIUS = RADIUS_START, name = "MIDI ITEM", guid = r.genGuid() },
     ["trans"] = { RADIUS = RADIUS_START, name = "TRANSPORT", guid = r.genGuid() },
     ["ruler"] = { RADIUS = RADIUS_START, name = "RULER", guid = r.genGuid() },
-    ["midi"] = { RADIUS = RADIUS_START, name = "MIDI", guid = r.genGuid(), is_midi = true},
-    ["midiruler"] = { RADIUS = RADIUS_START, name = "MIDI RULER", guid = r.genGuid(), is_midi = true},
-    ["midilane"] = { RADIUS = RADIUS_START, name = "MIDI LANE", guid = r.genGuid(), as_global = true,is_midi = true },
+    ["midi"] = { RADIUS = RADIUS_START, name = "MIDI", guid = r.genGuid(), is_midi = true },
+    ["midiruler"] = { RADIUS = RADIUS_START, name = "MIDI RULER", guid = r.genGuid(), is_midi = true },
+    ["midilane"] = { RADIUS = RADIUS_START, name = "MIDI LANE", guid = r.genGuid(), as_global = true, is_midi = true },
     ["plugin"] = { RADIUS = RADIUS_START, name = "PLUGIN", guid = r.genGuid() },
+    ["spacer"] = { RADIUS = RADIUS_START, name = "SPACER", guid = r.genGuid() },
 }
 
 local DEFAULT_CC_PIE = {
-    ["velocity"] = { RADIUS = RADIUS_START, name = "VELOCITY", guid = r.genGuid(), is_midi = true},
-    ["off velocity"] = { RADIUS = RADIUS_START, name = "OFF VELOCITY", guid = r.genGuid() , is_midi = true},
+    ["velocity"] = { RADIUS = RADIUS_START, name = "VELOCITY", guid = r.genGuid(), is_midi = true },
+    ["off velocity"] = { RADIUS = RADIUS_START, name = "OFF VELOCITY", guid = r.genGuid(), is_midi = true },
     ["pitch"] = { RADIUS = RADIUS_START, name = "PITCH", guid = r.genGuid(), is_midi = true },
-    ["program"] = { RADIUS = RADIUS_START, name = "PROGRAM", guid = r.genGuid() , is_midi = true},
-    ["channel pressure"] = { RADIUS = RADIUS_START, name = "CHANNEL PRESSURE", guid = r.genGuid() , is_midi = true},
-    ["bank/program select"] = { RADIUS = RADIUS_START, name = "BANK/PROGRAM SELECT", guid = r.genGuid() , is_midi = true},
+    ["program"] = { RADIUS = RADIUS_START, name = "PROGRAM", guid = r.genGuid(), is_midi = true },
+    ["channel pressure"] = { RADIUS = RADIUS_START, name = "CHANNEL PRESSURE", guid = r.genGuid(), is_midi = true },
+    ["bank/program select"] = { RADIUS = RADIUS_START, name = "BANK/PROGRAM SELECT", guid = r.genGuid(), is_midi = true },
     ["text events"] = { RADIUS = RADIUS_START, name = "TEXT EVENTS", guid = r.genGuid() },
-    ["notation events"] = { RADIUS = RADIUS_START, name = "NOTATION EVENTS", guid = r.genGuid() , is_midi = true},
+    ["notation events"] = { RADIUS = RADIUS_START, name = "NOTATION EVENTS", guid = r.genGuid(), is_midi = true },
     ["sysex"] = { RADIUS = RADIUS_START, name = "SYSEX", guid = r.genGuid() },
-    ["media item lane"] = { RADIUS = RADIUS_START, name = "MEDIA ITEM LANE", guid = r.genGuid() , is_midi = true},
+    ["media item lane"] = { RADIUS = RADIUS_START, name = "MEDIA ITEM LANE", guid = r.genGuid(), is_midi = true },
 }
 
 local CC_LIST = GetCCList()
+local ENV_LIST = GetEnvList()
+
+for i = 1, #ENV_LIST do
+    local name = ENV_LIST[i]
+    DEFAULT_CC_PIE[name:lower()] = { RADIUS = RADIUS_START, name = name:upper(), guid = r.genGuid() }
+end
 
 for i = 1, #CC_LIST do
     local name = CC_LIST[i]
-    DEFAULT_CC_PIE[name:lower()] = { RADIUS = RADIUS_START, name = name:upper(), guid = r.genGuid(), is_midi = true}
+    DEFAULT_CC_PIE[name:lower()] = { RADIUS = RADIUS_START, name = name:upper(), guid = r.genGuid(), is_midi = true }
 end
 
 local cur_cc_item = 0
+local cur_env_item = 0
 local context_cur_item = 1
 local menu_items = {
     { "arrange",      "ARRANGE" },
@@ -81,47 +89,63 @@ local menu_items = {
     { "midiruler",    "MIDI RULER" },
     { "midilane",     "MIDI LANE" },
     { "plugin",       "PLUGIN" },
+    { "spacer",       "SPACER" },
 }
 
 local PIES = ReadFromFile(pie_file) or Deepcopy(DEFAULT_PIE)
 
 local MIDI_CC_PIES = ReadFromFile(midi_cc_file) or Deepcopy(DEFAULT_CC_PIE)
---! REMOVE THIS ON FINAL RELEASE, WAS WORKAROUND FOR ADDING STUFF NOT TO BREAK FILES  --------------------------------
-if not PIES["ruler"] then
-    PIES["ruler"] = { RADIUS = RADIUS_START, name = "RULLER", guid = r.genGuid() }
-else
-    if PIES["ruler"].name == "RULLER" then PIES["ruler"].name = "RULER" end
-end
-if not PIES["midipianoview"] then
-    PIES["midiruler"] = { RADIUS = RADIUS_START, name = "MIDI RULER", guid = r.genGuid() }
-    PIES["midilane"] = { RADIUS = RADIUS_START, name = "MIDI LANE", guid = r.genGuid() }
-end
-if not PIES["plugin"] then
-    PIES["plugin"] = { RADIUS = RADIUS_START, name = "PLUGIN", guid = r.genGuid() }
-end
 
-if not PIES["itemmidi"] then
-    PIES["itemmidi"] = { RADIUS = RADIUS_START, name = "MIDI ITEM", guid = r.genGuid() }
-end
---! REMOVE THIS ON FINAL RELEASE, WAS WORKAROUND FOR ADDING STUFF NOT TO BREAK FILES 
-
-
-
---! REMOVE LATER
-if not MIDI_CC_PIES["00 bank select msb"] then
-    for i = 1, #CC_LIST do
-        local name = CC_LIST[i]
-        MIDI_CC_PIES[name:lower()] = { RADIUS = RADIUS_START, name = name:upper(), guid = r.genGuid(), is_midi = true}
+local function BetaAddContextToData()
+    --! REMOVE THIS ON FINAL RELEASE, WAS WORKAROUND FOR ADDING STUFF NOT TO BREAK FILES  --------------------------------
+    if not PIES["ruler"] then
+        PIES["ruler"] = { RADIUS = RADIUS_START, name = "RULLER", guid = r.genGuid() }
+    else
+        if PIES["ruler"].name == "RULLER" then PIES["ruler"].name = "RULER" end
     end
-end
-for k,v in pairs(MIDI_CC_PIES) do
-    v.is_midi = true
-end
-PIES["midi"].is_midi = true
-PIES["midiruler"].is_midi = true
-PIES["midilane"].is_midi = true
+    if not PIES["midipianoview"] then
+        PIES["midiruler"] = { RADIUS = RADIUS_START, name = "MIDI RULER", guid = r.genGuid() }
+        PIES["midilane"] = { RADIUS = RADIUS_START, name = "MIDI LANE", guid = r.genGuid() }
+    end
+    if not PIES["plugin"] then
+        PIES["plugin"] = { RADIUS = RADIUS_START, name = "PLUGIN", guid = r.genGuid() }
+    end
 
---! REMOVE LATER ------------------------------------------------------------------------------------------------------------------------------------------
+    if not PIES["itemmidi"] then
+        PIES["itemmidi"] = { RADIUS = RADIUS_START, name = "MIDI ITEM", guid = r.genGuid() }
+    end
+    if not PIES["spacer"] then
+        PIES["spacer"] = { RADIUS = RADIUS_START, name = "SPACER", guid = r.genGuid() }
+    end
+    --! REMOVE THIS ON FINAL RELEASE, WAS WORKAROUND FOR ADDING STUFF NOT TO BREAK FILES
+
+
+
+    --! REMOVE LATER
+    if not MIDI_CC_PIES["00 bank select msb"] then
+        for i = 1, #CC_LIST do
+            local name = CC_LIST[i]
+            MIDI_CC_PIES[name:lower()] = { RADIUS = RADIUS_START, name = name:upper(), guid = r.genGuid(), is_midi = true }
+        end
+    end
+
+    if not PIES["width"] then
+        for i = 1, #ENV_LIST do
+            local name = ENV_LIST[i]
+            PIES[name:lower()] = { RADIUS = RADIUS_START, name = name:upper(), guid = r.genGuid() }
+        end
+    end
+
+    for k, v in pairs(MIDI_CC_PIES) do
+        v.is_midi = true
+    end
+    PIES["midi"].is_midi = true
+    PIES["midiruler"].is_midi = true
+    PIES["midilane"].is_midi = true
+    --! REMOVE LATER ------------------------------------------------------------------------------------------------------------------------------------------
+end
+
+BetaAddContextToData() --! REMOVE ON FINAL RELEASE
 
 local MENUS = ReadFromFile(menu_file) or {}
 
@@ -799,10 +823,10 @@ local function NewProperties(pie)
                             MENUS[#MENUS][i] = CUR_PIE[i].menu and CUR_PIE[i] or Deepcopy(CUR_PIE[i])
                         end
                     end
-                    if pie.name == "MIDI LANE" then
+                    if pie.name == "MIDI LANE" or pie.name == "ENVELOPE" then
                         if r.ImGui_Checkbox(ctx, "Use as Default for all CC Lane Context", pie.as_global) then
                             pie.as_global = not pie.as_global
-                        end    
+                        end
                     end
                 end
             else
@@ -834,14 +858,14 @@ local function Settings()
         WANT_SAVE = true
     end
     if not HOLD_TO_OPEN then
-        r.ImGui_Indent( ctx, 0 )
+        r.ImGui_Indent(ctx, 0)
         if r.ImGui_Checkbox(ctx, "Close on Action Activate", CLOSE_ON_ACTIVATE) then
             CLOSE_ON_ACTIVATE = not CLOSE_ON_ACTIVATE
             WANT_SAVE = true
         end
-        r.ImGui_Unindent( ctx )
+        r.ImGui_Unindent(ctx)
     end
-   
+
     if r.ImGui_Checkbox(ctx, "Activate Action on Close", ACTIVATE_ON_CLOSE) then
         ACTIVATE_ON_CLOSE = not ACTIVATE_ON_CLOSE
         WANT_SAVE = true
@@ -879,13 +903,13 @@ local function Settings()
         WANT_SAVE = true
     end
     if SWIPE then
-        r.ImGui_Indent( ctx, 0 )
+        r.ImGui_Indent(ctx, 0)
         RV_SW, SWIPE_TRESHOLD = r.ImGui_SliderInt(ctx, "Threshold in Pixel (Move speed)", SWIPE_TRESHOLD, 20, 100)
         RV_SWC, SWIPE_CONFIRM = r.ImGui_SliderInt(ctx, "Confirm Delay MS", SWIPE_CONFIRM, 20, 150)
         if RV_SW or RV_SWC then
             WANT_SAVE = true
         end
-        r.ImGui_Unindent( ctx )
+        r.ImGui_Unindent(ctx)
     end
 
     r.ImGui_Separator(ctx)
@@ -923,7 +947,7 @@ local function ContextSelector()
     local w, h = r.ImGui_GetItemRectSize(ctx)
     local x, y = r.ImGui_GetCursorScreenPos(ctx)
     r.ImGui_SetNextWindowPos(ctx, x, y)
-    r.ImGui_SetNextWindowSize(ctx, w, 320)
+    r.ImGui_SetNextWindowSize(ctx, w, 340)
     r.ImGui_SetNextWindowBgAlpha(ctx, 1)
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_PopupBg(), bg_col)
     if r.ImGui_BeginPopup(ctx, "Context Selector") then
@@ -968,7 +992,16 @@ local function BreadCrumbs(tbl)
         r.ImGui_PushID(ctx, "btn_bx" .. j)
         if r.ImGui_InvisibleButton(ctx, "##BC", txt_w + (j == 0 and 18 or 30), 20) then
             if j == 0 then
-                SWITCH_PIE = cur_cc_item == 0 and PIES[menu_items[context_cur_item][1]] or MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+                if menu_items[context_cur_item][2] == "MIDI LANE" then
+                    SWITCH_PIE = cur_cc_item == 0 and PIES[menu_items[context_cur_item][1]] or
+                        MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+                elseif menu_items[context_cur_item][2] == "ENVELOPE" then
+                    SWITCH_PIE = cur_env_item == 0 and PIES["envelope"] or PIES[ENV_LIST[cur_env_item]:lower()]
+                else
+                    SWITCH_PIE = PIES[menu_items[context_cur_item][1]]
+                end
+                SWITCH_PIE = cur_cc_item == 0 and PIES[menu_items[context_cur_item][1]] or
+                    MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
                 CLEAR_PIE_LIST = 0
                 SWITCH_PIE.selected = nil
             else
@@ -1209,6 +1242,29 @@ local function MenuEditList(pie)
     r.ImGui_SameLine(ctx)
 end
 
+local function EnvLaneSelector()
+    local txt_w = r.ImGui_CalcTextSize(ctx, ENV_LIST[cur_env_item])
+    local w = txt_w + 25
+    if r.ImGui_BeginChild(ctx, "Envlaneeeee", w, 25) then
+        local child_hovered = r.ImGui_IsWindowHovered(ctx,
+            r.ImGui_HoveredFlags_ChildWindows() |  r.ImGui_HoveredFlags_AllowWhenBlockedByPopup() |
+            r.ImGui_HoveredFlags_AllowWhenBlockedByActiveItem())
+        if r.ImGui_BeginMenu(ctx, ENV_LIST[cur_env_item], true) then
+            for i = 0, #ENV_LIST do
+                if r.ImGui_MenuItem(ctx, ENV_LIST[i], nil, cur_env_item == i, true) then
+                    cur_env_item = i
+                    SWITCH_PIE = i == 0 and PIES["envelope"] or PIES[ENV_LIST[cur_env_item]:lower()]
+                end
+            end
+
+            if not child_hovered then
+                r.ImGui_CloseCurrentPopup(ctx)
+            end
+            r.ImGui_EndMenu(ctx)
+        end
+        r.ImGui_EndChild(ctx)
+    end
+end
 local function MidiLaneSelector()
     local txt_w = r.ImGui_CalcTextSize(ctx, CC_LIST[cur_cc_item])
     local w = txt_w + 25
@@ -1247,7 +1303,6 @@ local function MidiLaneSelector()
                     if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
                         cur_cc_item = i
                         SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
-
                     end
                 end
                 r.ImGui_EndMenu(ctx)
@@ -1257,7 +1312,6 @@ local function MidiLaneSelector()
                     if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
                         cur_cc_item = i
                         SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
-
                     end
                 end
                 r.ImGui_EndMenu(ctx)
@@ -1311,6 +1365,8 @@ local function Pie()
             end
             if menu_items[context_cur_item][2] == "MIDI LANE" then
                 MidiLaneSelector()
+            elseif menu_items[context_cur_item][2] == "ENVELOPE" then
+                EnvLaneSelector()
             end
         end
         local WW, WH = r.ImGui_GetWindowSize(ctx)
@@ -1448,12 +1504,12 @@ local function Delete()
         if REMOVE.tbl[REMOVE.i].menu then
             -- REMOVE GUID REFERENCE WHEN ALT CLICK MENU
             if REMOVE.tbl.guid_list then
-            for j = #REMOVE.tbl.guid_list, 1, -1 do
-                if REMOVE.tbl.guid_list[j] == REMOVE.tbl[REMOVE.i].guid then
-                    table.remove(REMOVE.tbl.guid_list, j)
+                for j = #REMOVE.tbl.guid_list, 1, -1 do
+                    if REMOVE.tbl.guid_list[j] == REMOVE.tbl[REMOVE.i].guid then
+                        table.remove(REMOVE.tbl.guid_list, j)
+                    end
                 end
             end
-        end
         end
         table.remove(REMOVE.tbl, REMOVE.i)
         REMOVE.tbl.selected = nil

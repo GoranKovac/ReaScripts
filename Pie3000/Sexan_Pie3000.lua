@@ -1,9 +1,11 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.32.89
+-- @version 0.32.90
 -- @changelog
---  Remove dropdown highlight
+--  Added Spacer context
+--  Added Envelope Lane context (Default only)
+--  Main Envelope context option to use as default for all
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -100,12 +102,17 @@ local function GetMouseContext()
     local class_name = r.JS_Window_GetClassName(cur_hwnd)
 
     -- local is_plugin --= DetectPluginContext(cur_hwnd)
-    if info:match("spacer") then return end
+    if info:match("spacer") then 
+        info = "spacer"
+    end
     if info:match("master") then return end
 
     if info:match("envelope") then
-        info = "envelope"
+        ENVELOPE_LANE = true
+        info = DetectEnvContext(track, info)
+        --info = "envelope"
     elseif info:match("envcp") then
+        DetectEnvContext(track, info)
         info = "envcp"
     elseif info:match("^fx_") then
         info = "plugin"
@@ -153,6 +160,12 @@ if not STANDALONE_PIE then
         else
             -- OPEN DEFAULT MENU IF DOES NOT EXIST
             PIE_MENU = MIDI_PIES[INFO] or PIES["midilane"]
+        end
+    elseif ENVELOPE_LANE then
+        if PIES["envelope"].as_global == true then
+            PIE_MENU = PIES["envelope"]
+        else
+            PIE_MENU = PIES[INFO] or PIES["envelope"] -- open default for all others (vst etc)
         end
     else
         PIE_MENU = PIES[INFO]

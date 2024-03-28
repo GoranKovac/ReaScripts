@@ -287,6 +287,22 @@ function GetCCList()
     return CC_LIST
 end
 
+local ENV_LIST = {
+    [0] = "Main",
+    "Volume",
+    "Pan",
+    "Width",
+    "Volume (Pre-FX)",
+    "Pan (Pre-FX)",
+    "Width (Pre-FX)",
+    "Trim Volume",
+    "Mute",
+}
+
+function GetEnvList()
+    return ENV_LIST
+end
+
 local cc_lanes = {
     [-1]    = "global",
     [0x200] = "velocity",
@@ -432,13 +448,15 @@ function DetectMIDIContext()
     end
 end
 
--- function DetectPluginContext(window)
---     local par = r.JS_Window_GetParent(window)
---     local par_class = r.JS_Window_GetClassName(par)
---     if par_class == "#32770" or par_class == "reaperPluginHostWrapProc" then
---        return "plugin"
---     end
--- end
+function DetectEnvContext(track, env_info)
+    local env_num = env_info:match("%S+ (%S+)$")
+    if env_num then
+        local env =  r.GetTrackEnvelope( track, env_num )
+        local retval, name = r.GetEnvelopeName( env )
+        if retval then return name:lower() end
+    end
+    return "envelope"
+end
 
 function PDefer(func)
     r.defer(function()
