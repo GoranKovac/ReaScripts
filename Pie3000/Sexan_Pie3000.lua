@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.32.93
+-- @version 0.32.94
 -- @changelog
---  Dont use midi actions for midi item
+--  If option select thing under mouse is enable set focus on last one
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -198,6 +198,9 @@ if SELECT_THING_UNDER_MOUSE then
     end
     if TRACK then
         r.SetOnlyTrackSelected(TRACK)
+        if not ITEM then
+            r.Main_OnCommand(r.NamedCommandLookup("_BR_FOCUS_TRACKS"),0)
+        end
     end
 end
 
