@@ -403,7 +403,7 @@ function DetectMIDIContext()
     -- TAKE SCREENSHOT OF THE THE RIGHT SCROLLBAR
     local function takeScreenshot(window)
         --local retval, w, h = r.JS_Window_GetClientSize( window )
-        local rv_scale, scale = reaper.get_config_var_string( "uiscale" )
+        local rv_scale, scale = r.get_config_var_string( "uiscale" )
         local UI_SCALE = rv_scale and tonumber(scale) or 1
         local retval, left, top, right, bottom = r.JS_Window_GetRect(window)
         local w, h = right - left, bottom - top
@@ -536,7 +536,12 @@ end
 
 function ImageUVOffset(img_obj, resize, cols, rows, frame, x, y, prog, need_single_frame)
     local w, h = r.ImGui_Image_GetSize(img_obj)
-    w, h = w / resize, h / resize
+    local factor = resize and h/resize
+    if resize and h > resize then        
+        h = h // factor
+        w = w // factor
+    end
+    
     local xs, ys = x - (w / cols) / 2, y - (h / rows) / 2
     local xe, ye = w / cols + xs, h / rows + ys
 
@@ -878,7 +883,7 @@ local function PieButtonDrawlist(pie, button_radius, selected, hovered, button_p
             pie.img_obj = r.ImGui_CreateImage(reaper_path .. png)
         end
         local is_track_icon = png:find("track_icons")
-        ImageUVOffset(pie.img_obj, is_track_icon and 1.2 or 1, is_track_icon and 1 or 3, 1,
+        ImageUVOffset(pie.img_obj, pie.rescale, is_track_icon and 1 or 3, 1,
             is_track_icon and 0 or (selected and 2 or 0), button_center.x, button_center.y, CENTER_BTN_PROG)
     end
 end
@@ -896,7 +901,7 @@ local function DrawButtons(pie, center)
             if not r.ImGui_ValidatePtr(pie[i].img_obj, 'ImGui_Image*') then
                 pie[i].img_obj = r.ImGui_CreateImage(reaper_path .. pie[i].png)
             end
-            local img_data = ImageUVOffset(pie[i].img_obj, pie[i].png:find("track_icons") and 1.2 or 1,
+            local img_data = ImageUVOffset(pie[i].img_obj, pie[i].rescale,
                 pie[i].png:find("track_icons") and 1 or 3, 1, 0, 0, 0, 0, true)
             button_wh = (sqrt(2) * img_data[1]) // 2
         end

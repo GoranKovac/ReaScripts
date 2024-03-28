@@ -210,7 +210,7 @@ local function IterateFiles(dir)
     for index = 0, math.huge do
         local file = r.EnumerateFiles(reaper_path .. dir, index)
         if not file then break end
-        if file:find("%.png$") and not file:match("animation") then
+        if file:lower():find("%.png$") and not file:match("animation") then
             tbl[#tbl + 1] = { name = dir .. file }
         end
     end
@@ -556,24 +556,40 @@ local function PngSelector(pie, button_size)
         r.ImGui_SameLine(ctx)
 
         if r.ImGui_RadioButton(ctx, "100", png_tbl == PNG_TBL) then
+            IMG_RESCALE_FACTOR = nil
             RefreshImgObj(PNG_TBL)
             png_tbl = PNG_TBL
         end
 
         r.ImGui_SameLine(ctx)
         if r.ImGui_RadioButton(ctx, "150", png_tbl == PNG_TBL_150) then
+            IMG_RESCALE_FACTOR = nil
             RefreshImgObj(PNG_TBL_150)
             png_tbl = PNG_TBL_150
         end
         r.ImGui_SameLine(ctx)
         if r.ImGui_RadioButton(ctx, "200", png_tbl == PNG_TBL_200) then
+            IMG_RESCALE_FACTOR = nil
             RefreshImgObj(PNG_TBL_200)
             png_tbl = PNG_TBL_200
         end
         r.ImGui_Text(ctx, "Track Icons    ")
         r.ImGui_SameLine(ctx)
 
-        if r.ImGui_RadioButton(ctx, "##ti", png_tbl == PNG_TBL_TRACK_ICONS) then
+        if r.ImGui_RadioButton(ctx, "100##ti", IMG_RESCALE_FACTOR == 30) then
+            RefreshImgObj(PNG_TBL_TRACK_ICONS)
+            IMG_RESCALE_FACTOR = 30
+            png_tbl = PNG_TBL_TRACK_ICONS
+        end
+        r.ImGui_SameLine(ctx)
+        if r.ImGui_RadioButton(ctx, "150##ti", IMG_RESCALE_FACTOR == 45) then
+            IMG_RESCALE_FACTOR = 45
+            RefreshImgObj(PNG_TBL_TRACK_ICONS)
+            png_tbl = PNG_TBL_TRACK_ICONS
+        end
+        r.ImGui_SameLine(ctx)
+        if r.ImGui_RadioButton(ctx, "200##ti", IMG_RESCALE_FACTOR == 60) then
+            IMG_RESCALE_FACTOR = 60
             RefreshImgObj(PNG_TBL_TRACK_ICONS)
             png_tbl = PNG_TBL_TRACK_ICONS
         end
@@ -595,7 +611,7 @@ local function PngSelector(pie, button_size)
                 if not r.ImGui_ValidatePtr(FILTERED_PNG[n + 1].img_obj, 'ImGui_Image*') then
                     FILTERED_PNG[n + 1].img_obj = r.ImGui_CreateImage(reaper_path .. image)
                 end
-                local uv = ImageUVOffset(FILTERED_PNG[n + 1].img_obj, image:find("track_icons") and 1.2 or 1,
+                local uv = ImageUVOffset(FILTERED_PNG[n + 1].img_obj, FILTERED_PNG[n + 1].rescale,
                     image:find("track_icons") and 1 or 3, 1, 0, 0, 0, 1, true)
                 if r.ImGui_ImageButton(ctx, "##png_select", FILTERED_PNG[n + 1].img_obj, button_size, button_size, uv[3], uv[4], uv[5], uv[6]) then
                     pie.img_obj = nil
@@ -615,7 +631,7 @@ local function PngSelector(pie, button_size)
         r.ImGui_EndPopup(ctx)
     end
     r.ImGui_PopStyleColor(ctx)
-    return ret, png
+    return ret, png, IMG_RESCALE_FACTOR
 end
 
 local function PngDisplay(tbl, img_obj, button_size)
@@ -626,7 +642,7 @@ local function PngDisplay(tbl, img_obj, button_size)
         if not r.ImGui_ValidatePtr(img_obj, 'ImGui_Image*') then
             img_obj = r.ImGui_CreateImage(reaper_path .. tbl.png)
         end
-        local uv = ImageUVOffset(img_obj, tbl.png:find("track_icons") and 1.2 or 1,
+        local uv = ImageUVOffset(img_obj, tbl.rescale,
             tbl.png:find("track_icons") and 1 or 3, 1, 0, 0, 0, 1, true)
         if r.ImGui_ImageButton(ctx, "##prev_png", img_obj, button_size - 6, button_size - 6, uv[3], uv[4], uv[5], uv[6]) then
             if not ALT then
@@ -653,8 +669,8 @@ local function PngFrame(pie, size)
         PNG_FILTER = ''
         r.ImGui_OpenPopup(ctx, 'Png Selector')
     end
-    local rv, png = PngSelector(pie[pie.selected], 24)
-    return rv, png
+    local rv, png, rescale = PngSelector(pie[pie.selected], 24)
+    return rv, png, rescale
 end
 
 ICON = ''
@@ -755,14 +771,16 @@ local function NewProperties(pie)
             if rv_i then
                 pie[pie.selected].icon = icon
                 if pie[pie.selected].png then
+                    pie[pie.selected].rescale = nil
                     pie[pie.selected].png = nil
                     pie[pie.selected].img_obj = nil
                 end
             end
             r.ImGui_SameLine(ctx)
-            local rv_png, png = PngFrame(pie, 50)
+            local rv_png, png, rescale = PngFrame(pie, 50)
             if rv_png then
                 pie[pie.selected].png = png
+                pie[pie.selected].rescale = rescale
                 if pie[pie.selected].icon then
                     pie[pie.selected].icon = nil
                 end

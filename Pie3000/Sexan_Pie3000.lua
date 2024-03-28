@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.32.95
+-- @version 0.33
 -- @changelog
---  Fix midi tracing when changeing UI scale in reaper settings
+--  Implement image Resizing (100-150-200) for custom images
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
