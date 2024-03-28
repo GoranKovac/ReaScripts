@@ -30,7 +30,7 @@ local DEFAULT_PIE = {
     ["tcpempty"] = { RADIUS = RADIUS_START, name = "TCP EMPTY", guid = r.genGuid() },
     ["mcp"] = { RADIUS = RADIUS_START, name = "MCP", guid = r.genGuid() },
     ["mcpempty"] = { RADIUS = RADIUS_START, name = "MCP EMPTY", guid = r.genGuid() },
-    ["envelope"] = { RADIUS = RADIUS_START, name = "ENVELOPE", guid = r.genGuid() },
+    ["envelope"] = { RADIUS = RADIUS_START, name = "ENVELOPE", guid = r.genGuid() ,as_global = true},
     ["envcp"] = { RADIUS = RADIUS_START, name = "ENV CP", guid = r.genGuid() },
     ["item"] = { RADIUS = RADIUS_START, name = "ITEM", guid = r.genGuid() },
     ["itemmidi"] = { RADIUS = RADIUS_START, name = "MIDI ITEM", guid = r.genGuid() },
@@ -824,7 +824,7 @@ local function NewProperties(pie)
                         end
                     end
                     if pie.name == "MIDI LANE" or pie.name == "ENVELOPE" then
-                        if r.ImGui_Checkbox(ctx, "Use as Default for all CC Lane Context", pie.as_global) then
+                        if r.ImGui_Checkbox(ctx, "Use as Default for all Lanes", pie.as_global) then
                             pie.as_global = not pie.as_global
                         end
                     end
@@ -849,24 +849,26 @@ end
 
 local function Settings()
     if STATE ~= "SETTINGS" then return end
-    if r.ImGui_Checkbox(ctx, "Open as DropDown Menu", DROP_DOWN_MENU) then
+    r.ImGui_SeparatorText(ctx, "OPENING BEHAVIOR")
+    r.ImGui_Indent(ctx, 0)
+    if r.ImGui_Checkbox(ctx, "Show as DropDown Menu", DROP_DOWN_MENU) then
         DROP_DOWN_MENU = not DROP_DOWN_MENU
         WANT_SAVE = true
     end
-    if r.ImGui_Checkbox(ctx, "Hold to OPEN", HOLD_TO_OPEN) then
+    if r.ImGui_Checkbox(ctx, "Hold Key to OPEN Script (DISABLED = TOGGLE Open/Close)", HOLD_TO_OPEN) then
         HOLD_TO_OPEN = not HOLD_TO_OPEN
         WANT_SAVE = true
     end
     if not HOLD_TO_OPEN then
         r.ImGui_Indent(ctx, 0)
-        if r.ImGui_Checkbox(ctx, "Close on Action Activate", CLOSE_ON_ACTIVATE) then
+        if r.ImGui_Checkbox(ctx, "Close script when Action is activate", CLOSE_ON_ACTIVATE) then
             CLOSE_ON_ACTIVATE = not CLOSE_ON_ACTIVATE
             WANT_SAVE = true
         end
         r.ImGui_Unindent(ctx)
     end
 
-    if r.ImGui_Checkbox(ctx, "Activate Action on Close", ACTIVATE_ON_CLOSE) then
+    if r.ImGui_Checkbox(ctx, "Activate action when closing script", ACTIVATE_ON_CLOSE) then
         ACTIVATE_ON_CLOSE = not ACTIVATE_ON_CLOSE
         WANT_SAVE = true
     end
@@ -874,50 +876,64 @@ local function Settings()
         ANIMATION = not ANIMATION
         WANT_SAVE = true
     end
-    if r.ImGui_Checkbox(ctx, "Limit mouse movement to radius", LIMIT_MOUSE) then
-        LIMIT_MOUSE = not LIMIT_MOUSE
-        WANT_SAVE = true
-    end
-    if r.ImGui_Checkbox(ctx, "Re-Center mouse position on menu open", RESET_POSITION) then
-        RESET_POSITION = not RESET_POSITION
-        WANT_SAVE = true
-    end
-    if r.ImGui_Checkbox(ctx, "Revert mouse position to starting position on close", REVERT_TO_START) then
-        REVERT_TO_START = not REVERT_TO_START
-        WANT_SAVE = true
-    end
-    if r.ImGui_Checkbox(ctx, "Re-Adjust Pie position near edges of screen", ADJUST_PIE_NEAR_EDGE) then
-        ADJUST_PIE_NEAR_EDGE = not ADJUST_PIE_NEAR_EDGE
-        WANT_SAVE = true
-    end
-    if r.ImGui_Checkbox(ctx, "Show shortcut buttons", SHOW_SHORTCUT) then
-        SHOW_SHORTCUT = not SHOW_SHORTCUT
-        WANT_SAVE = true
-    end
-    if r.ImGui_Checkbox(ctx, "Select thing under mouse", SELECT_THING_UNDER_MOUSE) then
+    if r.ImGui_Checkbox(ctx, "Select thing (Track/Item) under mouse", SELECT_THING_UNDER_MOUSE) then
         SELECT_THING_UNDER_MOUSE = not SELECT_THING_UNDER_MOUSE
         WANT_SAVE = true
     end
-    if r.ImGui_Checkbox(ctx, "SWIPE (Menus only)", SWIPE) then
+    r.ImGui_Unindent(ctx)
+    r.ImGui_SeparatorText(ctx, "GENERAL BEHAVIOR")
+    r.ImGui_Indent(ctx, 0)
+    -- if r.ImGui_Checkbox(ctx, "Limit mouse movement to radius", LIMIT_MOUSE) then
+    --     LIMIT_MOUSE = not LIMIT_MOUSE
+    --     WANT_SAVE = true
+    -- end
+    if r.ImGui_Checkbox(ctx, "Revert mouse position to starting position when script Closes", REVERT_TO_START) then
+        REVERT_TO_START = not REVERT_TO_START
+        WANT_SAVE = true
+    end
+    if r.ImGui_Checkbox(ctx, "Re-Center mouse position when new/previous menu opens", RESET_POSITION) then
+        RESET_POSITION = not RESET_POSITION
+        WANT_SAVE = true
+    end
+    if r.ImGui_Checkbox(ctx, "Re-Adjust Pie position when mouse is near edges of screen (Fit Pie into Screen)", ADJUST_PIE_NEAR_EDGE) then
+        ADJUST_PIE_NEAR_EDGE = not ADJUST_PIE_NEAR_EDGE
+        WANT_SAVE = true
+    end
+    if r.ImGui_Checkbox(ctx, "Show shortcut buttons around Pie", SHOW_SHORTCUT) then
+        SHOW_SHORTCUT = not SHOW_SHORTCUT
+        WANT_SAVE = true
+    end
+
+    if r.ImGui_Checkbox(ctx, "SWIPE (Menus only) - Open menu when mouse is swiped in its direction", SWIPE) then
         SWIPE = not SWIPE
         WANT_SAVE = true
     end
     if SWIPE then
         r.ImGui_Indent(ctx, 0)
-        RV_SW, SWIPE_TRESHOLD = r.ImGui_SliderInt(ctx, "Threshold in Pixel (Move speed)", SWIPE_TRESHOLD, 20, 100)
-        RV_SWC, SWIPE_CONFIRM = r.ImGui_SliderInt(ctx, "Confirm Delay MS", SWIPE_CONFIRM, 20, 150)
+        RV_SW, SWIPE_TRESHOLD = r.ImGui_SliderInt(ctx, "Threshold in Pixel - How fast mouse should Move", SWIPE_TRESHOLD, 20, 100)
+        RV_SWC, SWIPE_CONFIRM = r.ImGui_SliderInt(ctx, "Confirm Delay MS - Small delay to open menu", SWIPE_CONFIRM, 20, 150)
         if RV_SW or RV_SWC then
             WANT_SAVE = true
         end
         r.ImGui_Unindent(ctx)
     end
 
-    r.ImGui_Separator(ctx)
+    r.ImGui_Unindent(ctx)
+    r.ImGui_SeparatorText(ctx, "PLUGIN CONTEXT ENABLING")
+    r.ImGui_Indent(ctx, 0)
+
+    
     local ALLOW_KB_FX = r.SNM_GetIntConfigVar("fxfloat_focus", 0)
-    if r.ImGui_Checkbox(ctx, "Allow Keyboard in FX - Needs to be ON for detecting PLUGIN Context!!!!!!", ALLOW_KB_FX & 4096 ~= 0) then
+    if r.ImGui_Checkbox(ctx, "Allow Keyboard in FX - ENABLE PLUGIN CONTEXT", ALLOW_KB_FX & 4096 ~= 0) then
         r.SNM_SetIntConfigVar("fxfloat_focus", ALLOW_KB_FX ~ 4096)
     end
-    r.ImGui_Separator(ctx)
+    r.ImGui_PushStyleColor( ctx,  r.ImGui_Col_Text(), 0xFF0000FF )
+    r.ImGui_Text(ctx, "WARNING: ")
+    r.ImGui_PopStyleColor( ctx )
+    r.ImGui_SameLine(ctx)
+    r.ImGui_Text(ctx,"SOME KEYBOARD KEYS WON'T WORK IN PLUGINS (TEXT FIELDS/INPUT BOXES,SHORTCUTS)")
+    r.ImGui_Unindent(ctx)
+    --r.ImGui_Separator(ctx)
 
     if WANT_SAVE then
         local data = TableToString(
@@ -1254,6 +1270,9 @@ local function EnvLaneSelector()
                 if r.ImGui_MenuItem(ctx, ENV_LIST[i], nil, cur_env_item == i, true) then
                     cur_env_item = i
                     SWITCH_PIE = i == 0 and PIES["envelope"] or PIES[ENV_LIST[cur_env_item]:lower()]
+                end
+                if i == 0 then
+                    r.ImGui_Separator(ctx)
                 end
             end
 

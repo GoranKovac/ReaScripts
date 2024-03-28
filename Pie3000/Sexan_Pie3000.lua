@@ -1,11 +1,10 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.32.90
+-- @version 0.32.91
 -- @changelog
---  Added Spacer context
---  Added Envelope Lane context (Default only)
---  Main Envelope context option to use as default for all
+--  Improve settings
+--  Add lighter color for dark themes
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua

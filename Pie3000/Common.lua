@@ -1203,7 +1203,7 @@ end
 function DrawPie(pie, center)
     -- DRAW GUIDELINE WHERE MOUSE WAS BEFORE GUI WAS ADJUSTED TO BE IN THE SCREEN (ON EDGES)
     if OUT_SCREEN then
-        r.ImGui_DrawList_AddLine(draw_list, PREV_X, PREV_Y, START_X, START_Y, 0xff0000FF, 5)
+        r.ImGui_DrawList_AddLine(draw_list, PREV_X, PREV_Y, START_X, START_Y, dark_theme and 0x40ffb3aa or 0xff0000ff, 5)
     end
     GetMouseDelta()
     if not r.ImGui_ValidatePtr(SPLITTER, "ImGui_DrawListSplitter*") then
