@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.32.94
+-- @version 0.32.95
 -- @changelog
---  If option select thing under mouse is enable set focus on last one
+--  Fix midi tracing when changeing UI scale in reaper settings
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua

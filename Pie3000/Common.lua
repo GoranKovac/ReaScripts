@@ -403,6 +403,8 @@ function DetectMIDIContext()
     -- TAKE SCREENSHOT OF THE THE RIGHT SCROLLBAR
     local function takeScreenshot(window)
         --local retval, w, h = r.JS_Window_GetClientSize( window )
+        local rv_scale, scale = reaper.get_config_var_string( "uiscale" )
+        local UI_SCALE = rv_scale and tonumber(scale) or 1
         local retval, left, top, right, bottom = r.JS_Window_GetRect(window)
         local w, h = right - left, bottom - top
         local bot_px
@@ -412,7 +414,7 @@ function DetectMIDIContext()
             local destBmp = r.JS_LICE_CreateBitmap(true, 1, h)
             local destDC = r.JS_LICE_GetDC(destBmp)
             r.JS_GDI_Blit(destDC, 0, 0, srcDC, w - 1, 0, w, h)
-            bot_px = FasterSearch(destBmp, GetPixel(destBmp, 0, 64), 65)
+            bot_px = FasterSearch(destBmp, GetPixel(destBmp, 0, ceil(64*UI_SCALE)), ceil(65*UI_SCALE))
             --bot_px = BinaryPixelSearch(destBmp, GetPixel( destBmp, 1, 1 ), w, 63, h)
             --bot_px = CalculateLanes(destBmp, w, h)
             r.JS_GDI_ReleaseDC(window, srcDC)
