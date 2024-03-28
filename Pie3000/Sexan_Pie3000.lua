@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.33
+-- @version 0.33.01
 -- @changelog
---  Implement image Resizing (100-150-200) for custom images
+--  Clear resize when clearing icons
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua

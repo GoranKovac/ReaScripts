@@ -618,8 +618,10 @@ local function PngSelector(pie, button_size)
                     ret, png = true, image
                     r.ImGui_CloseCurrentPopup(ctx)
                 end
+
                 local last_button_x2 = r.ImGui_GetItemRectMax(ctx)
                 local next_button_x2 = last_button_x2 + item_spacing_x + button_size
+             
                 if n + 1 < buttons_count and next_button_x2 < window_visible_x2 then
                     r.ImGui_SameLine(ctx)
                 end
@@ -787,6 +789,7 @@ local function NewProperties(pie)
             end
             r.ImGui_SameLine(ctx)
             if r.ImGui_Button(ctx, "CLEAR", 50, 50) then
+                pie[pie.selected].rescale = nil
                 pie[pie.selected].png = nil
                 pie[pie.selected].img_obj = nil
                 pie[pie.selected].icon = nil
