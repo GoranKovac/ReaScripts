@@ -1,10 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.32.91
+-- @version 0.32.92
 -- @changelog
---  Improve settings
---  Add lighter color for dark themes
+--  Improve settings 2
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua

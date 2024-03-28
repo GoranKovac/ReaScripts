@@ -861,14 +861,14 @@ local function Settings()
     end
     if not HOLD_TO_OPEN then
         r.ImGui_Indent(ctx, 0)
-        if r.ImGui_Checkbox(ctx, "Close script when Action is activate", CLOSE_ON_ACTIVATE) then
+        if r.ImGui_Checkbox(ctx, "Close script when Action is Clicked", CLOSE_ON_ACTIVATE) then
             CLOSE_ON_ACTIVATE = not CLOSE_ON_ACTIVATE
             WANT_SAVE = true
         end
         r.ImGui_Unindent(ctx)
     end
 
-    if r.ImGui_Checkbox(ctx, "Activate action when closing script", ACTIVATE_ON_CLOSE) then
+    if r.ImGui_Checkbox(ctx, "Activate hovered action when closing script", ACTIVATE_ON_CLOSE) then
         ACTIVATE_ON_CLOSE = not ACTIVATE_ON_CLOSE
         WANT_SAVE = true
     end
