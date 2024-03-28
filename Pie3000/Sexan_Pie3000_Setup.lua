@@ -887,11 +887,11 @@ local function Settings()
     --     LIMIT_MOUSE = not LIMIT_MOUSE
     --     WANT_SAVE = true
     -- end
-    if r.ImGui_Checkbox(ctx, "Revert mouse position to starting position when script Closes", REVERT_TO_START) then
+    if r.ImGui_Checkbox(ctx, "Revert mouse to starting position when script Closes", REVERT_TO_START) then
         REVERT_TO_START = not REVERT_TO_START
         WANT_SAVE = true
     end
-    if r.ImGui_Checkbox(ctx, "Re-Center mouse position when new/previous menu opens", RESET_POSITION) then
+    if r.ImGui_Checkbox(ctx, "Re-Center mouse when new/previous menu opens", RESET_POSITION) then
         RESET_POSITION = not RESET_POSITION
         WANT_SAVE = true
     end
@@ -1433,7 +1433,8 @@ local function ActionsTab(pie)
             rv_af, ACTION_FILTER = r.ImGui_InputTextWithHint(ctx, "##inputA", "Search Actions", ACTION_FILTER)
             if rv_af or UPDATE_FILTER then
                 UPDATE_CNT = UPDATE_FILTER and UPDATE_CNT + 1 or UPDATE_CNT
-                FILTERED_ACTION_TBL = FilterActions(CUR_PIE.name:find("MIDI") and MIDI_ACTIONS_TBL or ACTIONS_TBL,
+                local want_midi = CUR_PIE.name:find("MIDI") and not CUR_PIE.name:find("MIDI ITEM")
+                FILTERED_ACTION_TBL = FilterActions(want_midi and MIDI_ACTIONS_TBL or ACTIONS_TBL,
                     ACTION_FILTER)
             end
             if r.ImGui_BeginChild(ctx, "##CLIPPER_ACTION", nil, nil, nil, r.ImGui_WindowFlags_AlwaysHorizontalScrollbar()) then
