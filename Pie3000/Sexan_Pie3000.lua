@@ -1,10 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.33.11
+-- @version 0.33.12
 -- @changelog
---  Change Action name to InputText so it can be selected
---  Scroll to current icon
+--  Select proper scale box and Scroll to current icon
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua

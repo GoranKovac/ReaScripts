@@ -553,15 +553,15 @@ local function PngSelector(pie, button_size)
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_PopupBg(), bg_col)
     local png_path_inner, png_name
     if pie.png then
-        png_path_inner = pie.png:match("(.+/)(%S+)")
-        png_name = pie.png --:gsub("/", "\\")
+       -- png_path_inner = pie.png:match("(.+/)(%S+)")
+        png_name = pie.png --:gsub("/", "\\")        
     end
     if r.ImGui_BeginPopup(ctx, "Png Selector") then
         r.ImGui_BeginGroup(ctx)
         r.ImGui_Text(ctx, "Toolbar Icons")
         r.ImGui_SameLine(ctx)
 
-        if r.ImGui_RadioButton(ctx, "100", (CHOOSE == "100" and true or (png_path_inner == png_path and not CHOOSE))) then
+        if r.ImGui_RadioButton(ctx, "100", CHOOSE == "100") then
             IMG_RESCALE_FACTOR = nil
             RefreshImgObj(PNG_TBL)
             png_tbl = PNG_TBL
@@ -569,14 +569,14 @@ local function PngSelector(pie, button_size)
         end
 
         r.ImGui_SameLine(ctx)
-        if r.ImGui_RadioButton(ctx, "150", (CHOOSE == "150" and true or (png_path_inner == png_path_150 and not CHOOSE))) then
+        if r.ImGui_RadioButton(ctx, "150", (CHOOSE == "150")) then
             IMG_RESCALE_FACTOR = nil
             RefreshImgObj(PNG_TBL_150)
             png_tbl = PNG_TBL_150
             CHOOSE = "150"
         end
         r.ImGui_SameLine(ctx)
-        if r.ImGui_RadioButton(ctx, "200", (CHOOSE == "200" and true or (png_path_inner == png_path_200 and not CHOOSE))) then
+        if r.ImGui_RadioButton(ctx, "200", (CHOOSE == "200")) then
             IMG_RESCALE_FACTOR = nil
             RefreshImgObj(PNG_TBL_200)
             png_tbl = PNG_TBL_200
@@ -585,22 +585,25 @@ local function PngSelector(pie, button_size)
         r.ImGui_Text(ctx, "Track Icons    ")
         r.ImGui_SameLine(ctx)
 
-        if r.ImGui_RadioButton(ctx, "100##ti", IMG_RESCALE_FACTOR == 30) then
+        if r.ImGui_RadioButton(ctx, "100##ti", (CHOOSE == "30")) then
             RefreshImgObj(PNG_TBL_TRACK_ICONS)
             IMG_RESCALE_FACTOR = 30
             png_tbl = PNG_TBL_TRACK_ICONS
+            CHOOSE = "30"
         end
         r.ImGui_SameLine(ctx)
-        if r.ImGui_RadioButton(ctx, "150##ti", IMG_RESCALE_FACTOR == 45) then
+        if r.ImGui_RadioButton(ctx, "150##ti",(CHOOSE == "45" )) then
             IMG_RESCALE_FACTOR = 45
             RefreshImgObj(PNG_TBL_TRACK_ICONS)
             png_tbl = PNG_TBL_TRACK_ICONS
+            CHOOSE = "45"
         end
         r.ImGui_SameLine(ctx)
-        if r.ImGui_RadioButton(ctx, "200##ti", IMG_RESCALE_FACTOR == 60) then
+        if r.ImGui_RadioButton(ctx, "200##ti", (CHOOSE == "60" )) then
             IMG_RESCALE_FACTOR = 60
             RefreshImgObj(PNG_TBL_TRACK_ICONS)
             png_tbl = PNG_TBL_TRACK_ICONS
+            CHOOSE = "60"
         end
         r.ImGui_EndGroup(ctx)
 
@@ -642,7 +645,7 @@ local function PngSelector(pie, button_size)
                     r.ImGui_DrawList_AddRect(draw_list, minx, miny, maxx, maxy, 0x00ff00ff, 0, 0, 2)
                     if SCROLL_TO_IMG then 
                         SCROLL_TO_IMG = nil
-                        r.ImGui_SetScrollFromPosY( ctx, maxy, 0.5 )
+                        r.ImGui_SetScrollHereY( ctx )
                     end
                 end
 
@@ -680,6 +683,29 @@ local function PngDisplay(tbl, img_obj, button_size)
         if r.ImGui_ImageButton(ctx, "##prev_png", img_obj, button_size - 6, button_size - 6, uv[3], uv[4], uv[5], uv[6]) then
             if not ALT then
                 rv = true
+                if tbl.png then
+                    local png_path_inner = tbl.png:match("(.+/)(%S+)")
+                    if not tbl.rescale then
+                        if png_path_inner:match("150") then
+                            RefreshImgObj(PNG_TBL_150)
+                            CHOOSE = "150"
+                            png_tbl = PNG_TBL_150
+                        elseif png_path_inner:match("200") then
+                            RefreshImgObj(PNG_TBL_200)
+                            CHOOSE = "200"
+                            png_tbl = PNG_TBL_200
+                        else
+                            RefreshImgObj(PNG_TBL)
+                            CHOOSE = "100"
+                            png_tbl = PNG_TBL
+                        end
+                    else
+                        CHOOSE = tostring(tbl.rescale)
+                        RefreshImgObj(PNG_TBL_TRACK_ICONS)
+                        png_tbl = PNG_TBL_TRACK_ICONS
+                    end
+                    SCROLL_TO_IMG = true
+                end
             else
                 tbl.png = nil
                 tbl.img_obj = nil
@@ -691,7 +717,6 @@ local function PngDisplay(tbl, img_obj, button_size)
         end
     end
     r.ImGui_PopID(ctx)
-    SCROLL_TO_IMG = rv
     return rv
 end
 
