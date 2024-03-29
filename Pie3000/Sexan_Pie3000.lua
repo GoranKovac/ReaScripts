@@ -1,9 +1,10 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.33.12
+-- @version 0.33.13
 -- @changelog
---  Select proper scale box and Scroll to current icon
+--  Default to toolbar icons when no icon is selected
+--  Clear all auto choosing flags when closing window
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua

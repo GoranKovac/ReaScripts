@@ -666,6 +666,8 @@ local function PngSelector(pie, button_size)
     r.ImGui_PopStyleColor(ctx)
     if not r.ImGui_IsPopupOpen(ctx, "filtered_pngs_list") then
         if SCROLL_TO_IMG then SCROLL_TO_IMG = nil end
+        if CHOOSE then CHOOSE = nil end
+        if IMG_RESCALE_FACTOR then IMG_RESCALE_FACTOR = nil end
     end
     return ret, png, IMG_RESCALE_FACTOR
 end
@@ -713,6 +715,9 @@ local function PngDisplay(tbl, img_obj, button_size)
         end
     else
         if r.ImGui_Button(ctx, "IMG", button_size, button_size) then
+            RefreshImgObj(PNG_TBL)
+            CHOOSE = "100"
+            png_tbl = PNG_TBL
             rv = true
         end
     end
