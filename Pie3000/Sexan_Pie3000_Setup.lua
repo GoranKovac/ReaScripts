@@ -553,7 +553,6 @@ local function PngSelector(pie, button_size)
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_PopupBg(), bg_col)
     local png_path_inner, png_name
     if pie.png then
-        -- r.ShowConsoleMsg(pie.png.."\n")
         png_path_inner = pie.png:match("(.+/)(%S+)")
         png_name = pie.png --:gsub("/", "\\")
     end
@@ -633,6 +632,7 @@ local function PngSelector(pie, button_size)
                     pie.img_obj = nil
                     ret, png = true, image
                     CHOOSE = nil
+                    SCROLL_TO_IMG = nil
                     r.ImGui_CloseCurrentPopup(ctx)
                 end
                 local minx, miny = r.ImGui_GetItemRectMin(ctx)
@@ -640,6 +640,10 @@ local function PngSelector(pie, button_size)
                 --end
                 if png_name == image then
                     r.ImGui_DrawList_AddRect(draw_list, minx, miny, maxx, maxy, 0x00ff00ff, 0, 0, 2)
+                    if SCROLL_TO_IMG then 
+                        SCROLL_TO_IMG = nil
+                        r.ImGui_SetScrollFromPosY( ctx, maxy, 0.5 )
+                    end
                 end
 
                 --local last_button_x2 = r.ImGui_GetItemRectMax(ctx)
@@ -657,6 +661,9 @@ local function PngSelector(pie, button_size)
         r.ImGui_EndPopup(ctx)
     end
     r.ImGui_PopStyleColor(ctx)
+    if not r.ImGui_IsPopupOpen(ctx, "filtered_pngs_list") then
+        if SCROLL_TO_IMG then SCROLL_TO_IMG = nil end
+    end
     return ret, png, IMG_RESCALE_FACTOR
 end
 
@@ -684,6 +691,7 @@ local function PngDisplay(tbl, img_obj, button_size)
         end
     end
     r.ImGui_PopID(ctx)
+    SCROLL_TO_IMG = rv
     return rv
 end
 
@@ -766,14 +774,12 @@ end
 
 local function NewProperties(pie)
     if STATE == "SETTINGS" then return end
-    if r.ImGui_BeginChild(ctx, "PROPERTIES", 0, 162, true) then
+    if r.ImGui_BeginChild(ctx, "PROPERTIES", 0, 147, true) then
         if pie.selected then
             LAST_MSG = pie[pie.selected].name
-            r.ImGui_Text(ctx, pie[pie.selected].menu and pie[pie.selected].name or pie[pie.selected].cmd_name)
-            r.ImGui_Separator(ctx)
-            --r.ImGui_Text(ctx, "Action ID: " .. (pie[pie.selected].menu and pie[pie.selected].name or pie[pie.selected].cmd))
             r.ImGui_PushStyleColor(ctx, r.ImGui_Col_FrameBg(),0)
-            r.ImGui_InputText( ctx, "##ID", "Action ID: " .. (pie[pie.selected].menu and pie[pie.selected].name or pie[pie.selected].cmd), r.ImGui_InputTextFlags_ReadOnly())
+            r.ImGui_SetNextItemWidth(ctx,-FLT_MIN)
+            r.ImGui_InputText( ctx, "##ID", pie[pie.selected].menu and pie[pie.selected].name or pie[pie.selected].cmd_name, r.ImGui_InputTextFlags_ReadOnly())
             r.ImGui_PopStyleColor(ctx)
             r.ImGui_Separator(ctx)
             r.ImGui_BeginGroup(ctx)
