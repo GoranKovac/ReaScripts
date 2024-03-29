@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.33.14
+-- @version 0.33.15
 -- @changelog
---  Show Warning if action does not exist (pie file exchanged from other user/system)
+--  Fix broken Auto scroll to image and scale selection
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua

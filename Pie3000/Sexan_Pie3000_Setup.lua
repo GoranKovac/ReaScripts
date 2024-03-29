@@ -664,11 +664,7 @@ local function PngSelector(pie, button_size)
         r.ImGui_EndPopup(ctx)
     end
     r.ImGui_PopStyleColor(ctx)
-    if not r.ImGui_IsPopupOpen(ctx, "filtered_pngs_list") then
-        if SCROLL_TO_IMG then SCROLL_TO_IMG = nil end
-        if CHOOSE then CHOOSE = nil end
-        if IMG_RESCALE_FACTOR then IMG_RESCALE_FACTOR = nil end
-    end
+    
     return ret, png, IMG_RESCALE_FACTOR
 end
 
@@ -702,6 +698,7 @@ local function PngDisplay(tbl, img_obj, button_size)
                             png_tbl = PNG_TBL
                         end
                     else
+                        IMG_RESCALE_FACTOR = tbl.rescale
                         CHOOSE = tostring(tbl.rescale)
                         RefreshImgObj(PNG_TBL_TRACK_ICONS)
                         png_tbl = PNG_TBL_TRACK_ICONS
