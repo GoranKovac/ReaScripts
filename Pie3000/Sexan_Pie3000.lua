@@ -1,9 +1,10 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.33.01
+-- @version 0.33.10
 -- @changelog
---  Clear resize when clearing icons
+--  Don't use find action by name and then use its ID
+--  Hopefully fix the the issue when swapping IDS
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -44,6 +45,8 @@ local function GetMonitorFromPoint()
     local x, y = r.GetMousePosition()
     LEFT, TOP, RIGHT, BOT = r.my_getViewport(x, y, x, y, x, y, x, y, true)
 end
+local ACTIONS = GetMainActions()
+local MIDI_ACTIONS = GetMidiActions()
 
 local function Init()
     SCRIPT_START_TIME = r.time_precise()
@@ -306,6 +309,22 @@ local function AnimationProgress()
     end
 end
 
+local function FindAction(name)
+    if PIE_MENU.is_midi then
+        for i= 1, #MIDI_ACTIONS do
+            if MIDI_ACTIONS[i].name == name then
+                return tonumber(MIDI_ACTIONS[i].cmd)
+            end
+        end
+    else
+        for i= 1, #ACTIONS do
+            if ACTIONS[i].name == name then
+                return tonumber(ACTIONS[i].cmd)
+            end
+        end
+    end
+end
+
 
 local MAIN_HWND = r.GetMainHwnd()
 local function ExecuteAction(action)
@@ -313,20 +332,30 @@ local function ExecuteAction(action)
         if CLOSE and ACTIVATE_ON_CLOSE then
             if LAST_TRIGGERED ~= action then
                 LAST_TRIGGERED = action
+                local cmd_id = FindAction(action)
                 if PIE_MENU.is_midi then
-                    r.MIDIEditor_OnCommand(r.MIDIEditor_GetActive(), action)
+                    if cmd_id then 
+                        r.MIDIEditor_OnCommand(r.MIDIEditor_GetActive(), cmd_id)
+                    end
                 else
-                    r.Main_OnCommand(action, 0)
+                    if cmd_id then                        
+                        r.Main_OnCommand(cmd_id, 0)
+                    end
                 end
             end
         end
         if r.ImGui_IsMouseReleased(ctx, 0) then
             local START_ACTION_TIME = r.time_precise()
             LAST_TRIGGERED = action
+            local cmd_id = FindAction(action)
             if PIE_MENU.is_midi then
-                r.MIDIEditor_OnCommand(r.MIDIEditor_GetActive(), action)
+                if cmd_id then 
+                r.MIDIEditor_OnCommand(r.MIDIEditor_GetActive(), cmd_id)
+                end
             else
-                r.Main_OnCommand(action, 0)
+                if cmd_id then 
+                r.Main_OnCommand(cmd_id, 0)
+                end
             end
             local AFTER_ACTION_TIME = r.time_precise()
 
@@ -340,10 +369,16 @@ local function ExecuteAction(action)
             end
         elseif KEY_TRIGGER then
             LAST_TRIGGERED = action
+            local cmd_id = FindAction(action)
+
             if PIES[INFO].name == "MIDI" then
-                r.MIDIEditor_OnCommand(r.MIDIEditor_GetActive(), action)
+                if cmd_id then 
+                    r.MIDIEditor_OnCommand(r.MIDIEditor_GetActive(), cmd_id)
+                end
             else
-                r.Main_OnCommand(action, 0)
+                if cmd_id then 
+                    r.Main_OnCommand(cmd_id, 0)
+                end
             end
             KEY_TRIGGER = nil
             if not HOLD_TO_OPEN then
@@ -369,7 +404,7 @@ local function DoAction()
             SWITCH_PIE = PIE_MENU[LAST_ACTION]
         end
     else
-        ExecuteAction(PIE_MENU[LAST_ACTION].cmd)
+        ExecuteAction(PIE_MENU[LAST_ACTION].cmd_name)
     end
 end
 

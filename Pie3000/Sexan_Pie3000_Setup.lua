@@ -15,6 +15,7 @@ if CheckDeps() then return end
 
 ctx = r.ImGui_CreateContext('Pie XYZ Setup', r.ImGui_ConfigFlags_NoSavedSettings())
 r.ImGui_SetConfigVar(ctx, r.ImGui_ConfigVar_WindowsMoveFromTitleBarOnly(), 1)
+r.ImGui_SetConfigVar(ctx, r.ImGui_ConfigFlags_NavEnableKeyboard(), 1)
 
 require('Common')
 
@@ -30,7 +31,7 @@ local DEFAULT_PIE = {
     ["tcpempty"] = { RADIUS = RADIUS_START, name = "TCP EMPTY", guid = r.genGuid() },
     ["mcp"] = { RADIUS = RADIUS_START, name = "MCP", guid = r.genGuid() },
     ["mcpempty"] = { RADIUS = RADIUS_START, name = "MCP EMPTY", guid = r.genGuid() },
-    ["envelope"] = { RADIUS = RADIUS_START, name = "ENVELOPE", guid = r.genGuid() ,as_global = true},
+    ["envelope"] = { RADIUS = RADIUS_START, name = "ENVELOPE", guid = r.genGuid(), as_global = true },
     ["envcp"] = { RADIUS = RADIUS_START, name = "ENV CP", guid = r.genGuid() },
     ["item"] = { RADIUS = RADIUS_START, name = "ITEM", guid = r.genGuid() },
     ["itemmidi"] = { RADIUS = RADIUS_START, name = "MIDI ITEM", guid = r.genGuid() },
@@ -550,28 +551,37 @@ local function PngSelector(pie, button_size)
     r.ImGui_SetNextWindowSize(ctx, 500, 400)
     r.ImGui_SetNextWindowBgAlpha(ctx, 1)
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_PopupBg(), bg_col)
+    local png_path_inner, png_name
+    if pie.png then
+        -- r.ShowConsoleMsg(pie.png.."\n")
+        png_path_inner = pie.png:match("(.+/)(%S+)")
+        png_name = pie.png --:gsub("/", "\\")
+    end
     if r.ImGui_BeginPopup(ctx, "Png Selector") then
         r.ImGui_BeginGroup(ctx)
         r.ImGui_Text(ctx, "Toolbar Icons")
         r.ImGui_SameLine(ctx)
 
-        if r.ImGui_RadioButton(ctx, "100", png_tbl == PNG_TBL) then
+        if r.ImGui_RadioButton(ctx, "100", (CHOOSE == "100" and true or (png_path_inner == png_path and not CHOOSE))) then
             IMG_RESCALE_FACTOR = nil
             RefreshImgObj(PNG_TBL)
             png_tbl = PNG_TBL
+            CHOOSE = "100"
         end
 
         r.ImGui_SameLine(ctx)
-        if r.ImGui_RadioButton(ctx, "150", png_tbl == PNG_TBL_150) then
+        if r.ImGui_RadioButton(ctx, "150", (CHOOSE == "150" and true or (png_path_inner == png_path_150 and not CHOOSE))) then
             IMG_RESCALE_FACTOR = nil
             RefreshImgObj(PNG_TBL_150)
             png_tbl = PNG_TBL_150
+            CHOOSE = "150"
         end
         r.ImGui_SameLine(ctx)
-        if r.ImGui_RadioButton(ctx, "200", png_tbl == PNG_TBL_200) then
+        if r.ImGui_RadioButton(ctx, "200", (CHOOSE == "200" and true or (png_path_inner == png_path_200 and not CHOOSE))) then
             IMG_RESCALE_FACTOR = nil
             RefreshImgObj(PNG_TBL_200)
             png_tbl = PNG_TBL_200
+            CHOOSE = "200"
         end
         r.ImGui_Text(ctx, "Track Icons    ")
         r.ImGui_SameLine(ctx)
@@ -607,24 +617,38 @@ local function PngSelector(pie, button_size)
         if r.ImGui_BeginChild(ctx, "filtered_pngs_list", 0, 0) then
             for n = 0, #FILTERED_PNG - 1 do
                 local image = FILTERED_PNG[n + 1].name
+                local xx, yy = r.ImGui_GetCursorPos(ctx)
+
                 r.ImGui_PushID(ctx, n)
+                r.ImGui_Dummy(ctx, button_size, button_size) -- PLACE HOLDER
+
                 if not r.ImGui_ValidatePtr(FILTERED_PNG[n + 1].img_obj, 'ImGui_Image*') then
                     FILTERED_PNG[n + 1].img_obj = r.ImGui_CreateImage(reaper_path .. image)
                 end
                 local uv = ImageUVOffset(FILTERED_PNG[n + 1].img_obj, FILTERED_PNG[n + 1].rescale,
                     image:find("track_icons") and 1 or 3, 1, 0, 0, 0, 1, true)
+
+                r.ImGui_SetCursorPos(ctx, xx, yy)
                 if r.ImGui_ImageButton(ctx, "##png_select", FILTERED_PNG[n + 1].img_obj, button_size, button_size, uv[3], uv[4], uv[5], uv[6]) then
                     pie.img_obj = nil
                     ret, png = true, image
+                    CHOOSE = nil
                     r.ImGui_CloseCurrentPopup(ctx)
                 end
+                local minx, miny = r.ImGui_GetItemRectMin(ctx)
+                local maxx, maxy = r.ImGui_GetItemRectMax(ctx)
+                --end
+                if png_name == image then
+                    r.ImGui_DrawList_AddRect(draw_list, minx, miny, maxx, maxy, 0x00ff00ff, 0, 0, 2)
+                end
 
-                local last_button_x2 = r.ImGui_GetItemRectMax(ctx)
-                local next_button_x2 = last_button_x2 + item_spacing_x + button_size
-             
+                --local last_button_x2 = r.ImGui_GetItemRectMax(ctx)
+                local next_button_x2 = maxx + item_spacing_x + button_size
+
                 if n + 1 < buttons_count and next_button_x2 < window_visible_x2 then
                     r.ImGui_SameLine(ctx)
                 end
+
                 r.ImGui_PopID(ctx)
             end
             r.ImGui_EndChild(ctx)
@@ -742,10 +766,15 @@ end
 
 local function NewProperties(pie)
     if STATE == "SETTINGS" then return end
-    if r.ImGui_BeginChild(ctx, "PROPERTIES", 0, 140, true) then
+    if r.ImGui_BeginChild(ctx, "PROPERTIES", 0, 162, true) then
         if pie.selected then
             LAST_MSG = pie[pie.selected].name
             r.ImGui_Text(ctx, pie[pie.selected].menu and pie[pie.selected].name or pie[pie.selected].cmd_name)
+            r.ImGui_Separator(ctx)
+            --r.ImGui_Text(ctx, "Action ID: " .. (pie[pie.selected].menu and pie[pie.selected].name or pie[pie.selected].cmd))
+            r.ImGui_PushStyleColor(ctx, r.ImGui_Col_FrameBg(),0)
+            r.ImGui_InputText( ctx, "##ID", "Action ID: " .. (pie[pie.selected].menu and pie[pie.selected].name or pie[pie.selected].cmd), r.ImGui_InputTextFlags_ReadOnly())
+            r.ImGui_PopStyleColor(ctx)
             r.ImGui_Separator(ctx)
             r.ImGui_BeginGroup(ctx)
             r.ImGui_PushID(ctx, "col_remove")
@@ -931,8 +960,10 @@ local function Settings()
     end
     if SWIPE then
         r.ImGui_Indent(ctx, 0)
-        RV_SW, SWIPE_TRESHOLD = r.ImGui_SliderInt(ctx, "Threshold in Pixel - How fast mouse should Move", SWIPE_TRESHOLD, 20, 100)
-        RV_SWC, SWIPE_CONFIRM = r.ImGui_SliderInt(ctx, "Confirm Delay MS - Small delay to open menu", SWIPE_CONFIRM, 20, 150)
+        RV_SW, SWIPE_TRESHOLD = r.ImGui_SliderInt(ctx, "Threshold in Pixel - How fast mouse should Move", SWIPE_TRESHOLD,
+            20, 100)
+        RV_SWC, SWIPE_CONFIRM = r.ImGui_SliderInt(ctx, "Confirm Delay MS - Small delay to open menu", SWIPE_CONFIRM, 20,
+            150)
         if RV_SW or RV_SWC then
             WANT_SAVE = true
         end
@@ -943,16 +974,16 @@ local function Settings()
     r.ImGui_SeparatorText(ctx, "PLUGIN CONTEXT ENABLING")
     r.ImGui_Indent(ctx, 0)
 
-    
+
     local ALLOW_KB_FX = r.SNM_GetIntConfigVar("fxfloat_focus", 0)
     if r.ImGui_Checkbox(ctx, "Allow Keyboard in FX - ENABLE PLUGIN CONTEXT", ALLOW_KB_FX & 4096 ~= 0) then
         r.SNM_SetIntConfigVar("fxfloat_focus", ALLOW_KB_FX ~ 4096)
     end
-    r.ImGui_PushStyleColor( ctx,  r.ImGui_Col_Text(), 0xFF0000FF )
+    r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Text(), 0xFF0000FF)
     r.ImGui_Text(ctx, "WARNING: ")
-    r.ImGui_PopStyleColor( ctx )
+    r.ImGui_PopStyleColor(ctx)
     r.ImGui_SameLine(ctx)
-    r.ImGui_Text(ctx,"SOME KEYBOARD KEYS WON'T WORK IN PLUGINS (TEXT FIELDS/INPUT BOXES,SHORTCUTS)")
+    r.ImGui_Text(ctx, "SOME KEYBOARD KEYS WON'T WORK IN PLUGINS (TEXT FIELDS/INPUT BOXES,SHORTCUTS)")
     r.ImGui_Unindent(ctx)
     --r.ImGui_Separator(ctx)
 
@@ -1420,28 +1451,31 @@ local function Pie()
     r.ImGui_EndGroup(ctx)
 end
 
-local function IterateActions(sectionID)
-    local i = 0
-    return function()
-        local retval, name = r.kbd_enumerateActions(sectionID, i)
-        if #name ~= 0 then
-            i = i + 1
-            return retval, name
-        end
-    end
-end
+-- function IterateActions(sectionID)
+--     local i = 0
+--     return function()
+--         local retval, name = r.kbd_enumerateActions(sectionID, i)
+--         if #name ~= 0 then
+--             i = i + 1
+--             return retval, name
+--         end
+--     end
+-- end
 
-local function GetActions(s)
-    local actions = {}
-    for cmd, name in IterateActions(s) do
-        table.insert(actions, { cmd = cmd, name = name })
-    end
-    table.sort(actions, function(a, b) return a.name < b.name end)
-    return actions
-end
+-- function GetActions(s)
+--     local actions = {}
+--     for cmd, name in IterateActions(s) do
+--         if name ~= "Script: Sexan_Pie3000.lua" then
+--             table.insert(actions, { cmd = cmd, name = name })
+--         end
+--     end
+--     table.sort(actions, function(a, b) return a.name < b.name end)
+--     return actions
+-- end
 
-local ACTIONS_TBL = GetActions(0)
-local MIDI_ACTIONS_TBL = GetActions(32060)
+local ACTIONS_TBL = GetMainActions() --GetActions(0)
+local MIDI_ACTIONS_TBL = GetMidiActions() --GetActions(32060)
+
 local FILTERED_ACTION_TBL = ACTIONS_TBL
 local FILTERED_MENU_TBL = MENUS
 local ACTION_FILTER = ''

@@ -109,6 +109,39 @@ for name, func in pairs(r) do
     if name then KEYS[func()] = name end
 end
 
+function IterateActions(sectionID)
+    local i = 0
+    return function()
+        local retval, name = r.kbd_enumerateActions(sectionID, i)
+        if #name ~= 0 then
+            i = i + 1
+            return retval, name
+        end
+    end
+end
+
+function GetActions(s)
+    local actions = {}
+    for cmd, name in IterateActions(s) do
+        if name ~= "Script: Sexan_Pie3000.lua" then
+            table.insert(actions, { cmd = cmd, name = name })
+        end
+    end
+    table.sort(actions, function(a, b) return a.name < b.name end)
+    return actions
+end
+
+local ACTIONS_TBL = GetActions(0)
+local MIDI_ACTIONS_TBL = GetActions(32060)
+
+function GetMainActions()
+    return ACTIONS_TBL
+end
+
+function GetMidiActions()
+    return MIDI_ACTIONS_TBL
+end
+
 function Release()
     if not KEY then return end
     r.JS_VKeys_Intercept(KEY, -1)
@@ -403,7 +436,7 @@ function DetectMIDIContext()
     -- TAKE SCREENSHOT OF THE THE RIGHT SCROLLBAR
     local function takeScreenshot(window)
         --local retval, w, h = r.JS_Window_GetClientSize( window )
-        local rv_scale, scale = r.get_config_var_string( "uiscale" )
+        local rv_scale, scale = r.get_config_var_string("uiscale")
         local UI_SCALE = rv_scale and tonumber(scale) or 1
         local retval, left, top, right, bottom = r.JS_Window_GetRect(window)
         local w, h = right - left, bottom - top
@@ -414,7 +447,7 @@ function DetectMIDIContext()
             local destBmp = r.JS_LICE_CreateBitmap(true, 1, h)
             local destDC = r.JS_LICE_GetDC(destBmp)
             r.JS_GDI_Blit(destDC, 0, 0, srcDC, w - 1, 0, w, h)
-            bot_px = FasterSearch(destBmp, GetPixel(destBmp, 0, ceil(64*UI_SCALE)), ceil(65*UI_SCALE))
+            bot_px = FasterSearch(destBmp, GetPixel(destBmp, 0, ceil(64 * UI_SCALE)), ceil(65 * UI_SCALE))
             --bot_px = BinaryPixelSearch(destBmp, GetPixel( destBmp, 1, 1 ), w, 63, h)
             --bot_px = CalculateLanes(destBmp, w, h)
             r.JS_GDI_ReleaseDC(window, srcDC)
@@ -453,8 +486,8 @@ end
 function DetectEnvContext(track, env_info)
     local env_num = env_info:match("%S+ (%S+)$")
     if env_num then
-        local env =  r.GetTrackEnvelope( track, env_num )
-        local retval, name = r.GetEnvelopeName( env )
+        local env = r.GetTrackEnvelope(track, env_num)
+        local retval, name = r.GetEnvelopeName(env)
         if retval then return name:lower() end
     end
     return "envelope"
@@ -536,12 +569,12 @@ end
 
 function ImageUVOffset(img_obj, resize, cols, rows, frame, x, y, prog, need_single_frame)
     local w, h = r.ImGui_Image_GetSize(img_obj)
-    local factor = resize and h/resize
-    if resize and h > resize then        
+    local factor = resize and h / resize
+    if resize and h > resize then
         h = h // factor
         w = w // factor
     end
-    
+
     local xs, ys = x - (w / cols) / 2, y - (h / rows) / 2
     local xe, ye = w / cols + xs, h / rows + ys
 
@@ -1137,7 +1170,7 @@ local function DrawDropDownMenu(pie, id, sel_tbl)
     r.ImGui_SeparatorText(ctx, pie.name)
     r.ImGui_PopStyleColor(ctx)
     local last_sel
-    for i = 1, #pie do        
+    for i = 1, #pie do
         if pie[i].menu then
             if r.ImGui_BeginMenu(ctx, pie[i].name, true) then
                 local prev_sel = DrawDropDownMenu(pie[i], id + 1, sel_tbl)
@@ -1146,14 +1179,14 @@ local function DrawDropDownMenu(pie, id, sel_tbl)
                 end
                 r.ImGui_EndMenu(ctx)
             end
-            
-            if not MENU_PRESS and not r.ImGui_IsPopupOpen( ctx, pie[i].name)  then
+
+            if not MENU_PRESS and not r.ImGui_IsPopupOpen(ctx, pie[i].name) then
                 MENU_PRESS = (pie[i].key and r.ImGui_IsKeyDown(ctx, pie[i].key)) and i
             end
             if MENU_PRESS == i and not r.ImGui_IsItemHovered(ctx) then
                 local menu_x, menu_y = r.ImGui_GetCursorScreenPos(ctx)
                 local w, h = r.ImGui_GetItemRectSize(ctx)
-                r.JS_Mouse_SetPosition(menu_x + w//2, menu_y - h//2)
+                r.JS_Mouse_SetPosition(menu_x + w // 2, menu_y - h // 2)
             end
             if MENU_PRESS and pie[i].key and r.ImGui_IsKeyReleased(ctx, pie[i].key) then
                 MENU_PRESS = nil
@@ -1163,7 +1196,7 @@ local function DrawDropDownMenu(pie, id, sel_tbl)
             if down and not MENU_PRESS then
                 last_sel = down
             end
-          
+
             --if LAST_HOLD_KEY == pie[i].name then r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Header(), 0x3b7eceff) end
             local rv_sel = r.ImGui_Selectable(ctx, pie[i].name)
             --if LAST_HOLD_KEY == pie[i].name then r.ImGui_PopStyleColor(ctx) end
