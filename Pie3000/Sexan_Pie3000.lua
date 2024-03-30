@@ -1,10 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.33.21
+-- @version 0.33.22
 -- @changelog
---  Increase size of invisible center bottun for drag and drop
---  More fixes to image listings
+--  Remove set focus on tcp when selecting track (breaks deleting by context/selected thing, always deletes track)
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -202,9 +201,10 @@ if SELECT_THING_UNDER_MOUSE then
     end
     if TRACK then
         r.SetOnlyTrackSelected(TRACK)
-        if not ITEM then
-            r.Main_OnCommand(r.NamedCommandLookup("_BR_FOCUS_TRACKS"),0)
-        end
+        --! breaks deleting stuff depending on the context since focus is on tcp always
+        -- if not ITEM then
+        --     r.Main_OnCommand(r.NamedCommandLookup("_BR_FOCUS_TRACKS"),0)
+        -- end
     end
 end
 
