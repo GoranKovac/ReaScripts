@@ -516,6 +516,10 @@ function PDefer(func)
     end)
 end
 
+function DrawDND(x,y,radius,col, dd_type)
+    r.ImGui_DrawList_AddCircle(draw_list,x,y,radius,col,128, 4)
+end
+
 function EasingAnimation(begin_val, end_val, duration_in_sec, ease_function, call_time, delay)
     local time = max(r.time_precise() - call_time, 0.01) - (delay and delay or 0)
     if time <= 0 then return begin_val end
@@ -1084,9 +1088,11 @@ local function DrawCenter(pie, center)
     end
 
     r.ImGui_SetCursorScreenPos(ctx, CENTER.x - (button_wh / 2), CENTER.y - (button_wh / 2))
-    r.ImGui_InvisibleButton(ctx, "##CENTER", button_wh, button_wh)
+    r.ImGui_Button(ctx, "##CENTER", button_wh, button_wh)
     if SETUP and #PIE_LIST == 0 then
-        DndAddAsContext(pie)
+       r.ImGui_SetCursorScreenPos(ctx, CENTER.x - RADIUS_MIN, CENTER.y -RADIUS_MIN)
+       r.ImGui_InvisibleButton(ctx, "##CENTERBoundry", (RADIUS_MIN*2),RADIUS_MIN*2) 
+       DndAddAsContext(pie)
     end
     local center_pressed = (r.ImGui_IsMouseDown(ctx, 0) and not pie.active and r.ImGui_IsWindowFocused(ctx))
     center_pressed = #PIE_LIST > 0 and center_pressed

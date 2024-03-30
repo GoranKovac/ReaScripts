@@ -296,9 +296,11 @@ local function GeneralDrawlistButton(name, active, round_side)
     local w = xe - xs
     local h = ye - ys
 
+    local active = r.ImGui_IsItemActive(ctx)
+
     local color = active and r.ImGui_GetStyleColor(ctx, r.ImGui_Col_ButtonActive()) or
         r.ImGui_GetStyleColor(ctx, r.ImGui_Col_Button())
-    color = r.ImGui_IsItemHovered(ctx) and r.ImGui_GetStyleColor(ctx, r.ImGui_Col_ButtonHovered()) or color
+    color = (not active and r.ImGui_IsItemHovered(ctx)) and r.ImGui_GetStyleColor(ctx, r.ImGui_Col_ButtonHovered()) or color
     r.ImGui_DrawList_AddRectFilled(draw_list, xs, ys, xe, ye,
         r.ImGui_GetColorEx(ctx, color), ROUNDING[round_side] and 5 or nil, ROUNDING[round_side] or nil)
 
@@ -554,7 +556,7 @@ local function PngSelector(pie, button_size)
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_PopupBg(), bg_col)
     local png_path_inner, png_name
     if pie.png then
-       -- png_path_inner = pie.png:match("(.+/)(%S+)")
+        png_path_inner = pie.png:match("(.+/)(%S+)")
         png_name = pie.png --:gsub("/", "\\")        
     end
     if r.ImGui_BeginPopup(ctx, "Png Selector") then
@@ -563,56 +565,62 @@ local function PngSelector(pie, button_size)
         r.ImGui_SameLine(ctx)
 
         if r.ImGui_RadioButton(ctx, "100", CHOOSE == "100") then
-            IMG_RESCALE_FACTOR = nil
+            png_tbl = {}
             RefreshImgObj(PNG_TBL)
+            IMG_RESCALE_FACTOR = nil
             png_tbl = PNG_TBL
             CHOOSE = "100"
         end
 
         r.ImGui_SameLine(ctx)
         if r.ImGui_RadioButton(ctx, "150", (CHOOSE == "150")) then
-            IMG_RESCALE_FACTOR = nil
+            png_tbl = {}
             RefreshImgObj(PNG_TBL_150)
+            IMG_RESCALE_FACTOR = nil
             png_tbl = PNG_TBL_150
             CHOOSE = "150"
         end
         r.ImGui_SameLine(ctx)
         if r.ImGui_RadioButton(ctx, "200", (CHOOSE == "200")) then
-            IMG_RESCALE_FACTOR = nil
+            png_tbl = {}
             RefreshImgObj(PNG_TBL_200)
+            IMG_RESCALE_FACTOR = nil
             png_tbl = PNG_TBL_200
             CHOOSE = "200"
         end
         r.ImGui_Text(ctx, "Track Icons    ")
         r.ImGui_SameLine(ctx)
         if r.ImGui_RadioButton(ctx, "100##ti", (CHOOSE == "30")) then
+            png_tbl = {}
             RefreshImgObj(PNG_TBL_TRACK_ICONS)
             IMG_RESCALE_FACTOR = 30
             png_tbl = PNG_TBL_TRACK_ICONS
             CHOOSE = "30"
-            if png_name then
+            if png_name and (png_path_inner:match("track_icons") or  png_path_inner:match("CustomImages"))  then
                 ret = true
                 png = png_name
             end
         end
         r.ImGui_SameLine(ctx)
         if r.ImGui_RadioButton(ctx, "150##ti",(CHOOSE == "45" )) then
-            IMG_RESCALE_FACTOR = 45
+            png_tbl = {}
             RefreshImgObj(PNG_TBL_TRACK_ICONS)
+            IMG_RESCALE_FACTOR = 45
             png_tbl = PNG_TBL_TRACK_ICONS
             CHOOSE = "45"
-            if png_name then
+            if png_name and (png_path_inner:match("track_icons") or  png_path_inner:match("CustomImages"))  then
                 ret = true
                 png = png_name
             end
         end
         r.ImGui_SameLine(ctx)
         if r.ImGui_RadioButton(ctx, "200##ti", (CHOOSE == "60" )) then
-            IMG_RESCALE_FACTOR = 60
+            png_tbl = {}
             RefreshImgObj(PNG_TBL_TRACK_ICONS)
+            IMG_RESCALE_FACTOR = 60
             png_tbl = PNG_TBL_TRACK_ICONS
             CHOOSE = "60"
-            if png_name then
+            if png_name and (png_path_inner:match("track_icons") or png_path_inner:match("CustomImages"))  then
                 ret = true
                 png = png_name
             end
@@ -620,30 +628,33 @@ local function PngSelector(pie, button_size)
         r.ImGui_Text(ctx, "Custom Icons")
         r.ImGui_SameLine(ctx)
         if r.ImGui_RadioButton(ctx, "100##ci", (CHOOSE == "30CI")) then
+            png_tbl = {}
             RefreshImgObj(PNG_TBL_CUSTOM_IMAGE)
             IMG_RESCALE_FACTOR = 30
             png_tbl = PNG_TBL_CUSTOM_IMAGE
             CHOOSE = "30CI"
-            if png_name then
+            if png_name and (png_path_inner:match("track_icons") or  png_path_inner:match("CustomImages"))  then
                 ret = true
                 png = png_name
             end
         end
         r.ImGui_SameLine(ctx)
         if r.ImGui_RadioButton(ctx, "150##ci",(CHOOSE == "45CI" )) then
-            IMG_RESCALE_FACTOR = 45
+            png_tbl = {}
             RefreshImgObj(PNG_TBL_CUSTOM_IMAGE)
+            IMG_RESCALE_FACTOR = 45
             png_tbl = PNG_TBL_CUSTOM_IMAGE
             CHOOSE = "45CI"
-            if png_name then
+            if png_name and (png_path_inner:match("track_icons") or  png_path_inner:match("CustomImages")) then
                 ret = true
                 png = png_name
             end
         end
         r.ImGui_SameLine(ctx)
         if r.ImGui_RadioButton(ctx, "200##ci", (CHOOSE == "60CI" )) then
-            IMG_RESCALE_FACTOR = 60
+            png_tbl = {}
             RefreshImgObj(PNG_TBL_CUSTOM_IMAGE)
+            IMG_RESCALE_FACTOR = 60
             png_tbl = PNG_TBL_CUSTOM_IMAGE
             CHOOSE = "60CI"
             if png_name then
@@ -729,14 +740,17 @@ local function PngDisplay(tbl, img_obj, button_size)
                     local png_path_inner = tbl.png:match("(.+/)(%S+)")
                     if not tbl.rescale then
                         if png_path_inner:match("150") then
+                            png_tbl = {}
                             RefreshImgObj(PNG_TBL_150)
                             CHOOSE = "150"
                             png_tbl = PNG_TBL_150
                         elseif png_path_inner:match("200") then
+                            png_tbl = {}
                             RefreshImgObj(PNG_TBL_200)
                             CHOOSE = "200"
                             png_tbl = PNG_TBL_200
                         else
+                            png_tbl = {}
                             RefreshImgObj(PNG_TBL)
                             CHOOSE = "100"
                             png_tbl = PNG_TBL
@@ -744,10 +758,12 @@ local function PngDisplay(tbl, img_obj, button_size)
                     else
                         IMG_RESCALE_FACTOR = tbl.rescale
                         if png_path_inner:match("track_icons") then
+                            png_tbl = {}                            
                             CHOOSE = tostring(tbl.rescale)
                             RefreshImgObj(PNG_TBL_TRACK_ICONS)
                             png_tbl = PNG_TBL_TRACK_ICONS
                         elseif png_path_inner:match("CustomImages") then
+                            png_tbl = {}
                             CHOOSE = tbl.rescale .. "CI"
                             RefreshImgObj(PNG_TBL_CUSTOM_IMAGE)
                             png_tbl = PNG_TBL_CUSTOM_IMAGE
@@ -1206,7 +1222,7 @@ local function BreadCrumbs(tbl)
 end
 
 function DNDSwapSRC(tbl, k)
-    if r.ImGui_BeginDragDropSource(ctx) then
+    if r.ImGui_BeginDragDropSource(ctx, r.ImGui_DragDropFlags_AcceptBeforeDelivery()) then
         r.ImGui_SetDragDropPayload(ctx, 'DND_SWAP', tostring(k))
         r.ImGui_Text(ctx, tbl[k].name)
         r.ImGui_EndDragDropSource(ctx)
@@ -1215,7 +1231,7 @@ end
 
 function DNDSwapDST(tbl, k, v)
     if r.ImGui_BeginDragDropTarget(ctx) then
-        RV_P, PAYLOAD = r.ImGui_AcceptDragDropPayload(ctx, 'DND_SWAP')
+        local RV_P, PAYLOAD = r.ImGui_AcceptDragDropPayload(ctx, 'DND_SWAP')
         if RV_P then
             local payload_n = tonumber(PAYLOAD)
             tbl[k] = tbl[payload_n]
@@ -1255,10 +1271,10 @@ end
 function DndAddTargetAction(pie, button)
     if pie.guid == "TEMP" then return end
     if r.ImGui_BeginDragDropTarget(ctx) then
-        local ret, payload = r.ImGui_AcceptDragDropPayload(ctx, 'DND ACTION')
+        local retv, payload = r.ImGui_AcceptDragDropPayload(ctx, 'DND ACTION')
         local name, cmd = payload:match("(.+)|(.+)")
         r.ImGui_EndDragDropTarget(ctx)
-        if ret then
+        if retv then
             local new_name = NameStrip(name)
             if not button then
                 local insert_pos = #pie ~= 0 and #pie or 1
@@ -1315,10 +1331,10 @@ end
 function DndAddAsContext(pie)
     if pie.guid == "TEMP" then return end
     if r.ImGui_BeginDragDropTarget(ctx) then
-        local ret, payload = r.ImGui_AcceptDragDropPayload(ctx, 'DND Menu')
+        local retv, payload = r.ImGui_AcceptDragDropPayload(ctx, 'DND Menu')
         local menu_id = tonumber(payload)
         r.ImGui_EndDragDropTarget(ctx)
-        if ret then
+        if retv then
             MENU_CONTEXT_TBL = MENUS[menu_id]
             CONTEXT_APPLY_WARNING = true
         end
@@ -1715,6 +1731,7 @@ local function Main()
     r.ImGui_SetNextWindowSizeConstraints(ctx, 900, 500, FLT_MAX, FLT_MAX)
     local visible, open = r.ImGui_Begin(ctx, 'Pie XYZ 3000 Setup', true)
     if visible then
+        _, PEEK_DND, PEEK_PAYLOAD = r.ImGui_GetDragDropPayload(ctx)
         draw_list = r.ImGui_GetWindowDrawList(ctx)
         vp_center = { r.ImGui_Viewport_GetCenter(r.ImGui_GetWindowViewport(ctx)) }
         MX, MY = r.ImGui_PointConvertNative(ctx, r.GetMousePosition())

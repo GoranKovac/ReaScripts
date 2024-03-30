@@ -1,11 +1,10 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.33.20
+-- @version 0.33.21
 -- @changelog
---  Immediately resize Track Icons/Custom Icons when chageing scale size (can't be done on toolbar icons since every folder has different images)
---  Add Custom folder for user images
---  Add button in settings to open custom image folder in explorer/finder
+--  Increase size of invisible center bottun for drag and drop
+--  More fixes to image listings
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
