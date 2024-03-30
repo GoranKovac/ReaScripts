@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="714e0f79aa0b309b7e437f31aa022cc395625464" name="Sexan_Scripts">
+<index version="1" commit="c98f7c305aa88ca929180f585dfc3b5afd8beb5a" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -4505,6 +4505,20 @@ Clear all auto choosing flags when closing window]]></changelog>
         <source file="fontello1.ttf">https://github.com/GoranKovac/ReaScripts/raw/714e0f79aa0b309b7e437f31aa022cc395625464/Pie3000/fontello1.ttf</source>
         <source file="Roboto-Medium.ttf">https://github.com/GoranKovac/ReaScripts/raw/714e0f79aa0b309b7e437f31aa022cc395625464/Pie3000/Roboto-Medium.ttf</source>
         <source main="main" file="Sexan_PieCleanFiles.lua">https://github.com/GoranKovac/ReaScripts/raw/714e0f79aa0b309b7e437f31aa022cc395625464/Pie3000/Sexan_PieCleanFiles.lua</source>
+      </version>
+      <version name="0.33.20" author="Sexan" time="2024-03-30T08:54:01Z">
+        <changelog><![CDATA[Immediately resize Track Icons/Custom Icons when chageing scale size (can't be done on toolbar icons since every folder has different images)
+Add Custom folder for user images
+Add button in settings to open custom image folder in explorer/finder]]></changelog>
+        <source main="main midi_editor">https://github.com/GoranKovac/ReaScripts/raw/c98f7c305aa88ca929180f585dfc3b5afd8beb5a/Pie3000/Sexan_Pie3000.lua</source>
+        <source main="main midi_editor" file="Sexan_Pie3000_Setup.lua">https://github.com/GoranKovac/ReaScripts/raw/c98f7c305aa88ca929180f585dfc3b5afd8beb5a/Pie3000/Sexan_Pie3000_Setup.lua</source>
+        <source file="CustomImages/Readme.txt">https://github.com/GoranKovac/ReaScripts/raw/c98f7c305aa88ca929180f585dfc3b5afd8beb5a/Pie3000/CustomImages/Readme.txt</source>
+        <source file="easing.lua">https://github.com/GoranKovac/ReaScripts/raw/c98f7c305aa88ca929180f585dfc3b5afd8beb5a/Pie3000/easing.lua</source>
+        <source file="Common.lua">https://github.com/GoranKovac/ReaScripts/raw/c98f7c305aa88ca929180f585dfc3b5afd8beb5a/Pie3000/Common.lua</source>
+        <source file="PieUtils.lua">https://github.com/GoranKovac/ReaScripts/raw/c98f7c305aa88ca929180f585dfc3b5afd8beb5a/Pie3000/PieUtils.lua</source>
+        <source file="fontello1.ttf">https://github.com/GoranKovac/ReaScripts/raw/c98f7c305aa88ca929180f585dfc3b5afd8beb5a/Pie3000/fontello1.ttf</source>
+        <source file="Roboto-Medium.ttf">https://github.com/GoranKovac/ReaScripts/raw/c98f7c305aa88ca929180f585dfc3b5afd8beb5a/Pie3000/Roboto-Medium.ttf</source>
+        <source main="main" file="Sexan_PieCleanFiles.lua">https://github.com/GoranKovac/ReaScripts/raw/c98f7c305aa88ca929180f585dfc3b5afd8beb5a/Pie3000/Sexan_PieCleanFiles.lua</source>
       </version>
     </reapack>
   </category>
