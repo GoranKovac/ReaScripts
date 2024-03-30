@@ -23,6 +23,7 @@ png_path = "/Data/toolbar_icons/"
 png_path_150 = "/Data/toolbar_icons/150/"
 png_path_200 = "/Data/toolbar_icons/200/"
 png_path_track_icons = "/Data/track_icons/"
+png_path_custom = "/Scripts/Sexan_Scripts/Pie3000/CustomImages/"
 
 ANIMATION = true
 ACTIVATE_ON_CLOSE = true
@@ -915,9 +916,9 @@ local function PieButtonDrawlist(pie, button_radius, selected, hovered, button_p
         if not r.ImGui_ValidatePtr(pie.img_obj, 'ImGui_Image*') then
             pie.img_obj = r.ImGui_CreateImage(reaper_path .. png)
         end
-        local is_track_icon = png:find("track_icons")
-        ImageUVOffset(pie.img_obj, pie.rescale, is_track_icon and 1 or 3, 1,
-            is_track_icon and 0 or (selected and 2 or 0), button_center.x, button_center.y, CENTER_BTN_PROG)
+        local is_toolbar_icon = png:find("toolbar_icons")
+        ImageUVOffset(pie.img_obj, pie.rescale, is_toolbar_icon and 3 or 1, 1,
+        is_toolbar_icon and 0 or (selected and 2 or 0), button_center.x, button_center.y, CENTER_BTN_PROG)
     end
 end
 
@@ -935,7 +936,7 @@ local function DrawButtons(pie, center)
                 pie[i].img_obj = r.ImGui_CreateImage(reaper_path .. pie[i].png)
             end
             local img_data = ImageUVOffset(pie[i].img_obj, pie[i].rescale,
-                pie[i].png:find("track_icons") and 1 or 3, 1, 0, 0, 0, 0, true)
+                pie[i].png:find("toolbar_icons") and 3 or 1, 1, 0, 0, 0, 0, true)
             button_wh = (sqrt(2) * img_data[1]) // 2
         end
 

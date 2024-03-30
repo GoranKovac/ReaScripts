@@ -1,7 +1,7 @@
 --@noindex
 --NoIndex: true
 local r = reaper
-
+local os_separator = package.config:sub(1, 1)
 local getinfo = debug.getinfo(1, 'S');
 local script_path = getinfo.source:match [[^@?(.*[\/])[^\/]-$]];
 package.path = script_path .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
@@ -222,6 +222,7 @@ local PNG_TBL = IterateFiles(png_path)
 local PNG_TBL_150 = IterateFiles(png_path_150)
 local PNG_TBL_200 = IterateFiles(png_path_200)
 local PNG_TBL_TRACK_ICONS = IterateFiles(png_path_track_icons)
+local PNG_TBL_CUSTOM_IMAGE = IterateFiles(png_path_custom)
 
 local function ExportToLuaFile(guid, name)
     local lua_string =
@@ -584,12 +585,15 @@ local function PngSelector(pie, button_size)
         end
         r.ImGui_Text(ctx, "Track Icons    ")
         r.ImGui_SameLine(ctx)
-
         if r.ImGui_RadioButton(ctx, "100##ti", (CHOOSE == "30")) then
             RefreshImgObj(PNG_TBL_TRACK_ICONS)
             IMG_RESCALE_FACTOR = 30
             png_tbl = PNG_TBL_TRACK_ICONS
             CHOOSE = "30"
+            if png_name then
+                ret = true
+                png = png_name
+            end
         end
         r.ImGui_SameLine(ctx)
         if r.ImGui_RadioButton(ctx, "150##ti",(CHOOSE == "45" )) then
@@ -597,6 +601,10 @@ local function PngSelector(pie, button_size)
             RefreshImgObj(PNG_TBL_TRACK_ICONS)
             png_tbl = PNG_TBL_TRACK_ICONS
             CHOOSE = "45"
+            if png_name then
+                ret = true
+                png = png_name
+            end
         end
         r.ImGui_SameLine(ctx)
         if r.ImGui_RadioButton(ctx, "200##ti", (CHOOSE == "60" )) then
@@ -604,6 +612,44 @@ local function PngSelector(pie, button_size)
             RefreshImgObj(PNG_TBL_TRACK_ICONS)
             png_tbl = PNG_TBL_TRACK_ICONS
             CHOOSE = "60"
+            if png_name then
+                ret = true
+                png = png_name
+            end
+        end
+        r.ImGui_Text(ctx, "Custom Icons")
+        r.ImGui_SameLine(ctx)
+        if r.ImGui_RadioButton(ctx, "100##ci", (CHOOSE == "30CI")) then
+            RefreshImgObj(PNG_TBL_CUSTOM_IMAGE)
+            IMG_RESCALE_FACTOR = 30
+            png_tbl = PNG_TBL_CUSTOM_IMAGE
+            CHOOSE = "30CI"
+            if png_name then
+                ret = true
+                png = png_name
+            end
+        end
+        r.ImGui_SameLine(ctx)
+        if r.ImGui_RadioButton(ctx, "150##ci",(CHOOSE == "45CI" )) then
+            IMG_RESCALE_FACTOR = 45
+            RefreshImgObj(PNG_TBL_CUSTOM_IMAGE)
+            png_tbl = PNG_TBL_CUSTOM_IMAGE
+            CHOOSE = "45CI"
+            if png_name then
+                ret = true
+                png = png_name
+            end
+        end
+        r.ImGui_SameLine(ctx)
+        if r.ImGui_RadioButton(ctx, "200##ci", (CHOOSE == "60CI" )) then
+            IMG_RESCALE_FACTOR = 60
+            RefreshImgObj(PNG_TBL_CUSTOM_IMAGE)
+            png_tbl = PNG_TBL_CUSTOM_IMAGE
+            CHOOSE = "60CI"
+            if png_name then
+                ret = true
+                png = png_name
+            end
         end
         r.ImGui_EndGroup(ctx)
 
@@ -628,7 +674,7 @@ local function PngSelector(pie, button_size)
                     FILTERED_PNG[n + 1].img_obj = r.ImGui_CreateImage(reaper_path .. image)
                 end
                 local uv = ImageUVOffset(FILTERED_PNG[n + 1].img_obj, FILTERED_PNG[n + 1].rescale,
-                    image:find("track_icons") and 1 or 3, 1, 0, 0, 0, 1, true)
+                    image:find("toolbar_icons") and 3 or 1, 1, 0, 0, 0, 1, true)
 
                 r.ImGui_SetCursorPos(ctx, xx, yy)
                 if r.ImGui_ImageButton(ctx, "##png_select", FILTERED_PNG[n + 1].img_obj, button_size, button_size, uv[3], uv[4], uv[5], uv[6]) then
@@ -640,7 +686,6 @@ local function PngSelector(pie, button_size)
                 end
                 local minx, miny = r.ImGui_GetItemRectMin(ctx)
                 local maxx, maxy = r.ImGui_GetItemRectMax(ctx)
-                --end
                 if png_name == image then
                     r.ImGui_DrawList_AddRect(draw_list, minx, miny, maxx, maxy, 0x00ff00ff, 0, 0, 2)
                     if SCROLL_TO_IMG then 
@@ -649,7 +694,6 @@ local function PngSelector(pie, button_size)
                     end
                 end
 
-                --local last_button_x2 = r.ImGui_GetItemRectMax(ctx)
                 local next_button_x2 = maxx + item_spacing_x + button_size
 
                 if n + 1 < buttons_count and next_button_x2 < window_visible_x2 then
@@ -677,7 +721,7 @@ local function PngDisplay(tbl, img_obj, button_size)
             img_obj = r.ImGui_CreateImage(reaper_path .. tbl.png)
         end
         local uv = ImageUVOffset(img_obj, tbl.rescale,
-            tbl.png:find("track_icons") and 1 or 3, 1, 0, 0, 0, 1, true)
+            tbl.png:find("toolbar_icons") and 3 or 1, 1, 0, 0, 0, 1, true)
         if r.ImGui_ImageButton(ctx, "##prev_png", img_obj, button_size - 6, button_size - 6, uv[3], uv[4], uv[5], uv[6]) then
             if not ALT then
                 rv = true
@@ -699,9 +743,15 @@ local function PngDisplay(tbl, img_obj, button_size)
                         end
                     else
                         IMG_RESCALE_FACTOR = tbl.rescale
-                        CHOOSE = tostring(tbl.rescale)
-                        RefreshImgObj(PNG_TBL_TRACK_ICONS)
-                        png_tbl = PNG_TBL_TRACK_ICONS
+                        if png_path_inner:match("track_icons") then
+                            CHOOSE = tostring(tbl.rescale)
+                            RefreshImgObj(PNG_TBL_TRACK_ICONS)
+                            png_tbl = PNG_TBL_TRACK_ICONS
+                        elseif png_path_inner:match("CustomImages") then
+                            CHOOSE = tbl.rescale .. "CI"
+                            RefreshImgObj(PNG_TBL_CUSTOM_IMAGE)
+                            png_tbl = PNG_TBL_CUSTOM_IMAGE
+                        end
                     end
                     SCROLL_TO_IMG = true
                 end
@@ -1018,7 +1068,17 @@ local function Settings()
     r.ImGui_SameLine(ctx)
     r.ImGui_Text(ctx, "SOME KEYBOARD KEYS WON'T WORK IN PLUGINS (TEXT FIELDS/INPUT BOXES,SHORTCUTS)")
     r.ImGui_Unindent(ctx)
-    --r.ImGui_Separator(ctx)
+    r.ImGui_Separator(ctx)
+    if r.ImGui_InvisibleButton(ctx, "OPEN CUSTOM IMAGES FOLDER", 190, 26) then
+        local cmd        
+        if r.GetOS():sub(1, 3) == 'Win' then
+            cmd = 'cmd.exe /c explorer'
+        else
+            cmd = 'open'
+        end
+        r.ExecProcess(([[%s "%s"]]):format(cmd, r.GetResourcePath() .. png_path_custom:gsub("/",os_separator)), 0)
+    end
+    GeneralDrawlistButton("OPEN CUSTOM IMAGES FOLDER", nil, "A")
 
     if WANT_SAVE then
         local data = TableToString(
