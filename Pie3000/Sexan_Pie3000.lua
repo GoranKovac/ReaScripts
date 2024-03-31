@@ -1,9 +1,21 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.33.22
+-- @version 0.33.30
 -- @changelog
---  Remove set focus on tcp when selecting track (breaks deleting by context/selected thing, always deletes track)
+--  Replace "USE AS EMPTY" with "USE MAIN CONTEXT"
+--  Add "USE MAIN CONTEXT" to TCP,MCP
+--  Move "USE MAIN CONTEXT" to child context (Non main)
+--  Fix breadcrumbs doing to wrong menu
+--  Dont allow processing current menu in breadrumbs on click
+--  Refresh image objects when switching menus
+--  ESC kills script
+--  Piano Roll Context
+--  Envelope Control panel contexts
+--  Added midi debug view
+--  Improved midi tracing boundaries
+--  Add UI scaling variable to boundries
+--  Fix empty naming in DropDown Mode
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -47,6 +59,7 @@ local function GetMonitorFromPoint()
 end
 local ACTIONS = GetMainActions()
 local MIDI_ACTIONS = GetMidiActions()
+local PIES, MIDI_PIES
 
 local function Init()
     SCRIPT_START_TIME = r.time_precise()
@@ -66,11 +79,19 @@ local function Init()
         return "ERROR"
     end
 
-    for k, v in pairs(PIES) do
-        if v.sync then
-            PIES[k .. "empty"] = PIES[k]
-        end
-    end
+    -- for k, v in pairs(PIES) do
+    --     if v.sync then
+    --         PIES[k .. "empty"] = PIES[k]
+    --     end
+    -- end
+
+    -- for k, v in pairs(PIES) do
+    --     if v.use_main then
+    --         r.ShowConsoleMsg(k .. " - " .. v.main_name.."\n")
+    --         PIES[k] = PIES[v.main_name]
+    --     end
+    -- end
+
     local key_state = r.JS_VKeys_GetState(SCRIPT_START_TIME - 1)
     local down_state = r.JS_VKeys_GetDown(SCRIPT_START_TIME)
     for i = 1, 255 do
@@ -91,7 +112,6 @@ local WND_IDS = {
     { id = "3EB", name = "midipianoview" },
     { id = "3E8", name = "REAPERTrackListWindow" },
     { id = "3ED", name = "REAPERTimeDisplay" },
-
 }
 
 local function GetMouseContext()
@@ -102,21 +122,35 @@ local function GetMouseContext()
     local id = r.JS_Window_GetLongPtr(cur_hwnd, "ID")
     local class_name = r.JS_Window_GetClassName(cur_hwnd)
 
-    -- local is_plugin --= DetectPluginContext(cur_hwnd)
     if info:match("spacer") then 
         info = "spacer"
     end
     if info:match("master") then return end
 
     if info:match("envelope") then
-        ENVELOPE_LANE = true
+        ENVELOPE_LANE = "lane"
         info = DetectEnvContext(track, info)
-        --info = "envelope"
     elseif info:match("envcp") then
-        DetectEnvContext(track, info)
-        info = "envcp"
+        ENVELOPE_LANE = "cp"
+        info = DetectEnvContext(track, info, true)
+        --DetectEnvContext(track, info)
+        --info = "envcp"
     elseif info:match("^fx_") then
         info = "plugin"
+    elseif info:match("mcp") then
+        if info:match("fxlist") then
+            info = "mcpfxlist"
+        elseif info:match("sendlist") then
+            info = "mcpsendlist"
+        else
+            info = "mcp"
+        end
+    elseif info:match("^tcp") then
+        if info:match("fxparm") then
+            info = "tcpfxparm"
+        else
+            info = "tcp"
+        end        
     end
 
     if #info == 0 then
@@ -126,10 +160,14 @@ local function GetMouseContext()
             info = "mcpempty"
         elseif tostring(id):upper():match(WND_IDS[3].id) then
             info = "arrangeempty"
+        elseif tostring(id):upper():match(WND_IDS[2].id) then
+            -- PIANO ROLL
+            info = DetectMIDIContext(true)
         elseif tostring(id):upper():match(WND_IDS[1].id) then
-            -- r.ShowConsoleMsg(tostring(id) .. "\n")
+            -- MIDI NOTES VIEW
             info = DetectMIDIContext()
         elseif tostring(id):upper():match(WND_IDS[4].id) then
+            -- TODO TRACE
             info = "ruler"
         end
     end
@@ -156,18 +194,38 @@ end
 
 if not STANDALONE_PIE then
     if MIDI_LANE_CONTEXT then
-        if PIES["midilane"].as_global == true then
-            PIE_MENU = PIES["midilane"]
-        else
-            -- OPEN DEFAULT MENU IF DOES NOT EXIST
-            PIE_MENU = MIDI_PIES[INFO] or PIES["midilane"]
+        if MIDI_LANE_CONTEXT == "lane" then
+            if PIES["midilane"].as_global == true then
+                PIE_MENU = PIES["midilane"]
+            else
+                -- OPEN DEFAULT MENU IF DOES NOT EXIST
+                PIE_MENU = MIDI_PIES[INFO] or PIES["midilane"]
+            end
+        -- elseif MIDI_LANE_CONTEXT == "cp" then
+        --     if PIES["midilanecp"].as_global == true then
+        --         PIE_MENU = PIES["midilanecp"]
+        --     else
+        --         -- OPEN DEFAULT MENU IF DOES NOT EXIST
+        --         PIE_MENU = MIDI_PIES[INFO] or PIES["midilanecp"]
+        --     end
         end
     elseif ENVELOPE_LANE then
+        if ENVELOPE_LANE == "lane" then
         if PIES["envelope"].as_global == true then
             PIE_MENU = PIES["envelope"]
         else
             PIE_MENU = PIES[INFO] or PIES["envelope"] -- open default for all others (vst etc)
         end
+    elseif ENVELOPE_LANE == "cp" then
+        if PIES["envcp"].as_global == true then
+            PIE_MENU = PIES["envcp"]
+        --end
+        elseif PIES["envcp"].use_main == true then
+            PIE_MENU = PIES[INFO:sub(4)]
+        else
+            PIE_MENU = PIES[INFO] or PIES["envcp"] -- open default for all others (vst etc)
+        end
+    end
     else
         PIE_MENU = PIES[INFO]
     end
@@ -175,18 +233,14 @@ else
     PIE_MENU = STANDALONE_PIE
 end
 
---if INFO == "midilane" then LANE_NAME = "global" end
+if PIE_MENU.use_main then 
+    PIE_MENU = PIES[PIE_MENU.main_name]
+end
 
---PIE_MENU = STANDALONE_PIE or (MIDI_LANE_CONTEXT and MIDI_PIES[INFO] or PIES[INFO])
---PIE_MENU = STANDALONE_PIE or (MIDI_LANE_CONTEXT and MIDI_PIES[INFO] or PIES[INFO])
 if not PIE_MENU then
     Release()
     return
 end
-
---if LANE_NAME then
--- PIE_MENU.name = LANE_NAME:upper()
---end
 
 local function ConvertAndSetCursor(x, y)
     local mouse_x, mouse_y = r.ImGui_PointConvertNative(ctx, x, y, true)
@@ -248,14 +302,17 @@ local function LimitMouseToRadius()
         MX = (START_X + (MOUSE_RANGE) * cos(DRAG_ANGLE)) // 1
         MY = (START_Y + (MOUSE_RANGE) * sin(DRAG_ANGLE)) // 1
         ConvertAndSetCursor(MX, MY)
-        --r.JS_Mouse_SetPosition(MX, MY)
     end
 end
 
 local FLAGS =
-    r.ImGui_WindowFlags_NoBackground() |
+    --r.ImGui_WindowFlags_NoBackground() |
     r.ImGui_WindowFlags_NoDecoration() |
     r.ImGui_WindowFlags_NoMove()
+
+if not MIDI_TRACE_DEBUG then
+    FLAGS = FLAGS | r.ImGui_WindowFlags_NoBackground()
+end
 
 local function DoFullScreen()
     r.ImGui_SetNextWindowPos(ctx, LEFT, TOP)
@@ -409,8 +466,7 @@ local function DoAction()
         ExecuteAction(PIE_MENU[LAST_ACTION].cmd_name)
     end
 end
-
-
+    
 local function Main()
     TrackShortcutKey()
     if TERMINATE then
@@ -434,10 +490,15 @@ local function Main()
     end
     if LAST_ACTION then DoAction() end
     DoFullScreen()
-
-    if r.ImGui_Begin(ctx, 'PIE XYZ', false, FLAGS) then
+    if ESC then DONE = true end
+    if r.ImGui_Begin(ctx, 'PIE XYZ', false, FLAGS) then        
         draw_list = r.ImGui_GetWindowDrawList(ctx)
         MX, MY = r.ImGui_PointConvertNative(ctx, r.GetMousePosition())
+
+        if MIDI_TRACE_DEBUG then
+            DetectMIDIContext(true, true)
+        end
+
         CheckKeys()
         DrawPie(PIE_MENU)
         if ANIMATION then AnimationProgress() end

@@ -11,6 +11,8 @@ if DBG then dofile("C:/Users/Gokily/Documents/ReaGit/ReaScripts/Debug/LoadDebug.
 easingFunctions = require("easing")
 dofile(r.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua')('0.8.7.6')
 
+local SPLITTER
+
 local pi, max, min, floor, cos, sin, atan, ceil, abs, sqrt = math.pi, math.max, math.min, math.floor, math.cos, math.sin,
     math.atan, math.ceil, math.abs, math.sqrt
 
@@ -39,6 +41,7 @@ SHOW_SHORTCUT = true
 SELECT_THING_UNDER_MOUSE = false
 CLOSE_ON_ACTIVATE = false
 DROP_DOWN_MENU = false
+MIDI_TRACE_DEBUG = false
 
 local def_color_dark = 0x414141ff
 local def_out_ring = 0x2a2a2aff
@@ -100,6 +103,7 @@ if r.HasExtState("PIE3000", "SETTINGS") then
             ADJUST_PIE_NEAR_EDGE = save_data.adjust_pie_near_edge
             CLOSE_ON_ACTIVATE = save_data.close_on_activate
             DROP_DOWN_MENU = save_data.drop_down_menu
+            MIDI_TRACE_DEBUG = save_data.midi_trace_debug
         end
     end
 end
@@ -354,8 +358,12 @@ local cc_lanes = {
 local function MidiLaneDetect(hwnd)
     local mouse_wnd = r.JS_Window_FromPoint(r.GetMousePosition())
     local x, y = r.JS_Window_ScreenToClient(mouse_wnd, r.GetMousePosition())
+    r.PreventUIRefresh(1)
+    local ec = r.GetCursorPosition()
     r.JS_WindowMessage_Send(mouse_wnd, "WM_LBUTTONDOWN", 1, 0, x, y)
     r.JS_WindowMessage_Send(mouse_wnd, "WM_LBUTTONUP", 0, 0, x, y)
+    r.SetEditCurPos( ec, false, false )
+    r.PreventUIRefresh(-1)
     local lane = r.MIDIEditor_GetSetting_int(hwnd, "last_clicked_cc_lane")
     local sel_lane = "global"
 
@@ -378,7 +386,7 @@ local MIDI_WND_IDS = {
 }
 
 local GetPixel = r.JS_LICE_GetPixel
-function DetectMIDIContext()
+function DetectMIDIContext(piano, midi_debug)
     local function IsInside(left, top, right, bottom)
         if START_X > left and START_X < right and START_Y > top and START_Y < bottom then
             return true
@@ -435,22 +443,27 @@ function DetectMIDIContext()
     end
 
     -- TAKE SCREENSHOT OF THE THE RIGHT SCROLLBAR
-    local function takeScreenshot(window)
-        --local retval, w, h = r.JS_Window_GetClientSize( window )
-        local rv_scale, scale = r.get_config_var_string("uiscale")
-        local UI_SCALE = rv_scale and tonumber(scale) or 1
+    local function takeScreenshot(window,dip_scale)
+       --local rv_scale, scale = r.get_config_var_string("uiscale")
+       -- local UI_SCALE = rv_scale and tonumber(scale) or 1
         local retval, left, top, right, bottom = r.JS_Window_GetRect(window)
         local w, h = right - left, bottom - top
         local bot_px
         if retval then
             local srcDC = r.JS_GDI_GetWindowDC(window)
-            --local srcDC = r.JS_GDI_GetWindowDC( window )
             local destBmp = r.JS_LICE_CreateBitmap(true, 1, h)
             local destDC = r.JS_LICE_GetDC(destBmp)
             r.JS_GDI_Blit(destDC, 0, 0, srcDC, w - 1, 0, w, h)
-            bot_px = FasterSearch(destBmp, GetPixel(destBmp, 0, ceil(64 * UI_SCALE)), ceil(65 * UI_SCALE))
-            --bot_px = BinaryPixelSearch(destBmp, GetPixel( destBmp, 1, 1 ), w, 63, h)
-            --bot_px = CalculateLanes(destBmp, w, h)
+            bot_px = FasterSearch(destBmp, GetPixel(destBmp, 0, ceil(64 * dip_scale)), ceil(65 * dip_scale))
+            if MIDI_TRACE_DEBUG then
+                if not GOT then
+                    GOT = true
+                    local debug_destBmp = r.JS_LICE_CreateBitmap(true, w, h)
+                    local debug_destDC = r.JS_LICE_GetDC(debug_destBmp)
+                    r.JS_GDI_Blit(debug_destDC, 0, 0, srcDC, 0, 0, w, h)
+                    r.JS_LICE_WritePNG(script_path .. "/MIDI_DEBUG.png", debug_destBmp, false)
+                end
+            end
             r.JS_GDI_ReleaseDC(window, srcDC)
             r.JS_LICE_DestroyBitmap(destBmp)
         end
@@ -458,40 +471,69 @@ function DetectMIDIContext()
     end
 
     local HWND = r.MIDIEditor_GetActive()
+    --local retval_dpi, dpi = r.get_config_var_string("uiscale")
+    --local dpi_scale = retval_dpi and tonumber(dpi) or 1
+    local retval_dpi, dpi = r.ThemeLayout_GetLayout("tcp", -3)
+    local dpi_scale = retval_dpi and tonumber(dpi)/256 or 1
+    if not HWND then return end
     local child_hwnd = r.JS_Window_FindChildByID(HWND, MIDI_WND_IDS[2].id)
-    local bot_px = takeScreenshot(child_hwnd)
+    local piano_hwnd = r.JS_Window_FindChildByID(HWND, MIDI_WND_IDS[1].id)
+    local bot_px = takeScreenshot(child_hwnd, dpi_scale)
 
-    local MIDI_SIZE = {}
-    --for n in ipairs(MIDI_WND_IDS) do
-    --local child_hwnd = r.JS_Window_FindChildByID(HWND, MIDI_WND_IDS[2].id)
+    --local MIDI_SIZE = {}
+
     local retval, left, top, right, bottom = r.JS_Window_GetRect(child_hwnd)
-    if IsInside(left - 2, top + 63, right, top + bot_px - 2) then
-        --return MIDI_WND_IDS[n].name == "midiview" and "midi" or MIDI_WND_IDS[n].name
+    if midi_debug then
+        r.ImGui_DrawList_AddRect( draw_list, left, top + ceil(64*dpi_scale), right, top + bot_px, 0xff000050, 0, 0, 1 )
+        r.ImGui_DrawList_AddText( draw_list, left + 20, top + ceil(64*dpi_scale) + 20, 0xffffffff, "MIDI NOTES" )
+
+        r.ImGui_DrawList_AddRect( draw_list, left, top + bot_px, right, bottom, 0xff000050, 0, 0, 1 )
+        r.ImGui_DrawList_AddText( draw_list, left + 20, top + bot_px + 5 + 20, 0xffffffff, "CC LANES" )
+
+        r.ImGui_DrawList_AddRect( draw_list, left, top, right, top + ceil(65*dpi_scale), 0xff000050, 0, 0, 1 )
+        r.ImGui_DrawList_AddText( draw_list, left + 20, top + 20, 0xffffffff, "RULER" )
+    end
+    if piano then
+        local p_retval, p_left, p_top, p_right, p_bottom = r.JS_Window_GetRect(piano_hwnd)
+        if midi_debug then
+            r.ImGui_DrawList_AddRect( draw_list, p_left, top + ceil(64*dpi_scale), p_right, top + bot_px + 5 , 0xff000050, 0, 0, 1 )
+            r.ImGui_DrawList_AddText( draw_list, p_left + 20, top + ceil(64*dpi_scale) + 20, 0xffffffff, "PIANO ROLL" )
+
+            r.ImGui_DrawList_AddRect( draw_list, p_left, top + bot_px + 5, p_right, bottom, 0xff000050, 0, 0, 1 )
+            r.ImGui_DrawList_AddText( draw_list, p_left + 20, top + bot_px + 5 + 20, 0xffffffff, "CC CP" )
+        end
+        
+        if IsInside(p_left, top + ceil(64*dpi_scale), p_right, top + bot_px + 5) then
+            return "pianoroll"
+        elseif IsInside(p_left, top + bot_px + 5, p_right, bottom) then
+           -- MIDI_LANE_CONTEXT = "cp"
+           -- local lane_cp = MidiLaneDetect(HWND)
+           -- if lane_cp then return "cp " .. lane_cp end
+        end
+    end
+    if IsInside(left, top + ceil(63*dpi_scale), right, top + bot_px) then
         return "midi"
     end
-    MIDI_SIZE = { left - 2, top, right, bottom }
-    --end
+    --MIDI_SIZE = { left - 2, top, right, bottom }
     -- RULLER
-    if IsInside(MIDI_SIZE[1], MIDI_SIZE[2], MIDI_SIZE[3], MIDI_SIZE[2] + 64) then
+    if IsInside(left, top, right, top + ceil(64*dpi_scale)) then
         return "midiruler"
     end
     -- LANES (WHOLE SECTION)
-    if IsInside(MIDI_SIZE[1], MIDI_SIZE[2] + bot_px - 3, MIDI_SIZE[3], MIDI_SIZE[2] + MIDI_SIZE[4]) then
-        MIDI_LANE_CONTEXT = true
+    if IsInside(left, top + bot_px, right, bottom) then
+        MIDI_LANE_CONTEXT = "lane"
         return MidiLaneDetect(HWND)
-        --r.ShowConsoleMsg(LANE_NAME .. "\n")
-        --return "midilane"
     end
 end
 
-function DetectEnvContext(track, env_info)
+function DetectEnvContext(track, env_info, cp)
     local env_num = env_info:match("%S+ (%S+)$")
     if env_num then
         local env = r.GetTrackEnvelope(track, env_num)
         local retval, name = r.GetEnvelopeName(env)
-        if retval then return name:lower() end
+        if retval then return cp and "cp " .. name:lower() or name:lower() end
     end
-    return "envelope"
+    return cp and "envcp" or "envelope"
 end
 
 function PDefer(func)
@@ -1179,6 +1221,7 @@ local function DrawDropDownMenu(pie, id, sel_tbl)
     local last_sel
     for i = 1, #pie do
         if pie[i].menu then
+            r.ImGui_PushID(ctx, pie[i].name .. i)
             if r.ImGui_BeginMenu(ctx, pie[i].name, true) then
                 local prev_sel = DrawDropDownMenu(pie[i], id + 1, sel_tbl)
                 if prev_sel then
@@ -1186,6 +1229,7 @@ local function DrawDropDownMenu(pie, id, sel_tbl)
                 end
                 r.ImGui_EndMenu(ctx)
             end
+            r.ImGui_PopID(ctx)
 
             if not MENU_PRESS and not r.ImGui_IsPopupOpen(ctx, pie[i].name) then
                 MENU_PRESS = (pie[i].key and r.ImGui_IsKeyDown(ctx, pie[i].key)) and i
@@ -1203,10 +1247,11 @@ local function DrawDropDownMenu(pie, id, sel_tbl)
             if down and not MENU_PRESS then
                 last_sel = down
             end
-
+            r.ImGui_PushID(ctx, pie[i].name .. i)
             --if LAST_HOLD_KEY == pie[i].name then r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Header(), 0x3b7eceff) end
             local rv_sel = r.ImGui_Selectable(ctx, pie[i].name)
             --if LAST_HOLD_KEY == pie[i].name then r.ImGui_PopStyleColor(ctx) end
+            r.ImGui_PopID(ctx)
             if rv_sel or (pie[i].key and r.ImGui_IsKeyReleased(ctx, pie[i].key) and not MENU_PRESS) then
                 LAST_DD_MENU_CMD = pie[i].cmd
                 TERMINATE = true

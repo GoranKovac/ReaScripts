@@ -26,35 +26,53 @@ PIE_LIST = {}
 local RADIUS_START = 150
 local DEFAULT_PIE = {
     ["arrange"] = { RADIUS = RADIUS_START, name = "ARRANGE", guid = r.genGuid() },
-    ["arrangeempty"] = { RADIUS = RADIUS_START, name = "ARRANGE EMPTY", guid = r.genGuid() },
+    ["arrangeempty"] = { RADIUS = RADIUS_START, name = "ARRANGE EMPTY", guid = r.genGuid(), use_main = true, main_name = "arrange"},
     ["tcp"] = { RADIUS = RADIUS_START, name = "TCP", guid = r.genGuid() },
-    ["tcpempty"] = { RADIUS = RADIUS_START, name = "TCP EMPTY", guid = r.genGuid() },
-    ["mcp"] = { RADIUS = RADIUS_START, name = "MCP", guid = r.genGuid() },
-    ["mcpempty"] = { RADIUS = RADIUS_START, name = "MCP EMPTY", guid = r.genGuid() },
+    
+    ["tcpfxparm"] = { RADIUS = RADIUS_START, name = "TCP FX PARM", guid = r.genGuid(), use_main = true, main_name = "tcp"},
+    ["tcpempty"] = { RADIUS = RADIUS_START, name = "TCP EMPTY", guid = r.genGuid(), use_main = true , main_name = "tcp"},
+    
+    ["mcp"] = { RADIUS = RADIUS_START, name = "MCP", guid = r.genGuid()},
+    
+    ["mcpfxlist"] = { RADIUS = RADIUS_START, name = "MCP FX LIST", guid = r.genGuid(), use_main = true , main_name = "mcp"},
+    ["mcpsendlist"] = { RADIUS = RADIUS_START, name = "MCP SEND LIST", guid = r.genGuid(), use_main = true , main_name = "mcp"},
+    
+    ["mcpempty"] = { RADIUS = RADIUS_START, name = "MCP EMPTY", guid = r.genGuid(), use_main = true, main_name = "mcp" },
     ["envelope"] = { RADIUS = RADIUS_START, name = "ENVELOPE", guid = r.genGuid(), as_global = true },
-    ["envcp"] = { RADIUS = RADIUS_START, name = "ENV CP", guid = r.genGuid() },
+    ["envcp"] = { RADIUS = RADIUS_START, name = "ENV CP", guid = r.genGuid()},
     ["item"] = { RADIUS = RADIUS_START, name = "ITEM", guid = r.genGuid() },
     ["itemmidi"] = { RADIUS = RADIUS_START, name = "MIDI ITEM", guid = r.genGuid() },
     ["trans"] = { RADIUS = RADIUS_START, name = "TRANSPORT", guid = r.genGuid() },
     ["ruler"] = { RADIUS = RADIUS_START, name = "RULER", guid = r.genGuid() },
     ["midi"] = { RADIUS = RADIUS_START, name = "MIDI", guid = r.genGuid(), is_midi = true },
+    ["pianoroll"] = { RADIUS = RADIUS_START, name = "MIDI PIANO ROLL", guid = r.genGuid(), is_midi = true },
     ["midiruler"] = { RADIUS = RADIUS_START, name = "MIDI RULER", guid = r.genGuid(), is_midi = true },
     ["midilane"] = { RADIUS = RADIUS_START, name = "MIDI LANE", guid = r.genGuid(), as_global = true, is_midi = true },
+    --["midilanecp"] = { RADIUS = RADIUS_START, name = "MIDI LANE CP", guid = r.genGuid(), as_global = true, is_midi = true },
     ["plugin"] = { RADIUS = RADIUS_START, name = "PLUGIN", guid = r.genGuid() },
     ["spacer"] = { RADIUS = RADIUS_START, name = "SPACER", guid = r.genGuid() },
 }
 
-local DEFAULT_CC_PIE = {
-    ["velocity"] = { RADIUS = RADIUS_START, name = "VELOCITY", guid = r.genGuid(), is_midi = true },
-    ["off velocity"] = { RADIUS = RADIUS_START, name = "OFF VELOCITY", guid = r.genGuid(), is_midi = true },
-    ["pitch"] = { RADIUS = RADIUS_START, name = "PITCH", guid = r.genGuid(), is_midi = true },
-    ["program"] = { RADIUS = RADIUS_START, name = "PROGRAM", guid = r.genGuid(), is_midi = true },
-    ["channel pressure"] = { RADIUS = RADIUS_START, name = "CHANNEL PRESSURE", guid = r.genGuid(), is_midi = true },
-    ["bank/program select"] = { RADIUS = RADIUS_START, name = "BANK/PROGRAM SELECT", guid = r.genGuid(), is_midi = true },
-    ["text events"] = { RADIUS = RADIUS_START, name = "TEXT EVENTS", guid = r.genGuid() },
-    ["notation events"] = { RADIUS = RADIUS_START, name = "NOTATION EVENTS", guid = r.genGuid(), is_midi = true },
-    ["sysex"] = { RADIUS = RADIUS_START, name = "SYSEX", guid = r.genGuid() },
-    ["media item lane"] = { RADIUS = RADIUS_START, name = "MEDIA ITEM LANE", guid = r.genGuid(), is_midi = true },
+-- local DEFAULT_CC_PIE = {
+--     ["velocity"] = { RADIUS = RADIUS_START, name = "VELOCITY", guid = r.genGuid(), is_midi = true },
+--     ["off velocity"] = { RADIUS = RADIUS_START, name = "OFF VELOCITY", guid = r.genGuid(), is_midi = true },
+--     ["pitch"] = { RADIUS = RADIUS_START, name = "PITCH", guid = r.genGuid(), is_midi = true },
+--     ["program"] = { RADIUS = RADIUS_START, name = "PROGRAM", guid = r.genGuid(), is_midi = true },
+--     ["channel pressure"] = { RADIUS = RADIUS_START, name = "CHANNEL PRESSURE", guid = r.genGuid(), is_midi = true },
+--     ["bank/program select"] = { RADIUS = RADIUS_START, name = "BANK/PROGRAM SELECT", guid = r.genGuid(), is_midi = true },
+--     ["text events"] = { RADIUS = RADIUS_START, name = "TEXT EVENTS", guid = r.genGuid() },
+--     ["notation events"] = { RADIUS = RADIUS_START, name = "NOTATION EVENTS", guid = r.genGuid(), is_midi = true },
+--     ["sysex"] = { RADIUS = RADIUS_START, name = "SYSEX", guid = r.genGuid() },
+--     ["media item lane"] = { RADIUS = RADIUS_START, name = "MEDIA ITEM LANE", guid = r.genGuid(), is_midi = true },
+-- }
+local MAIN_NAMES = {
+    ["ARRANGE EMPTY"] = "arrange",
+    ["TCP FX PARM"] = "tcp",
+    ["TCP EMPTY"] = "tcp",
+    ["MCP FX LIST"] = "mcp",
+    ["MCP SEND LIST"] = "mcp",
+    ["MCP EMPTY"] = "mcp",
+   -- ["ENV CP"] = "envelope",
 }
 
 local CC_LIST = GetCCList()
@@ -62,12 +80,18 @@ local ENV_LIST = GetEnvList()
 
 for i = 1, #ENV_LIST do
     local name = ENV_LIST[i]
-    DEFAULT_CC_PIE[name:lower()] = { RADIUS = RADIUS_START, name = name:upper(), guid = r.genGuid() }
+    DEFAULT_PIE[name:lower()] = { RADIUS = RADIUS_START, name = name:upper(), guid = r.genGuid() }
+    DEFAULT_PIE["cp " .. name:lower()] = { RADIUS = RADIUS_START, name = "CP " .. name:upper(), guid = r.genGuid() }
 end
 
-for i = 1, #CC_LIST do
-    local name = CC_LIST[i]
-    DEFAULT_CC_PIE[name:lower()] = { RADIUS = RADIUS_START, name = name:upper(), guid = r.genGuid(), is_midi = true }
+local DEFAULT_CC_PIE = {}
+
+for i = -10, #CC_LIST do
+    if i ~= 0 then
+        local name = CC_LIST[i]
+        DEFAULT_CC_PIE[name:lower()] = { RADIUS = RADIUS_START, name = name:upper(), guid = r.genGuid(), is_midi = true }
+        --DEFAULT_CC_PIE["cp " .. name:lower()] = { RADIUS = RADIUS_START, name = "CP " .. name:upper(), guid = r.genGuid(), is_midi = true }
+    end
 end
 
 local cur_cc_item = 0
@@ -77,18 +101,23 @@ local menu_items = {
     { "arrange",      "ARRANGE" },
     { "arrangeempty", "ARRANGE EMPTY" },
     { "tcp",          "TCP" },
+    { "tcpfxparm" ,   "TCP FX PARM" },
     { "tcpempty",     "TCP EMPTY" },
     { "mcp",          "MCP" },
+    { "mcpfxlist",    "MCP FX LIST" },
+    { "mcpsendlist",  "MCP SEND LIST" },
     { "mcpempty",     "MCP EMPTY" },
     { "envelope",     "ENVELOPE" },
-    { "envcp",        "ECP" },
+    { "envcp",        "ENVELOPE CP" },
     { "item",         "ITEM" },
     { "itemmidi",     "MIDI ITEM" },
     { "trans",        "TRANSPORT" },
     { "ruler",        "RULER" },
     { "midi",         "MIDI" },
+    { "pianoroll",    "MIDI PIANO ROLL" },
     { "midiruler",    "MIDI RULER" },
     { "midilane",     "MIDI LANE" },
+   -- { "midilanecp",   "MIDI LANE CP" },
     { "plugin",       "PLUGIN" },
     { "spacer",       "SPACER" },
 }
@@ -104,9 +133,9 @@ local function BetaAddContextToData()
     else
         if PIES["ruler"].name == "RULLER" then PIES["ruler"].name = "RULER" end
     end
-    if not PIES["midipianoview"] then
-        PIES["midiruler"] = { RADIUS = RADIUS_START, name = "MIDI RULER", guid = r.genGuid() }
-        PIES["midilane"] = { RADIUS = RADIUS_START, name = "MIDI LANE", guid = r.genGuid() }
+    if not PIES["midiruler"] then
+        PIES["midiruler"] = { RADIUS = RADIUS_START, name = "MIDI RULER", guid = r.genGuid(), is_midi = true }
+        PIES["midilane"] = { RADIUS = RADIUS_START, name = "MIDI LANE", guid = r.genGuid(), is_midi = true }
     end
     if not PIES["plugin"] then
         PIES["plugin"] = { RADIUS = RADIUS_START, name = "PLUGIN", guid = r.genGuid() }
@@ -118,22 +147,62 @@ local function BetaAddContextToData()
     if not PIES["spacer"] then
         PIES["spacer"] = { RADIUS = RADIUS_START, name = "SPACER", guid = r.genGuid() }
     end
+    if not PIES["pianoroll"] then
+        PIES["pianoroll"] = { RADIUS = RADIUS_START, name = "PIANO ROLL", guid = r.genGuid(), is_midi = true }
+    end
+
+   -- if not PIES["midilanecp"] then
+   --     PIES["midilanecp"] = { RADIUS = RADIUS_START, name = "MIDI LANE CP", guid = r.genGuid(), as_global = true, is_midi = true }
+   -- end
     --! REMOVE THIS ON FINAL RELEASE, WAS WORKAROUND FOR ADDING STUFF NOT TO BREAK FILES
+    if not PIES["mcpfxlist"] then
+        PIES["mcpfxlist"] = { RADIUS = RADIUS_START, name = "MCP FX LIST", guid = r.genGuid() }
+        PIES["mcpsendlist"] = { RADIUS = RADIUS_START, name = "MCP SEND LIST", guid = r.genGuid() }
+    end
 
-
-
-    --! REMOVE LATER
-    if not MIDI_CC_PIES["00 bank select msb"] then
-        for i = 1, #CC_LIST do
-            local name = CC_LIST[i]
-            MIDI_CC_PIES[name:lower()] = { RADIUS = RADIUS_START, name = name:upper(), guid = r.genGuid(), is_midi = true }
+    if not PIES["tcpfxparm"] then
+        PIES["tcpfxparm"] = { RADIUS = RADIUS_START, name = "TCP FX PARM", guid = r.genGuid(), use_main = true}
+        PIES["mcpfxlist"] = { RADIUS = RADIUS_START, name = "MCP FX LIST", guid = r.genGuid(), use_main = true }
+        PIES["mcpsendlist"] = { RADIUS = RADIUS_START, name = "MCP SEND LIST", guid = r.genGuid(), use_main = true }        
+        for k,v in pairs(PIES) do            
+            if MAIN_NAMES[v.name] then
+                v.use_main = true
+                v.main_name = MAIN_NAMES[v.name]
+            end
+            if v.sync then v.sync = nil end
         end
     end
+
+    --! REMOVE LATER
+    -- if not MIDI_CC_PIES["00 bank select msb"] then
+    --     for i = -10, #CC_LIST do
+    --         if i ~= 0 then
+    --             local name = CC_LIST[i]
+    --             MIDI_CC_PIES[name:lower()] = { RADIUS = RADIUS_START, name = name:upper(), guid = r.genGuid(), is_midi = true }
+    --         end
+    --     end
+    -- end
+    -- if not MIDI_CC_PIES["cp off velocity"] then
+    --     for i = -10, #CC_LIST do
+    --         if i ~= 0 then
+    --             local name = CC_LIST[i]
+    --             MIDI_CC_PIES["cp " .. name:lower()] = { RADIUS = RADIUS_START, name = "CP " .. name:upper(), guid = r
+    --             .genGuid(), is_midi = true }
+    --         end
+    --     end
+    -- end
 
     if not PIES["width"] then
         for i = 1, #ENV_LIST do
             local name = ENV_LIST[i]
             PIES[name:lower()] = { RADIUS = RADIUS_START, name = name:upper(), guid = r.genGuid() }
+        end
+    end
+
+    if not PIES["cp width"] then
+        for i = 1, #ENV_LIST do
+            local name = ENV_LIST[i]
+            PIES["cp " .. name:lower()] = { RADIUS = RADIUS_START, name ="CP " .. name:upper(), guid = r.genGuid() }
         end
     end
 
@@ -300,7 +369,8 @@ local function GeneralDrawlistButton(name, active, round_side)
 
     local color = active and r.ImGui_GetStyleColor(ctx, r.ImGui_Col_ButtonActive()) or
         r.ImGui_GetStyleColor(ctx, r.ImGui_Col_Button())
-    color = (not active and r.ImGui_IsItemHovered(ctx)) and r.ImGui_GetStyleColor(ctx, r.ImGui_Col_ButtonHovered()) or color
+    color = (not active and r.ImGui_IsItemHovered(ctx)) and r.ImGui_GetStyleColor(ctx, r.ImGui_Col_ButtonHovered()) or
+        color
     r.ImGui_DrawList_AddRectFilled(draw_list, xs, ys, xe, ye,
         r.ImGui_GetColorEx(ctx, color), ROUNDING[round_side] and 5 or nil, ROUNDING[round_side] or nil)
 
@@ -557,7 +627,7 @@ local function PngSelector(pie, button_size)
     local png_path_inner, png_name
     if pie.png then
         png_path_inner = pie.png:match("(.+/)(%S+)")
-        png_name = pie.png --:gsub("/", "\\")        
+        png_name = pie.png --:gsub("/", "\\")
     end
     if r.ImGui_BeginPopup(ctx, "Png Selector") then
         r.ImGui_BeginGroup(ctx)
@@ -596,31 +666,31 @@ local function PngSelector(pie, button_size)
             IMG_RESCALE_FACTOR = 30
             png_tbl = PNG_TBL_TRACK_ICONS
             CHOOSE = "30"
-            if png_name and (png_path_inner:match("track_icons") or  png_path_inner:match("CustomImages"))  then
+            if png_name and (png_path_inner:match("track_icons") or png_path_inner:match("CustomImages")) then
                 ret = true
                 png = png_name
             end
         end
         r.ImGui_SameLine(ctx)
-        if r.ImGui_RadioButton(ctx, "150##ti",(CHOOSE == "45" )) then
+        if r.ImGui_RadioButton(ctx, "150##ti", (CHOOSE == "45")) then
             png_tbl = {}
             RefreshImgObj(PNG_TBL_TRACK_ICONS)
             IMG_RESCALE_FACTOR = 45
             png_tbl = PNG_TBL_TRACK_ICONS
             CHOOSE = "45"
-            if png_name and (png_path_inner:match("track_icons") or  png_path_inner:match("CustomImages"))  then
+            if png_name and (png_path_inner:match("track_icons") or png_path_inner:match("CustomImages")) then
                 ret = true
                 png = png_name
             end
         end
         r.ImGui_SameLine(ctx)
-        if r.ImGui_RadioButton(ctx, "200##ti", (CHOOSE == "60" )) then
+        if r.ImGui_RadioButton(ctx, "200##ti", (CHOOSE == "60")) then
             png_tbl = {}
             RefreshImgObj(PNG_TBL_TRACK_ICONS)
             IMG_RESCALE_FACTOR = 60
             png_tbl = PNG_TBL_TRACK_ICONS
             CHOOSE = "60"
-            if png_name and (png_path_inner:match("track_icons") or png_path_inner:match("CustomImages"))  then
+            if png_name and (png_path_inner:match("track_icons") or png_path_inner:match("CustomImages")) then
                 ret = true
                 png = png_name
             end
@@ -633,25 +703,25 @@ local function PngSelector(pie, button_size)
             IMG_RESCALE_FACTOR = 30
             png_tbl = PNG_TBL_CUSTOM_IMAGE
             CHOOSE = "30CI"
-            if png_name and (png_path_inner:match("track_icons") or  png_path_inner:match("CustomImages"))  then
+            if png_name and (png_path_inner:match("track_icons") or png_path_inner:match("CustomImages")) then
                 ret = true
                 png = png_name
             end
         end
         r.ImGui_SameLine(ctx)
-        if r.ImGui_RadioButton(ctx, "150##ci",(CHOOSE == "45CI" )) then
+        if r.ImGui_RadioButton(ctx, "150##ci", (CHOOSE == "45CI")) then
             png_tbl = {}
             RefreshImgObj(PNG_TBL_CUSTOM_IMAGE)
             IMG_RESCALE_FACTOR = 45
             png_tbl = PNG_TBL_CUSTOM_IMAGE
             CHOOSE = "45CI"
-            if png_name and (png_path_inner:match("track_icons") or  png_path_inner:match("CustomImages")) then
+            if png_name and (png_path_inner:match("track_icons") or png_path_inner:match("CustomImages")) then
                 ret = true
                 png = png_name
             end
         end
         r.ImGui_SameLine(ctx)
-        if r.ImGui_RadioButton(ctx, "200##ci", (CHOOSE == "60CI" )) then
+        if r.ImGui_RadioButton(ctx, "200##ci", (CHOOSE == "60CI")) then
             png_tbl = {}
             RefreshImgObj(PNG_TBL_CUSTOM_IMAGE)
             IMG_RESCALE_FACTOR = 60
@@ -699,9 +769,9 @@ local function PngSelector(pie, button_size)
                 local maxx, maxy = r.ImGui_GetItemRectMax(ctx)
                 if png_name == image then
                     r.ImGui_DrawList_AddRect(draw_list, minx, miny, maxx, maxy, 0x00ff00ff, 0, 0, 2)
-                    if SCROLL_TO_IMG then 
+                    if SCROLL_TO_IMG then
                         SCROLL_TO_IMG = nil
-                        r.ImGui_SetScrollHereY( ctx )
+                        r.ImGui_SetScrollHereY(ctx)
                     end
                 end
 
@@ -719,7 +789,7 @@ local function PngSelector(pie, button_size)
         r.ImGui_EndPopup(ctx)
     end
     r.ImGui_PopStyleColor(ctx)
-    
+
     return ret, png, IMG_RESCALE_FACTOR
 end
 
@@ -758,7 +828,7 @@ local function PngDisplay(tbl, img_obj, button_size)
                     else
                         IMG_RESCALE_FACTOR = tbl.rescale
                         if png_path_inner:match("track_icons") then
-                            png_tbl = {}                            
+                            png_tbl = {}
                             CHOOSE = tostring(tbl.rescale)
                             RefreshImgObj(PNG_TBL_TRACK_ICONS)
                             png_tbl = PNG_TBL_TRACK_ICONS
@@ -870,9 +940,11 @@ local function NewProperties(pie)
     if r.ImGui_BeginChild(ctx, "PROPERTIES", 0, 147, true) then
         if pie.selected then
             LAST_MSG = pie[pie.selected].name
-            r.ImGui_PushStyleColor(ctx, r.ImGui_Col_FrameBg(),0)
-            r.ImGui_SetNextItemWidth(ctx,-FLT_MIN)
-            r.ImGui_InputText( ctx, "##ID", pie[pie.selected].menu and pie[pie.selected].name or pie[pie.selected].cmd_name, r.ImGui_InputTextFlags_ReadOnly())
+            r.ImGui_PushStyleColor(ctx, r.ImGui_Col_FrameBg(), 0)
+            r.ImGui_SetNextItemWidth(ctx, -FLT_MIN)
+            r.ImGui_InputText(ctx, "##ID",
+                pie[pie.selected].menu and pie[pie.selected].name or pie[pie.selected].cmd_name,
+                r.ImGui_InputTextFlags_ReadOnly())
             r.ImGui_PopStyleColor(ctx)
             r.ImGui_Separator(ctx)
             r.ImGui_BeginGroup(ctx)
@@ -949,11 +1021,17 @@ local function NewProperties(pie)
             RV_R, pie.RADIUS = r.ImGui_SliderInt(ctx, "##RADIUS", pie.RADIUS, 50, 270)
             if STATE == "PIE" then
                 if #PIE_LIST == 0 then
-                    if pie.name == "ARRANGE" or pie.name == "TCP" or pie.name == "MCP" then
-                        if r.ImGui_Checkbox(ctx, "USE AS EMPTY CONTEXT", pie.sync) then
-                            pie.sync = not pie.sync
+                    -- if pie.name == "ARRANGE" or pie.name == "TCP" or pie.name == "MCP" then
+                    --     if r.ImGui_Checkbox(ctx, "USE AS EMPTY CONTEXT", pie.sync) then
+                    --         pie.sync = not pie.sync
+                    --     end
+                    -- end
+                    if MAIN_NAMES[pie.name]then
+                        if r.ImGui_Checkbox(ctx, "USE MAIN CONTEXT - " .. pie.main_name, pie.use_main) then
+                            pie.use_main = not pie.use_main
                         end
                     end
+
                     if r.ImGui_Button(ctx, "Clear Context") then
                         OPEN_WARNING = true
                         CLEAR_PIE = pie
@@ -972,7 +1050,7 @@ local function NewProperties(pie)
                             MENUS[#MENUS][i] = CUR_PIE[i].menu and CUR_PIE[i] or Deepcopy(CUR_PIE[i])
                         end
                     end
-                    if pie.name == "MIDI LANE" or pie.name == "ENVELOPE" then
+                    if pie.name == "MIDI LANE" or pie.name == "MIDI LANE CP" or pie.name == "ENVELOPE" or pie.name == "ENV CP" then
                         if r.ImGui_Checkbox(ctx, "Use as Default for all Lanes", pie.as_global) then
                             pie.as_global = not pie.as_global
                         end
@@ -1086,15 +1164,20 @@ local function Settings()
     r.ImGui_Unindent(ctx)
     r.ImGui_Separator(ctx)
     if r.ImGui_InvisibleButton(ctx, "OPEN CUSTOM IMAGES FOLDER", 190, 26) then
-        local cmd        
+        local cmd
         if r.GetOS():sub(1, 3) == 'Win' then
             cmd = 'cmd.exe /c explorer'
         else
             cmd = 'open'
         end
-        r.ExecProcess(([[%s "%s"]]):format(cmd, r.GetResourcePath() .. png_path_custom:gsub("/",os_separator)), 0)
+        r.ExecProcess(([[%s "%s"]]):format(cmd, r.GetResourcePath() .. png_path_custom:gsub("/", os_separator)), 0)
     end
     GeneralDrawlistButton("OPEN CUSTOM IMAGES FOLDER", nil, "A")
+    r.ImGui_SameLine(ctx, 0, 100)
+    if r.ImGui_Checkbox(ctx, "MIDI DEBUG", MIDI_TRACE_DEBUG) then
+        MIDI_TRACE_DEBUG = not MIDI_TRACE_DEBUG
+        WANT_SAVE = true
+    end
 
     if WANT_SAVE then
         local data = TableToString(
@@ -1113,6 +1196,7 @@ local function Settings()
                 adjust_pie_near_edge = ADJUST_PIE_NEAR_EDGE,
                 close_on_activate = CLOSE_ON_ACTIVATE,
                 drop_down_menu = DROP_DOWN_MENU,
+                midi_trace_debug = MIDI_TRACE_DEBUG,
 
             }, true)
         r.SetExtState("PIE3000", "SETTINGS", data, true)
@@ -1124,15 +1208,23 @@ local function ContextSelector()
     local w, h = r.ImGui_GetItemRectSize(ctx)
     local x, y = r.ImGui_GetCursorScreenPos(ctx)
     r.ImGui_SetNextWindowPos(ctx, x, y)
-    r.ImGui_SetNextWindowSize(ctx, w, 340)
+    r.ImGui_SetNextWindowSize(ctx, w, 425)
     r.ImGui_SetNextWindowBgAlpha(ctx, 1)
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_PopupBg(), bg_col)
-    if r.ImGui_BeginPopup(ctx, "Context Selector") then
+    if r.ImGui_BeginPopup(ctx, "Context Selector") then  
         r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Button(), bg_col)
         r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing(), 0, 0)
         for i = 1, #menu_items do
             if r.ImGui_Button(ctx, menu_items[i][2], -FLT_MIN) then
-                SWITCH_PIE = PIES[menu_items[i][1]]
+                if menu_items[i][2] == "MIDI LANE" then --or menu_items[i][2] == "MIDI LANE CP" then
+                    if cur_cc_item ~= 0 then
+                        SWITCH_PIE = menu_items[i][2] == "MIDI LANE" and MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()] --or MIDI_CC_PIES["cp " .. CC_LIST[cur_cc_item]:lower()]
+                    else
+                        SWITCH_PIE = PIES[menu_items[i][1]]
+                    end
+                else
+                    SWITCH_PIE = PIES[menu_items[i][1]]
+                end
                 PIE_LIST = {}
                 context_cur_item = i
                 r.ImGui_CloseCurrentPopup(ctx)
@@ -1168,22 +1260,27 @@ local function BreadCrumbs(tbl)
         local txt_w, txt_h = r.ImGui_CalcTextSize(ctx, j == 0 and "H" or PIE_LIST[j].name)
         r.ImGui_PushID(ctx, "btn_bx" .. j)
         if r.ImGui_InvisibleButton(ctx, "##BC", txt_w + (j == 0 and 18 or 30), 20) then
-            if j == 0 then
+            if j == 0 and #tbl ~= 0 then
                 if menu_items[context_cur_item][2] == "MIDI LANE" then
-                    SWITCH_PIE = cur_cc_item == 0 and PIES[menu_items[context_cur_item][1]] or
-                        MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+                    SWITCH_PIE = cur_cc_item == 0 and PIES[menu_items[context_cur_item][1]] or MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+               -- elseif menu_items[context_cur_item][2] == "MIDI LANE CP" then
+                --    SWITCH_PIE = cur_cc_item == 0 and PIES[menu_items[context_cur_item][1]] or MIDI_CC_PIES["cp " .. CC_LIST[cur_cc_item]:lower()]
                 elseif menu_items[context_cur_item][2] == "ENVELOPE" then
                     SWITCH_PIE = cur_env_item == 0 and PIES["envelope"] or PIES[ENV_LIST[cur_env_item]:lower()]
+                elseif menu_items[context_cur_item][2] == "ENVELOPE CP" then
+                    SWITCH_PIE = cur_env_item == 0 and PIES["envcp"] or PIES["cp " .. ENV_LIST[cur_env_item]:lower()]
                 else
                     SWITCH_PIE = PIES[menu_items[context_cur_item][1]]
                 end
-                SWITCH_PIE = cur_cc_item == 0 and PIES[menu_items[context_cur_item][1]] or
-                    MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+                --SWITCH_PIE = cur_cc_item == 0 and PIES[menu_items[context_cur_item][1]] or  MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
                 CLEAR_PIE_LIST = 0
                 SWITCH_PIE.selected = nil
             else
-                CLEAR_PIE_LIST = j
-                SWITCH_PIE = PIE_LIST[j].pid
+                if j < #tbl then
+                    CLEAR_PIE_LIST = j
+                    SWITCH_PIE = PIE_LIST[j+1].pid
+                    SWITCH_PIE.selected = nil
+                end
             end
         end
         color = r.ImGui_IsItemHovered(ctx) and r.ImGui_GetStyleColor(ctx, r.ImGui_Col_ButtonHovered()) or color
@@ -1419,7 +1516,7 @@ local function MenuEditList(pie)
     r.ImGui_SameLine(ctx)
 end
 
-local function EnvLaneSelector()
+local function EnvLaneSelector(cp)
     local txt_w = r.ImGui_CalcTextSize(ctx, ENV_LIST[cur_env_item])
     local w = txt_w + 25
     if r.ImGui_BeginChild(ctx, "Envlaneeeee", w, 25) then
@@ -1430,7 +1527,11 @@ local function EnvLaneSelector()
             for i = 0, #ENV_LIST do
                 if r.ImGui_MenuItem(ctx, ENV_LIST[i], nil, cur_env_item == i, true) then
                     cur_env_item = i
-                    SWITCH_PIE = i == 0 and PIES["envelope"] or PIES[ENV_LIST[cur_env_item]:lower()]
+                    if cp then
+                        SWITCH_PIE = i == 0 and PIES["envcp"] or PIES["cp " .. ENV_LIST[cur_env_item]:lower()]
+                    else
+                        SWITCH_PIE = i == 0 and PIES["envelope"] or PIES[ENV_LIST[cur_env_item]:lower()]
+                    end
                 end
                 if i == 0 then
                     r.ImGui_Separator(ctx)
@@ -1445,7 +1546,7 @@ local function EnvLaneSelector()
         r.ImGui_EndChild(ctx)
     end
 end
-local function MidiLaneSelector()
+local function MidiLaneSelector(cp)
     local txt_w = r.ImGui_CalcTextSize(ctx, CC_LIST[cur_cc_item])
     local w = txt_w + 25
     if r.ImGui_BeginChild(ctx, "laneeeee", w, 25) then
@@ -1456,7 +1557,11 @@ local function MidiLaneSelector()
             for i = 0, -10, -1 do
                 if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
                     cur_cc_item = i
-                    SWITCH_PIE = i == 0 and PIES["midilane"] or MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+                    --if cp then
+                      --  SWITCH_PIE = i == 0 and PIES["midilanecp"] or MIDI_CC_PIES ["cp " .. CC_LIST[cur_cc_item]:lower()]
+                   -- else
+                        SWITCH_PIE = i == 0 and PIES["midilane"] or MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+                    --end
                 end
                 if i == 0 or i == -10 then r.ImGui_Separator(ctx) end
             end
@@ -1465,6 +1570,7 @@ local function MidiLaneSelector()
                     if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
                         cur_cc_item = i
                         SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+                        --SWITCH_PIE = cp and MIDI_CC_PIES["cp " .. CC_LIST[cur_cc_item]:lower()] or  MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
                     end
                 end
                 r.ImGui_EndMenu(ctx)
@@ -1474,6 +1580,7 @@ local function MidiLaneSelector()
                     if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
                         cur_cc_item = i
                         SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+                       -- SWITCH_PIE = cp and MIDI_CC_PIES["cp " .. CC_LIST[cur_cc_item]:lower()] or MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
                     end
                 end
                 r.ImGui_EndMenu(ctx)
@@ -1483,6 +1590,7 @@ local function MidiLaneSelector()
                     if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
                         cur_cc_item = i
                         SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+                       -- SWITCH_PIE = cp and MIDI_CC_PIES["cp " .. CC_LIST[cur_cc_item]:lower()] or                        MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
                     end
                 end
                 r.ImGui_EndMenu(ctx)
@@ -1492,6 +1600,7 @@ local function MidiLaneSelector()
                     if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
                         cur_cc_item = i
                         SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+                       -- SWITCH_PIE = cp and MIDI_CC_PIES["cp " .. CC_LIST[cur_cc_item]:lower()] or                        MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
                     end
                 end
                 r.ImGui_EndMenu(ctx)
@@ -1501,6 +1610,7 @@ local function MidiLaneSelector()
                     if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
                         cur_cc_item = i
                         SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+                       -- SWITCH_PIE = cp and MIDI_CC_PIES["cp " .. CC_LIST[cur_cc_item]:lower()] or                        MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
                     end
                 end
                 r.ImGui_EndMenu(ctx)
@@ -1545,8 +1655,12 @@ local function Pie()
             end
             if menu_items[context_cur_item][2] == "MIDI LANE" then
                 MidiLaneSelector()
+           -- elseif menu_items[context_cur_item][2] == "MIDI LANE CP" then
+                --MidiLaneSelector(true)
             elseif menu_items[context_cur_item][2] == "ENVELOPE" then
                 EnvLaneSelector()
+            elseif menu_items[context_cur_item][2] == "ENVELOPE CP" then
+                EnvLaneSelector(true)
             end
         end
         local WW, WH = r.ImGui_GetWindowSize(ctx)
@@ -1582,7 +1696,7 @@ end
 --     return actions
 -- end
 
-local ACTIONS_TBL = GetMainActions() --GetActions(0)
+local ACTIONS_TBL = GetMainActions()      --GetActions(0)
 local MIDI_ACTIONS_TBL = GetMidiActions() --GetActions(32060)
 
 local FILTERED_ACTION_TBL = ACTIONS_TBL
@@ -1704,6 +1818,7 @@ end
 UPDATE_CNT = 0
 local function Main()
     if SWITCH_PIE then
+        RefreshImgObj(SWITCH_PIE)
         if STATE == "EDITOR" then
             CUR_MENU_PIE = SWITCH_PIE
         elseif STATE == "PIE" then
