@@ -365,7 +365,7 @@ local function GeneralDrawlistButton(name, active, round_side)
     local w = xe - xs
     local h = ye - ys
 
-    local active = r.ImGui_IsItemActive(ctx)
+    local active = active or r.ImGui_IsItemActive(ctx)
 
     local color = active and r.ImGui_GetStyleColor(ctx, r.ImGui_Col_ButtonActive()) or
         r.ImGui_GetStyleColor(ctx, r.ImGui_Col_Button())

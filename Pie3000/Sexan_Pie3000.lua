@@ -1,21 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.33.30
+-- @version 0.33.31
 -- @changelog
---  Replace "USE AS EMPTY" with "USE MAIN CONTEXT"
---  Add "USE MAIN CONTEXT" to TCP,MCP
---  Move "USE MAIN CONTEXT" to child context (Non main)
---  Fix breadcrumbs doing to wrong menu
---  Dont allow processing current menu in breadrumbs on click
---  Refresh image objects when switching menus
---  ESC kills script
---  Piano Roll Context
---  Envelope Control panel contexts
---  Added midi debug view
---  Improved midi tracing boundaries
---  Add UI scaling variable to boundries
---  Fix empty naming in DropDown Mode
+--  Fix broken tab highlights
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
