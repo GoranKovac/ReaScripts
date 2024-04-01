@@ -110,10 +110,26 @@ if r.HasExtState("PIE3000", "SETTINGS") then
     end
 end
 
+local KEYS_IGNORE_LIST = {
+    ["escape"] = true,
+    ["leftshift"] = true,
+    ["righthift"] = true,
+    ["leftalt"] = true,
+    ["rightalt"] = true,
+    ["leftctrl"] = true,
+    ["rightctrl"] = true,
+    ["leftsuper"] = true,
+    ["rightsuper"] = true,
+}
+
 local KEYS = { "" }
 for name, func in pairs(r) do
     name = name:match('^ImGui_Key_(.+)$')
-    if name then KEYS[func()] = name end
+    if name and not KEYS_IGNORE_LIST[name:lower()] then KEYS[func()] = name end
+end
+
+function GetImguiKeys()
+    return KEYS
 end
 
 function IterateActions(sectionID)
@@ -366,7 +382,7 @@ local function MidiLaneDetect(hwnd)
     local ec = r.GetCursorPosition()
     r.JS_WindowMessage_Send(mouse_wnd, "WM_LBUTTONDOWN", 1, 0, x, y)
     r.JS_WindowMessage_Send(mouse_wnd, "WM_LBUTTONUP", 0, 0, x, y)
-    r.SetEditCurPos( ec, false, false )
+    r.SetEditCurPos(ec, false, false)
     r.PreventUIRefresh(-1)
     local lane = r.MIDIEditor_GetSetting_int(hwnd, "last_clicked_cc_lane")
     local sel_lane = "global"
@@ -447,9 +463,9 @@ function DetectMIDIContext(piano, midi_debug)
     end
 
     -- TAKE SCREENSHOT OF THE THE RIGHT SCROLLBAR
-    local function takeScreenshot(window,dip_scale)
-       --local rv_scale, scale = r.get_config_var_string("uiscale")
-       -- local UI_SCALE = rv_scale and tonumber(scale) or 1
+    local function takeScreenshot(window, dip_scale)
+        --local rv_scale, scale = r.get_config_var_string("uiscale")
+        -- local UI_SCALE = rv_scale and tonumber(scale) or 1
         local retval, left, top, right, bottom = r.JS_Window_GetRect(window)
         local w, h = right - left, bottom - top
         local bot_px
@@ -478,7 +494,7 @@ function DetectMIDIContext(piano, midi_debug)
     --local retval_dpi, dpi = r.get_config_var_string("uiscale")
     --local dpi_scale = retval_dpi and tonumber(dpi) or 1
     local retval_dpi, dpi = r.ThemeLayout_GetLayout("tcp", -3)
-    local dpi_scale = retval_dpi and tonumber(dpi)/256 or 1
+    local dpi_scale = retval_dpi and tonumber(dpi) / 256 or 1
     if not HWND then return end
     local child_hwnd = r.JS_Window_FindChildByID(HWND, MIDI_WND_IDS[2].id)
     local piano_hwnd = r.JS_Window_FindChildByID(HWND, MIDI_WND_IDS[1].id)
@@ -488,39 +504,40 @@ function DetectMIDIContext(piano, midi_debug)
 
     local retval, left, top, right, bottom = r.JS_Window_GetRect(child_hwnd)
     if midi_debug then
-        r.ImGui_DrawList_AddRect( draw_list, left, top + ceil(64*dpi_scale), right, top + bot_px, 0xff000050, 0, 0, 1 )
-        r.ImGui_DrawList_AddText( draw_list, left + 20, top + ceil(64*dpi_scale) + 20, 0xffffffff, "MIDI NOTES" )
+        r.ImGui_DrawList_AddRect(draw_list, left, top + ceil(64 * dpi_scale), right, top + bot_px, 0xff000050, 0, 0, 1)
+        r.ImGui_DrawList_AddText(draw_list, left + 20, top + ceil(64 * dpi_scale) + 20, 0xffffffff, "MIDI NOTES")
 
-        r.ImGui_DrawList_AddRect( draw_list, left, top + bot_px, right, bottom, 0xff000050, 0, 0, 1 )
-        r.ImGui_DrawList_AddText( draw_list, left + 20, top + bot_px + 5 + 20, 0xffffffff, "CC LANES" )
+        r.ImGui_DrawList_AddRect(draw_list, left, top + bot_px, right, bottom, 0xff000050, 0, 0, 1)
+        r.ImGui_DrawList_AddText(draw_list, left + 20, top + bot_px + 5 + 20, 0xffffffff, "CC LANES")
 
-        r.ImGui_DrawList_AddRect( draw_list, left, top, right, top + ceil(65*dpi_scale), 0xff000050, 0, 0, 1 )
-        r.ImGui_DrawList_AddText( draw_list, left + 20, top + 20, 0xffffffff, "RULER" )
+        r.ImGui_DrawList_AddRect(draw_list, left, top, right, top + ceil(65 * dpi_scale), 0xff000050, 0, 0, 1)
+        r.ImGui_DrawList_AddText(draw_list, left + 20, top + 20, 0xffffffff, "RULER")
     end
     if piano then
         local p_retval, p_left, p_top, p_right, p_bottom = r.JS_Window_GetRect(piano_hwnd)
         if midi_debug then
-            r.ImGui_DrawList_AddRect( draw_list, p_left, top + ceil(64*dpi_scale), p_right, top + bot_px + 5 , 0xff000050, 0, 0, 1 )
-            r.ImGui_DrawList_AddText( draw_list, p_left + 20, top + ceil(64*dpi_scale) + 20, 0xffffffff, "PIANO ROLL" )
+            r.ImGui_DrawList_AddRect(draw_list, p_left, top + ceil(64 * dpi_scale), p_right, top + bot_px + 5, 0xff000050,
+                0, 0, 1)
+            r.ImGui_DrawList_AddText(draw_list, p_left + 20, top + ceil(64 * dpi_scale) + 20, 0xffffffff, "PIANO ROLL")
 
-            r.ImGui_DrawList_AddRect( draw_list, p_left, top + bot_px + 5, p_right, bottom, 0xff000050, 0, 0, 1 )
-            r.ImGui_DrawList_AddText( draw_list, p_left + 20, top + bot_px + 5 + 20, 0xffffffff, "CC CP" )
+            r.ImGui_DrawList_AddRect(draw_list, p_left, top + bot_px + 5, p_right, bottom, 0xff000050, 0, 0, 1)
+            r.ImGui_DrawList_AddText(draw_list, p_left + 20, top + bot_px + 5 + 20, 0xffffffff, "CC CP")
         end
-        
-        if IsInside(p_left, top + ceil(64*dpi_scale), p_right, top + bot_px + 5) then
+
+        if IsInside(p_left, top + ceil(64 * dpi_scale), p_right, top + bot_px + 5) then
             return "pianoroll"
         elseif IsInside(p_left, top + bot_px + 5, p_right, bottom) then
-           -- MIDI_LANE_CONTEXT = "cp"
-           -- local lane_cp = MidiLaneDetect(HWND)
-           -- if lane_cp then return "cp " .. lane_cp end
+            -- MIDI_LANE_CONTEXT = "cp"
+            -- local lane_cp = MidiLaneDetect(HWND)
+            -- if lane_cp then return "cp " .. lane_cp end
         end
     end
-    if IsInside(left, top + ceil(63*dpi_scale), right, top + bot_px) then
+    if IsInside(left, top + ceil(63 * dpi_scale), right, top + bot_px) then
         return "midi"
     end
     --MIDI_SIZE = { left - 2, top, right, bottom }
     -- RULLER
-    if IsInside(left, top, right, top + ceil(64*dpi_scale)) then
+    if IsInside(left, top, right, top + ceil(64 * dpi_scale)) then
         return "midiruler"
     end
     -- LANES (WHOLE SECTION)
@@ -538,6 +555,14 @@ function DetectEnvContext(track, env_info, cp)
         if retval then return cp and "cp " .. name:lower() or name:lower() end
     end
     return cp and "envcp" or "envelope"
+end
+
+function DetectMediaExplorer(hwnd)
+    local parent = r.JS_Window_GetParent(hwnd)
+    local title = r.JS_Window_GetTitle(parent)
+    if title == "Media Explorer" then
+        return "mediaexplorer", parent
+    end
 end
 
 function PDefer(func)
@@ -562,8 +587,8 @@ function PDefer(func)
     end)
 end
 
-function DrawDND(x,y,radius,col, dd_type)
-    r.ImGui_DrawList_AddCircle(draw_list,x,y,radius,col,128, 4)
+function DrawDND(x, y, radius, col, dd_type)
+    r.ImGui_DrawList_AddCircle(draw_list, x, y, radius, col, 128, 4)
 end
 
 function EasingAnimation(begin_val, end_val, duration_in_sec, ease_function, call_time, delay)
@@ -968,7 +993,7 @@ local function PieButtonDrawlist(pie, button_radius, selected, hovered, button_p
         end
         local is_toolbar_icon = png:find("toolbar_icons")
         ImageUVOffset(pie.img_obj, pie.rescale, is_toolbar_icon and 3 or 1, 1,
-        is_toolbar_icon and 0 or (selected and 2 or 0), button_center.x, button_center.y, CENTER_BTN_PROG)
+            is_toolbar_icon and 0 or (selected and 2 or 0), button_center.x, button_center.y, CENTER_BTN_PROG)
     end
 end
 
@@ -1136,9 +1161,9 @@ local function DrawCenter(pie, center)
     r.ImGui_SetCursorScreenPos(ctx, CENTER.x - (button_wh / 2), CENTER.y - (button_wh / 2))
     r.ImGui_Button(ctx, "##CENTER", button_wh, button_wh)
     if SETUP and #PIE_LIST == 0 then
-       r.ImGui_SetCursorScreenPos(ctx, CENTER.x - RADIUS_MIN, CENTER.y -RADIUS_MIN)
-       r.ImGui_InvisibleButton(ctx, "##CENTERBoundry", (RADIUS_MIN*2),RADIUS_MIN*2) 
-       DndAddAsContext(pie)
+        r.ImGui_SetCursorScreenPos(ctx, CENTER.x - RADIUS_MIN, CENTER.y - RADIUS_MIN)
+        r.ImGui_InvisibleButton(ctx, "##CENTERBoundry", (RADIUS_MIN * 2), RADIUS_MIN * 2)
+        DndAddAsContext(pie)
     end
     local center_pressed = (r.ImGui_IsMouseDown(ctx, 0) and not pie.active and r.ImGui_IsWindowFocused(ctx))
     center_pressed = #PIE_LIST > 0 and center_pressed

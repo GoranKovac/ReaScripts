@@ -26,26 +26,26 @@ PIE_LIST = {}
 local RADIUS_START = 150
 local DEFAULT_PIE = {
     ["arrange"] = { RADIUS = RADIUS_START, name = "TRACK", guid = r.genGuid() },
-    ["arrangeempty"] = { RADIUS = RADIUS_START, name = "ARRANGE EMPTY", guid = r.genGuid(), use_main = true, main_name = "arrange"},
+    ["arrangeempty"] = { RADIUS = RADIUS_START, name = "ARRANGE EMPTY", guid = r.genGuid(), use_main = true, main_name = "arrange" },
     -----------------------------
-    ["tcp"] = { RADIUS = RADIUS_START, name = "TCP", guid = r.genGuid() },    
-    ["tcpfxparm"] = { RADIUS = RADIUS_START, name = "TCP FX PARM", guid = r.genGuid(), use_main = true, main_name = "tcp"},
-    ["tcpempty"] = { RADIUS = RADIUS_START, name = "TCP EMPTY", guid = r.genGuid(), use_main = true , main_name = "tcp"},
+    ["tcp"] = { RADIUS = RADIUS_START, name = "TCP", guid = r.genGuid() },
+    ["tcpfxparm"] = { RADIUS = RADIUS_START, name = "TCP FX PARM", guid = r.genGuid(), use_main = true, main_name = "tcp" },
+    ["tcpempty"] = { RADIUS = RADIUS_START, name = "TCP EMPTY", guid = r.genGuid(), use_main = true, main_name = "tcp" },
     -----------------------------
-    ["mastertcp"] = { RADIUS = RADIUS_START, name = "MASTER TCP", guid = r.genGuid() },    
-    ["mastertcpfxparm"] = { RADIUS = RADIUS_START, name = "MASTER TCP FX PARM", guid = r.genGuid(), use_main = true, main_name = "mastertcp"},
+    ["mastertcp"] = { RADIUS = RADIUS_START, name = "MASTER TCP", guid = r.genGuid() },
+    ["mastertcpfxparm"] = { RADIUS = RADIUS_START, name = "MASTER TCP FX PARM", guid = r.genGuid(), use_main = true, main_name = "mastertcp" },
     -----------------------------
-    ["mcp"] = { RADIUS = RADIUS_START, name = "MASTER MCP", guid = r.genGuid()},    
-    ["mcpfxlist"] = { RADIUS = RADIUS_START, name = "MASTER MCP FX LIST", guid = r.genGuid(), use_main = true , main_name = "mcp"},
-    ["mcpsendlist"] = { RADIUS = RADIUS_START, name = "MASTER MCP SEND LIST", guid = r.genGuid(), use_main = true , main_name = "mcp"},    
+    ["mcp"] = { RADIUS = RADIUS_START, name = "MASTER MCP", guid = r.genGuid() },
+    ["mcpfxlist"] = { RADIUS = RADIUS_START, name = "MASTER MCP FX LIST", guid = r.genGuid(), use_main = true, main_name = "mcp" },
+    ["mcpsendlist"] = { RADIUS = RADIUS_START, name = "MASTER MCP SEND LIST", guid = r.genGuid(), use_main = true, main_name = "mcp" },
     -----------------------------
-    ["mastermcp"] = { RADIUS = RADIUS_START, name = "MCP", guid = r.genGuid()},    
-    ["mastermcpfxlist"] = { RADIUS = RADIUS_START, name = "MCP FX LIST", guid = r.genGuid(), use_main = true, main_name = "mastermcp"},
-    ["mastermcpsendlist"] = { RADIUS = RADIUS_START, name = "MCP SEND LIST", guid = r.genGuid(), use_main = true , main_name = "mastermcp"},    
+    ["mastermcp"] = { RADIUS = RADIUS_START, name = "MCP", guid = r.genGuid() },
+    ["mastermcpfxlist"] = { RADIUS = RADIUS_START, name = "MCP FX LIST", guid = r.genGuid(), use_main = true, main_name = "mastermcp" },
+    ["mastermcpsendlist"] = { RADIUS = RADIUS_START, name = "MCP SEND LIST", guid = r.genGuid(), use_main = true, main_name = "mastermcp" },
     ["mastermcpempty"] = { RADIUS = RADIUS_START, name = "MCP EMPTY", guid = r.genGuid(), use_main = true, main_name = "mastermcp" },
     -----------------------------
     ["envelope"] = { RADIUS = RADIUS_START, name = "ENVELOPE", guid = r.genGuid(), as_global = true },
-    ["envcp"] = { RADIUS = RADIUS_START, name = "ENV CP", guid = r.genGuid()},
+    ["envcp"] = { RADIUS = RADIUS_START, name = "ENV CP", guid = r.genGuid() },
     ["item"] = { RADIUS = RADIUS_START, name = "ITEM", guid = r.genGuid() },
     ["itemmidi"] = { RADIUS = RADIUS_START, name = "MIDI ITEM", guid = r.genGuid() },
     ["trans"] = { RADIUS = RADIUS_START, name = "TRANSPORT", guid = r.genGuid() },
@@ -57,6 +57,8 @@ local DEFAULT_PIE = {
     --["midilanecp"] = { RADIUS = RADIUS_START, name = "MIDI LANE CP", guid = r.genGuid(), as_global = true, is_midi = true },
     ["plugin"] = { RADIUS = RADIUS_START, name = "PLUGIN", guid = r.genGuid() },
     ["spacer"] = { RADIUS = RADIUS_START, name = "SPACER", guid = r.genGuid() },
+    ---------------------------------
+    ["mediaexplorer"] = { RADIUS = RADIUS_START, name = "MEDIA EXPLORER", guid = r.genGuid() },
 }
 
 -- local DEFAULT_CC_PIE = {
@@ -81,7 +83,7 @@ local MAIN_NAMES = {
     ["MCP EMPTY"] = "mcp",
     ["MASTER MCP FX LIST"] = "mastermcp",
     ["MASTER MCP SEND LIST"] = "mastermcp",
-   -- ["ENV CP"] = "envelope",
+    -- ["ENV CP"] = "envelope",
 }
 
 local CC_LIST = GetCCList()
@@ -107,37 +109,38 @@ local cur_cc_item = 0
 local cur_env_item = 0
 local context_cur_item = 1
 local menu_items = {
-    { "arrange",      "TRACK" },
-    { "arrangeempty", "ARRANGE EMPTY", "_separator_" },
-    { "tcp",          "TCP" },
-    { "tcpfxparm" ,   "TCP FX PARM" },
-    { "tcpempty",     "TCP EMPTY", "_separator_"  },
-    
-    { "mastertcp",          "MASTER TCP" },
-    { "mastertcpfxparm" ,   "MASTER TCP FX PARM", "_separator_"  },
-    
-    { "mcp",          "MCP" },
-    { "mcpfxlist",    "MCP FX LIST" },
-    { "mcpsendlist",  "MCP SEND LIST" },
-    { "mcpempty",     "MCP EMPTY", "_separator_"  },
+    { "arrange",           "TRACK" },
+    { "arrangeempty",      "ARRANGE EMPTY",          "_separator_" },
+    { "tcp",               "TCP" },
+    { "tcpfxparm",         "TCP FX PARM" },
+    { "tcpempty",          "TCP EMPTY",              "_separator_" },
 
-    { "mastermcp",          "MASTER MCP" },
-    { "mastermcpfxlist",    "MASTER MCP FX LIST" },
-    { "mastermcpsendlist",  "MASTER MCP SEND LIST", "_separator_"  },
+    { "mastertcp",         "MASTER TCP" },
+    { "mastertcpfxparm",   "MASTER TCP FX PARM",     "_separator_" },
 
-    { "envelope",     "ENVELOPE" },
-    { "envcp",        "ENVELOPE CP", "_separator_"  },
-    { "item",         "ITEM" },
-    { "itemmidi",     "MIDI ITEM", "_separator_"  },
-    { "trans",        "TRANSPORT" },
-    { "ruler",        "RULER", "_separator_"  },
-    { "midi",         "MIDI" },
-    { "pianoroll",    "MIDI PIANO ROLL" },
-    { "midiruler",    "MIDI RULER" },
-    { "midilane",     "MIDI LANE", "_separator_"},
-   -- { "midilanecp",   "MIDI LANE CP" },
-    { "plugin",       "PLUGIN" },
-    { "spacer",       "SPACER" },
+    { "mcp",               "MCP" },
+    { "mcpfxlist",         "MCP FX LIST" },
+    { "mcpsendlist",       "MCP SEND LIST" },
+    { "mcpempty",          "MCP EMPTY",              "_separator_" },
+
+    { "mastermcp",         "MASTER MCP" },
+    { "mastermcpfxlist",   "MASTER MCP FX LIST" },
+    { "mastermcpsendlist", "MASTER MCP SEND LIST",   "_separator_" },
+
+    { "envelope",          "ENVELOPE" },
+    { "envcp",             "ENVELOPE CONTROL PANEL", "_separator_" },
+    { "item",              "ITEM" },
+    { "itemmidi",          "MIDI ITEM",              "_separator_" },
+    { "trans",             "TRANSPORT" },
+    { "ruler",             "RULER",                  "_separator_" },
+    { "midi",              "MIDI" },
+    { "pianoroll",         "MIDI PIANO ROLL" },
+    { "midiruler",         "MIDI RULER" },
+    { "midilane",          "MIDI LANE",              "_separator_" },
+    -- { "midilanecp",   "MIDI LANE CP" },
+    { "plugin",            "PLUGIN" },
+    { "spacer",            "SPACER","_separator_" },
+    {"mediaexplorer" ,     "MEDIA EXPLORER - (BG Tracker script needs to run)"},
 }
 
 local PIES = ReadFromFile(pie_file) or Deepcopy(DEFAULT_PIE)
@@ -146,6 +149,10 @@ local MIDI_CC_PIES = ReadFromFile(midi_cc_file) or Deepcopy(DEFAULT_CC_PIE)
 
 local function BetaAddContextToData()
     --! REMOVE THIS ON FINAL RELEASE, WAS WORKAROUND FOR ADDING STUFF NOT TO BREAK FILES  --------------------------------
+
+    if not PIES["mediaexplorer"]then
+        PIES["mediaexplorer"] = { RADIUS = RADIUS_START, name = "MEDIA EXPLORER", guid = r.genGuid() }
+    end
     if not PIES["ruler"] then
         PIES["ruler"] = { RADIUS = RADIUS_START, name = "RULLER", guid = r.genGuid() }
     else
@@ -170,20 +177,25 @@ local function BetaAddContextToData()
         PIES["pianoroll"] = { RADIUS = RADIUS_START, name = "PIANO ROLL", guid = r.genGuid(), is_midi = true }
     end
 
-   -- if not PIES["midilanecp"] then
-   --     PIES["midilanecp"] = { RADIUS = RADIUS_START, name = "MIDI LANE CP", guid = r.genGuid(), as_global = true, is_midi = true }
-   -- end
+    -- if not PIES["midilanecp"] then
+    --     PIES["midilanecp"] = { RADIUS = RADIUS_START, name = "MIDI LANE CP", guid = r.genGuid(), as_global = true, is_midi = true }
+    -- end
     --! REMOVE THIS ON FINAL RELEASE, WAS WORKAROUND FOR ADDING STUFF NOT TO BREAK FILES
     if not PIES["mcpfxlist"] then
-        PIES["mcpfxlist"] = { RADIUS = RADIUS_START, name = "MCP FX LIST", guid = r.genGuid(),use_main = true, main_name = "mcp"}
-        PIES["mcpsendlist"] = { RADIUS = RADIUS_START, name = "MCP SEND LIST", guid = r.genGuid(),use_main = true, main_name = "mcp" }
+        PIES["mcpfxlist"] = { RADIUS = RADIUS_START, name = "MCP FX LIST", guid = r.genGuid(), use_main = true, main_name =
+        "mcp" }
+        PIES["mcpsendlist"] = { RADIUS = RADIUS_START, name = "MCP SEND LIST", guid = r.genGuid(), use_main = true, main_name =
+        "mcp" }
     end
 
     if not PIES["tcpfxparm"] then
-        PIES["tcpfxparm"] = { RADIUS = RADIUS_START, name = "TCP FX PARM", guid = r.genGuid(), use_main = true, main_name = "tcp"}
-        PIES["mcpfxlist"] = { RADIUS = RADIUS_START, name = "MCP FX LIST", guid = r.genGuid(), use_main = true , main_name = "mcp"}
-        PIES["mcpsendlist"] = { RADIUS = RADIUS_START, name = "MCP SEND LIST", guid = r.genGuid(), use_main = true , main_name = "mcp"}        
-        for k,v in pairs(PIES) do            
+        PIES["tcpfxparm"] = { RADIUS = RADIUS_START, name = "TCP FX PARM", guid = r.genGuid(), use_main = true, main_name =
+        "tcp" }
+        PIES["mcpfxlist"] = { RADIUS = RADIUS_START, name = "MCP FX LIST", guid = r.genGuid(), use_main = true, main_name =
+        "mcp" }
+        PIES["mcpsendlist"] = { RADIUS = RADIUS_START, name = "MCP SEND LIST", guid = r.genGuid(), use_main = true, main_name =
+        "mcp" }
+        for k, v in pairs(PIES) do
             if MAIN_NAMES[v.name] then
                 v.use_main = true
                 v.main_name = MAIN_NAMES[v.name]
@@ -193,13 +205,16 @@ local function BetaAddContextToData()
     end
 
     if not PIES["mastertcp"] then
-        PIES["mastertcp"] = { RADIUS = RADIUS_START, name = "MASTER TCP", guid = r.genGuid() }  
-        PIES["mastertcpfxparm"] = { RADIUS = RADIUS_START, name = "MASTER TCP FX PARM", guid = r.genGuid(), use_main = true, main_name = "mastertcp"}
-        PIES["mastermcp"] = { RADIUS = RADIUS_START, name = "MASTER MCP", guid = r.genGuid()}    
-        PIES["mastermcpfxlist"] = { RADIUS = RADIUS_START, name = "MASTER MCP FX LIST", guid = r.genGuid(), use_main = true, main_name = "mastermcp"}
-        PIES["mastermcpsendlist"] = { RADIUS = RADIUS_START, name = "MASTER MCP SEND LIST", guid = r.genGuid(), use_main = true , main_name = "mastermcp"}
+        PIES["mastertcp"] = { RADIUS = RADIUS_START, name = "MASTER TCP", guid = r.genGuid() }
+        PIES["mastertcpfxparm"] = { RADIUS = RADIUS_START, name = "MASTER TCP FX PARM", guid = r.genGuid(), use_main = true, main_name =
+        "mastertcp" }
+        PIES["mastermcp"] = { RADIUS = RADIUS_START, name = "MASTER MCP", guid = r.genGuid() }
+        PIES["mastermcpfxlist"] = { RADIUS = RADIUS_START, name = "MASTER MCP FX LIST", guid = r.genGuid(), use_main = true, main_name =
+        "mastermcp" }
+        PIES["mastermcpsendlist"] = { RADIUS = RADIUS_START, name = "MASTER MCP SEND LIST", guid = r.genGuid(), use_main = true, main_name =
+        "mastermcp" }
         PIES["mcpfxlist"].main_name = "mcp"
-        PIES["mcpsendlist"].main_name ="mcp"
+        PIES["mcpsendlist"].main_name = "mcp"
         PIES["tcpfxparm"].main_name = "tcp"
     end
 
@@ -232,7 +247,7 @@ local function BetaAddContextToData()
     if not PIES["cp width"] then
         for i = 1, #ENV_LIST do
             local name = ENV_LIST[i]
-            PIES["cp " .. name:lower()] = { RADIUS = RADIUS_START, name ="CP " .. name:upper(), guid = r.genGuid() }
+            PIES["cp " .. name:lower()] = { RADIUS = RADIUS_START, name = "CP " .. name:upper(), guid = r.genGuid() }
         end
     end
 
@@ -309,11 +324,7 @@ local TEMP_MENU = {
 local CUR_MENU_PIE = MENUS[1] or TEMP_MENU
 LAST_MENU_SEL = MENUS[1] and 1 or nil
 
-local KEYS = { "" }
-for name, func in pairs(r) do
-    name = name:match('^ImGui_Key_(.+)$')
-    if name then KEYS[func()] = name end
-end
+local KEYS = GetImguiKeys()
 
 local function IterateFiles(dir)
     local tbl = {}
@@ -632,6 +643,7 @@ local function DetectShortcut(pie)
             key = nil
             txt = "PRESS KEY"
         end
+        if ESC then r.ImGui_CloseCurrentPopup(ctx) end
         r.ImGui_EndPopup(ctx)
     end
 end
@@ -1066,7 +1078,7 @@ local function NewProperties(pie)
                     --         pie.sync = not pie.sync
                     --     end
                     -- end
-                    if MAIN_NAMES[pie.name]then
+                    if MAIN_NAMES[pie.name] then
                         if r.ImGui_Checkbox(ctx, "USE MAIN CONTEXT - " .. pie.main_name, pie.use_main) then
                             pie.use_main = not pie.use_main
                         end
@@ -1118,6 +1130,10 @@ local function Settings()
     if STATE ~= "SETTINGS" then return end
     r.ImGui_SeparatorText(ctx, "OPENING BEHAVIOR")
     r.ImGui_Indent(ctx, 0)
+    if r.ImGui_Checkbox(ctx, "Animation", ANIMATION) then
+        ANIMATION = not ANIMATION
+        WANT_SAVE = true
+    end
     if r.ImGui_Checkbox(ctx, "Show as DropDown Menu", DROP_DOWN_MENU) then
         DROP_DOWN_MENU = not DROP_DOWN_MENU
         WANT_SAVE = true
@@ -1139,10 +1155,7 @@ local function Settings()
         ACTIVATE_ON_CLOSE = not ACTIVATE_ON_CLOSE
         WANT_SAVE = true
     end
-    if r.ImGui_Checkbox(ctx, "Animation", ANIMATION) then
-        ANIMATION = not ANIMATION
-        WANT_SAVE = true
-    end
+
     if r.ImGui_Checkbox(ctx, "Select thing (Track/Item) under mouse", SELECT_THING_UNDER_MOUSE) then
         SELECT_THING_UNDER_MOUSE = not SELECT_THING_UNDER_MOUSE
         WANT_SAVE = true
@@ -1256,14 +1269,15 @@ local function ContextSelector()
     r.ImGui_SetNextWindowSize(ctx, w, 520)
     r.ImGui_SetNextWindowBgAlpha(ctx, 1)
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_PopupBg(), bg_col)
-    if r.ImGui_BeginPopup(ctx, "Context Selector") then  
+    if r.ImGui_BeginPopup(ctx, "Context Selector") then
         r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Button(), bg_col)
         r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing(), 0, 4)
         for i = 1, #menu_items do
             if r.ImGui_Selectable(ctx, "\t\t\t\t\t\t\t\t\t\t" .. menu_items[i][2], i == context_cur_item) then
-                if menu_items[i][2] == "MIDI LANE" then --or menu_items[i][2] == "MIDI LANE CP" then
+                if menu_items[i][2] == "MIDI LANE" then                                                             --or menu_items[i][2] == "MIDI LANE CP" then
                     if cur_cc_item ~= 0 then
-                        SWITCH_PIE = menu_items[i][2] == "MIDI LANE" and MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()] --or MIDI_CC_PIES["cp " .. CC_LIST[cur_cc_item]:lower()]
+                        SWITCH_PIE = menu_items[i][2] == "MIDI LANE" and
+                        MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]                                                  --or MIDI_CC_PIES["cp " .. CC_LIST[cur_cc_item]:lower()]
                     else
                         SWITCH_PIE = PIES[menu_items[i][1]]
                     end
@@ -1276,7 +1290,7 @@ local function ContextSelector()
                 UPDATE_FILTER = true
             end
             if menu_items[i][3] then
-                r.ImGui_SeparatorText(ctx,"")
+                r.ImGui_SeparatorText(ctx, "")
             end
         end
         r.ImGui_PopStyleVar(ctx)
@@ -1310,12 +1324,13 @@ local function BreadCrumbs(tbl)
         if r.ImGui_InvisibleButton(ctx, "##BC", txt_w + (j == 0 and 18 or 30), 20) then
             if j == 0 and #tbl ~= 0 then
                 if menu_items[context_cur_item][2] == "MIDI LANE" then
-                    SWITCH_PIE = cur_cc_item == 0 and PIES[menu_items[context_cur_item][1]] or MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
-               -- elseif menu_items[context_cur_item][2] == "MIDI LANE CP" then
-                --    SWITCH_PIE = cur_cc_item == 0 and PIES[menu_items[context_cur_item][1]] or MIDI_CC_PIES["cp " .. CC_LIST[cur_cc_item]:lower()]
+                    SWITCH_PIE = cur_cc_item == 0 and PIES[menu_items[context_cur_item][1]] or
+                    MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+                    -- elseif menu_items[context_cur_item][2] == "MIDI LANE CP" then
+                    --    SWITCH_PIE = cur_cc_item == 0 and PIES[menu_items[context_cur_item][1]] or MIDI_CC_PIES["cp " .. CC_LIST[cur_cc_item]:lower()]
                 elseif menu_items[context_cur_item][2] == "ENVELOPE" then
                     SWITCH_PIE = cur_env_item == 0 and PIES["envelope"] or PIES[ENV_LIST[cur_env_item]:lower()]
-                elseif menu_items[context_cur_item][2] == "ENVELOPE CP" then
+                elseif menu_items[context_cur_item][2] == "ENVELOPE CONTROL PANEL" then
                     SWITCH_PIE = cur_env_item == 0 and PIES["envcp"] or PIES["cp " .. ENV_LIST[cur_env_item]:lower()]
                 else
                     SWITCH_PIE = PIES[menu_items[context_cur_item][1]]
@@ -1326,7 +1341,7 @@ local function BreadCrumbs(tbl)
             else
                 if j < #tbl then
                     CLEAR_PIE_LIST = j
-                    SWITCH_PIE = PIE_LIST[j+1].pid
+                    SWITCH_PIE = PIE_LIST[j + 1].pid
                     SWITCH_PIE.selected = nil
                 end
             end
@@ -1606,9 +1621,9 @@ local function MidiLaneSelector(cp)
                 if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
                     cur_cc_item = i
                     --if cp then
-                      --  SWITCH_PIE = i == 0 and PIES["midilanecp"] or MIDI_CC_PIES ["cp " .. CC_LIST[cur_cc_item]:lower()]
-                   -- else
-                        SWITCH_PIE = i == 0 and PIES["midilane"] or MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+                    --  SWITCH_PIE = i == 0 and PIES["midilanecp"] or MIDI_CC_PIES ["cp " .. CC_LIST[cur_cc_item]:lower()]
+                    -- else
+                    SWITCH_PIE = i == 0 and PIES["midilane"] or MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
                     --end
                 end
                 if i == 0 or i == -10 then r.ImGui_Separator(ctx) end
@@ -1628,7 +1643,7 @@ local function MidiLaneSelector(cp)
                     if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
                         cur_cc_item = i
                         SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
-                       -- SWITCH_PIE = cp and MIDI_CC_PIES["cp " .. CC_LIST[cur_cc_item]:lower()] or MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+                        -- SWITCH_PIE = cp and MIDI_CC_PIES["cp " .. CC_LIST[cur_cc_item]:lower()] or MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
                     end
                 end
                 r.ImGui_EndMenu(ctx)
@@ -1638,7 +1653,7 @@ local function MidiLaneSelector(cp)
                     if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
                         cur_cc_item = i
                         SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
-                       -- SWITCH_PIE = cp and MIDI_CC_PIES["cp " .. CC_LIST[cur_cc_item]:lower()] or                        MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+                        -- SWITCH_PIE = cp and MIDI_CC_PIES["cp " .. CC_LIST[cur_cc_item]:lower()] or                        MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
                     end
                 end
                 r.ImGui_EndMenu(ctx)
@@ -1648,7 +1663,7 @@ local function MidiLaneSelector(cp)
                     if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
                         cur_cc_item = i
                         SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
-                       -- SWITCH_PIE = cp and MIDI_CC_PIES["cp " .. CC_LIST[cur_cc_item]:lower()] or                        MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+                        -- SWITCH_PIE = cp and MIDI_CC_PIES["cp " .. CC_LIST[cur_cc_item]:lower()] or                        MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
                     end
                 end
                 r.ImGui_EndMenu(ctx)
@@ -1658,7 +1673,7 @@ local function MidiLaneSelector(cp)
                     if r.ImGui_MenuItem(ctx, CC_LIST[i], nil, cur_cc_item == i, true) then
                         cur_cc_item = i
                         SWITCH_PIE = MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
-                       -- SWITCH_PIE = cp and MIDI_CC_PIES["cp " .. CC_LIST[cur_cc_item]:lower()] or                        MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+                        -- SWITCH_PIE = cp and MIDI_CC_PIES["cp " .. CC_LIST[cur_cc_item]:lower()] or                        MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
                     end
                 end
                 r.ImGui_EndMenu(ctx)
@@ -1703,11 +1718,11 @@ local function Pie()
             end
             if menu_items[context_cur_item][2] == "MIDI LANE" then
                 MidiLaneSelector()
-           -- elseif menu_items[context_cur_item][2] == "MIDI LANE CP" then
+                -- elseif menu_items[context_cur_item][2] == "MIDI LANE CP" then
                 --MidiLaneSelector(true)
             elseif menu_items[context_cur_item][2] == "ENVELOPE" then
                 EnvLaneSelector()
-            elseif menu_items[context_cur_item][2] == "ENVELOPE CP" then
+            elseif menu_items[context_cur_item][2] == "ENVELOPE CONTROL PANEL" then
                 EnvLaneSelector(true)
             end
         end

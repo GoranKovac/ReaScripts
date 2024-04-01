@@ -1,13 +1,16 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.33.34
+-- @version 0.33.36
 -- @changelog
---  Rename Arrange to Track
---  Add option Kill on ESC
+--  Added Tracker BG Script for advanced contexts
+--  BG tracker finds plugins and Media Explorer for now
+--  If BG Tracker is running plugins context does not need to be enabled in SETUP Settings (allow keyboard)
+--  Added Media Explorer Context
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
+--   [main] Sexan_Pie3000_Tracker_BG.lua
 --   CustomImages/*.txt
 --   easing.lua
 --   Common.lua
@@ -102,7 +105,7 @@ local WND_IDS = {
     { id = "3ED", name = "REAPERTimeDisplay" },
 }
 
-local function GetMouseContext()
+local function GetMouseContext()    
     local x, y = r.GetMousePosition()
     local track, info = r.GetThingFromPoint(x, y)
     local item, take = r.GetItemFromPoint(x, y, true)
@@ -122,8 +125,6 @@ local function GetMouseContext()
     elseif info:match("envcp") then
         ENVELOPE_LANE = "cp"
         info = DetectEnvContext(track, info, true)
-        --DetectEnvContext(track, info)
-        --info = "envcp"
     elseif info:match("^fx_") then
         info = "plugin"
     elseif info:match("mcp") then
@@ -154,13 +155,21 @@ local function GetMouseContext()
         elseif class_name == "REAPERMCPDisplay" then
             info = "mcpempty"
         elseif tostring(id):upper():match(WND_IDS[3].id) then
-            info = "arrangeempty"
+            -- SHARES ID WITH MEDIA EXPLORER
+            info, RETURN_FOCUS = DetectMediaExplorer(cur_hwnd)
+            if not info then 
+                info = "arrangeempty"
+            end
         elseif tostring(id):upper():match(WND_IDS[2].id) then
             -- PIANO ROLL
-            info = DetectMIDIContext(true)
+                info = DetectMIDIContext(true)
         elseif tostring(id):upper():match(WND_IDS[1].id) then
-            -- MIDI NOTES VIEW
-            info = DetectMIDIContext()
+            -- SHARES ID WITH MEDIA EXPLORER
+            info, RETURN_FOCUS = DetectMediaExplorer(cur_hwnd)
+            if not info then 
+                -- MIDI NOTES VIEW
+                info = DetectMIDIContext()
+            end
         elseif tostring(id):upper():match(WND_IDS[4].id) then
             -- TODO TRACE
             info = "ruler"
@@ -228,7 +237,7 @@ else
     PIE_MENU = STANDALONE_PIE
 end
 
-if PIE_MENU.use_main then 
+if PIE_MENU.use_main then
     PIE_MENU = PIES[PIE_MENU.main_name]
 end
 
@@ -291,7 +300,7 @@ local function KeyHeld()
 end
 
 local function LimitMouseToRadius()
-    local MOUSE_RANGE = ((PIE_MENU.RADIUS / sqrt(2)) * 2) // 1 --PIE_MENU.RADIUS * 2
+    local MOUSE_RANGE = ((PIE_MENU.RADIUS / sqrt(2)) * 2) // 1
 
     if DRAG_DIST > (MOUSE_RANGE ^ 2) then
         MX = (START_X + (MOUSE_RANGE) * cos(DRAG_ANGLE)) // 1
@@ -317,6 +326,9 @@ end
 
 local function CloseScript()
     if not CLOSE then
+        if RETURN_FOCUS then
+            r.JS_Window_SetFocus( RETURN_FOCUS )
+        end
         START_TIME = r.time_precise()
         CLOSE = true
         FLAGS = FLAGS | r.ImGui_WindowFlags_NoInputs()
