@@ -1351,7 +1351,7 @@ end
 function DrawPie(pie, center)
     if pie.is_midi then
         section_id = 32060
-    elseif pie.name == "MEDIA EXPLORER" then
+    elseif pie.is_explorer then
         section_id = 32063
     else
         section_id = 0

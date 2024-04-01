@@ -58,7 +58,7 @@ local DEFAULT_PIE = {
     ["plugin"] = { RADIUS = RADIUS_START, name = "PLUGIN", guid = r.genGuid() },
     ["spacer"] = { RADIUS = RADIUS_START, name = "SPACER", guid = r.genGuid() },
     ---------------------------------
-    ["mediaexplorer"] = { RADIUS = RADIUS_START, name = "MEDIA EXPLORER", guid = r.genGuid() },
+    ["mediaexplorer"] = { RADIUS = RADIUS_START, name = "MEDIA EXPLORER", guid = r.genGuid(), is_explorer = true},
 }
 
 -- local DEFAULT_CC_PIE = {
@@ -138,9 +138,9 @@ local menu_items = {
     { "midiruler",         "MIDI RULER" },
     { "midilane",          "MIDI LANE",              "_separator_" },
     -- { "midilanecp",   "MIDI LANE CP" },
-    { "plugin",            "PLUGIN - Needs TRACKER" },
+    { "plugin",            "PLUGIN - NEEDS TRACKER" },
     { "spacer",            "SPACER","_separator_" },
-    {"mediaexplorer" ,     "MEDIA EXPLORER - Needs TRACKER"},
+    { "mediaexplorer" ,    "MEDIA EXPLORER - NEEDS TRACKER", "_separator_"},
 }
 
 local PIES = ReadFromFile(pie_file) or Deepcopy(DEFAULT_PIE)
@@ -267,6 +267,7 @@ local function BetaAddContextToData()
     PIES["midi"].is_midi = true
     PIES["midiruler"].is_midi = true
     PIES["midilane"].is_midi = true
+    PIES["mediaexplorer"].is_explorer = true
     --! REMOVE LATER ------------------------------------------------------------------------------------------------------------------------------------------
 end
 
@@ -1776,7 +1777,7 @@ local function ActionsTab(pie)
             if rv_af or UPDATE_FILTER then
                 UPDATE_CNT = UPDATE_FILTER and UPDATE_CNT + 1 or UPDATE_CNT
                 local want_midi = CUR_PIE.name:find("MIDI") and not CUR_PIE.name:find("MIDI ITEM")
-                FILTERED_ACTION_TBL = FilterActions(want_midi and MIDI_ACTIONS_TBL or (CUR_PIE.name == "MEDIA EXPLORER" and EXPLORER_ACTIONS_TBL or ACTIONS_TBL),
+                FILTERED_ACTION_TBL = FilterActions(want_midi and MIDI_ACTIONS_TBL or (CUR_PIE.is_explorer and EXPLORER_ACTIONS_TBL or ACTIONS_TBL),
                     ACTION_FILTER)
             end
             if r.ImGui_BeginChild(ctx, "##CLIPPER_ACTION", nil, nil, nil, r.ImGui_WindowFlags_AlwaysHorizontalScrollbar()) then

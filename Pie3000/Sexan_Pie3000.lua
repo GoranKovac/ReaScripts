@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.33.42
+-- @version 0.33.43
 -- @changelog
---  Remove Setup option Allow Keyboard on FX (not needed anymore with tracker)
+--  Add is_explorer flag
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -382,7 +382,7 @@ local function FindAction(name)
             end
         end
     else
-        if PIE_MENU.name == "MEDIA EXPLORER" then
+        if PIE_MENU.is_explorer then
             for i = 1, #EXPLORER_ACTIONS do
                 if EXPLORER_ACTIONS[i].name == name then
                     return tonumber(EXPLORER_ACTIONS[i].cmd)
@@ -413,7 +413,7 @@ local function ExecuteAction(action)
                     end
                 else
                     if cmd_id then
-                        if PIE_MENU.name == "MEDIA EXPLORER" then
+                        if PIE_MENU.is_explorer then
                             r.JS_WindowMessage_Send(RETURN_FOCUS, "WM_COMMAND", cmd_id, 0, 0, 0)
                         else
                             r.Main_OnCommand(cmd_id, 0)
@@ -432,7 +432,7 @@ local function ExecuteAction(action)
                 end
             else
                 if cmd_id then
-                    if PIE_MENU.name == "MEDIA EXPLORER" then
+                    if PIE_MENU.is_explorer then
                         r.JS_WindowMessage_Send(RETURN_FOCUS, "WM_COMMAND", cmd_id, 0, 0, 0)
                     else
                         r.Main_OnCommand(cmd_id, 0)
@@ -459,7 +459,7 @@ local function ExecuteAction(action)
                 end
             else
                 if cmd_id then
-                    if PIE_MENU.name == "MEDIA EXPLORER" then
+                    if PIE_MENU.is_explorer then
                         r.JS_WindowMessage_Send(RETURN_FOCUS, "WM_COMMAND", cmd_id, 0, 0, 0)
                     else
                         r.Main_OnCommand(cmd_id, 0)
