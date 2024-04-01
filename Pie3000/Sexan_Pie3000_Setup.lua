@@ -138,9 +138,9 @@ local menu_items = {
     { "midiruler",         "MIDI RULER" },
     { "midilane",          "MIDI LANE",              "_separator_" },
     -- { "midilanecp",   "MIDI LANE CP" },
-    { "plugin",            "PLUGIN" },
+    { "plugin",            "PLUGIN - Needs TRACKER" },
     { "spacer",            "SPACER","_separator_" },
-    {"mediaexplorer" ,     "MEDIA EXPLORER - (BG Tracker script needs to run)"},
+    {"mediaexplorer" ,     "MEDIA EXPLORER - Needs TRACKER"},
 }
 
 local PIES = ReadFromFile(pie_file) or Deepcopy(DEFAULT_PIE)
@@ -1205,20 +1205,20 @@ local function Settings()
     end
 
     r.ImGui_Unindent(ctx)
-    r.ImGui_SeparatorText(ctx, "PLUGIN CONTEXT ENABLING")
-    r.ImGui_Indent(ctx, 0)
+    -- r.ImGui_SeparatorText(ctx, "PLUGIN CONTEXT ENABLING")
+    -- r.ImGui_Indent(ctx, 0)
 
 
-    local ALLOW_KB_FX = r.SNM_GetIntConfigVar("fxfloat_focus", 0)
-    if r.ImGui_Checkbox(ctx, "Allow Keyboard in FX - ENABLE PLUGIN CONTEXT", ALLOW_KB_FX & 4096 ~= 0) then
-        r.SNM_SetIntConfigVar("fxfloat_focus", ALLOW_KB_FX ~ 4096)
-    end
-    r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Text(), 0xFF0000FF)
-    r.ImGui_Text(ctx, "WARNING: ")
-    r.ImGui_PopStyleColor(ctx)
-    r.ImGui_SameLine(ctx)
-    r.ImGui_Text(ctx, "SOME KEYBOARD KEYS WON'T WORK IN PLUGINS (TEXT FIELDS/INPUT BOXES,SHORTCUTS)")
-    r.ImGui_Unindent(ctx)
+    -- local ALLOW_KB_FX = r.SNM_GetIntConfigVar("fxfloat_focus", 0)
+    -- if r.ImGui_Checkbox(ctx, "Allow Keyboard in FX - ENABLE PLUGIN CONTEXT", ALLOW_KB_FX & 4096 ~= 0) then
+    --     r.SNM_SetIntConfigVar("fxfloat_focus", ALLOW_KB_FX ~ 4096)
+    -- end
+    -- r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Text(), 0xFF0000FF)
+    -- r.ImGui_Text(ctx, "WARNING: ")
+    -- r.ImGui_PopStyleColor(ctx)
+    -- r.ImGui_SameLine(ctx)
+    -- r.ImGui_Text(ctx, "SOME KEYBOARD KEYS WON'T WORK IN PLUGINS (TEXT FIELDS/INPUT BOXES,SHORTCUTS)")
+    -- r.ImGui_Unindent(ctx)
     r.ImGui_Separator(ctx)
     if r.ImGui_InvisibleButton(ctx, "OPEN CUSTOM IMAGES FOLDER", 190, 26) then
         local cmd

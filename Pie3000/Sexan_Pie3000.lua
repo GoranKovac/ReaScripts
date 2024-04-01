@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.33.41
+-- @version 0.33.42
 -- @changelog
---  Fix toggle states for each SectionID (Main,Midi,Media Explorer)
+--  Remove Setup option Allow Keyboard on FX (not needed anymore with tracker)
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
