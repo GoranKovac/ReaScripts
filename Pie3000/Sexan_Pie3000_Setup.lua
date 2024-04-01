@@ -108,33 +108,33 @@ local cur_env_item = 0
 local context_cur_item = 1
 local menu_items = {
     { "arrange",      "ARRANGE" },
-    { "arrangeempty", "ARRANGE EMPTY" },
+    { "arrangeempty", "ARRANGE EMPTY", "_separator_" },
     { "tcp",          "TCP" },
     { "tcpfxparm" ,   "TCP FX PARM" },
-    { "tcpempty",     "TCP EMPTY" },
+    { "tcpempty",     "TCP EMPTY", "_separator_"  },
     
     { "mastertcp",          "MASTER TCP" },
-    { "mastertcpfxparm" ,   "MASTER TCP FX PARM" },
+    { "mastertcpfxparm" ,   "MASTER TCP FX PARM", "_separator_"  },
     
     { "mcp",          "MCP" },
     { "mcpfxlist",    "MCP FX LIST" },
     { "mcpsendlist",  "MCP SEND LIST" },
-    { "mcpempty",     "MCP EMPTY" },
+    { "mcpempty",     "MCP EMPTY", "_separator_"  },
 
     { "mastermcp",          "MASTER MCP" },
     { "mastermcpfxlist",    "MASTER MCP FX LIST" },
-    { "mastermcpsendlist",  "MASTER MCP SEND LIST" },
+    { "mastermcpsendlist",  "MASTER MCP SEND LIST", "_separator_"  },
 
     { "envelope",     "ENVELOPE" },
-    { "envcp",        "ENVELOPE CP" },
+    { "envcp",        "ENVELOPE CP", "_separator_"  },
     { "item",         "ITEM" },
-    { "itemmidi",     "MIDI ITEM" },
+    { "itemmidi",     "MIDI ITEM", "_separator_"  },
     { "trans",        "TRANSPORT" },
-    { "ruler",        "RULER" },
+    { "ruler",        "RULER", "_separator_"  },
     { "midi",         "MIDI" },
     { "pianoroll",    "MIDI PIANO ROLL" },
     { "midiruler",    "MIDI RULER" },
-    { "midilane",     "MIDI LANE" },
+    { "midilane",     "MIDI LANE", "_separator_"},
    -- { "midilanecp",   "MIDI LANE CP" },
     { "plugin",       "PLUGIN" },
     { "spacer",       "SPACER" },
@@ -1252,9 +1252,9 @@ local function ContextSelector()
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_PopupBg(), bg_col)
     if r.ImGui_BeginPopup(ctx, "Context Selector") then  
         r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Button(), bg_col)
-        r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing(), 0, 0)
+        r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing(), 0, 4)
         for i = 1, #menu_items do
-            if r.ImGui_Button(ctx, menu_items[i][2], -FLT_MIN) then
+            if r.ImGui_Selectable(ctx, "\t\t\t\t\t\t\t\t\t\t" .. menu_items[i][2], i == context_cur_item) then
                 if menu_items[i][2] == "MIDI LANE" then --or menu_items[i][2] == "MIDI LANE CP" then
                     if cur_cc_item ~= 0 then
                         SWITCH_PIE = menu_items[i][2] == "MIDI LANE" and MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()] --or MIDI_CC_PIES["cp " .. CC_LIST[cur_cc_item]:lower()]
@@ -1268,6 +1268,9 @@ local function ContextSelector()
                 context_cur_item = i
                 r.ImGui_CloseCurrentPopup(ctx)
                 UPDATE_FILTER = true
+            end
+            if menu_items[i][3] then
+                r.ImGui_SeparatorText(ctx,"")
             end
         end
         r.ImGui_PopStyleVar(ctx)

@@ -1,10 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.33.32
+-- @version 0.33.33
 -- @changelog
---  Added Master TCP/MCP context
---  Added Tempo map, Playrate envelope contexts
+--  Separate context selected entries
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
