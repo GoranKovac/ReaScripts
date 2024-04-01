@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="c09ab991f6f8db246822433a8a69a4b6ae427d8b" name="Sexan_Scripts">
+<index version="1" commit="0694053f85083cf2382c549596dfb2373c9349a6" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -4618,6 +4618,22 @@ Add option Kill on ESC]]></changelog>
         <source file="fontello1.ttf">https://github.com/GoranKovac/ReaScripts/raw/c09ab991f6f8db246822433a8a69a4b6ae427d8b/Pie3000/fontello1.ttf</source>
         <source file="Roboto-Medium.ttf">https://github.com/GoranKovac/ReaScripts/raw/c09ab991f6f8db246822433a8a69a4b6ae427d8b/Pie3000/Roboto-Medium.ttf</source>
         <source main="main" file="Sexan_PieCleanFiles.lua">https://github.com/GoranKovac/ReaScripts/raw/c09ab991f6f8db246822433a8a69a4b6ae427d8b/Pie3000/Sexan_PieCleanFiles.lua</source>
+      </version>
+      <version name="0.33.36" author="Sexan" time="2024-04-01T13:44:38Z">
+        <changelog><![CDATA[Added Tracker BG Script for advanced contexts
+BG tracker finds plugins and Media Explorer for now
+If BG Tracker is running plugins context does not need to be enabled in SETUP Settings (allow keyboard)
+Added Media Explorer Context]]></changelog>
+        <source main="main midi_editor">https://github.com/GoranKovac/ReaScripts/raw/0694053f85083cf2382c549596dfb2373c9349a6/Pie3000/Sexan_Pie3000.lua</source>
+        <source main="main midi_editor" file="Sexan_Pie3000_Setup.lua">https://github.com/GoranKovac/ReaScripts/raw/0694053f85083cf2382c549596dfb2373c9349a6/Pie3000/Sexan_Pie3000_Setup.lua</source>
+        <source main="main" file="Sexan_Pie3000_Tracker_BG.lua">https://github.com/GoranKovac/ReaScripts/raw/0694053f85083cf2382c549596dfb2373c9349a6/Pie3000/Sexan_Pie3000_Tracker_BG.lua</source>
+        <source file="CustomImages/Readme.txt">https://github.com/GoranKovac/ReaScripts/raw/0694053f85083cf2382c549596dfb2373c9349a6/Pie3000/CustomImages/Readme.txt</source>
+        <source file="easing.lua">https://github.com/GoranKovac/ReaScripts/raw/0694053f85083cf2382c549596dfb2373c9349a6/Pie3000/easing.lua</source>
+        <source file="Common.lua">https://github.com/GoranKovac/ReaScripts/raw/0694053f85083cf2382c549596dfb2373c9349a6/Pie3000/Common.lua</source>
+        <source file="PieUtils.lua">https://github.com/GoranKovac/ReaScripts/raw/0694053f85083cf2382c549596dfb2373c9349a6/Pie3000/PieUtils.lua</source>
+        <source file="fontello1.ttf">https://github.com/GoranKovac/ReaScripts/raw/0694053f85083cf2382c549596dfb2373c9349a6/Pie3000/fontello1.ttf</source>
+        <source file="Roboto-Medium.ttf">https://github.com/GoranKovac/ReaScripts/raw/0694053f85083cf2382c549596dfb2373c9349a6/Pie3000/Roboto-Medium.ttf</source>
+        <source main="main" file="Sexan_PieCleanFiles.lua">https://github.com/GoranKovac/ReaScripts/raw/0694053f85083cf2382c549596dfb2373c9349a6/Pie3000/Sexan_PieCleanFiles.lua</source>
       </version>
     </reapack>
   </category>
