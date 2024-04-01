@@ -1,9 +1,12 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.33.37
+-- @version 0.33.38
 -- @changelog
---  Add toggle state to Tracker Script
+--  Integrate tracker into main script
+--  Toggle trackr on off
+--  Added tracker button
+--  Tracker button shows tracker state
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua

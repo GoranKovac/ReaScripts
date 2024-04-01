@@ -11,6 +11,8 @@ if DBG then dofile("C:/Users/Gokily/Documents/ReaGit/ReaScripts/Debug/LoadDebug.
 easingFunctions = require("easing")
 dofile(r.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua')('0.8.7.6')
 
+local tracker_script_id = r.NamedCommandLookup("_RS6b5bc650ef11c3470124d998b9eadea9e9778b16")
+
 local SPLITTER
 
 local pi, max, min, floor, cos, sin, atan, ceil, abs, sqrt = math.pi, math.max, math.min, math.floor, math.cos, math.sin,
@@ -720,6 +722,7 @@ function Swipe()
 end
 
 local function TextSplitByWidth(text, width, height)
+    r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 4)
     r.ImGui_PushFont(ctx, SYSTEM_FONT)
     local str_tbl = {}
     local str = {}
@@ -1117,6 +1120,9 @@ end
 
 local function DrawCenter(pie, center)
     if SETUP and STATE == "EDITOR" and pie.guid == "TEMP" then return end
+
+    local tracker_state =  r.GetToggleCommandState( tracker_script_id )
+
     local CENTER = center or CENTER
     local main_color = def_color
 
@@ -1157,6 +1163,12 @@ local function DrawCenter(pie, center)
             LerpAlpha(0xffffffaa, (sin(r.time_precise() * 5) * 0.5) + 0.7),
             128, 2.5)
     end
+    r.ImGui_SetCursorScreenPos(ctx, CENTER.x - 6, CENTER.y + RADIUS_MIN - 23)
+    if r.ImGui_InvisibleButton(ctx,"##tracker_on_off", 12,12) then
+        r.Main_OnCommand(tracker_script_id,0)
+    end
+    local is_tracker_hovered = r.ImGui_IsItemHovered(ctx)
+    LAST_MSG = is_tracker_hovered and (tracker_state == 1 and "TRACKER SCRIPT ON" or "TRACKER SCRIPT OFF") or LAST_MSG
 
     r.ImGui_SetCursorScreenPos(ctx, CENTER.x - (button_wh / 2), CENTER.y - (button_wh / 2))
     r.ImGui_Button(ctx, "##CENTER", button_wh, button_wh)
@@ -1165,7 +1177,7 @@ local function DrawCenter(pie, center)
         r.ImGui_InvisibleButton(ctx, "##CENTERBoundry", (RADIUS_MIN * 2), RADIUS_MIN * 2)
         DndAddAsContext(pie)
     end
-    local center_pressed = (r.ImGui_IsMouseDown(ctx, 0) and not pie.active and r.ImGui_IsWindowFocused(ctx))
+    local center_pressed = (r.ImGui_IsMouseDown(ctx, 0) and not pie.active and r.ImGui_IsWindowFocused(ctx) and not is_tracker_hovered)
     center_pressed = #PIE_LIST > 0 and center_pressed
     if center_pressed then
         r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 4)
@@ -1173,6 +1185,8 @@ local function DrawCenter(pie, center)
     end
 
     -- DRAW CENTER CIRCLE -------------------------------------------------
+    TextSplitByWidth(LAST_MSG, button_wh, button_wh)
+    
     r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 3)
 
     -- SHADOW
@@ -1192,9 +1206,17 @@ local function DrawCenter(pie, center)
         LerpAlpha(col, CENTER_BTN_PROG), 64)
 
     -- DRAW CENTER CIRCLE -------------------------------------------------
-
-    TextSplitByWidth(LAST_MSG, button_wh, button_wh)
-
+    -- TRACKER SHADOW    
+    r.ImGui_DrawList_AddCircleFilled(draw_list, CENTER.x, CENTER.y + RADIUS_MIN-17,
+        7 - (center_pressed and 5 or 0), LerpAlpha(0x44, CENTER_BTN_PROG), 64)
+    -- TRACKER OUTER RING
+    r.ImGui_DrawList_AddCircleFilled(draw_list, CENTER.x, CENTER.y + RADIUS_MIN-17, 6.5 - (center_pressed and 5 or 0),
+        LerpAlpha(def_out_ring, CENTER_BTN_PROG), 64)
+    -- TRACKER ON/OFF
+    r.ImGui_DrawList_AddCircleFilled(draw_list, CENTER.x, CENTER.y + RADIUS_MIN-17, 5 ,
+        LerpAlpha(tracker_state == 1 and IncreaseDecreaseBrightness(0x55f67eDD, r.ImGui_IsItemHovered(ctx) and 30 or 0) or IncreaseDecreaseBrightness(0xd31111aa, r.ImGui_IsItemHovered(ctx) and 30 or 0), CENTER_BTN_PROG), 64)
+   -- IncreaseDecreaseBrightness(0xd31111aa, r.ImGui_IsItemHovered(ctx) and 30 or 0)
+    
     -- DRAW PREVIOUS MENU PREVIEW
     r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 1)
     if #PIE_LIST ~= 0 then
@@ -1227,15 +1249,15 @@ local function DrawCenter(pie, center)
             if prev_i == i then
                 r.ImGui_DrawList_AddCircle(draw_list, button_pos.x, button_pos.y, mini_rad * MAIN_PROG, 0x25283eEE, 0, 2)
             end
-        end
+        end        
 
         if not SETUP then
-            if r.ImGui_IsMouseReleased(ctx, 0) and not pie.active then
+            if r.ImGui_IsMouseReleased(ctx, 0) and not pie.active and not is_tracker_hovered then
                 SWITCH_PIE = PIE_LIST[#PIE_LIST].pid
                 table.remove(PIE_LIST, #PIE_LIST)
             end
         else
-            if r.ImGui_IsMouseDoubleClicked(ctx, 0) and not pie.active then
+            if r.ImGui_IsMouseDoubleClicked(ctx, 0) and not pie.active and not is_tracker_hovered then
                 SWITCH_PIE = PIE_LIST[#PIE_LIST].pid
                 table.remove(PIE_LIST, #PIE_LIST)
             end
