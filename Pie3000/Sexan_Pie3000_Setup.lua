@@ -25,7 +25,7 @@ PIE_LIST = {}
 
 local RADIUS_START = 150
 local DEFAULT_PIE = {
-    ["arrange"] = { RADIUS = RADIUS_START, name = "ARRANGE", guid = r.genGuid() },
+    ["arrange"] = { RADIUS = RADIUS_START, name = "TRACK", guid = r.genGuid() },
     ["arrangeempty"] = { RADIUS = RADIUS_START, name = "ARRANGE EMPTY", guid = r.genGuid(), use_main = true, main_name = "arrange"},
     -----------------------------
     ["tcp"] = { RADIUS = RADIUS_START, name = "TCP", guid = r.genGuid() },    
@@ -107,7 +107,7 @@ local cur_cc_item = 0
 local cur_env_item = 0
 local context_cur_item = 1
 local menu_items = {
-    { "arrange",      "ARRANGE" },
+    { "arrange",      "TRACK" },
     { "arrangeempty", "ARRANGE EMPTY", "_separator_" },
     { "tcp",          "TCP" },
     { "tcpfxparm" ,   "TCP FX PARM" },
@@ -151,6 +151,7 @@ local function BetaAddContextToData()
     else
         if PIES["ruler"].name == "RULLER" then PIES["ruler"].name = "RULER" end
     end
+    if PIES["arrange"].name == "ARRANGE" then PIES["arrange"].name = "TRACK" end
     if not PIES["midiruler"] then
         PIES["midiruler"] = { RADIUS = RADIUS_START, name = "MIDI RULER", guid = r.genGuid(), is_midi = true }
         PIES["midilane"] = { RADIUS = RADIUS_START, name = "MIDI LANE", guid = r.genGuid(), is_midi = true }
@@ -1060,7 +1061,7 @@ local function NewProperties(pie)
             RV_R, pie.RADIUS = r.ImGui_SliderInt(ctx, "##RADIUS", pie.RADIUS, 50, 270)
             if STATE == "PIE" then
                 if #PIE_LIST == 0 then
-                    -- if pie.name == "ARRANGE" or pie.name == "TCP" or pie.name == "MCP" then
+                    -- if pie.name == "TRACK" or pie.name == "TCP" or pie.name == "MCP" then
                     --     if r.ImGui_Checkbox(ctx, "USE AS EMPTY CONTEXT", pie.sync) then
                     --         pie.sync = not pie.sync
                     --     end
@@ -1144,6 +1145,10 @@ local function Settings()
     end
     if r.ImGui_Checkbox(ctx, "Select thing (Track/Item) under mouse", SELECT_THING_UNDER_MOUSE) then
         SELECT_THING_UNDER_MOUSE = not SELECT_THING_UNDER_MOUSE
+        WANT_SAVE = true
+    end
+    if r.ImGui_Checkbox(ctx, "Kill the script when ESC key is pressed", KILL_ON_ESC) then
+        KILL_ON_ESC = not KILL_ON_ESC
         WANT_SAVE = true
     end
     r.ImGui_Unindent(ctx)
@@ -1236,6 +1241,7 @@ local function Settings()
                 close_on_activate = CLOSE_ON_ACTIVATE,
                 drop_down_menu = DROP_DOWN_MENU,
                 midi_trace_debug = MIDI_TRACE_DEBUG,
+                kill_on_esc = KILL_ON_ESC,
 
             }, true)
         r.SetExtState("PIE3000", "SETTINGS", data, true)

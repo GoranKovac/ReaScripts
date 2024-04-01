@@ -42,6 +42,7 @@ SELECT_THING_UNDER_MOUSE = false
 CLOSE_ON_ACTIVATE = false
 DROP_DOWN_MENU = false
 MIDI_TRACE_DEBUG = false
+KILL_ON_ESC = false
 
 local def_color_dark = 0x414141ff
 local def_out_ring = 0x2a2a2aff
@@ -104,6 +105,7 @@ if r.HasExtState("PIE3000", "SETTINGS") then
             CLOSE_ON_ACTIVATE = save_data.close_on_activate
             DROP_DOWN_MENU = save_data.drop_down_menu
             MIDI_TRACE_DEBUG = save_data.midi_trace_debug
+            KILL_ON_ESC = save_data.kill_on_esc
         end
     end
 end
@@ -1291,7 +1293,7 @@ local function DropDownDo(pie)
         r.ImGui_EndPopup(ctx)
     end
     if not r.ImGui_IsPopupOpen(ctx, "TEST_MENU") then DONE = true end
-    if ESC then DONE = true end
+    if KILL_ON_ESC and ESC then DONE = true end
 end
 
 function DrawPie(pie, center)

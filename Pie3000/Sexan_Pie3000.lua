@@ -1,9 +1,10 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.33.33
+-- @version 0.33.34
 -- @changelog
---  Separate context selected entries
+--  Rename Arrange to Track
+--  Add option Kill on ESC
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -18,7 +19,6 @@ local r = reaper
 local getinfo = debug.getinfo(1, 'S');
 local script_path = getinfo.source:match [[^@?(.*[\/])[^\/]-$]];
 package.path = script_path .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
-AAA = {reaper.get_action_context()}
 local sqrt, sin, cos = math.sqrt, math.sin, math.cos
 
 require('PieUtils')
@@ -485,7 +485,7 @@ local function Main()
     end
     if LAST_ACTION then DoAction() end
     DoFullScreen()
-    if ESC then DONE = true end
+    if KILL_ON_ESC and ESC then DONE = true end
     if r.ImGui_Begin(ctx, 'PIE XYZ', false, FLAGS) then        
         draw_list = r.ImGui_GetWindowDrawList(ctx)
         MX, MY = r.ImGui_PointConvertNative(ctx, r.GetMousePosition())
