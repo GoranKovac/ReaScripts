@@ -1,9 +1,10 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.33.31
+-- @version 0.33.32
 -- @changelog
---  Fix broken tab highlights
+--  Added Master TCP/MCP context
+--  Added Tempo map, Playrate envelope contexts
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -18,7 +19,7 @@ local r = reaper
 local getinfo = debug.getinfo(1, 'S');
 local script_path = getinfo.source:match [[^@?(.*[\/])[^\/]-$]];
 package.path = script_path .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
-
+AAA = {reaper.get_action_context()}
 local sqrt, sin, cos = math.sqrt, math.sin, math.cos
 
 require('PieUtils')
@@ -109,6 +110,7 @@ local function GetMouseContext()
     local cur_hwnd = r.JS_Window_FromPoint(x, y)
     local id = r.JS_Window_GetLongPtr(cur_hwnd, "ID")
     local class_name = r.JS_Window_GetClassName(cur_hwnd)
+    local master_track = r.GetMasterTrack(0) 
 
     if info:match("spacer") then 
         info = "spacer"
@@ -133,12 +135,18 @@ local function GetMouseContext()
         else
             info = "mcp"
         end
+        if track == master_track then
+            info = "master" .. info
+        end
     elseif info:match("^tcp") then
         if info:match("fxparm") then
             info = "tcpfxparm"
         else
             info = "tcp"
-        end        
+        end
+        if track == master_track then
+            info = "master" .. info
+        end     
     end
 
     if #info == 0 then

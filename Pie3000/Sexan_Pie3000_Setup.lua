@@ -27,17 +27,23 @@ local RADIUS_START = 150
 local DEFAULT_PIE = {
     ["arrange"] = { RADIUS = RADIUS_START, name = "ARRANGE", guid = r.genGuid() },
     ["arrangeempty"] = { RADIUS = RADIUS_START, name = "ARRANGE EMPTY", guid = r.genGuid(), use_main = true, main_name = "arrange"},
-    ["tcp"] = { RADIUS = RADIUS_START, name = "TCP", guid = r.genGuid() },
-    
+    -----------------------------
+    ["tcp"] = { RADIUS = RADIUS_START, name = "TCP", guid = r.genGuid() },    
     ["tcpfxparm"] = { RADIUS = RADIUS_START, name = "TCP FX PARM", guid = r.genGuid(), use_main = true, main_name = "tcp"},
     ["tcpempty"] = { RADIUS = RADIUS_START, name = "TCP EMPTY", guid = r.genGuid(), use_main = true , main_name = "tcp"},
-    
-    ["mcp"] = { RADIUS = RADIUS_START, name = "MCP", guid = r.genGuid()},
-    
-    ["mcpfxlist"] = { RADIUS = RADIUS_START, name = "MCP FX LIST", guid = r.genGuid(), use_main = true , main_name = "mcp"},
-    ["mcpsendlist"] = { RADIUS = RADIUS_START, name = "MCP SEND LIST", guid = r.genGuid(), use_main = true , main_name = "mcp"},
-    
-    ["mcpempty"] = { RADIUS = RADIUS_START, name = "MCP EMPTY", guid = r.genGuid(), use_main = true, main_name = "mcp" },
+    -----------------------------
+    ["mastertcp"] = { RADIUS = RADIUS_START, name = "MASTER TCP", guid = r.genGuid() },    
+    ["mastertcpfxparm"] = { RADIUS = RADIUS_START, name = "MASTER TCP FX PARM", guid = r.genGuid(), use_main = true, main_name = "mastertcp"},
+    -----------------------------
+    ["mcp"] = { RADIUS = RADIUS_START, name = "MASTER MCP", guid = r.genGuid()},    
+    ["mcpfxlist"] = { RADIUS = RADIUS_START, name = "MASTER MCP FX LIST", guid = r.genGuid(), use_main = true , main_name = "mcp"},
+    ["mcpsendlist"] = { RADIUS = RADIUS_START, name = "MASTER MCP SEND LIST", guid = r.genGuid(), use_main = true , main_name = "mcp"},    
+    -----------------------------
+    ["mastermcp"] = { RADIUS = RADIUS_START, name = "MCP", guid = r.genGuid()},    
+    ["mastermcpfxlist"] = { RADIUS = RADIUS_START, name = "MCP FX LIST", guid = r.genGuid(), use_main = true, main_name = "mastermcp"},
+    ["mastermcpsendlist"] = { RADIUS = RADIUS_START, name = "MCP SEND LIST", guid = r.genGuid(), use_main = true , main_name = "mastermcp"},    
+    ["mastermcpempty"] = { RADIUS = RADIUS_START, name = "MCP EMPTY", guid = r.genGuid(), use_main = true, main_name = "mastermcp" },
+    -----------------------------
     ["envelope"] = { RADIUS = RADIUS_START, name = "ENVELOPE", guid = r.genGuid(), as_global = true },
     ["envcp"] = { RADIUS = RADIUS_START, name = "ENV CP", guid = r.genGuid()},
     ["item"] = { RADIUS = RADIUS_START, name = "ITEM", guid = r.genGuid() },
@@ -69,9 +75,12 @@ local MAIN_NAMES = {
     ["ARRANGE EMPTY"] = "arrange",
     ["TCP FX PARM"] = "tcp",
     ["TCP EMPTY"] = "tcp",
+    ["MASTER TCP FX PARM"] = "mastertcp",
     ["MCP FX LIST"] = "mcp",
     ["MCP SEND LIST"] = "mcp",
     ["MCP EMPTY"] = "mcp",
+    ["MASTER MCP FX LIST"] = "mastermcp",
+    ["MASTER MCP SEND LIST"] = "mastermcp",
    -- ["ENV CP"] = "envelope",
 }
 
@@ -103,10 +112,19 @@ local menu_items = {
     { "tcp",          "TCP" },
     { "tcpfxparm" ,   "TCP FX PARM" },
     { "tcpempty",     "TCP EMPTY" },
+    
+    { "mastertcp",          "MASTER TCP" },
+    { "mastertcpfxparm" ,   "MASTER TCP FX PARM" },
+    
     { "mcp",          "MCP" },
     { "mcpfxlist",    "MCP FX LIST" },
     { "mcpsendlist",  "MCP SEND LIST" },
     { "mcpempty",     "MCP EMPTY" },
+
+    { "mastermcp",          "MASTER MCP" },
+    { "mastermcpfxlist",    "MASTER MCP FX LIST" },
+    { "mastermcpsendlist",  "MASTER MCP SEND LIST" },
+
     { "envelope",     "ENVELOPE" },
     { "envcp",        "ENVELOPE CP" },
     { "item",         "ITEM" },
@@ -156,14 +174,14 @@ local function BetaAddContextToData()
    -- end
     --! REMOVE THIS ON FINAL RELEASE, WAS WORKAROUND FOR ADDING STUFF NOT TO BREAK FILES
     if not PIES["mcpfxlist"] then
-        PIES["mcpfxlist"] = { RADIUS = RADIUS_START, name = "MCP FX LIST", guid = r.genGuid() }
-        PIES["mcpsendlist"] = { RADIUS = RADIUS_START, name = "MCP SEND LIST", guid = r.genGuid() }
+        PIES["mcpfxlist"] = { RADIUS = RADIUS_START, name = "MCP FX LIST", guid = r.genGuid(),use_main = true, main_name = "mcp"}
+        PIES["mcpsendlist"] = { RADIUS = RADIUS_START, name = "MCP SEND LIST", guid = r.genGuid(),use_main = true, main_name = "mcp" }
     end
 
     if not PIES["tcpfxparm"] then
-        PIES["tcpfxparm"] = { RADIUS = RADIUS_START, name = "TCP FX PARM", guid = r.genGuid(), use_main = true}
-        PIES["mcpfxlist"] = { RADIUS = RADIUS_START, name = "MCP FX LIST", guid = r.genGuid(), use_main = true }
-        PIES["mcpsendlist"] = { RADIUS = RADIUS_START, name = "MCP SEND LIST", guid = r.genGuid(), use_main = true }        
+        PIES["tcpfxparm"] = { RADIUS = RADIUS_START, name = "TCP FX PARM", guid = r.genGuid(), use_main = true, main_name = "tcp"}
+        PIES["mcpfxlist"] = { RADIUS = RADIUS_START, name = "MCP FX LIST", guid = r.genGuid(), use_main = true , main_name = "mcp"}
+        PIES["mcpsendlist"] = { RADIUS = RADIUS_START, name = "MCP SEND LIST", guid = r.genGuid(), use_main = true , main_name = "mcp"}        
         for k,v in pairs(PIES) do            
             if MAIN_NAMES[v.name] then
                 v.use_main = true
@@ -171,6 +189,17 @@ local function BetaAddContextToData()
             end
             if v.sync then v.sync = nil end
         end
+    end
+
+    if not PIES["mastertcp"] then
+        PIES["mastertcp"] = { RADIUS = RADIUS_START, name = "MASTER TCP", guid = r.genGuid() }  
+        PIES["mastertcpfxparm"] = { RADIUS = RADIUS_START, name = "MASTER TCP FX PARM", guid = r.genGuid(), use_main = true, main_name = "mastertcp"}
+        PIES["mastermcp"] = { RADIUS = RADIUS_START, name = "MASTER MCP", guid = r.genGuid()}    
+        PIES["mastermcpfxlist"] = { RADIUS = RADIUS_START, name = "MASTER MCP FX LIST", guid = r.genGuid(), use_main = true, main_name = "mastermcp"}
+        PIES["mastermcpsendlist"] = { RADIUS = RADIUS_START, name = "MASTER MCP SEND LIST", guid = r.genGuid(), use_main = true , main_name = "mastermcp"}
+        PIES["mcpfxlist"].main_name = "mcp"
+        PIES["mcpsendlist"].main_name ="mcp"
+        PIES["tcpfxparm"].main_name = "tcp"
     end
 
     --! REMOVE LATER
@@ -204,6 +233,16 @@ local function BetaAddContextToData()
             local name = ENV_LIST[i]
             PIES["cp " .. name:lower()] = { RADIUS = RADIUS_START, name ="CP " .. name:upper(), guid = r.genGuid() }
         end
+    end
+
+    if not PIES["playrate"] then
+        PIES["playrate"] = { RADIUS = RADIUS_START, name = "PLAYRATE", guid = r.genGuid() }
+        PIES["tempo map"] = { RADIUS = RADIUS_START, name = "TEMPO MAP", guid = r.genGuid() }
+    end
+
+    if not PIES["cp playrate"] then
+        PIES["cp playrate"] = { RADIUS = RADIUS_START, name = "CP PLAYRATE", guid = r.genGuid() }
+        PIES["cp tempo map"] = { RADIUS = RADIUS_START, name = "CP TEMPO MAP", guid = r.genGuid() }
     end
 
     for k, v in pairs(MIDI_CC_PIES) do
@@ -1208,7 +1247,7 @@ local function ContextSelector()
     local w, h = r.ImGui_GetItemRectSize(ctx)
     local x, y = r.ImGui_GetCursorScreenPos(ctx)
     r.ImGui_SetNextWindowPos(ctx, x, y)
-    r.ImGui_SetNextWindowSize(ctx, w, 425)
+    r.ImGui_SetNextWindowSize(ctx, w, 520)
     r.ImGui_SetNextWindowBgAlpha(ctx, 1)
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_PopupBg(), bg_col)
     if r.ImGui_BeginPopup(ctx, "Context Selector") then  

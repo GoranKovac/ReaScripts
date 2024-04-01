@@ -335,6 +335,8 @@ local ENV_LIST = {
     "Width (Pre-FX)",
     "Trim Volume",
     "Mute",
+    "Playrate",
+    "Tempo map"
 }
 
 function GetEnvList()
