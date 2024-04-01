@@ -1219,7 +1219,7 @@ local function DrawCenter(pie, center)
         LerpAlpha(def_out_ring, CENTER_BTN_PROG), 64)
     -- TRACKER ON/OFF
     r.ImGui_DrawList_AddCircleFilled(draw_list, CENTER.x, CENTER.y + RADIUS_MIN-17, 5 ,
-        LerpAlpha(tracker_state == 1 and IncreaseDecreaseBrightness(0x55f67eDD, r.ImGui_IsItemHovered(ctx) and 30 or 0) or IncreaseDecreaseBrightness(0xd31111aa, r.ImGui_IsItemHovered(ctx) and 30 or 0), CENTER_BTN_PROG), 64)
+        LerpAlpha(tracker_state == 1 and IncreaseDecreaseBrightness(0x55f67eDD, is_tracker_hovered and 30 or 0) or IncreaseDecreaseBrightness(0xd31111aa, is_tracker_hovered and 30 or 0), CENTER_BTN_PROG), 64)
    -- IncreaseDecreaseBrightness(0xd31111aa, r.ImGui_IsItemHovered(ctx) and 30 or 0)
     
     -- DRAW PREVIOUS MENU PREVIEW
