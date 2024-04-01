@@ -1,12 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.33.36
+-- @version 0.33.37
 -- @changelog
---  Added Tracker BG Script for advanced contexts
---  BG tracker finds plugins and Media Explorer for now
---  If BG Tracker is running plugins context does not need to be enabled in SETUP Settings (allow keyboard)
---  Added Media Explorer Context
+--  Add toggle state to Tracker Script
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -126,6 +123,7 @@ local function GetMouseContext()
         ENVELOPE_LANE = "cp"
         info = DetectEnvContext(track, info, true)
     elseif info:match("^fx_") then
+        RETURN_FOCUS = cur_hwnd
         info = "plugin"
     elseif info:match("mcp") then
         if info:match("fxlist") then
