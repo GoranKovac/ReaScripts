@@ -1761,6 +1761,7 @@ end
 
 local ACTIONS_TBL = GetMainActions()      --GetActions(0)
 local MIDI_ACTIONS_TBL = GetMidiActions() --GetActions(32060)
+local EXPLORER_ACTIONS_TBL= GetExplorerActions()
 
 local FILTERED_ACTION_TBL = ACTIONS_TBL
 local FILTERED_MENU_TBL = MENUS
@@ -1775,7 +1776,7 @@ local function ActionsTab(pie)
             if rv_af or UPDATE_FILTER then
                 UPDATE_CNT = UPDATE_FILTER and UPDATE_CNT + 1 or UPDATE_CNT
                 local want_midi = CUR_PIE.name:find("MIDI") and not CUR_PIE.name:find("MIDI ITEM")
-                FILTERED_ACTION_TBL = FilterActions(want_midi and MIDI_ACTIONS_TBL or ACTIONS_TBL,
+                FILTERED_ACTION_TBL = FilterActions(want_midi and MIDI_ACTIONS_TBL or (CUR_PIE.name == "MEDIA EXPLORER" and EXPLORER_ACTIONS_TBL or ACTIONS_TBL),
                     ACTION_FILTER)
             end
             if r.ImGui_BeginChild(ctx, "##CLIPPER_ACTION", nil, nil, nil, r.ImGui_WindowFlags_AlwaysHorizontalScrollbar()) then

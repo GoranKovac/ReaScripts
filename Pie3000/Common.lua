@@ -158,6 +158,7 @@ end
 
 local ACTIONS_TBL = GetActions(0)
 local MIDI_ACTIONS_TBL = GetActions(32060)
+local EXPLORER_ACTIONS_TBL = GetActions(32063)
 
 function GetMainActions()
     return ACTIONS_TBL
@@ -165,6 +166,10 @@ end
 
 function GetMidiActions()
     return MIDI_ACTIONS_TBL
+end
+
+function GetExplorerActions()
+    return EXPLORER_ACTIONS_TBL
 end
 
 function Release()

@@ -1,12 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.33.38
+-- @version 0.33.40
 -- @changelog
---  Integrate tracker into main script
---  Toggle trackr on off
---  Added tracker button
---  Tracker button shows tracker state
+--  Added Media Explorer Actions
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -50,6 +47,8 @@ local function GetMonitorFromPoint()
 end
 local ACTIONS = GetMainActions()
 local MIDI_ACTIONS = GetMidiActions()
+local EXPLORER_ACTIONS = GetExplorerActions()
+
 local PIES, MIDI_PIES
 
 local function Init()
@@ -105,16 +104,16 @@ local WND_IDS = {
     { id = "3ED", name = "REAPERTimeDisplay" },
 }
 
-local function GetMouseContext()    
+local function GetMouseContext()
     local x, y = r.GetMousePosition()
     local track, info = r.GetThingFromPoint(x, y)
     local item, take = r.GetItemFromPoint(x, y, true)
     local cur_hwnd = r.JS_Window_FromPoint(x, y)
     local id = r.JS_Window_GetLongPtr(cur_hwnd, "ID")
     local class_name = r.JS_Window_GetClassName(cur_hwnd)
-    local master_track = r.GetMasterTrack(0) 
+    local master_track = r.GetMasterTrack(0)
 
-    if info:match("spacer") then 
+    if info:match("spacer") then
         info = "spacer"
     end
     if info:match("master") then return end
@@ -147,7 +146,7 @@ local function GetMouseContext()
         end
         if track == master_track then
             info = "master" .. info
-        end     
+        end
     end
 
     if #info == 0 then
@@ -158,16 +157,16 @@ local function GetMouseContext()
         elseif tostring(id):upper():match(WND_IDS[3].id) then
             -- SHARES ID WITH MEDIA EXPLORER
             info, RETURN_FOCUS = DetectMediaExplorer(cur_hwnd)
-            if not info then 
+            if not info then
                 info = "arrangeempty"
             end
         elseif tostring(id):upper():match(WND_IDS[2].id) then
             -- PIANO ROLL
-                info = DetectMIDIContext(true)
+            info = DetectMIDIContext(true)
         elseif tostring(id):upper():match(WND_IDS[1].id) then
             -- SHARES ID WITH MEDIA EXPLORER
             info, RETURN_FOCUS = DetectMediaExplorer(cur_hwnd)
-            if not info then 
+            if not info then
                 -- MIDI NOTES VIEW
                 info = DetectMIDIContext()
             end
@@ -206,31 +205,31 @@ if not STANDALONE_PIE then
                 -- OPEN DEFAULT MENU IF DOES NOT EXIST
                 PIE_MENU = MIDI_PIES[INFO] or PIES["midilane"]
             end
-        -- elseif MIDI_LANE_CONTEXT == "cp" then
-        --     if PIES["midilanecp"].as_global == true then
-        --         PIE_MENU = PIES["midilanecp"]
-        --     else
-        --         -- OPEN DEFAULT MENU IF DOES NOT EXIST
-        --         PIE_MENU = MIDI_PIES[INFO] or PIES["midilanecp"]
-        --     end
+            -- elseif MIDI_LANE_CONTEXT == "cp" then
+            --     if PIES["midilanecp"].as_global == true then
+            --         PIE_MENU = PIES["midilanecp"]
+            --     else
+            --         -- OPEN DEFAULT MENU IF DOES NOT EXIST
+            --         PIE_MENU = MIDI_PIES[INFO] or PIES["midilanecp"]
+            --     end
         end
     elseif ENVELOPE_LANE then
         if ENVELOPE_LANE == "lane" then
-        if PIES["envelope"].as_global == true then
-            PIE_MENU = PIES["envelope"]
-        else
-            PIE_MENU = PIES[INFO] or PIES["envelope"] -- open default for all others (vst etc)
+            if PIES["envelope"].as_global == true then
+                PIE_MENU = PIES["envelope"]
+            else
+                PIE_MENU = PIES[INFO] or PIES["envelope"] -- open default for all others (vst etc)
+            end
+        elseif ENVELOPE_LANE == "cp" then
+            if PIES["envcp"].as_global == true then
+                PIE_MENU = PIES["envcp"]
+                --end
+            elseif PIES["envcp"].use_main == true then
+                PIE_MENU = PIES[INFO:sub(4)]
+            else
+                PIE_MENU = PIES[INFO] or PIES["envcp"] -- open default for all others (vst etc)
+            end
         end
-    elseif ENVELOPE_LANE == "cp" then
-        if PIES["envcp"].as_global == true then
-            PIE_MENU = PIES["envcp"]
-        --end
-        elseif PIES["envcp"].use_main == true then
-            PIE_MENU = PIES[INFO:sub(4)]
-        else
-            PIE_MENU = PIES[INFO] or PIES["envcp"] -- open default for all others (vst etc)
-        end
-    end
     else
         PIE_MENU = PIES[INFO]
     end
@@ -311,7 +310,7 @@ local function LimitMouseToRadius()
 end
 
 local FLAGS =
-    --r.ImGui_WindowFlags_NoBackground() |
+--r.ImGui_WindowFlags_NoBackground() |
     r.ImGui_WindowFlags_NoDecoration() |
     r.ImGui_WindowFlags_NoMove()
 
@@ -328,7 +327,7 @@ end
 local function CloseScript()
     if not CLOSE then
         if RETURN_FOCUS then
-            r.JS_Window_SetFocus( RETURN_FOCUS )
+            r.JS_Window_SetFocus(RETURN_FOCUS)
         end
         START_TIME = r.time_precise()
         CLOSE = true
@@ -377,19 +376,27 @@ end
 
 local function FindAction(name)
     if PIE_MENU.is_midi then
-        for i= 1, #MIDI_ACTIONS do
+        for i = 1, #MIDI_ACTIONS do
             if MIDI_ACTIONS[i].name == name then
                 return tonumber(MIDI_ACTIONS[i].cmd)
             end
         end
     else
-        for i= 1, #ACTIONS do
-            if ACTIONS[i].name == name then
-                return tonumber(ACTIONS[i].cmd)
+        if PIE_MENU.name == "MEDIA EXPLORER" then
+            for i = 1, #EXPLORER_ACTIONS do
+                if EXPLORER_ACTIONS[i].name == name then
+                    return tonumber(EXPLORER_ACTIONS[i].cmd)
+                end
+            end
+        else
+            for i = 1, #ACTIONS do
+                if ACTIONS[i].name == name then
+                    return tonumber(ACTIONS[i].cmd)
+                end
             end
         end
     end
-    r.ShowMessageBox(name .."\ndoes not exist on this system", "WARNING",0)
+    r.ShowMessageBox(name .. "\ndoes not exist on this system", "WARNING", 0)
 end
 
 
@@ -401,12 +408,16 @@ local function ExecuteAction(action)
                 LAST_TRIGGERED = action
                 local cmd_id = FindAction(action)
                 if PIE_MENU.is_midi then
-                    if cmd_id then 
+                    if cmd_id then
                         r.MIDIEditor_OnCommand(r.MIDIEditor_GetActive(), cmd_id)
                     end
                 else
-                    if cmd_id then                        
-                        r.Main_OnCommand(cmd_id, 0)
+                    if cmd_id then
+                        if PIE_MENU.name == "MEDIA EXPLORER" then
+                            r.JS_WindowMessage_Send(RETURN_FOCUS, "WM_COMMAND", cmd_id, 0, 0, 0)
+                        else
+                            r.Main_OnCommand(cmd_id, 0)
+                        end
                     end
                 end
             end
@@ -416,12 +427,16 @@ local function ExecuteAction(action)
             LAST_TRIGGERED = action
             local cmd_id = FindAction(action)
             if PIE_MENU.is_midi then
-                if cmd_id then 
-                r.MIDIEditor_OnCommand(r.MIDIEditor_GetActive(), cmd_id)
+                if cmd_id then
+                    r.MIDIEditor_OnCommand(r.MIDIEditor_GetActive(), cmd_id)
                 end
             else
-                if cmd_id then 
-                r.Main_OnCommand(cmd_id, 0)
+                if cmd_id then
+                    if PIE_MENU.name == "MEDIA EXPLORER" then
+                        r.JS_WindowMessage_Send(RETURN_FOCUS, "WM_COMMAND", cmd_id, 0, 0, 0)
+                    else
+                        r.Main_OnCommand(cmd_id, 0)
+                    end
                 end
             end
             local AFTER_ACTION_TIME = r.time_precise()
@@ -439,12 +454,16 @@ local function ExecuteAction(action)
             local cmd_id = FindAction(action)
 
             if PIES[INFO].name == "MIDI" then
-                if cmd_id then 
+                if cmd_id then
                     r.MIDIEditor_OnCommand(r.MIDIEditor_GetActive(), cmd_id)
                 end
             else
-                if cmd_id then 
-                    r.Main_OnCommand(cmd_id, 0)
+                if cmd_id then
+                    if PIE_MENU.name == "MEDIA EXPLORER" then
+                        r.JS_WindowMessage_Send(RETURN_FOCUS, "WM_COMMAND", cmd_id, 0, 0, 0)
+                    else
+                        r.Main_OnCommand(cmd_id, 0)
+                    end
                 end
             end
             KEY_TRIGGER = nil
@@ -474,7 +493,7 @@ local function DoAction()
         ExecuteAction(PIE_MENU[LAST_ACTION].cmd_name)
     end
 end
-    
+
 local function Main()
     TrackShortcutKey()
     if TERMINATE then
@@ -499,7 +518,7 @@ local function Main()
     if LAST_ACTION then DoAction() end
     DoFullScreen()
     if KILL_ON_ESC and ESC then DONE = true end
-    if r.ImGui_Begin(ctx, 'PIE XYZ', false, FLAGS) then        
+    if r.ImGui_Begin(ctx, 'PIE XYZ', false, FLAGS) then
         draw_list = r.ImGui_GetWindowDrawList(ctx)
         MX, MY = r.ImGui_PointConvertNative(ctx, r.GetMousePosition())
 
