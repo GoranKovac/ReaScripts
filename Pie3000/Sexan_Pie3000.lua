@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.33.40
+-- @version 0.33.41
 -- @changelog
---  Added Media Explorer Actions
+--  Fix toggle states for each SectionID (Main,Midi,Media Explorer)
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua

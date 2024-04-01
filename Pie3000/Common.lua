@@ -936,7 +936,7 @@ local function PieButtonDrawlist(pie, button_radius, selected, hovered, button_p
     -- BUTTON CIRCLE -------------------------------------------------
 
     -- SPINNER FOR ACTION STATE ON/OFF
-    if (tonumber(pie.cmd) and r.GetToggleCommandState(pie.cmd) == 1) then
+    if (tonumber(pie.cmd) and r.GetToggleCommandStateEx( section_id, pie.cmd) == 1) then
         StateSpinner(button_center.x, button_center.y, LerpAlpha(spinner_col, CENTER_BTN_PROG),
             button_radius * CENTER_BTN_PROG)
     end
@@ -1349,6 +1349,13 @@ local function DropDownDo(pie)
 end
 
 function DrawPie(pie, center)
+    if pie.is_midi then
+        section_id = 32060
+    elseif pie.name == "MEDIA EXPLORER" then
+        section_id = 32063
+    else
+        section_id = 0
+    end
     -- DRAW GUIDELINE WHERE MOUSE WAS BEFORE GUI WAS ADJUSTED TO BE IN THE SCREEN (ON EDGES)
     if OUT_SCREEN then
         r.ImGui_DrawList_AddLine(draw_list, PREV_X, PREV_Y, START_X, START_Y, dark_theme and 0x40ffb3aa or 0xff0000ff, 5)
