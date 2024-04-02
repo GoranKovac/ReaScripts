@@ -1082,17 +1082,15 @@ local function DrawButtonTextStyle(pie, center)
 
 
     local inside
-
-    if pie.active and AngleInRange(DRAG_ANGLE, ap1_t, ap2_t) then
-        inside = { ap1_t, ap2_t, "TOP" }
-    elseif pie.active and AngleInRange(DRAG_ANGLE, ap2_b, ap1_b) then
-        inside = { ap2_b, ap1_b, "BOT" }
-    elseif pie.active and AngleInRange(DRAG_ANGLE, ap2_t, ap1_b) then
-        inside = { ap2_t, ap2_b, "LEFT" }
-    elseif pie.active and AngleInRange(DRAG_ANGLE, ap1_b, ap1_t) then
-        inside = { ap1_b, ap1_t, "RIGHT" }
-    end
-
+        if pie.active and AngleInRange(DRAG_ANGLE, ap1_t, ap2_t) then
+            inside = { ap1_t, ap2_t, "TOP" }
+        elseif pie.active and AngleInRange(DRAG_ANGLE, ap2_b, ap1_b) then
+            inside = { ap2_b, ap1_b, "BOT" }
+        elseif pie.active and AngleInRange(DRAG_ANGLE, ap2_t, ap1_b) then
+            inside = { ap2_t, ap2_b, "LEFT" }
+        elseif pie.active and AngleInRange(DRAG_ANGLE, ap1_b, ap1_t) then
+            inside = { ap1_b, ap1_t, "RIGHT" }
+        end
     local closest_tbl = {}
     for i = 1, #pie do
         --local ang_min = (item_arc_span) * (i - (0.5)) + START_ANG
@@ -1350,6 +1348,7 @@ local function DrawCenter(pie, center)
 
     if not pie.active then
         if not SETUP then
+            pie.selected = nil
             LAST_ACTION = nil
             LAST_MSG = pie.name
             BUTTON_HOVER_TIME = nil
