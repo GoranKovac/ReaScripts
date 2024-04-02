@@ -60,12 +60,14 @@ DEF_COLOR = def_color
 
 local FONT_SIZE = 14
 local FONT_LARGE = 16
+local ICON_FONT_VERY_SMALL_SIZE = 14
 local ICON_FONT_SMALL_SIZE = 25
 local ICON_FONT_LARGE_SIZE = 40
 local ICON_FONT_PREVIEW_SIZE = 16
 local ICON_FONT_CLICKED_SIZE = 32
 local GUI_FONT_SIZE = 14
 
+ICON_FONT_VERY_SMALL = r.ImGui_CreateFont(script_path .. 'fontello1.ttf', ICON_FONT_VERY_SMALL_SIZE)
 ICON_FONT_SMALL = r.ImGui_CreateFont(script_path .. 'fontello1.ttf', ICON_FONT_SMALL_SIZE)
 ICON_FONT_LARGE = r.ImGui_CreateFont(script_path .. 'fontello1.ttf', ICON_FONT_LARGE_SIZE)
 ICON_FONT_PREVIEW = r.ImGui_CreateFont(script_path .. 'fontello1.ttf', ICON_FONT_PREVIEW_SIZE)
@@ -77,6 +79,7 @@ GUI_FONT = r.ImGui_CreateFont(script_path .. "Roboto-Medium.ttf", GUI_FONT_SIZE)
 r.ImGui_Attach(ctx, GUI_FONT)
 r.ImGui_Attach(ctx, SYSTEM_FONT)
 r.ImGui_Attach(ctx, SYSTEM_FONT2)
+r.ImGui_Attach(ctx, ICON_FONT_VERY_SMALL)
 r.ImGui_Attach(ctx, ICON_FONT_SMALL)
 r.ImGui_Attach(ctx, ICON_FONT_LARGE)
 r.ImGui_Attach(ctx, ICON_FONT_PREVIEW)
@@ -922,6 +925,7 @@ local function PieButtonDrawlist(pie, button_radius, selected, hovered, button_p
     -- OUTER RING
     r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x, button_center.y, (button_radius + 4) * CENTER_BTN_PROG,
         LerpAlpha(ring_col, CENTER_BTN_PROG), 128)
+    
     -- MAIN
 
     r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x, button_center.y, (button_radius) * CENTER_BTN_PROG,
@@ -1013,24 +1017,60 @@ local function DrawClassicButton(pie, selected, hovered)
     local w = xe - xs
     local h = ye - ys
 
-    local color, name = pie.col, pie.name
+    local button_center = { x = xs + (w / 2), y = ys + (h / 2) }
+
+    local color, name, png, icon = pie.col, pie.name, pie.png, pie.icon
+    local ring_col = (hovered and ALT) and 0xff0000ff or def_out_ring
+    color = color == 0xff and def_color or color
+
+    --if png then color = def_color end
+
     color = (hovered and ALT) and 0xff0000ff or color
+
+    local icon_col = LerpAlpha(0xffffffff, CENTER_BTN_PROG)
+    local icon_font = selected and ICON_FONT_SMALL or ICON_FONT_VERY_SMALL
+    local icon_font_size = selected and ICON_FONT_SMALL_SIZE or ICON_FONT_VERY_SMALL_SIZE
+
+    local col = (selected or hovered) and IncreaseDecreaseBrightness(color, 30) or color
     local hovered = selected
-    local sel_size = hovered and 15 or 0
+    local sel_size = hovered and 10 or 0
     r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, selected and 3 or 1)
-    r.ImGui_DrawList_AddRectFilled(draw_list, xs - sel_size, ys - sel_size, xe + sel_size, ye + sel_size,
-        LerpAlpha(color, CENTER_BTN_PROG), 5, r.ImGui_DrawFlags_RoundCornersAll())
-    if hovered then
-        r.ImGui_DrawList_AddRect(draw_list, xs - sel_size, ys - sel_size, xe + sel_size, ye + sel_size,
-            LerpAlpha(0x22FF44FF, CENTER_BTN_PROG), 5,
-            nil, 3)
+
+    -- SHADOW
+    r.ImGui_DrawList_AddRectFilled(draw_list, (xs - sel_size), (ys - sel_size), (xe + sel_size)+4, (ye + sel_size)+4,
+        LerpAlpha(dark_theme and 0x44 or 0x33, CENTER_BTN_PROG), 5, r.ImGui_DrawFlags_RoundCornersAll())
+
+    -- OUTER RING
+    r.ImGui_DrawList_AddRectFilled(draw_list, (xs - sel_size)-1, (ys - sel_size)-1, (xe + sel_size)+1, (ye + sel_size)+1,
+        LerpAlpha(hovered and 0x22FF44DD or ring_col, CENTER_BTN_PROG), 5, r.ImGui_DrawFlags_RoundCornersAll())
+
+    -- MAIN
+    r.ImGui_DrawList_AddRectFilled(draw_list, (xs - sel_size)+1, (ys - sel_size)+1, (xe + sel_size)-1, (ye + sel_size)-1,
+    LerpAlpha(def_color, CENTER_BTN_PROG), 5, r.ImGui_DrawFlags_RoundCornersAll())
+
+    --if hovered then
+      --  r.ImGui_DrawList_AddRect(draw_list, (xs - sel_size)+2, (ys - sel_size)+2, (xe + sel_size)-2, (ye + sel_size)-2,
+       --     LerpAlpha(0x22FF44FF, CENTER_BTN_PROG), 5,
+      --      nil, 2)
+    --end
+    r.ImGui_DrawList_AddRectFilled(draw_list, (xs - sel_size)+3, (ys - sel_size)+3, (xe + sel_size)-3, (ye + sel_size)-3,
+    LerpAlpha(col, CENTER_BTN_PROG), 5, r.ImGui_DrawFlags_RoundCornersAll())
+
+    if icon then
+        r.ImGui_PushFont(ctx, icon_font)
+        local icon_w, icon_h = r.ImGui_CalcTextSize(ctx, icon)
+        local i_x, i_y = xs + (hovered and 0 or 9), button_center.y - icon_h / 2
+        r.ImGui_DrawList_AddTextEx(draw_list, nil, icon_font_size * CENTER_BTN_PROG, i_x + 2, i_y + 2, 0xaa, icon)
+        r.ImGui_DrawList_AddTextEx(draw_list, nil, icon_font_size * CENTER_BTN_PROG, i_x, i_y, icon_col, icon)
+        r.ImGui_PopFont(ctx)
     end
 
     local label_size = r.ImGui_CalcTextSize(ctx, name)
     local font_size = r.ImGui_GetFontSize(ctx)
 
-    local txt_x = xs + (w / 2) - (label_size / 2)
+    local txt_x = xs + (icon and 12 or 0) + (w / 2) - (label_size / 2)
     local txt_y = ys + (h / 2) - (font_size / 2)
+    r.ImGui_DrawList_AddTextEx(draw_list, nil, font_size, txt_x+1, txt_y+1, LerpAlpha(0xff, CENTER_BTN_PROG), name)
     r.ImGui_DrawList_AddTextEx(draw_list, nil, font_size, txt_x, txt_y, LerpAlpha(0xffffffff, CENTER_BTN_PROG), name)
 end
 
@@ -1082,15 +1122,15 @@ local function DrawButtonTextStyle(pie, center)
 
 
     local inside
-        if pie.active and AngleInRange(DRAG_ANGLE, ap1_t, ap2_t) then
-            inside = { ap1_t, ap2_t, "TOP" }
-        elseif pie.active and AngleInRange(DRAG_ANGLE, ap2_b, ap1_b) then
-            inside = { ap2_b, ap1_b, "BOT" }
-        elseif pie.active and AngleInRange(DRAG_ANGLE, ap2_t, ap1_b) then
-            inside = { ap2_t, ap2_b, "LEFT" }
-        elseif pie.active and AngleInRange(DRAG_ANGLE, ap1_b, ap1_t) then
-            inside = { ap1_b, ap1_t, "RIGHT" }
-        end
+    if pie.active and AngleInRange(DRAG_ANGLE, ap1_t, ap2_t) then
+        inside = { ap1_t, ap2_t, "TOP" }
+    elseif pie.active and AngleInRange(DRAG_ANGLE, ap2_b, ap1_b) then
+        inside = { ap2_b, ap1_b, "BOT" }
+    elseif pie.active and AngleInRange(DRAG_ANGLE, ap2_t, ap1_b) then
+        inside = { ap2_t, ap2_b, "LEFT" }
+    elseif pie.active and AngleInRange(DRAG_ANGLE, ap1_b, ap1_t) then
+        inside = { ap1_b, ap1_t, "RIGHT" }
+    end
     local closest_tbl = {}
     for i = 1, #pie do
         --local ang_min = (item_arc_span) * (i - (0.5)) + START_ANG
@@ -1169,18 +1209,9 @@ local function DrawButtonTextStyle(pie, center)
             if inside then
                 if (inside[3] == "TOP" or inside[3] == "BOT") then
                     pie.selected = AngleInRange(a_cur, inside[1], inside[2]) and i
-                   -- last_m_angle = inside[1]
                 else
                     if AngleInRange(a_cur, inside[1], inside[2]) then
                         closest_tbl[#closest_tbl + 1] = { a_cur, ys, i }
-                        -- if last_m_angle then
-                        --     closest_tbl[#closest_tbl + 1] = { a_cur, i }
-                        -- else
-                        --     if MY > ys and MY < ye then
-                        --         -- last_m_angle = nil
-                        --         pie.hovered = i
-                        --     end
-                        -- end
                     end
                 end
             end
@@ -1193,7 +1224,6 @@ local function DrawButtonTextStyle(pie, center)
         if pie.selected == i and not CLOSE then
             LAST_ACTION = i
         end
-        --r.ShowConsoleMsg(tostring(pie.hovered) .. "\n")
         DrawClassicButton(pie[i], pie.selected == i, boundry_hovered)
     end
     -- FIND LAST CLOSEST ANGLE
@@ -1202,7 +1232,6 @@ local function DrawButtonTextStyle(pie, center)
             local near = NearestValue(closest_tbl, last_m_angle, MY)
             if near then
                 pie.selected = near
-                --last_m_angle = nil
             end
         end
     end
