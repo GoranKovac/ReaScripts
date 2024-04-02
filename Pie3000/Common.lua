@@ -109,7 +109,7 @@ if r.HasExtState("PIE3000", "SETTINGS") then
             DROP_DOWN_MENU = save_data.drop_down_menu
             MIDI_TRACE_DEBUG = save_data.midi_trace_debug
             KILL_ON_ESC = save_data.kill_on_esc
-            STYLE = save_data.style
+            STYLE = save_data.style ~= nil and save_data.style or STYLE
         end
     end
 end
@@ -1169,7 +1169,7 @@ local function DrawButtonTextStyle(pie, center)
             if inside then
                 if (inside[3] == "TOP" or inside[3] == "BOT") then
                     pie.selected = AngleInRange(a_cur, inside[1], inside[2]) and i
-                    last_m_angle = inside[1]
+                   -- last_m_angle = inside[1]
                 else
                     if AngleInRange(a_cur, inside[1], inside[2]) then
                         closest_tbl[#closest_tbl + 1] = { a_cur, ys, i }
@@ -1198,11 +1198,11 @@ local function DrawButtonTextStyle(pie, center)
     end
     -- FIND LAST CLOSEST ANGLE
     if not SETUP then
-        if closest_tbl then
+        if #closest_tbl ~= 0 then
             local near = NearestValue(closest_tbl, last_m_angle, MY)
             if near then
                 pie.selected = near
-                last_m_angle = nil
+                --last_m_angle = nil
             end
         end
     end

@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.34.01
+-- @version 0.34.02
 -- @changelog
---  Fix Text Button style selecting button while opening/closing new menu
+--  Check nil on loading default style
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
