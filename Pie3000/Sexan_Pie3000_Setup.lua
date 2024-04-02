@@ -1236,6 +1236,16 @@ local function Settings()
         MIDI_TRACE_DEBUG = not MIDI_TRACE_DEBUG
         WANT_SAVE = true
     end
+    r.ImGui_SeparatorText(ctx, "Pie Style")
+    if r.ImGui_RadioButton(ctx, "MODERN", STYLE == 1) then
+        STYLE = 1
+        WANT_SAVE = true
+    end
+    r.ImGui_SameLine(ctx)
+    if r.ImGui_RadioButton(ctx, "TEXT BUTTONS", STYLE == 2) then
+        STYLE = 2
+        WANT_SAVE = true
+    end
 
     if WANT_SAVE then
         local data = TableToString(
@@ -1256,6 +1266,7 @@ local function Settings()
                 drop_down_menu = DROP_DOWN_MENU,
                 midi_trace_debug = MIDI_TRACE_DEBUG,
                 kill_on_esc = KILL_ON_ESC,
+                style = STYLE
 
             }, true)
         r.SetExtState("PIE3000", "SETTINGS", data, true)

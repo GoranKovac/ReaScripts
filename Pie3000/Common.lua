@@ -45,6 +45,7 @@ CLOSE_ON_ACTIVATE = false
 DROP_DOWN_MENU = false
 MIDI_TRACE_DEBUG = false
 KILL_ON_ESC = false
+STYLE = 1
 
 local def_color_dark = 0x414141ff
 local def_out_ring = 0x2a2a2aff
@@ -108,6 +109,7 @@ if r.HasExtState("PIE3000", "SETTINGS") then
             DROP_DOWN_MENU = save_data.drop_down_menu
             MIDI_TRACE_DEBUG = save_data.midi_trace_debug
             KILL_ON_ESC = save_data.kill_on_esc
+            STYLE = save_data.style
         end
     end
 end
@@ -936,7 +938,7 @@ local function PieButtonDrawlist(pie, button_radius, selected, hovered, button_p
     -- BUTTON CIRCLE -------------------------------------------------
 
     -- SPINNER FOR ACTION STATE ON/OFF
-    if (tonumber(pie.cmd) and r.GetToggleCommandStateEx( section_id, pie.cmd) == 1) then
+    if (tonumber(pie.cmd) and r.GetToggleCommandStateEx(section_id, pie.cmd) == 1) then
         StateSpinner(button_center.x, button_center.y, LerpAlpha(spinner_col, CENTER_BTN_PROG),
             button_radius * CENTER_BTN_PROG)
     end
@@ -1003,6 +1005,210 @@ local function PieButtonDrawlist(pie, button_radius, selected, hovered, button_p
         ImageUVOffset(pie.img_obj, pie.rescale, is_toolbar_icon and 3 or 1, 1,
             is_toolbar_icon and 0 or (selected and 2 or 0), button_center.x, button_center.y, CENTER_BTN_PROG)
     end
+end
+
+local function DrawClassicButton(pie, selected, hovered)
+    local xs, ys = r.ImGui_GetItemRectMin(ctx)
+    local xe, ye = r.ImGui_GetItemRectMax(ctx)
+    local w = xe - xs
+    local h = ye - ys
+
+    local color, name = pie.col, pie.name
+    color = (hovered and ALT) and 0xff0000ff or color
+    local hovered = selected
+    local sel_size = hovered and 15 or 0
+    r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, selected and 3 or 1)
+    r.ImGui_DrawList_AddRectFilled(draw_list, xs - sel_size, ys - sel_size, xe + sel_size, ye + sel_size,
+        LerpAlpha(color, CENTER_BTN_PROG), 5, r.ImGui_DrawFlags_RoundCornersAll())
+    if hovered then
+        r.ImGui_DrawList_AddRect(draw_list, xs - sel_size, ys - sel_size, xe + sel_size, ye + sel_size,
+            LerpAlpha(0x22FF44FF, CENTER_BTN_PROG), 5,
+            nil, 3)
+    end
+
+    local label_size = r.ImGui_CalcTextSize(ctx, name)
+    local font_size = r.ImGui_GetFontSize(ctx)
+
+    local txt_x = xs + (w / 2) - (label_size / 2)
+    local txt_y = ys + (h / 2) - (font_size / 2)
+    r.ImGui_DrawList_AddTextEx(draw_list, nil, font_size, txt_x, txt_y, LerpAlpha(0xffffffff, CENTER_BTN_PROG), name)
+end
+
+local function DrawButtonTextStyle(pie, center)
+    local function RoughlyEquals(a, b)
+        return abs(a - b) < 0.00001
+    end
+
+    local function NearestValue(table, number, my)
+        local smallestSoFar, smallestIndex
+        local target = number and number or my
+        for i, y in ipairs(table) do
+            if not smallestSoFar or (abs(target - (number and y[1] or y[2])) < smallestSoFar) then
+                smallestSoFar = abs(target - (number and y[1] or y[2]))
+                smallestIndex = y[3]
+            end
+        end
+        return smallestIndex --, table[smallestIndex]
+    end
+    r.ImGui_PushFont(ctx, SYSTEM_FONT)
+    local CENTER = center or CENTER
+
+    local item_arc_span = ((2 * pi) / #pie)
+
+    local RADIUS = pie.RADIUS * CENTER_BTN_PROG
+    local RADIUS_MIN = RADIUS / 2.2
+
+    --r.ImGui_DrawList_AddRect(draw_list, CENTER.x - RADIUS_MIN, CENTER.y - RADIUS, CENTER.x + RADIUS_MIN,
+    --    CENTER.y + RADIUS, 0xff0000ff, 0, 0, 2)
+
+    local ap1_t = atan((CENTER.y - RADIUS) - CENTER.y, (CENTER.x - RADIUS_MIN) - CENTER.x)
+    local ap2_t = atan((CENTER.y - RADIUS) - CENTER.y, (CENTER.x + RADIUS_MIN) - CENTER.x)
+
+    -- TOP
+    --r.ImGui_DrawList_PathArcTo(draw_list, CENTER.x, CENTER.y, RADIUS, ap1_t, ap2_t)
+    -- r.ImGui_DrawList_PathStroke(draw_list, 0x22FF4455, r.ImGui_DrawFlags_None(), 150 * 1)
+
+    local ap1_b = atan((CENTER.y + RADIUS) - CENTER.y, (CENTER.x - RADIUS_MIN) - CENTER.x)
+    local ap2_b = atan((CENTER.y + RADIUS) - CENTER.y, (CENTER.x + RADIUS_MIN) - CENTER.x)
+
+    -- -- BOT
+    -- r.ImGui_DrawList_PathArcTo(draw_list, CENTER.x, CENTER.y, RADIUS, ap1_b, ap2_b)
+    -- r.ImGui_DrawList_PathStroke(draw_list, 0x22FF4455, r.ImGui_DrawFlags_None(), 150 * 1)
+
+    -- -- LEFT
+    -- r.ImGui_DrawList_PathArcTo(draw_list, CENTER.x, CENTER.y, RADIUS, ap2_t, ap2_b)
+    -- r.ImGui_DrawList_PathStroke(draw_list, 0x2244FF55, r.ImGui_DrawFlags_None(), 150 * 1)
+
+
+
+    local inside
+
+    if pie.active and AngleInRange(DRAG_ANGLE, ap1_t, ap2_t) then
+        inside = { ap1_t, ap2_t, "TOP" }
+    elseif pie.active and AngleInRange(DRAG_ANGLE, ap2_b, ap1_b) then
+        inside = { ap2_b, ap1_b, "BOT" }
+    elseif pie.active and AngleInRange(DRAG_ANGLE, ap2_t, ap1_b) then
+        inside = { ap2_t, ap2_b, "LEFT" }
+    elseif pie.active and AngleInRange(DRAG_ANGLE, ap1_b, ap1_t) then
+        inside = { ap1_b, ap1_t, "RIGHT" }
+    end
+
+    local closest_tbl = {}
+    for i = 1, #pie do
+        --local ang_min = (item_arc_span) * (i - (0.5)) + START_ANG
+        --local ang_max = (item_arc_span) * (i + (0.5)) + START_ANG
+        local angle = item_arc_span * i
+
+        local txt_w, txt_h = r.ImGui_CalcTextSize(ctx, pie[i].name)
+        txt_w = txt_w + 50
+        local button_pos = {
+            x = CENTER.x + (RADIUS_MIN + ((RADIUS - RADIUS_MIN) / 1.3) * MAIN_PROG) * cos(angle + START_ANG),
+            y = CENTER.y + (RADIUS_MIN + ((RADIUS - RADIUS_MIN) / 1.3) * MAIN_PROG) * sin(angle + START_ANG),
+        }
+        -- if pie.hovered then
+        --     r.ImGui_DrawList_PathArcTo(draw_list, CENTER.x, CENTER.y, RADIUS,
+        --     angle - (item_arc_span / 2) + START_ANG, angle + (item_arc_span / 2) + START_ANG)
+        --     r.ImGui_DrawList_PathStroke(draw_list, 0x22FF4455, r.ImGui_DrawFlags_None(), 150 * 1)
+        -- end
+        if RoughlyEquals(angle % pi, 0) then
+            button_pos.x = button_pos.x - txt_w / 2
+            if i == #pie then
+                button_pos.y = button_pos.y - txt_h * 2
+            else
+                button_pos.y = button_pos.y + txt_h
+            end
+        else
+            button_pos.y = button_pos.y - 25 // 2
+            if angle > pi then
+                button_pos.x = button_pos.x - txt_w
+            end
+        end
+        local boundry_hovered
+
+        if not SETUP then
+            r.ImGui_SetCursorScreenPos(ctx, button_pos.x, button_pos.y)
+            r.ImGui_PushID(ctx, "pie_btn" .. i)
+            r.ImGui_InvisibleButton(ctx, pie[i].name, txt_w, 25)
+            r.ImGui_PopID(ctx)
+        else
+            r.ImGui_SetCursorScreenPos(ctx, button_pos.x, button_pos.y)
+            r.ImGui_PushID(ctx, "pie_btn" .. i)
+            if r.ImGui_InvisibleButton(ctx, pie[i].name, txt_w, 25) then
+                if ALT then
+                    REMOVE = { tbl = pie, i = i }
+                else
+                    pie.selected = i
+                    LAST_MSG = pie[i].name
+                end
+            end
+            boundry_hovered = r.ImGui_IsItemHovered(ctx)
+            r.ImGui_PopID(ctx)
+            if not pie[i].menu then
+                DndAddTargetAction(pie, pie[i])
+            else
+                if r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseDoubleClicked(ctx, 0) and not ALT then
+                    local src_menu, menu_id = InTbl(GetMenus(), pie[i].guid)
+                    if STATE == "PIE" then
+                        table.insert(PIE_LIST, {
+                            col = pie[i].col,
+                            icon = pie[i].icon,
+                            name = pie[i].name,
+                            pid = pie,
+                            prev_i = i,
+                        })
+                    else
+                        LAST_MENU_SEL = menu_id
+                    end
+                    SWITCH_PIE = src_menu
+                end
+            end
+        end
+        if not SETUP then
+            local xs, ys = r.ImGui_GetItemRectMin(ctx)
+            local xe, ye = r.ImGui_GetItemRectMax(ctx)
+
+            local a_cur = atan((ys + txt_h / 2) - CENTER.y, (xs + txt_w / 2) - CENTER.x)
+            if inside then
+                if (inside[3] == "TOP" or inside[3] == "BOT") then
+                    pie.selected = AngleInRange(a_cur, inside[1], inside[2]) and i
+                    last_m_angle = inside[1]
+                else
+                    if AngleInRange(a_cur, inside[1], inside[2]) then
+                        closest_tbl[#closest_tbl + 1] = { a_cur, ys, i }
+                        -- if last_m_angle then
+                        --     closest_tbl[#closest_tbl + 1] = { a_cur, i }
+                        -- else
+                        --     if MY > ys and MY < ye then
+                        --         -- last_m_angle = nil
+                        --         pie.hovered = i
+                        --     end
+                        -- end
+                    end
+                end
+            end
+        end
+        if (pie[i].key and r.ImGui_IsKeyReleased(ctx, pie[i].key)) then
+            LAST_ACTION = i
+            KEY_TRIGGER = true
+        end
+
+        if pie.selected == i and not CLOSE then
+            LAST_ACTION = i
+        end
+        --r.ShowConsoleMsg(tostring(pie.hovered) .. "\n")
+        DrawClassicButton(pie[i], pie.selected == i, boundry_hovered)
+    end
+    -- FIND LAST CLOSEST ANGLE
+    if not SETUP then
+        if closest_tbl then
+            local near = NearestValue(closest_tbl, last_m_angle, MY)
+            if near then
+                pie.selected = near
+                last_m_angle = nil
+            end
+        end
+    end
+    r.ImGui_PopFont(ctx)
 end
 
 local function DrawButtons(pie, center)
@@ -1126,7 +1332,7 @@ end
 local function DrawCenter(pie, center)
     if SETUP and STATE == "EDITOR" and pie.guid == "TEMP" then return end
 
-    local tracker_state =  r.GetToggleCommandState( tracker_script_id )
+    local tracker_state = r.GetToggleCommandState(tracker_script_id)
 
     local CENTER = center or CENTER
     local main_color = def_color
@@ -1169,14 +1375,14 @@ local function DrawCenter(pie, center)
             128, 2.5)
     end
     r.ImGui_SetCursorScreenPos(ctx, CENTER.x - 6, CENTER.y + RADIUS_MIN - 23)
-    if r.ImGui_InvisibleButton(ctx,"##tracker_on_off", 12,12) then
-        r.Main_OnCommand(tracker_script_id,0)
+    if r.ImGui_InvisibleButton(ctx, "##tracker_on_off", 12, 12) then
+        r.Main_OnCommand(tracker_script_id, 0)
     end
     local is_tracker_hovered = r.ImGui_IsItemHovered(ctx)
-    LAST_MSG = is_tracker_hovered and (tracker_state == 1 and "TRACKER SCRIPT ON" or "TRACKER SCRIPT OFF") or LAST_MSG
+    LAST_MSG = is_tracker_hovered and (tracker_state == 1 and "TRACKER ON" or "TRACKER OFF") or LAST_MSG
 
     r.ImGui_SetCursorScreenPos(ctx, CENTER.x - (button_wh / 2), CENTER.y - (button_wh / 2))
-    r.ImGui_Button(ctx, "##CENTER", button_wh, button_wh)
+    r.ImGui_InvisibleButton(ctx, "##CENTER", button_wh, button_wh)
     if SETUP and #PIE_LIST == 0 then
         r.ImGui_SetCursorScreenPos(ctx, CENTER.x - RADIUS_MIN, CENTER.y - RADIUS_MIN)
         r.ImGui_InvisibleButton(ctx, "##CENTERBoundry", (RADIUS_MIN * 2), RADIUS_MIN * 2)
@@ -1191,7 +1397,7 @@ local function DrawCenter(pie, center)
 
     -- DRAW CENTER CIRCLE -------------------------------------------------
     TextSplitByWidth(LAST_MSG, button_wh, button_wh)
-    
+
     r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 3)
 
     -- SHADOW
@@ -1211,17 +1417,19 @@ local function DrawCenter(pie, center)
         LerpAlpha(col, CENTER_BTN_PROG), 64)
 
     -- DRAW CENTER CIRCLE -------------------------------------------------
-    -- TRACKER SHADOW    
-    r.ImGui_DrawList_AddCircleFilled(draw_list, CENTER.x, CENTER.y + RADIUS_MIN-17,
+    -- TRACKER SHADOW
+    r.ImGui_DrawList_AddCircleFilled(draw_list, CENTER.x, CENTER.y + RADIUS_MIN - 17,
         7 - (center_pressed and 5 or 0), LerpAlpha(0x44, CENTER_BTN_PROG), 64)
     -- TRACKER OUTER RING
-    r.ImGui_DrawList_AddCircleFilled(draw_list, CENTER.x, CENTER.y + RADIUS_MIN-17, 6.5 - (center_pressed and 5 or 0),
+    r.ImGui_DrawList_AddCircleFilled(draw_list, CENTER.x, CENTER.y + RADIUS_MIN - 17, 6.5 - (center_pressed and 5 or 0),
         LerpAlpha(def_out_ring, CENTER_BTN_PROG), 64)
     -- TRACKER ON/OFF
-    r.ImGui_DrawList_AddCircleFilled(draw_list, CENTER.x, CENTER.y + RADIUS_MIN-17, 5 ,
-        LerpAlpha(tracker_state == 1 and IncreaseDecreaseBrightness(0x55f67eDD, is_tracker_hovered and 30 or 0) or IncreaseDecreaseBrightness(0xd31111aa, is_tracker_hovered and 30 or 0), CENTER_BTN_PROG), 64)
-   -- IncreaseDecreaseBrightness(0xd31111aa, r.ImGui_IsItemHovered(ctx) and 30 or 0)
-    
+    r.ImGui_DrawList_AddCircleFilled(draw_list, CENTER.x, CENTER.y + RADIUS_MIN - 17, 5,
+        LerpAlpha(
+            tracker_state == 1 and IncreaseDecreaseBrightness(0x55f67eDD, is_tracker_hovered and 30 or 0) or
+            IncreaseDecreaseBrightness(0xd31111aa, is_tracker_hovered and 30 or 0), CENTER_BTN_PROG), 64)
+    -- IncreaseDecreaseBrightness(0xd31111aa, r.ImGui_IsItemHovered(ctx) and 30 or 0)
+
     -- DRAW PREVIOUS MENU PREVIEW
     r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 1)
     if #PIE_LIST ~= 0 then
@@ -1254,7 +1462,7 @@ local function DrawCenter(pie, center)
             if prev_i == i then
                 r.ImGui_DrawList_AddCircle(draw_list, button_pos.x, button_pos.y, mini_rad * MAIN_PROG, 0x25283eEE, 0, 2)
             end
-        end        
+        end
 
         if not SETUP then
             if r.ImGui_IsMouseReleased(ctx, 0) and not pie.active and not is_tracker_hovered then
@@ -1367,7 +1575,11 @@ function DrawPie(pie, center)
     r.ImGui_DrawListSplitter_Split(SPLITTER, 5)
     if SETUP or not DROP_DOWN_MENU then
         DrawCenter(pie, center)
-        DrawButtons(pie, center)
+        if STYLE == 1 then
+            DrawButtons(pie, center)
+        elseif STYLE == 2 then
+            DrawButtonTextStyle(pie, center)
+        end
     elseif DROP_DOWN_MENU then
         DropDownDo(pie)
     end

@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.33.44
+-- @version 0.34.00
 -- @changelog
---  Fix inverted highlight on tracker button
+--  Added Button Text style
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -326,9 +326,6 @@ end
 
 local function CloseScript()
     if not CLOSE then
-        if RETURN_FOCUS then
-            r.JS_Window_SetFocus(RETURN_FOCUS)
-        end
         START_TIME = r.time_precise()
         CLOSE = true
         FLAGS = FLAGS | r.ImGui_WindowFlags_NoInputs()
@@ -537,6 +534,9 @@ local function Main()
     end
 
     if DONE then
+        if RETURN_FOCUS then
+            r.JS_Window_SetFocus(RETURN_FOCUS)
+        end
         if REVERT_TO_START then
             local org_mouse_x, org_mouse_y = OUT_SCREEN and PREV_X or START_X, OUT_SCREEN and PREV_Y or START_Y
             ConvertAndSetCursor(org_mouse_x, org_mouse_y)
