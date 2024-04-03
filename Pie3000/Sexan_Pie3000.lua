@@ -1,17 +1,10 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.34.04
+-- @version 0.34.05
 -- @changelog
---  Style Text fixed detection logic for uneven button number
---  Style Text Buttons calculate font color from bg luminocity
---  Style Text Buttons Add Shortcuts preview
---  Style Text Buttons added click/confirm highlight
---  Expose color picker inputs
---  Style Text Fixed Drag and drop swap 
---  Style Text Added menu indicator (Credits ArKaDaTa for idea)
---  Style Text Added selection hover
---  Keyboard shortcuts preview bluish color and darker background
+--  Style Text increase sel size on shortcut down
+--  Style Text Setup add selected animation
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua

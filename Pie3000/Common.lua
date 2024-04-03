@@ -1061,14 +1061,23 @@ local function DrawClassicButton(pie, selected, hovered)
         click_highlight = selected
     end
 
-    local sel_size = selected and 10 or 0
+    local sel_size = (selected or (pie.key and r.ImGui_IsKeyDown(ctx, pie.key)) ) and 10 or 0
+    if SETUP and selected then
+        sel_size = 6
+        local scale = (sin(r.time_precise() * 5) * 0.15) + 1.02
+        local sel_size = sel_size + 5
+        r.ImGui_DrawList_AddRect(draw_list, (xs - sel_size* scale) - 1, (ys - sel_size* scale) - 1, (xe + sel_size* scale) + 1,
+        (ye + sel_size* scale) + 1,
+        LerpAlpha(0xffffffaa, (sin(r.time_precise() * 5) * 0.5) + 0.7), 5, r.ImGui_DrawFlags_RoundCornersAll(), 2.5 * scale)
+    end
+
     if click_highlight and r.ImGui_IsMouseDown(ctx, 0) or (pie.key and r.ImGui_IsKeyDown(ctx, pie.key)) then
         r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 1)
         r.ImGui_DrawList_AddRectFilled(draw_list, (xs - sel_size) - 6, (ys - sel_size) - 6, (xe + sel_size) + 6,
             (ye + sel_size) + 6,
             0xffffff77, 5, r.ImGui_DrawFlags_RoundCornersAll())
         col = IncreaseDecreaseBrightness(col, 20)
-        sel_size = selected and sel_size - 5 or 0
+        sel_size = selected and sel_size - 5 or sel_size
     end
 
     --local hovered = selected
@@ -1133,9 +1142,9 @@ local function DrawClassicButton(pie, selected, hovered)
     end
 
 
-    if hovered then
-        r.ImGui_PushFont(ctx, BUTTON_TEXT_FONT)
-    end
+   -- if hovered and not SETUP then
+    --    r.ImGui_PushFont(ctx, BUTTON_TEXT_FONT)
+    --end
     local label_size = r.ImGui_CalcTextSize(ctx, name)
     local font_size = r.ImGui_GetFontSize(ctx)
 
@@ -1147,9 +1156,9 @@ local function DrawClassicButton(pie, selected, hovered)
             name)
     end
     r.ImGui_DrawList_AddTextEx(draw_list, nil, font_size, txt_x, txt_y, LerpAlpha(txt_col, CENTER_BTN_PROG), name)
-    if hovered then
-        r.ImGui_PopFont(ctx)
-    end
+    --if hovered and not SETUP then
+    ----    r.ImGui_PopFont(ctx)
+    --end
 end
 
 local function DrawButtonTextStyle(pie, center)
