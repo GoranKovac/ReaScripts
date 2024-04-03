@@ -1,10 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.34.06
+-- @version 0.34.07
 -- @changelog
---  Change spinners color 
---  Style Text button add state spinner
+--  Modern style calculate font color by bg luminosity
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua

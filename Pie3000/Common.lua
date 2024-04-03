@@ -902,7 +902,7 @@ local function PieButtonDrawlist(pie, button_radius, selected, hovered, button_p
     if png then color = def_color end
     color = hovered and ALT and 0xff0000ff or color
 
-    local icon_col = LerpAlpha(0xffffffff, CENTER_BTN_PROG)
+    --local icon_col = LerpAlpha(0xffffffff, CENTER_BTN_PROG)
     local icon_font = selected and ICON_FONT_LARGE or ICON_FONT_SMALL
     local icon_font_size = selected and ICON_FONT_LARGE_SIZE or ICON_FONT_SMALL_SIZE
 
@@ -1008,10 +1008,14 @@ local function PieButtonDrawlist(pie, button_radius, selected, hovered, button_p
     r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, selected and 3 or 1)
 
     if icon then
+        local luma_high = IsColorLuminanceHigh(col)
+        local icon_col = LerpAlpha(luma_high and 0xff or 0xffffffff, CENTER_BTN_PROG)
         r.ImGui_PushFont(ctx, icon_font)
         local icon_w, icon_h = r.ImGui_CalcTextSize(ctx, icon)
         local i_x, i_y = button_center.x - icon_w / 2, button_center.y - icon_h / 2
-        r.ImGui_DrawList_AddTextEx(draw_list, nil, icon_font_size * CENTER_BTN_PROG, i_x + 2, i_y + 2, 0xaa, icon)
+        if not luma_high then
+            r.ImGui_DrawList_AddTextEx(draw_list, nil, icon_font_size * CENTER_BTN_PROG, i_x + 2, i_y + 2, 0xaa, icon)
+        end
         r.ImGui_DrawList_AddTextEx(draw_list, nil, icon_font_size * CENTER_BTN_PROG, i_x, i_y, icon_col, icon)
         r.ImGui_PopFont(ctx)
     end
