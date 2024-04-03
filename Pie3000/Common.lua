@@ -709,7 +709,7 @@ local function StateSpinner(cx, cy, col, radius)
         local ang_min = (item_arc_span) * (i - (0.2)) + (r.time_precise() % (pi * 2))
         local ang_max = (item_arc_span) * (i + (0.2)) + (r.time_precise() % (pi * 2))
         r.ImGui_DrawList_PathArcTo(draw_list, cx, cy, radius + 5, ang_min, ang_max)
-        r.ImGui_DrawList_PathStroke(draw_list, col, nil, 5)
+        r.ImGui_DrawList_PathStroke(draw_list, dark_theme and 0x40ffb3ff or 0xff2233ff, nil, 5)
     end
 end
 
@@ -1026,6 +1026,16 @@ local function PieButtonDrawlist(pie, button_radius, selected, hovered, button_p
     end
 end
 
+local function lerp(a, b, t) return a + (b - a) * t end
+
+local function Animate_On_Cordinates(a, b, duration_in_sec, time)
+    --local time = max(r.time_precise() - ANIMATION_START_TIME, 0.01)
+    --if time >= duration_in_sec then ANIMATION_START_TIME = r.time_precise() end
+    local final_time = min((time / duration_in_sec - floor(time / duration_in_sec)) * 1, 1)
+    local new_val = lerp(a, b, final_time)
+    return new_val
+end
+
 local function DrawClassicButton(pie, selected, hovered)
     local xs, ys = r.ImGui_GetItemRectMin(ctx)
     local xe, ye = r.ImGui_GetItemRectMax(ctx)
@@ -1065,9 +1075,9 @@ local function DrawClassicButton(pie, selected, hovered)
     if SETUP and selected then
         sel_size = 6
         local scale = (sin(r.time_precise() * 5) * 0.15) + 1.02
-        local sel_size = sel_size + 5
-        r.ImGui_DrawList_AddRect(draw_list, (xs - sel_size* scale) - 1, (ys - sel_size* scale) - 1, (xe + sel_size* scale) + 1,
-        (ye + sel_size* scale) + 1,
+        local sel_size_2 = sel_size + 5
+        r.ImGui_DrawList_AddRect(draw_list, (xs - sel_size_2* scale) - 1, (ys - sel_size_2* scale) - 1, (xe + sel_size_2* scale) + 1,
+        (ye + sel_size_2* scale) + 1,
         LerpAlpha(0xffffffaa, (sin(r.time_precise() * 5) * 0.5) + 0.7), 5, r.ImGui_DrawFlags_RoundCornersAll(), 2.5 * scale)
     end
 
@@ -1103,6 +1113,15 @@ local function DrawClassicButton(pie, selected, hovered)
         (ye + sel_size) - 3,
         LerpAlpha(col, CENTER_BTN_PROG), 5, r.ImGui_DrawFlags_RoundCornersAll())
 
+    if (tonumber(pie.cmd) and r.GetToggleCommandStateEx(section_id, pie.cmd) == 1) then
+        for i = 1 , 2 do
+            local new_x = Animate_On_Cordinates(xs, xe-15, 2, (r.time_precise()* 0.5)- (i))
+            r.ImGui_DrawList_AddLine(draw_list, new_x, ys - 2 - sel_size, new_x + 15, ys - 2 - sel_size, dark_theme and 0x40ffb3ff or 0xff2233ff, 5)
+            local new_x2 = Animate_On_Cordinates(xs, xe-15, 2, (r.time_precise()* 0.5) - (i))
+            r.ImGui_DrawList_AddLine(draw_list, new_x2, ye + 2 + sel_size, new_x2 + 15, ye + 2 + sel_size, dark_theme and 0x40ffb3ff or 0xff2233ff, 5)
+        end
+    end
+
     if pie.menu then
         r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 1)
 
@@ -1120,7 +1139,7 @@ local function DrawClassicButton(pie, selected, hovered)
         r.ImGui_DrawList_AddTriangleFilled( draw_list, (xs - sel_size + w/2) - (selected and 2 or 4), (ys - sel_size) - 4, (xe + sel_size - w/2) + (selected and 2 or 4), (ys - sel_size) - 4, (xs + w/2), (ys + (selected and -4 or 0) ), 0x525356ff )
 
     end
-
+    
     if SHOW_SHORTCUT then
         if pie.key then
             DrawShortcut(pie, button_pos, selected)
