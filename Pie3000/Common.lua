@@ -66,6 +66,7 @@ local ICON_FONT_LARGE_SIZE = 40
 local ICON_FONT_PREVIEW_SIZE = 16
 local ICON_FONT_CLICKED_SIZE = 32
 local GUI_FONT_SIZE = 14
+local BUTTON_TEXT_STYLE_LARGE = 14
 
 ICON_FONT_VERY_SMALL = r.ImGui_CreateFont(script_path .. 'fontello1.ttf', ICON_FONT_VERY_SMALL_SIZE)
 ICON_FONT_SMALL = r.ImGui_CreateFont(script_path .. 'fontello1.ttf', ICON_FONT_SMALL_SIZE)
@@ -75,7 +76,9 @@ ICON_FONT_CLICKED = r.ImGui_CreateFont(script_path .. 'fontello1.ttf', ICON_FONT
 SYSTEM_FONT = r.ImGui_CreateFont('sans-serif', FONT_SIZE, r.ImGui_FontFlags_Bold())
 SYSTEM_FONT2 = r.ImGui_CreateFont('sans-serif', FONT_LARGE, r.ImGui_FontFlags_Bold())
 GUI_FONT = r.ImGui_CreateFont(script_path .. "Roboto-Medium.ttf", GUI_FONT_SIZE)
+BUTTON_TEXT_FONT = r.ImGui_CreateFont(script_path .. "Roboto-Medium.ttf", BUTTON_TEXT_STYLE_LARGE)
 
+r.ImGui_Attach(ctx, BUTTON_TEXT_FONT)
 r.ImGui_Attach(ctx, GUI_FONT)
 r.ImGui_Attach(ctx, SYSTEM_FONT)
 r.ImGui_Attach(ctx, SYSTEM_FONT2)
@@ -612,7 +615,7 @@ function EasingAnimation(begin_val, end_val, duration_in_sec, ease_function, cal
     return new_val
 end
 
-local function IsColorLuminanceHigh(org_color)
+function IsColorLuminanceHigh(org_color)
     local alpha = org_color & 0xFF
     local blue = (org_color >> 8) & 0xFF
     local green = (org_color >> 16) & 0xFF
@@ -839,8 +842,20 @@ end
 local function DrawShortcut(pie, button_pos, selected)
     r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, selected and 3 or 1)
     r.ImGui_PushFont(ctx, GUI_FONT)
+    --r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Text(),0x8cdbffff)
     local key_w, key_h = r.ImGui_CalcTextSize(ctx, KEYS[pie.key])
-    r.ImGui_SetCursorScreenPos(ctx, button_pos.kx - ((key_w + 15) / 2), button_pos.ky)
+    local style_offset = 1
+    if button_pos.side then
+        if button_pos.side == "R" then
+            style_offset = 0
+        else
+            style_offset = 2
+        end
+    end
+    local xx = button_pos.kx - ((key_w + 15) / 2) * style_offset
+    local txt_c = xx + ((key_w + 15) / 2)
+
+    r.ImGui_SetCursorScreenPos(ctx, button_pos.kx - ((key_w + 15) / 2) * style_offset, button_pos.ky)
     r.ImGui_InvisibleButton(ctx, KEYS[pie.key], (key_w + 15), key_h + 2)
     local xs, ys = r.ImGui_GetItemRectMin(ctx)
     local xe, ye = r.ImGui_GetItemRectMax(ctx)
@@ -851,14 +866,14 @@ local function DrawShortcut(pie, button_pos, selected)
     r.ImGui_DrawList_AddRectFilled(draw_list, xs - 2, ys - 2, xe + 2, ye + 2, LerpAlpha(def_out_ring, CENTER_BTN_PROG), 7,
         r.ImGui_DrawFlags_RoundCornersAll())
     -- MAIN
-    r.ImGui_DrawList_AddRectFilled(draw_list, xs, ys, xe, ye, LerpAlpha(def_color, CENTER_BTN_PROG), 5,
+    r.ImGui_DrawList_AddRectFilled(draw_list, xs, ys, xe, ye, LerpAlpha(0x1d1f27ff, CENTER_BTN_PROG), 5,
         r.ImGui_DrawFlags_RoundCornersAll())
     -- SHADOW
-    r.ImGui_DrawList_AddTextEx(draw_list, nil, GUI_FONT_SIZE * CENTER_BTN_PROG, (button_pos.kx - key_w / 2) + 1,
+    r.ImGui_DrawList_AddTextEx(draw_list, nil, GUI_FONT_SIZE * CENTER_BTN_PROG, txt_c - (key_w / 2) + 1,
         button_pos.ky + 1, LerpAlpha(0xFF, CENTER_BTN_PROG), KEYS[pie.key])
     -- MAIN
-    r.ImGui_DrawList_AddTextEx(draw_list, nil, GUI_FONT_SIZE * CENTER_BTN_PROG, button_pos.kx - key_w / 2, button_pos.ky,
-        LerpAlpha(0xFFFFFFFF, CENTER_BTN_PROG), KEYS[pie.key])
+    r.ImGui_DrawList_AddTextEx(draw_list, nil, GUI_FONT_SIZE * CENTER_BTN_PROG, txt_c - (key_w / 2), button_pos.ky,
+        LerpAlpha(0x8cc3ffff, CENTER_BTN_PROG), KEYS[pie.key])
     r.ImGui_PopFont(ctx)
 end
 
@@ -925,7 +940,7 @@ local function PieButtonDrawlist(pie, button_radius, selected, hovered, button_p
     -- OUTER RING
     r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x, button_center.y, (button_radius + 4) * CENTER_BTN_PROG,
         LerpAlpha(ring_col, CENTER_BTN_PROG), 128)
-    
+
     -- MAIN
 
     r.ImGui_DrawList_AddCircleFilled(draw_list, button_center.x, button_center.y, (button_radius) * CENTER_BTN_PROG,
@@ -984,7 +999,7 @@ local function PieButtonDrawlist(pie, button_radius, selected, hovered, button_p
     -- KEY CIRCLE   -----------------------------------------------------------
     if SHOW_SHORTCUT then
         if pie.key then
-            DrawShortcut(pie, button_pos, selected)
+            DrawShortcut(pie, button_pos, selected, 2)
         end
     end
     -- KEY CIRCLE   -----------------------------------------------------------
@@ -1017,61 +1032,124 @@ local function DrawClassicButton(pie, selected, hovered)
     local w = xe - xs
     local h = ye - ys
 
+    local button_pos = {
+        kx = xs > CENTER.x and xe + (selected and 15 or 5) or xs - (selected and 15 or 5),
+        ky = ys + 5,
+        side =
+            xs > CENTER.x and "R" or "L"
+    }
+
     local button_center = { x = xs + (w / 2), y = ys + (h / 2) }
 
     local color, name, png, icon = pie.col, pie.name, pie.png, pie.icon
     local ring_col = (hovered and ALT) and 0xff0000ff or def_out_ring
     color = color == 0xff and def_color or color
 
-    --if png then color = def_color end
+    -- if png then color = def_color end
 
     color = (hovered and ALT) and 0xff0000ff or color
 
     local icon_col = LerpAlpha(0xffffffff, CENTER_BTN_PROG)
     local icon_font = selected and ICON_FONT_SMALL or ICON_FONT_VERY_SMALL
     local icon_font_size = selected and ICON_FONT_SMALL_SIZE or ICON_FONT_VERY_SMALL_SIZE
-
     local col = (selected or hovered) and IncreaseDecreaseBrightness(color, 30) or color
-    local hovered = selected
-    local sel_size = hovered and 10 or 0
-    r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, selected and 3 or 1)
+
+    local click_highlight
+    if SETUP then
+        click_highlight = hovered
+    else
+        click_highlight = selected
+    end
+
+    local sel_size = selected and 10 or 0
+    if click_highlight and r.ImGui_IsMouseDown(ctx, 0) or (pie.key and r.ImGui_IsKeyDown(ctx, pie.key)) then
+        r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 1)
+        r.ImGui_DrawList_AddRectFilled(draw_list, (xs - sel_size) - 6, (ys - sel_size) - 6, (xe + sel_size) + 6,
+            (ye + sel_size) + 6,
+            0xffffff77, 5, r.ImGui_DrawFlags_RoundCornersAll())
+        col = IncreaseDecreaseBrightness(col, 20)
+        sel_size = selected and sel_size - 5 or 0
+    end
+
+    --local hovered = selected
+
+    r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, selected and 3 or 2)
 
     -- SHADOW
-    r.ImGui_DrawList_AddRectFilled(draw_list, (xs - sel_size), (ys - sel_size), (xe + sel_size)+4, (ye + sel_size)+4,
+    r.ImGui_DrawList_AddRectFilled(draw_list, (xs - sel_size), (ys - sel_size), (xe + sel_size) + 4, (ye + sel_size) + 4,
         LerpAlpha(dark_theme and 0x44 or 0x33, CENTER_BTN_PROG), 5, r.ImGui_DrawFlags_RoundCornersAll())
 
     -- OUTER RING
-    r.ImGui_DrawList_AddRectFilled(draw_list, (xs - sel_size)-1, (ys - sel_size)-1, (xe + sel_size)+1, (ye + sel_size)+1,
-        LerpAlpha(hovered and 0x22FF44DD or ring_col, CENTER_BTN_PROG), 5, r.ImGui_DrawFlags_RoundCornersAll())
+    r.ImGui_DrawList_AddRectFilled(draw_list, (xs - sel_size) - 1, (ys - sel_size) - 1, (xe + sel_size) + 1,
+        (ye + sel_size) + 1,
+        LerpAlpha(ring_col, CENTER_BTN_PROG), 5, r.ImGui_DrawFlags_RoundCornersAll())
 
     -- MAIN
-    r.ImGui_DrawList_AddRectFilled(draw_list, (xs - sel_size)+1, (ys - sel_size)+1, (xe + sel_size)-1, (ye + sel_size)-1,
-    LerpAlpha(def_color, CENTER_BTN_PROG), 5, r.ImGui_DrawFlags_RoundCornersAll())
+    r.ImGui_DrawList_AddRectFilled(draw_list, (xs - sel_size) + 1, (ys - sel_size) + 1, (xe + sel_size) - 1,
+        (ye + sel_size) - 1,
+        LerpAlpha(def_color, CENTER_BTN_PROG), 5, r.ImGui_DrawFlags_RoundCornersAll())
 
-    --if hovered then
-      --  r.ImGui_DrawList_AddRect(draw_list, (xs - sel_size)+2, (ys - sel_size)+2, (xe + sel_size)-2, (ye + sel_size)-2,
-       --     LerpAlpha(0x22FF44FF, CENTER_BTN_PROG), 5,
-      --      nil, 2)
-    --end
-    r.ImGui_DrawList_AddRectFilled(draw_list, (xs - sel_size)+3, (ys - sel_size)+3, (xe + sel_size)-3, (ye + sel_size)-3,
-    LerpAlpha(col, CENTER_BTN_PROG), 5, r.ImGui_DrawFlags_RoundCornersAll())
+    -- COLOR
+    r.ImGui_DrawList_AddRectFilled(draw_list, (xs - sel_size) + 3, (ys - sel_size) + 3, (xe + sel_size) - 3,
+        (ye + sel_size) - 3,
+        LerpAlpha(col, CENTER_BTN_PROG), 5, r.ImGui_DrawFlags_RoundCornersAll())
 
+    if pie.menu then
+        r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 1)
+
+        r.ImGui_DrawList_AddRectFilled(draw_list, (xs - sel_size + w/2) - 20, (ys - sel_size) - 8, (xe + sel_size - w/2) + 20,
+        (ys - sel_size) + 5,
+        LerpAlpha(ring_col, CENTER_BTN_PROG), 5, r.ImGui_DrawFlags_RoundCornersAll())
+
+        r.ImGui_DrawList_AddRectFilled(draw_list, (xs - sel_size + w/2) - 18, (ys - sel_size) - 6, (xe + sel_size - w/2) + 18,
+        (ys - sel_size) + 3,
+        LerpAlpha(def_color, CENTER_BTN_PROG), 5, r.ImGui_DrawFlags_RoundCornersAll())
+        r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 3)
+
+       -- r.ImGui_DrawList_AddTriangleFilled( draw_list, (xs - sel_size + w/2) - 12, (ys - sel_size) - 8, (xe + sel_size - w/2) + 12, (ys - sel_size) - 8, (xs + w/2), (ys + (selected and 2 or 6) ), ring_col )
+        r.ImGui_DrawList_AddTriangleFilled( draw_list, (xs - sel_size + w/2) - 10, (ys - sel_size) - 6, (xe + sel_size - w/2) + 10, (ys - sel_size) - 6, (xs + w/2), (ys + (selected and 0 or 3) ), 0xCCCCCCff )
+        r.ImGui_DrawList_AddTriangleFilled( draw_list, (xs - sel_size + w/2) - (selected and 2 or 4), (ys - sel_size) - 4, (xe + sel_size - w/2) + (selected and 2 or 4), (ys - sel_size) - 4, (xs + w/2), (ys + (selected and -4 or 0) ), 0x525356ff )
+
+    end
+
+    if SHOW_SHORTCUT then
+        if pie.key then
+            DrawShortcut(pie, button_pos, selected)
+        end
+    end
+
+    local is_luma_high = IsColorLuminanceHigh(col)
+    local txt_col = is_luma_high and 0xff or 0xffffffff
+    r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, selected and 3 or 2)
     if icon then
         r.ImGui_PushFont(ctx, icon_font)
         local icon_w, icon_h = r.ImGui_CalcTextSize(ctx, icon)
-        local i_x, i_y = xs + (hovered and 0 or 9), button_center.y - icon_h / 2
-        r.ImGui_DrawList_AddTextEx(draw_list, nil, icon_font_size * CENTER_BTN_PROG, i_x + 2, i_y + 2, 0xaa, icon)
-        r.ImGui_DrawList_AddTextEx(draw_list, nil, icon_font_size * CENTER_BTN_PROG, i_x, i_y, icon_col, icon)
+        local i_x, i_y = xs + (selected and 0 or 9), button_center.y - icon_h / 2
+        if not is_luma_high then
+            r.ImGui_DrawList_AddTextEx(draw_list, nil, icon_font_size * CENTER_BTN_PROG, i_x + 2, i_y + 2, 0xaa, icon)
+        end
+        r.ImGui_DrawList_AddTextEx(draw_list, nil, icon_font_size * CENTER_BTN_PROG, i_x, i_y, txt_col, icon)
         r.ImGui_PopFont(ctx)
     end
 
+
+    if hovered then
+        r.ImGui_PushFont(ctx, BUTTON_TEXT_FONT)
+    end
     local label_size = r.ImGui_CalcTextSize(ctx, name)
     local font_size = r.ImGui_GetFontSize(ctx)
 
     local txt_x = xs + (icon and 12 or 0) + (w / 2) - (label_size / 2)
     local txt_y = ys + (h / 2) - (font_size / 2)
-    r.ImGui_DrawList_AddTextEx(draw_list, nil, font_size, txt_x+1, txt_y+1, LerpAlpha(0xff, CENTER_BTN_PROG), name)
-    r.ImGui_DrawList_AddTextEx(draw_list, nil, font_size, txt_x, txt_y, LerpAlpha(0xffffffff, CENTER_BTN_PROG), name)
+
+    if not is_luma_high then
+        r.ImGui_DrawList_AddTextEx(draw_list, nil, font_size, txt_x + 1, txt_y + 1, LerpAlpha(0xff, CENTER_BTN_PROG),
+            name)
+    end
+    r.ImGui_DrawList_AddTextEx(draw_list, nil, font_size, txt_x, txt_y, LerpAlpha(txt_col, CENTER_BTN_PROG), name)
+    if hovered then
+        r.ImGui_PopFont(ctx)
+    end
 end
 
 local function DrawButtonTextStyle(pie, center)
@@ -1079,16 +1157,17 @@ local function DrawButtonTextStyle(pie, center)
         return abs(a - b) < 0.00001
     end
 
-    local function NearestValue(table, number, my)
+    local function NearestValue(table, number)
         local smallestSoFar, smallestIndex
-        local target = number and number or my
+        local last_tbl_idx
         for i, y in ipairs(table) do
-            if not smallestSoFar or (abs(target - (number and y[1] or y[2])) < smallestSoFar) then
-                smallestSoFar = abs(target - (number and y[1] or y[2]))
-                smallestIndex = y[3]
+            if not smallestSoFar or (abs(number - y[1]) < smallestSoFar) then
+                smallestSoFar = abs(number - y[1])
+                smallestIndex = y[2]
+                last_tbl_idx = i
             end
         end
-        return smallestIndex --, table[smallestIndex]
+        return smallestIndex, last_tbl_idx --, table[smallestIndex]
     end
     r.ImGui_PushFont(ctx, SYSTEM_FONT)
     local CENTER = center or CENTER
@@ -1098,7 +1177,7 @@ local function DrawButtonTextStyle(pie, center)
     local RADIUS = pie.RADIUS * CENTER_BTN_PROG
     local RADIUS_MIN = RADIUS / 2.2
 
-    --r.ImGui_DrawList_AddRect(draw_list, CENTER.x - RADIUS_MIN, CENTER.y - RADIUS, CENTER.x + RADIUS_MIN,
+    -- r.ImGui_DrawList_AddRect(draw_list, CENTER.x - RADIUS_MIN, CENTER.y - RADIUS, CENTER.x + RADIUS_MIN,
     --    CENTER.y + RADIUS, 0xff0000ff, 0, 0, 2)
 
     local ap1_t = atan((CENTER.y - RADIUS) - CENTER.y, (CENTER.x - RADIUS_MIN) - CENTER.x)
@@ -1111,6 +1190,8 @@ local function DrawButtonTextStyle(pie, center)
     local ap1_b = atan((CENTER.y + RADIUS) - CENTER.y, (CENTER.x - RADIUS_MIN) - CENTER.x)
     local ap2_b = atan((CENTER.y + RADIUS) - CENTER.y, (CENTER.x + RADIUS_MIN) - CENTER.x)
 
+    local ap_c = atan((CENTER.y + RADIUS) - CENTER.y, 0)
+
     -- -- BOT
     -- r.ImGui_DrawList_PathArcTo(draw_list, CENTER.x, CENTER.y, RADIUS, ap1_b, ap2_b)
     -- r.ImGui_DrawList_PathStroke(draw_list, 0x22FF4455, r.ImGui_DrawFlags_None(), 150 * 1)
@@ -1120,18 +1201,23 @@ local function DrawButtonTextStyle(pie, center)
     -- r.ImGui_DrawList_PathStroke(draw_list, 0x2244FF55, r.ImGui_DrawFlags_None(), 150 * 1)
 
 
+    local pie_even = #pie % 2 == 0
 
     local inside
     if pie.active and AngleInRange(DRAG_ANGLE, ap1_t, ap2_t) then
         inside = { ap1_t, ap2_t, "TOP" }
-    elseif pie.active and AngleInRange(DRAG_ANGLE, ap2_b, ap1_b) then
+    elseif pie.active and pie_even and AngleInRange(DRAG_ANGLE, ap2_b, ap1_b) then
         inside = { ap2_b, ap1_b, "BOT" }
-    elseif pie.active and AngleInRange(DRAG_ANGLE, ap2_t, ap1_b) then
+    elseif pie.active and AngleInRange(DRAG_ANGLE, ap2_t, pie_even and ap1_b or ap_c) then
         inside = { ap2_t, ap2_b, "LEFT" }
-    elseif pie.active and AngleInRange(DRAG_ANGLE, ap1_b, ap1_t) then
+        CUR_HOR = "LEFT"
+    elseif pie.active and AngleInRange(DRAG_ANGLE, pie_even and ap1_b or ap_c, ap1_t) then
         inside = { ap1_b, ap1_t, "RIGHT" }
+        CUR_HOR = "RIGHT"
     end
+
     local closest_tbl = {}
+    local LAST_HOR_SEL
     for i = 1, #pie do
         --local ang_min = (item_arc_span) * (i - (0.5)) + START_ANG
         --local ang_max = (item_arc_span) * (i + (0.5)) + START_ANG
@@ -1140,18 +1226,14 @@ local function DrawButtonTextStyle(pie, center)
         local txt_w, txt_h = r.ImGui_CalcTextSize(ctx, pie[i].name)
         txt_w = txt_w + 50
         local button_pos = {
-            x = CENTER.x + (RADIUS_MIN + ((RADIUS - RADIUS_MIN) / 1.3) * MAIN_PROG) * cos(angle + START_ANG),
-            y = CENTER.y + (RADIUS_MIN + ((RADIUS - RADIUS_MIN) / 1.3) * MAIN_PROG) * sin(angle + START_ANG),
+            x = CENTER.x + (RADIUS_MIN + ((RADIUS - RADIUS_MIN) / 1.6) * MAIN_PROG) * cos(angle + START_ANG),
+            y = CENTER.y + (RADIUS_MIN + ((RADIUS - RADIUS_MIN) / 1.6) * MAIN_PROG) * sin(angle + START_ANG),
         }
-        -- if pie.hovered then
-        --     r.ImGui_DrawList_PathArcTo(draw_list, CENTER.x, CENTER.y, RADIUS,
-        --     angle - (item_arc_span / 2) + START_ANG, angle + (item_arc_span / 2) + START_ANG)
-        --     r.ImGui_DrawList_PathStroke(draw_list, 0x22FF4455, r.ImGui_DrawFlags_None(), 150 * 1)
-        -- end
+
         if RoughlyEquals(angle % pi, 0) then
             button_pos.x = button_pos.x - txt_w / 2
             if i == #pie then
-                button_pos.y = button_pos.y - txt_h * 2
+                button_pos.y = button_pos.y - (txt_h * 2.2)
             else
                 button_pos.y = button_pos.y + txt_h
             end
@@ -1181,6 +1263,8 @@ local function DrawButtonTextStyle(pie, center)
             end
             boundry_hovered = r.ImGui_IsItemHovered(ctx)
             r.ImGui_PopID(ctx)
+            DNDSwapSRC(pie, i)
+            DNDSwapDST(pie, i, pie[i])
             if not pie[i].menu then
                 DndAddTargetAction(pie, pie[i])
             else
@@ -1208,10 +1292,14 @@ local function DrawButtonTextStyle(pie, center)
             local a_cur = atan((ys + txt_h / 2) - CENTER.y, (xs + txt_w / 2) - CENTER.x)
             if inside then
                 if (inside[3] == "TOP" or inside[3] == "BOT") then
-                    pie.selected = AngleInRange(a_cur, inside[1], inside[2]) and i
+                    local is_in_angle = AngleInRange(a_cur, inside[1], inside[2])
+                    pie.selected = is_in_angle and i
+                    if is_in_angle then
+                        LAST_HOR_SEL = { xs = xs, xe = xe, ys = ys, ye = ye }
+                    end
                 else
                     if AngleInRange(a_cur, inside[1], inside[2]) then
-                        closest_tbl[#closest_tbl + 1] = { a_cur, ys, i }
+                        closest_tbl[#closest_tbl + 1] = { ys, i, { xs = xs, xe = xe, ys = ys, ye = ye } }
                     end
                 end
             end
@@ -1229,9 +1317,60 @@ local function DrawButtonTextStyle(pie, center)
     -- FIND LAST CLOSEST ANGLE
     if not SETUP then
         if #closest_tbl ~= 0 then
-            local near = NearestValue(closest_tbl, last_m_angle, MY)
+            local near, idx = NearestValue(closest_tbl, MY)
             if near then
-                pie.selected = near
+                pie.selected, LAST_HOR_SEL = near, closest_tbl[idx][3]
+            end
+        end
+        r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 0)
+
+        if inside then
+            if inside[3] == "TOP" or inside[3] == "BOT" then
+                if LAST_HOR_SEL then
+                    local ys = inside[3] == "TOP" and LAST_HOR_SEL.ye + 15 or LAST_HOR_SEL.ys - 15
+                    r.ImGui_DrawList_PathLineTo(draw_list, CENTER.x - 5, CENTER.y)
+                    r.ImGui_DrawList_PathLineTo(draw_list, CENTER.x - 15, ys)
+                    r.ImGui_DrawList_PathLineTo(draw_list, CENTER.x + 15, ys)
+                    r.ImGui_DrawList_PathLineTo(draw_list, CENTER.x + 5, CENTER.y)
+                    r.ImGui_DrawList_PathFillConvex(draw_list, ARC_COLOR)
+                    r.ImGui_DrawList_PathClear(draw_list)
+
+
+                    r.ImGui_DrawList_PathLineTo(draw_list, LAST_HOR_SEL.xs - 15, LAST_HOR_SEL.ys - 15)
+                    r.ImGui_DrawList_PathLineTo(draw_list, LAST_HOR_SEL.xe + 15, LAST_HOR_SEL.ys - 15)
+                    r.ImGui_DrawList_PathLineTo(draw_list, LAST_HOR_SEL.xe + 15, LAST_HOR_SEL.ye + 15)
+                    r.ImGui_DrawList_PathLineTo(draw_list, LAST_HOR_SEL.xs - 15, LAST_HOR_SEL.ye + 15)
+
+                    r.ImGui_DrawList_PathFillConvex(draw_list, ARC_COLOR)
+                    r.ImGui_DrawList_PathClear(draw_list)
+                end
+                --DrawArc(pie, center, item_arc_span, inside[1], inside[2], RADIUS, RADIUS_MIN)
+                -- r.ImGui_DrawList_PathArcTo(draw_list, CENTER.x, CENTER.y, (RADIUS - RADIUS_MIN) + 100, inside[1],
+                --     inside[2],
+                --     12)
+                -- r.ImGui_DrawList_PathArcTo(draw_list, CENTER.x, CENTER.y, RADIUS_MIN, inside[2], inside[1], 12)
+                -- r.ImGui_DrawList_PathFillConvex(draw_list, ARC_COLOR)
+            else
+                if LAST_HOR_SEL then
+                    local xs = inside[3] == "LEFT" and LAST_HOR_SEL.xs - 15 or LAST_HOR_SEL.xe + 15
+                    local ys = inside[3] == "LEFT" and LAST_HOR_SEL.ys - 15 or LAST_HOR_SEL.ye + 15
+                    local xe = inside[3] == "LEFT" and LAST_HOR_SEL.xe + 15 or LAST_HOR_SEL.xs - 15
+                    local ye = inside[3] == "LEFT" and LAST_HOR_SEL.ye + 15 or LAST_HOR_SEL.ys - 15
+
+                    r.ImGui_DrawList_PathLineTo(draw_list, xs, ys)
+                    r.ImGui_DrawList_PathLineTo(draw_list, xe, ys)
+                    r.ImGui_DrawList_PathLineTo(draw_list, xe, ye)
+                    r.ImGui_DrawList_PathLineTo(draw_list, xs, ye)
+                    r.ImGui_DrawList_PathFillConvex(draw_list, ARC_COLOR)
+                    r.ImGui_DrawList_PathClear(draw_list)
+                    r.ImGui_DrawList_PathLineTo(draw_list, CENTER.x, CENTER.y - 5)
+                    r.ImGui_DrawList_PathLineTo(draw_list, xs, ys)
+                    r.ImGui_DrawList_PathLineTo(draw_list, xs, ye)
+                    r.ImGui_DrawList_PathLineTo(draw_list, CENTER.x, CENTER.y)
+                    r.ImGui_DrawList_PathLineTo(draw_list, CENTER.x, CENTER.y + 5)
+                    r.ImGui_DrawList_PathFillConvex(draw_list, ARC_COLOR)
+                    r.ImGui_DrawList_PathClear(draw_list)
+                end
             end
         end
     end

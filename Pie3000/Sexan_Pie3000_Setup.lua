@@ -1013,8 +1013,8 @@ local function NewProperties(pie)
             r.ImGui_SetNextWindowPos(ctx, r.ImGui_GetCursorScreenPos(ctx))
             if r.ImGui_BeginPopupContextItem(ctx, "ColorPickerXYZ", r.ImGui_ButtonFlags_MouseButtonLeft()) then
                 rv, pie[pie.selected].col = r.ImGui_ColorPicker4(ctx, '##MyColor##5', pie[pie.selected].col,
-                    r.ImGui_ColorEditFlags_PickerHueBar() | r.ImGui_ColorEditFlags_NoSidePreview() |
-                    r.ImGui_ColorEditFlags_NoInputs())
+                    r.ImGui_ColorEditFlags_PickerHueBar() | r.ImGui_ColorEditFlags_NoSidePreview()
+                    )
                 r.ImGui_EndPopup(ctx)
             end
             r.ImGui_SameLine(ctx)
