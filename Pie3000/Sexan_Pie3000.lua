@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.03
+-- @version 0.35.04
 -- @changelog
---  Prettify DropDown Style setup
+--  DropDown Style setup more fixes
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua

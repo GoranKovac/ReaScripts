@@ -1724,7 +1724,27 @@ local function DrawCenter(pie, center)
     end
 end
 
-local function DropDownMenuPopup(pie, max_w)
+local function DropDownMenuPopup(pie)
+    local longest_label, longest_key, dummy_h = 0, 0, 0
+    for i = 1, #pie do
+        local txt_w, txt_h = r.ImGui_CalcTextSize(ctx, pie[i].name)
+        dummy_h = txt_h
+        if longest_label < txt_w then
+            longest_label = txt_w
+        end
+        if pie[i].key then
+            local key_w = r.ImGui_CalcTextSize(ctx, "   -   " .. KEYS[pie[i].key])
+            if longest_key < key_w then
+                longest_key = key_w
+            end
+        end
+    end
+
+    local max_w = longest_label + longest_key
+    local xx, yy = r.ImGui_GetCursorPos(ctx)
+    r.ImGui_Dummy(ctx, max_w + 29, dummy_h)
+
+    r.ImGui_SetCursorPos(ctx, xx, yy)
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Text(), 0x3aCCffff)
     r.ImGui_SeparatorText(ctx, "\t" .. pie.name .. "\t")
     r.ImGui_PopStyleColor(ctx)
@@ -1918,9 +1938,10 @@ function DrawPie(pie, center)
 
             local max_w = longest_label + longest_key
             local txt_separator_h = max(font_size + (pad_y_sep * 2) + sep_boarder)
-            r.ImGui_SetNextWindowPos(ctx, CENTER.x - (max_w + 50) // 2, CENTER.y - 150)
-            if r.ImGui_BeginChild(ctx, "DropDownSetup", max_w + 50, txt_separator_h + (#pie * font_size) + (wnd_padding * 2) + item_s_y * (#pie), true, r.ImGui_WindowFlags_AlwaysAutoResize()) then
-                DropDownMenuPopup(pie, max_w)
+            local xx, yy = r.ImGui_GetCursorScreenPos(ctx)
+            r.ImGui_SetNextWindowPos(ctx, CENTER.x - (max_w + 50) // 2, yy)
+            if r.ImGui_BeginChild(ctx, "DropDownSetup", max_w + 50, txt_separator_h + (#pie * font_size) + (wnd_padding * 2) + item_s_y * (#pie), true) then
+                DropDownMenuPopup(pie)
                 r.ImGui_EndChild(ctx)
             end
             r.ImGui_PopStyleColor(ctx)
