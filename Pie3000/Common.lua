@@ -1746,7 +1746,7 @@ local function DropDownMenuPopup(pie)
 
     r.ImGui_SetCursorPos(ctx, xx, yy)
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Text(), 0x3aCCffff)
-    r.ImGui_SeparatorText(ctx, pie.name)
+    r.ImGui_SeparatorText(ctx, "\t" .. pie.name .. "\t")
     r.ImGui_PopStyleColor(ctx)
 
     for i = 1, #pie do
@@ -1856,11 +1856,28 @@ local function DropDownMenuPopup(pie)
 end
 
 local function OpenDropDownStyle(pie)
+    local tracker_state = r.GetToggleCommandState(tracker_script_id)
     if r.ImGui_IsWindowAppearing(ctx) then
         r.ImGui_OpenPopup(ctx, "DROP_DOWN_MENU")
         r.ImGui_SetNextWindowPos(ctx, START_X - 80, START_Y - 10)
     end
     if r.ImGui_BeginPopup(ctx, "DROP_DOWN_MENU") then
+        local xx, yy = r.ImGui_GetCursorPos(ctx)
+        r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Button(), tracker_state == 1 and 0x00ff00cc or 0xff0000cc)
+        r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ButtonHovered(), tracker_state == 1 and 0x00ff00dd or 0xff0000dd)
+        r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ButtonActive(), tracker_state == 1 and 0x00ff00ff or 0xff0000ff)
+        r.ImGui_SetCursorPos(ctx, 26, 14)
+        if r.ImGui_Button(ctx, "##", 10, 10) then
+            r.Main_OnCommand(tracker_script_id, 0)
+        end
+        if r.ImGui_IsItemHovered(ctx) then
+            if r.ImGui_BeginTooltip(ctx) then
+                r.ImGui_Text(ctx, (tracker_state == 1 and "TRACKER ON" or "TRACKER OFF"))
+                r.ImGui_EndTooltip(ctx)
+            end
+        end
+        r.ImGui_PopStyleColor(ctx, 3)
+        r.ImGui_SetCursorPos(ctx, xx, yy)
         DropDownMenuPopup(pie)
         r.ImGui_EndPopup(ctx)
     end
