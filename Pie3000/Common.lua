@@ -1821,7 +1821,7 @@ local function DropDownMenuPopup(pie)
                 DndAddTargetAction(pie, pie[i])
             end
             if (r.ImGui_IsItemHovered(ctx) or key_released) and not SETUP then
-                LAST_ACTION = i
+                LAST_ACTION = pie[i].cmd_name
             end
             if (rv_sel or key_released) and not SETUP then
                 DROP_DOWN_CONFIRM = true

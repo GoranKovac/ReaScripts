@@ -1,25 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.00
+-- @version 0.35.01
 -- @changelog
---  Tracker script - set focus on window under mouse (fixes script not opening when context is not in focus)
---  Simplify detecting midi/media explorer
---  Protect call context function
---  Added midi track list Context
---  Added Ruler Region,Marker,Temp context
---  Add actions filters (Main, Midi, ME)
---  Run OnCommand API depending is the current context Main/Midi/ME
---  Show warning if action does not belong to context
---  If envelope is unknown (VST etc) return default main context (fixes crash on shortcut press on unknown envelopes)
---  Select envelope under mouse
---  Style Text Button improve state spinner animation
---  Style Text Button tweak toggle state animation
---  Replace OPEN AS DROPDOWN with DropDown Style
---  DropDown Style Improve and simplify code
---  DropDOwn Style Ignore HOLD_TO_OPEN,ANIMATION,ADJUST_PIE_NEAR_EDGE,SWIPE
---  DropDOwn Style Disable buttons in Opening behavior
---  DropDOwn Style Setup Setup Drawing
+--  Track action for DropDown Style by name instead of table idx
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -379,20 +363,19 @@ local function FindAction(name, no_warning)
                 return tonumber(MIDI_ACTIONS[i].cmd), MIDI_ACTIONS[i].type
             end
         end
-    else
-        if PIES[INFO].is_explorer then
-            for i = 1, #EXPLORER_ACTIONS do
-                if EXPLORER_ACTIONS[i].name == name then
-                    return tonumber(EXPLORER_ACTIONS[i].cmd), EXPLORER_ACTIONS[i].type
-                end
-            end
-        else
-            for i = 1, #ACTIONS do
-                if ACTIONS[i].name == name then
-                    return tonumber(ACTIONS[i].cmd), ACTIONS[i].type
-                end
+    elseif PIES[INFO].is_explorer then
+        for i = 1, #EXPLORER_ACTIONS do
+            if EXPLORER_ACTIONS[i].name == name then
+                return tonumber(EXPLORER_ACTIONS[i].cmd), EXPLORER_ACTIONS[i].type
             end
         end
+    else
+        for i = 1, #ACTIONS do
+            if ACTIONS[i].name == name then
+                return tonumber(ACTIONS[i].cmd), ACTIONS[i].type
+            end
+        end
+        --  end
     end
     if not no_warning then
         r.ShowMessageBox(name .. "\ndoes not exist on this system", "WARNING", 0)
@@ -402,11 +385,20 @@ local function FindAction(name, no_warning)
 end
 
 local function CheckActionContext(name)
-    if PREV_ACTION ~= PIE_MENU[LAST_ACTION] then
-        ACTION_CONTEXT_WARNING = nil
-        FindAction(name, true)
-        --LAST_ACTION_CONTEXT = cmd_type
-        PREV_ACTION = PIE_MENU[LAST_ACTION]
+    if STYLE ~= 3 then
+        if PREV_ACTION ~= PIE_MENU[LAST_ACTION] then
+            ACTION_CONTEXT_WARNING = nil
+            FindAction(name, true)
+            --LAST_ACTION_CONTEXT = cmd_type
+            PREV_ACTION = PIE_MENU[LAST_ACTION]
+        end
+    else
+        if PREV_ACTION ~= name then
+            ACTION_CONTEXT_WARNING = nil
+            FindAction(name, true)
+            --LAST_ACTION_CONTEXT = cmd_type
+            PREV_ACTION = name
+        end
     end
     -- if LAST_ACTION_CONTEXT then
 
@@ -517,21 +509,41 @@ local function ExecuteAction(action)
 end
 
 local function DoAction()
-    if PIE_MENU[LAST_ACTION].menu then
-        if r.ImGui_IsMouseReleased(ctx, 0) or Swipe() or KEY_TRIGGER then
-            table.insert(PIE_LIST, {
-                col = PIE_MENU[LAST_ACTION].col,
-                icon = PIE_MENU[LAST_ACTION].icon,
-                name = PIE_MENU[LAST_ACTION].name,
-                pid = PIE_MENU,
-                prev_i = LAST_ACTION,
-            })
-            KEY_TRIGGER = nil
-            SWITCH_PIE = PIE_MENU[LAST_ACTION]
+    if STYLE ~= 3 then
+        if PIE_MENU[LAST_ACTION].menu then
+            if r.ImGui_IsMouseReleased(ctx, 0) or Swipe() or KEY_TRIGGER then
+                table.insert(PIE_LIST, {
+                    col = PIE_MENU[LAST_ACTION].col,
+                    icon = PIE_MENU[LAST_ACTION].icon,
+                    name = PIE_MENU[LAST_ACTION].name,
+                    pid = PIE_MENU,
+                    prev_i = LAST_ACTION,
+                })
+                KEY_TRIGGER = nil
+                SWITCH_PIE = PIE_MENU[LAST_ACTION]
+            end
+        else
+            ExecuteAction(PIE_MENU[LAST_ACTION].cmd_name)
         end
     else
-        ExecuteAction(PIE_MENU[LAST_ACTION].cmd_name)
+        ExecuteAction(LAST_ACTION)
     end
+
+    -- if PIE_MENU[LAST_ACTION].menu then
+    --     if r.ImGui_IsMouseReleased(ctx, 0) or Swipe() or KEY_TRIGGER then
+    --         table.insert(PIE_LIST, {
+    --             col = PIE_MENU[LAST_ACTION].col,
+    --             icon = PIE_MENU[LAST_ACTION].icon,
+    --             name = PIE_MENU[LAST_ACTION].name,
+    --             pid = PIE_MENU,
+    --             prev_i = LAST_ACTION,
+    --         })
+    --         KEY_TRIGGER = nil
+    --         SWITCH_PIE = PIE_MENU[LAST_ACTION]
+    --     end
+    -- else
+    --     ExecuteAction(PIE_MENU[LAST_ACTION].cmd_name)
+    -- end
 end
 
 local function Main()
