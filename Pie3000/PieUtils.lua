@@ -23,7 +23,6 @@ function CheckDeps()
         r.ReaPack_BrowsePackages(table.concat(deps, " OR "))
         return true
     end
-
 end
 
 function SaveToFile(data, fn)
@@ -125,7 +124,7 @@ function TableToString(table, new_line)
 end
 
 if not r.HasExtState("PIE3000", "RELATIVE_PNG") then
---! REMOVE THIS AFTER A WHILE (THIS IS CURRENT SILENT PNG RELATIVE PATH FIX)
+    --! REMOVE THIS AFTER A WHILE (THIS IS CURRENT SILENT PNG RELATIVE PATH FIX)
     local menu_file = script_path .. "menu_file.txt"
     local pie_file = script_path .. "pie_file.txt"
     PngToRelative(pie_file)

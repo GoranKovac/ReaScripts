@@ -50,15 +50,19 @@ local DEFAULT_PIE = {
     ["itemmidi"] = { RADIUS = RADIUS_START, name = "MIDI ITEM", guid = r.genGuid() },
     ["trans"] = { RADIUS = RADIUS_START, name = "TRANSPORT", guid = r.genGuid() },
     ["ruler"] = { RADIUS = RADIUS_START, name = "RULER", guid = r.genGuid() },
+    ["rulerregion_lane"] = { RADIUS = RADIUS_START, name = "RULER REGION LANE", guid = r.genGuid(), use_main = true, main_name = "ruler" },
+    ["rulermarker_lane"] = { RADIUS = RADIUS_START, name = "RULER MARKER LANE", guid = r.genGuid(), use_main = true, main_name = "ruler" },
+    ["rulertempo_lane"] = { RADIUS = RADIUS_START, name = "RULER TEMPO LANE", guid = r.genGuid(), use_main = true, main_name = "ruler" },
     ["midi"] = { RADIUS = RADIUS_START, name = "MIDI", guid = r.genGuid(), is_midi = true },
     ["pianoroll"] = { RADIUS = RADIUS_START, name = "MIDI PIANO ROLL", guid = r.genGuid(), is_midi = true },
+    ["miditracklist"] = { RADIUS = RADIUS_START, name = "MIDI TRACK LIST", guid = r.genGuid(), is_midi = true },
     ["midiruler"] = { RADIUS = RADIUS_START, name = "MIDI RULER", guid = r.genGuid(), is_midi = true },
     ["midilane"] = { RADIUS = RADIUS_START, name = "MIDI LANE", guid = r.genGuid(), as_global = true, is_midi = true },
     --["midilanecp"] = { RADIUS = RADIUS_START, name = "MIDI LANE CP", guid = r.genGuid(), as_global = true, is_midi = true },
     ["plugin"] = { RADIUS = RADIUS_START, name = "PLUGIN", guid = r.genGuid() },
     ["spacer"] = { RADIUS = RADIUS_START, name = "SPACER", guid = r.genGuid() },
     ---------------------------------
-    ["mediaexplorer"] = { RADIUS = RADIUS_START, name = "MEDIA EXPLORER", guid = r.genGuid(), is_explorer = true},
+    ["mediaexplorer"] = { RADIUS = RADIUS_START, name = "MEDIA EXPLORER", guid = r.genGuid(), is_explorer = true },
 }
 
 -- local DEFAULT_CC_PIE = {
@@ -83,6 +87,9 @@ local MAIN_NAMES = {
     ["MCP EMPTY"] = "mcp",
     ["MASTER MCP FX LIST"] = "mastermcp",
     ["MASTER MCP SEND LIST"] = "mastermcp",
+    ["RULER REGION LANE"] = "ruler",
+    ["RULER MARKER LANE"] = "ruler",
+    ["RULER TEMPO LANE"] = "ruler",
     -- ["ENV CP"] = "envelope",
 }
 
@@ -110,37 +117,43 @@ local cur_env_item = 0
 local context_cur_item = 1
 local menu_items = {
     { "arrange",           "TRACK" },
-    { "arrangeempty",      "ARRANGE EMPTY",          "_separator_" },
+    { "arrangeempty",      "ARRANGE EMPTY",                  "_separator_" },
     { "tcp",               "TCP" },
     { "tcpfxparm",         "TCP FX PARM" },
-    { "tcpempty",          "TCP EMPTY",              "_separator_" },
+    { "tcpempty",          "TCP EMPTY",                      "_separator_" },
 
     { "mastertcp",         "MASTER TCP" },
-    { "mastertcpfxparm",   "MASTER TCP FX PARM",     "_separator_" },
+    { "mastertcpfxparm",   "MASTER TCP FX PARM",             "_separator_" },
 
     { "mcp",               "MCP" },
     { "mcpfxlist",         "MCP FX LIST" },
     { "mcpsendlist",       "MCP SEND LIST" },
-    { "mcpempty",          "MCP EMPTY",              "_separator_" },
+    { "mcpempty",          "MCP EMPTY",                      "_separator_" },
 
     { "mastermcp",         "MASTER MCP" },
     { "mastermcpfxlist",   "MASTER MCP FX LIST" },
-    { "mastermcpsendlist", "MASTER MCP SEND LIST",   "_separator_" },
+    { "mastermcpsendlist", "MASTER MCP SEND LIST",           "_separator_" },
 
     { "envelope",          "ENVELOPE" },
-    { "envcp",             "ENVELOPE CONTROL PANEL", "_separator_" },
+    { "envcp",             "ENVELOPE CONTROL PANEL",         "_separator_" },
     { "item",              "ITEM" },
-    { "itemmidi",          "MIDI ITEM",              "_separator_" },
-    { "trans",             "TRANSPORT" },
-    { "ruler",             "RULER",                  "_separator_" },
+    { "itemmidi",          "MIDI ITEM",                      "_separator_" },
+    { "trans",             "TRANSPORT",                      "_separator_" },
+
+    { "ruler",             "RULER", },
+    { "rulerregion_lane",  "RULER REGION LANE", },
+    { "rulermarker_lane",  "RULER MARKER LANE", },
+    { "rulertempo_lane",   "RULER TEMPO LANE",               "_separator_" },
+
     { "midi",              "MIDI" },
     { "pianoroll",         "MIDI PIANO ROLL" },
+    { "miditracklist",     "MIDI TRACK LIST" },
     { "midiruler",         "MIDI RULER" },
-    { "midilane",          "MIDI LANE",              "_separator_" },
+    { "midilane",          "MIDI LANE",                      "_separator_" },
     -- { "midilanecp",   "MIDI LANE CP" },
     { "plugin",            "PLUGIN - NEEDS TRACKER" },
-    { "spacer",            "SPACER","_separator_" },
-    { "mediaexplorer" ,    "MEDIA EXPLORER - NEEDS TRACKER", "_separator_"},
+    { "spacer",            "SPACER",                         "_separator_" },
+    { "mediaexplorer",     "MEDIA EXPLORER - NEEDS TRACKER", "_separator_" },
 }
 
 local PIES = ReadFromFile(pie_file) or Deepcopy(DEFAULT_PIE)
@@ -150,7 +163,36 @@ local MIDI_CC_PIES = ReadFromFile(midi_cc_file) or Deepcopy(DEFAULT_CC_PIE)
 local function BetaAddContextToData()
     --! REMOVE THIS ON FINAL RELEASE, WAS WORKAROUND FOR ADDING STUFF NOT TO BREAK FILES  --------------------------------
 
-    if not PIES["mediaexplorer"]then
+    if not PIES["rulerregion_lane"] then
+        PIES["rulerregion_lane"] = {
+            RADIUS = RADIUS_START,
+            name = "RULER REGION LANE",
+            guid = r.genGuid(),
+            use_main = true,
+            main_name =
+            "ruler"
+        }
+        PIES["rulermarker_lane"] = {
+            RADIUS = RADIUS_START,
+            name = "RULER MARKER LANE",
+            guid = r.genGuid(),
+            use_main = true,
+            main_name =
+            "ruler"
+        }
+        PIES["rulertempo_lane"] = {
+            RADIUS = RADIUS_START,
+            name = "RULER TEMPO LANE",
+            guid = r.genGuid(),
+            use_main = true,
+            main_name =
+            "ruler"
+        }
+    end
+    if not PIES["miditracklist"] then
+        PIES["miditracklist"] = { RADIUS = RADIUS_START, name = "MIDI TRACK LIST", guid = r.genGuid(), is_midi = true }
+    end
+    if not PIES["mediaexplorer"] then
         PIES["mediaexplorer"] = { RADIUS = RADIUS_START, name = "MEDIA EXPLORER", guid = r.genGuid() }
     end
     if not PIES["ruler"] then
@@ -182,19 +224,49 @@ local function BetaAddContextToData()
     -- end
     --! REMOVE THIS ON FINAL RELEASE, WAS WORKAROUND FOR ADDING STUFF NOT TO BREAK FILES
     if not PIES["mcpfxlist"] then
-        PIES["mcpfxlist"] = { RADIUS = RADIUS_START, name = "MCP FX LIST", guid = r.genGuid(), use_main = true, main_name =
-        "mcp" }
-        PIES["mcpsendlist"] = { RADIUS = RADIUS_START, name = "MCP SEND LIST", guid = r.genGuid(), use_main = true, main_name =
-        "mcp" }
+        PIES["mcpfxlist"] = {
+            RADIUS = RADIUS_START,
+            name = "MCP FX LIST",
+            guid = r.genGuid(),
+            use_main = true,
+            main_name =
+            "mcp"
+        }
+        PIES["mcpsendlist"] = {
+            RADIUS = RADIUS_START,
+            name = "MCP SEND LIST",
+            guid = r.genGuid(),
+            use_main = true,
+            main_name =
+            "mcp"
+        }
     end
 
     if not PIES["tcpfxparm"] then
-        PIES["tcpfxparm"] = { RADIUS = RADIUS_START, name = "TCP FX PARM", guid = r.genGuid(), use_main = true, main_name =
-        "tcp" }
-        PIES["mcpfxlist"] = { RADIUS = RADIUS_START, name = "MCP FX LIST", guid = r.genGuid(), use_main = true, main_name =
-        "mcp" }
-        PIES["mcpsendlist"] = { RADIUS = RADIUS_START, name = "MCP SEND LIST", guid = r.genGuid(), use_main = true, main_name =
-        "mcp" }
+        PIES["tcpfxparm"] = {
+            RADIUS = RADIUS_START,
+            name = "TCP FX PARM",
+            guid = r.genGuid(),
+            use_main = true,
+            main_name =
+            "tcp"
+        }
+        PIES["mcpfxlist"] = {
+            RADIUS = RADIUS_START,
+            name = "MCP FX LIST",
+            guid = r.genGuid(),
+            use_main = true,
+            main_name =
+            "mcp"
+        }
+        PIES["mcpsendlist"] = {
+            RADIUS = RADIUS_START,
+            name = "MCP SEND LIST",
+            guid = r.genGuid(),
+            use_main = true,
+            main_name =
+            "mcp"
+        }
         for k, v in pairs(PIES) do
             if MAIN_NAMES[v.name] then
                 v.use_main = true
@@ -206,13 +278,30 @@ local function BetaAddContextToData()
 
     if not PIES["mastertcp"] then
         PIES["mastertcp"] = { RADIUS = RADIUS_START, name = "MASTER TCP", guid = r.genGuid() }
-        PIES["mastertcpfxparm"] = { RADIUS = RADIUS_START, name = "MASTER TCP FX PARM", guid = r.genGuid(), use_main = true, main_name =
-        "mastertcp" }
+        PIES["mastertcpfxparm"] = {
+            RADIUS = RADIUS_START,
+            name = "MASTER TCP FX PARM",
+            guid = r.genGuid(),
+            use_main = true,
+            main_name =
+            "mastertcp"
+        }
         PIES["mastermcp"] = { RADIUS = RADIUS_START, name = "MASTER MCP", guid = r.genGuid() }
-        PIES["mastermcpfxlist"] = { RADIUS = RADIUS_START, name = "MASTER MCP FX LIST", guid = r.genGuid(), use_main = true, main_name =
-        "mastermcp" }
-        PIES["mastermcpsendlist"] = { RADIUS = RADIUS_START, name = "MASTER MCP SEND LIST", guid = r.genGuid(), use_main = true, main_name =
-        "mastermcp" }
+        PIES["mastermcpfxlist"] = {
+            RADIUS = RADIUS_START,
+            name = "MASTER MCP FX LIST",
+            guid = r.genGuid(),
+            use_main = true,
+            main_name =
+            "mastermcp"
+        }
+        PIES["mastermcpsendlist"] = {
+            RADIUS = RADIUS_START,
+            name = "MASTER MCP SEND LIST",
+            guid = r.genGuid(),
+            use_main = true,
+            main_name = "mastermcp"
+        }
         PIES["mcpfxlist"].main_name = "mcp"
         PIES["mcpsendlist"].main_name = "mcp"
         PIES["tcpfxparm"].main_name = "tcp"
@@ -1014,7 +1103,7 @@ local function NewProperties(pie)
             if r.ImGui_BeginPopupContextItem(ctx, "ColorPickerXYZ", r.ImGui_ButtonFlags_MouseButtonLeft()) then
                 rv, pie[pie.selected].col = r.ImGui_ColorPicker4(ctx, '##MyColor##5', pie[pie.selected].col,
                     r.ImGui_ColorEditFlags_PickerHueBar() | r.ImGui_ColorEditFlags_NoSidePreview()
-                    )
+                )
                 r.ImGui_EndPopup(ctx)
             end
             r.ImGui_SameLine(ctx)
@@ -1131,12 +1220,12 @@ local function Settings()
     if STATE ~= "SETTINGS" then return end
     r.ImGui_SeparatorText(ctx, "OPENING BEHAVIOR")
     r.ImGui_Indent(ctx, 0)
+
+    if STYLE == 3 then
+        r.ImGui_BeginDisabled(ctx, true)
+    end
     if r.ImGui_Checkbox(ctx, "Animation", ANIMATION) then
         ANIMATION = not ANIMATION
-        WANT_SAVE = true
-    end
-    if r.ImGui_Checkbox(ctx, "Show as DropDown Menu", DROP_DOWN_MENU) then
-        DROP_DOWN_MENU = not DROP_DOWN_MENU
         WANT_SAVE = true
     end
     if r.ImGui_Checkbox(ctx, "Hold Key to OPEN Script (DISABLED = TOGGLE Open/Close)", HOLD_TO_OPEN) then
@@ -1160,6 +1249,9 @@ local function Settings()
     if r.ImGui_Checkbox(ctx, "Select thing (Track/Item) under mouse", SELECT_THING_UNDER_MOUSE) then
         SELECT_THING_UNDER_MOUSE = not SELECT_THING_UNDER_MOUSE
         WANT_SAVE = true
+    end
+    if STYLE == 3 then
+        r.ImGui_EndDisabled(ctx)
     end
     if r.ImGui_Checkbox(ctx, "Kill the script when ESC key is pressed", KILL_ON_ESC) then
         KILL_ON_ESC = not KILL_ON_ESC
@@ -1220,6 +1312,21 @@ local function Settings()
     -- r.ImGui_SameLine(ctx)
     -- r.ImGui_Text(ctx, "SOME KEYBOARD KEYS WON'T WORK IN PLUGINS (TEXT FIELDS/INPUT BOXES,SHORTCUTS)")
     -- r.ImGui_Unindent(ctx)
+    r.ImGui_SeparatorText(ctx, "Pie Style")
+    if r.ImGui_RadioButton(ctx, "MODERN", STYLE == 1) then
+        STYLE = 1
+        WANT_SAVE = true
+    end
+    r.ImGui_SameLine(ctx)
+    if r.ImGui_RadioButton(ctx, "TEXT BUTTONS", STYLE == 2) then
+        STYLE = 2
+        WANT_SAVE = true
+    end
+    r.ImGui_SameLine(ctx)
+    if r.ImGui_RadioButton(ctx, "DROP DOWN MENU", STYLE == 3) then
+        STYLE = 3
+        WANT_SAVE = true
+    end
     r.ImGui_Separator(ctx)
     if r.ImGui_InvisibleButton(ctx, "OPEN CUSTOM IMAGES FOLDER", 190, 26) then
         local cmd
@@ -1234,16 +1341,6 @@ local function Settings()
     r.ImGui_SameLine(ctx, 0, 100)
     if r.ImGui_Checkbox(ctx, "MIDI DEBUG", MIDI_TRACE_DEBUG) then
         MIDI_TRACE_DEBUG = not MIDI_TRACE_DEBUG
-        WANT_SAVE = true
-    end
-    r.ImGui_SeparatorText(ctx, "Pie Style")
-    if r.ImGui_RadioButton(ctx, "MODERN", STYLE == 1) then
-        STYLE = 1
-        WANT_SAVE = true
-    end
-    r.ImGui_SameLine(ctx)
-    if r.ImGui_RadioButton(ctx, "TEXT BUTTONS", STYLE == 2) then
-        STYLE = 2
         WANT_SAVE = true
     end
 
@@ -1263,7 +1360,7 @@ local function Settings()
                 select_thing_under_mouse = SELECT_THING_UNDER_MOUSE,
                 adjust_pie_near_edge = ADJUST_PIE_NEAR_EDGE,
                 close_on_activate = CLOSE_ON_ACTIVATE,
-                drop_down_menu = DROP_DOWN_MENU,
+                --drop_down_menu = DROP_DOWN_MENU,
                 midi_trace_debug = MIDI_TRACE_DEBUG,
                 kill_on_esc = KILL_ON_ESC,
                 style = STYLE
@@ -1286,10 +1383,11 @@ local function ContextSelector()
         r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing(), 0, 4)
         for i = 1, #menu_items do
             if r.ImGui_Selectable(ctx, "\t\t\t\t\t\t\t\t\t\t" .. menu_items[i][2], i == context_cur_item) then
-                if menu_items[i][2] == "MIDI LANE" then                                                             --or menu_items[i][2] == "MIDI LANE CP" then
+                if menu_items[i][2] == "MIDI LANE" then --or menu_items[i][2] == "MIDI LANE CP" then
                     if cur_cc_item ~= 0 then
                         SWITCH_PIE = menu_items[i][2] == "MIDI LANE" and
-                        MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]                                                  --or MIDI_CC_PIES["cp " .. CC_LIST[cur_cc_item]:lower()]
+                            MIDI_CC_PIES
+                            [CC_LIST[cur_cc_item]:lower()] --or MIDI_CC_PIES["cp " .. CC_LIST[cur_cc_item]:lower()]
                     else
                         SWITCH_PIE = PIES[menu_items[i][1]]
                     end
@@ -1337,7 +1435,7 @@ local function BreadCrumbs(tbl)
             if j == 0 and #tbl ~= 0 then
                 if menu_items[context_cur_item][2] == "MIDI LANE" then
                     SWITCH_PIE = cur_cc_item == 0 and PIES[menu_items[context_cur_item][1]] or
-                    MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
+                        MIDI_CC_PIES[CC_LIST[cur_cc_item]:lower()]
                     -- elseif menu_items[context_cur_item][2] == "MIDI LANE CP" then
                     --    SWITCH_PIE = cur_cc_item == 0 and PIES[menu_items[context_cur_item][1]] or MIDI_CC_PIES["cp " .. CC_LIST[cur_cc_item]:lower()]
                 elseif menu_items[context_cur_item][2] == "ENVELOPE" then
@@ -1773,22 +1871,42 @@ end
 
 local ACTIONS_TBL = GetMainActions()      --GetActions(0)
 local MIDI_ACTIONS_TBL = GetMidiActions() --GetActions(32060)
-local EXPLORER_ACTIONS_TBL= GetExplorerActions()
+local EXPLORER_ACTIONS_TBL = GetExplorerActions()
 
 local FILTERED_ACTION_TBL = ACTIONS_TBL
 local FILTERED_MENU_TBL = MENUS
 local ACTION_FILTER = ''
 local MENU_FILTER = ''
 
+local want_filter = 1
 local function ActionsTab(pie)
     if r.ImGui_BeginTabBar(ctx, "ACTIONS MENUS TAB") then
         if r.ImGui_BeginTabItem(ctx, "Actions") then
+            r.ImGui_SameLine(ctx, 0, 80)
+            r.ImGui_BeginGroup(ctx)
+            if r.ImGui_RadioButton(ctx, "Main", want_filter == 1) then
+                want_filter = 1
+                UPDATE_FILTER = true
+            end
+            r.ImGui_SameLine(ctx)
+            if r.ImGui_RadioButton(ctx, "Midi", want_filter == 2) then
+                want_filter = 2
+                UPDATE_FILTER = true
+            end
+            r.ImGui_SameLine(ctx)
+            if r.ImGui_RadioButton(ctx, "ME", want_filter == 3) then
+                want_filter = 3
+                UPDATE_FILTER = true
+            end
+            r.ImGui_EndGroup(ctx)
+
             r.ImGui_SetNextItemWidth(ctx, -FLT_MIN)
             rv_af, ACTION_FILTER = r.ImGui_InputTextWithHint(ctx, "##inputA", "Search Actions", ACTION_FILTER)
             if rv_af or UPDATE_FILTER then
                 UPDATE_CNT = UPDATE_FILTER and UPDATE_CNT + 1 or UPDATE_CNT
-                local want_midi = CUR_PIE.name:find("MIDI") and not CUR_PIE.name:find("MIDI ITEM")
-                FILTERED_ACTION_TBL = FilterActions(want_midi and MIDI_ACTIONS_TBL or (CUR_PIE.is_explorer and EXPLORER_ACTIONS_TBL or ACTIONS_TBL),
+                --local want_midi = CUR_PIE.name:find("MIDI") and not CUR_PIE.name:find("MIDI ITEM")
+                FILTERED_ACTION_TBL = FilterActions(
+                    want_filter == 2 and MIDI_ACTIONS_TBL or (want_filter == 3 and EXPLORER_ACTIONS_TBL or ACTIONS_TBL),
                     ACTION_FILTER)
             end
             if r.ImGui_BeginChild(ctx, "##CLIPPER_ACTION", nil, nil, nil, r.ImGui_WindowFlags_AlwaysHorizontalScrollbar()) then
@@ -1809,6 +1927,7 @@ local function ActionsTab(pie)
             end
             r.ImGui_EndTabItem(ctx)
         end
+
         if STATE == "PIE" then
             if r.ImGui_BeginTabItem(ctx, "Menus") then
                 r.ImGui_SetNextItemWidth(ctx, -FLT_MIN)

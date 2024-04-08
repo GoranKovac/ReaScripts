@@ -42,7 +42,7 @@ ADJUST_PIE_NEAR_EDGE = false
 SHOW_SHORTCUT = true
 SELECT_THING_UNDER_MOUSE = false
 CLOSE_ON_ACTIVATE = false
-DROP_DOWN_MENU = false
+--DROP_DOWN_MENU = false
 MIDI_TRACE_DEBUG = false
 KILL_ON_ESC = false
 STYLE = 1
@@ -112,7 +112,7 @@ if r.HasExtState("PIE3000", "SETTINGS") then
             SELECT_THING_UNDER_MOUSE = save_data.select_thing_under_mouse
             ADJUST_PIE_NEAR_EDGE = save_data.adjust_pie_near_edge
             CLOSE_ON_ACTIVATE = save_data.close_on_activate
-            DROP_DOWN_MENU = save_data.drop_down_menu
+            --DROP_DOWN_MENU = save_data.drop_down_menu
             MIDI_TRACE_DEBUG = save_data.midi_trace_debug
             KILL_ON_ESC = save_data.kill_on_esc
             STYLE = save_data.style ~= nil and save_data.style or STYLE
@@ -153,11 +153,17 @@ function IterateActions(sectionID)
     end
 end
 
+local SECTION_FILTER = {
+    [0] = "Main",
+    [32060] = "Midi",
+    [32063] = "ME",
+}
+
 function GetActions(s)
     local actions = {}
     for cmd, name in IterateActions(s) do
         if name ~= "Script: Sexan_Pie3000.lua" then
-            table.insert(actions, { cmd = cmd, name = name })
+            table.insert(actions, { cmd = cmd, name = name, type = SECTION_FILTER[s] })
         end
     end
     table.sort(actions, function(a, b) return a.name < b.name end)
@@ -421,7 +427,7 @@ local MIDI_WND_IDS = {
 }
 
 local GetPixel = r.JS_LICE_GetPixel
-function DetectMIDIContext(piano, midi_debug)
+function DetectMIDIContext(midi_debug)
     local function IsInside(left, top, right, bottom)
         if START_X > left and START_X < right and START_Y > top and START_Y < bottom then
             return true
@@ -511,13 +517,18 @@ function DetectMIDIContext(piano, midi_debug)
     local retval_dpi, dpi = r.ThemeLayout_GetLayout("tcp", -3)
     local dpi_scale = retval_dpi and tonumber(dpi) / 256 or 1
     if not HWND then return end
+    local main_retval, main_left, main_top, main_right, main_bottom = r.JS_Window_GetClientRect(HWND)
+
     local child_hwnd = r.JS_Window_FindChildByID(HWND, MIDI_WND_IDS[2].id)
     local piano_hwnd = r.JS_Window_FindChildByID(HWND, MIDI_WND_IDS[1].id)
     local bot_px = takeScreenshot(child_hwnd, dpi_scale)
 
+    local retval, left, top, right, bottom = r.JS_Window_GetRect(child_hwnd)
+
+    local track_list = main_right - right > 1
+
     --local MIDI_SIZE = {}
 
-    local retval, left, top, right, bottom = r.JS_Window_GetRect(child_hwnd)
     if midi_debug then
         r.ImGui_DrawList_AddRect(draw_list, left, top + ceil(64 * dpi_scale), right, top + bot_px, 0xff000050, 0, 0, 1)
         r.ImGui_DrawList_AddText(draw_list, left + 20, top + ceil(64 * dpi_scale) + 20, 0xffffffff, "MIDI NOTES")
@@ -527,25 +538,33 @@ function DetectMIDIContext(piano, midi_debug)
 
         r.ImGui_DrawList_AddRect(draw_list, left, top, right, top + ceil(65 * dpi_scale), 0xff000050, 0, 0, 1)
         r.ImGui_DrawList_AddText(draw_list, left + 20, top + 20, 0xffffffff, "RULER")
+
+        if track_list then
+            r.ImGui_DrawList_AddRect(draw_list, right, top, main_right, bottom, 0xff000050, 0, 0, 2)
+            r.ImGui_DrawList_AddText(draw_list, right + 20, top + 20, 0xffffffff, "TRACK LIST")
+        end
     end
-    if piano then
-        local p_retval, p_left, p_top, p_right, p_bottom = r.JS_Window_GetRect(piano_hwnd)
-        if midi_debug then
-            r.ImGui_DrawList_AddRect(draw_list, p_left, top + ceil(64 * dpi_scale), p_right, top + bot_px + 5, 0xff000050,
-                0, 0, 1)
-            r.ImGui_DrawList_AddText(draw_list, p_left + 20, top + ceil(64 * dpi_scale) + 20, 0xffffffff, "PIANO ROLL")
+    --if piano then
+    local p_retval, p_left, p_top, p_right, p_bottom = r.JS_Window_GetRect(piano_hwnd)
+    if midi_debug then
+        r.ImGui_DrawList_AddRect(draw_list, p_left, top + ceil(64 * dpi_scale), p_right, top + bot_px + 5, 0xff000050,
+            0, 0, 1)
+        r.ImGui_DrawList_AddText(draw_list, p_left + 20, top + ceil(64 * dpi_scale) + 20, 0xffffffff, "PIANO ROLL")
 
-            r.ImGui_DrawList_AddRect(draw_list, p_left, top + bot_px + 5, p_right, bottom, 0xff000050, 0, 0, 1)
-            r.ImGui_DrawList_AddText(draw_list, p_left + 20, top + bot_px + 5 + 20, 0xffffffff, "CC CP")
-        end
+        r.ImGui_DrawList_AddRect(draw_list, p_left, top + bot_px + 5, p_right, bottom, 0xff000050, 0, 0, 1)
+        r.ImGui_DrawList_AddText(draw_list, p_left + 20, top + bot_px + 5 + 20, 0xffffffff, "CC CP")
+    end
 
-        if IsInside(p_left, top + ceil(64 * dpi_scale), p_right, top + bot_px + 5) then
-            return "pianoroll"
-        elseif IsInside(p_left, top + bot_px + 5, p_right, bottom) then
-            -- MIDI_LANE_CONTEXT = "cp"
-            -- local lane_cp = MidiLaneDetect(HWND)
-            -- if lane_cp then return "cp " .. lane_cp end
-        end
+    if IsInside(p_left, top + ceil(64 * dpi_scale), p_right, top + bot_px + 5) then
+        return "pianoroll"
+    elseif IsInside(p_left, top + bot_px + 5, p_right, bottom) then
+        -- MIDI_LANE_CONTEXT = "cp"
+        -- local lane_cp = MidiLaneDetect(HWND)
+        -- if lane_cp then return "cp " .. lane_cp end
+    end
+    --end
+    if track_list and IsInside(right, top, main_right, bottom) then
+        return "miditracklist"
     end
     if IsInside(left, top + ceil(63 * dpi_scale), right, top + bot_px) then
         return "midi"
@@ -564,39 +583,49 @@ end
 
 function DetectEnvContext(track, env_info, cp)
     local env_num = env_info:match("%S+ (%S+)$")
+    local env
     if env_num then
-        local env = r.GetTrackEnvelope(track, env_num)
+        env = r.GetTrackEnvelope(track, env_num)
         local retval, name = r.GetEnvelopeName(env)
-        if retval then return cp and "cp " .. name:lower() or name:lower() end
+        if retval then
+            if ENV_LIST[name] then
+                local context = cp and "cp " .. name:lower() or name:lower()
+                return context, env
+            end
+        end
     end
-    return cp and "envcp" or "envelope"
+    return (cp and "envcp" or "envelope"), env
 end
 
-function DetectMediaExplorer(hwnd)
-    local parent = r.JS_Window_GetParent(hwnd)
-    local title = r.JS_Window_GetTitle(parent)
-    if title == "Media Explorer" then
-        return "mediaexplorer", parent
+function DetectMediaExplorer(parent)
+    --local parent = r.JS_Window_GetParent(hwnd)
+    --local title = r.JS_Window_GetTitle(parent)
+    -- if title == "Media Explorer" then
+    return "mediaexplorer", parent
+    --end
+end
+
+function PrintTraceback(err)
+    local byLine = "([^\r\n]*)\r?\n?"
+    local trimPath = "[\\/]([^\\/]-:%d+:.+)$"
+    local stack = {}
+    for line in string.gmatch(err, byLine) do
+        local str = string.match(line, trimPath) or line
+        stack[#stack + 1] = str
     end
+    r.ShowConsoleMsg(
+        "Error: " .. stack[1] .. "\n\n" ..
+        "Stack traceback:\n\t" .. table.concat(stack, "\n\t", 3) .. "\n\n" ..
+        "Reaper:       \t" .. r.GetAppVersion() .. "\n" ..
+        "Platform:     \t" .. r.GetOS()
+    )
 end
 
 function PDefer(func)
     r.defer(function()
         local status, err = xpcall(func, debug.traceback)
         if not status then
-            local byLine = "([^\r\n]*)\r?\n?"
-            local trimPath = "[\\/]([^\\/]-:%d+:.+)$"
-            local stack = {}
-            for line in string.gmatch(err, byLine) do
-                local str = string.match(line, trimPath) or line
-                stack[#stack + 1] = str
-            end
-            r.ShowConsoleMsg(
-                "Error: " .. stack[1] .. "\n\n" ..
-                "Stack traceback:\n\t" .. table.concat(stack, "\n\t", 3) .. "\n\n" ..
-                "Reaper:       \t" .. r.GetAppVersion() .. "\n" ..
-                "Platform:     \t" .. r.GetOS()
-            )
+            PrintTraceback(err)
             Release()
         end
     end)
@@ -1063,7 +1092,7 @@ local function DrawClassicButton(pie, selected, hovered)
 
     color = (hovered and ALT) and 0xff0000ff or color
 
-    local icon_col = LerpAlpha(0xffffffff, CENTER_BTN_PROG)
+    --local icon_col = LerpAlpha(0xffffffff, CENTER_BTN_PROG)
     local icon_font = selected and ICON_FONT_SMALL or ICON_FONT_VERY_SMALL
     local icon_font_size = selected and ICON_FONT_SMALL_SIZE or ICON_FONT_VERY_SMALL_SIZE
     local col = (selected or hovered) and IncreaseDecreaseBrightness(color, 30) or color
@@ -1075,14 +1104,16 @@ local function DrawClassicButton(pie, selected, hovered)
         click_highlight = selected
     end
 
-    local sel_size = (selected or (pie.key and r.ImGui_IsKeyDown(ctx, pie.key)) ) and 10 or 0
+    local sel_size = (selected or (pie.key and r.ImGui_IsKeyDown(ctx, pie.key))) and 10 or 0
     if SETUP and selected then
         sel_size = 6
         local scale = (sin(r.time_precise() * 5) * 0.15) + 1.02
         local sel_size_2 = sel_size + 5
-        r.ImGui_DrawList_AddRect(draw_list, (xs - sel_size_2* scale) - 1, (ys - sel_size_2* scale) - 1, (xe + sel_size_2* scale) + 1,
-        (ye + sel_size_2* scale) + 1,
-        LerpAlpha(0xffffffaa, (sin(r.time_precise() * 5) * 0.5) + 0.7), 5, r.ImGui_DrawFlags_RoundCornersAll(), 2.5 * scale)
+        r.ImGui_DrawList_AddRect(draw_list, (xs - sel_size_2 * scale) - 1, (ys - sel_size_2 * scale) - 1,
+            (xe + sel_size_2 * scale) + 1,
+            (ye + sel_size_2 * scale) + 1,
+            LerpAlpha(0xffffffaa, (sin(r.time_precise() * 5) * 0.5) + 0.7), 5, r.ImGui_DrawFlags_RoundCornersAll(),
+            2.5 * scale)
     end
 
     if click_highlight and r.ImGui_IsMouseDown(ctx, 0) or (pie.key and r.ImGui_IsKeyDown(ctx, pie.key)) then
@@ -1118,32 +1149,47 @@ local function DrawClassicButton(pie, selected, hovered)
         LerpAlpha(col, CENTER_BTN_PROG), 5, r.ImGui_DrawFlags_RoundCornersAll())
 
     if (tonumber(pie.cmd) and r.GetToggleCommandStateEx(section_id, pie.cmd) == 1) then
-        for i = 1 , 2 do
-            local new_x = Animate_On_Cordinates(xs, xe-15, 2, (r.time_precise()* 0.5)- (i))
-            r.ImGui_DrawList_AddLine(draw_list, new_x, ys - 2 - sel_size, new_x + 15, ys - 2 - sel_size, dark_theme and 0x40ffb3ff or 0xff2233ff, 5)
-            local new_x2 = Animate_On_Cordinates(xs, xe-15, 2, (r.time_precise()* 0.5) - (i))
-            r.ImGui_DrawList_AddLine(draw_list, new_x2, ye + 2 + sel_size, new_x2 + 15, ye + 2 + sel_size, dark_theme and 0x40ffb3ff or 0xff2233ff, 5)
-        end
+        -- for i = 1, 2 do
+        local new_x = Animate_On_Cordinates(xs - 35, xe, 2, (r.time_precise() * 0.5) - (1)) // 1
+
+        local end_x = new_x + 35 > xe and xe or new_x + 35
+        local start_x = new_x < xs and xs or new_x
+
+        r.ImGui_DrawList_AddLine(draw_list, start_x, ys - 2 - sel_size, end_x, ys - 2 - sel_size,
+            dark_theme and 0x40ffb3ff or 0xff2233ff, 5)
+
+        local new_x = Animate_On_Cordinates(xs - 35, xe, 2, (-r.time_precise() * 0.5) - (1)) // 1
+
+        local end_x = new_x + 35 > xe and xe or new_x + 35
+        local start_x = new_x < xs and xs or new_x
+
+        r.ImGui_DrawList_AddLine(draw_list, start_x, ye + 2 + sel_size, end_x, ye + 2 + sel_size,
+            dark_theme and 0x40ffb3ff or 0xff2233ff, 5)
+        -- end
     end
 
     if pie.menu then
         r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 1)
 
-        r.ImGui_DrawList_AddRectFilled(draw_list, (xs - sel_size + w/2) - 20, (ys - sel_size) - 8, (xe + sel_size - w/2) + 20,
-        (ys - sel_size) + 5,
-        LerpAlpha(ring_col, CENTER_BTN_PROG), 5, r.ImGui_DrawFlags_RoundCornersAll())
+        r.ImGui_DrawList_AddRectFilled(draw_list, (xs - sel_size + w / 2) - 20, (ys - sel_size) - 8,
+            (xe + sel_size - w / 2) + 20,
+            (ys - sel_size) + 5,
+            LerpAlpha(ring_col, CENTER_BTN_PROG), 5, r.ImGui_DrawFlags_RoundCornersAll())
 
-        r.ImGui_DrawList_AddRectFilled(draw_list, (xs - sel_size + w/2) - 18, (ys - sel_size) - 6, (xe + sel_size - w/2) + 18,
-        (ys - sel_size) + 3,
-        LerpAlpha(def_color, CENTER_BTN_PROG), 5, r.ImGui_DrawFlags_RoundCornersAll())
+        r.ImGui_DrawList_AddRectFilled(draw_list, (xs - sel_size + w / 2) - 18, (ys - sel_size) - 6,
+            (xe + sel_size - w / 2) + 18,
+            (ys - sel_size) + 3,
+            LerpAlpha(def_color, CENTER_BTN_PROG), 5, r.ImGui_DrawFlags_RoundCornersAll())
         r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 3)
 
-       -- r.ImGui_DrawList_AddTriangleFilled( draw_list, (xs - sel_size + w/2) - 12, (ys - sel_size) - 8, (xe + sel_size - w/2) + 12, (ys - sel_size) - 8, (xs + w/2), (ys + (selected and 2 or 6) ), ring_col )
-        r.ImGui_DrawList_AddTriangleFilled( draw_list, (xs - sel_size + w/2) - 10, (ys - sel_size) - 6, (xe + sel_size - w/2) + 10, (ys - sel_size) - 6, (xs + w/2), (ys + (selected and 0 or 3) ), 0xCCCCCCff )
-        r.ImGui_DrawList_AddTriangleFilled( draw_list, (xs - sel_size + w/2) - (selected and 2 or 4), (ys - sel_size) - 4, (xe + sel_size - w/2) + (selected and 2 or 4), (ys - sel_size) - 4, (xs + w/2), (ys + (selected and -4 or 0) ), 0x525356ff )
-
+        -- r.ImGui_DrawList_AddTriangleFilled( draw_list, (xs - sel_size + w/2) - 12, (ys - sel_size) - 8, (xe + sel_size - w/2) + 12, (ys - sel_size) - 8, (xs + w/2), (ys + (selected and 2 or 6) ), ring_col )
+        r.ImGui_DrawList_AddTriangleFilled(draw_list, (xs - sel_size + w / 2) - 10, (ys - sel_size) - 6,
+            (xe + sel_size - w / 2) + 10, (ys - sel_size) - 6, (xs + w / 2), (ys + (selected and 0 or 3)), 0xCCCCCCff)
+        r.ImGui_DrawList_AddTriangleFilled(draw_list, (xs - sel_size + w / 2) - (selected and 2 or 4),
+            (ys - sel_size) - 4, (xe + sel_size - w / 2) + (selected and 2 or 4), (ys - sel_size) - 4, (xs + w / 2),
+            (ys + (selected and -4 or 0)), 0x525356ff)
     end
-    
+
     if SHOW_SHORTCUT then
         if pie.key then
             DrawShortcut(pie, button_pos, selected)
@@ -1151,7 +1197,8 @@ local function DrawClassicButton(pie, selected, hovered)
     end
 
     local is_luma_high = IsColorLuminanceHigh(col)
-    local txt_col = is_luma_high and 0xff or 0xffffffff
+    local txt_col = LerpAlpha(is_luma_high and 0xff or 0xffffffff, CENTER_BTN_PROG)
+    --local txt_col = is_luma_high and 0xff or 0xffffffff
     r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, selected and 3 or 2)
     if icon then
         r.ImGui_PushFont(ctx, icon_font)
@@ -1165,7 +1212,7 @@ local function DrawClassicButton(pie, selected, hovered)
     end
 
 
-   -- if hovered and not SETUP then
+    -- if hovered and not SETUP then
     --    r.ImGui_PushFont(ctx, BUTTON_TEXT_FONT)
     --end
     local label_size = r.ImGui_CalcTextSize(ctx, name)
@@ -1409,7 +1456,7 @@ local function DrawButtonTextStyle(pie, center)
     r.ImGui_PopFont(ctx)
 end
 
-local function DrawButtons(pie, center)
+local function DrawModernStyle(pie, center)
     local CENTER = center or CENTER
     local item_arc_span = ((2 * pi) / #pie)
 
@@ -1677,82 +1724,147 @@ local function DrawCenter(pie, center)
     end
 end
 
-local function DrawDropDownMenu(pie, id, sel_tbl)
+local function DropDownMenuPopup(pie)
+    local longest_label, longest_key, dummy_h = 0, 0, 0
+    for i = 1, #pie do
+        local txt_w, txt_h = r.ImGui_CalcTextSize(ctx, pie[i].name)
+        dummy_h = txt_h
+        if longest_label < txt_w then
+            longest_label = txt_w
+        end
+        if pie[i].key then
+            local key_w = r.ImGui_CalcTextSize(ctx, "   -   " .. KEYS[pie[i].key])
+            if longest_key < key_w then
+                longest_key = key_w
+            end
+        end
+    end
+
+    local max_w = longest_label + longest_key
+    local xx, yy = r.ImGui_GetCursorPos(ctx)
+    r.ImGui_Dummy(ctx, max_w + 29, dummy_h)
+
+    r.ImGui_SetCursorPos(ctx, xx, yy)
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Text(), 0x3aCCffff)
     r.ImGui_SeparatorText(ctx, pie.name)
     r.ImGui_PopStyleColor(ctx)
-    local last_sel
+
     for i = 1, #pie do
+        local selected = (SETUP and (pie.selected == i)) and true
+        local key_released = (pie[i].key and r.ImGui_IsKeyReleased(ctx, pie[i].key) and r.ImGui_IsWindowFocused(ctx)) and
+            true
+        local key_down = (pie[i].key and r.ImGui_IsKeyDown(ctx, pie[i].key) and r.ImGui_IsWindowFocused(ctx)) and true
+        local key_pressed = (pie[i].key and r.ImGui_IsKeyPressed(ctx, pie[i].key) and r.ImGui_IsWindowFocused(ctx)) and
+            true
+
+        if pie[i].icon then
+            r.ImGui_PushFont(ctx, ICON_FONT_VERY_SMALL)
+            r.ImGui_Text(ctx, pie[i].icon)
+            r.ImGui_PopFont(ctx)
+            r.ImGui_SameLine(ctx, 5)
+        end
+
+        r.ImGui_SetCursorPosX(ctx, 29)
+        if SETUP and ALT then
+            r.ImGui_PushStyleColor(ctx, r.ImGui_Col_HeaderHovered(), 0xCC0000ff)
+            r.ImGui_PushStyleColor(ctx, r.ImGui_Col_HeaderActive(), 0xff0000ff)
+        end
+
         if pie[i].menu then
             r.ImGui_PushID(ctx, pie[i].name .. i)
-            if r.ImGui_BeginMenu(ctx, pie[i].name, true) then
-                local prev_sel = DrawDropDownMenu(pie[i], id + 1, sel_tbl)
-                if prev_sel then
-                    last_sel = prev_sel
+            if not SETUP then
+                if r.ImGui_BeginMenu(ctx, pie[i].name, true) then
+                    DropDownMenuPopup(pie[i])
+                    r.ImGui_EndMenu(ctx)
                 end
-                r.ImGui_EndMenu(ctx)
+            else
+                if r.ImGui_Selectable(ctx, pie[i].name, selected, r.ImGui_SelectableFlags_AllowDoubleClick()) then
+                    if r.ImGui_IsMouseDoubleClicked(ctx, 0) then
+                        local src_menu, menu_id = InTbl(GetMenus(), pie[i].guid)
+                        if STATE == "PIE" then
+                            table.insert(PIE_LIST, {
+                                col = pie[i].col,
+                                icon = pie[i].icon,
+                                name = pie[i].name,
+                                pid = pie,
+                                prev_i = i,
+                            })
+                        else
+                            LAST_MENU_SEL = menu_id
+                        end
+                        SWITCH_PIE = src_menu
+                    end
+                end
+                if SETUP then
+                    DNDSwapSRC(pie, i)
+                    DNDSwapDST(pie, i, pie[i])
+                end
+                r.ImGui_SameLine(ctx, -1, max_w + 29)
+                r.ImGui_PushFont(ctx, ICON_FONT_VERY_SMALL)
+                r.ImGui_Text(ctx, utf8.char(146))
+                r.ImGui_PopFont(ctx)
             end
             r.ImGui_PopID(ctx)
-
-            if not MENU_PRESS and not r.ImGui_IsPopupOpen(ctx, pie[i].name) then
-                MENU_PRESS = (pie[i].key and r.ImGui_IsKeyDown(ctx, pie[i].key)) and i
-            end
-            if MENU_PRESS == i and not r.ImGui_IsItemHovered(ctx) then
+            if key_pressed then
                 local menu_x, menu_y = r.ImGui_GetCursorScreenPos(ctx)
                 local w, h = r.ImGui_GetItemRectSize(ctx)
-                r.JS_Mouse_SetPosition(menu_x + w // 2, menu_y - h // 2)
-            end
-            if MENU_PRESS and pie[i].key and r.ImGui_IsKeyReleased(ctx, pie[i].key) then
-                MENU_PRESS = nil
+                local x, y = r.ImGui_PointConvertNative(ctx, menu_x + w // 2, menu_y - h // 2)
+                r.JS_Mouse_SetPosition(x, y)
             end
         else
-            local down = (pie[i].key and r.ImGui_IsKeyDown(ctx, pie[i].key)) and pie[i].name
-            if down and not MENU_PRESS then
-                last_sel = down
-            end
             r.ImGui_PushID(ctx, pie[i].name .. i)
-            --if LAST_HOLD_KEY == pie[i].name then r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Header(), 0x3b7eceff) end
-            local rv_sel = r.ImGui_Selectable(ctx, pie[i].name)
-            --if LAST_HOLD_KEY == pie[i].name then r.ImGui_PopStyleColor(ctx) end
+            local rv_sel = r.ImGui_Selectable(ctx, pie[i].name, SETUP and selected or key_down)
             r.ImGui_PopID(ctx)
-            if rv_sel or (pie[i].key and r.ImGui_IsKeyReleased(ctx, pie[i].key) and not MENU_PRESS) then
-                LAST_DD_MENU_CMD = pie[i].cmd
-                TERMINATE = true
+            if SETUP then
+                DNDSwapSRC(pie, i)
+                DNDSwapDST(pie, i, pie[i])
+                DndAddTargetAction(pie, pie[i])
+            end
+            if (r.ImGui_IsItemHovered(ctx) or key_released) and not SETUP then
+                LAST_ACTION = i
+            end
+            if (rv_sel or key_released) and not SETUP then
+                DROP_DOWN_CONFIRM = true
             end
         end
+
+        if SETUP then
+            if ALT then
+                r.ImGui_PopStyleColor(ctx, 2)
+            end
+            if not pie[i].menu then
+                DndAddTargetAction(pie, pie[i])
+            end
+            if r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseReleased(ctx, 0) then
+                if ALT then
+                    REMOVE = { tbl = pie, i = i }
+                else
+                    pie.selected = i
+                    LAST_MSG = pie[i].name
+                end
+            end
+        end
+
         if pie[i].key then
-            r.ImGui_SameLine(ctx)
+            local txt_w = r.ImGui_CalcTextSize(ctx, pie[i].name)
+            r.ImGui_SameLine(ctx, txt_w + 25)
             r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Text(), 0x3aCCffff)
-            r.ImGui_Selectable(ctx, " - " .. KEYS[pie[i].key], false)
+            r.ImGui_Selectable(ctx, "   - " .. KEYS[pie[i].key], false)
             r.ImGui_PopStyleColor(ctx)
         end
     end
-    return last_sel
 end
 
-local function DropDownDo(pie)
-    if DROP_DOWN_MENU then
-        if not OPEN_DD then
-            OPEN_DD = true
-            r.ImGui_OpenPopup(ctx, "TEST_MENU")
-        end
+local function OpenDropDownStyle(pie)
+    if r.ImGui_IsWindowAppearing(ctx) then
+        r.ImGui_OpenPopup(ctx, "DROP_DOWN_MENU")
+        r.ImGui_SetNextWindowPos(ctx, START_X - 80, START_Y - 10)
     end
-    r.ImGui_SetNextWindowPos(ctx, START_X - 80, START_Y - 10)
-    if r.ImGui_BeginPopup(ctx, "TEST_MENU") then
-        local pressed = {}
-        local LAST_HOLD_KEY = DrawDropDownMenu(pie, 0, pressed)
-        if LAST_DD_MENU_CMD then
-            if PIE_MENU.is_midi then
-                r.MIDIEditor_OnCommand(r.MIDIEditor_GetActive(), LAST_DD_MENU_CMD)
-            else
-                r.Main_OnCommand(LAST_DD_MENU_CMD, 0)
-            end
-            LAST_DD_MENU_CMD = nil
-        end
+    if r.ImGui_BeginPopup(ctx, "DROP_DOWN_MENU") then
+        DropDownMenuPopup(pie)
         r.ImGui_EndPopup(ctx)
     end
-    if not r.ImGui_IsPopupOpen(ctx, "TEST_MENU") then DONE = true end
-    if KILL_ON_ESC and ESC then DONE = true end
+    if not r.ImGui_IsPopupOpen(ctx, "DROP_DOWN_MENU") then DD_CLOSED = true end
 end
 
 function DrawPie(pie, center)
@@ -1772,15 +1884,32 @@ function DrawPie(pie, center)
         SPLITTER = r.ImGui_CreateDrawListSplitter(draw_list)
     end
     r.ImGui_DrawListSplitter_Split(SPLITTER, 5)
-    if SETUP or not DROP_DOWN_MENU then
+    if STYLE ~= 3 then
         DrawCenter(pie, center)
-        if STYLE == 1 then
-            DrawButtons(pie, center)
-        elseif STYLE == 2 then
-            DrawButtonTextStyle(pie, center)
+    end
+    if STYLE == 1 then
+        DrawModernStyle(pie, center)
+    elseif STYLE == 2 then
+        DrawButtonTextStyle(pie, center)
+    elseif STYLE == 3 then
+        if not SETUP then
+            --DrawDropDownStyle(pie)
+            r.ImGui_PushFont(ctx, GUI_FONT)
+            OpenDropDownStyle(pie)
+            r.ImGui_PopFont(ctx)
+        else
+            r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x44)
+            if r.ImGui_BeginChild(ctx, "DropDownSetup", 0, 0, true) then
+                -- if not r.ImGui_ValidatePtr(SPLITTER_DD, "ImGui_DrawListSplitter*") then
+                --     SPLITTER_DD = r.ImGui_CreateDrawListSplitter(draw_list)
+                -- end
+                -- r.ImGui_DrawListSplitter_Split(SPLITTER_DD, 5)
+                DropDownMenuPopup(pie)
+                -- r.ImGui_DrawListSplitter_Merge(SPLITTER_DD)
+                r.ImGui_EndChild(ctx)
+            end
+            r.ImGui_PopStyleColor(ctx)
         end
-    elseif DROP_DOWN_MENU then
-        DropDownDo(pie)
     end
     r.ImGui_DrawListSplitter_Merge(SPLITTER)
 

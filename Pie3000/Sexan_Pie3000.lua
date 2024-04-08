@@ -1,9 +1,25 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.34.07
+-- @version 0.35.00
 -- @changelog
---  Modern style calculate font color by bg luminosity
+--  Tracker script - set focus on window under mouse (fixes script not opening when context is not in focus)
+--  Simplify detecting midi/media explorer
+--  Protect call context function
+--  Added midi track list Context
+--  Added Ruler Region,Marker,Temp context
+--  Add actions filters (Main, Midi, ME)
+--  Run OnCommand API depending is the current context Main/Midi/ME
+--  Show warning if action does not belong to context
+--  If envelope is unknown (VST etc) return default main context (fixes crash on shortcut press on unknown envelopes)
+--  Select envelope under mouse
+--  Style Text Button improve state spinner animation
+--  Style Text Button tweak toggle state animation
+--  Replace OPEN AS DROPDOWN with DropDown Style
+--  DropDown Style Improve and simplify code
+--  DropDOwn Style Ignore HOLD_TO_OPEN,ANIMATION,ADJUST_PIE_NEAR_EDGE,SWIPE
+--  DropDOwn Style Disable buttons in Opening behavior
+--  DropDOwn Style Setup Setup Drawing
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -27,7 +43,8 @@ if CheckDeps() then return end
 ctx = r.ImGui_CreateContext('Pie XYZ', r.ImGui_ConfigFlags_NoSavedSettings())
 
 require('Common')
-if DROP_DOWN_MENU then
+if STYLE == 3 then
+    HOLD_TO_OPEN = false
     ANIMATION = false
     ADJUST_PIE_NEAR_EDGE = false
     SWIPE = false
@@ -69,19 +86,6 @@ local function Init()
         return "ERROR"
     end
 
-    -- for k, v in pairs(PIES) do
-    --     if v.sync then
-    --         PIES[k .. "empty"] = PIES[k]
-    --     end
-    -- end
-
-    -- for k, v in pairs(PIES) do
-    --     if v.use_main then
-    --         r.ShowConsoleMsg(k .. " - " .. v.main_name.."\n")
-    --         PIES[k] = PIES[v.main_name]
-    --     end
-    -- end
-
     local key_state = r.JS_VKeys_GetState(SCRIPT_START_TIME - 1)
     local down_state = r.JS_VKeys_GetDown(SCRIPT_START_TIME)
     for i = 1, 255 do
@@ -98,17 +102,21 @@ end
 if Init() == "ERROR" then return end
 
 local WND_IDS = {
-    { id = "3E9", name = "midiview" },
-    { id = "3EB", name = "midipianoview" },
+    -- { id = "3E9", name = "midiview" },
+    -- { id = "3EB", name = "midipianoview" },
     { id = "3E8", name = "REAPERTrackListWindow" },
     { id = "3ED", name = "REAPERTimeDisplay" },
 }
 
 local function GetMouseContext()
+    local active_midi = r.MIDIEditor_GetActive()
+    local main_wnd = r.GetMainHwnd()
     local x, y = r.GetMousePosition()
     local track, info = r.GetThingFromPoint(x, y)
     local item, take = r.GetItemFromPoint(x, y, true)
     local cur_hwnd = r.JS_Window_FromPoint(x, y)
+    local parent = r.JS_Window_GetParent(cur_hwnd)
+    local parent_title = r.JS_Window_GetTitle(parent)
     local id = r.JS_Window_GetLongPtr(cur_hwnd, "ID")
     local class_name = r.JS_Window_GetClassName(cur_hwnd)
     local master_track = r.GetMasterTrack(0)
@@ -120,14 +128,14 @@ local function GetMouseContext()
 
     if info:match("envelope") then
         ENVELOPE_LANE = "lane"
-        info = DetectEnvContext(track, info)
+        info, ENV = DetectEnvContext(track, info)
     elseif info:match("envcp") then
         ENVELOPE_LANE = "cp"
-        info = DetectEnvContext(track, info, true)
+        info, ENV = DetectEnvContext(track, info, true)
     elseif info:match("^fx_") then
         RETURN_FOCUS = cur_hwnd
         info = "plugin"
-    elseif info:match("mcp") then
+    elseif info:match("^mcp") then
         if info:match("fxlist") then
             info = "mcpfxlist"
         elseif info:match("sendlist") then
@@ -154,25 +162,15 @@ local function GetMouseContext()
             info = "tcpempty"
         elseif class_name == "REAPERMCPDisplay" then
             info = "mcpempty"
-        elseif tostring(id):upper():match(WND_IDS[3].id) then
-            -- SHARES ID WITH MEDIA EXPLORER
-            info, RETURN_FOCUS = DetectMediaExplorer(cur_hwnd)
-            if not info then
-                info = "arrangeempty"
-            end
-        elseif tostring(id):upper():match(WND_IDS[2].id) then
-            -- PIANO ROLL
-            info = DetectMIDIContext(true)
+        elseif parent == active_midi then
+            info = DetectMIDIContext()
+        elseif parent_title == "Media Explorer" then
+            info, RETURN_FOCUS = DetectMediaExplorer(parent)
         elseif tostring(id):upper():match(WND_IDS[1].id) then
-            -- SHARES ID WITH MEDIA EXPLORER
-            info, RETURN_FOCUS = DetectMediaExplorer(cur_hwnd)
-            if not info then
-                -- MIDI NOTES VIEW
-                info = DetectMIDIContext()
-            end
-        elseif tostring(id):upper():match(WND_IDS[4].id) then
-            -- TODO TRACE
-            info = "ruler"
+            info = "arrangeempty"
+        elseif tostring(id):upper():match(WND_IDS[2].id) then
+            local window, segment, details = r.BR_GetMouseCursorContext()
+            return segment ~= "timeline" and "ruler" .. segment or "ruler"
         end
     end
 
@@ -189,8 +187,11 @@ local function GetMouseContext()
     end
 end
 
-local INFO, TRACK, ITEM = GetMouseContext()
-
+local status, err = xpcall(function() INFO, TRACK, ITEM = GetMouseContext() end, debug.traceback)
+if not status then
+    PrintTraceback(err)
+    Release()
+end
 if not INFO then
     Release()
     return
@@ -259,10 +260,10 @@ if SELECT_THING_UNDER_MOUSE then
     end
     if TRACK then
         r.SetOnlyTrackSelected(TRACK)
-        --! breaks deleting stuff depending on the context since focus is on tcp always
-        -- if not ITEM then
-        --     r.Main_OnCommand(r.NamedCommandLookup("_BR_FOCUS_TRACKS"),0)
-        -- end
+    end
+    if ENV then
+        r.SetCursorContext(2, ENV)
+        r.UpdateArrange()
     end
 end
 
@@ -371,46 +372,88 @@ local function AnimationProgress()
     end
 end
 
-local function FindAction(name)
-    if PIE_MENU.is_midi then
+local function FindAction(name, no_warning)
+    if PIES[INFO].is_midi then
         for i = 1, #MIDI_ACTIONS do
             if MIDI_ACTIONS[i].name == name then
-                return tonumber(MIDI_ACTIONS[i].cmd)
+                return tonumber(MIDI_ACTIONS[i].cmd), MIDI_ACTIONS[i].type
             end
         end
     else
-        if PIE_MENU.is_explorer then
+        if PIES[INFO].is_explorer then
             for i = 1, #EXPLORER_ACTIONS do
                 if EXPLORER_ACTIONS[i].name == name then
-                    return tonumber(EXPLORER_ACTIONS[i].cmd)
+                    return tonumber(EXPLORER_ACTIONS[i].cmd), EXPLORER_ACTIONS[i].type
                 end
             end
         else
             for i = 1, #ACTIONS do
                 if ACTIONS[i].name == name then
-                    return tonumber(ACTIONS[i].cmd)
+                    return tonumber(ACTIONS[i].cmd), ACTIONS[i].type
                 end
             end
         end
     end
-    r.ShowMessageBox(name .. "\ndoes not exist on this system", "WARNING", 0)
+    if not no_warning then
+        r.ShowMessageBox(name .. "\ndoes not exist on this system", "WARNING", 0)
+    else
+        ACTION_CONTEXT_WARNING = true
+    end
+end
+
+local function CheckActionContext(name)
+    if PREV_ACTION ~= PIE_MENU[LAST_ACTION] then
+        ACTION_CONTEXT_WARNING = nil
+        FindAction(name, true)
+        --LAST_ACTION_CONTEXT = cmd_type
+        PREV_ACTION = PIE_MENU[LAST_ACTION]
+    end
+    -- if LAST_ACTION_CONTEXT then
+
+    -- if PIES[INFO].is_midi then
+    --     if LAST_ACTION_CONTEXT ~= "Midi" then
+    --         ACTION_CONTEXT_WARNING = true
+    --     end
+    -- elseif PIES[INFO].is_explorer then
+    --     if LAST_ACTION_CONTEXT ~= "ME" then
+    --         ACTION_CONTEXT_WARNING = true
+    --     end
+    -- else
+    --     if LAST_ACTION_CONTEXT ~= "Main" then
+    --         ACTION_CONTEXT_WARNING = true
+    --     end
+
+    -- end
+    if ACTION_CONTEXT_WARNING then
+        if r.ImGui_BeginTooltip(ctx) then
+            r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Text(), 0xff0000ff)
+            r.ImGui_Text(ctx, "ACTION BELONGS TO DIFFERENT CONTEXT OR DOESN'T EXIST")
+            r.ImGui_PopStyleColor(ctx)
+            r.ImGui_EndTooltip(ctx)
+        end
+    end
+    --end
 end
 
 
 local MAIN_HWND = r.GetMainHwnd()
 local function ExecuteAction(action)
     if action then
+        CheckActionContext(action)
+        if STYLE == 3 and DROP_DOWN_CONFIRM then
+            TERMINATE = true
+        end
         if CLOSE and ACTIVATE_ON_CLOSE then
             if LAST_TRIGGERED ~= action then
                 LAST_TRIGGERED = action
                 local cmd_id = FindAction(action)
-                if PIE_MENU.is_midi then
+                if PIES[INFO].is_midi then
                     if cmd_id then
                         r.MIDIEditor_OnCommand(r.MIDIEditor_GetActive(), cmd_id)
                     end
                 else
                     if cmd_id then
-                        if PIE_MENU.is_explorer then
+                        if PIES[INFO].is_explorer then
                             r.JS_WindowMessage_Send(RETURN_FOCUS, "WM_COMMAND", cmd_id, 0, 0, 0)
                         else
                             r.Main_OnCommand(cmd_id, 0)
@@ -423,13 +466,13 @@ local function ExecuteAction(action)
             local START_ACTION_TIME = r.time_precise()
             LAST_TRIGGERED = action
             local cmd_id = FindAction(action)
-            if PIE_MENU.is_midi then
+            if PIES[INFO].is_midi then
                 if cmd_id then
                     r.MIDIEditor_OnCommand(r.MIDIEditor_GetActive(), cmd_id)
                 end
             else
                 if cmd_id then
-                    if PIE_MENU.is_explorer then
+                    if PIES[INFO].is_explorer then
                         r.JS_WindowMessage_Send(RETURN_FOCUS, "WM_COMMAND", cmd_id, 0, 0, 0)
                     else
                         r.Main_OnCommand(cmd_id, 0)
@@ -456,7 +499,7 @@ local function ExecuteAction(action)
                 end
             else
                 if cmd_id then
-                    if PIE_MENU.is_explorer then
+                    if PIES[INFO].is_explorer then
                         r.JS_WindowMessage_Send(RETURN_FOCUS, "WM_COMMAND", cmd_id, 0, 0, 0)
                     else
                         r.Main_OnCommand(cmd_id, 0)
@@ -513,6 +556,12 @@ local function Main()
         RefreshImgObj(PIE_MENU)
     end
     if LAST_ACTION then DoAction() end
+
+    if STYLE == 3 and DD_CLOSED then
+        Release()
+        return
+    end
+
     DoFullScreen()
     if KILL_ON_ESC and ESC then DONE = true end
     if r.ImGui_Begin(ctx, 'PIE XYZ', false, FLAGS) then
@@ -520,7 +569,7 @@ local function Main()
         MX, MY = r.ImGui_PointConvertNative(ctx, r.GetMousePosition())
 
         if MIDI_TRACE_DEBUG then
-            DetectMIDIContext(true, true)
+            DetectMIDIContext(true)
         end
 
         CheckKeys()

@@ -19,22 +19,30 @@ for k in io.lines(r.GetResourcePath() .. "/reaper-kb.ini") do
 end
 
 local MAIN_HWND = r.GetMainHwnd()
-local function TriggerPie(title, info)
+local function TriggerPie(parent, title, info)
+    local MIDI_HWND = r.MIDIEditor_GetActive()
     if (WND[title] or info:match("^fx_")) and r.JS_Window_GetFocus() ~= MAIN_HWND then
         r.JS_Window_SetFocus(r.GetMainHwnd())
+        r.JS_WindowMessage_Post(MAIN_HWND, "WM_KEYDOWN", PIE_KEY, 0, 0, 0)
+    elseif parent == MAIN_HWND then
+        r.JS_Window_SetFocus(r.GetMainHwnd())
+        r.JS_WindowMessage_Post(MAIN_HWND, "WM_KEYDOWN", PIE_KEY, 0, 0, 0)
+    elseif parent == MIDI_HWND then
+        r.JS_Window_SetFocus(MIDI_HWND)
         r.JS_WindowMessage_Post(MAIN_HWND, "WM_KEYDOWN", PIE_KEY, 0, 0, 0)
     end
 end
 
-local parent_title
+local parent_title, parent
 local function Main()
     local x, y        = r.GetMousePosition()
     local wnd         = r.JS_Window_FromPoint(x, y)
     local track, info = r.GetThingFromPoint(x, y)
 
     if prev_wnd ~= wnd then
-        local wnd_id = r.JS_Window_GetLongPtr(wnd, "ID")
-        parent_title = r.JS_Window_GetTitle(r.JS_Window_GetParent(wnd))
+        --local wnd_id = r.JS_Window_GetLongPtr(wnd, "ID")
+        parent = r.JS_Window_GetParent(wnd)
+        parent_title = r.JS_Window_GetTitle(parent)
         prev_wnd = wnd
     end
 
@@ -42,13 +50,13 @@ local function Main()
         local key_state = r.JS_VKeys_GetState(SCRIPT_START_TIME - 0.1)
         if key_state:byte(PIE_KEY) ~= 0 then
             SCRIPT_START_TIME = r.time_precise() + 0.1
-            TriggerPie(parent_title, info)
+            TriggerPie(parent, parent_title, info)
         end
     end
     r.defer(Main)
 end
 
-r.atexit(function() 
+r.atexit(function()
     r.set_action_options(1|8)
 end)
 Main()
