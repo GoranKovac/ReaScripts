@@ -1724,27 +1724,7 @@ local function DrawCenter(pie, center)
     end
 end
 
-local function DropDownMenuPopup(pie)
-    local longest_label, longest_key, dummy_h = 0, 0, 0
-    for i = 1, #pie do
-        local txt_w, txt_h = r.ImGui_CalcTextSize(ctx, pie[i].name)
-        dummy_h = txt_h
-        if longest_label < txt_w then
-            longest_label = txt_w
-        end
-        if pie[i].key then
-            local key_w = r.ImGui_CalcTextSize(ctx, "   -   " .. KEYS[pie[i].key])
-            if longest_key < key_w then
-                longest_key = key_w
-            end
-        end
-    end
-
-    local max_w = longest_label + longest_key
-    local xx, yy = r.ImGui_GetCursorPos(ctx)
-    r.ImGui_Dummy(ctx, max_w + 29, dummy_h)
-
-    r.ImGui_SetCursorPos(ctx, xx, yy)
+local function DropDownMenuPopup(pie, max_w)
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Text(), 0x3aCCffff)
     r.ImGui_SeparatorText(ctx, "\t" .. pie.name .. "\t")
     r.ImGui_PopStyleColor(ctx)
@@ -1883,7 +1863,11 @@ local function OpenDropDownStyle(pie)
     end
     if not r.ImGui_IsPopupOpen(ctx, "DROP_DOWN_MENU") then DD_CLOSED = true end
 end
-
+local pad_x_sel, pad_y_sel = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_FramePadding())
+local pad_x_sep, pad_y_sep = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_SeparatorTextPadding())
+local sep_boarder = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_SeparatorTextBorderSize())
+local wnd_padding = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_WindowPadding())
+local item_s_x, item_s_y = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing())
 function DrawPie(pie, center)
     if pie.is_midi then
         section_id = 32060
@@ -1916,13 +1900,27 @@ function DrawPie(pie, center)
             r.ImGui_PopFont(ctx)
         else
             r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x44)
-            if r.ImGui_BeginChild(ctx, "DropDownSetup", 0, 0, true) then
-                -- if not r.ImGui_ValidatePtr(SPLITTER_DD, "ImGui_DrawListSplitter*") then
-                --     SPLITTER_DD = r.ImGui_CreateDrawListSplitter(draw_list)
-                -- end
-                -- r.ImGui_DrawListSplitter_Split(SPLITTER_DD, 5)
-                DropDownMenuPopup(pie)
-                -- r.ImGui_DrawListSplitter_Merge(SPLITTER_DD)
+            local font_size = r.ImGui_GetFontSize(ctx)
+            local selectable_h = font_size + (pad_y_sel * 2)
+            local longest_label, longest_key = 0, 0
+            for i = 1, #pie do
+                local txt_w, txt_h = r.ImGui_CalcTextSize(ctx, pie[i].name)
+                if longest_label < txt_w then
+                    longest_label = txt_w
+                end
+                if pie[i].key then
+                    local key_w = r.ImGui_CalcTextSize(ctx, "   -   " .. KEYS[pie[i].key])
+                    if longest_key < key_w then
+                        longest_key = key_w
+                    end
+                end
+            end
+
+            local max_w = longest_label + longest_key
+            local txt_separator_h = max(font_size + (pad_y_sep * 2) + sep_boarder)
+            r.ImGui_SetNextWindowPos(ctx, CENTER.x - (max_w + 50) // 2, CENTER.y - 150)
+            if r.ImGui_BeginChild(ctx, "DropDownSetup", max_w + 50, txt_separator_h + (#pie * font_size) + (wnd_padding * 2) + item_s_y * (#pie), true, r.ImGui_WindowFlags_AlwaysAutoResize()) then
+                DropDownMenuPopup(pie, max_w)
                 r.ImGui_EndChild(ctx)
             end
             r.ImGui_PopStyleColor(ctx)
