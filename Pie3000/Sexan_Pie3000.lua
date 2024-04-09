@@ -1,12 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.21
+-- @version 0.35.22
 -- @changelog
---  Reintroduce Limit mouse movement to Pie radius
---  DropDown Style disable and ignore Reintroduce Limit mouse movement to Pie radius option
---  DropDown Style Allow Activate action on script close
---  Custom Scripts Pies allow functions (func = "NameOfFunction")
+--  Disable Midi Inline, Midi Event actions for now
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua

@@ -1847,16 +1847,16 @@ local function ActionsTab(pie)
                 want_filter = 2
                 UPDATE_FILTER = true
             end
-            r.ImGui_SameLine(ctx)
-            if r.ImGui_RadioButton(ctx, "Midi INL", want_filter == 4) then
-                want_filter = 4
-                UPDATE_FILTER = true
-            end
-            r.ImGui_SameLine(ctx)
-            if r.ImGui_RadioButton(ctx, "Midi Event", want_filter == 5) then
-                want_filter = 5
-                UPDATE_FILTER = true
-            end
+            -- r.ImGui_SameLine(ctx)
+            -- if r.ImGui_RadioButton(ctx, "Midi INL", want_filter == 4) then
+            --     want_filter = 4
+            --     UPDATE_FILTER = true
+            -- end
+            -- r.ImGui_SameLine(ctx)
+            -- if r.ImGui_RadioButton(ctx, "Midi Event", want_filter == 5) then
+            --     want_filter = 5
+            --     UPDATE_FILTER = true
+            -- end
             r.ImGui_SameLine(ctx)
             if r.ImGui_RadioButton(ctx, "ME", want_filter == 3) then
                 want_filter = 3
