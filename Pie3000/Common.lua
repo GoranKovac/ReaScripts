@@ -1862,6 +1862,9 @@ local function OpenDropDownStyle(pie)
         r.ImGui_SetNextWindowPos(ctx, START_X - 80, START_Y - 10)
     end
     if r.ImGui_BeginPopup(ctx, "DROP_DOWN_MENU") then
+        if not r.ImGui_IsAnyItemHovered(ctx) then
+            LAST_ACTION = nil
+        end
         local xx, yy = r.ImGui_GetCursorPos(ctx)
         r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Button(), tracker_state == 1 and 0x00ff00cc or 0xff0000cc)
         r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ButtonHovered(), tracker_state == 1 and 0x00ff00dd or 0xff0000dd)
@@ -1876,6 +1879,8 @@ local function OpenDropDownStyle(pie)
                 r.ImGui_EndTooltip(ctx)
             end
         end
+
+
         r.ImGui_PopStyleColor(ctx, 3)
         r.ImGui_SetCursorPos(ctx, xx, yy)
         DropDownMenuPopup(pie)
@@ -1921,10 +1926,9 @@ function DrawPie(pie, center)
         else
             r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x44)
             local font_size = r.ImGui_GetFontSize(ctx)
-            local selectable_h = font_size + (pad_y_sel * 2)
             local longest_label, longest_key = 0, 0
             for i = 1, #pie do
-                local txt_w, txt_h = r.ImGui_CalcTextSize(ctx, pie[i].name)
+                local txt_w = r.ImGui_CalcTextSize(ctx, pie[i].name)
                 if longest_label < txt_w then
                     longest_label = txt_w
                 end
@@ -1936,7 +1940,7 @@ function DrawPie(pie, center)
                 end
             end
 
-            local max_w = longest_label + longest_key
+            local max_w = (longest_label + longest_key) < 100 and 100 or (longest_label + longest_key)
             local txt_separator_h = max(font_size + (pad_y_sep * 2) + sep_boarder)
             local xx, yy = r.ImGui_GetCursorScreenPos(ctx)
             r.ImGui_SetNextWindowPos(ctx, CENTER.x - (max_w + 50) // 2, yy)

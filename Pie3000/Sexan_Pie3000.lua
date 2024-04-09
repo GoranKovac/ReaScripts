@@ -1,9 +1,10 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.04
+-- @version 0.35.05
 -- @changelog
---  DropDown Style setup more fixes
+--  DropDown Style fix item hover (reset last action if no items are hovered)
+--  Exported menu separate action search logic from normal Pie
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -357,30 +358,53 @@ local function AnimationProgress()
 end
 
 local function FindAction(name, no_warning)
-    if PIES[INFO].is_midi then
+    if not STANDALONE_PIE then
+        if PIES[INFO].is_midi then
+            for i = 1, #MIDI_ACTIONS do
+                if MIDI_ACTIONS[i].name == name then
+                    return tonumber(MIDI_ACTIONS[i].cmd), MIDI_ACTIONS[i].type
+                end
+            end
+        elseif PIES[INFO].is_explorer then
+            for i = 1, #EXPLORER_ACTIONS do
+                if EXPLORER_ACTIONS[i].name == name then
+                    return tonumber(EXPLORER_ACTIONS[i].cmd), EXPLORER_ACTIONS[i].type
+                end
+            end
+        else
+            for i = 1, #ACTIONS do
+                if ACTIONS[i].name == name then
+                    return tonumber(ACTIONS[i].cmd), ACTIONS[i].type
+                end
+            end
+            --  end
+        end
+        if not no_warning then
+            r.ShowMessageBox(name .. "\ndoes not exist on this system", "WARNING", 0)
+        else
+            ACTION_CONTEXT_WARNING = true
+        end
+    else
         for i = 1, #MIDI_ACTIONS do
             if MIDI_ACTIONS[i].name == name then
                 return tonumber(MIDI_ACTIONS[i].cmd), MIDI_ACTIONS[i].type
             end
         end
-    elseif PIES[INFO].is_explorer then
         for i = 1, #EXPLORER_ACTIONS do
             if EXPLORER_ACTIONS[i].name == name then
                 return tonumber(EXPLORER_ACTIONS[i].cmd), EXPLORER_ACTIONS[i].type
             end
         end
-    else
         for i = 1, #ACTIONS do
             if ACTIONS[i].name == name then
                 return tonumber(ACTIONS[i].cmd), ACTIONS[i].type
             end
         end
-        --  end
-    end
-    if not no_warning then
-        r.ShowMessageBox(name .. "\ndoes not exist on this system", "WARNING", 0)
-    else
-        ACTION_CONTEXT_WARNING = true
+        if not no_warning then
+            r.ShowMessageBox(name .. "\ndoes not exist on this system", "WARNING", 0)
+        else
+            ACTION_CONTEXT_WARNING = true
+        end
     end
 end
 
