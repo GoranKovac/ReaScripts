@@ -1,9 +1,12 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.20
+-- @version 0.35.21
 -- @changelog
---  Code Cleanup
+--  Reintroduce Limit mouse movement to Pie radius
+--  DropDown Style disable and ignore Reintroduce Limit mouse movement to Pie radius option
+--  DropDown Style Allow Activate action on script close
+--  Custom Scripts Pies allow functions (func = "NameOfFunction")
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -32,6 +35,7 @@ if STYLE == 3 then
     ANIMATION = false
     ADJUST_PIE_NEAR_EDGE = false
     SWIPE = false
+    LIMIT_MOUSE = false
 end
 
 MAIN_PROG = ANIMATION and 0.01 or 1
@@ -431,14 +435,67 @@ end
 
 
 local MAIN_HWND = r.GetMainHwnd()
-local function ExecuteAction(action)
-    if action then
-        CheckActionContext(action)
-        if STYLE == 3 and DROP_DOWN_CONFIRM then
-            TERMINATE = true
-        end
+local function ExecuteAction(action_tbl)
+    local action = action_tbl.cmd_name
+    local pie_func = action_tbl.func
+    if pie_func then
         if CLOSE and ACTIVATE_ON_CLOSE then
             if LAST_TRIGGERED ~= action then
+                LAST_TRIGGERED = action
+                _G[pie_func](action_tbl, INFO)
+            end
+        end
+        if r.ImGui_IsMouseReleased(ctx, 0) then
+            local START_ACTION_TIME = r.time_precise()
+            LAST_TRIGGERED = action
+            _G[pie_func](action_tbl, INFO)
+            local AFTER_ACTION_TIME = r.time_precise()
+
+            if AFTER_ACTION_TIME - START_ACTION_TIME > 0.1 then
+                r.JS_WindowMessage_Post(MAIN_HWND, "WM_KEYUP", KEY, 0, 0, 0)
+            end
+            if not HOLD_TO_OPEN then
+                if CLOSE_ON_ACTIVATE then
+                    DONE = true
+                end
+            end
+        elseif KEY_TRIGGER then
+            LAST_TRIGGERED = action
+            _G[pie_func](action_tbl, INFO)
+            KEY_TRIGGER = nil
+            if not HOLD_TO_OPEN then
+                if CLOSE_ON_ACTIVATE then
+                    DONE = true
+                end
+            end
+        end
+    else
+        if action then
+            CheckActionContext(action)
+            if STYLE == 3 and DROP_DOWN_CONFIRM then
+                TERMINATE = true
+            end
+            if CLOSE and ACTIVATE_ON_CLOSE then
+                if LAST_TRIGGERED ~= action then
+                    LAST_TRIGGERED = action
+                    local cmd_id = FindAction(action)
+                    if PIES[INFO].is_midi then
+                        if cmd_id then
+                            r.MIDIEditor_OnCommand(r.MIDIEditor_GetActive(), cmd_id)
+                        end
+                    else
+                        if cmd_id then
+                            if PIES[INFO].is_explorer then
+                                r.JS_WindowMessage_Send(RETURN_FOCUS, "WM_COMMAND", cmd_id, 0, 0, 0)
+                            else
+                                r.Main_OnCommand(cmd_id, 0)
+                            end
+                        end
+                    end
+                end
+            end
+            if r.ImGui_IsMouseReleased(ctx, 0) then
+                local START_ACTION_TIME = r.time_precise()
                 LAST_TRIGGERED = action
                 local cmd_id = FindAction(action)
                 if PIES[INFO].is_midi then
@@ -454,56 +511,38 @@ local function ExecuteAction(action)
                         end
                     end
                 end
-            end
-        end
-        if r.ImGui_IsMouseReleased(ctx, 0) then
-            local START_ACTION_TIME = r.time_precise()
-            LAST_TRIGGERED = action
-            local cmd_id = FindAction(action)
-            if PIES[INFO].is_midi then
-                if cmd_id then
-                    r.MIDIEditor_OnCommand(r.MIDIEditor_GetActive(), cmd_id)
+                local AFTER_ACTION_TIME = r.time_precise()
+
+                if AFTER_ACTION_TIME - START_ACTION_TIME > 0.1 then
+                    r.JS_WindowMessage_Post(MAIN_HWND, "WM_KEYUP", KEY, 0, 0, 0)
                 end
-            else
-                if cmd_id then
-                    if PIES[INFO].is_explorer then
-                        r.JS_WindowMessage_Send(RETURN_FOCUS, "WM_COMMAND", cmd_id, 0, 0, 0)
-                    else
-                        r.Main_OnCommand(cmd_id, 0)
+                if not HOLD_TO_OPEN then
+                    if CLOSE_ON_ACTIVATE then
+                        DONE = true
                     end
                 end
-            end
-            local AFTER_ACTION_TIME = r.time_precise()
+            elseif KEY_TRIGGER then
+                LAST_TRIGGERED = action
+                local cmd_id = FindAction(action)
 
-            if AFTER_ACTION_TIME - START_ACTION_TIME > 0.1 then
-                r.JS_WindowMessage_Post(MAIN_HWND, "WM_KEYUP", KEY, 0, 0, 0)
-            end
-            if not HOLD_TO_OPEN then
-                if CLOSE_ON_ACTIVATE then
-                    DONE = true
-                end
-            end
-        elseif KEY_TRIGGER then
-            LAST_TRIGGERED = action
-            local cmd_id = FindAction(action)
-
-            if PIES[INFO].name == "MIDI" then
-                if cmd_id then
-                    r.MIDIEditor_OnCommand(r.MIDIEditor_GetActive(), cmd_id)
-                end
-            else
-                if cmd_id then
-                    if PIES[INFO].is_explorer then
-                        r.JS_WindowMessage_Send(RETURN_FOCUS, "WM_COMMAND", cmd_id, 0, 0, 0)
-                    else
-                        r.Main_OnCommand(cmd_id, 0)
+                if PIES[INFO].name == "MIDI" then
+                    if cmd_id then
+                        r.MIDIEditor_OnCommand(r.MIDIEditor_GetActive(), cmd_id)
+                    end
+                else
+                    if cmd_id then
+                        if PIES[INFO].is_explorer then
+                            r.JS_WindowMessage_Send(RETURN_FOCUS, "WM_COMMAND", cmd_id, 0, 0, 0)
+                        else
+                            r.Main_OnCommand(cmd_id, 0)
+                        end
                     end
                 end
-            end
-            KEY_TRIGGER = nil
-            if not HOLD_TO_OPEN then
-                if CLOSE_ON_ACTIVATE then
-                    DONE = true
+                KEY_TRIGGER = nil
+                if not HOLD_TO_OPEN then
+                    if CLOSE_ON_ACTIVATE then
+                        DONE = true
+                    end
                 end
             end
         end
@@ -511,25 +550,26 @@ local function ExecuteAction(action)
 end
 
 local function DoAction()
-    if STYLE ~= 3 then
-        if PIE_MENU[LAST_ACTION].menu then
-            if r.ImGui_IsMouseReleased(ctx, 0) or Swipe() or KEY_TRIGGER then
-                table.insert(PIE_LIST, {
-                    col = PIE_MENU[LAST_ACTION].col,
-                    icon = PIE_MENU[LAST_ACTION].icon,
-                    name = PIE_MENU[LAST_ACTION].name,
-                    pid = PIE_MENU,
-                    prev_i = LAST_ACTION,
-                })
-                KEY_TRIGGER = nil
-                SWITCH_PIE = PIE_MENU[LAST_ACTION]
-            end
-        else
-            ExecuteAction(PIE_MENU[LAST_ACTION].cmd_name)
+    --if STYLE ~= 3 then
+    if STYLE ~= 3 and PIE_MENU[LAST_ACTION].menu then
+        if r.ImGui_IsMouseReleased(ctx, 0) or Swipe() or KEY_TRIGGER then
+            table.insert(PIE_LIST, {
+                col = PIE_MENU[LAST_ACTION].col,
+                icon = PIE_MENU[LAST_ACTION].icon,
+                name = PIE_MENU[LAST_ACTION].name,
+                pid = PIE_MENU,
+                prev_i = LAST_ACTION,
+            })
+            KEY_TRIGGER = nil
+            SWITCH_PIE = PIE_MENU[LAST_ACTION]
         end
     else
-        ExecuteAction(LAST_ACTION)
+        --ExecuteAction(PIE_MENU[LAST_ACTION].cmd_name)
+        ExecuteAction(STYLE == 3 and LAST_ACTION or PIE_MENU[LAST_ACTION])
     end
+    --else
+    -- ExecuteAction(LAST_ACTION)
+    --end
 end
 
 local function Main()

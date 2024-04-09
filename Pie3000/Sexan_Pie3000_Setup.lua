@@ -1222,18 +1222,16 @@ local function Settings()
         end
         r.ImGui_Unindent(ctx)
     end
-
-    if r.ImGui_Checkbox(ctx, "Activate hovered action when closing script", ACTIVATE_ON_CLOSE) then
-        ACTIVATE_ON_CLOSE = not ACTIVATE_ON_CLOSE
-        WANT_SAVE = true
-    end
-
     if r.ImGui_Checkbox(ctx, "Select thing (Track/Item) under mouse", SELECT_THING_UNDER_MOUSE) then
         SELECT_THING_UNDER_MOUSE = not SELECT_THING_UNDER_MOUSE
         WANT_SAVE = true
     end
     if STYLE == 3 then
         r.ImGui_EndDisabled(ctx)
+    end
+    if r.ImGui_Checkbox(ctx, "Activate hovered action when closing script", ACTIVATE_ON_CLOSE) then
+        ACTIVATE_ON_CLOSE = not ACTIVATE_ON_CLOSE
+        WANT_SAVE = true
     end
     if r.ImGui_Checkbox(ctx, "Kill the script when ESC key is pressed", KILL_ON_ESC) then
         KILL_ON_ESC = not KILL_ON_ESC
@@ -1250,6 +1248,16 @@ local function Settings()
     if r.ImGui_Checkbox(ctx, "Re-Center mouse when new/previous menu opens", RESET_POSITION) then
         RESET_POSITION = not RESET_POSITION
         WANT_SAVE = true
+    end
+    if STYLE == 3 then
+        r.ImGui_BeginDisabled(ctx, true)
+    end
+    if r.ImGui_Checkbox(ctx, "Limit mouse movement to Pie radius", LIMIT_MOUSE) then
+        LIMIT_MOUSE = not LIMIT_MOUSE
+        WANT_SAVE = true
+    end
+    if STYLE == 3 then
+        r.ImGui_EndDisabled(ctx)
     end
     if r.ImGui_Checkbox(ctx, "Re-Adjust Pie position when mouse is near edges of screen (Fit Pie into Screen)", ADJUST_PIE_NEAR_EDGE) then
         ADJUST_PIE_NEAR_EDGE = not ADJUST_PIE_NEAR_EDGE
