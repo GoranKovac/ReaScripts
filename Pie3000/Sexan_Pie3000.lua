@@ -1,7 +1,7 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.07
+-- @version 0.35.08
 -- @changelog
 --  Added Midi Inline, Midi Event actions
 -- @provides
