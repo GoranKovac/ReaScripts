@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.13
+-- @version 0.35.20
 -- @changelog
---  DropDown Style added state spinner
+--  Code Cleanup
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -188,16 +188,8 @@ if not STANDALONE_PIE then
             if PIES["midilane"].as_global == true then
                 PIE_MENU = PIES["midilane"]
             else
-                -- OPEN DEFAULT MENU IF DOES NOT EXIST
                 PIE_MENU = MIDI_PIES[INFO] or PIES["midilane"]
             end
-            -- elseif MIDI_LANE_CONTEXT == "cp" then
-            --     if PIES["midilanecp"].as_global == true then
-            --         PIE_MENU = PIES["midilanecp"]
-            --     else
-            --         -- OPEN DEFAULT MENU IF DOES NOT EXIST
-            --         PIE_MENU = MIDI_PIES[INFO] or PIES["midilanecp"]
-            --     end
         end
     elseif ENVELOPE_LANE then
         if ENVELOPE_LANE == "lane" then
@@ -209,7 +201,6 @@ if not STANDALONE_PIE then
         elseif ENVELOPE_LANE == "cp" then
             if PIES["envcp"].as_global == true then
                 PIE_MENU = PIES["envcp"]
-                --end
             elseif PIES["envcp"].use_main == true then
                 PIE_MENU = PIES[INFO:sub(4)]
             else
@@ -370,40 +361,14 @@ local function FindAction(name, no_warning)
             if EVENT_ACTIONS_PAIRS[name] then
                 return tonumber(EVENT_ACTIONS_PAIRS[name].cmd), EVENT_ACTIONS_PAIRS[name].type
             end
-            -- for i = 1, #MIDI_ACTIONS do
-            --     if MIDI_ACTIONS[i].name == name then
-            --         return tonumber(MIDI_ACTIONS[i].cmd), MIDI_ACTIONS[i].type
-            --     end
-            -- end
-            -- for i = 1, #INLINE_ACTIONS do
-            --     if INLINE_ACTIONS[i].name == name then
-            --         return tonumber(INLINE_ACTIONS[i].cmd), INLINE_ACTIONS[i].type
-            --     end
-            -- end
-            -- for i = 1, #EVENT_ACTIONS do
-            --     if EVENT_ACTIONS[i].name == name then
-            --         return tonumber(EVENT_ACTIONS[i].cmd), EVENT_ACTIONS[i].type
-            --     end
-            -- end
         elseif PIES[INFO].is_explorer then
             if EXPLORER_ACTIONS_PAIRS[name] then
                 return tonumber(EXPLORER_ACTIONS_PAIRS[name].cmd), EXPLORER_ACTIONS_PAIRS[name].type
             end
-            -- for i = 1, #EXPLORER_ACTIONS do
-            --     if EXPLORER_ACTIONS[i].name == name then
-            --         return tonumber(EXPLORER_ACTIONS[i].cmd), EXPLORER_ACTIONS[i].type
-            --     end
-            -- end
         else
             if ACTIONS_PAIRS[name] then
                 return tonumber(ACTIONS_PAIRS[name].cmd), ACTIONS_PAIRS[name].type
             end
-            -- for i = 1, #ACTIONS do
-            --     if ACTIONS[i].name == name then
-            --         return tonumber(ACTIONS[i].cmd), ACTIONS[i].type
-            --     end
-            -- end
-            --  end
         end
         if not no_warning then
             r.ShowMessageBox(name .. "\nIs not for this Context or does not Exist", "WARNING", 0)
@@ -444,33 +409,16 @@ local function CheckActionContext(name)
         if PREV_ACTION ~= PIE_MENU[LAST_ACTION] then
             ACTION_CONTEXT_WARNING = nil
             FindAction(name, true)
-            --LAST_ACTION_CONTEXT = cmd_type
             PREV_ACTION = PIE_MENU[LAST_ACTION]
         end
     else
         if PREV_ACTION ~= name then
             ACTION_CONTEXT_WARNING = nil
             FindAction(name, true)
-            --LAST_ACTION_CONTEXT = cmd_type
             PREV_ACTION = name
         end
     end
-    -- if LAST_ACTION_CONTEXT then
 
-    -- if PIES[INFO].is_midi then
-    --     if LAST_ACTION_CONTEXT ~= "Midi" then
-    --         ACTION_CONTEXT_WARNING = true
-    --     end
-    -- elseif PIES[INFO].is_explorer then
-    --     if LAST_ACTION_CONTEXT ~= "ME" then
-    --         ACTION_CONTEXT_WARNING = true
-    --     end
-    -- else
-    --     if LAST_ACTION_CONTEXT ~= "Main" then
-    --         ACTION_CONTEXT_WARNING = true
-    --     end
-
-    -- end
     if ACTION_CONTEXT_WARNING then
         if r.ImGui_BeginTooltip(ctx) then
             r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Text(), 0xff0000ff)
@@ -479,7 +427,6 @@ local function CheckActionContext(name)
             r.ImGui_EndTooltip(ctx)
         end
     end
-    --end
 end
 
 
@@ -583,22 +530,6 @@ local function DoAction()
     else
         ExecuteAction(LAST_ACTION)
     end
-
-    -- if PIE_MENU[LAST_ACTION].menu then
-    --     if r.ImGui_IsMouseReleased(ctx, 0) or Swipe() or KEY_TRIGGER then
-    --         table.insert(PIE_LIST, {
-    --             col = PIE_MENU[LAST_ACTION].col,
-    --             icon = PIE_MENU[LAST_ACTION].icon,
-    --             name = PIE_MENU[LAST_ACTION].name,
-    --             pid = PIE_MENU,
-    --             prev_i = LAST_ACTION,
-    --         })
-    --         KEY_TRIGGER = nil
-    --         SWITCH_PIE = PIE_MENU[LAST_ACTION]
-    --     end
-    -- else
-    --     ExecuteAction(PIE_MENU[LAST_ACTION].cmd_name)
-    -- end
 end
 
 local function Main()

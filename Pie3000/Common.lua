@@ -42,7 +42,6 @@ ADJUST_PIE_NEAR_EDGE = false
 SHOW_SHORTCUT = true
 SELECT_THING_UNDER_MOUSE = false
 CLOSE_ON_ACTIVATE = false
---DROP_DOWN_MENU = false
 MIDI_TRACE_DEBUG = false
 KILL_ON_ESC = false
 STYLE = 1
@@ -112,7 +111,6 @@ if r.HasExtState("PIE3000", "SETTINGS") then
             SELECT_THING_UNDER_MOUSE = save_data.select_thing_under_mouse
             ADJUST_PIE_NEAR_EDGE = save_data.adjust_pie_near_edge
             CLOSE_ON_ACTIVATE = save_data.close_on_activate
-            --DROP_DOWN_MENU = save_data.drop_down_menu
             MIDI_TRACE_DEBUG = save_data.midi_trace_debug
             KILL_ON_ESC = save_data.kill_on_esc
             STYLE = save_data.style ~= nil and save_data.style or STYLE
@@ -154,12 +152,6 @@ function IterateActions(sectionID)
 end
 
 local SECTION_FILTER = {
-    -- [0] = "Main",
-    -- [32060] = "Midi",
-    -- [32062] = "Midi Inline",
-    -- [32061] = "Midi Event",
-    -- [32063] = "ME",
-
     [0] = 0,
     [32060] = 32060,
     [32062] = 32062,
@@ -525,8 +517,6 @@ function DetectMIDIContext(midi_debug)
 
     -- TAKE SCREENSHOT OF THE THE RIGHT SCROLLBAR
     local function takeScreenshot(window, dip_scale)
-        --local rv_scale, scale = r.get_config_var_string("uiscale")
-        -- local UI_SCALE = rv_scale and tonumber(scale) or 1
         local retval, left, top, right, bottom = r.JS_Window_GetRect(window)
         local w, h = right - left, bottom - top
         local bot_px
@@ -552,8 +542,6 @@ function DetectMIDIContext(midi_debug)
     end
 
     local HWND = r.MIDIEditor_GetActive()
-    --local retval_dpi, dpi = r.get_config_var_string("uiscale")
-    --local dpi_scale = retval_dpi and tonumber(dpi) or 1
     local retval_dpi, dpi = r.ThemeLayout_GetLayout("tcp", -3)
     local dpi_scale = retval_dpi and tonumber(dpi) / 256 or 1
     if not HWND then return end
@@ -566,8 +554,6 @@ function DetectMIDIContext(midi_debug)
     local retval, left, top, right, bottom = r.JS_Window_GetRect(child_hwnd)
 
     local track_list = main_right - right > 1
-
-    --local MIDI_SIZE = {}
 
     if midi_debug then
         r.ImGui_DrawList_AddRect(draw_list, left, top + ceil(64 * dpi_scale), right, top + bot_px, 0xff000050, 0, 0, 1)
@@ -609,7 +595,6 @@ function DetectMIDIContext(midi_debug)
     if IsInside(left, top + ceil(63 * dpi_scale), right, top + bot_px) then
         return "midi"
     end
-    --MIDI_SIZE = { left - 2, top, right, bottom }
     -- RULLER
     if IsInside(left, top, right, top + ceil(64 * dpi_scale)) then
         return "midiruler"
@@ -638,11 +623,7 @@ function DetectEnvContext(track, env_info, cp)
 end
 
 function DetectMediaExplorer(parent)
-    --local parent = r.JS_Window_GetParent(hwnd)
-    --local title = r.JS_Window_GetTitle(parent)
-    -- if title == "Media Explorer" then
     return "mediaexplorer", parent
-    --end
 end
 
 function PrintTraceback(err)
@@ -846,9 +827,6 @@ local function TextSplitByWidth(text, width, height)
             r.ImGui_DrawList_AddTextEx(draw_list, nil, FONT_SIZE, xs + bw / 2 - str_w / 2,
                 ys + (bh / 2) - (txt_h * (h_cnt - (i - 1))) + (h_cnt * txt_h) / 2, LerpAlpha(0xffffffff, CENTER_BTN_PROG),
                 str_tbl[i])
-            -- r.ImGui_SetCursorScreenPos(ctx, xs + bw / 2 - str_w / 2,
-            --     ys + (bh / 2) - (txt_h * (h_cnt - (i - 1))) + (h_cnt * txt_h) / 2)
-            --  r.ImGui_Text(ctx, str_tbl[i])
         end
     end
     r.ImGui_PopFont(ctx)
@@ -1103,8 +1081,6 @@ end
 local function lerp(a, b, t) return a + (b - a) * t end
 
 local function Animate_On_Cordinates(a, b, duration_in_sec, time)
-    --local time = max(r.time_precise() - ANIMATION_START_TIME, 0.01)
-    --if time >= duration_in_sec then ANIMATION_START_TIME = r.time_precise() end
     local final_time = min((time / duration_in_sec - floor(time / duration_in_sec)) * 1, 1)
     local new_val = lerp(a, b, final_time)
     return new_val
@@ -1129,11 +1105,8 @@ local function DrawClassicButton(pie, selected, hovered)
     local ring_col = (hovered and ALT) and 0xff0000ff or def_out_ring
     color = color == 0xff and def_color or color
 
-    -- if png then color = def_color end
-
     color = (hovered and ALT) and 0xff0000ff or color
 
-    --local icon_col = LerpAlpha(0xffffffff, CENTER_BTN_PROG)
     local icon_font = selected and ICON_FONT_SMALL or ICON_FONT_VERY_SMALL
     local icon_font_size = selected and ICON_FONT_SMALL_SIZE or ICON_FONT_VERY_SMALL_SIZE
     local col = (selected or hovered) and IncreaseDecreaseBrightness(color, 30) or color
@@ -1165,8 +1138,6 @@ local function DrawClassicButton(pie, selected, hovered)
         col = IncreaseDecreaseBrightness(col, 20)
         sel_size = selected and sel_size - 5 or sel_size
     end
-
-    --local hovered = selected
 
     r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, selected and 3 or 2)
 
@@ -1206,7 +1177,6 @@ local function DrawClassicButton(pie, selected, hovered)
 
         r.ImGui_DrawList_AddLine(draw_list, start_x, ye + 2 + sel_size, end_x, ye + 2 + sel_size,
             dark_theme and 0x40ffb3ff or 0xff2233ff, 5)
-        -- end
     end
 
     if pie.menu then
@@ -1223,7 +1193,6 @@ local function DrawClassicButton(pie, selected, hovered)
             LerpAlpha(def_color, CENTER_BTN_PROG), 5, r.ImGui_DrawFlags_RoundCornersAll())
         r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 3)
 
-        -- r.ImGui_DrawList_AddTriangleFilled( draw_list, (xs - sel_size + w/2) - 12, (ys - sel_size) - 8, (xe + sel_size - w/2) + 12, (ys - sel_size) - 8, (xs + w/2), (ys + (selected and 2 or 6) ), ring_col )
         r.ImGui_DrawList_AddTriangleFilled(draw_list, (xs - sel_size + w / 2) - 10, (ys - sel_size) - 6,
             (xe + sel_size - w / 2) + 10, (ys - sel_size) - 6, (xs + w / 2), (ys + (selected and 0 or 3)), 0xCCCCCCff)
         r.ImGui_DrawList_AddTriangleFilled(draw_list, (xs - sel_size + w / 2) - (selected and 2 or 4),
@@ -1239,7 +1208,6 @@ local function DrawClassicButton(pie, selected, hovered)
 
     local is_luma_high = IsColorLuminanceHigh(col)
     local txt_col = LerpAlpha(is_luma_high and 0xff or 0xffffffff, CENTER_BTN_PROG)
-    --local txt_col = is_luma_high and 0xff or 0xffffffff
     r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, selected and 3 or 2)
     if icon then
         r.ImGui_PushFont(ctx, icon_font)
@@ -1252,10 +1220,6 @@ local function DrawClassicButton(pie, selected, hovered)
         r.ImGui_PopFont(ctx)
     end
 
-
-    -- if hovered and not SETUP then
-    --    r.ImGui_PushFont(ctx, BUTTON_TEXT_FONT)
-    --end
     local label_size = r.ImGui_CalcTextSize(ctx, name)
     local font_size = r.ImGui_GetFontSize(ctx)
 
@@ -1267,9 +1231,6 @@ local function DrawClassicButton(pie, selected, hovered)
             name)
     end
     r.ImGui_DrawList_AddTextEx(draw_list, nil, font_size, txt_x, txt_y, LerpAlpha(txt_col, CENTER_BTN_PROG), name)
-    --if hovered and not SETUP then
-    ----    r.ImGui_PopFont(ctx)
-    --end
 end
 
 local function DrawButtonTextStyle(pie, center)
@@ -1287,7 +1248,7 @@ local function DrawButtonTextStyle(pie, center)
                 last_tbl_idx = i
             end
         end
-        return smallestIndex, last_tbl_idx --, table[smallestIndex]
+        return smallestIndex, last_tbl_idx
     end
     r.ImGui_PushFont(ctx, SYSTEM_FONT)
     local CENTER = center or CENTER
@@ -1297,29 +1258,13 @@ local function DrawButtonTextStyle(pie, center)
     local RADIUS = pie.RADIUS * CENTER_BTN_PROG
     local RADIUS_MIN = RADIUS / 2.2
 
-    -- r.ImGui_DrawList_AddRect(draw_list, CENTER.x - RADIUS_MIN, CENTER.y - RADIUS, CENTER.x + RADIUS_MIN,
-    --    CENTER.y + RADIUS, 0xff0000ff, 0, 0, 2)
-
     local ap1_t = atan((CENTER.y - RADIUS) - CENTER.y, (CENTER.x - RADIUS_MIN) - CENTER.x)
     local ap2_t = atan((CENTER.y - RADIUS) - CENTER.y, (CENTER.x + RADIUS_MIN) - CENTER.x)
-
-    -- TOP
-    --r.ImGui_DrawList_PathArcTo(draw_list, CENTER.x, CENTER.y, RADIUS, ap1_t, ap2_t)
-    -- r.ImGui_DrawList_PathStroke(draw_list, 0x22FF4455, r.ImGui_DrawFlags_None(), 150 * 1)
 
     local ap1_b = atan((CENTER.y + RADIUS) - CENTER.y, (CENTER.x - RADIUS_MIN) - CENTER.x)
     local ap2_b = atan((CENTER.y + RADIUS) - CENTER.y, (CENTER.x + RADIUS_MIN) - CENTER.x)
 
     local ap_c = atan((CENTER.y + RADIUS) - CENTER.y, 0)
-
-    -- -- BOT
-    -- r.ImGui_DrawList_PathArcTo(draw_list, CENTER.x, CENTER.y, RADIUS, ap1_b, ap2_b)
-    -- r.ImGui_DrawList_PathStroke(draw_list, 0x22FF4455, r.ImGui_DrawFlags_None(), 150 * 1)
-
-    -- -- LEFT
-    -- r.ImGui_DrawList_PathArcTo(draw_list, CENTER.x, CENTER.y, RADIUS, ap2_t, ap2_b)
-    -- r.ImGui_DrawList_PathStroke(draw_list, 0x2244FF55, r.ImGui_DrawFlags_None(), 150 * 1)
-
 
     local pie_even = #pie % 2 == 0
 
@@ -1339,8 +1284,6 @@ local function DrawButtonTextStyle(pie, center)
     local closest_tbl = {}
     local LAST_HOR_SEL
     for i = 1, #pie do
-        --local ang_min = (item_arc_span) * (i - (0.5)) + START_ANG
-        --local ang_max = (item_arc_span) * (i + (0.5)) + START_ANG
         local angle = item_arc_span * i
 
         local txt_w, txt_h = r.ImGui_CalcTextSize(ctx, pie[i].name)
@@ -1464,12 +1407,6 @@ local function DrawButtonTextStyle(pie, center)
                     r.ImGui_DrawList_PathFillConvex(draw_list, ARC_COLOR)
                     r.ImGui_DrawList_PathClear(draw_list)
                 end
-                --DrawArc(pie, center, item_arc_span, inside[1], inside[2], RADIUS, RADIUS_MIN)
-                -- r.ImGui_DrawList_PathArcTo(draw_list, CENTER.x, CENTER.y, (RADIUS - RADIUS_MIN) + 100, inside[1],
-                --     inside[2],
-                --     12)
-                -- r.ImGui_DrawList_PathArcTo(draw_list, CENTER.x, CENTER.y, RADIUS_MIN, inside[2], inside[1], 12)
-                -- r.ImGui_DrawList_PathFillConvex(draw_list, ARC_COLOR)
             else
                 if LAST_HOR_SEL then
                     local xs = inside[3] == "LEFT" and LAST_HOR_SEL.xs - 15 or LAST_HOR_SEL.xe + 15
@@ -1715,7 +1652,6 @@ local function DrawCenter(pie, center)
         LerpAlpha(
             tracker_state == 1 and IncreaseDecreaseBrightness(0x55f67eDD, is_tracker_hovered and 30 or 0) or
             IncreaseDecreaseBrightness(0xd31111aa, is_tracker_hovered and 30 or 0), CENTER_BTN_PROG), 64)
-    -- IncreaseDecreaseBrightness(0xd31111aa, r.ImGui_IsItemHovered(ctx) and 30 or 0)
 
     -- DRAW PREVIOUS MENU PREVIEW
     r.ImGui_DrawListSplitter_SetCurrentChannel(SPLITTER, 1)
@@ -1737,10 +1673,9 @@ local function DrawCenter(pie, center)
                 LerpAlpha(0x44, MAIN_PROG), 128)
 
             -- OUTER RING
-            --if dark_theme or SETUP then
             r.ImGui_DrawList_AddCircleFilled(draw_list, button_pos.x, button_pos.y, mini_rad + 1.5 * MAIN_PROG,
                 LerpAlpha(def_out_ring, MAIN_PROG), 64)
-            --end
+
             -- MAIN BG
             r.ImGui_DrawList_AddCircleFilled(draw_list, button_pos.x, button_pos.y, mini_rad * MAIN_PROG,
                 prev_i == i and 0x23EE9cff or def_menu_prev, 64)
@@ -1946,13 +1881,6 @@ local sep_boarder = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_SeparatorTextBorde
 local wnd_padding = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_WindowPadding())
 local item_s_x, item_s_y = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing())
 function DrawPie(pie, center)
-    -- if pie.is_midi then
-    --     section_id = "MIDI"
-    -- elseif pie.is_explorer then
-    --     section_id = "EXPLORER"
-    -- else
-    --     section_id = 0
-    -- end
     -- DRAW GUIDELINE WHERE MOUSE WAS BEFORE GUI WAS ADJUSTED TO BE IN THE SCREEN (ON EDGES)
     if OUT_SCREEN then
         r.ImGui_DrawList_AddLine(draw_list, PREV_X, PREV_Y, START_X, START_Y, dark_theme and 0x40ffb3aa or 0xff0000ff, 5)
