@@ -1,9 +1,10 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.11
+-- @version 0.35.12
 -- @changelog
---  Expand action section id for inline and event list
+--  Improved/optimized action find logic
+--  Improved/optimized action state checking
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -46,9 +47,10 @@ local function GetMonitorFromPoint()
     local x, y = r.GetMousePosition()
     LEFT, TOP, RIGHT, BOT = r.my_getViewport(x, y, x, y, x, y, x, y, true)
 end
-local ACTIONS                                     = GetMainActions()
-local MIDI_ACTIONS, INLINE_ACTIONS, EVENT_ACTIONS = GetMidiActions()
-local EXPLORER_ACTIONS                            = GetExplorerActions()
+local ACTIONS, ACTIONS_PAIRS                                                                                     = GetMainActions()
+local MIDI_ACTIONS, INLINE_ACTIONS, EVENT_ACTIONS, MIDI_ACTIONS_PAIRS, INLINE_ACTIONS_PAIRS, EVENT_ACTIONS_PAIRS =
+    GetMidiActions()
+local EXPLORER_ACTIONS, EXPLORER_ACTIONS_PAIRS                                                                   = GetExplorerActions()
 
 local PIES, MIDI_PIES
 
@@ -359,33 +361,49 @@ end
 local function FindAction(name, no_warning)
     if not STANDALONE_PIE then
         if PIES[INFO].is_midi then
-            for i = 1, #MIDI_ACTIONS do
-                if MIDI_ACTIONS[i].name == name then
-                    return tonumber(MIDI_ACTIONS[i].cmd), MIDI_ACTIONS[i].type
-                end
+            if MIDI_ACTIONS_PAIRS[name] then
+                return tonumber(MIDI_ACTIONS_PAIRS[name].cmd), MIDI_ACTIONS_PAIRS[name].type
             end
-            for i = 1, #INLINE_ACTIONS do
-                if INLINE_ACTIONS[i].name == name then
-                    return tonumber(INLINE_ACTIONS[i].cmd), INLINE_ACTIONS[i].type
-                end
+            if INLINE_ACTIONS_PAIRS[name] then
+                return tonumber(INLINE_ACTIONS_PAIRS[name].cmd), INLINE_ACTIONS_PAIRS[name].type
             end
-            for i = 1, #EVENT_ACTIONS do
-                if EVENT_ACTIONS[i].name == name then
-                    return tonumber(EVENT_ACTIONS[i].cmd), EVENT_ACTIONS[i].type
-                end
+
+            if EVENT_ACTIONS_PAIRS[name] then
+                return tonumber(EVENT_ACTIONS_PAIRS[name].cmd), EVENT_ACTIONS_PAIRS[name].type
             end
+            -- for i = 1, #MIDI_ACTIONS do
+            --     if MIDI_ACTIONS[i].name == name then
+            --         return tonumber(MIDI_ACTIONS[i].cmd), MIDI_ACTIONS[i].type
+            --     end
+            -- end
+            -- for i = 1, #INLINE_ACTIONS do
+            --     if INLINE_ACTIONS[i].name == name then
+            --         return tonumber(INLINE_ACTIONS[i].cmd), INLINE_ACTIONS[i].type
+            --     end
+            -- end
+            -- for i = 1, #EVENT_ACTIONS do
+            --     if EVENT_ACTIONS[i].name == name then
+            --         return tonumber(EVENT_ACTIONS[i].cmd), EVENT_ACTIONS[i].type
+            --     end
+            -- end
         elseif PIES[INFO].is_explorer then
-            for i = 1, #EXPLORER_ACTIONS do
-                if EXPLORER_ACTIONS[i].name == name then
-                    return tonumber(EXPLORER_ACTIONS[i].cmd), EXPLORER_ACTIONS[i].type
-                end
+            if EXPLORER_ACTIONS_PAIRS[name] then
+                return tonumber(EXPLORER_ACTIONS_PAIRS[name].cmd), EXPLORER_ACTIONS_PAIRS[name].type
             end
+            -- for i = 1, #EXPLORER_ACTIONS do
+            --     if EXPLORER_ACTIONS[i].name == name then
+            --         return tonumber(EXPLORER_ACTIONS[i].cmd), EXPLORER_ACTIONS[i].type
+            --     end
+            -- end
         else
-            for i = 1, #ACTIONS do
-                if ACTIONS[i].name == name then
-                    return tonumber(ACTIONS[i].cmd), ACTIONS[i].type
-                end
+            if ACTIONS_PAIRS[name] then
+                return tonumber(ACTIONS_PAIRS[name].cmd), ACTIONS_PAIRS[name].type
             end
+            -- for i = 1, #ACTIONS do
+            --     if ACTIONS[i].name == name then
+            --         return tonumber(ACTIONS[i].cmd), ACTIONS[i].type
+            --     end
+            -- end
             --  end
         end
         if not no_warning then
@@ -395,32 +413,23 @@ local function FindAction(name, no_warning)
         end
     else
         if INFO:match("^midi") or INFO:match("pianoroll") or MIDI_LANE_CONTEXT then
-            for i = 1, #MIDI_ACTIONS do
-                if MIDI_ACTIONS[i].name == name then
-                    return tonumber(MIDI_ACTIONS[i].cmd), MIDI_ACTIONS[i].type
-                end
+            if MIDI_ACTIONS_PAIRS[name] then
+                return tonumber(MIDI_ACTIONS_PAIRS[name].cmd), MIDI_ACTIONS_PAIRS[name].type
             end
-            for i = 1, #INLINE_ACTIONS do
-                if INLINE_ACTIONS[i].name == name then
-                    return tonumber(INLINE_ACTIONS[i].cmd), INLINE_ACTIONS[i].type
-                end
+            if INLINE_ACTIONS_PAIRS[name] then
+                return tonumber(INLINE_ACTIONS_PAIRS[name].cmd), INLINE_ACTIONS_PAIRS[name].type
             end
-            for i = 1, #EVENT_ACTIONS do
-                if EVENT_ACTIONS[i].name == name then
-                    return tonumber(EVENT_ACTIONS[i].cmd), EVENT_ACTIONS[i].type
-                end
+
+            if EVENT_ACTIONS_PAIRS[name] then
+                return tonumber(EVENT_ACTIONS_PAIRS[name].cmd), EVENT_ACTIONS_PAIRS[name].type
             end
         elseif INFO:match("mediaexplorer") then
-            for i = 1, #EXPLORER_ACTIONS do
-                if EXPLORER_ACTIONS[i].name == name then
-                    return tonumber(EXPLORER_ACTIONS[i].cmd), EXPLORER_ACTIONS[i].type
-                end
+            if EXPLORER_ACTIONS_PAIRS[name] then
+                return tonumber(EXPLORER_ACTIONS_PAIRS[name].cmd), EXPLORER_ACTIONS_PAIRS[name].type
             end
         else
-            for i = 1, #ACTIONS do
-                if ACTIONS[i].name == name then
-                    return tonumber(ACTIONS[i].cmd), ACTIONS[i].type
-                end
+            if ACTIONS_PAIRS[name] then
+                return tonumber(ACTIONS_PAIRS[name].cmd), ACTIONS_PAIRS[name].type
             end
         end
         if not no_warning then

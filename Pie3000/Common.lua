@@ -154,54 +154,76 @@ function IterateActions(sectionID)
 end
 
 local SECTION_FILTER = {
-    [0] = "Main",
-    [32060] = "Midi",
-    [32062] = "Midi Inline",
-    [32061] = "Midi Event",
-    [32063] = "ME",
-}
+    -- [0] = "Main",
+    -- [32060] = "Midi",
+    -- [32062] = "Midi Inline",
+    -- [32061] = "Midi Event",
+    -- [32063] = "ME",
 
-local function GetToggleState(sec_type, cmd)
-    if sec_type == "MIDI" then
-        if r.GetToggleCommandStateEx(32060, cmd) == 1 or
-            r.GetToggleCommandStateEx(32062, cmd) == 1 or
-            r.GetToggleCommandStateEx(32061, cmd) == 1 then
-            return true
-        end
-    else
-        if r.GetToggleCommandStateEx(sec_type, cmd) == 1 then
-            return true
-        end
-    end
-end
+    [0] = 0,
+    [32060] = 32060,
+    [32062] = 32062,
+    [32061] = 32061,
+    [32063] = 32063,
+}
 
 function GetActions(s)
     local actions = {}
+    local pairs_actions = {}
     for cmd, name in IterateActions(s) do
         if name ~= "Script: Sexan_Pie3000.lua" then
             table.insert(actions, { cmd = cmd, name = name, type = SECTION_FILTER[s] })
+            pairs_actions[name] = { cmd = cmd, name = name, type = SECTION_FILTER[s] }
         end
     end
     table.sort(actions, function(a, b) return a.name < b.name end)
-    return actions
+    return actions, pairs_actions
 end
 
-local ACTIONS_TBL = GetActions(0)
-local MIDI_ACTIONS_TBL = GetActions(32060)
-local MIDI_INLINE_ACTIONS_TBL = GetActions(32062)
-local MIDI_EVENT_ACTIONS_TBL = GetActions(32061)
-local EXPLORER_ACTIONS_TBL = GetActions(32063)
+local ACTIONS_TBL, ACTIONS_TBL_PAIRS = GetActions(0)
+local MIDI_ACTIONS_TBL, MIDI_ACTIONS_TBL_PAIRS = GetActions(32060)
+local MIDI_INLINE_ACTIONS_TBL, MIDI_INLINE_ACTIONS_TBL_PAIRS = GetActions(32062)
+local MIDI_EVENT_ACTIONS_TBL, MIDI_EVENT_ACTIONS_TBL_PAIRS = GetActions(32061)
+local EXPLORER_ACTIONS_TBL, EXPLORER_ACTIONS_TBL_PAIRS = GetActions(32063)
 
 function GetMainActions()
-    return ACTIONS_TBL
+    return ACTIONS_TBL, ACTIONS_TBL_PAIRS
 end
 
 function GetMidiActions()
-    return MIDI_ACTIONS_TBL, MIDI_INLINE_ACTIONS_TBL, MIDI_EVENT_ACTIONS_TBL
+    return MIDI_ACTIONS_TBL, MIDI_INLINE_ACTIONS_TBL, MIDI_EVENT_ACTIONS_TBL, MIDI_ACTIONS_TBL_PAIRS,
+        MIDI_INLINE_ACTIONS_TBL_PAIRS, MIDI_EVENT_ACTIONS_TBL_PAIRS
 end
 
 function GetExplorerActions()
-    return EXPLORER_ACTIONS_TBL
+    return EXPLORER_ACTIONS_TBL, EXPLORER_ACTIONS_TBL_PAIRS
+end
+
+local function GetToggleState(name, cmd)
+    local section
+    if MIDI_ACTIONS_TBL_PAIRS[name] then
+        section = MIDI_ACTIONS_TBL_PAIRS[name].type
+    end
+    if MIDI_INLINE_ACTIONS_TBL_PAIRS[name] then
+        section = MIDI_INLINE_ACTIONS_TBL_PAIRS[name].type
+    end
+
+    if MIDI_EVENT_ACTIONS_TBL_PAIRS[name] then
+        section = MIDI_EVENT_ACTIONS_TBL_PAIRS[name].type
+    end
+
+    if EXPLORER_ACTIONS_TBL_PAIRS[name] then
+        section = EXPLORER_ACTIONS_TBL_PAIRS[name].type
+    end
+    if ACTIONS_TBL_PAIRS[name] then
+        section = ACTIONS_TBL_PAIRS[name].type
+    end
+
+    if section then
+        if r.GetToggleCommandStateEx(section, cmd) == 1 then
+            return true
+        end
+    end
 end
 
 function Release()
@@ -1004,7 +1026,7 @@ local function PieButtonDrawlist(pie, button_radius, selected, hovered, button_p
     -- BUTTON CIRCLE -------------------------------------------------
 
     -- SPINNER FOR ACTION STATE ON/OFF
-    if (tonumber(pie.cmd) and GetToggleState(section_id, pie.cmd)) then
+    if (tonumber(pie.cmd) and GetToggleState(pie.cmd_name, pie.cmd)) then
         StateSpinner(button_center.x, button_center.y, LerpAlpha(spinner_col, CENTER_BTN_PROG),
             button_radius * CENTER_BTN_PROG)
     end
@@ -1166,7 +1188,7 @@ local function DrawClassicButton(pie, selected, hovered)
         (ye + sel_size) - 3,
         LerpAlpha(col, CENTER_BTN_PROG), 5, r.ImGui_DrawFlags_RoundCornersAll())
 
-    if (tonumber(pie.cmd) and GetToggleState(section_id, pie.cmd)) then
+    if (tonumber(pie.cmd) and GetToggleState(pie.cmd_name, pie.cmd)) then
         -- for i = 1, 2 do
         local new_x = Animate_On_Cordinates(xs - 35, xe, 2, (r.time_precise() * 0.5) - (1)) // 1
 
@@ -1912,13 +1934,13 @@ local sep_boarder = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_SeparatorTextBorde
 local wnd_padding = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_WindowPadding())
 local item_s_x, item_s_y = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing())
 function DrawPie(pie, center)
-    if pie.is_midi then
-        section_id = "MIDI"
-    elseif pie.is_explorer then
-        section_id = 32063
-    else
-        section_id = 0
-    end
+    -- if pie.is_midi then
+    --     section_id = "MIDI"
+    -- elseif pie.is_explorer then
+    --     section_id = "EXPLORER"
+    -- else
+    --     section_id = 0
+    -- end
     -- DRAW GUIDELINE WHERE MOUSE WAS BEFORE GUI WAS ADJUSTED TO BE IN THE SCREEN (ON EDGES)
     if OUT_SCREEN then
         r.ImGui_DrawList_AddLine(draw_list, PREV_X, PREV_Y, START_X, START_Y, dark_theme and 0x40ffb3aa or 0xff0000ff, 5)
