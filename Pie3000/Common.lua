@@ -192,6 +192,7 @@ function GetExplorerActions()
 end
 
 local function GetToggleState(name, cmd)
+    if not name then return end
     local section
     if MIDI_ACTIONS_TBL_PAIRS[name] then
         section = MIDI_ACTIONS_TBL_PAIRS[name].type

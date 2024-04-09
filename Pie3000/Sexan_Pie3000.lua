@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.22
+-- @version 0.35.23
 -- @changelog
---  Disable Midi Inline, Midi Event actions for now
+--  Check nil in togglestate
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
