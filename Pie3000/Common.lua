@@ -772,13 +772,14 @@ end
 
 DEF_COLOR = def_color
 
-local function StateSpinner(cx, cy, col, radius)
+local function StateSpinner(cx, cy, col, radius, is_dd)
     local item_arc_span = (2 * pi) / 2
     for i = 1, 2 do
         local ang_min = (item_arc_span) * (i - (0.2)) + (r.time_precise() % (pi * 2))
         local ang_max = (item_arc_span) * (i + (0.2)) + (r.time_precise() % (pi * 2))
         r.ImGui_DrawList_PathArcTo(draw_list, cx, cy, radius + 5, ang_min, ang_max)
-        r.ImGui_DrawList_PathStroke(draw_list, dark_theme and 0x40ffb3ff or 0xff2233ff, nil, 5)
+        r.ImGui_DrawList_PathStroke(draw_list, STYLE == 3 and 0xff0000ff or (dark_theme and 0x40ffb3ff or 0xff2233ff),
+            nil, is_dd and 4 or 5)
     end
 end
 
@@ -1765,6 +1766,11 @@ local function DrawCenter(pie, center)
 end
 
 local function DropDownMenuPopup(pie)
+    local SPLITTER_DD
+    if not r.ImGui_ValidatePtr(SPLITTER_DD, 'ImGui_DrawListSplitter*') then
+        SPLITTER_DD = r.ImGui_CreateDrawListSplitter(draw_list)
+    end
+    r.ImGui_DrawListSplitter_Split(SPLITTER_DD, 3)
     local longest_label, longest_key, dummy_h = 0, 0, 0
     for i = 1, #pie do
         local txt_w, txt_h = r.ImGui_CalcTextSize(ctx, pie[i].name)
@@ -1788,7 +1794,6 @@ local function DropDownMenuPopup(pie)
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Text(), 0x3aCCffff)
     r.ImGui_SeparatorText(ctx, "\t" .. pie.name .. "\t")
     r.ImGui_PopStyleColor(ctx)
-
     for i = 1, #pie do
         local selected = (SETUP and (pie.selected == i)) and true
         local key_released = (pie[i].key and r.ImGui_IsKeyReleased(ctx, pie[i].key) and r.ImGui_IsWindowFocused(ctx)) and
@@ -1805,6 +1810,11 @@ local function DropDownMenuPopup(pie)
         end
 
         r.ImGui_SetCursorPosX(ctx, 29)
+        local sxx, syy = r.ImGui_GetCursorScreenPos(ctx)
+        if (tonumber(pie[i].cmd) and GetToggleState(pie[i].cmd_name, pie[i].cmd)) then
+            StateSpinner(sxx - 15, syy + 8, LerpAlpha(spinner_col, CENTER_BTN_PROG),
+                2 * CENTER_BTN_PROG, true)
+        end
         if SETUP and ALT then
             r.ImGui_PushStyleColor(ctx, r.ImGui_Col_HeaderHovered(), 0xCC0000ff)
             r.ImGui_PushStyleColor(ctx, r.ImGui_Col_HeaderActive(), 0xff0000ff)
@@ -1868,6 +1878,7 @@ local function DropDownMenuPopup(pie)
             end
         end
 
+
         if SETUP then
             if ALT then
                 r.ImGui_PopStyleColor(ctx, 2)
@@ -1893,6 +1904,7 @@ local function DropDownMenuPopup(pie)
             r.ImGui_PopStyleColor(ctx)
         end
     end
+    r.ImGui_DrawListSplitter_Merge(SPLITTER_DD)
 end
 
 local function OpenDropDownStyle(pie)

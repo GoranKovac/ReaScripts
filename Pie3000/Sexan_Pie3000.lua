@@ -1,10 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.12
+-- @version 0.35.13
 -- @changelog
---  Improved/optimized action find logic
---  Improved/optimized action state checking
+--  DropDown Style added state spinner
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
