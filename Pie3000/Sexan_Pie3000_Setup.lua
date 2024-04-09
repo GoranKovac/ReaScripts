@@ -1802,14 +1802,14 @@ local function Pie()
     r.ImGui_BeginGroup(ctx)
     if STATE == "PIE" then
         r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_WindowPadding(), 0, 0)
-        if r.ImGui_BeginChild(ctx, "##PIEDRAWTOP", -400, 20, true) then
+        if r.ImGui_BeginChild(ctx, "##PIEDRAWTOP", -450, 20, true) then
             CustomDropDown()
             r.ImGui_EndChild(ctx)
         end
         r.ImGui_PopStyleVar(ctx)
     end
     if STATE == "EDITOR" then MenuEditList(CUR_MENU_PIE) end
-    if r.ImGui_BeginChild(ctx, "##PIEDRAW", -400, 0, true) then
+    if r.ImGui_BeginChild(ctx, "##PIEDRAW", -450, 0, true) then
         if STATE == "PIE" then
             BreadCrumbs(PIE_LIST)
             r.ImGui_SameLine(ctx, 0, 3)
@@ -1869,8 +1869,8 @@ end
 --     return actions
 -- end
 
-local ACTIONS_TBL = GetMainActions()      --GetActions(0)
-local MIDI_ACTIONS_TBL = GetMidiActions() --GetActions(32060)
+local ACTIONS_TBL = GetMainActions()                                                       --GetActions(0)
+local MIDI_ACTIONS_TBL, MIDI_INLINE_ACTIONS_TBL, MIDI_EVENT_ACTIONS_TBL = GetMidiActions() --GetActions(32060)
 local EXPLORER_ACTIONS_TBL = GetExplorerActions()
 
 local FILTERED_ACTION_TBL = ACTIONS_TBL
@@ -1879,10 +1879,25 @@ local ACTION_FILTER = ''
 local MENU_FILTER = ''
 
 local want_filter = 1
+
+local function GetFilter(flt_idx)
+    if flt_idx == 1 then
+        return ACTIONS_TBL
+    elseif flt_idx == 2 then
+        return MIDI_ACTIONS_TBL
+    elseif flt_idx == 3 then
+        return EXPLORER_ACTIONS_TBL
+    elseif flt_idx == 4 then
+        return MIDI_INLINE_ACTIONS_TBL
+    elseif flt_idx == 5 then
+        return MIDI_EVENT_ACTIONS_TBL
+    end
+end
+
 local function ActionsTab(pie)
     if r.ImGui_BeginTabBar(ctx, "ACTIONS MENUS TAB") then
         if r.ImGui_BeginTabItem(ctx, "Actions") then
-            r.ImGui_SameLine(ctx, 0, 80)
+            r.ImGui_SameLine(ctx, 0, 55)
             r.ImGui_BeginGroup(ctx)
             if r.ImGui_RadioButton(ctx, "Main", want_filter == 1) then
                 want_filter = 1
@@ -1891,6 +1906,16 @@ local function ActionsTab(pie)
             r.ImGui_SameLine(ctx)
             if r.ImGui_RadioButton(ctx, "Midi", want_filter == 2) then
                 want_filter = 2
+                UPDATE_FILTER = true
+            end
+            r.ImGui_SameLine(ctx)
+            if r.ImGui_RadioButton(ctx, "Midi INL", want_filter == 4) then
+                want_filter = 4
+                UPDATE_FILTER = true
+            end
+            r.ImGui_SameLine(ctx)
+            if r.ImGui_RadioButton(ctx, "Midi Event", want_filter == 5) then
+                want_filter = 5
                 UPDATE_FILTER = true
             end
             r.ImGui_SameLine(ctx)
@@ -1906,8 +1931,8 @@ local function ActionsTab(pie)
                 UPDATE_CNT = UPDATE_FILTER and UPDATE_CNT + 1 or UPDATE_CNT
                 --local want_midi = CUR_PIE.name:find("MIDI") and not CUR_PIE.name:find("MIDI ITEM")
                 FILTERED_ACTION_TBL = FilterActions(
-                    want_filter == 2 and MIDI_ACTIONS_TBL or (want_filter == 3 and EXPLORER_ACTIONS_TBL or ACTIONS_TBL),
-                    ACTION_FILTER)
+                --want_filter == 2 and MIDI_ACTIONS_TBL or (want_filter == 3 and EXPLORER_ACTIONS_TBL or ACTIONS_TBL),
+                    GetFilter(want_filter), ACTION_FILTER)
             end
             if r.ImGui_BeginChild(ctx, "##CLIPPER_ACTION", nil, nil, nil, r.ImGui_WindowFlags_AlwaysHorizontalScrollbar()) then
                 if not r.ImGui_ValidatePtr(ACTION_CLIPPER, 'ImGui_ListClipper*') then

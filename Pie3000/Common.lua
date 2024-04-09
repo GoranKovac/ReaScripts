@@ -172,6 +172,8 @@ end
 
 local ACTIONS_TBL = GetActions(0)
 local MIDI_ACTIONS_TBL = GetActions(32060)
+local MIDI_INLINE_ACTIONS_TBL = GetActions(32062)
+local MIDI_EVENT_ACTIONS_TBL = GetActions(32061)
 local EXPLORER_ACTIONS_TBL = GetActions(32063)
 
 function GetMainActions()
@@ -179,7 +181,7 @@ function GetMainActions()
 end
 
 function GetMidiActions()
-    return MIDI_ACTIONS_TBL
+    return MIDI_ACTIONS_TBL, MIDI_INLINE_ACTIONS_TBL, MIDI_EVENT_ACTIONS_TBL
 end
 
 function GetExplorerActions()
@@ -1894,13 +1896,13 @@ local sep_boarder = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_SeparatorTextBorde
 local wnd_padding = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_WindowPadding())
 local item_s_x, item_s_y = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing())
 function DrawPie(pie, center)
-    if pie.is_midi then
-        section_id = 32060
-    elseif pie.is_explorer then
-        section_id = 32063
-    else
-        section_id = 0
-    end
+    -- if pie.is_midi then
+    --     section_id = 32060
+    -- elseif pie.is_explorer then
+    --     section_id = 32063
+    -- else
+    --     section_id = 0
+    -- end
     -- DRAW GUIDELINE WHERE MOUSE WAS BEFORE GUI WAS ADJUSTED TO BE IN THE SCREEN (ON EDGES)
     if OUT_SCREEN then
         r.ImGui_DrawList_AddLine(draw_list, PREV_X, PREV_Y, START_X, START_Y, dark_theme and 0x40ffb3aa or 0xff0000ff, 5)

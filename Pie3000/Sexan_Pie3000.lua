@@ -3,7 +3,7 @@
 -- @license GPL v3
 -- @version 0.35.07
 -- @changelog
---  Exported Menu detect MIDI CC action context
+--  Added Midi Inline, Midi Event actions
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -46,9 +46,9 @@ local function GetMonitorFromPoint()
     local x, y = r.GetMousePosition()
     LEFT, TOP, RIGHT, BOT = r.my_getViewport(x, y, x, y, x, y, x, y, true)
 end
-local ACTIONS = GetMainActions()
-local MIDI_ACTIONS = GetMidiActions()
-local EXPLORER_ACTIONS = GetExplorerActions()
+local ACTIONS                                     = GetMainActions()
+local MIDI_ACTIONS, INLINE_ACTIONS, EVENT_ACTIONS = GetMidiActions()
+local EXPLORER_ACTIONS                            = GetExplorerActions()
 
 local PIES, MIDI_PIES
 
@@ -364,6 +364,16 @@ local function FindAction(name, no_warning)
                     return tonumber(MIDI_ACTIONS[i].cmd), MIDI_ACTIONS[i].type
                 end
             end
+            for i = 1, #INLINE_ACTIONS do
+                if INLINE_ACTIONS[i].name == name then
+                    return tonumber(INLINE_ACTIONS[i].cmd), INLINE_ACTIONS[i].type
+                end
+            end
+            for i = 1, #EVENT_ACTIONS do
+                if EVENT_ACTIONS[i].name == name then
+                    return tonumber(EVENT_ACTIONS[i].cmd), EVENT_ACTIONS[i].type
+                end
+            end
         elseif PIES[INFO].is_explorer then
             for i = 1, #EXPLORER_ACTIONS do
                 if EXPLORER_ACTIONS[i].name == name then
@@ -388,6 +398,16 @@ local function FindAction(name, no_warning)
             for i = 1, #MIDI_ACTIONS do
                 if MIDI_ACTIONS[i].name == name then
                     return tonumber(MIDI_ACTIONS[i].cmd), MIDI_ACTIONS[i].type
+                end
+            end
+            for i = 1, #INLINE_ACTIONS do
+                if INLINE_ACTIONS[i].name == name then
+                    return tonumber(INLINE_ACTIONS[i].cmd), INLINE_ACTIONS[i].type
+                end
+            end
+            for i = 1, #EVENT_ACTIONS do
+                if EVENT_ACTIONS[i].name == name then
+                    return tonumber(EVENT_ACTIONS[i].cmd), EVENT_ACTIONS[i].type
                 end
             end
         elseif INFO:match("mediaexplorer") then
