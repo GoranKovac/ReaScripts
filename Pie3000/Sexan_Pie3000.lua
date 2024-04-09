@@ -1,10 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.06
+-- @version 0.35.07
 -- @changelog
---  Exported Menu detect action context
---  Improve action context detect Warning when activating aciton
+--  Exported Menu detect MIDI CC action context
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -385,7 +384,7 @@ local function FindAction(name, no_warning)
             ACTION_CONTEXT_WARNING = true
         end
     else
-        if INFO:match("^midi") or INFO:match("pianoroll") then
+        if INFO:match("^midi") or INFO:match("pianoroll") or MIDI_LANE_CONTEXT then
             for i = 1, #MIDI_ACTIONS do
                 if MIDI_ACTIONS[i].name == name then
                     return tonumber(MIDI_ACTIONS[i].cmd), MIDI_ACTIONS[i].type
