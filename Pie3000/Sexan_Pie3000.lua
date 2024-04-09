@@ -1,7 +1,7 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.09
+-- @version 0.35.10
 -- @changelog
 --  Action Context Warning 2
 -- @provides
