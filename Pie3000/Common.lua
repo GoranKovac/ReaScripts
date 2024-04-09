@@ -156,8 +156,24 @@ end
 local SECTION_FILTER = {
     [0] = "Main",
     [32060] = "Midi",
+    [32062] = "Midi Inline",
+    [32061] = "Midi Event",
     [32063] = "ME",
 }
+
+local function GetToggleState(sec_type, cmd)
+    if sec_type == "MIDI" then
+        if r.GetToggleCommandStateEx(32060, cmd) == 1 or
+            r.GetToggleCommandStateEx(32062, cmd) == 1 or
+            r.GetToggleCommandStateEx(32061, cmd) == 1 then
+            return true
+        end
+    else
+        if r.GetToggleCommandStateEx(sec_type, cmd) == 1 then
+            return true
+        end
+    end
+end
 
 function GetActions(s)
     local actions = {}
@@ -988,7 +1004,7 @@ local function PieButtonDrawlist(pie, button_radius, selected, hovered, button_p
     -- BUTTON CIRCLE -------------------------------------------------
 
     -- SPINNER FOR ACTION STATE ON/OFF
-    if (tonumber(pie.cmd) and r.GetToggleCommandStateEx(section_id, pie.cmd) == 1) then
+    if (tonumber(pie.cmd) and GetToggleState(section_id, pie.cmd)) then
         StateSpinner(button_center.x, button_center.y, LerpAlpha(spinner_col, CENTER_BTN_PROG),
             button_radius * CENTER_BTN_PROG)
     end
@@ -1150,7 +1166,7 @@ local function DrawClassicButton(pie, selected, hovered)
         (ye + sel_size) - 3,
         LerpAlpha(col, CENTER_BTN_PROG), 5, r.ImGui_DrawFlags_RoundCornersAll())
 
-    if (tonumber(pie.cmd) and r.GetToggleCommandStateEx(section_id, pie.cmd) == 1) then
+    if (tonumber(pie.cmd) and GetToggleState(section_id, pie.cmd)) then
         -- for i = 1, 2 do
         local new_x = Animate_On_Cordinates(xs - 35, xe, 2, (r.time_precise() * 0.5) - (1)) // 1
 
@@ -1896,13 +1912,13 @@ local sep_boarder = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_SeparatorTextBorde
 local wnd_padding = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_WindowPadding())
 local item_s_x, item_s_y = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing())
 function DrawPie(pie, center)
-    -- if pie.is_midi then
-    --     section_id = 32060
-    -- elseif pie.is_explorer then
-    --     section_id = 32063
-    -- else
-    --     section_id = 0
-    -- end
+    if pie.is_midi then
+        section_id = "MIDI"
+    elseif pie.is_explorer then
+        section_id = 32063
+    else
+        section_id = 0
+    end
     -- DRAW GUIDELINE WHERE MOUSE WAS BEFORE GUI WAS ADJUSTED TO BE IN THE SCREEN (ON EDGES)
     if OUT_SCREEN then
         r.ImGui_DrawList_AddLine(draw_list, PREV_X, PREV_Y, START_X, START_Y, dark_theme and 0x40ffb3aa or 0xff0000ff, 5)
