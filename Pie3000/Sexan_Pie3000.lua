@@ -389,7 +389,7 @@ local function FindAction(name, no_warning)
             --  end
         end
         if not no_warning then
-            r.ShowMessageBox(name .. "\nIs not in this Context or does not Exist", "WARNING", 0)
+            r.ShowMessageBox(name .. "\nIs not for this Context or does not Exist", "WARNING", 0)
         else
             ACTION_CONTEXT_WARNING = true
         end
