@@ -1,10 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.24
+-- @version 0.35.26
 -- @changelog
---  Add context limit for custom pie scripts
---  Change "pianoroll" context to "midipianoroll"
+--  Context limit for custom pie scripts set midi/env lane to default info
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -214,6 +213,11 @@ if not STANDALONE_PIE then
     end
 else
     PIE_MENU = STANDALONE_PIE
+    if MIDI_LANE_CONTEXT then
+        INFO = "midilane"
+    elseif ENVELOPE_LANE then
+        INFO = "envcp"
+    end
 end
 
 if PIE_MENU.use_main then
