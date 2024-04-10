@@ -1,9 +1,10 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.23
+-- @version 0.35.24
 -- @changelog
---  Check nil in togglestate
+--  Add context limit for custom pie scripts
+--  Change "pianoroll" context to "midipianoroll"
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -572,6 +573,11 @@ end
 local function Main()
     TrackShortcutKey()
     if TERMINATE then
+        Release()
+        return
+    end
+
+    if CONTEXT_LIMIT and not INFO:match(CONTEXT_LIMIT) then
         Release()
         return
     end

@@ -54,7 +54,7 @@ local DEFAULT_PIE = {
     ["rulermarker_lane"] = { RADIUS = RADIUS_START, name = "RULER MARKER LANE", guid = r.genGuid(), use_main = true, main_name = "ruler" },
     ["rulertempo_lane"] = { RADIUS = RADIUS_START, name = "RULER TEMPO LANE", guid = r.genGuid(), use_main = true, main_name = "ruler" },
     ["midi"] = { RADIUS = RADIUS_START, name = "MIDI", guid = r.genGuid(), is_midi = true },
-    ["pianoroll"] = { RADIUS = RADIUS_START, name = "MIDI PIANO ROLL", guid = r.genGuid(), is_midi = true },
+    ["midipianoroll"] = { RADIUS = RADIUS_START, name = "MIDI PIANO ROLL", guid = r.genGuid(), is_midi = true },
     ["miditracklist"] = { RADIUS = RADIUS_START, name = "MIDI TRACK LIST", guid = r.genGuid(), is_midi = true },
     ["midiruler"] = { RADIUS = RADIUS_START, name = "MIDI RULER", guid = r.genGuid(), is_midi = true },
     ["midilane"] = { RADIUS = RADIUS_START, name = "MIDI LANE", guid = r.genGuid(), as_global = true, is_midi = true },
@@ -133,7 +133,7 @@ local menu_items = {
     { "rulertempo_lane",   "RULER TEMPO LANE",               "_separator_" },
 
     { "midi",              "MIDI" },
-    { "pianoroll",         "MIDI PIANO ROLL" },
+    { "midipianoroll",     "MIDI PIANO ROLL" },
     { "miditracklist",     "MIDI TRACK LIST" },
     { "midiruler",         "MIDI RULER" },
     { "midilane",          "MIDI LANE",                      "_separator_" },
@@ -150,6 +150,10 @@ local MIDI_CC_PIES = ReadFromFile(midi_cc_file) or Deepcopy(DEFAULT_CC_PIE)
 local function BetaAddContextToData()
     --! REMOVE THIS ON FINAL RELEASE, WAS WORKAROUND FOR ADDING STUFF NOT TO BREAK FILES  --------------------------------
 
+    if not PIES["midipianoroll"] then
+        PIES["midipianoroll"] = Deepcopy(PIES["pianoroll"])
+        PIES["pianoroll"] = nil
+    end
     if not PIES["rulerregion_lane"] then
         PIES["rulerregion_lane"] = {
             RADIUS = RADIUS_START,
@@ -202,9 +206,9 @@ local function BetaAddContextToData()
     if not PIES["spacer"] then
         PIES["spacer"] = { RADIUS = RADIUS_START, name = "SPACER", guid = r.genGuid() }
     end
-    if not PIES["pianoroll"] then
-        PIES["pianoroll"] = { RADIUS = RADIUS_START, name = "PIANO ROLL", guid = r.genGuid(), is_midi = true }
-    end
+    -- if not PIES["pianoroll"] then
+    --    PIES["pianoroll"] = { RADIUS = RADIUS_START, name = "PIANO ROLL", guid = r.genGuid(), is_midi = true }
+    --end
 
     -- if not PIES["midilanecp"] then
     --     PIES["midilanecp"] = { RADIUS = RADIUS_START, name = "MIDI LANE CP", guid = r.genGuid(), as_global = true, is_midi = true }

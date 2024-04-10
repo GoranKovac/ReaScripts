@@ -583,7 +583,7 @@ function DetectMIDIContext(midi_debug)
     end
 
     if IsInside(p_left, top + ceil(64 * dpi_scale), p_right, top + bot_px + 5) then
-        return "pianoroll"
+        return "midipianoroll"
     elseif IsInside(p_left, top + bot_px + 5, p_right, bottom) then
         -- MIDI_LANE_CONTEXT = "cp"
         -- local lane_cp = MidiLaneDetect(HWND)
