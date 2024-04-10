@@ -477,6 +477,7 @@ function DetectMIDIContext(midi_debug)
                 end
                 step = -1
             end
+            if px_start > 10000 then break end -- prevent infinite loop
         end
         return bot
     end
@@ -524,7 +525,7 @@ function DetectMIDIContext(midi_debug)
             local destBmp = r.JS_LICE_CreateBitmap(true, 1, h)
             local destDC = r.JS_LICE_GetDC(destBmp)
             r.JS_GDI_Blit(destDC, 0, 0, srcDC, w - 1, 0, w, h)
-            bot_px = FasterSearch(destBmp, GetPixel(destBmp, 0, ceil(64 * dip_scale)), ceil(65 * dip_scale))
+            bot_px = FasterSearch(destBmp, GetPixel(destBmp, 0, ceil(64 * dip_scale)), ceil(65 * dip_scale)) or bottom
             if MIDI_TRACE_DEBUG then
                 if not GOT then
                     GOT = true
