@@ -432,12 +432,10 @@ local cc_lanes = {
 local function MidiLaneDetect(hwnd)
     local mouse_wnd = r.JS_Window_FromPoint(r.GetMousePosition())
     local x, y = r.JS_Window_ScreenToClient(mouse_wnd, r.GetMousePosition())
-    r.PreventUIRefresh(1)
-    local ec = r.GetCursorPosition()
     r.JS_WindowMessage_Send(mouse_wnd, "WM_LBUTTONDOWN", 1, 0, x, y)
+    r.JS_WindowMessage_Send(mouse_wnd, "WM_RBUTTONDOWN", 1, 0, x, y)
+    r.JS_WindowMessage_Send(mouse_wnd, "WM_RBUTTONUP", 0, 0, x, y)
     r.JS_WindowMessage_Send(mouse_wnd, "WM_LBUTTONUP", 0, 0, x, y)
-    r.SetEditCurPos(ec, false, false)
-    r.PreventUIRefresh(-1)
     local lane = r.MIDIEditor_GetSetting_int(hwnd, "last_clicked_cc_lane")
     local sel_lane = "global"
 

@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.28
+-- @version 0.35.30
 -- @changelog
---  Return window to focus after script is closed
+--  Workaround hack for selecting midi lane unselects stuff
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
