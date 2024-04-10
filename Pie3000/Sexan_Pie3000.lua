@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.30
+-- @version 0.35.31
 -- @changelog
---  Workaround hack for selecting midi lane unselects stuff
+--  Fix some crashes in midi CC context
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -361,7 +361,7 @@ end
 
 local function FindAction(name, no_warning)
     if not STANDALONE_PIE then
-        if PIES[INFO].is_midi then
+        if (PIES[INFO] and PIES[INFO].is_midi) or MIDI_LANE_CONTEXT then
             if MIDI_ACTIONS_PAIRS[name] then
                 return tonumber(MIDI_ACTIONS_PAIRS[name].cmd), MIDI_ACTIONS_PAIRS[name].type
             end
@@ -372,7 +372,7 @@ local function FindAction(name, no_warning)
             if EVENT_ACTIONS_PAIRS[name] then
                 return tonumber(EVENT_ACTIONS_PAIRS[name].cmd), EVENT_ACTIONS_PAIRS[name].type
             end
-        elseif PIES[INFO].is_explorer then
+        elseif (PIES[INFO] and PIES[INFO].is_explorer) then
             if EXPLORER_ACTIONS_PAIRS[name] then
                 return tonumber(EXPLORER_ACTIONS_PAIRS[name].cmd), EXPLORER_ACTIONS_PAIRS[name].type
             end
@@ -505,7 +505,7 @@ local function ExecuteAction(action_tbl)
                 local START_ACTION_TIME = r.time_precise()
                 LAST_TRIGGERED = action
                 local cmd_id = FindAction(action)
-                if PIES[INFO].is_midi then
+                if (PIES[INFO] and PIES[INFO].is_midi) or MIDI_LANE_CONTEXT then
                     if cmd_id then
                         r.MIDIEditor_OnCommand(r.MIDIEditor_GetActive(), cmd_id)
                     end
