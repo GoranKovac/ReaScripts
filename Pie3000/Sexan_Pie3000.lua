@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.27
+-- @version 0.35.28
 -- @changelog
---  Context limit for custom pie scripts set midi/env lane to default info
+--  Return window to focus after script is closed
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -150,6 +150,7 @@ local function GetMouseContext()
             info = "mcpempty"
         elseif parent == active_midi then
             info = DetectMIDIContext()
+            RETURN_FOCUS = active_midi
         elseif parent_title == "Media Explorer" then
             info, RETURN_FOCUS = DetectMediaExplorer(parent)
         elseif tostring(id):upper():match(WND_IDS[1].id) then
@@ -587,6 +588,7 @@ local function Main()
 
     if CONTEXT_LIMIT and not INFO:match(CONTEXT_LIMIT) then
         Release()
+        r.ShowConsoleMsg("Pie works under : " .. CONTEXT_LIMIT:upper() .. " context only.\n")
         return
     end
 
