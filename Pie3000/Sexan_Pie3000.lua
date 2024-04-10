@@ -1,7 +1,7 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.26
+-- @version 0.35.27
 -- @changelog
 --  Context limit for custom pie scripts set midi/env lane to default info
 -- @provides
@@ -216,7 +216,11 @@ else
     if MIDI_LANE_CONTEXT then
         INFO = "midilane"
     elseif ENVELOPE_LANE then
-        INFO = "envcp"
+        if ENVELOPE_LANE == "lane" then
+            INFO = "envelope"
+        elseif ENVELOPE_LANE == "cp" then
+            INFO = "envcp"
+        end
     end
 end
 
