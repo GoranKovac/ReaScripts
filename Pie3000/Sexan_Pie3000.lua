@@ -1,7 +1,7 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.35
+-- @version 0.35.40
 -- @changelog
 --  OSX WORKAROUND For Midi tracing
 --  Credits Cfillion for workaround
