@@ -3,7 +3,9 @@
 -- @license GPL v3
 -- @version 0.35.35
 -- @changelog
---  OSX WORKAROUND TEST 3 Set focus on midi when in context (to make sure tracing has no window over midi)
+--  OSX WORKAROUND For Midi tracing
+--  Credits Cfillion for workaround
+--  Credits Ollie_r for providing remote session on OSX
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -299,7 +301,7 @@ local function LimitMouseToRadius()
 end
 
 local FLAGS =
-    r.ImGui_WindowFlags_NoBackground() |
+-- r.ImGui_WindowFlags_NoBackground() |
     r.ImGui_WindowFlags_NoDecoration() |
     r.ImGui_WindowFlags_NoMove()
 

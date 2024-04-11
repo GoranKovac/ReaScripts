@@ -530,7 +530,7 @@ function DetectMIDIContext(midi_debug)
     local function ScreenshotOSX(x, y, w, h)
         x, y = r.ImGui_PointConvertNative(ctx, x, y, false)
         local filename = os.tmpname() -- a shell-safe value
-        local command = 'screencapture -xR %d,%d,%d,%d -t png "%s"'
+        local command = 'screencapture -x -R %d,%d,%d,%d -t png "%s"'
         os.execute(command:format(x, y, w, h, filename))
         local png = r.JS_LICE_LoadPNG(filename)
         os.remove(filename)
@@ -555,8 +555,7 @@ function DetectMIDIContext(midi_debug)
                 destBmp = ScreenshotOSX(right - 1, top, 1, h)
             end
 
-            bot_px = destBmp and FasterSearch(destBmp, GetPixel(destBmp, 0, ceil(64 * dpi_scale)), ceil(65 * dpi_scale)) or
-                bottom
+            bot_px = FasterSearch(destBmp, GetPixel(destBmp, 0, ceil(64 * dpi_scale)), ceil(65 * dpi_scale)) // DPI_OS
 
             r.JS_LICE_DestroyBitmap(destBmp)
         end
@@ -564,8 +563,10 @@ function DetectMIDIContext(midi_debug)
     end
 
     local HWND = r.MIDIEditor_GetActive()
-    local retval_dpi, dpi = r.ThemeLayout_GetLayout("tcp", -3)
-    local dpi_scale = retval_dpi and tonumber(dpi) / 256 or 1
+    DPI_OS = r.ImGui_GetWindowDpiScale(ctx)
+    local retval_dpi, dpi = r.get_config_var_string("uiscale")
+
+    local dpi_scale = tonumber(dpi)
     if not HWND then return end
     local main_retval, main_left, main_top, main_right, main_bottom = r.JS_Window_GetClientRect(HWND)
 
@@ -573,7 +574,6 @@ function DetectMIDIContext(midi_debug)
     local piano_hwnd = r.JS_Window_FindChildByID(HWND, MIDI_WND_IDS[1].id)
     if not BOT_PX then
         BOT_PX = takeScreenshot(child_hwnd, dpi_scale)
-        _, BOT_PX = r.ImGui_PointConvertNative(ctx, 0, BOT_PX, false)
     end
 
     local retval, left, top, right, bottom = r.JS_Window_GetRect(child_hwnd)
@@ -581,6 +581,7 @@ function DetectMIDIContext(midi_debug)
     right, bottom = r.ImGui_PointConvertNative(ctx, right, bottom, false)
     local track_list = main_right - right > 1
 
+    --local top_offset = ceil(64*dpi_scale)
     if midi_debug then
         r.ImGui_DrawList_AddRect(draw_list, left, top + ceil(64 * dpi_scale), right, top + BOT_PX, 0xff000050, 0, 0, 1)
         r.ImGui_DrawList_AddText(draw_list, left + 20, top + ceil(64 * dpi_scale) + 20, 0xffffffff, "MIDI NOTES")
