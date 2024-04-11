@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.33
+-- @version 0.35.34
 -- @changelog
---  OSX WORKAROUND TEST
+--  OSX WORKAROUND TEST Numero duo
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -298,7 +298,7 @@ local function LimitMouseToRadius()
 end
 
 local FLAGS =
---r.ImGui_WindowFlags_NoBackground() |
+    r.ImGui_WindowFlags_NoBackground() |
     r.ImGui_WindowFlags_NoDecoration() |
     r.ImGui_WindowFlags_NoMove()
 

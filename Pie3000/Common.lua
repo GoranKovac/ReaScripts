@@ -484,7 +484,10 @@ function DetectMIDIContext(midi_debug)
                 end
                 step = -1
             end
-            if px_start > 10000 then break end -- prevent infinite loop
+            if px_start > 10000 then
+                r.ShowConsoleMsg("CC LANES NOT DETECTED")
+                break
+            end -- prevent infinite loop
         end
         return bot
     end
@@ -540,7 +543,6 @@ function DetectMIDIContext(midi_debug)
         local bot_px
         if retval then
             local w, h = right - left, bottom - top
-
             local destBmp
             if not IsOSX() then
                 destBmp = r.JS_LICE_CreateBitmap(true, 1, h)
@@ -550,7 +552,7 @@ function DetectMIDIContext(midi_debug)
                 r.JS_GDI_ReleaseDC(window, srcDC)
             else
                 h = top - bottom
-                destBmp = ScreenshotOSX(right - 1, top, w, h)
+                destBmp = ScreenshotOSX(right - 1, top, 1, h)
             end
 
             bot_px = destBmp and FasterSearch(destBmp, GetPixel(destBmp, 0, ceil(64 * dpi_scale)), ceil(65 * dpi_scale)) or
@@ -571,6 +573,7 @@ function DetectMIDIContext(midi_debug)
     local piano_hwnd = r.JS_Window_FindChildByID(HWND, MIDI_WND_IDS[1].id)
     if not BOT_PX then
         BOT_PX = takeScreenshot(child_hwnd, dpi_scale)
+        _, BOT_PX = r.ImGui_PointConvertNative(ctx, 0, BOT_PX, false)
     end
 
     local retval, left, top, right, bottom = r.JS_Window_GetRect(child_hwnd)
