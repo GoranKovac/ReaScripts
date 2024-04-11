@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.34
+-- @version 0.35.35
 -- @changelog
---  OSX WORKAROUND TEST Numero duo
+--  OSX WORKAROUND TEST 3 Set focus on midi when in context (to make sure tracing has no window over midi)
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -149,6 +149,7 @@ local function GetMouseContext()
         elseif class_name == "REAPERMCPDisplay" then
             info = "mcpempty"
         elseif parent == active_midi then
+            r.JS_Window_SetFocus(active_midi)
             info = DetectMIDIContext()
             RETURN_FOCUS = active_midi
         elseif parent_title == "Media Explorer" then
