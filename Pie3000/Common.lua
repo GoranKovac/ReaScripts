@@ -1,6 +1,7 @@
 --@noindex
 --NoIndex: true
 local r = reaper
+local running_os = r.GetOS()
 reaper_path = r.GetResourcePath()
 local info = debug.getinfo(1, 'S');
 local script_path = info.source:match [[^@?(.*[\/])[^\/]-$]]
@@ -457,6 +458,12 @@ local MIDI_WND_IDS = {
     { id = 0x000003E9, name = "midiview" },
 }
 
+function IsOSX()
+    if running_os:match("OSX") or running_os:match("macOS") then
+        return true
+    end
+end
+
 local GetPixel = r.JS_LICE_GetPixel
 function DetectMIDIContext(midi_debug)
     local function IsInside(left, top, right, bottom)
@@ -496,7 +503,7 @@ function DetectMIDIContext(midi_debug)
     -- SLOW
     local function CalculateLanes(bitmap, w, h)
         local start_color = GetPixel(bitmap, 1, 1)
-        local top_px, bot_px
+        local top_px, BOT_PX
         for i = 1, h do
             local color = GetPixel(bitmap, w - 1, i)
             if color ~= start_color then
@@ -505,37 +512,50 @@ function DetectMIDIContext(midi_debug)
                 end
             else
                 if top_px then
-                    if not bot_px then
-                        bot_px = i
+                    if not BOT_PX then
+                        BOT_PX = i
                         break
                     end
                 end
             end
         end
-        return bot_px
+        return BOT_PX
     end
 
     -- TAKE SCREENSHOT OF THE THE RIGHT SCROLLBAR
-    local function takeScreenshot(window, dip_scale)
+
+    local function ScreenshotOSX(x, y, w, h)
+        x, y = r.ImGui_PointConvertNative(ctx, x, y, false)
+        local filename = os.tmpname() -- a shell-safe value
+        local command = 'screencapture -xR %d,%d,%d,%d -t png "%s"'
+        os.execute(command:format(x, y, w, h, filename))
+        local png = r.JS_LICE_LoadPNG(filename)
+        os.remove(filename)
+        return png
+    end
+
+    -- TAKE SCREENSHOT OF THE THE RIGHT SCROLLBAR
+    local function takeScreenshot(window, dpi_scale)
         local retval, left, top, right, bottom = r.JS_Window_GetRect(window)
-        local w, h = right - left, bottom - top
         local bot_px
         if retval then
-            local srcDC = r.JS_GDI_GetWindowDC(window)
-            local destBmp = r.JS_LICE_CreateBitmap(true, 1, h)
-            local destDC = r.JS_LICE_GetDC(destBmp)
-            r.JS_GDI_Blit(destDC, 0, 0, srcDC, w - 1, 0, w, h)
-            bot_px = FasterSearch(destBmp, GetPixel(destBmp, 0, ceil(64 * dip_scale)), ceil(65 * dip_scale)) or bottom
-            if MIDI_TRACE_DEBUG then
-                if not GOT then
-                    GOT = true
-                    local debug_destBmp = r.JS_LICE_CreateBitmap(true, w, h)
-                    local debug_destDC = r.JS_LICE_GetDC(debug_destBmp)
-                    r.JS_GDI_Blit(debug_destDC, 0, 0, srcDC, 0, 0, w, h)
-                    r.JS_LICE_WritePNG(script_path .. "/MIDI_DEBUG.png", debug_destBmp, false)
-                end
+            local w, h = right - left, bottom - top
+
+            local destBmp
+            if not IsOSX() then
+                destBmp = r.JS_LICE_CreateBitmap(true, 1, h)
+                local srcDC = r.JS_GDI_GetWindowDC(window)
+                local destDC = r.JS_LICE_GetDC(destBmp)
+                r.JS_GDI_Blit(destDC, 0, 0, srcDC, w - 1, 0, w, h)
+                r.JS_GDI_ReleaseDC(window, srcDC)
+            else
+                h = top - bottom
+                destBmp = ScreenshotOSX(right - 1, top, w, h)
             end
-            r.JS_GDI_ReleaseDC(window, srcDC)
+
+            bot_px = destBmp and FasterSearch(destBmp, GetPixel(destBmp, 0, ceil(64 * dpi_scale)), ceil(65 * dpi_scale)) or
+                bottom
+
             r.JS_LICE_DestroyBitmap(destBmp)
         end
         return bot_px
@@ -549,18 +569,21 @@ function DetectMIDIContext(midi_debug)
 
     local child_hwnd = r.JS_Window_FindChildByID(HWND, MIDI_WND_IDS[2].id)
     local piano_hwnd = r.JS_Window_FindChildByID(HWND, MIDI_WND_IDS[1].id)
-    local bot_px = takeScreenshot(child_hwnd, dpi_scale)
+    if not BOT_PX then
+        BOT_PX = takeScreenshot(child_hwnd, dpi_scale)
+    end
 
     local retval, left, top, right, bottom = r.JS_Window_GetRect(child_hwnd)
-
+    left, top = r.ImGui_PointConvertNative(ctx, left, top, false)
+    right, bottom = r.ImGui_PointConvertNative(ctx, right, bottom, false)
     local track_list = main_right - right > 1
 
     if midi_debug then
-        r.ImGui_DrawList_AddRect(draw_list, left, top + ceil(64 * dpi_scale), right, top + bot_px, 0xff000050, 0, 0, 1)
+        r.ImGui_DrawList_AddRect(draw_list, left, top + ceil(64 * dpi_scale), right, top + BOT_PX, 0xff000050, 0, 0, 1)
         r.ImGui_DrawList_AddText(draw_list, left + 20, top + ceil(64 * dpi_scale) + 20, 0xffffffff, "MIDI NOTES")
 
-        r.ImGui_DrawList_AddRect(draw_list, left, top + bot_px, right, bottom, 0xff000050, 0, 0, 1)
-        r.ImGui_DrawList_AddText(draw_list, left + 20, top + bot_px + 5 + 20, 0xffffffff, "CC LANES")
+        r.ImGui_DrawList_AddRect(draw_list, left, top + BOT_PX, right, bottom, 0xff000050, 0, 0, 1)
+        r.ImGui_DrawList_AddText(draw_list, left + 20, top + BOT_PX + 5 + 20, 0xffffffff, "CC LANES")
 
         r.ImGui_DrawList_AddRect(draw_list, left, top, right, top + ceil(65 * dpi_scale), 0xff000050, 0, 0, 1)
         r.ImGui_DrawList_AddText(draw_list, left + 20, top + 20, 0xffffffff, "RULER")
@@ -572,18 +595,20 @@ function DetectMIDIContext(midi_debug)
     end
     --if piano then
     local p_retval, p_left, p_top, p_right, p_bottom = r.JS_Window_GetRect(piano_hwnd)
+    p_left, p_top = r.ImGui_PointConvertNative(ctx, p_left, p_top, false)
+    p_right, p_bottom = r.ImGui_PointConvertNative(ctx, p_right, p_bottom, false)
     if midi_debug then
-        r.ImGui_DrawList_AddRect(draw_list, p_left, top + ceil(64 * dpi_scale), p_right, top + bot_px + 5, 0xff000050,
+        r.ImGui_DrawList_AddRect(draw_list, p_left, top + ceil(64 * dpi_scale), p_right, top + BOT_PX + 5, 0xff000050,
             0, 0, 1)
         r.ImGui_DrawList_AddText(draw_list, p_left + 20, top + ceil(64 * dpi_scale) + 20, 0xffffffff, "PIANO ROLL")
 
-        r.ImGui_DrawList_AddRect(draw_list, p_left, top + bot_px + 5, p_right, bottom, 0xff000050, 0, 0, 1)
-        r.ImGui_DrawList_AddText(draw_list, p_left + 20, top + bot_px + 5 + 20, 0xffffffff, "CC CP")
+        r.ImGui_DrawList_AddRect(draw_list, p_left, top + BOT_PX + 5, p_right, bottom, 0xff000050, 0, 0, 1)
+        r.ImGui_DrawList_AddText(draw_list, p_left + 20, top + BOT_PX + 5 + 20, 0xffffffff, "CC CP")
     end
 
-    if IsInside(p_left, top + ceil(64 * dpi_scale), p_right, top + bot_px + 5) then
+    if IsInside(p_left, top + ceil(64 * dpi_scale), p_right, top + BOT_PX + 5) then
         return "midipianoroll"
-    elseif IsInside(p_left, top + bot_px + 5, p_right, bottom) then
+    elseif IsInside(p_left, top + BOT_PX + 5, p_right, bottom) then
         -- MIDI_LANE_CONTEXT = "cp"
         -- local lane_cp = MidiLaneDetect(HWND)
         -- if lane_cp then return "cp " .. lane_cp end
@@ -592,7 +617,7 @@ function DetectMIDIContext(midi_debug)
     if track_list and IsInside(right, top, main_right, bottom) then
         return "miditracklist"
     end
-    if IsInside(left, top + ceil(63 * dpi_scale), right, top + bot_px) then
+    if IsInside(left, top + ceil(63 * dpi_scale), right, top + BOT_PX) then
         return "midi"
     end
     -- RULLER
@@ -600,7 +625,7 @@ function DetectMIDIContext(midi_debug)
         return "midiruler"
     end
     -- LANES (WHOLE SECTION)
-    if IsInside(left, top + bot_px, right, bottom) then
+    if IsInside(left, top + BOT_PX, right, bottom) then
         MIDI_LANE_CONTEXT = "lane"
         return MidiLaneDetect(HWND)
     end

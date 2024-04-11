@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.32
+-- @version 0.35.33
 -- @changelog
---  Prevent infinite loop on osx when opening midi cc context
+--  OSX WORKAROUND TEST
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
