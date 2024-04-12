@@ -4,7 +4,7 @@ local r = reaper
 
 local getinfo = debug.getinfo(1, 'S');
 local script_path = getinfo.source:match [[^@?(.*[\/])[^\/]-$]];
-package.path = script_path .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
+package.path = script_path .. "?.lua;" .. package.path -- GET DIRECTORY FOR REQUIRE
 
 function CheckDeps()
     local deps = {}

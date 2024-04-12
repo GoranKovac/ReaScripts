@@ -46,6 +46,7 @@ CLOSE_ON_ACTIVATE = false
 MIDI_TRACE_DEBUG = false
 KILL_ON_ESC = false
 STYLE = 1
+OSX_DISABLE_MIDI_TRACING = false
 
 local def_color_dark = 0x414141ff
 local def_out_ring = 0x2a2a2aff
@@ -115,6 +116,7 @@ if r.HasExtState("PIE3000", "SETTINGS") then
             MIDI_TRACE_DEBUG = save_data.midi_trace_debug
             KILL_ON_ESC = save_data.kill_on_esc
             STYLE = save_data.style ~= nil and save_data.style or STYLE
+            OSX_DISABLE_MIDI_TRACING = save_data.osx_midi_tracing
         end
     end
 end
@@ -572,7 +574,7 @@ function DetectMIDIContext(midi_debug)
 
     local child_hwnd = r.JS_Window_FindChildByID(HWND, MIDI_WND_IDS[2].id)
     local piano_hwnd = r.JS_Window_FindChildByID(HWND, MIDI_WND_IDS[1].id)
-    if not BOT_PX then
+    if not BOT_PX or not OSX_DISABLE_MIDI_TRACING then
         BOT_PX = takeScreenshot(child_hwnd, dpi_scale)
     end
 
@@ -581,6 +583,7 @@ function DetectMIDIContext(midi_debug)
     right, bottom = r.ImGui_PointConvertNative(ctx, right, bottom, false)
     local track_list = main_right - right > 1
 
+    if not BOT_PX then BOT_PX = bottom - top end
     --local top_offset = ceil(64*dpi_scale)
     if midi_debug then
         r.ImGui_DrawList_AddRect(draw_list, left, top + ceil(64 * dpi_scale), right, top + BOT_PX, 0xff000050, 0, 0, 1)
@@ -1730,11 +1733,11 @@ local function DrawCenter(pie, center)
 end
 
 local function DropDownMenuPopup(pie)
-    local SPLITTER_DD
-    if not r.ImGui_ValidatePtr(SPLITTER_DD, 'ImGui_DrawListSplitter*') then
-        SPLITTER_DD = r.ImGui_CreateDrawListSplitter(draw_list)
-    end
-    r.ImGui_DrawListSplitter_Split(SPLITTER_DD, 3)
+    --local SPLITTER_DD
+    -- if not r.ImGui_ValidatePtr(SPLITTER_DD, 'ImGui_DrawListSplitter*') then
+    --   SPLITTER_DD = r.ImGui_CreateDrawListSplitter(draw_list)
+    --end
+    -- r.ImGui_DrawListSplitter_Split(SPLITTER_DD, 3)
     local longest_label, longest_key, dummy_h = 0, 0, 0
     for i = 1, #pie do
         local txt_w, txt_h = r.ImGui_CalcTextSize(ctx, pie[i].name)
@@ -1752,7 +1755,7 @@ local function DropDownMenuPopup(pie)
 
     local max_w = longest_label + longest_key
     local xx, yy = r.ImGui_GetCursorPos(ctx)
-    r.ImGui_Dummy(ctx, max_w + 29, dummy_h)
+    r.ImGui_Dummy(ctx, max_w + 34, dummy_h)
 
     r.ImGui_SetCursorPos(ctx, xx, yy)
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Text(), 0x3aCCffff)
@@ -1773,7 +1776,15 @@ local function DropDownMenuPopup(pie)
             r.ImGui_SameLine(ctx, 5)
         end
 
-        r.ImGui_SetCursorPosX(ctx, 29)
+        r.ImGui_SetCursorPosX(ctx, 25)
+        if pie[i].col ~= 0xff then
+            r.ImGui_ColorButton(ctx, "##", pie[i].col, r.ImGui_ColorEditFlags_NoTooltip(), 5, 14)
+            r.ImGui_SameLine(ctx)
+        end
+
+        -- r.ImGui_DrawList_AddRectFilled(draw_list,)
+
+        r.ImGui_SetCursorPosX(ctx, 34)
         local sxx, syy = r.ImGui_GetCursorScreenPos(ctx)
         if (tonumber(pie[i].cmd) and GetToggleState(pie[i].cmd_name, pie[i].cmd)) then
             StateSpinner(sxx - 15, syy + 8, LerpAlpha(spinner_col, CENTER_BTN_PROG),
@@ -1813,7 +1824,7 @@ local function DropDownMenuPopup(pie)
                     DNDSwapSRC(pie, i)
                     DNDSwapDST(pie, i, pie[i])
                 end
-                r.ImGui_SameLine(ctx, -1, max_w + 29)
+                r.ImGui_SameLine(ctx, -1, max_w + 34)
                 r.ImGui_PushFont(ctx, ICON_FONT_VERY_SMALL)
                 r.ImGui_Text(ctx, utf8.char(146))
                 r.ImGui_PopFont(ctx)
@@ -1861,13 +1872,13 @@ local function DropDownMenuPopup(pie)
 
         if pie[i].key then
             local txt_w = r.ImGui_CalcTextSize(ctx, pie[i].name)
-            r.ImGui_SameLine(ctx, txt_w + 25)
+            r.ImGui_SameLine(ctx, txt_w + 30)
             r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Text(), 0x3aCCffff)
             r.ImGui_Selectable(ctx, "   - " .. KEYS[pie[i].key], false)
             r.ImGui_PopStyleColor(ctx)
         end
     end
-    r.ImGui_DrawListSplitter_Merge(SPLITTER_DD)
+    --r.ImGui_DrawListSplitter_Merge(SPLITTER_DD)
 end
 
 local function OpenDropDownStyle(pie)

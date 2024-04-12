@@ -4,7 +4,7 @@ local r = reaper
 local os_separator = package.config:sub(1, 1)
 local getinfo = debug.getinfo(1, 'S');
 local script_path = getinfo.source:match [[^@?(.*[\/])[^\/]-$]];
-package.path = script_path .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
+package.path = script_path .. "?.lua;" .. package.path -- GET DIRECTORY FOR REQUIRE
 
 SETUP = true
 STATE = "PIE"
@@ -136,7 +136,7 @@ local menu_items = {
     { "midipianoroll",     "MIDI PIANO ROLL" },
     { "miditracklist",     "MIDI TRACK LIST" },
     { "midiruler",         "MIDI RULER" },
-    { "midilane",          "MIDI LANE",                      "_separator_" },
+    { "midilane",          "MIDI LANE",                      "_separator_", (OSX_DISABLE_MIDI_TRACING and true or nil) },
     -- { "midilanecp",   "MIDI LANE CP" },
     { "plugin",            "PLUGIN - NEEDS TRACKER" },
     { "spacer",            "SPACER",                         "_separator_" },
@@ -1306,6 +1306,16 @@ local function Settings()
         WANT_SAVE = true
     end
     r.ImGui_Separator(ctx)
+    if IsOSX() then
+        r.ImGui_SeparatorText(ctx, "OSX Specific")
+        r.ImGui_Indent(ctx, 0)
+        if r.ImGui_RadioButton(ctx, "DISABLE Midi CC Tracing (stores small png file of midi)", OSX_DISABLE_MIDI_TRACING == true) then
+            OSX_DISABLE_MIDI_TRACING = not OSX_DISABLE_MIDI_TRACING
+            WANT_SAVE = true
+        end
+        r.ImGui_Unindent(ctx)
+        r.ImGui_Separator(ctx)
+    end
     if r.ImGui_InvisibleButton(ctx, "OPEN CUSTOM IMAGES FOLDER", 190, 26) then
         local cmd
         if r.GetOS():sub(1, 3) == 'Win' then
@@ -1340,7 +1350,8 @@ local function Settings()
                 close_on_activate = CLOSE_ON_ACTIVATE,
                 midi_trace_debug = MIDI_TRACE_DEBUG,
                 kill_on_esc = KILL_ON_ESC,
-                style = STYLE
+                style = STYLE,
+                osx_midi_tracing = OSX_DISABLE_MIDI_TRACING
 
             }, true)
         r.SetExtState("PIE3000", "SETTINGS", data, true)
@@ -1359,22 +1370,24 @@ local function ContextSelector()
         r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Button(), bg_col)
         r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing(), 0, 4)
         for i = 1, #menu_items do
-            if r.ImGui_Selectable(ctx, "\t\t\t\t\t\t\t\t\t\t" .. menu_items[i][2], i == context_cur_item) then
-                if menu_items[i][2] == "MIDI LANE" then
-                    if cur_cc_item ~= 0 then
-                        SWITCH_PIE = menu_items[i][2] == "MIDI LANE" and
-                            MIDI_CC_PIES
-                            [CC_LIST[cur_cc_item]:lower()]
+            if not menu_items[i][4] then -- EXCLUDE MIDI LANE ON OSX IF DISABLED
+                if r.ImGui_Selectable(ctx, "\t\t\t\t\t\t\t\t\t\t" .. menu_items[i][2], i == context_cur_item) then
+                    if menu_items[i][2] == "MIDI LANE" then
+                        if cur_cc_item ~= 0 then
+                            SWITCH_PIE = menu_items[i][2] == "MIDI LANE" and
+                                MIDI_CC_PIES
+                                [CC_LIST[cur_cc_item]:lower()]
+                        else
+                            SWITCH_PIE = PIES[menu_items[i][1]]
+                        end
                     else
                         SWITCH_PIE = PIES[menu_items[i][1]]
                     end
-                else
-                    SWITCH_PIE = PIES[menu_items[i][1]]
+                    PIE_LIST = {}
+                    context_cur_item = i
+                    r.ImGui_CloseCurrentPopup(ctx)
+                    UPDATE_FILTER = true
                 end
-                PIE_LIST = {}
-                context_cur_item = i
-                r.ImGui_CloseCurrentPopup(ctx)
-                UPDATE_FILTER = true
             end
             if menu_items[i][3] then
                 r.ImGui_SeparatorText(ctx, "")

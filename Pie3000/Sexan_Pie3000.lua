@@ -1,11 +1,11 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.40
+-- @version 0.35.41
 -- @changelog
---  OSX WORKAROUND For Midi tracing
---  Credits Cfillion for workaround
---  Credits Ollie_r for providing remote session on OSX
+--  DropDown style add small color rectangles
+--  Setup script OSX option - DISABLE MIDI CC TRACING (disables MIDI CC LANES)
+--  Fixed package paths for all included scripts
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -20,7 +20,7 @@
 local r = reaper
 local getinfo = debug.getinfo(1, 'S');
 local script_path = getinfo.source:match [[^@?(.*[\/])[^\/]-$]];
-package.path = script_path .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
+package.path = script_path .. "?.lua;" .. package.path -- GET DIRECTORY FOR REQUIRE
 local sqrt, sin, cos = math.sqrt, math.sin, math.cos
 
 require('PieUtils')
