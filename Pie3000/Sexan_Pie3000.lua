@@ -1,11 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.41
+-- @version 0.35.42
 -- @changelog
---  DropDown style add small color rectangles
---  Setup script OSX option - DISABLE MIDI CC TRACING (disables MIDI CC LANES)
---  Fixed package paths for all included scripts
+--  Fixy pixy os xsy
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua

@@ -574,7 +574,7 @@ function DetectMIDIContext(midi_debug)
 
     local child_hwnd = r.JS_Window_FindChildByID(HWND, MIDI_WND_IDS[2].id)
     local piano_hwnd = r.JS_Window_FindChildByID(HWND, MIDI_WND_IDS[1].id)
-    if not BOT_PX or not OSX_DISABLE_MIDI_TRACING then
+    if not BOT_PX and not OSX_DISABLE_MIDI_TRACING then
         BOT_PX = takeScreenshot(child_hwnd, dpi_scale)
     end
 
