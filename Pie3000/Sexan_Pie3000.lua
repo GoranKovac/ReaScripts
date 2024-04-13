@@ -1,14 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.43
+-- @version 0.35.44
 -- @changelog
---  Add some tooltips
---  Fix menu preview on center button for active prev active menu
---  Fix crash when executing action on CC lanes
---  Added custom flag for custom script toggle state "toggle_state = bool"
---  Added custom script context for detecting GUI scripts CUSTOM_SCRIPT_CONTEXT = WINDOW NAME OF THE SCRIPT
---  Stye TextButton fix wrongly calculated item selection on uneven cases
+--  Stye TextButton fix wrongly calculated item selection on uneven cases TAKE 2
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua

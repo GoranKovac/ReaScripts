@@ -1401,10 +1401,12 @@ local function DrawButtonTextStyle(pie, center)
                         LAST_HOR_SEL = { xs = xs, xe = xe, ys = ys, ye = ye }
                     end
                 else
-                    local x_pos = inside[3] == "LEFT" and xe or xs
-                    local a_cur = atan((ys + txt_h / 2) - CENTER.y, (x_pos) - CENTER.x)
-                    if AngleInRange(a_cur, inside[1], inside[2]) then
-                        closest_tbl[#closest_tbl + 1] = { ys, i, { xs = xs, xe = xe, ys = ys, ye = ye } }
+                    if not RoughlyEquals(angle % pi, 0) then
+                        local x_pos = inside[3] == "LEFT" and xe or xs
+                        local a_cur = atan((ys + txt_h / 2) - CENTER.y, (x_pos) - CENTER.x)
+                        if AngleInRange(a_cur, inside[1], inside[2]) then
+                            closest_tbl[#closest_tbl + 1] = { ys, i, { xs = xs, xe = xe, ys = ys, ye = ye } }
+                        end
                     end
                 end
             end
