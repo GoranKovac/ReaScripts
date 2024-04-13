@@ -1,9 +1,12 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.44
+-- @version 0.35.45
 -- @changelog
---  Stye TextButton fix wrongly calculated item selection on uneven cases TAKE 2
+--  Stye DropDown Recreate as child
+--  Stye DropDown Hold to open
+--  Stye DropDown Adjust near edge
+--  Stye DropDown Toggle mode close when clicking anywhere outside
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -28,9 +31,9 @@ ctx = r.ImGui_CreateContext('Pie XYZ', r.ImGui_ConfigFlags_NoSavedSettings())
 
 require('Common')
 if STYLE == 3 then
-    HOLD_TO_OPEN = false
+    --HOLD_TO_OPEN = false
     ANIMATION = false
-    ADJUST_PIE_NEAR_EDGE = false
+    -- ADJUST_PIE_NEAR_EDGE = false
     SWIPE = false
     LIMIT_MOUSE = false
 end
@@ -357,8 +360,10 @@ local function TrackShortcutKey()
                 end
             end
         end
-        if DD_CLOSED then
-            CloseScript()
+        if STYLE == 3 then
+            if wnd_hovered and r.ImGui_IsMouseClicked(ctx, 0) then
+                CloseScript()
+            end
         end
     end
 end
@@ -497,9 +502,9 @@ local function ExecuteAction(action_tbl)
     else
         if action then
             CheckActionContext(action)
-            if STYLE == 3 and DROP_DOWN_CONFIRM then
-                TERMINATE = true
-            end
+            --if STYLE == 3 and DROP_DOWN_CONFIRM then
+            --    TERMINATE = true
+            --end
             if CLOSE and ACTIVATE_ON_CLOSE then
                 if LAST_TRIGGERED ~= action then
                     LAST_TRIGGERED = action
@@ -636,6 +641,7 @@ local function Main()
     DoFullScreen()
     if KILL_ON_ESC and ESC then DONE = true end
     if r.ImGui_Begin(ctx, 'PIE XYZ', false, FLAGS) then
+        wnd_hovered = r.ImGui_IsWindowHovered(ctx, r.ImGui_HoveredFlags_RootWindow())
         draw_list = r.ImGui_GetWindowDrawList(ctx)
         MX, MY = r.ImGui_PointConvertNative(ctx, r.GetMousePosition())
 

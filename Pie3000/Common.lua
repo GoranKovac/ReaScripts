@@ -1900,39 +1900,39 @@ local function DropDownMenuPopup(pie)
     --r.ImGui_DrawListSplitter_Merge(SPLITTER_DD)
 end
 
-local function OpenDropDownStyle(pie)
-    local tracker_state = r.GetToggleCommandState(tracker_script_id)
-    if r.ImGui_IsWindowAppearing(ctx) then
-        r.ImGui_OpenPopup(ctx, "DROP_DOWN_MENU")
-        r.ImGui_SetNextWindowPos(ctx, START_X - 80, START_Y - 10)
-    end
-    if r.ImGui_BeginPopup(ctx, "DROP_DOWN_MENU") then
-        if not r.ImGui_IsAnyItemHovered(ctx) then
-            LAST_ACTION = nil
-        end
-        local xx, yy = r.ImGui_GetCursorPos(ctx)
-        r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Button(), tracker_state == 1 and 0x00ff00cc or 0xff0000cc)
-        r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ButtonHovered(), tracker_state == 1 and 0x00ff00dd or 0xff0000dd)
-        r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ButtonActive(), tracker_state == 1 and 0x00ff00ff or 0xff0000ff)
-        r.ImGui_SetCursorPos(ctx, 26, 14)
-        if r.ImGui_Button(ctx, "##", 10, 10) then
-            r.Main_OnCommand(tracker_script_id, 0)
-        end
-        if r.ImGui_IsItemHovered(ctx) then
-            if r.ImGui_BeginTooltip(ctx) then
-                r.ImGui_Text(ctx, (tracker_state == 1 and "TRACKER ON" or "TRACKER OFF"))
-                r.ImGui_EndTooltip(ctx)
-            end
-        end
+-- local function OpenDropDownStyle(pie)
+--     local tracker_state = r.GetToggleCommandState(tracker_script_id)
+--     if r.ImGui_IsWindowAppearing(ctx) then
+--         r.ImGui_OpenPopup(ctx, "DROP_DOWN_MENU")
+--         r.ImGui_SetNextWindowPos(ctx, START_X - 80, START_Y - 10)
+--     end
+--     if r.ImGui_BeginPopup(ctx, "DROP_DOWN_MENU") then
+--         if not r.ImGui_IsAnyItemHovered(ctx) then
+--             LAST_ACTION = nil
+--         end
+--         local xx, yy = r.ImGui_GetCursorPos(ctx)
+--         r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Button(), tracker_state == 1 and 0x00ff00cc or 0xff0000cc)
+--         r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ButtonHovered(), tracker_state == 1 and 0x00ff00dd or 0xff0000dd)
+--         r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ButtonActive(), tracker_state == 1 and 0x00ff00ff or 0xff0000ff)
+--         r.ImGui_SetCursorPos(ctx, 26, 14)
+--         if r.ImGui_Button(ctx, "##", 10, 10) then
+--             r.Main_OnCommand(tracker_script_id, 0)
+--         end
+--         if r.ImGui_IsItemHovered(ctx) then
+--             if r.ImGui_BeginTooltip(ctx) then
+--                 r.ImGui_Text(ctx, (tracker_state == 1 and "TRACKER ON" or "TRACKER OFF"))
+--                 r.ImGui_EndTooltip(ctx)
+--             end
+--         end
 
 
-        r.ImGui_PopStyleColor(ctx, 3)
-        r.ImGui_SetCursorPos(ctx, xx, yy)
-        DropDownMenuPopup(pie)
-        r.ImGui_EndPopup(ctx)
-    end
-    if not r.ImGui_IsPopupOpen(ctx, "DROP_DOWN_MENU") then DD_CLOSED = true end
-end
+--         r.ImGui_PopStyleColor(ctx, 3)
+--         r.ImGui_SetCursorPos(ctx, xx, yy)
+--         DropDownMenuPopup(pie)
+--         r.ImGui_EndPopup(ctx)
+--     end
+--     if not r.ImGui_IsPopupOpen(ctx, "DROP_DOWN_MENU") then DD_CLOSED = true end
+-- end
 local pad_x_sel, pad_y_sel = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_FramePadding())
 local pad_x_sep, pad_y_sep = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_SeparatorTextPadding())
 local sep_boarder = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_SeparatorTextBorderSize())
@@ -1956,37 +1956,53 @@ function DrawPie(pie, center)
     elseif STYLE == 2 then
         DrawButtonTextStyle(pie, center)
     elseif STYLE == 3 then
-        if not SETUP then
-            --DrawDropDownStyle(pie)
-            r.ImGui_PushFont(ctx, GUI_FONT)
-            OpenDropDownStyle(pie)
-            r.ImGui_PopFont(ctx)
-        else
+        local wnd_hovered
+        -- if not SETUP then
+        --     --DrawDropDownStyle(pie)
+        --     r.ImGui_PushFont(ctx, GUI_FONT)
+        --     OpenDropDownStyle(pie)
+        --     r.ImGui_PopFont(ctx)
+        -- else
+        if SETUP then
             r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x44)
-            local font_size = r.ImGui_GetFontSize(ctx)
-            local longest_label, longest_key = 0, 0
-            for i = 1, #pie do
-                local txt_w = r.ImGui_CalcTextSize(ctx, pie[i].name)
-                if longest_label < txt_w then
-                    longest_label = txt_w
-                end
-                if pie[i].key then
-                    local key_w = r.ImGui_CalcTextSize(ctx, "   -   " .. KEYS[pie[i].key])
-                    if longest_key < key_w then
-                        longest_key = key_w
-                    end
-                end
-            end
+        else
+            r.ImGui_PushFont(ctx, GUI_FONT)
+            r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0xdd)
+        end
 
-            local max_w = (longest_label + longest_key) < 100 and 100 or (longest_label + longest_key)
-            local txt_separator_h = max(font_size + (pad_y_sep * 2) + sep_boarder)
-            local xx, yy = r.ImGui_GetCursorScreenPos(ctx)
-            r.ImGui_SetNextWindowPos(ctx, CENTER.x - (max_w + 50) // 2, yy)
-            if r.ImGui_BeginChild(ctx, "DropDownSetup", max_w + 50, txt_separator_h + (#pie * font_size) + (wnd_padding * 2) + item_s_y * (#pie), true) then
-                DropDownMenuPopup(pie)
-                r.ImGui_EndChild(ctx)
+        local font_size = r.ImGui_GetFontSize(ctx)
+        local longest_label, longest_key = 0, 0
+        for i = 1, #pie do
+            local txt_w = r.ImGui_CalcTextSize(ctx, pie[i].name)
+            if longest_label < txt_w then
+                longest_label = txt_w
             end
-            r.ImGui_PopStyleColor(ctx)
+            if pie[i].key then
+                local key_w = r.ImGui_CalcTextSize(ctx, "   -   " .. KEYS[pie[i].key])
+                if longest_key < key_w then
+                    longest_key = key_w
+                end
+            end
+        end
+
+        local max_w = (longest_label + longest_key) < 100 and 100 or (longest_label + longest_key)
+        local txt_separator_h = max(font_size + (pad_y_sep * 2) + sep_boarder)
+        local xx, yy = r.ImGui_GetCursorScreenPos(ctx)
+        if SETUP then
+            r.ImGui_SetNextWindowPos(ctx, CENTER.x - (max_w + 50) // 2, yy)
+        else
+            r.ImGui_SetNextWindowPos(ctx, START_X - 80, START_Y - 10)
+            if r.ImGui_IsWindowAppearing(ctx) then
+                r.ImGui_SetNextWindowFocus(ctx)
+            end
+        end
+        if r.ImGui_BeginChild(ctx, "DropDownSetup", max_w + 50, txt_separator_h + (#pie * font_size) + (wnd_padding * 2) + item_s_y * (#pie), true) then
+            DropDownMenuPopup(pie)
+            r.ImGui_EndChild(ctx)
+        end
+        r.ImGui_PopStyleColor(ctx)
+        if not SETUP then
+            r.ImGui_PopFont(ctx)
         end
     end
     r.ImGui_DrawListSplitter_Merge(SPLITTER)

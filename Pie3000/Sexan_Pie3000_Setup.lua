@@ -1214,6 +1214,9 @@ local function Settings()
         ANIMATION = not ANIMATION
         WANT_SAVE = true
     end
+    if STYLE == 3 then
+        r.ImGui_EndDisabled(ctx)
+    end
     if r.ImGui_Checkbox(ctx, "Hold Key to OPEN Script (DISABLED = TOGGLE Open/Close)", HOLD_TO_OPEN) then
         HOLD_TO_OPEN = not HOLD_TO_OPEN
         WANT_SAVE = true
@@ -1229,9 +1232,6 @@ local function Settings()
     if r.ImGui_Checkbox(ctx, "Select thing (Track/Item) under mouse", SELECT_THING_UNDER_MOUSE) then
         SELECT_THING_UNDER_MOUSE = not SELECT_THING_UNDER_MOUSE
         WANT_SAVE = true
-    end
-    if STYLE == 3 then
-        r.ImGui_EndDisabled(ctx)
     end
     if r.ImGui_Checkbox(ctx, "Activate hovered action when closing script", ACTIVATE_ON_CLOSE) then
         ACTIVATE_ON_CLOSE = not ACTIVATE_ON_CLOSE
@@ -1267,6 +1267,9 @@ local function Settings()
         ADJUST_PIE_NEAR_EDGE = not ADJUST_PIE_NEAR_EDGE
         WANT_SAVE = true
     end
+    if STYLE == 3 then
+        r.ImGui_BeginDisabled(ctx, true)
+    end
     if r.ImGui_Checkbox(ctx, "Show shortcut buttons around Pie", SHOW_SHORTCUT) then
         SHOW_SHORTCUT = not SHOW_SHORTCUT
         WANT_SAVE = true
@@ -1286,6 +1289,9 @@ local function Settings()
             WANT_SAVE = true
         end
         r.ImGui_Unindent(ctx)
+    end
+    if STYLE == 3 then
+        r.ImGui_EndDisabled(ctx)
     end
 
     r.ImGui_Unindent(ctx)
