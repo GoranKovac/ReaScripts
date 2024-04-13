@@ -13,7 +13,6 @@
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
 --   [main] Sexan_Pie3000_Tracker_BG.lua
---   ContextShowcase/*.png
 --   CustomImages/*.txt
 --   easing.lua
 --   Common.lua
