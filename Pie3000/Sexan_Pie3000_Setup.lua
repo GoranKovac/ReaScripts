@@ -13,7 +13,7 @@ require('PieUtils')
 
 if CheckDeps() then return end
 
-ctx = r.ImGui_CreateContext('Pie XYZ Setup', r.ImGui_ConfigFlags_NoSavedSettings())
+ctx = r.ImGui_CreateContext('Pie XYZ Setup')
 r.ImGui_SetConfigVar(ctx, r.ImGui_ConfigVar_WindowsMoveFromTitleBarOnly(), 1)
 r.ImGui_SetConfigVar(ctx, r.ImGui_ConfigFlags_NavEnableKeyboard(), 1)
 
@@ -521,7 +521,7 @@ local function TabButtons()
         if r.ImGui_InvisibleButton(ctx, "APPLY", 100, 26) then
             MakePieFile()
         end
-        GeneralDrawlistButton("APPLY", nil, "A")
+        GeneralDrawlistButton("APPLY Changes", nil, "A")
         r.ImGui_SameLine(ctx)
 
         r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing(), 0, 0)
@@ -1366,9 +1366,11 @@ local function ContextSelector()
     r.ImGui_SetNextWindowSize(ctx, w, 520)
     r.ImGui_SetNextWindowBgAlpha(ctx, 1)
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_PopupBg(), bg_col)
+    r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_SeparatorTextPadding(), 0, 0)
+    r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing(), 0, 4)
     if r.ImGui_BeginPopup(ctx, "Context Selector") then
+        r.ImGui_Dummy(ctx, 520, 10)
         r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Button(), bg_col)
-        r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing(), 0, 4)
         for i = 1, #menu_items do
             if not menu_items[i][4] then -- EXCLUDE MIDI LANE ON OSX IF DISABLED
                 if r.ImGui_Selectable(ctx, "\t\t\t\t\t\t\t\t\t\t" .. menu_items[i][2], i == context_cur_item) then
@@ -1389,14 +1391,16 @@ local function ContextSelector()
                     UPDATE_FILTER = true
                 end
             end
-            if menu_items[i][3] then
+            if menu_items[i][3] and i ~= #menu_items then
                 r.ImGui_SeparatorText(ctx, "")
             end
         end
-        r.ImGui_PopStyleVar(ctx)
+        r.ImGui_Dummy(ctx, 520, 10)
         r.ImGui_PopStyleColor(ctx)
         r.ImGui_EndPopup(ctx)
     end
+    r.ImGui_PopStyleVar(ctx)
+    r.ImGui_PopStyleVar(ctx)
     r.ImGui_PopStyleColor(ctx)
 end
 
@@ -1442,6 +1446,9 @@ local function BreadCrumbs(tbl)
                     SWITCH_PIE.selected = nil
                 end
             end
+        end
+        if j == 0 then
+            DrawTooltip("Return to " .. menu_items[context_cur_item][2])
         end
         color = r.ImGui_IsItemHovered(ctx) and r.ImGui_GetStyleColor(ctx, r.ImGui_Col_ButtonHovered()) or color
         r.ImGui_PopID(ctx)
@@ -1804,6 +1811,7 @@ local function Pie()
                 CUR_PIE.selected = #CUR_PIE
                 UPDATE_FILTER = true
             end
+            DrawTooltip("CREATE NEW MENU")
             if menu_items[context_cur_item][2] == "MIDI LANE" then
                 MidiLaneSelector()
                 -- elseif menu_items[context_cur_item][2] == "MIDI LANE CP" then

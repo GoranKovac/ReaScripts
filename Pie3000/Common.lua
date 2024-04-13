@@ -684,6 +684,14 @@ function PDefer(func)
     end)
 end
 
+function DrawTooltip(str)
+    if not r.ImGui_IsItemHovered(ctx) then return end
+    if r.ImGui_BeginTooltip(ctx) then
+        r.ImGui_Text(ctx, str)
+        r.ImGui_EndTooltip(ctx)
+    end
+end
+
 function DrawDND(x, y, radius, col, dd_type)
     r.ImGui_DrawList_AddCircle(draw_list, x, y, radius, col, 128, 4)
 end
@@ -1037,7 +1045,7 @@ local function PieButtonDrawlist(pie, button_radius, selected, hovered, button_p
     -- BUTTON CIRCLE -------------------------------------------------
 
     -- SPINNER FOR ACTION STATE ON/OFF
-    if (tonumber(pie.cmd) and GetToggleState(pie.cmd_name, pie.cmd)) then
+    if (tonumber(pie.cmd) and GetToggleState(pie.cmd_name, pie.cmd)) or pie.toggle_state then
         StateSpinner(button_center.x, button_center.y, LerpAlpha(spinner_col, CENTER_BTN_PROG),
             button_radius * CENTER_BTN_PROG)
     end
@@ -1192,7 +1200,7 @@ local function DrawClassicButton(pie, selected, hovered)
         (ye + sel_size) - 3,
         LerpAlpha(col, CENTER_BTN_PROG), 5, r.ImGui_DrawFlags_RoundCornersAll())
 
-    if (tonumber(pie.cmd) and GetToggleState(pie.cmd_name, pie.cmd)) then
+    if (tonumber(pie.cmd) and GetToggleState(pie.cmd_name, pie.cmd)) or pie.toggle_state then
         -- for i = 1, 2 do
         local new_x = Animate_On_Cordinates(xs - 35, xe, 2, (r.time_precise() * 0.5) - (1)) // 1
 
@@ -1384,15 +1392,17 @@ local function DrawButtonTextStyle(pie, center)
             local xs, ys = r.ImGui_GetItemRectMin(ctx)
             local xe, ye = r.ImGui_GetItemRectMax(ctx)
 
-            local a_cur = atan((ys + txt_h / 2) - CENTER.y, (xs + txt_w / 2) - CENTER.x)
             if inside then
                 if (inside[3] == "TOP" or inside[3] == "BOT") then
+                    local a_cur = atan((ys + txt_h / 2) - CENTER.y, (xs + txt_w / 2) - CENTER.x)
                     local is_in_angle = AngleInRange(a_cur, inside[1], inside[2])
                     pie.selected = is_in_angle and i
                     if is_in_angle then
                         LAST_HOR_SEL = { xs = xs, xe = xe, ys = ys, ye = ye }
                     end
                 else
+                    local x_pos = inside[3] == "LEFT" and xe or xs
+                    local a_cur = atan((ys + txt_h / 2) - CENTER.y, (x_pos) - CENTER.x)
                     if AngleInRange(a_cur, inside[1], inside[2]) then
                         closest_tbl[#closest_tbl + 1] = { ys, i, { xs = xs, xe = xe, ys = ys, ye = ye } }
                     end
@@ -1631,8 +1641,14 @@ local function DrawCenter(pie, center)
             128, 2.5)
     end
     r.ImGui_SetCursorScreenPos(ctx, CENTER.x - 6, CENTER.y + RADIUS_MIN - 23)
+    --if _G["CustomTracker"] then
+    --    _G["CustomTracker"](tracker_state == 1)
+    --end
     if r.ImGui_InvisibleButton(ctx, "##tracker_on_off", 12, 12) then
         r.Main_OnCommand(tracker_script_id, 0)
+        --if r.GetToggleCommandState(tracker_script_id) == 0 then
+        --    r.SetExtState("PIE3000_TRACKER", "", "", false)
+        -- end
     end
     local is_tracker_hovered = r.ImGui_IsItemHovered(ctx)
     LAST_MSG = is_tracker_hovered and (tracker_state == 1 and "TRACKER ON" or "TRACKER OFF") or LAST_MSG
@@ -1778,7 +1794,8 @@ local function DropDownMenuPopup(pie)
 
         r.ImGui_SetCursorPosX(ctx, 25)
         if pie[i].col ~= 0xff then
-            r.ImGui_ColorButton(ctx, "##", pie[i].col, r.ImGui_ColorEditFlags_NoTooltip(), 5, 14)
+            r.ImGui_ColorButton(ctx, "##", pie[i].col,
+                r.ImGui_ColorEditFlags_NoTooltip() | r.ImGui_ColorEditFlags_NoBorder(), 5, 14)
             r.ImGui_SameLine(ctx)
         end
 
@@ -1787,7 +1804,7 @@ local function DropDownMenuPopup(pie)
         r.ImGui_SetCursorPosX(ctx, 34)
         local sxx, syy = r.ImGui_GetCursorScreenPos(ctx)
         if (tonumber(pie[i].cmd) and GetToggleState(pie[i].cmd_name, pie[i].cmd)) then
-            StateSpinner(sxx - 15, syy + 8, LerpAlpha(spinner_col, CENTER_BTN_PROG),
+            StateSpinner(sxx - 20, syy + 8, LerpAlpha(spinner_col, CENTER_BTN_PROG),
                 2 * CENTER_BTN_PROG, true)
         end
         if SETUP and ALT then

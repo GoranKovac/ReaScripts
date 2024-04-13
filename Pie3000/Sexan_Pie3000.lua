@@ -1,13 +1,19 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.42
+-- @version 0.35.43
 -- @changelog
---  Fixy pixy os xsy
+--  Add some tooltips
+--  Fix menu preview on center button for active prev active menu
+--  Fix crash when executing action on CC lanes
+--  Added custom flag for custom script toggle state "toggle_state = bool"
+--  Added custom script context for detecting GUI scripts CUSTOM_SCRIPT_CONTEXT = WINDOW NAME OF THE SCRIPT
+--  Stye TextButton fix wrongly calculated item selection on uneven cases
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
 --   [main] Sexan_Pie3000_Tracker_BG.lua
+--   ContextShowcase/*.png
 --   CustomImages/*.txt
 --   easing.lua
 --   Common.lua
@@ -102,6 +108,7 @@ local function GetMouseContext()
     local item, take = r.GetItemFromPoint(x, y, true)
     local cur_hwnd = r.JS_Window_FromPoint(x, y)
     local parent = r.JS_Window_GetParent(cur_hwnd)
+    local title = r.JS_Window_GetTitle(cur_hwnd)
     local parent_title = r.JS_Window_GetTitle(parent)
     local id = r.JS_Window_GetLongPtr(cur_hwnd, "ID")
     local class_name = r.JS_Window_GetClassName(cur_hwnd)
@@ -169,6 +176,14 @@ local function GetMouseContext()
             info = "item"
         end
     end
+
+    if #info == 0 and CUSTOM_SCRIPT_CONTEXT then
+        info = title
+    end
+    --r.ShowConsoleMsg(tostring(info) .. "\n")
+    -- if CUSTOM_SCRIPT_CONTEXT and CUSTOM_SCRIPT_CONTEXT == title then
+    --     info = CUSTOM_SCRIPT_CONTEXT
+    -- end
     if info then
         info = info:match('^([^%.]+)')
         return info, track, item
@@ -180,6 +195,7 @@ if not status then
     PrintTraceback(err)
     Release()
 end
+
 if not INFO then
     Release()
     return
@@ -215,6 +231,9 @@ if not STANDALONE_PIE then
     end
 else
     PIE_MENU = STANDALONE_PIE
+    -- if CUSTOM_SCRIPT_CONTEXT then
+    --    INFO = CUSTOM_SCRIPT_CONTEXT
+    --else
     if MIDI_LANE_CONTEXT then
         INFO = "midilane"
     elseif ENVELOPE_LANE then
@@ -224,6 +243,7 @@ else
             INFO = "envcp"
         end
     end
+    --end
 end
 
 if PIE_MENU.use_main then
@@ -343,6 +363,9 @@ local function TrackShortcutKey()
                 end
             end
         end
+        if DD_CLOSED then
+            CloseScript()
+        end
     end
 end
 
@@ -450,13 +473,13 @@ local function ExecuteAction(action_tbl)
         if CLOSE and ACTIVATE_ON_CLOSE then
             if LAST_TRIGGERED ~= action then
                 LAST_TRIGGERED = action
-                _G[pie_func](action_tbl, INFO)
+                _G[pie_func](action_tbl)
             end
         end
         if r.ImGui_IsMouseReleased(ctx, 0) then
             local START_ACTION_TIME = r.time_precise()
             LAST_TRIGGERED = action
-            _G[pie_func](action_tbl, INFO)
+            _G[pie_func](action_tbl)
             local AFTER_ACTION_TIME = r.time_precise()
 
             if AFTER_ACTION_TIME - START_ACTION_TIME > 0.1 then
@@ -469,7 +492,7 @@ local function ExecuteAction(action_tbl)
             end
         elseif KEY_TRIGGER then
             LAST_TRIGGERED = action
-            _G[pie_func](action_tbl, INFO)
+            _G[pie_func](action_tbl)
             KEY_TRIGGER = nil
             if not HOLD_TO_OPEN then
                 if CLOSE_ON_ACTIVATE then
@@ -487,7 +510,7 @@ local function ExecuteAction(action_tbl)
                 if LAST_TRIGGERED ~= action then
                     LAST_TRIGGERED = action
                     local cmd_id = FindAction(action)
-                    if PIES[INFO].is_midi then
+                    if (PIES[INFO] and PIES[INFO].is_midi) or MIDI_LANE_CONTEXT then
                         if cmd_id then
                             r.MIDIEditor_OnCommand(r.MIDIEditor_GetActive(), cmd_id)
                         end
@@ -587,9 +610,11 @@ local function Main()
         return
     end
 
+    --r.ShowConsoleMsg(CONTEXT_LIMIT .. " - " .. INFO .. "\n")
+
     if CONTEXT_LIMIT and not INFO:match(CONTEXT_LIMIT) then
         Release()
-        r.ShowConsoleMsg("Pie works under : " .. CONTEXT_LIMIT:upper() .. " context only.\n")
+        r.ShowConsoleMsg("Pie works under " .. CONTEXT_LIMIT:upper() .. " context only.\n")
         return
     end
 
@@ -609,10 +634,10 @@ local function Main()
     end
     if LAST_ACTION then DoAction() end
 
-    if STYLE == 3 and DD_CLOSED then
-        Release()
-        return
-    end
+    --if STYLE == 3 and DD_CLOSED then
+    --    Release()
+    --    return
+    --end
 
     DoFullScreen()
     if KILL_ON_ESC and ESC then DONE = true end
