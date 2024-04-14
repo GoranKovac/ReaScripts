@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.47
+-- @version 0.35.48
 -- @changelog
---  Imgui Shims
+--  remove Imgui Shims since they were already there (in common)
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -23,9 +23,8 @@ local sqrt, sin, cos = math.sqrt, math.sin, math.cos
 
 require('PieUtils')
 if CheckDeps() then return end
-dofile(r.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua')('0.8.7')
 
-ctx = r.ImGui_CreateContext('Pie XYZ', r.ImGui_ConfigFlags_NoSavedSettings())
+ctx = r.ImGui_CreateContext('Pie 3000', r.ImGui_ConfigFlags_NoSavedSettings())
 
 require('Common')
 if STYLE == 3 then
@@ -316,7 +315,8 @@ end
 local FLAGS =
 -- r.ImGui_WindowFlags_NoBackground() |
     r.ImGui_WindowFlags_NoDecoration() |
-    r.ImGui_WindowFlags_NoMove()
+    r.ImGui_WindowFlags_NoMove() |
+    r.ImGui_WindowFlags_TopMost()
 
 if not MIDI_TRACE_DEBUG then
     FLAGS = FLAGS | r.ImGui_WindowFlags_NoBackground()
@@ -578,7 +578,6 @@ local function ExecuteAction(action_tbl)
 end
 
 local function DoAction()
-    --if STYLE ~= 3 then
     if STYLE ~= 3 and PIE_MENU[LAST_ACTION].menu then
         if r.ImGui_IsMouseReleased(ctx, 0) or Swipe() or KEY_TRIGGER then
             table.insert(PIE_LIST, {
@@ -592,14 +591,10 @@ local function DoAction()
             SWITCH_PIE = PIE_MENU[LAST_ACTION]
         end
     else
-        --ExecuteAction(PIE_MENU[LAST_ACTION].cmd_name)
         ExecuteAction(STYLE == 3 and LAST_ACTION or PIE_MENU[LAST_ACTION])
     end
-    --else
-    -- ExecuteAction(LAST_ACTION)
-    --end
 end
-
+r.set_action_options(4)
 local function Main()
     TrackShortcutKey()
     if TERMINATE then
@@ -631,14 +626,10 @@ local function Main()
     end
     if LAST_ACTION then DoAction() end
 
-    --if STYLE == 3 and DD_CLOSED then
-    --    Release()
-    --    return
-    --end
-
     DoFullScreen()
     if KILL_ON_ESC and ESC then DONE = true end
-    if r.ImGui_Begin(ctx, 'PIE XYZ', false, FLAGS) then
+    --r.ShowConsoleMsg(tostring(DONE) .. "\n")
+    if r.ImGui_Begin(ctx, 'PIE 3000', false, FLAGS) then
         wnd_hovered = r.ImGui_IsWindowHovered(ctx, r.ImGui_HoveredFlags_RootWindow())
         draw_list = r.ImGui_GetWindowDrawList(ctx)
         MX, MY = r.ImGui_PointConvertNative(ctx, r.GetMousePosition())
@@ -667,6 +658,12 @@ local function Main()
         end
     end
 end
+--r.set_action_options(4) -- toggle
 
-r.atexit(Release)
+function Exit()
+    r.set_action_options(8)
+    Release()
+end
+
+r.atexit(Exit)
 DeferLoop(Main)
