@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.37.5
+-- @version 1.37.51
 -- @changelog
---  Added user color for BG
+--  Imgui Shims
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -121,6 +121,8 @@ local function CheckDeps()
 end
 
 if CheckDeps() then return end
+
+dofile(r.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua')('0.8.7')
 --if ThirdPartyDeps() then return end
 
 ctx = ImGui.CreateContext('ParaNormalFX Router')
@@ -481,7 +483,6 @@ local function Main()
         UI()
         r.ImGui_PushFont(ctx, CUSTOM_FONT and SYSTEM_FONT_FACTORY or DEFAULT_FONT_FACTORY)
         if OPEN_SETTINGS then
-
             DrawUserSettings()
             if OPEN_PM_INSPECTOR then OPEN_PM_INSPECTOR = nil end
         end
@@ -491,11 +492,11 @@ local function Main()
             if PM_INSPECTOR_FXID then PM_INSPECTOR_FXID = nil end
         end
 
-        if HasMultiple(SEL_TBL)then
-            r.ImGui_SetCursorPos(ctx,270,25)
+        if HasMultiple(SEL_TBL) then
+            r.ImGui_SetCursorPos(ctx, 270, 25)
             r.ImGui_Button(ctx, "MARQUEE MOVE/COPY IS NOT SUPPORTED")
         end
-        
+
         ClipBoard()
         r.ImGui_PopFont(ctx)
         --if OPEN_SLOTS then SlotsMenu() end
