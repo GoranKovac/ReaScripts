@@ -1,12 +1,12 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.45
+-- @version 0.35.46
 -- @changelog
---  Stye DropDown Recreate as child
---  Stye DropDown Hold to open
---  Stye DropDown Adjust near edge
---  Stye DropDown Toggle mode close when clicking anywhere outside
+--  Stye DropDown Add tracker
+--  Stye DropDown remove last action trigger when mouse is outside any child window
+--  Stye DropDown Move style creation in new function for cleaner reading
+--  Custom Scripts fix activate on release
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -470,14 +470,14 @@ local function ExecuteAction(action_tbl)
     local pie_func = action_tbl.func
     if pie_func then
         if CLOSE and ACTIVATE_ON_CLOSE then
-            if LAST_TRIGGERED ~= action then
-                LAST_TRIGGERED = action
+            if LAST_TRIGGERED ~= pie_func then
+                LAST_TRIGGERED = pie_func
                 _G[pie_func](action_tbl)
             end
         end
         if r.ImGui_IsMouseReleased(ctx, 0) then
             local START_ACTION_TIME = r.time_precise()
-            LAST_TRIGGERED = action
+            LAST_TRIGGERED = pie_func
             _G[pie_func](action_tbl)
             local AFTER_ACTION_TIME = r.time_precise()
 
@@ -490,7 +490,7 @@ local function ExecuteAction(action_tbl)
                 end
             end
         elseif KEY_TRIGGER then
-            LAST_TRIGGERED = action
+            LAST_TRIGGERED = pie_func
             _G[pie_func](action_tbl)
             KEY_TRIGGER = nil
             if not HOLD_TO_OPEN then
