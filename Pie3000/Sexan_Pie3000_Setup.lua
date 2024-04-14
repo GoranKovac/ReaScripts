@@ -12,6 +12,7 @@ STATE = "PIE"
 require('PieUtils')
 
 if CheckDeps() then return end
+dofile(r.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua')('0.8.7')
 
 ctx = r.ImGui_CreateContext('Pie XYZ Setup')
 r.ImGui_SetConfigVar(ctx, r.ImGui_ConfigVar_WindowsMoveFromTitleBarOnly(), 1)

@@ -1,12 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.46
+-- @version 0.35.47
 -- @changelog
---  Stye DropDown Add tracker
---  Stye DropDown remove last action trigger when mouse is outside any child window
---  Stye DropDown Move style creation in new function for cleaner reading
---  Custom Scripts fix activate on release
+--  Imgui Shims
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -26,6 +23,7 @@ local sqrt, sin, cos = math.sqrt, math.sin, math.cos
 
 require('PieUtils')
 if CheckDeps() then return end
+dofile(r.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua')('0.8.7')
 
 ctx = r.ImGui_CreateContext('Pie XYZ', r.ImGui_ConfigFlags_NoSavedSettings())
 
