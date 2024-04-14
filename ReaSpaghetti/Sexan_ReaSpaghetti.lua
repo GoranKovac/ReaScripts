@@ -1,9 +1,9 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.47
+-- @version 0.48
 -- @changelog
---  Fix tableconstructor not allowing first input to change type
+--  Imgui shims
 -- @provides
 --   api_file.txt
 --   Modules/*.lua
@@ -23,6 +23,7 @@ local r = reaper
 local crash = function(e)
     r.ShowConsoleMsg(e .. '\n' .. debug.traceback())
 end
+dofile(r.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua')('0.8.7')
 
 -- IMGUI SETUP
 ctx = r.ImGui_CreateContext('My script')
