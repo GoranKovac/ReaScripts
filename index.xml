@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="0ce83255b5d4f6a1065f9d9712c1d83a7c3a7034" name="Sexan_Scripts">
+<index version="1" commit="be6bed1cb9a645ca7085303246fdc1905564ed17" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -3392,6 +3392,37 @@ Added warning at top for MOVE/COPY not supported]]></changelog>
         <source type="effect" file="JSFX/MSMidFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/736718a6d4d4e6e9ea90de9276d14cb6c1b75377/ParanormalFX/JSFX/MSMidFX.jsfx</source>
         <source type="effect" file="JSFX/MSSideFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/736718a6d4d4e6e9ea90de9276d14cb6c1b75377/ParanormalFX/JSFX/MSSideFX.jsfx</source>
       </version>
+      <version name="1.37.51" author="Sexan" time="2024-04-14T08:05:41Z">
+        <changelog><![CDATA[Imgui Shims]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/8f35bb11d1ef419e2a798de51fd865ca8a587a19/ParanormalFX/Sexan_ParaNormal_FX_Router.lua</source>
+        <source file="Modules/Canvas.lua">https://github.com/GoranKovac/ReaScripts/raw/8f35bb11d1ef419e2a798de51fd865ca8a587a19/ParanormalFX/Modules/Canvas.lua</source>
+        <source file="Modules/ContainerCode.lua">https://github.com/GoranKovac/ReaScripts/raw/8f35bb11d1ef419e2a798de51fd865ca8a587a19/ParanormalFX/Modules/ContainerCode.lua</source>
+        <source file="Modules/Drawing.lua">https://github.com/GoranKovac/ReaScripts/raw/8f35bb11d1ef419e2a798de51fd865ca8a587a19/ParanormalFX/Modules/Drawing.lua</source>
+        <source file="Modules/Functions.lua">https://github.com/GoranKovac/ReaScripts/raw/8f35bb11d1ef419e2a798de51fd865ca8a587a19/ParanormalFX/Modules/Functions.lua</source>
+        <source file="Modules/Utils.lua">https://github.com/GoranKovac/ReaScripts/raw/8f35bb11d1ef419e2a798de51fd865ca8a587a19/ParanormalFX/Modules/Utils.lua</source>
+        <source file="Modules/flux.lua">https://github.com/GoranKovac/ReaScripts/raw/8f35bb11d1ef419e2a798de51fd865ca8a587a19/ParanormalFX/Modules/flux.lua</source>
+        <source file="Fonts/Icons.ttf">https://github.com/GoranKovac/ReaScripts/raw/8f35bb11d1ef419e2a798de51fd865ca8a587a19/ParanormalFX/Fonts/Icons.ttf</source>
+        <source file="Fonts/ProggyClean.ttf">https://github.com/GoranKovac/ReaScripts/raw/8f35bb11d1ef419e2a798de51fd865ca8a587a19/ParanormalFX/Fonts/ProggyClean.ttf</source>
+        <source file="JSFX/MSMidFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/8f35bb11d1ef419e2a798de51fd865ca8a587a19/ParanormalFX/JSFX/MSMidFX.jsfx</source>
+        <source file="JSFX/MSSideFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/8f35bb11d1ef419e2a798de51fd865ca8a587a19/ParanormalFX/JSFX/MSSideFX.jsfx</source>
+        <source file="FXChains/3BANDSTOCK.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/8f35bb11d1ef419e2a798de51fd865ca8a587a19/ParanormalFX/FXChains/3BANDSTOCK.RfxChain</source>
+        <source file="FXChains/4BANDSTOCK.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/8f35bb11d1ef419e2a798de51fd865ca8a587a19/ParanormalFX/FXChains/4BANDSTOCK.RfxChain</source>
+        <source file="FXChains/5BANDSTOCK.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/8f35bb11d1ef419e2a798de51fd865ca8a587a19/ParanormalFX/FXChains/5BANDSTOCK.RfxChain</source>
+        <source file="FXChains/LEWLOIWC_2_4_MODE_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/8f35bb11d1ef419e2a798de51fd865ca8a587a19/ParanormalFX/FXChains/LEWLOIWC_2_4_MODE_SETUP.RfxChain</source>
+        <source file="FXChains/LEWLOIWC_2_BANDNOTCH_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/8f35bb11d1ef419e2a798de51fd865ca8a587a19/ParanormalFX/FXChains/LEWLOIWC_2_BANDNOTCH_SETUP.RfxChain</source>
+        <source file="FXChains/LEWLOIWC_2_COMBPHASE_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/8f35bb11d1ef419e2a798de51fd865ca8a587a19/ParanormalFX/FXChains/LEWLOIWC_2_COMBPHASE_SETUP.RfxChain</source>
+        <source file="FXChains/LEWLOIWC_3_MIN_PHASE_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/8f35bb11d1ef419e2a798de51fd865ca8a587a19/ParanormalFX/FXChains/LEWLOIWC_3_MIN_PHASE_SETUP.RfxChain</source>
+        <source file="FXChains/LEWLOIWC_ENVELOPE_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/8f35bb11d1ef419e2a798de51fd865ca8a587a19/ParanormalFX/FXChains/LEWLOIWC_ENVELOPE_SETUP.RfxChain</source>
+        <source file="FXChains/LEWLOIWC_GATE_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/8f35bb11d1ef419e2a798de51fd865ca8a587a19/ParanormalFX/FXChains/LEWLOIWC_GATE_SETUP.RfxChain</source>
+        <source file="FXChains/LEWLOIWC_TRANSIENT_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/8f35bb11d1ef419e2a798de51fd865ca8a587a19/ParanormalFX/FXChains/LEWLOIWC_TRANSIENT_SETUP.RfxChain</source>
+        <source file="FXChains/MS_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/8f35bb11d1ef419e2a798de51fd865ca8a587a19/ParanormalFX/FXChains/MS_SETUP.RfxChain</source>
+        <source file="FXChains/SAIKE_2_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/8f35bb11d1ef419e2a798de51fd865ca8a587a19/ParanormalFX/FXChains/SAIKE_2_SETUP.RfxChain</source>
+        <source file="FXChains/SAIKE_3_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/8f35bb11d1ef419e2a798de51fd865ca8a587a19/ParanormalFX/FXChains/SAIKE_3_SETUP.RfxChain</source>
+        <source file="FXChains/SAIKE_4_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/8f35bb11d1ef419e2a798de51fd865ca8a587a19/ParanormalFX/FXChains/SAIKE_4_SETUP.RfxChain</source>
+        <source file="FXChains/SAIKE_5_SETUP.RfxChain">https://github.com/GoranKovac/ReaScripts/raw/8f35bb11d1ef419e2a798de51fd865ca8a587a19/ParanormalFX/FXChains/SAIKE_5_SETUP.RfxChain</source>
+        <source type="effect" file="JSFX/MSMidFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/8f35bb11d1ef419e2a798de51fd865ca8a587a19/ParanormalFX/JSFX/MSMidFX.jsfx</source>
+        <source type="effect" file="JSFX/MSSideFX.jsfx">https://github.com/GoranKovac/ReaScripts/raw/8f35bb11d1ef419e2a798de51fd865ca8a587a19/ParanormalFX/JSFX/MSSideFX.jsfx</source>
+      </version>
     </reapack>
   </category>
   <category name="Pie3000">
@@ -5336,6 +5367,19 @@ Custom Scripts fix activate on release]]></changelog>
         <source file="Roboto-Medium.ttf">https://github.com/GoranKovac/ReaScripts/raw/0ce83255b5d4f6a1065f9d9712c1d83a7c3a7034/Pie3000/Roboto-Medium.ttf</source>
         <source main="main" file="Sexan_PieCleanFiles.lua">https://github.com/GoranKovac/ReaScripts/raw/0ce83255b5d4f6a1065f9d9712c1d83a7c3a7034/Pie3000/Sexan_PieCleanFiles.lua</source>
       </version>
+      <version name="0.35.47" author="Sexan" time="2024-04-14T08:06:39Z">
+        <changelog><![CDATA[Imgui Shims]]></changelog>
+        <source main="main midi_editor">https://github.com/GoranKovac/ReaScripts/raw/acf24b943617f8cdbda9a66ab1d586646749c34b/Pie3000/Sexan_Pie3000.lua</source>
+        <source main="main midi_editor" file="Sexan_Pie3000_Setup.lua">https://github.com/GoranKovac/ReaScripts/raw/acf24b943617f8cdbda9a66ab1d586646749c34b/Pie3000/Sexan_Pie3000_Setup.lua</source>
+        <source main="main" file="Sexan_Pie3000_Tracker_BG.lua">https://github.com/GoranKovac/ReaScripts/raw/acf24b943617f8cdbda9a66ab1d586646749c34b/Pie3000/Sexan_Pie3000_Tracker_BG.lua</source>
+        <source file="CustomImages/Readme.txt">https://github.com/GoranKovac/ReaScripts/raw/acf24b943617f8cdbda9a66ab1d586646749c34b/Pie3000/CustomImages/Readme.txt</source>
+        <source file="easing.lua">https://github.com/GoranKovac/ReaScripts/raw/acf24b943617f8cdbda9a66ab1d586646749c34b/Pie3000/easing.lua</source>
+        <source file="Common.lua">https://github.com/GoranKovac/ReaScripts/raw/acf24b943617f8cdbda9a66ab1d586646749c34b/Pie3000/Common.lua</source>
+        <source file="PieUtils.lua">https://github.com/GoranKovac/ReaScripts/raw/acf24b943617f8cdbda9a66ab1d586646749c34b/Pie3000/PieUtils.lua</source>
+        <source file="fontello1.ttf">https://github.com/GoranKovac/ReaScripts/raw/acf24b943617f8cdbda9a66ab1d586646749c34b/Pie3000/fontello1.ttf</source>
+        <source file="Roboto-Medium.ttf">https://github.com/GoranKovac/ReaScripts/raw/acf24b943617f8cdbda9a66ab1d586646749c34b/Pie3000/Roboto-Medium.ttf</source>
+        <source main="main" file="Sexan_PieCleanFiles.lua">https://github.com/GoranKovac/ReaScripts/raw/acf24b943617f8cdbda9a66ab1d586646749c34b/Pie3000/Sexan_PieCleanFiles.lua</source>
+      </version>
     </reapack>
   </category>
   <category name="Project">
@@ -6988,6 +7032,55 @@ Refresh Library on export]]></changelog>
         <source file="Examples/SCHWA/invader2.png">https://github.com/GoranKovac/ReaScripts/raw/0599289b4f0c990cfcc7a8f44858984ead8bdbe2/ReaSpaghetti/Examples/SCHWA/invader2.png</source>
         <source file="Examples/SCHWA/squid.png">https://github.com/GoranKovac/ReaScripts/raw/0599289b4f0c990cfcc7a8f44858984ead8bdbe2/ReaSpaghetti/Examples/SCHWA/squid.png</source>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/0599289b4f0c990cfcc7a8f44858984ead8bdbe2/ReaSpaghetti/Sexan_ReaSpaghetti.lua</source>
+      </version>
+      <version name="0.48" author="Sexan" time="2024-04-14T08:07:57Z">
+        <changelog><![CDATA[Imgui shims]]></changelog>
+        <source file="api_file.txt">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/api_file.txt</source>
+        <source file="Modules/APIParser.lua">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Modules/APIParser.lua</source>
+        <source file="Modules/Canvas.lua">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Modules/Canvas.lua</source>
+        <source file="Modules/CustomFunctions.lua">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Modules/CustomFunctions.lua</source>
+        <source file="Modules/Defaults.lua">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Modules/Defaults.lua</source>
+        <source file="Modules/ExportToAction.lua">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Modules/ExportToAction.lua</source>
+        <source file="Modules/FileManager.lua">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Modules/FileManager.lua</source>
+        <source file="Modules/Flow.lua">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Modules/Flow.lua</source>
+        <source file="Modules/Library.lua">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Modules/Library.lua</source>
+        <source file="Modules/NodeDraw.lua">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Modules/NodeDraw.lua</source>
+        <source file="Modules/ProFi.lua">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Modules/ProFi.lua</source>
+        <source file="Modules/UI.lua">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Modules/UI.lua</source>
+        <source file="Modules/Undo.lua">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Modules/Undo.lua</source>
+        <source file="Modules/Utils.lua">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Modules/Utils.lua</source>
+        <source file="Modules/flux.lua">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Modules/flux.lua</source>
+        <source file="Modules/glue.lua">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Modules/glue.lua</source>
+        <source file="Modules/inspect.lua">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Modules/inspect.lua</source>
+        <source file="Modules/json.lua">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Modules/json.lua</source>
+        <source file="Modules/path2d_bezier3.lua">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Modules/path2d_bezier3.lua</source>
+        <source file="Modules/path2d_bezier3_hit.lua">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Modules/path2d_bezier3_hit.lua</source>
+        <source file="Modules/path2d_bezier_length.lua">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Modules/path2d_bezier_length.lua</source>
+        <source file="Modules/path2d_point.lua">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Modules/path2d_point.lua</source>
+        <source file="Modules/profiler.lua">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Modules/profiler.lua</source>
+        <source file="Examples/Envelopes_Increase_Points_Bellow_Threshold.reanodes">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Examples/Envelopes_Increase_Points_Bellow_Threshold.reanodes</source>
+        <source file="Examples/Function_Advance.reanodes">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Examples/Function_Advance.reanodes</source>
+        <source file="Examples/Functions_Basic.reanodes">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Examples/Functions_Basic.reanodes</source>
+        <source file="Examples/IMGUI_ITEMS.reanodes">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Examples/IMGUI_ITEMS.reanodes</source>
+        <source file="Examples/Imgui.reanodes">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Examples/Imgui.reanodes</source>
+        <source file="Examples/SCHWARMINATOR.reanodes">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Examples/SCHWARMINATOR.reanodes</source>
+        <source file="Examples/Toggle_Mute_Tracks.reanodes">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Examples/Toggle_Mute_Tracks.reanodes</source>
+        <source file="Examples/Track_volume_defer.reanodes">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Examples/Track_volume_defer.reanodes</source>
+        <source file="Library/GetAllSelectedTracksItems.reanlib">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Library/GetAllSelectedTracksItems.reanlib</source>
+        <source file="Library/GetSelectedTracks.reanlib">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Library/GetSelectedTracks.reanlib</source>
+        <source file="Library/MUTE_TRACK_ITEMS.reanlib">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Library/MUTE_TRACK_ITEMS.reanlib</source>
+        <source file="Library/SET_VOLUME_ALL_TRACKS.reanlib">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Library/SET_VOLUME_ALL_TRACKS.reanlib</source>
+        <source file="ExportedActions/dummy.lua">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/ExportedActions/dummy.lua</source>
+        <source file="Docs/ReaSpaghetti.pdf">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Docs/ReaSpaghetti.pdf</source>
+        <source file="Examples/SCHWA/BG.png">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Examples/SCHWA/BG.png</source>
+        <source file="Examples/SCHWA/Explosion.png">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Examples/SCHWA/Explosion.png</source>
+        <source file="Examples/SCHWA/MENU.png">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Examples/SCHWA/MENU.png</source>
+        <source file="Examples/SCHWA/Schwa_ATTACK.png">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Examples/SCHWA/Schwa_ATTACK.png</source>
+        <source file="Examples/SCHWA/Schwa_IDLE.png">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Examples/SCHWA/Schwa_IDLE.png</source>
+        <source file="Examples/SCHWA/invader.png">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Examples/SCHWA/invader.png</source>
+        <source file="Examples/SCHWA/invader2.png">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Examples/SCHWA/invader2.png</source>
+        <source file="Examples/SCHWA/squid.png">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Examples/SCHWA/squid.png</source>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/be6bed1cb9a645ca7085303246fdc1905564ed17/ReaSpaghetti/Sexan_ReaSpaghetti.lua</source>
       </version>
     </reapack>
   </category>
