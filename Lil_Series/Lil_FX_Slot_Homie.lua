@@ -1,11 +1,3 @@
--- @description Lil FX Slot Homie
--- @author Sexan
--- @license GPL v3
--- @version 1.2
--- @changelog
---  Imgui Shims
---  Implement FX Browser parser
-
 local SLOT = 1
 
 local r = reaper
