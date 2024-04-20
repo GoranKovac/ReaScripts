@@ -18,8 +18,9 @@ end
 local IMGUI_DEF_VALS = {}
 local function GetImguiDefaults2(str)
     for line in str:gmatch('[^\r\n]+') do
-        local f_name = line:match('reaper.(%S+)%(')
+        local f_name = line:match('ImGui%.(%S+)%(')
         if f_name and line:match('Optional =') then
+            f_name = "ImGui_" .. f_name
             IMGUI_DEF_VALS[f_name] = {}
             for val_name, def_val in line:gmatch('</span> (%S+) = <span class="sn">(.-)</span>') do
                 if val_name and def_val then

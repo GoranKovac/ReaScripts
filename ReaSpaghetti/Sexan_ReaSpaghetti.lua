@@ -1,9 +1,9 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.48
+-- @version 0.49
 -- @changelog
---  Imgui shims
+--  Fix Imgui v0.9 Docs parsing
 -- @provides
 --   api_file.txt
 --   Modules/*.lua
