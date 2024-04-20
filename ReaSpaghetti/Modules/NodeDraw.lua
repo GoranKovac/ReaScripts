@@ -1166,6 +1166,7 @@ local function Draw_input(node, io_type, pin, x, y, pin_n, h)
                 --     r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_DisabledAlpha(), 0.3)
                 --     r.ImGui_BeginDisabled(ctx)
                 -- end
+                current_input = type(current_input) == "string" and 0 or current_input
                 _, pin.i_val = r.ImGui_DragDouble(ctx, "##" .. pin.label, current_input, 0.01, 0.0, 0.0,
                     pin.label .. separator .. '%.03f')
                 -- if CheckOptional(pin) then

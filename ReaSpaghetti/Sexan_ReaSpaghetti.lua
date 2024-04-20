@@ -1,9 +1,9 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.49
+-- @version 0.49.1
 -- @changelog
---  Fix Imgui v0.9 Docs parsing
+--  Fix Integer/number fields from reading strings (PushStyleVar, DragDouble and similar nodes)
 -- @provides
 --   api_file.txt
 --   Modules/*.lua
