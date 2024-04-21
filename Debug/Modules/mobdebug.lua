@@ -1904,7 +1904,7 @@ do
               end
 
               local value, string_value
-              if is_scope and not is_global and not is_upvalue then
+              if is_local then
                 value, string_value = var[1], var[2]
               else
                 value, string_value = var, tostring(var)
