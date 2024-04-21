@@ -1873,6 +1873,8 @@ do
           vscode_debugger.send_success(req, { variables = {} })
         else
           local ref, result, vars = args.variablesReference, {}, nil
+          local is_local = (ref % vscode_scope_offset == 1)
+          local is_upvalue = (ref % vscode_scope_offset == 2)
           local is_global = (ref % vscode_scope_offset == 3)
           local is_scope = ref > vscode_scope_offset
           if is_scope then
@@ -1885,6 +1887,8 @@ do
               local frame     = frames[frameId + 1]
               vars            = frame[scopeType]
               if is_global then -- Globals scope
+                vars = _G
+              elseif is_upvalue then
                 vars = _G
               end
             end
@@ -1900,7 +1904,7 @@ do
               end
 
               local value, string_value
-              if is_scope and not is_global then
+              if is_scope and not is_global and not is_upvalue then
                 value, string_value = var[1], var[2]
               else
                 value, string_value = var, tostring(var)
@@ -1922,6 +1926,15 @@ do
                     value              = string_value,
                   }
                 end
+              elseif is_upvalue then
+                if name ~= "_G" then
+                  result[#result + 1] = {
+                    name               = name,
+                    type               = vt,
+                    variablesReference = ref,
+                    value              = string_value,
+                  }
+                end
               else
                 result[#result + 1] = {
                   name               = name,
@@ -1931,6 +1944,7 @@ do
                 }
               end
             end
+            table.sort(result, function(a, b) return a.name < b.name end)
             vscode_debugger.send_success(req, { variables = result })
           end -- if vars
         end   -- if not seen_hook
