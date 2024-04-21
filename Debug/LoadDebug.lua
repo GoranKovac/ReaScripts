@@ -1,8 +1,17 @@
 local info = debug.getinfo(1, 'S');
 local script_path = info.source:match [[^@?(.*[\/])[^\/]-$]];
-package.cpath = package.cpath .. ";" .. script_path .. "/Modules/?.dll" -- Add current folder/socket module for looking at .dll (need for loading basic luasocket)
-package.cpath = package.cpath .. ";" .. script_path .. "/Modules/?.so" -- Add current folder/socket module for looking at .so (need for loading basic luasocket)
-package.path = package.path .. ";" .. script_path .. "/Modules/?.lua"  -- Add current folder/socket module for looking at sockets.
+package.cpath = package.cpath ..
+    ";" ..
+    script_path ..
+    "/Modules/?.dll" -- Add current folder/socket module for looking at .dll (need for loading basic luasocket)
+package.cpath = package.cpath ..
+    ";" ..
+    script_path ..
+    "/Modules/?.so" -- Add current folder/socket module for looking at .so (need for loading basic luasocket)
+package.path = package.path ..
+    ";" ..
+    script_path ..
+    "/Modules/?.lua" -- Add current folder/socket module for looking at sockets.
 
 -- INSTALL VSCODE EXSTENSION
 -- https://marketplace.visualstudio.com/items?itemName=AlexeyMelnichuk.lua-mobdebug
@@ -30,7 +39,7 @@ package.path = package.path .. ";" .. script_path .. "/Modules/?.lua"  -- Add cu
 
 
 -- .vscode/tasks.json
--- {   
+-- {
 --     "version": "2.0.0",
 --     "tasks": [
 --         {
@@ -61,10 +70,14 @@ package.path = package.path .. ";" .. script_path .. "/Modules/?.lua"  -- Add cu
 --     ]
 -- }
 
-DEBUG = require("mobdebug")
+local DEBUG = require("mobdebug")
 
 DEBUG.defer = function(func)
     reaper.defer(function() xpcall(func, DEBUG.crash) end)
 end
 
 DEBUG.start()
+
+function MobDebug()
+    return DEBUG
+end

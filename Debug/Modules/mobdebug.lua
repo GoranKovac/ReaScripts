@@ -11,6 +11,12 @@ local function prequire(name)
   return ok and m or nil
 end
 
+local GLOBAL_IGNORE = {}
+
+for k, v in pairs(_G) do
+  GLOBAL_IGNORE[k] = v
+end
+
 local socket = require "socket"
 local table = table or require "table"
 local string = string or require "string"
@@ -31,7 +37,7 @@ local mobdebug = {
   port = os and os.getenv and tonumber((os.getenv("MOBDEBUG_PORT"))) or 8172,
   checkcount = 200,
   yieldtimeout = 0.02, -- yield timeout (s)
-  connecttimeout = 2, -- connect timeout (s)
+  connecttimeout = 2,  -- connect timeout (s)
 }
 
 local HOOKMASK = "lcr"
@@ -83,12 +89,14 @@ if not setfenv then -- Lua 5.2+
       if name == '_ENV' then return level, value end
       level = level + 1
     until name == nil
-    return nil end
-  getfenv = function (f) return(select(2, findenv(f)) or _G) end
-  setfenv = function (f, t)
+    return nil
+  end
+  getfenv = function(f) return (select(2, findenv(f)) or _G) end
+  setfenv = function(f, t)
     local level = findenv(f)
     if level then debug.setupvalue(f, level, t) end
-    return f end
+    return f
+  end
 end
 
 -- check for OS and convert file names to lower case on windows
@@ -101,9 +109,9 @@ local win = os and os.getenv and (os.getenv('WINDIR') or (os.getenv('OS') or '')
 local mac = not win and (os and os.getenv and os.getenv('DYLD_LIBRARY_PATH') or not io.open("/proc")) and true or false
 local iscasepreserving = win or (mac and io.open('/library') ~= nil)
 
-local coroutines = {}; setmetatable(coroutines, {__mode = "k"}) -- "weak" keys
+local coroutines = {}; setmetatable(coroutines, { __mode = "k" }) -- "weak" keys
 local events = { BREAK = 1, WATCH = 2, RESTART = 3, STACK = 4 }
-local PROTOCOLS = {MOBDEBUG = 1, VSCODE = 2}
+local PROTOCOLS = { MOBDEBUG = 1, VSCODE = 2 }
 local deferror = "execution aborted at default debugee"
 
 -- turn jit off based on Mike Pall's comment in this discussion:
@@ -128,14 +136,14 @@ local state = {
   stack_level   = 0,
   basedir       = "",
   protocol      = nil,
-  debugee = function ()
+  debugee       = function()
     local a = 1
     for _ = 1, 10 do a = a + 1 end
     error(deferror)
   end,
-  outputs = {},
-  logging = false,
-  logfile = nil,
+  outputs       = {},
+  logging       = false,
+  logfile       = nil,
 }
 
 local server
@@ -143,158 +151,201 @@ local coro_debugger
 local coro_debugee
 local abort -- default value is nil; this is used in start/loop distinction
 
-local iobase = {print = print}
-local function q(s) return string_gsub(s, '([%(%)%.%%%+%-%*%?%[%^%$%]])','%%%1') end
+local iobase = { print = print }
+local function q(s) return string_gsub(s, '([%(%)%.%%%+%-%*%?%[%^%$%]])', '%%%1') end
 
-local serpent = (function() ---- include Serpent module for serialization
-local n, v = "serpent", "0.302" -- (C) 2012-18 Paul Kulchenko; MIT License
-local c, d = "Paul Kulchenko", "Lua serializer and pretty printer"
-local snum = {[tostring(1/0)]='1/0 --[[math.huge]]',[tostring(-1/0)]='-1/0 --[[-math.huge]]',[tostring(0/0)]='0/0'}
-local badtype = {thread = true, userdata = true, cdata = true}
-local getmetatable = debug and debug.getmetatable or getmetatable
-local pairs = function(t) return next, t end -- avoid using __pairs in Lua 5.2+
-local keyword, globals, G = {}, {}, (_G or _ENV)
-for _,k in ipairs({'and', 'break', 'do', 'else', 'elseif', 'end', 'false',
-  'for', 'function', 'goto', 'if', 'in', 'local', 'nil', 'not', 'or', 'repeat',
-  'return', 'then', 'true', 'until', 'while'}) do keyword[k] = true end
-for k,v in pairs(G) do globals[v] = k end -- build func to name mapping
-for _,g in ipairs({'coroutine', 'debug', 'io', 'math', 'string', 'table', 'os'}) do
-  for k,v in pairs(type(G[g]) == 'table' and G[g] or {}) do globals[v] = g..'.'..k end end
+local serpent = (function()       ---- include Serpent module for serialization
+  local n, v = "serpent", "0.302" -- (C) 2012-18 Paul Kulchenko; MIT License
+  local c, d = "Paul Kulchenko", "Lua serializer and pretty printer"
+  local snum = {
+    [tostring(1 / 0)] = '1/0 --[[math.huge]]',
+    [tostring(-1 / 0)] = '-1/0 --[[-math.huge]]',
+    [tostring(0 / 0)] =
+    '0/0'
+  }
+  local badtype = { thread = true, userdata = true, cdata = true }
+  local getmetatable = debug and debug.getmetatable or getmetatable
+  local pairs = function(t) return next, t end -- avoid using __pairs in Lua 5.2+
+  local keyword, globals, G = {}, {}, (_G or _ENV)
+  for _, k in ipairs({ 'and', 'break', 'do', 'else', 'elseif', 'end', 'false',
+    'for', 'function', 'goto', 'if', 'in', 'local', 'nil', 'not', 'or', 'repeat',
+    'return', 'then', 'true', 'until', 'while' }) do keyword[k] = true end
+  for k, v in pairs(G) do globals[v] = k end -- build func to name mapping
+  for _, g in ipairs({ 'coroutine', 'debug', 'io', 'math', 'string', 'table', 'os' }) do
+    for k, v in pairs(type(G[g]) == 'table' and G[g] or {}) do globals[v] = g .. '.' .. k end
+  end
 
-local function s(t, opts)
-  local name, indent, fatal, maxnum = opts.name, opts.indent, opts.fatal, opts.maxnum
-  local sparse, custom, huge = opts.sparse, opts.custom, not opts.nohuge
-  local space, maxl = (opts.compact and '' or ' '), (opts.maxlevel or math.huge)
-  local maxlen, metatostring = tonumber(opts.maxlength), opts.metatostring
-  local iname, comm = '_'..(name or ''), opts.comment and (tonumber(opts.comment) or math.huge)
-  local numformat = opts.numformat or "%.17g"
-  local seen, sref, syms, symn = {}, {'local '..iname..'={}'}, {}, 0
-  local function gensym(val) return '_'..(tostring(tostring(val)):gsub("[^%w]",""):gsub("(%d%w+)",
-    -- tostring(val) is needed because __tostring may return a non-string value
-    function(s) if not syms[s] then symn = symn+1; syms[s] = symn end return tostring(syms[s]) end)) end
-  local function safestr(s) return type(s) == "number" and tostring(huge and snum[tostring(s)] or numformat:format(s))
-    or type(s) ~= "string" and tostring(s) -- escape NEWLINE/010 and EOF/026
-    or ("%q"):format(s):gsub("\010","n"):gsub("\026","\\026") end
-  local function comment(s,l) return comm and (l or 0) < comm and ' --[['..select(2, pcall(tostring, s))..']]' or '' end
-  local function globerr(s,l) return globals[s] and globals[s]..comment(s,l) or not fatal
-    and safestr(select(2, pcall(tostring, s))) or error("Can't serialize "..tostring(s)) end
-  local function safename(path, name) -- generates foo.bar, foo[3], or foo['b a r']
-    local n = name == nil and '' or name
-    local plain = type(n) == "string" and n:match("^[%l%u_][%w_]*$") and not keyword[n]
-    local safe = plain and n or '['..safestr(n)..']'
-    return (path or '')..(plain and path and '.' or '')..safe, safe end
-  local alphanumsort = type(opts.sortkeys) == 'function' and opts.sortkeys or function(k, o, n) -- k=keys, o=originaltable, n=padding
-    local maxn, to = tonumber(n) or 12, {number = 'a', string = 'b'}
-    local function padnum(d) return ("%0"..tostring(maxn).."d"):format(tonumber(d)) end
-    table.sort(k, function(a,b)
-      -- sort numeric keys first: k[key] is not nil for numerical keys
-      return (k[a] ~= nil and 0 or to[type(a)] or 'z')..(tostring(a):gsub("%d+",padnum))
-           < (k[b] ~= nil and 0 or to[type(b)] or 'z')..(tostring(b):gsub("%d+",padnum)) end) end
-  local function val2str(t, name, indent, insref, path, plainindex, level)
-    local ttype, level, mt = type(t), (level or 0), getmetatable(t)
-    local spath, sname = safename(path, name)
-    local tag = plainindex and
-      ((type(name) == "number") and '' or name..space..'='..space) or
-      (name ~= nil and sname..space..'='..space or '')
-    if seen[t] then -- already seen this element
-      sref[#sref+1] = spath..space..'='..space..seen[t]
-      return tag..'nil'..comment('ref', level) end
-    -- protect from those cases where __tostring may fail
-    if type(mt) == 'table' and metatostring ~= false then
-      local to, tr = pcall(function() return mt.__tostring(t) end)
-      local so, sr = pcall(function() return mt.__serialize(t) end)
-      if (to or so) then -- knows how to serialize itself
-        seen[t] = insref or spath
-        t = so and sr or tr
-        ttype = type(t)
-      end -- new value falls through to be serialized
+  local function s(t, opts)
+    local name, indent, fatal, maxnum = opts.name, opts.indent, opts.fatal, opts.maxnum
+    local sparse, custom, huge = opts.sparse, opts.custom, not opts.nohuge
+    local space, maxl = (opts.compact and '' or ' '), (opts.maxlevel or math.huge)
+    local maxlen, metatostring = tonumber(opts.maxlength), opts.metatostring
+    local iname, comm = '_' .. (name or ''), opts.comment and (tonumber(opts.comment) or math.huge)
+    local numformat = opts.numformat or "%.17g"
+    local seen, sref, syms, symn = {}, { 'local ' .. iname .. '={}' }, {}, 0
+    local function gensym(val)
+      return '_' .. (tostring(tostring(val)):gsub("[^%w]", ""):gsub("(%d%w+)",
+        -- tostring(val) is needed because __tostring may return a non-string value
+        function(s)
+          if not syms[s] then
+            symn = symn + 1; syms[s] = symn
+          end
+          return tostring(syms[s])
+        end))
     end
-    if ttype == "table" then
-      if level >= maxl then return tag..'{}'..comment('maxlvl', level) end
-      seen[t] = insref or spath
-      if next(t) == nil then return tag..'{}'..comment(t, level) end -- table empty
-      if maxlen and maxlen < 0 then return tag..'{}'..comment('maxlen', level) end
-      local maxn, o, out = math.min(#t, maxnum or #t), {}, {}
-      for key = 1, maxn do o[key] = key end
-      if not maxnum or #o < maxnum then
-        local n = #o -- n = n + 1; o[n] is much faster than o[#o+1] on large tables
-        for key in pairs(t) do if o[key] ~= key then n = n + 1; o[n] = key end end end
-      if maxnum and #o > maxnum then o[maxnum+1] = nil end
-      if opts.sortkeys and #o > maxn then alphanumsort(o, t, opts.sortkeys) end
-      local sparse = sparse and #o > maxn -- disable sparsness if only numeric keys (shorter output)
-      for n, key in ipairs(o) do
-        local value, ktype, plainindex = t[key], type(key), n <= maxn and not sparse
-        if opts.valignore and opts.valignore[value] -- skip ignored values; do nothing
-        or opts.keyallow and not opts.keyallow[key]
-        or opts.keyignore and opts.keyignore[key]
-        or opts.valtypeignore and opts.valtypeignore[type(value)] -- skipping ignored value types
-        or sparse and value == nil then -- skipping nils; do nothing
-        elseif ktype == 'table' or ktype == 'function' or badtype[ktype] then
-          if not seen[key] and not globals[key] then
-            sref[#sref+1] = 'placeholder'
-            local sname = safename(iname, gensym(key)) -- iname is table for local variables
-            sref[#sref] = val2str(key,sname,indent,sname,iname,true) end
-          sref[#sref+1] = 'placeholder'
-          local path = seen[t]..'['..tostring(seen[key] or globals[key] or gensym(key))..']'
-          sref[#sref] = path..space..'='..space..tostring(seen[value] or val2str(value,nil,indent,path))
-        else
-          out[#out+1] = val2str(value,key,indent,nil,seen[t],plainindex,level+1)
-          if maxlen then
-            maxlen = maxlen - #out[#out]
-            if maxlen < 0 then break end
+    local function safestr(s)
+      return type(s) == "number" and tostring(huge and snum[tostring(s)] or numformat:format(s))
+          or type(s) ~= "string" and tostring(s) -- escape NEWLINE/010 and EOF/026
+          or ("%q"):format(s):gsub("\010", "n"):gsub("\026", "\\026")
+    end
+    local function comment(s, l)
+      return comm and (l or 0) < comm and ' --[[' .. select(2, pcall(tostring, s)) .. ']]' or
+          ''
+    end
+    local function globerr(s, l)
+      return globals[s] and globals[s] .. comment(s, l) or not fatal
+          and safestr(select(2, pcall(tostring, s))) or error("Can't serialize " .. tostring(s))
+    end
+    local function safename(path, name) -- generates foo.bar, foo[3], or foo['b a r']
+      local n = name == nil and '' or name
+      local plain = type(n) == "string" and n:match("^[%l%u_][%w_]*$") and not keyword[n]
+      local safe = plain and n or '[' .. safestr(n) .. ']'
+      return (path or '') .. (plain and path and '.' or '') .. safe, safe
+    end
+    local alphanumsort = type(opts.sortkeys) == 'function' and opts.sortkeys or
+        function(k, o, n) -- k=keys, o=originaltable, n=padding
+          local maxn, to = tonumber(n) or 12, { number = 'a', string = 'b' }
+          local function padnum(d) return ("%0" .. tostring(maxn) .. "d"):format(tonumber(d)) end
+          table.sort(k, function(a, b)
+            -- sort numeric keys first: k[key] is not nil for numerical keys
+            return (k[a] ~= nil and 0 or to[type(a)] or 'z') .. (tostring(a):gsub("%d+", padnum))
+                < (k[b] ~= nil and 0 or to[type(b)] or 'z') .. (tostring(b):gsub("%d+", padnum))
+          end)
+        end
+    local function val2str(t, name, indent, insref, path, plainindex, level)
+      local ttype, level, mt = type(t), (level or 0), getmetatable(t)
+      local spath, sname = safename(path, name)
+      local tag = plainindex and
+          ((type(name) == "number") and '' or name .. space .. '=' .. space) or
+          (name ~= nil and sname .. space .. '=' .. space or '')
+      if seen[t] then -- already seen this element
+        sref[#sref + 1] = spath .. space .. '=' .. space .. seen[t]
+        return tag .. 'nil' .. comment('ref', level)
+      end
+      -- protect from those cases where __tostring may fail
+      if type(mt) == 'table' and metatostring ~= false then
+        local to, tr = pcall(function() return mt.__tostring(t) end)
+        local so, sr = pcall(function() return mt.__serialize(t) end)
+        if (to or so) then -- knows how to serialize itself
+          seen[t] = insref or spath
+          t = so and sr or tr
+          ttype = type(t)
+        end -- new value falls through to be serialized
+      end
+      if ttype == "table" then
+        if level >= maxl then return tag .. '{}' .. comment('maxlvl', level) end
+        seen[t] = insref or spath
+        if next(t) == nil then return tag .. '{}' .. comment(t, level) end -- table empty
+        if maxlen and maxlen < 0 then return tag .. '{}' .. comment('maxlen', level) end
+        local maxn, o, out = math.min(#t, maxnum or #t), {}, {}
+        for key = 1, maxn do o[key] = key end
+        if not maxnum or #o < maxnum then
+          local n = #o -- n = n + 1; o[n] is much faster than o[#o+1] on large tables
+          for key in pairs(t) do
+            if o[key] ~= key then
+              n = n + 1; o[n] = key
+            end
           end
         end
-      end
-      local prefix = string.rep(indent or '', level)
-      local head = indent and '{\n'..prefix..indent or '{'
-      local body = table.concat(out, ','..(indent and '\n'..prefix..indent or space))
-      local tail = indent and "\n"..prefix..'}' or '}'
-      return (custom and custom(tag,head,body,tail,level) or tag..head..body..tail)..comment(t, level)
-    elseif badtype[ttype] then
-      seen[t] = insref or spath
-      return tag..globerr(t, level)
-    elseif ttype == 'function' then
-      seen[t] = insref or spath
-      if opts.nocode then return tag.."function() --[[..skipped..]] end"..comment(t, level) end
-      local ok, res = pcall(string.dump, t)
-      local func = ok and "((loadstring or load)("..safestr(res)..",'@serialized'))"..comment(t, level)
-      return tag..(func or globerr(t, level))
-    else return tag..safestr(t) end -- handle all other types
+        if maxnum and #o > maxnum then o[maxnum + 1] = nil end
+        if opts.sortkeys and #o > maxn then alphanumsort(o, t, opts.sortkeys) end
+        local sparse = sparse and #o > maxn -- disable sparsness if only numeric keys (shorter output)
+        for n, key in ipairs(o) do
+          local value, ktype, plainindex = t[key], type(key), n <= maxn and not sparse
+          if opts.valignore and opts.valignore[value] -- skip ignored values; do nothing
+              or opts.keyallow and not opts.keyallow[key]
+              or opts.keyignore and opts.keyignore[key]
+              or opts.valtypeignore and opts.valtypeignore[type(value)] -- skipping ignored value types
+              or sparse and value == nil then                           -- skipping nils; do nothing
+          elseif ktype == 'table' or ktype == 'function' or badtype[ktype] then
+            if not seen[key] and not globals[key] then
+              sref[#sref + 1] = 'placeholder'
+              local sname = safename(iname, gensym(key)) -- iname is table for local variables
+              sref[#sref] = val2str(key, sname, indent, sname, iname, true)
+            end
+            sref[#sref + 1] = 'placeholder'
+            local path = seen[t] .. '[' .. tostring(seen[key] or globals[key] or gensym(key)) .. ']'
+            sref[#sref] = path .. space .. '=' .. space .. tostring(seen[value] or val2str(value, nil, indent, path))
+          else
+            out[#out + 1] = val2str(value, key, indent, nil, seen[t], plainindex, level + 1)
+            if maxlen then
+              maxlen = maxlen - #out[#out]
+              if maxlen < 0 then break end
+            end
+          end
+        end
+        local prefix = string.rep(indent or '', level)
+        local head = indent and '{\n' .. prefix .. indent or '{'
+        local body = table.concat(out, ',' .. (indent and '\n' .. prefix .. indent or space))
+        local tail = indent and "\n" .. prefix .. '}' or '}'
+        return (custom and custom(tag, head, body, tail, level) or tag .. head .. body .. tail) .. comment(t, level)
+      elseif badtype[ttype] then
+        seen[t] = insref or spath
+        return tag .. globerr(t, level)
+      elseif ttype == 'function' then
+        seen[t] = insref or spath
+        if opts.nocode then return tag .. "function() --[[..skipped..]] end" .. comment(t, level) end
+        local ok, res = pcall(string.dump, t)
+        local func = ok and "((loadstring or load)(" .. safestr(res) .. ",'@serialized'))" .. comment(t, level)
+        return tag .. (func or globerr(t, level))
+      else
+        return tag .. safestr(t)
+      end -- handle all other types
+    end
+    local sepr = indent and "\n" or ";" .. space
+    local body = val2str(t, name, indent) -- this call also populates sref
+    local tail = #sref > 1 and table.concat(sref, sepr) .. sepr or ''
+    local warn = opts.comment and #sref > 1 and space .. "--[[incomplete output with shared/self-references skipped]]" or
+        ''
+    return not name and body .. warn or "do local " .. body .. sepr .. tail .. "return " .. name .. sepr .. "end"
   end
-  local sepr = indent and "\n" or ";"..space
-  local body = val2str(t, name, indent) -- this call also populates sref
-  local tail = #sref>1 and table.concat(sref, sepr)..sepr or ''
-  local warn = opts.comment and #sref>1 and space.."--[[incomplete output with shared/self-references skipped]]" or ''
-  return not name and body..warn or "do local "..body..sepr..tail.."return "..name..sepr.."end"
-end
 
-local function deserialize(data, opts)
-  local env = (opts and opts.safe == false) and G
-    or setmetatable({}, {
-        __index = function(t,k) return t end,
-        __call = function(t,...) error("cannot call functions") end
-      })
-  local f, res = (loadstring or load)('return '..data, nil, nil, env)
-  if not f then f, res = (loadstring or load)(data, nil, nil, env) end
-  if not f then return f, res end
-  if setfenv then setfenv(f, env) end
-  return pcall(f)
-end
+  local function deserialize(data, opts)
+    local env = (opts and opts.safe == false) and G
+        or setmetatable({}, {
+          __index = function(t, k) return t end,
+          __call = function(t, ...) error("cannot call functions") end
+        })
+    local f, res = (loadstring or load)('return ' .. data, nil, nil, env)
+    if not f then f, res = (loadstring or load)(data, nil, nil, env) end
+    if not f then return f, res end
+    if setfenv then setfenv(f, env) end
+    return pcall(f)
+  end
 
-local function merge(a, b) if b then for k,v in pairs(b) do a[k] = v end end; return a; end
-return { _NAME = n, _COPYRIGHT = c, _DESCRIPTION = d, _VERSION = v, serialize = s,
-  load = deserialize,
-  dump = function(a, opts) return s(a, merge({name = '_', compact = true, sparse = true}, opts)) end,
-  line = function(a, opts) return s(a, merge({sortkeys = true, comment = true}, opts)) end,
-  block = function(a, opts) return s(a, merge({indent = '  ', sortkeys = true, comment = true}, opts)) end }
+  local function merge(a, b)
+    if b then for k, v in pairs(b) do a[k] = v end end; return a;
+  end
+  return {
+    _NAME = n,
+    _COPYRIGHT = c,
+    _DESCRIPTION = d,
+    _VERSION = v,
+    serialize = s,
+    load = deserialize,
+    dump = function(a, opts) return s(a, merge({ name = '_', compact = true, sparse = true }, opts)) end,
+    line = function(a, opts) return s(a, merge({ sortkeys = true, comment = true }, opts)) end,
+    block = function(a, opts) return s(a, merge({ indent = '  ', sortkeys = true, comment = true }, opts)) end
+  }
 end)() ---- end of Serpent module
 
-local Log = {} do
+local Log = {}
+do
   local io_open = io and io.open
   local io_flush = io and io.flush or function() end
-  local table_format_params = {comment = false, nocode = true}
+  local table_format_params = { comment = false, nocode = true }
   local function table_format(t)
-    return serpent.block(t,table_format_params)
+    return serpent.block(t, table_format_params)
   end
 
   function Log.format(...)
@@ -326,219 +377,218 @@ local Log = {} do
   end
 end
 
-local Socket = {} do
+local Socket = {}
+do
+  function Socket.new(s)
+    local self = {}
+    for k, v in pairs(Socket) do
+      self[k] = v
+    end
 
-function Socket.new(s)
-  local self = {}
-  for k, v in pairs(Socket) do
-    self[k] = v
+    self.s   = s
+    self.buf = nil
+
+    return self
   end
 
-  self.s   = s
-  self.buf = nil
-
-  return self
-end
-
-function Socket:buffer_append(data)
-  if data and data ~= '' then
-    if self.buf then
-      self.buf = self.buf .. data
-    else
-      self.buf = data
+  function Socket:buffer_append(data)
+    if data and data ~= '' then
+      if self.buf then
+        self.buf = self.buf .. data
+      else
+        self.buf = data
+      end
     end
   end
-end
 
-function Socket:buffer_readn(n)
-  if n == 0 then
-    return ''
-  end
+  function Socket:buffer_readn(n)
+    if n == 0 then
+      return ''
+    end
 
-  if not self.buf or #self.buf < n then
-    return nil
-  end
+    if not self.buf or #self.buf < n then
+      return nil
+    end
 
-  local data = self.buf:sub(1, n)
-  if #self.buf == n then
-    self.buf = nil
-  else
-    self.buf = self.buf:sub(n + 1)
-  end
+    local data = self.buf:sub(1, n)
+    if #self.buf == n then
+      self.buf = nil
+    else
+      self.buf = self.buf:sub(n + 1)
+    end
 
-  return data
-end
-
-function Socket:buffer_read_line()
-  if not self.buf then
-    return
-  end
-
-  local n = string_find(self.buf, '\n', nil, true)
-  if not n then
-    return
-  end
-
-  local line = self.buf:sub(1, n)
-  self.buf = self.buf:sub(n + 2)
-  if self.buf == '' then
-    self.buf = nil
-  end
-
-  return line
-end
-
-function Socket:buffer_read_all()
-  local data = self.buf
-  self.buf = nil
-  return data
-end
-
-function Socket:buffer_peek(n)
-  if n == 0 then
-    return ''
-  end
-  if not self.buf then
-    return nil
-  end
-  if #self.buf < n then
-    return nil
-  end
-  local res = self.buf:sub(1, n)
-  return res
-end
-
-function Socket:buffer_size()
-  return self.buf and #self.buf or 0
-end
-
-function Socket:settimeout(...)
-  return self.s:settimeout(...)
-end
-
-function Socket:receive(...)
-  return self.s:receive(...)
-end
-
-function Socket:peek(n, sync)
-  local data = self:buffer_peek(n)
-  if data then
     return data
   end
 
-  local more = n - self:buffer_size()
+  function Socket:buffer_read_line()
+    if not self.buf then
+      return
+    end
 
-  if sync == false then
-    self:settimeout(0) -- non-blocking
-  end
-  local res, err, partial = self:receive(n) -- get the rest of the line
-  if sync == false then
-    self:settimeout() -- back to blocking
-  end
+    local n = string_find(self.buf, '\n', nil, true)
+    if not n then
+      return
+    end
 
-  self:buffer_append(res or partial)
+    local line = self.buf:sub(1, n)
+    self.buf = self.buf:sub(n + 2)
+    if self.buf == '' then
+      self.buf = nil
+    end
 
-  return self:buffer_peek(n)
-end
-
-function Socket:receive_line(sync)
-  local line = self:buffer_read_line()
-  if line then
     return line
   end
 
-  if sync == false then
-    self:settimeout(0) -- non-blocking
-  end
-  local res, err, partial = self:receive("*l") -- get the rest of the line
-  if sync == false then
-    self:settimeout() -- back to blocking
-  end
-
-  self:buffer_append(res or partial)
-
-  if not res then
-    return nil, err
-  end
-
-  return self:buffer_read_all()
-end
-
-function Socket:receive_nread(n, sync)
-  local data = self:buffer_readn(n)
-  if data then
+  function Socket:buffer_read_all()
+    local data = self.buf
+    self.buf = nil
     return data
   end
 
-  local more = n - self:buffer_size()
-  if sync == false then
-    self:settimeout(0) -- non-blocking
-  end
-  local res, err, partial = self:receive(n)
-  if sync == false then
-    self:settimeout() -- back to blocking
-  end
-
-  self:buffer_append(res or partial)
-
-  data = self:buffer_readn(n)
-  if not data then
-    return nil, err
+  function Socket:buffer_peek(n)
+    if n == 0 then
+      return ''
+    end
+    if not self.buf then
+      return nil
+    end
+    if #self.buf < n then
+      return nil
+    end
+    local res = self.buf:sub(1, n)
+    return res
   end
 
-  return data
-end
+  function Socket:buffer_size()
+    return self.buf and #self.buf or 0
+  end
 
-function Socket:send(...)
-  return self.s:send(...)
-end
+  function Socket:settimeout(...)
+    return self.s:settimeout(...)
+  end
 
-function Socket:nsend(str)
-  local total_sent, attempt = 0, 5
-  while total_sent < #str do
-    local sent, err = self:send(str, total_sent + 1)
-    if sent then
-      if send == 0 then
-        attempt = attempt - 1
-        if attempt == 0 then
-          return nil, err or 'no progress'
+  function Socket:receive(...)
+    return self.s:receive(...)
+  end
+
+  function Socket:peek(n, sync)
+    local data = self:buffer_peek(n)
+    if data then
+      return data
+    end
+
+    local more = n - self:buffer_size()
+
+    if sync == false then
+      self:settimeout(0)                      -- non-blocking
+    end
+    local res, err, partial = self:receive(n) -- get the rest of the line
+    if sync == false then
+      self:settimeout()                       -- back to blocking
+    end
+
+    self:buffer_append(res or partial)
+
+    return self:buffer_peek(n)
+  end
+
+  function Socket:receive_line(sync)
+    local line = self:buffer_read_line()
+    if line then
+      return line
+    end
+
+    if sync == false then
+      self:settimeout(0)                         -- non-blocking
+    end
+    local res, err, partial = self:receive("*l") -- get the rest of the line
+    if sync == false then
+      self:settimeout()                          -- back to blocking
+    end
+
+    self:buffer_append(res or partial)
+
+    if not res then
+      return nil, err
+    end
+
+    return self:buffer_read_all()
+  end
+
+  function Socket:receive_nread(n, sync)
+    local data = self:buffer_readn(n)
+    if data then
+      return data
+    end
+
+    local more = n - self:buffer_size()
+    if sync == false then
+      self:settimeout(0) -- non-blocking
+    end
+    local res, err, partial = self:receive(n)
+    if sync == false then
+      self:settimeout() -- back to blocking
+    end
+
+    self:buffer_append(res or partial)
+
+    data = self:buffer_readn(n)
+    if not data then
+      return nil, err
+    end
+
+    return data
+  end
+
+  function Socket:send(...)
+    return self.s:send(...)
+  end
+
+  function Socket:nsend(str)
+    local total_sent, attempt = 0, 5
+    while total_sent < #str do
+      local sent, err = self:send(str, total_sent + 1)
+      if sent then
+        if send == 0 then
+          attempt = attempt - 1
+          if attempt == 0 then
+            return nil, err or 'no progress'
+          end
+        else
+          total_sent = total_sent + sent
         end
       else
-        total_sent = total_sent + sent
+        return nil, err, total_sent
       end
+    end
+    return true
+  end
+
+  function Socket:is_pending()
+    -- if there is something already in the buffer, skip check
+    if self:buffer_size() == 0 and self.checkcount >= mobdebug.checkcount then
+      self:settimeout(0) -- non-blocking
+      local res, err, part = self:receive(1)
+      self:settimeout()  -- back to blocking
+      self:buffer_append(res or part)
+      self.checkcount = 0
     else
-      return nil, err, total_sent
+      self.checkcount = self.checkcount + 1
+    end
+    return self:buffer_size() > 0
+  end
+
+  function Socket:enforce_pending_check()
+    self.checkcount = mobdebug.checkcount
+  end
+
+  function Socket:close()
+    if self.s then
+      self.s:close()
+      self.buf = nil
+      self.s = nil
     end
   end
-  return true
-end
-
-function Socket:is_pending()
-  -- if there is something already in the buffer, skip check
-  if self:buffer_size() == 0 and self.checkcount >= mobdebug.checkcount then
-    self:settimeout(0) -- non-blocking
-    local res, err, part = self:receive(1)
-    self:settimeout() -- back to blocking
-    self:buffer_append(res or part)
-    self.checkcount = 0
-  else
-    self.checkcount = self.checkcount + 1
-  end
-  return self:buffer_size() > 0
-end
-
-function Socket:enforce_pending_check()
-  self.checkcount = mobdebug.checkcount
-end
-
-function Socket:close()
-  if self.s then
-    self.s:close()
-    self.buf = nil
-    self.s = nil
-  end
-end
-
 end
 
 local debugger = {}
@@ -567,19 +617,19 @@ mobdebug.print = print
 
 local function is_abs_path(file)
   return
-    string_match(file, [[^\\]])
-    or string_match(file, [[^/]])
-    or string_match(file, [[^.:]])
+      string_match(file, [[^\\]])
+      or string_match(file, [[^/]])
+      or string_match(file, [[^.:]])
 end
 
 local function removebasedir(path, basedir)
   if not iscasepreserving then
-    return string_gsub(path, '^'..q(basedir), '')
+    return string_gsub(path, '^' .. q(basedir), '')
   end
 
   -- check if the lowercased path matches the basedir
   -- if so, return substring of the original path (to not lowercase it)
-  if string_find(string_lower(path), '^'..q(string_lower(basedir))) then
+  if string_find(string_lower(path), '^' .. q(string_lower(basedir))) then
     return string_sub(path, #basedir + 1)
   end
 
@@ -589,7 +639,7 @@ end
 local function normalize_path(file)
   local n
   repeat
-    file, n = file:gsub("/+%.?/+","/") -- remove all `//` and `/./` references
+    file, n = file:gsub("/+%.?/+", "/") -- remove all `//` and `/./` references
   until n == 0
 
   -- collapse all up-dir references: this will clobber UNC prefix (\\?\)
@@ -622,7 +672,7 @@ local function normalize_source_file(file)
   -- ignore qualified relative path (`D:../`) and UNC paths (`\\?\`)
   if string_find(file, "^%.%.?/") then file = state.basedir .. file end
   if string_find(file, "/%.%.?/") then file = normalize_path(file) end
-  if string_find(file, "^%./")    then file = string_sub(file, 3) end
+  if string_find(file, "^%./") then file = string_sub(file, 3) end
 
   -- need this conversion to be applied to relative and absolute
   -- file names as you may write "require 'Foo'" to
@@ -662,7 +712,7 @@ local function stack(start)
       local name, value = debug.getlocal(f, i)
       if not name then break end
       if string_sub(name, 1, 1) ~= '(' then
-        locals[name] = {value, select(2,pcall(tostring,value))}
+        locals[name] = { value, select(2, pcall(tostring, value)) }
       end
       i = i + 1
     end
@@ -671,7 +721,7 @@ local function stack(start)
     while true do
       local name, value = debug.getlocal(f, -i)
       if not name then break end
-      locals[name:gsub("%)$"," "..i..")")] = {value, select(2,pcall(tostring,value))}
+      locals[name:gsub("%)$", " " .. i .. ")")] = { value, select(2, pcall(tostring, value)) }
       i = i + 1
     end
     -- get upvalues
@@ -680,7 +730,7 @@ local function stack(start)
     while func do -- check for func as it may be nil for tail calls
       local name, value = debug.getupvalue(func, i)
       if not name then break end
-      ups[name] = {value, select(2,pcall(tostring,value))}
+      ups[name] = { value, select(2, pcall(tostring, value)) }
       i = i + 1
     end
     return locals, ups
@@ -699,26 +749,33 @@ local function stack(start)
     end
 
     table.insert(stack, { -- remove basedir from source
-      {source.name, removebasedir(src, state.basedir),
-       linemap and linemap(source.linedefined, source.source) or source.linedefined,
-       linemap and linemap(source.currentline, source.source) or source.currentline,
-       source.what, source.namewhat, source.short_src},
-      vars(i+1)})
+      { source.name, removebasedir(src, state.basedir),
+        linemap and linemap(source.linedefined, source.source) or source.linedefined,
+        linemap and linemap(source.currentline, source.source) or source.currentline,
+        source.what, source.namewhat, source.short_src },
+      vars(i + 1) })
   end
   return stack
 end
 
 local function set_breakpoint(file, line)
-  if file == '-' and state.lastfile then file = state.lastfile
-  elseif iscasepreserving then file = string_lower(file) end
+  if file == '-' and state.lastfile then
+    file = state.lastfile
+  elseif iscasepreserving then
+    file = string_lower(file)
+  end
   if not state.breakpoints[line] then state.breakpoints[line] = {} end
   state.breakpoints[line][file] = true
 end
 
 local function remove_breakpoint(file, line)
-  if file == '-' and state.lastfile then file = state.lastfile
-  elseif file == '*' and line == 0 then state.breakpoints = {}
-  elseif iscasepreserving then file = string_lower(file) end
+  if file == '-' and state.lastfile then
+    file = state.lastfile
+  elseif file == '*' and line == 0 then
+    state.breakpoints = {}
+  elseif iscasepreserving then
+    file = string_lower(file)
+  end
   if state.breakpoints[line] then state.breakpoints[line][file] = nil end
 end
 
@@ -731,7 +788,7 @@ end
 
 local function has_breakpoint(file, line)
   return state.breakpoints[line]
-     and state.breakpoints[line][iscasepreserving and string_lower(file) or file]
+      and state.breakpoints[line][iscasepreserving and string_lower(file) or file]
 end
 
 local function restore_vars(vars)
@@ -778,11 +835,11 @@ local function restore_vars(vars)
 end
 
 local function capture_vars(level, thread)
-  level = (level or 0)+2 -- add two levels for this and debug calls
+  level = (level or 0) + 2 -- add two levels for this and debug calls
   local func = (thread and debug.getinfo(thread, level, "f") or debug.getinfo(level, "f") or {}).func
   if not func then return {} end
 
-  local vars = {['...'] = {}}
+  local vars = { ['...'] = {} }
   local i = 1
   while true do
     local name, value = debug.getupvalue(func, i)
@@ -828,7 +885,7 @@ end
 
 local function stack_depth(start_depth)
   for i = start_depth, 0, -1 do
-    if debug.getinfo(i, "l") then return i+1 end
+    if debug.getinfo(i, "l") then return i + 1 end
   end
   return start_depth
 end
@@ -875,7 +932,7 @@ local function debug_hook(event, line)
     local coro, main = coroutine.running()
     if not coro or main then coro = 'main' end
     local disabled = coroutines[coro] == false
-      or coroutines[coro] == nil and coro ~= (coro_debugee or 'main')
+        or coroutines[coro] == nil and coro ~= (coro_debugee or 'main')
     if coro_debugee and disabled or not coro_debugee and (disabled or in_debugger()) then
       return
     end
@@ -907,9 +964,11 @@ local function debug_hook(event, line)
     -- (4) socket call (only do every Xth check)
     -- (5) at least one watch is registered
     if not (
-      state.step_into or state.step_over or state.breakpoints[line] or state.watchescnt > 0
-      or server:is_pending()
-    ) then return end
+          state.step_into or state.step_over or state.breakpoints[line] or state.watchescnt > 0
+          or server:is_pending()
+        ) then
+      return
+    end
 
     server:enforce_pending_check() -- force check on the next command
 
@@ -928,7 +987,7 @@ local function debug_hook(event, line)
 
     local caller = debug.getinfo(2, "S")
 
-    -- uJIT in case of `ujit -e require'mobdebug'.start()` 
+    -- uJIT in case of `ujit -e require'mobdebug'.start()`
     -- start execution with this file name - skip it
     if caller.source == '=(command line)' then
       return
@@ -970,7 +1029,7 @@ local function debug_hook(event, line)
     -- need to get into the "regular" debug handler, but only if there was
     -- no watch that was fired. If there was a watch, handle its result.
     local getin = (status == nil) and (
-        state.step_into
+      state.step_into
       -- when coroutine.running() return `nil` (main thread in Lua 5.1),
       -- step_over will equal 'main', so need to check for that explicitly.
       or (state.step_over and state.step_over == (coroutine.running() or 'main') and state.stack_level <= state.step_level)
@@ -995,8 +1054,12 @@ local function debug_hook(event, line)
     -- need to recheck once more as resume after 'stack' command may
     -- return something else (for example, 'exit'), which needs to be handled
     if status and res and res ~= 'stack' then
-      if not abort and res == "exit" then mobdebug.onexit(1, true); return end
-      if not abort and res == "done" then mobdebug.done(); return end
+      if not abort and res == "exit" then
+        mobdebug.onexit(1, true); return
+      end
+      if not abort and res == "done" then
+        mobdebug.done(); return
+      end
       abort = res
       -- only abort if safe; if not, there is another (earlier) check inside
       -- debug_hook, which will abort execution at the first safe opportunity
@@ -1031,1012 +1094,1033 @@ local function done()
   debug.sethook()
   server:close()
 
-  coro_debugger = nil -- to make sure isrunning() returns `false`
+  coro_debugger = nil   -- to make sure isrunning() returns `false`
   state.seen_hook = nil -- to make sure that the next start() call works
-  abort = nil -- to make sure that callback calls use proper "abort" value
-  state.basedir = "" -- to reset basedir in case the same module/state is reused
+  abort = nil           -- to make sure that callback calls use proper "abort" value
+  state.basedir = ""    -- to reset basedir in case the same module/state is reused
 end
 
-local mobdebug_debugger = {} do
+local mobdebug_debugger = {}
+do
+  local function stringify_results(params, status, ...)
+    if not status then return status, ... end -- on error report as it
 
-local function stringify_results(params, status, ...)
-  if not status then return status, ... end -- on error report as it
+    params = params or {}
+    if params.nocode == nil then params.nocode = true end
+    if params.comment == nil then params.comment = 1 end
 
-  params = params or {}
-  if params.nocode == nil then params.nocode = true end
-  if params.comment == nil then params.comment = 1 end
-
-  local t = {...}
-  for i,v in pairs(t) do -- stringify each of the returned values
-    local ok, res = pcall(mobdebug.line, v, params)
-    t[i] = ok and res or ("%q"):format(res):gsub("\010","n"):gsub("\026","\\026")
-  end
-  -- stringify table with all returned values
-  -- this is done to allow each returned value to be used (serialized or not)
-  -- intependently and to preserve "original" comments
-  return pcall(mobdebug.dump, t, {sparse = false})
-end
-
-function mobdebug_debugger.path_to_ide(file)
-  return file
-end
-
-function mobdebug_debugger.path_from_ide(file)
-  return file
-end
-
-function mobdebug_debugger.send_response(status, message, data)
-  if data then
-    local msg = string_format("%d %s %d\n", status, message, #data)
-    local ok, err = server:nsend(msg)
-    if not ok then
-      return nil, err
+    local t = { ... }
+    for i, v in pairs(t) do -- stringify each of the returned values
+      local ok, res = pcall(mobdebug.line, v, params)
+      t[i] = ok and res or ("%q"):format(res):gsub("\010", "n"):gsub("\026", "\\026")
     end
-    return server:nsend(data)
+    -- stringify table with all returned values
+    -- this is done to allow each returned value to be used (serialized or not)
+    -- intependently and to preserve "original" comments
+    return pcall(mobdebug.dump, t, { sparse = false })
   end
 
-  local msg = string_format("%d %s\n", status, message)
-  return server:nsend(msg)
-end
-
-function mobdebug_debugger.send_ok_response(data)
-  return mobdebug_debugger.send_response(200, 'OK', data)
-end
-
-function mobdebug_debugger.send_bad_request_response(data)
-  return mobdebug_debugger.send_response(400, 'Bad Request', data)
-end
-
-function mobdebug_debugger.send_expression_error_response(data)
-  return mobdebug_debugger.send_response(401, 'Error in Expression', data)
-end
-
-function mobdebug_debugger.send_execution_error_response(data)
-  return mobdebug_debugger.send_response(401, 'Error in Execution', data)
-end
-
-function mobdebug_debugger.send_params_response(code, ...)
-  return mobdebug_debugger.send_response(code, string_format(...))
-end
-
--- extract any optional parameters
-function mobdebug_debugger.load_params(line)
-  local params = string.match(line, "--%s*(%b{})%s*$")
-  local pfunc = params and loadstring("return " .. params) -- use internal function
-  params = pfunc and pfunc()
-  params = (type(params) == "table" and params or {})
-  return params
-end
-
-function mobdebug_debugger.parse_breackpoint_command(line)
-  local _, _, cmd, file, line_no = string_find(line, "^([A-Z]+)%s+(.-)%s+(%d+)%s*$")
-  local local_file = mobdebug_debugger.path_from_ide(file)
-  Log.format('breakpoint path: %s -> %s', file, local_file)
-  return local_file, tonumber(line_no), cmd
-end
-
-function mobdebug_debugger.parse_exec_command(line)
-  local _, _, chunk = string_find(line, "^[A-Z]+%s+(.+)$")
-  if not chunk then
-    return
+  function mobdebug_debugger.path_to_ide(file)
+    return file
   end
 
-  local params = mobdebug_debugger.load_params(line)
+  function mobdebug_debugger.path_from_ide(file)
+    return file
+  end
 
-  return chunk, params
-end
+  function mobdebug_debugger.send_response(status, message, data)
+    if data then
+      local msg = string_format("%d %s %d\n", status, message, #data)
+      local ok, err = server:nsend(msg)
+      if not ok then
+        return nil, err
+      end
+      return server:nsend(data)
+    end
 
-function mobdebug_debugger.parse_load_command(line)
-  local _, _, size, name = string_find(line, "^[A-Z]+%s+(%d+)%s+(%S.-)%s*$")
-  size = tonumber(size)
-  local chunk = server:receive_nread(size)
-  return size, name, chunk
-end
+    local msg = string_format("%d %s\n", status, message)
+    return server:nsend(msg)
+  end
 
-function mobdebug_debugger.parse_set_watch_command(line)
-  local _, _, exp = string_find(line, "^[A-Z]+%s+(.+)%s*$")
-  return exp
-end
+  function mobdebug_debugger.send_ok_response(data)
+    return mobdebug_debugger.send_response(200, 'OK', data)
+  end
 
-function mobdebug_debugger.parse_del_watch_command(line)
-  local _, _, index = string_find(line, "^[A-Z]+%s+(%d+)%s*$")
-  return tonumber(index)
-end
+  function mobdebug_debugger.send_bad_request_response(data)
+    return mobdebug_debugger.send_response(400, 'Bad Request', data)
+  end
 
-function mobdebug_debugger.parse_set_basedir_command(line)
-  local _, _, dir = string_find(line, "^[A-Z]+%s+(.+)%s*$")
-  return dir
-end
+  function mobdebug_debugger.send_expression_error_response(data)
+    return mobdebug_debugger.send_response(401, 'Error in Expression', data)
+  end
 
-function mobdebug_debugger.parse_stack_command(line)
-  return mobdebug_debugger.load_params(line)
-end
+  function mobdebug_debugger.send_execution_error_response(data)
+    return mobdebug_debugger.send_response(401, 'Error in Execution', data)
+  end
 
-function mobdebug_debugger.parse_output_command(line)
-  local _, _, stream, mode = string_find(line, "^[A-Z]+%s+(%w+)%s+([dcr])%s*$")
-  return stream, mode
-end
+  function mobdebug_debugger.send_params_response(code, ...)
+    return mobdebug_debugger.send_response(code, string_format(...))
+  end
 
-function mobdebug_debugger.loop(sev, svars, sfile, sline)
-  local command, arguments
-  local eval_env = svars or {}
-  local function emptyWatch () return false end
-  local loaded = {}
-  for k in pairs(package.loaded) do loaded[k] = true end
+  -- extract any optional parameters
+  function mobdebug_debugger.load_params(line)
+    local params = string.match(line, "--%s*(%b{})%s*$")
+    local pfunc = params and loadstring("return " .. params) -- use internal function
+    params = pfunc and pfunc()
+    params = (type(params) == "table" and params or {})
+    return params
+  end
 
-  while true do
-    local line, err
-    if mobdebug.yield and server.settimeout then server:settimeout(mobdebug.yieldtimeout) end
+  function mobdebug_debugger.parse_breackpoint_command(line)
+    local _, _, cmd, file, line_no = string_find(line, "^([A-Z]+)%s+(.-)%s+(%d+)%s*$")
+    local local_file = mobdebug_debugger.path_from_ide(file)
+    Log.format('breakpoint path: %s -> %s', file, local_file)
+    return local_file, tonumber(line_no), cmd
+  end
+
+  function mobdebug_debugger.parse_exec_command(line)
+    local _, _, chunk = string_find(line, "^[A-Z]+%s+(.+)$")
+    if not chunk then
+      return
+    end
+
+    local params = mobdebug_debugger.load_params(line)
+
+    return chunk, params
+  end
+
+  function mobdebug_debugger.parse_load_command(line)
+    local _, _, size, name = string_find(line, "^[A-Z]+%s+(%d+)%s+(%S.-)%s*$")
+    size = tonumber(size)
+    local chunk = server:receive_nread(size)
+    return size, name, chunk
+  end
+
+  function mobdebug_debugger.parse_set_watch_command(line)
+    local _, _, exp = string_find(line, "^[A-Z]+%s+(.+)%s*$")
+    return exp
+  end
+
+  function mobdebug_debugger.parse_del_watch_command(line)
+    local _, _, index = string_find(line, "^[A-Z]+%s+(%d+)%s*$")
+    return tonumber(index)
+  end
+
+  function mobdebug_debugger.parse_set_basedir_command(line)
+    local _, _, dir = string_find(line, "^[A-Z]+%s+(.+)%s*$")
+    return dir
+  end
+
+  function mobdebug_debugger.parse_stack_command(line)
+    return mobdebug_debugger.load_params(line)
+  end
+
+  function mobdebug_debugger.parse_output_command(line)
+    local _, _, stream, mode = string_find(line, "^[A-Z]+%s+(%w+)%s+([dcr])%s*$")
+    return stream, mode
+  end
+
+  function mobdebug_debugger.loop(sev, svars, sfile, sline)
+    local command, arguments
+    local eval_env = svars or {}
+    local function emptyWatch() return false end
+    local loaded = {}
+    for k in pairs(package.loaded) do loaded[k] = true end
+
     while true do
-      line, err = server:receive_line()
-      if line then
-        break
-      end
-      if err == "timeout" then
-        if mobdebug.yield then mobdebug.yield() end
-      elseif err == "closed" then
-        error("Debugger connection closed", 0)
-      else
-        error(("Unexpected socket error: %s"):format(err), 0)
-      end
-    end
-    if server.settimeout then server:settimeout() end -- back to blocking
-
-    command = string_sub(line, string_find(line, "^[A-Z]+"))
-    if command == "SETB" then
-      local file, line = mobdebug_debugger.parse_breackpoint_command(line)
-      if file and line then
-        set_breakpoint(file, line)
-        mobdebug_debugger.send_ok_response()
-      else
-        mobdebug_debugger.send_bad_request_response()
-      end
-    elseif command == "DELB" then
-      local file, line = mobdebug_debugger.parse_breackpoint_command(line)
-      if file and line then
-        remove_breakpoint(file, tonumber(line))
-        mobdebug_debugger.send_ok_response()
-      else
-        mobdebug_debugger.send_bad_request_response()
-      end
-    elseif command == "EXEC" then
-      -- extract any optional parameters
-      local chunk, params = mobdebug_debugger.parse_exec_command(line)
-      if chunk then
-        local func, res = mobdebug.loadstring(chunk)
-        local status
-        if func then
-          local stack = tonumber(params.stack)
-          -- if the requested stack frame is not the current one, then use a new capture
-          -- with a specific stack frame: `capture_vars(0, coro_debugee)`
-          local env = stack and coro_debugee and capture_vars(stack-1, coro_debugee) or eval_env
-          setfenv(func, env)
-          status, res = stringify_results(params, pcall(func, unpack(rawget(env,'...') or {})))
-          if status and mobdebug.onscratch then mobdebug.onscratch(res) end
-        end
-
-        if status then
-          mobdebug_debugger.send_ok_response(res)
-        else
-          -- fix error if not set (for example, when loadstring is not present)
-          if not res then res = "Unknown error" end
-          mobdebug_debugger.send_expression_error_response(res)
-        end
-      else
-        mobdebug_debugger.send_bad_request_response()
-      end
-    elseif command == "LOAD" then
-      local size, name, chunk = mobdebug_debugger.parse_load_command(line)
-      if not size then
-        mobdebug_debugger.send_bad_request_response()
-      else
-        if abort == nil then -- no LOAD/RELOAD allowed inside start()
-          if sfile and sline then
-            mobdebug_debugger.send_params_response(201, "Started %s %d", sfile, sline)
-          else
-            mobdebug_debugger.send_ok_response('')
-          end
-        else
-          -- reset environment to allow required modules to load again
-          -- remove those packages that weren't loaded when debugger started
-          for k in pairs(package.loaded) do
-            if not loaded[k] then package.loaded[k] = nil end
-          end
-          if size == 0 and name == '-' then -- RELOAD the current script being debugged
-            mobdebug_debugger.send_ok_response('')
-            coroyield("load")
-          elseif chunk then -- LOAD a new script for debugging
-            local func, res = mobdebug.loadstring(chunk, "@"..name)
-            if func then
-              mobdebug_debugger.send_ok_response('')
-              state.debugee = func
-              coroyield("load")
-            else
-              mobdebug_debugger.send_expression_error_response(res)
-            end
-          else
-            mobdebug_debugger.send_bad_request_response()
-          end
-        end
-      end
-    elseif command == "SETW" then
-      local exp = mobdebug_debugger.parse_set_watch_command(line)
-      if exp then
-        local func, res = mobdebug.loadstring("return(" .. exp .. ")")
-        if func then
-          state.watchescnt = state.watchescnt + 1
-          local newidx = #state.watches + 1
-          state.watches[newidx] = func
-          mobdebug_debugger.send_params_response(200, 'OK %d', newidx )
-        else
-          mobdebug_debugger.send_expression_error_response(res)
-        end
-      else
-        mobdebug_debugger.send_bad_request_response()
-      end
-    elseif command == "DELW" then
-      local index = mobdebug_debugger.parse_del_watch_command(line)
-      if index and (index > 0 and index <= #state.watches) then
-        state.watchescnt = state.watchescnt - (state.watches[index] ~= emptyWatch and 1 or 0)
-        state.watches[index] = emptyWatch
-        mobdebug_debugger.send_ok_response()
-      else
-        mobdebug_debugger.send_bad_request_response()
-      end
-    elseif command == "RUN" or command == "STEP" or command == "OVER" or command == "OUT" then
-      mobdebug_debugger.send_ok_response()
-
-      if command == "RUN" then
-        state.step_into = false
-        state.step_over = false
-      elseif command == "STEP" then
-        state.step_into = true
-        state.step_over = false
-      elseif command == "OVER" or command == "OUT" then
-        state.step_into = false
-        state.step_over = true
-        state.step_level = (command == "OVER") and state.stack_level or state.stack_level - 1
-      end
-
-      local ev, vars, file, line, idx_watch = coroyield()
-      if ev == events.BREAK or ev == events.WATCH then
-        file = file and mobdebug_debugger.path_to_ide(file)
-      end
-      eval_env = vars
-      if ev == events.BREAK then
-        mobdebug_debugger.send_params_response(202, 'Paused %s %d', file, line)
-      elseif ev == events.WATCH then
-        mobdebug_debugger.send_params_response(203, 'Paused %s %d %d', file, line, idx_watch)
-      elseif ev == events.RESTART then
-        -- nothing to do
-      else
-        mobdebug_debugger.send_execution_error_response(file)
-      end
-    elseif command == "BASEDIR" then
-      local dir = mobdebug_debugger.parse_set_basedir_command(line)
-      if dir then
-        set_basedir(dir)
-        mobdebug_debugger.send_ok_response()
-      else
-        mobdebug_debugger.send_bad_request_response()
-      end
-    elseif command == "SUSPEND" then
-      -- do nothing; it already fulfilled its role
-    elseif command == "DONE" then
-      coroyield("done")
-      return -- done with all the debugging
-    elseif command == "STACK" then
-      -- first check if we can execute the stack command
-      -- as it requires yielding back to debug_hook it cannot be executed
-      -- if we have not seen the hook yet as happens after start().
-      -- in this case we simply return an empty result
-      local ev, vars
-      if state.seen_hook then
-        ev, vars = coroyield("stack")
-      else
-        ev, vars = events.STACK, {}
-      end
-      if ev ~= events.STACK then
-        mobdebug_debugger.send_execution_error_response(vars)
-      else
-        local params = mobdebug_debugger.parse_stack_command(line)
-        if params.nocode == nil then params.nocode = true end
-        if params.sparse == nil then params.sparse = false end
-        -- take into account additional levels for the stack frames and data management
-        if tonumber(params.maxlevel) then params.maxlevel = tonumber(params.maxlevel)+4 end
-
-        local ok, res = pcall(mobdebug.dump, vars, params)
-        if ok then
-          mobdebug_debugger.send_params_response(200, 'OK %s', tostring(res))
-        else
-          mobdebug_debugger.send_execution_error_response(res)
-        end
-      end
-    elseif command == "OUTPUT" then
-      local stream, mode = mobdebug_debugger.parse_output_command(line)
-      if stream and mode and stream == "stdout" then
-        -- assign "print" in the global environment
-        local default = mode == 'd'
-        genv.print = default and iobase.print or corowrap(function()
-          -- wrapping into coroutine.wrap protects this function from
-          -- being stepped through in the debugger.
-          -- don't use vararg (...) as it adds a reference for its values,
-          -- which may affect how they are garbage collected
-          while true do
-            local tbl = {coroutine.yield()}
-            if mode == 'c' then iobase.print(unpack(tbl)) end
-            for n = 1, #tbl do
-              tbl[n] = select(2, pcall(mobdebug.line, tbl[n], {nocode = true, comment = false})) end
-            local file = table.concat(tbl, "\t").."\n"
-            mobdebug_debugger.send_response(204, "Output " .. stream, file)
-          end
-        end)
-        if not default then genv.print() end -- "fake" print to start printing loop
-        mobdebug_debugger.send_ok_response()
-      else
-        mobdebug_debugger.send_bad_request_response()
-      end
-    elseif command == "EXIT" then
-      mobdebug_debugger.send_ok_response()
-      coroyield("exit")
-    else
-      mobdebug_debugger.send_bad_request_response()
-    end
-  end
-end
-
--- Handling command from inside debug hook during run state
-function mobdebug_debugger.pending_io()
-  local possible_pending_io = false
-  while server:is_pending() do
-    server:enforce_pending_check()
-
-    -- check if the buffer has the beginning of SETB/DELB command;
-    -- this is to avoid reading the entire line for commands that
-    -- don't need to be handled here.
-    local ch = server:peek(1, false)
-    if ch ~= 'S' and ch ~= 'D' then break end
-
-    -- check second character to avoid reading STEP or other S* and D* commands
-    local err
-    ch, err = server:peek(2, false)
-    if ch ~= 'SE' and ch ~= 'DE' then
-      possible_pending_io = (err == 'timeout')
-      break
-    end
-
-    -- need to read few more characters
-    ch, err = server:peek(5, false)
-    if ch ~= 'SETB ' and ch ~= 'DELB ' then
-      possible_pending_io = (err == 'timeout')
-      break
-    end
-
-    local line
-    line, err = server:receive_line(true) -- get the rest of the line; blocking
-    if not line then
-      possible_pending_io = (err == 'timeout')
-      break
-    end
-
-    local file, line_no, cmd = mobdebug_debugger.parse_breackpoint_command(line)
-    if cmd == 'SETB' then set_breakpoint(file, line_no)
-    elseif cmd == 'DELB' then remove_breakpoint(file, line_no)
-    else
-      Log.format("unexpected command: %s", line)
-      -- this looks like a breakpoint command, but something went wrong;
-      -- return here to let the "normal" processing to handle,
-      -- although this is likely to not go well.
-      break
-    end
-  end
-
-  if possible_pending_io then
-    return false
-  end
-
-  return not not server:is_pending()
-end
-
-end
-
-local vscode_debugger = {} do
-
-local json = prequire'dkjson'
-
-local vscode_message_size = nil
-local vscode_thread_id    = 0
-local vscode_thread_name  = 'main'
-local vscode_init_failure = false
-local vscode_scope_offset = 1000000
-local vscode_scope_types  = {Locals = 1, Upvalues = 2, Globals = 3}
-local vscode_variables_ref
-local vscode_variables_map
-local vscode_fetched_message
-local vscode_dir_sep
-local vscode_stop_on_entry = false
-local vscode_pathmap
-
-local function pcall_vararg_pack(status, ...)
-  if not status then return status, ... end -- on error report as it
-  return status, {n = select('#', ...), ...}
-end
-
--- Motivation:
--- when deal with the system running in the docker 
--- file path may differ from the local one.
--- E.g. in the docker Lua files may be installed via package manager
--- to the `/var/lib/some_library` directory. But on the 
--- developers system thouse files placed in the `~/projects/some_library`
--- As result to be able to debug there needs 
--- to convert `/var/lib/some_library` to `~/projects/some_library` for step by step debugging
--- and convert `~/projects/some_library` to `/var/lib/some_library` when set breakpoints
-local fix_file_name do
-  local function isSameAs(f1, f2)
-    return f1 == f2 or iscaseinsensitive and string_lower(f1) == string_lower(f2)
-  end
-
-  local function filePathMatch(file, pattern)
-    return (#file >= #pattern) and isSameAs(string_sub(file, 1, #pattern), pattern)
-  end
-
-  fix_file_name = function(reverse, file)
-    if vscode_pathmap then
-      for _, map in ipairs(vscode_pathmap) do
-        local pattern, substitution = map[reverse and 2 or 1], map[reverse and 1 or 2]
-        if filePathMatch(file, pattern) then
-          file = substitution .. string_sub(file, #pattern + 1)
+      local line, err
+      if mobdebug.yield and server.settimeout then server:settimeout(mobdebug.yieldtimeout) end
+      while true do
+        line, err = server:receive_line()
+        if line then
           break
         end
+        if err == "timeout" then
+          if mobdebug.yield then mobdebug.yield() end
+        elseif err == "closed" then
+          error("Debugger connection closed", 0)
+        else
+          error(("Unexpected socket error: %s"):format(err), 0)
+        end
+      end
+      if server.settimeout then server:settimeout() end -- back to blocking
+
+      command = string_sub(line, string_find(line, "^[A-Z]+"))
+      if command == "SETB" then
+        local file, line = mobdebug_debugger.parse_breackpoint_command(line)
+        if file and line then
+          set_breakpoint(file, line)
+          mobdebug_debugger.send_ok_response()
+        else
+          mobdebug_debugger.send_bad_request_response()
+        end
+      elseif command == "DELB" then
+        local file, line = mobdebug_debugger.parse_breackpoint_command(line)
+        if file and line then
+          remove_breakpoint(file, tonumber(line))
+          mobdebug_debugger.send_ok_response()
+        else
+          mobdebug_debugger.send_bad_request_response()
+        end
+      elseif command == "EXEC" then
+        -- extract any optional parameters
+        local chunk, params = mobdebug_debugger.parse_exec_command(line)
+        if chunk then
+          local func, res = mobdebug.loadstring(chunk)
+          local status
+          if func then
+            local stack = tonumber(params.stack)
+            -- if the requested stack frame is not the current one, then use a new capture
+            -- with a specific stack frame: `capture_vars(0, coro_debugee)`
+            local env = stack and coro_debugee and capture_vars(stack - 1, coro_debugee) or eval_env
+            setfenv(func, env)
+            status, res = stringify_results(params, pcall(func, unpack(rawget(env, '...') or {})))
+            if status and mobdebug.onscratch then mobdebug.onscratch(res) end
+          end
+
+          if status then
+            mobdebug_debugger.send_ok_response(res)
+          else
+            -- fix error if not set (for example, when loadstring is not present)
+            if not res then res = "Unknown error" end
+            mobdebug_debugger.send_expression_error_response(res)
+          end
+        else
+          mobdebug_debugger.send_bad_request_response()
+        end
+      elseif command == "LOAD" then
+        local size, name, chunk = mobdebug_debugger.parse_load_command(line)
+        if not size then
+          mobdebug_debugger.send_bad_request_response()
+        else
+          if abort == nil then -- no LOAD/RELOAD allowed inside start()
+            if sfile and sline then
+              mobdebug_debugger.send_params_response(201, "Started %s %d", sfile, sline)
+            else
+              mobdebug_debugger.send_ok_response('')
+            end
+          else
+            -- reset environment to allow required modules to load again
+            -- remove those packages that weren't loaded when debugger started
+            for k in pairs(package.loaded) do
+              if not loaded[k] then package.loaded[k] = nil end
+            end
+            if size == 0 and name == '-' then -- RELOAD the current script being debugged
+              mobdebug_debugger.send_ok_response('')
+              coroyield("load")
+            elseif chunk then -- LOAD a new script for debugging
+              local func, res = mobdebug.loadstring(chunk, "@" .. name)
+              if func then
+                mobdebug_debugger.send_ok_response('')
+                state.debugee = func
+                coroyield("load")
+              else
+                mobdebug_debugger.send_expression_error_response(res)
+              end
+            else
+              mobdebug_debugger.send_bad_request_response()
+            end
+          end
+        end
+      elseif command == "SETW" then
+        local exp = mobdebug_debugger.parse_set_watch_command(line)
+        if exp then
+          local func, res = mobdebug.loadstring("return(" .. exp .. ")")
+          if func then
+            state.watchescnt = state.watchescnt + 1
+            local newidx = #state.watches + 1
+            state.watches[newidx] = func
+            mobdebug_debugger.send_params_response(200, 'OK %d', newidx)
+          else
+            mobdebug_debugger.send_expression_error_response(res)
+          end
+        else
+          mobdebug_debugger.send_bad_request_response()
+        end
+      elseif command == "DELW" then
+        local index = mobdebug_debugger.parse_del_watch_command(line)
+        if index and (index > 0 and index <= #state.watches) then
+          state.watchescnt = state.watchescnt - (state.watches[index] ~= emptyWatch and 1 or 0)
+          state.watches[index] = emptyWatch
+          mobdebug_debugger.send_ok_response()
+        else
+          mobdebug_debugger.send_bad_request_response()
+        end
+      elseif command == "RUN" or command == "STEP" or command == "OVER" or command == "OUT" then
+        mobdebug_debugger.send_ok_response()
+
+        if command == "RUN" then
+          state.step_into = false
+          state.step_over = false
+        elseif command == "STEP" then
+          state.step_into = true
+          state.step_over = false
+        elseif command == "OVER" or command == "OUT" then
+          state.step_into = false
+          state.step_over = true
+          state.step_level = (command == "OVER") and state.stack_level or state.stack_level - 1
+        end
+
+        local ev, vars, file, line, idx_watch = coroyield()
+        if ev == events.BREAK or ev == events.WATCH then
+          file = file and mobdebug_debugger.path_to_ide(file)
+        end
+        eval_env = vars
+        if ev == events.BREAK then
+          mobdebug_debugger.send_params_response(202, 'Paused %s %d', file, line)
+        elseif ev == events.WATCH then
+          mobdebug_debugger.send_params_response(203, 'Paused %s %d %d', file, line, idx_watch)
+        elseif ev == events.RESTART then
+          -- nothing to do
+        else
+          mobdebug_debugger.send_execution_error_response(file)
+        end
+      elseif command == "BASEDIR" then
+        local dir = mobdebug_debugger.parse_set_basedir_command(line)
+        if dir then
+          set_basedir(dir)
+          mobdebug_debugger.send_ok_response()
+        else
+          mobdebug_debugger.send_bad_request_response()
+        end
+      elseif command == "SUSPEND" then
+        -- do nothing; it already fulfilled its role
+      elseif command == "DONE" then
+        coroyield("done")
+        return -- done with all the debugging
+      elseif command == "STACK" then
+        -- first check if we can execute the stack command
+        -- as it requires yielding back to debug_hook it cannot be executed
+        -- if we have not seen the hook yet as happens after start().
+        -- in this case we simply return an empty result
+        local ev, vars
+        if state.seen_hook then
+          ev, vars = coroyield("stack")
+        else
+          ev, vars = events.STACK, {}
+        end
+        if ev ~= events.STACK then
+          mobdebug_debugger.send_execution_error_response(vars)
+        else
+          local params = mobdebug_debugger.parse_stack_command(line)
+          if params.nocode == nil then params.nocode = true end
+          if params.sparse == nil then params.sparse = false end
+          -- take into account additional levels for the stack frames and data management
+          if tonumber(params.maxlevel) then params.maxlevel = tonumber(params.maxlevel) + 4 end
+
+          local ok, res = pcall(mobdebug.dump, vars, params)
+          if ok then
+            mobdebug_debugger.send_params_response(200, 'OK %s', tostring(res))
+          else
+            mobdebug_debugger.send_execution_error_response(res)
+          end
+        end
+      elseif command == "OUTPUT" then
+        local stream, mode = mobdebug_debugger.parse_output_command(line)
+        if stream and mode and stream == "stdout" then
+          -- assign "print" in the global environment
+          local default = mode == 'd'
+          genv.print = default and iobase.print or corowrap(function()
+            -- wrapping into coroutine.wrap protects this function from
+            -- being stepped through in the debugger.
+            -- don't use vararg (...) as it adds a reference for its values,
+            -- which may affect how they are garbage collected
+            while true do
+              local tbl = { coroutine.yield() }
+              if mode == 'c' then iobase.print(unpack(tbl)) end
+              for n = 1, #tbl do
+                tbl[n] = select(2, pcall(mobdebug.line, tbl[n], { nocode = true, comment = false }))
+              end
+              local file = table.concat(tbl, "\t") .. "\n"
+              mobdebug_debugger.send_response(204, "Output " .. stream, file)
+            end
+          end)
+          if not default then genv.print() end -- "fake" print to start printing loop
+          mobdebug_debugger.send_ok_response()
+        else
+          mobdebug_debugger.send_bad_request_response()
+        end
+      elseif command == "EXIT" then
+        mobdebug_debugger.send_ok_response()
+        coroyield("exit")
+      else
+        mobdebug_debugger.send_bad_request_response()
       end
     end
+  end
+
+  -- Handling command from inside debug hook during run state
+  function mobdebug_debugger.pending_io()
+    local possible_pending_io = false
+    while server:is_pending() do
+      server:enforce_pending_check()
+
+      -- check if the buffer has the beginning of SETB/DELB command;
+      -- this is to avoid reading the entire line for commands that
+      -- don't need to be handled here.
+      local ch = server:peek(1, false)
+      if ch ~= 'S' and ch ~= 'D' then break end
+
+      -- check second character to avoid reading STEP or other S* and D* commands
+      local err
+      ch, err = server:peek(2, false)
+      if ch ~= 'SE' and ch ~= 'DE' then
+        possible_pending_io = (err == 'timeout')
+        break
+      end
+
+      -- need to read few more characters
+      ch, err = server:peek(5, false)
+      if ch ~= 'SETB ' and ch ~= 'DELB ' then
+        possible_pending_io = (err == 'timeout')
+        break
+      end
+
+      local line
+      line, err = server:receive_line(true) -- get the rest of the line; blocking
+      if not line then
+        possible_pending_io = (err == 'timeout')
+        break
+      end
+
+      local file, line_no, cmd = mobdebug_debugger.parse_breackpoint_command(line)
+      if cmd == 'SETB' then
+        set_breakpoint(file, line_no)
+      elseif cmd == 'DELB' then
+        remove_breakpoint(file, line_no)
+      else
+        Log.format("unexpected command: %s", line)
+        -- this looks like a breakpoint command, but something went wrong;
+        -- return here to let the "normal" processing to handle,
+        -- although this is likely to not go well.
+        break
+      end
+    end
+
+    if possible_pending_io then
+      return false
+    end
+
+    return not not server:is_pending()
+  end
+end
+
+local vscode_debugger = {}
+do
+  local json                 = prequire 'dkjson'
+
+  local vscode_message_size  = nil
+  local vscode_thread_id     = 0
+  local vscode_thread_name   = 'main'
+  local vscode_init_failure  = false
+  local vscode_scope_offset  = 1000000
+  local vscode_scope_types   = { Locals = 1, Upvalues = 2, Globals = 3 }
+  local vscode_variables_ref
+  local vscode_variables_map
+  local vscode_fetched_message
+  local vscode_dir_sep
+  local vscode_stop_on_entry = false
+  local vscode_pathmap
+
+  local function pcall_vararg_pack(status, ...)
+    if not status then return status, ... end -- on error report as it
+    return status, { n = select('#', ...), ... }
+  end
+
+  -- Motivation:
+  -- when deal with the system running in the docker
+  -- file path may differ from the local one.
+  -- E.g. in the docker Lua files may be installed via package manager
+  -- to the `/var/lib/some_library` directory. But on the
+  -- developers system thouse files placed in the `~/projects/some_library`
+  -- As result to be able to debug there needs
+  -- to convert `/var/lib/some_library` to `~/projects/some_library` for step by step debugging
+  -- and convert `~/projects/some_library` to `/var/lib/some_library` when set breakpoints
+  local fix_file_name
+  do
+    local function isSameAs(f1, f2)
+      return f1 == f2 or iscaseinsensitive and string_lower(f1) == string_lower(f2)
+    end
+
+    local function filePathMatch(file, pattern)
+      return (#file >= #pattern) and isSameAs(string_sub(file, 1, #pattern), pattern)
+    end
+
+    fix_file_name = function(reverse, file)
+      if vscode_pathmap then
+        for _, map in ipairs(vscode_pathmap) do
+          local pattern, substitution = map[reverse and 2 or 1], map[reverse and 1 or 2]
+          if filePathMatch(file, pattern) then
+            file = substitution .. string_sub(file, #pattern + 1)
+            break
+          end
+        end
+      end
+
+      return file
+    end
+  end
+
+  function vscode_debugger.path_to_ide(file)
+    if not is_abs_path(file) then
+      file = state.basedir .. file
+    end
+
+    file = fix_file_name(false, file)
+
+    file = string_gsub(file, '/', vscode_dir_sep)
 
     return file
   end
-end
 
-function vscode_debugger.path_to_ide(file)
-  if not is_abs_path(file) then
-    file = state.basedir .. file
+  function vscode_debugger.path_from_ide(file)
+    file = normalize_source_file(file)
+    return fix_file_name(true, file)
   end
 
-  file = fix_file_name(false, file)
-
-  file = string_gsub(file, '/', vscode_dir_sep)
-
-  return file
-end
-
-function vscode_debugger.path_from_ide(file)
-  file = normalize_source_file(file)
-  return fix_file_name(true, file)
-end
-
-function vscode_debugger.proto_error(message)
-  error('[MOBDEBUG][PROTOCOL ERROR] ' .. message, 2)
-end
-
-function vscode_debugger.receive_message(sync)
-  if vscode_fetched_message then
-    local res = vscode_fetched_message
-    vscode_fetched_message = nil
-    return res
+  function vscode_debugger.proto_error(message)
+    error('[MOBDEBUG][PROTOCOL ERROR] ' .. message, 2)
   end
 
-  if (sync == false) and (not server:is_pending()) then
-    return
-  end
+  function vscode_debugger.receive_message(sync)
+    if vscode_fetched_message then
+      local res = vscode_fetched_message
+      vscode_fetched_message = nil
+      return res
+    end
 
-  if not vscode_message_size then
-    local header, err = server:receive_line(sync, sync)
-    if not header then
+    if (sync == false) and (not server:is_pending()) then
+      return
+    end
+
+    if not vscode_message_size then
+      local header, err = server:receive_line(sync, sync)
+      if not header then
+        return nil, err
+      end
+
+      if (string_sub(header, 1, 1) ~= '#') then
+        return vscode_debugger.proto_error('Invalid header:' .. header)
+      end
+
+      vscode_message_size = tonumber(string_sub(header, 2))
+      if (not vscode_message_size) or (vscode_message_size < 0) then
+        return vscode_debugger.proto_error('Invalid header:' .. header)
+      end
+    end
+
+    local message, err = server:receive_nread(vscode_message_size, sync)
+    if not message then
       return nil, err
     end
 
-    if (string_sub(header, 1, 1) ~= '#') then
-      return vscode_debugger.proto_error('Invalid header:' .. header)
+    vscode_message_size = nil
+
+    local decoded_message = json.decode(message)
+    if not decoded_message then
+      return vscode_debugger.proto_error('Invalid message:' .. message)
     end
 
-    vscode_message_size = tonumber(string_sub(header, 2))
-    if (not vscode_message_size) or (vscode_message_size < 0) then
-      return vscode_debugger.proto_error('Invalid header:' .. header)
+    return decoded_message
+  end
+
+  function vscode_debugger.push_back_message(msg)
+    vscode_fetched_message = msg
+  end
+
+  function vscode_debugger.send_message(msg)
+    local data = json.encode(msg)
+    local ok, err = server:nsend(string_format('#%d\n%s', #data, data))
+    if not ok then
+      error('[MOBDEUG][SEND ERROR]: ' .. err)
     end
   end
 
-  local message, err = server:receive_nread(vscode_message_size, sync)
-  if not message then
-    return nil, err
+  function vscode_debugger.send_success(req, body)
+    vscode_debugger.send_message {
+      type        = "response",
+      request_seq = req.seq,
+      command     = req.command,
+      success     = true,
+      body        = body
+    }
   end
 
-  vscode_message_size = nil
-
-  local decoded_message = json.decode(message)
-  if not decoded_message then
-    return vscode_debugger.proto_error('Invalid message:' .. message)
+  function vscode_debugger.send_failure(req, msg)
+    vscode_debugger.send_message {
+      type        = "response",
+      request_seq = req.seq,
+      command     = req.command,
+      success     = false,
+      message     = msg
+    }
   end
 
-  return decoded_message
-end
-
-function vscode_debugger.push_back_message(msg)
-  vscode_fetched_message = msg
-end
-
-function vscode_debugger.send_message(msg)
-  local data = json.encode(msg)
-  local ok, err = server:nsend(string_format('#%d\n%s', #data, data))
-  if not ok then
-    error('[MOBDEUG][SEND ERROR]: ' .. err)
-  end
-end
-
-function vscode_debugger.send_success(req, body)
-  vscode_debugger.send_message {
-    type        = "response",
-    request_seq = req.seq,
-    command     = req.command,
-    success     = true,
-    body        = body
-  }
-end
-
-function vscode_debugger.send_failure(req, msg)
-  vscode_debugger.send_message {
-    type        = "response",
-    request_seq = req.seq,
-    command     = req.command,
-    success     = false,
-    message     = msg
-  }
-end
-
-function vscode_debugger.send_event(eventName, body)
-  vscode_debugger.send_message {
-    type  = "event",
-    event = eventName,
-    body  = body
-  }
-end
-
-function vscode_debugger.send_console(str)
-  vscode_debugger.send_event('output', {category = 'console', output = str})
-end
-
-function vscode_debugger.send_stdout(str)
-  vscode_debugger.send_event('output', {category = 'stdout', output = str})
-end
-
-function vscode_debugger.send_stderr(str)
-  vscode_debugger.send_event('output', {category = 'stderr', output = str})
-end
-
-function vscode_debugger.send_stop_event(reason)
-  vscode_debugger.send_event('stopped', {
-    reason            = reason,
-    threadId          = vscode_thread_id,
-    allThreadsStopped = true
-  })
-end
-
-function GetVarValue(name)
-  local value, found
-
-  -- try local variables
-  local i = 1
-  while true do
-    local n, v = debug.getlocal(2, i)
-    if not n then break end
-    if n == name then
-      value = v
-      found = true
-    end
-    i = i + 1
-  end
-  if found then return value end
-
-  -- try upvalues
-  local func = debug.getinfo(2).func
-  i = 1
-  while true do
-    local n, v = debug.getupvalue(func, i)
-    if not n then break end
-    if n == name then return v end
-    i = i + 1
+  function vscode_debugger.send_event(eventName, body)
+    vscode_debugger.send_message {
+      type  = "event",
+      event = eventName,
+      body  = body
+    }
   end
 
-  -- not found; get global
-  return getfenv(func)[name]
-end
+  function vscode_debugger.send_console(str)
+    vscode_debugger.send_event('output', { category = 'console', output = str })
+  end
 
-function vscode_debugger.loop(sev, svars, sfile, sline)
-  local command, args
-  local eval_env = svars or {}
-  local loaded = {}
-  for k in pairs(package.loaded) do loaded[k] = true end
+  function vscode_debugger.send_stdout(str)
+    vscode_debugger.send_event('output', { category = 'stdout', output = str })
+  end
 
-  while true do
-    local req, err
-    if mobdebug.yield and server.settimeout then server:settimeout(mobdebug.yieldtimeout) end
+  function vscode_debugger.send_stderr(str)
+    vscode_debugger.send_event('output', { category = 'stderr', output = str })
+  end
+
+  function vscode_debugger.send_imperr(str)
+    vscode_debugger.send_event('output', { category = 'important', output = str })
+  end
+
+  function vscode_debugger.send_stop_event(reason)
+    vscode_debugger.send_event('stopped', {
+      reason            = reason,
+      threadId          = vscode_thread_id,
+      allThreadsStopped = true
+    })
+  end
+
+  function GetVarValue(name)
+    local value, found
+
+    -- try local variables
+    local i = 1
     while true do
-      req, err = vscode_debugger.receive_message()
-      if req then
-        break
+      local n, v = debug.getlocal(2, i)
+      if not n then break end
+      if n == name then
+        value = v
+        found = true
       end
-      if err == "timeout" then
-        if mobdebug.yield then mobdebug.yield() end
-      elseif err == "closed" then
-        error("Debugger connection closed", 0)
-      else
-        error(("Unexpected socket error: %s"):format(err), 0)
-      end
+      i = i + 1
     end
-    if server.settimeout then server:settimeout() end -- back to blocking
+    if found then return value end
 
-    command, args = req.command, req.arguments or {}
-    Log.format('New command: %s', tostring(command))
+    -- try upvalues
+    local func = debug.getinfo(2).func
+    i = 1
+    while true do
+      local n, v = debug.getupvalue(func, i)
+      if not n then break end
+      if n == name then return v end
+      i = i + 1
+    end
 
-    if command == 'welcome' then
-      set_basedir(args.sourceBasePath)
-      vscode_dir_sep = args.directorySeperator
-      vscode_stop_on_entry = args.stopOnEntry
-      vscode_pathmap = args.pathMap
-      vscode_init_failure = false
-      -- No response
-    elseif command == 'configurationDone' then
-      if vscode_init_failure then
-        vscode_debugger.send_failure(req, 'Initialization failure')
-      else
-        vscode_debugger.send_success(req, {})
-        if vscode_stop_on_entry then
-          vscode_debugger.send_stop_event('entry')
-        else -- continue command
-          state.step_into = false
-          state.step_over = false
+    -- not found; get global
+    return getfenv(func)[name]
+  end
 
-          local ev, vars, file, line, idx_watch = coroyield()
-          eval_env = vars
-          if ev == events.BREAK then
-            vscode_debugger.send_stop_event('breakpoint')
-          elseif ev == events.WATCH then -- TODO: conditional breakpoint
-            vscode_debugger.send_stop_event('breakpoint')
-          elseif ev == events.RESTART then
-            -- nothing to do
-          else
-            vscode_debugger.send_stop_event('exception')
-            vscode_debugger.send_stderr(file)
-          end
+  function vscode_debugger.loop(sev, svars, sfile, sline)
+    local command, args
+    local eval_env = svars or {}
+    local loaded = {}
+    for k in pairs(package.loaded) do loaded[k] = true end
+
+    while true do
+      local req, err
+      if mobdebug.yield and server.settimeout then server:settimeout(mobdebug.yieldtimeout) end
+      while true do
+        req, err = vscode_debugger.receive_message()
+        if req then
+          break
         end
-      end
-    elseif command == 'threads' then
-      local result = {
-        {
-          id   = vscode_thread_id,
-          name = vscode_thread_name,
-        }
-      }
-      vscode_debugger.send_success(req, {threads = result})
-    elseif command == 'setBreakpoints' then
-      local file = vscode_debugger.path_from_ide(args.source.path)
-      remove_file_breakpoint(file)
-      local result = {}
-      for i, breakpoint in ipairs(args.breakpoints) do
-        set_breakpoint(file, breakpoint.line)
-        result[i] = {
-          verified = true,
-          line     = breakpoint.line,
-        }
-      end
-      vscode_debugger.send_success(req, {breakpoints = result})
-    elseif command == 'stackTrace' then
-      vscode_variables_ref = {}
-      if not state.seen_hook then
-        vscode_debugger.send_success(req, {stackFrames = {}})
-      else
-        local ev, frames = coroyield("stack")
-        if ev ~= events.STACK then
-          vscode_debugger.send_failure(req, tostring(frames))
+        if err == "timeout" then
+          if mobdebug.yield then mobdebug.yield() end
+        elseif err == "closed" then
+          error("Debugger connection closed", 0)
         else
-          
-          local result = {}
-          local start_frame = CRASH_FRAME_ID and CRASH_FRAME_ID - 1 or (args.startFrame or 0)
-         
-          local levels = args.levels or 20
-
-          for i = 0, levels - 1 do
-            local level = start_frame + i
-            local stack = frames[level + 1]
-
-            if not stack then
-              break
-            end
-
-            local frame            = stack[1]
-            local source_name      = frame[1]
-            local file_path        = frame[2]
-            local linedefined      = frame[3]
-            local currentline      = frame[4]
-            local source_what      = frame[5]
-            local source_namewhat  = frame[6]
-            local source_short_src = frame[7]
-
-            if not frames[level + 2] and source_what == 'C' then
-              break -- skip top C level
-            end
-
-            result[#result + 1] = {
-              id     = level,
-              name   = source_name or '?',
-              source = {
-                path = vscode_debugger.path_to_ide(file_path)
-              },
-              line = currentline,
-              column = 1,
-            }
-          end
-          vscode_debugger.send_success(req, {stackFrames = result})
+          error(("Unexpected socket error: %s"):format(err), 0)
         end
       end
-    elseif command == 'scopes' then
-      local frameId = args.frameId or 0
-      local scopes = {}
-      scopes[#scopes + 1] = {
-        name      = 'Locals',
-        expensive = false,
-        variablesReference = (frameId + 1) * vscode_scope_offset + vscode_scope_types.Locals
-      }
-      scopes[#scopes + 1] = {
-        name      = 'Upvalues',
-        expensive = false,
-        variablesReference = (frameId + 1) * vscode_scope_offset + vscode_scope_types.Upvalues
-      }
-      scopes[#scopes + 1] = {
-        name      = 'Globals',
-        expensive = false,
-        variablesReference = (frameId + 1) * vscode_scope_offset + vscode_scope_types.Globals
-      }
-      local result = {
-        scopes = scopes,
-        line   = nil, -- TODO: defenition line
-      }
-      vscode_debugger.send_success(req, result)
-    elseif command == 'variables' then
-      if not state.seen_hook then
-        vscode_debugger.send_success(req, {variables = {}})
-      else
-        local ref, result, vars = args.variablesReference, {}
-        local is_scope = ref > vscode_scope_offset
-        if is_scope then
+      if server.settimeout then server:settimeout() end -- back to blocking
+
+      command, args = req.command, req.arguments or {}
+      Log.format('New command: %s', tostring(command))
+
+      if command == 'welcome' then
+        set_basedir(args.sourceBasePath)
+        vscode_dir_sep = args.directorySeperator
+        vscode_stop_on_entry = args.stopOnEntry
+        vscode_pathmap = args.pathMap
+        vscode_init_failure = false
+        -- No response
+      elseif command == 'configurationDone' then
+        if vscode_init_failure then
+          vscode_debugger.send_failure(req, 'Initialization failure')
+        else
+          vscode_debugger.send_success(req, {})
+          if vscode_stop_on_entry then
+            vscode_debugger.send_stop_event('entry')
+          else -- continue command
+            state.step_into = false
+            state.step_over = false
+
+            local ev, vars, file, line, idx_watch = coroyield()
+            eval_env = vars
+            if ev == events.BREAK then
+              vscode_debugger.send_stop_event('breakpoint')
+            elseif ev == events.WATCH then -- TODO: conditional breakpoint
+              vscode_debugger.send_stop_event('breakpoint')
+            elseif ev == events.RESTART then
+              -- nothing to do
+            else
+              vscode_debugger.send_stop_event('exception')
+              vscode_debugger.send_stderr(file)
+            end
+          end
+        end
+      elseif command == 'threads' then
+        local result = {
+          {
+            id   = vscode_thread_id,
+            name = vscode_thread_name,
+          }
+        }
+        vscode_debugger.send_success(req, { threads = result })
+      elseif command == 'setBreakpoints' then
+        local file = vscode_debugger.path_from_ide(args.source.path)
+        remove_file_breakpoint(file)
+        local result = {}
+        for i, breakpoint in ipairs(args.breakpoints) do
+          set_breakpoint(file, breakpoint.line)
+          result[i] = {
+            verified = true,
+            line     = breakpoint.line,
+          }
+        end
+        vscode_debugger.send_success(req, { breakpoints = result })
+      elseif command == 'stackTrace' then
+        vscode_variables_ref = {}
+        if not state.seen_hook then
+          vscode_debugger.send_success(req, { stackFrames = {} })
+        else
           local ev, frames = coroyield("stack")
           if ev ~= events.STACK then
             vscode_debugger.send_failure(req, tostring(frames))
           else
-            local frameId   = math.floor(ref / vscode_scope_offset) - 1
-            local scopeType = ref % vscode_scope_offset + 1
-            local frame = frames[frameId + 1]
-            vars = frame[scopeType]
+            local result = {}
+            local start_frame = CRASH_FRAME_ID and CRASH_FRAME_ID - 1 or (args.startFrame or 0)
+
+            local levels = args.levels or 20
+
+            for i = 0, levels - 1 do
+              local level = start_frame + i
+              local stack = frames[level + 1]
+
+              if not stack then
+                break
+              end
+
+              local frame            = stack[1]
+              local source_name      = frame[1]
+              local file_path        = frame[2]
+              local linedefined      = frame[3]
+              local currentline      = frame[4]
+              local source_what      = frame[5]
+              local source_namewhat  = frame[6]
+              local source_short_src = frame[7]
+
+              if not frames[level + 2] and source_what == 'C' then
+                break -- skip top C level
+              end
+
+              result[#result + 1] = {
+                id     = level,
+                name   = source_name or '?',
+                source = {
+                  path = vscode_debugger.path_to_ide(file_path)
+                },
+                line   = currentline,
+                column = 1,
+              }
+            end
+            vscode_debugger.send_success(req, { stackFrames = result })
           end
+        end
+      elseif command == 'scopes' then
+        local frameId = args.frameId or 0
+        local scopes = {}
+        scopes[#scopes + 1] = {
+          name               = 'Globals',
+          expensive          = false,
+          variablesReference = (frameId + 1) * vscode_scope_offset + vscode_scope_types.Globals
+        }
+        scopes[#scopes + 1] = {
+          name               = 'Locals',
+          expensive          = false,
+          variablesReference = (frameId + 1) * vscode_scope_offset + vscode_scope_types.Locals
+        }
+        scopes[#scopes + 1] = {
+          name               = 'Upvalues',
+          expensive          = false,
+          variablesReference = (frameId + 1) * vscode_scope_offset + vscode_scope_types.Upvalues
+        }
+        local result = {
+          scopes = scopes,
+          line   = nil, -- TODO: defenition line
+        }
+        vscode_debugger.send_success(req, result)
+      elseif command == 'variables' then
+        if not state.seen_hook then
+          vscode_debugger.send_success(req, { variables = {} })
         else
-          vars = vscode_variables_ref[ref]
-        end
-        if vars then
-          for name, var in pairs(vars) do
-            if type(name) == 'number' then
-              name = '[' .. tostring(name) .. ']'
+          local ref, result, vars = args.variablesReference, {}, nil
+          local is_global = (ref % vscode_scope_offset == 3)
+          local is_scope = ref > vscode_scope_offset
+          if is_scope then
+            local ev, frames = coroyield("stack")
+            if ev ~= events.STACK then
+              vscode_debugger.send_failure(req, tostring(frames))
             else
-              name = tostring(name)
+              local frameId   = math.floor(ref / vscode_scope_offset) - 1
+              local scopeType = ref % vscode_scope_offset + 1
+              local frame     = frames[frameId + 1]
+              vars            = frame[scopeType]
+              if is_global then -- Globals scope
+                vars = _G
+              end
             end
-
-            local value, string_value
-            if is_scope then
-              value, string_value = var[1], var[2]
-            else
-              value, string_value = var, tostring(var)
-            end
-
-            local vt = type(value)
-            if vt == 'table' then
-              ref = #vscode_variables_ref + 1
-              vscode_variables_ref[ref] = value
-            else
-              ref = -1
-            end
-            --GetVarValue(name)
-            result[#result + 1] = {
-              name               = name,
-              type               = vt,
-              variablesReference = ref,
-              value              = string_value,
-            }
-          end
-          vscode_debugger.send_success(req, {variables = result})
-        end -- if vars
-      end -- if not seen_hook
-    elseif command == 'evaluate' then
-      if not state.seen_hook then
-        vscode_debugger.send_failure(req, "Invalid state")
-      else
-        Log.table('evaluate', req)
-        local chunk = args.expression
-        local func, res = mobdebug.loadstring(string_format('return (%s)', chunk))
-        local status
-        if func then
-          local stack = args.frameId
-          if stack == 0 then stack = nil end
-          -- if the requested stack frame is not the current one, then use a new capture
-          -- with a specific stack frame: `capture_vars(0, coro_debugee)`
-          local env = stack and coro_debugee and capture_vars(stack - 1, coro_debugee) or eval_env
-          setfenv(func, env)
-          status, res = pcall_vararg_pack(pcall(func, unpack(rawget(env, '...') or {})))
-        end
-        if status then
-          Log.table('res', res)
-          -- TODO multiple values
-          if res.n == 0 then
-            vscode_debugger.send_success(req, {})
           else
-            local value = res[1]
-            local vt, ref = type(value), -1
-            if vt == 'table' then
-              ref = #vscode_variables_ref + 1
-              vscode_variables_ref[ref] = value
-            end
-            vscode_debugger.send_success(req, {
-              result             = tostring(value),
-              type               = vt,
-              variablesReference = ref,
-            })
+            vars = vscode_variables_ref[ref]
           end
+          if vars then
+            for name, var in pairs(vars) do
+              if type(name) == 'number' then
+                name = '[' .. tostring(name) .. ']'
+              else
+                name = tostring(name)
+              end
+
+              local value, string_value
+              if is_scope and not is_global then
+                value, string_value = var[1], var[2]
+              else
+                value, string_value = var, tostring(var)
+              end
+
+              local vt = type(value)
+              if vt == 'table' then
+                ref = #vscode_variables_ref + 1
+                vscode_variables_ref[ref] = value
+              else
+                ref = -1
+              end
+              if is_global then
+                if not GLOBAL_IGNORE[name] and type(var) ~= "function" then
+                  result[#result + 1] = {
+                    name               = name,
+                    type               = vt,
+                    variablesReference = ref,
+                    value              = string_value,
+                  }
+                end
+              else
+                result[#result + 1] = {
+                  name               = name,
+                  type               = vt,
+                  variablesReference = ref,
+                  value              = string_value,
+                }
+              end
+            end
+            vscode_debugger.send_success(req, { variables = result })
+          end -- if vars
+        end   -- if not seen_hook
+      elseif command == 'evaluate' then
+        if not state.seen_hook then
+          vscode_debugger.send_failure(req, "Invalid state")
         else
-          -- fix error if not set (for example, when loadstring is not present)
-          if not res then res = "Unknown error" end
-          -- Strip error message, implementation from the `handle` function
-          res = string_gsub(res, ".-:%d+:%s*", "")
-          vscode_debugger.send_failure(req, res)
+          Log.table('evaluate', req)
+          local chunk = args.expression
+          --local func, res = mobdebug.loadstring(string_format('return (%s)', chunk))
+          local func, res = mobdebug.loadstring(chunk)
+          if not func then
+            func, res = mobdebug.loadstring('return ' .. chunk)
+          end
+          local status
+          if func then
+            local stack = args.frameId
+            if stack == 0 then stack = nil end
+            -- if the requested stack frame is not the current one, then use a new capture
+            -- with a specific stack frame: `capture_vars(0, coro_debugee)`
+            local env = stack and coro_debugee and capture_vars(stack - 1, coro_debugee) or eval_env
+            setfenv(func, env)
+            status, res = pcall_vararg_pack(pcall(func, unpack(rawget(env, '...') or {})))
+          end
+          if status then
+            Log.table('res', res)
+            -- TODO multiple values
+            if res.n == 0 then
+              vscode_debugger.send_success(req, {})
+            else
+              local value = res[1]
+              local vt, ref = type(value), -1
+              if vt == 'table' then
+                ref = #vscode_variables_ref + 1
+                vscode_variables_ref[ref] = value
+              end
+              vscode_debugger.send_success(req, {
+                result             = tostring(value),
+                type               = vt,
+                variablesReference = ref,
+              })
+            end
+          else
+            -- fix error if not set (for example, when loadstring is not present)
+            if not res then res = "Unknown error" end
+            -- Strip error message, implementation from the `handle` function
+            res = string_gsub(res, ".-:%d+:%s*", "")
+            vscode_debugger.send_failure(req, res)
+          end
         end
-      end
-    elseif command == 'continue' or command == 'next' or command == 'stepIn' or command == 'stepOut' then
-      vscode_debugger.send_success(req, {})
-      if command == "continue" then
-        state.step_into = false
-        state.step_over = false
-      elseif command == "stepIn" then
-        state.step_into = true
-        state.step_over = false
-      elseif command == "next" or command == "stepOut" then
-        state.step_into = false
-        state.step_over = true
-        state.step_level = (command == "next") and state.stack_level or state.stack_level - 1
-      end
+      elseif command == 'continue' or command == 'next' or command == 'stepIn' or command == 'stepOut' then
+        vscode_debugger.send_success(req, {})
+        if command == "continue" then
+          state.step_into = false
+          state.step_over = false
+        elseif command == "stepIn" then
+          state.step_into = true
+          state.step_over = false
+        elseif command == "next" or command == "stepOut" then
+          state.step_into = false
+          state.step_over = true
+          state.step_level = (command == "next") and state.stack_level or state.stack_level - 1
+        end
 
-      local ev, vars, file, line, idx_watch = coroyield()
-      eval_env = vars
-      if ev == events.BREAK then
-        vscode_debugger.send_stop_event('breakpoint')
-      elseif ev == events.WATCH then -- TODO: conditional breakpoint
-        vscode_debugger.send_stop_event('breakpoint')
-      elseif ev == events.RESTART then
-        -- nothing to do
+        local ev, vars, file, line, idx_watch = coroyield()
+        eval_env = vars
+        if ev == events.BREAK then
+          vscode_debugger.send_stop_event('breakpoint')
+        elseif ev == events.WATCH then -- TODO: conditional breakpoint
+          vscode_debugger.send_stop_event('breakpoint')
+        elseif ev == events.RESTART then
+          -- nothing to do
+        else
+          vscode_debugger.send_stop_event('exception')
+          vscode_debugger.send_stderr(file)
+        end
+      elseif command == 'disconnect' then
+        vscode_debugger.send_success(req, {})
+        coroyield("done")
+        return
       else
-        vscode_debugger.send_stop_event('exception')
-        vscode_debugger.send_stderr(file)
+        Log.format('Unsupported command: %s', tostring(command or '<UNKNOWN>'))
+        vscode_debugger.send_failure(req, 'Unsupported command')
+      end -- if command
+    end   -- while protocol == 'vscode'
+  end
+
+  function vscode_debugger.pending_io()
+    local possible_pending_io = false
+    while server:is_pending() do
+      server:enforce_pending_check()
+
+      local req, err = vscode_debugger.receive_message(false)
+      if not req then
+        Log.format('  %s', err or 'unknown')
+        possible_pending_io = (err == 'timeout')
+        break
       end
-    elseif command == 'disconnect' then
-      vscode_debugger.send_success(req, {})
-      coroyield("done")
-      return
-    else
-      Log.format('Unsupported command: %s', tostring(command or '<UNKNOWN>'))
-      vscode_debugger.send_failure(req, 'Unsupported command')
-    end -- if command
-  end -- while protocol == 'vscode'
-end
 
-function vscode_debugger.pending_io()
-  local possible_pending_io = false
-  while server:is_pending() do
-    server:enforce_pending_check()
-
-    local req, err = vscode_debugger.receive_message(false)
-    if not req then
-      Log.format('  %s', err or 'unknown')
-      possible_pending_io = (err == 'timeout')
-      break
-    end
-
-    local command, args = req.command, req.arguments
-    if command == 'setBreakpoints' then
-      local file = vscode_debugger.path_from_ide(args.source.path)
-      remove_file_breakpoint(file)
-      local result = {}
-      for i, breakpoint in ipairs(args.breakpoints) do
-        set_breakpoint(file, breakpoint.line)
-        result[i] = {
-          verified = true,
-          line     = breakpoint.line,
+      local command, args = req.command, req.arguments
+      if command == 'setBreakpoints' then
+        local file = vscode_debugger.path_from_ide(args.source.path)
+        remove_file_breakpoint(file)
+        local result = {}
+        for i, breakpoint in ipairs(args.breakpoints) do
+          set_breakpoint(file, breakpoint.line)
+          result[i] = {
+            verified = true,
+            line     = breakpoint.line,
+          }
+        end
+        vscode_debugger.send_success(req, { breakpoints = result })
+      elseif command == 'threads' then
+        local result = {
+          {
+            id   = vscode_thread_id,
+            name = vscode_thread_name,
+          }
         }
-      end
-      vscode_debugger.send_success(req, {breakpoints = result})
-    elseif command == 'threads' then
-      local result = {
-        {
-          id   = vscode_thread_id,
-          name = vscode_thread_name,
-        }
-      }
-      vscode_debugger.send_success(req, {threads = result})
-    elseif command == 'pause' then
+        vscode_debugger.send_success(req, { threads = result })
+      elseif command == 'pause' then
         state.step_into = true
         state.step_over = false
         vscode_debugger.send_success(req, {})
-    else
-      Log.format('Unsupported pending command: %s', command)
-      vscode_debugger.push_back_message(req)
-      return true
+      else
+        Log.format('Unsupported pending command: %s', command)
+        vscode_debugger.push_back_message(req)
+        return true
+      end
     end
+
+    if possible_pending_io then
+      return false
+    end
+
+    return not not server:is_pending()
   end
-
-  if possible_pending_io then
-    return false
-  end
-
-  return not not server:is_pending()
-end
-
 end
 
 do -- debugger
+  function debugger.loop_detect_protocol()
+    if mobdebug.yield and server.settimeout then server:settimeout(mobdebug.yieldtimeout) end
 
-function debugger.loop_detect_protocol()
-  if mobdebug.yield and server.settimeout then server:settimeout(mobdebug.yieldtimeout) end
-
-  local data, err
-  while true do
-    data, err = server:peek(1, true)
-    if data then
-      break
+    local data, err
+    while true do
+      data, err = server:peek(1, true)
+      if data then
+        break
+      end
+      if err == "timeout" then
+        if mobdebug.yield then mobdebug.yield() end
+      elseif err == "closed" then
+        error("Debugger connection closed", 1)
+      else
+        error(("Unexpected socket error: %s"):format(err), 1)
+      end
     end
-    if err == "timeout" then
-      if mobdebug.yield then mobdebug.yield() end
-    elseif err == "closed" then
-      error("Debugger connection closed", 1)
-    else
-      error(("Unexpected socket error: %s"):format(err), 1)
+
+    if server.settimeout then server:settimeout() end -- back to blocking
+
+    state.protocol = (data == '#') and PROTOCOLS.VSCODE or PROTOCOLS.MOBDEBUG
+  end
+
+  function debugger.loop(sev, svars, sfile, sline)
+    debugger.loop_detect_protocol()
+
+    if state.protocol == PROTOCOLS.VSCODE then
+      return vscode_debugger.loop(sev, svars, sfile, sline)
+    end
+
+    if state.protocol == PROTOCOLS.MOBDEBUG then
+      return mobdebug_debugger.loop(sev, svars, sfile, sline)
     end
   end
 
-  if server.settimeout then server:settimeout() end -- back to blocking
+  -- return
+  --   true - need to interrupt debug hook and switch to `debugger_loop`
+  function debugger.loop_pending_io()
+    if state.protocol == PROTOCOLS.VSCODE then
+      return vscode_debugger.pending_io()
+    end
 
-  state.protocol = (data == '#') and PROTOCOLS.VSCODE or PROTOCOLS.MOBDEBUG
-end
-
-function debugger.loop(sev, svars, sfile, sline)
-  debugger.loop_detect_protocol()
-
-  if state.protocol == PROTOCOLS.VSCODE then
-    return vscode_debugger.loop(sev, svars, sfile, sline)
+    if state.protocol == PROTOCOLS.MOBDEBUG then
+      return mobdebug_debugger.pending_io()
+    end
   end
-
-  if state.protocol == PROTOCOLS.MOBDEBUG then
-    return mobdebug_debugger.loop(sev, svars, sfile, sline)
-  end
-end
-
--- return
---   true - need to interrupt debug hook and switch to `debugger_loop`
-function debugger.loop_pending_io()
-  if state.protocol == PROTOCOLS.VSCODE then
-    return vscode_debugger.pending_io()
-  end
-
-  if state.protocol == PROTOCOLS.MOBDEBUG then
-    return mobdebug_debugger.pending_io()
-  end
-end
-
 end
 
 local function output(stream, data)
-  if server then return server:send("204 Output "..stream.." "..tostring(#data).."\n"..data) end
+  if server then return server:send("204 Output " .. stream .. " " .. tostring(#data) .. "\n" .. data) end
 end
 
 local function connect(controller_host, controller_port)
@@ -2076,7 +2160,7 @@ local function start(controller_host, controller_port)
 
     coro_debugger = corocreate(debugger.loop)
     debug.sethook(debug_hook, HOOKMASK)
-    state.seen_hook = nil -- reset in case the last start() call was refused
+    state.seen_hook = nil  -- reset in case the last start() call was refused
     state.step_into = true -- start with step command
     return true
   else
@@ -2112,8 +2196,8 @@ local function controller(controller_host, controller_port, scratchpad)
     coro_debugger = corocreate(debugger.loop)
 
     while true do
-      state.step_into = true -- start with step command
-      abort = false -- reset abort flag from the previous loop
+      state.step_into = true                                -- start with step command
+      abort = false                                         -- reset abort flag from the previous loop
       if scratchpad then server:enforce_pending_check() end -- force suspend right away
 
       coro_debugee = corocreate(state.debugee)
@@ -2205,7 +2289,9 @@ local function off()
   if jit then
     local remove = true
     for _, debugged in pairs(coroutines) do
-      if debugged then remove = false; break end
+      if debugged then
+        remove = false; break
+      end
     end
     if remove then debug.sethook() end
   end
@@ -2220,7 +2306,7 @@ local function handle(params, client, options)
   local file, line, watch_idx
   local _, _, command = string_find(params, "^([a-z]+)")
   if command == "run" or command == "step" or command == "out"
-  or command == "over" or command == "exit" then
+      or command == "over" or command == "exit" then
     client:send(string.upper(command) .. "\n")
     client:receive("*l") -- this should consume the first '200 OK' response
     while true do
@@ -2241,7 +2327,8 @@ local function handle(params, client, options)
       elseif status == "203" then
         _, _, file, line, watch_idx = string_find(breakpoint, "^203 Paused%s+(.-)%s+(%d+)%s+(%d+)%s*$")
         if file and line and watch_idx then
-          print("Paused at file " .. file .. " line " .. line .. " (watch expression " .. watch_idx .. ": [" .. state.watches[watch_idx] .. "])")
+          print("Paused at file " ..
+            file .. " line " .. line .. " (watch expression " .. watch_idx .. ": [" .. state.watches[watch_idx] .. "])")
         end
       elseif status == "204" then
         local _, _, stream, size = string_find(breakpoint, "^204 Output (%w+) (%d+)$")
@@ -2298,7 +2385,7 @@ local function handle(params, client, options)
       else
         local _, _, size = string_find(answer, "^401 Error in Expression (%d+)$")
         if size then
-          local err = client:receive(tonumber(size)):gsub(".-:%d+:%s*","")
+          local err = client:receive(tonumber(size)):gsub(".-:%d+:%s*", "")
           print("Error: watch expression not set: " .. err)
         else
           print("Error: watch expression not set")
@@ -2367,7 +2454,7 @@ local function handle(params, client, options)
       elseif command == "loadstring" then
         local _, _, _, file, lines = string_find(exp, "^([\"'])(.-)%1%s(.+)")
         if not file then
-           _, _, file, lines = string_find(exp, "^(%S+)%s(.+)")
+          _, _, file, lines = string_find(exp, "^(%S+)%s(.+)")
         end
         client:send("LOAD " .. tostring(#lines) .. " " .. file .. "\n")
         client:send(lines)
@@ -2406,9 +2493,10 @@ local function handle(params, client, options)
             local func, err = loadstring(str)
             if func then
               status, res = pcall(func)
-              if not status then err = res
+              if not status then
+                err = res
               elseif type(res) ~= "table" then
-                err = "received "..type(res).." instead of expected 'table'"
+                err = "received " .. type(res) .. " instead of expected 'table'"
               end
             end
             if err then
@@ -2461,7 +2549,7 @@ local function handle(params, client, options)
     client:send("SUSPEND\n")
   elseif command == "stack" then
     local opts = string.match(params, "^[a-z]+%s+(.+)$")
-    client:send("STACK" .. (opts and " "..opts or "") .."\n")
+    client:send("STACK" .. (opts and " " .. opts or "") .. "\n")
     local resp = client:receive("*l")
     local _, _, status, res = string_find(resp, "^(%d+)%s+%w+%s+(.+)%s*$")
     if status == "200" then
@@ -2475,8 +2563,8 @@ local function handle(params, client, options)
         print("Error in stack information: " .. stack)
         return nil, nil, stack
       end
-      for _,frame in ipairs(stack) do
-        print(mobdebug.line(frame[1], {comment = false}))
+      for _, frame in ipairs(stack) do
+        print(mobdebug.line(frame[1], { comment = false }))
       end
       return stack
     elseif status == "401" then
@@ -2492,22 +2580,22 @@ local function handle(params, client, options)
   elseif command == "output" then
     local _, _, stream, mode = string_find(params, "^[a-z]+%s+(%w+)%s+([dcr])%s*$")
     if stream and mode then
-      client:send("OUTPUT "..stream.." "..mode.."\n")
+      client:send("OUTPUT " .. stream .. " " .. mode .. "\n")
       local resp, err = client:receive("*l")
       if not resp then
-        print("Unknown error: "..err)
-        return nil, nil, "Debugger connection error: "..err
+        print("Unknown error: " .. err)
+        return nil, nil, "Debugger connection error: " .. err
       end
       local _, _, status = string_find(resp, "^(%d+)%s+%w+%s*$")
       if status == "200" then
-        print("Stream "..stream.." redirected")
+        print("Stream " .. stream .. " redirected")
         state.outputs[stream] = type(options) == 'table' and options.handler or nil
-      -- the client knows when she is doing, so install the handler
+        -- the client knows when she is doing, so install the handler
       elseif type(options) == 'table' and options.handler then
         state.outputs[stream] = options.handler
       else
         print("Unknown error")
-        return nil, nil, "Debugger error: can't redirect "..stream
+        return nil, nil, "Debugger error: can't redirect " .. stream
       end
     else
       print("Invalid command")
@@ -2522,11 +2610,11 @@ local function handle(params, client, options)
       if remdir then dir = dir:gsub("/?\t.+", "/") end
       state.basedir = dir
 
-      client:send("BASEDIR "..(remdir or dir).."\n")
+      client:send("BASEDIR " .. (remdir or dir) .. "\n")
       local resp, err = client:receive("*l")
       if not resp then
-        print("Unknown error: "..err)
-        return nil, nil, "Debugger connection error: "..err
+        print("Unknown error: " .. err)
+        return nil, nil, "Debugger connection error: " .. err
       end
       local _, _, status = string_find(resp, "^(%d+)%s+%w+%s*$")
       if status == "200" then
@@ -2591,7 +2679,7 @@ local function listen(host, port)
   local breakpoint = client:receive("*l")
   local _, _, file, line = string_find(breakpoint, "^202 Paused%s+(.-)%s+(%d+)%s*$")
   if file and line then
-    print("Paused at file " .. file )
+    print("Paused at file " .. file)
     print("Type 'help' for commands")
   else
     local _, _, size = string_find(breakpoint, "^401 Error in Execution (%d+)%s*$")
@@ -2634,7 +2722,7 @@ local function moai()
     local mt = thread.run and thread or getmetatable(thread)
     local patched = mt.run
     mt.run = function(self, f, ...)
-      return patched(self,  function(...)
+      return patched(self, function(...)
         mobdebug.on()
         return f(...)
       end, ...)
@@ -2644,26 +2732,29 @@ local function moai()
 end
 
 function vscode_debugger.goto_crash_line(e)
-    local byLine = "([^\r\n]*)\r?\n?"
-    local trimPath = "[\\/]([^\\/]-:%d+:.+)$"
-    local stack_inner = {}
-    for line in string.gmatch(e .. "\n" .. debug.traceback(), byLine) do
-        local str = string.match(line, trimPath) or line
-        stack_inner[#stack_inner + 1] = str
-    end
-    vscode_debugger.send_console(
-        "Error: " .. stack_inner[1] .. "\n\n" ..
-        "Stack traceback:\n\t" .. table.concat(stack_inner, "\n\t", 3) .. "\n\n"
-    )
-    --vscode_debugger.send_console(e .. '\n' .. debug.traceback()) -- print error and trace in console
-    local depth, callerInfo = 1, nil
-    local selfInfo = debug.getinfo(depth, 'S')
-    repeat
-        depth = depth + 1
-        callerInfo = debug.getinfo(depth, 'S')
-    until callerInfo.source ~= selfInfo.source and callerInfo.what ~= 'C'
-    CRASH_FRAME_ID = depth
-    mobdebug.pause() -- pause debuger
+  local byLine = "([^\r\n]*)\r?\n?"
+  local trimPath = "[\\/]([^\\/]-:%d+:.+)$"
+  local stack_inner = {}
+  for line in string.gmatch(e .. "\n" .. debug.traceback(), byLine) do
+    local str = string.match(line, trimPath) or line
+    stack_inner[#stack_inner + 1] = str
+  end
+  --vscode_debugger.send_imperr(stack_inner[1])
+  --vscode_debugger.proto_error(stack_inner[1])
+  vscode_debugger.send_stderr(stack_inner[1])
+  vscode_debugger.send_console(
+  -- "Error: " .. stack_inner[1] .. "\n\n" ..
+    "\n\nStack traceback:\n\t" .. table.concat(stack_inner, "\n\t", 3) .. "\n\n"
+  )
+  --vscode_debugger.send_console(e .. '\n' .. debug.traceback()) -- print error and trace in console
+  local depth, callerInfo = 1, nil
+  local selfInfo = debug.getinfo(depth, 'S')
+  repeat
+    depth = depth + 1
+    callerInfo = debug.getinfo(depth, 'S')
+  until callerInfo.source ~= selfInfo.source and callerInfo.what ~= 'C'
+  CRASH_FRAME_ID = depth
+  mobdebug.pause() -- pause debuger
 end
 
 -- make public functions available
@@ -2692,7 +2783,7 @@ mobdebug.basedir = function(b)
   return state.basedir
 end
 
-mobdebug.logging = function (on, file)
+mobdebug.logging = function(on, file)
   state.logging = on
   state.logfile = file
 end
