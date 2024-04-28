@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="0c1a85fa558a25bd96c117a0b073baf06b153158" name="Sexan_Scripts">
+<index version="1" commit="b0d93d59486c191dddbc3b1cbf0e59adce8a9c0e" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -44,6 +44,14 @@
         <changelog><![CDATA[Fixed issue for my buddy with rendering midi stuff]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/0efdff6edaf8af3b4ce623499eb42979e0899c81/Alpha/Sexan_Track_versions_gui.lua</source>
         <source file="Sexan_Track_versions_core.lua">https://github.com/GoranKovac/ReaScripts/raw/0efdff6edaf8af3b4ce623499eb42979e0899c81/Alpha/Sexan_Track_versions_core.lua</source>
+      </version>
+    </reapack>
+  </category>
+  <category name="ApiParser">
+    <reapack name="ReaperDefinitionsGenerator.lua" type="script" desc="Reaper VSCode Definitions Generator">
+      <version name="1.0" author="Sexan, Cfillion, Docs source X-Raym - https://www.extremraym.com/cloud/reascript-doc/" time="2024-04-28T20:53:24Z">
+        <changelog><![CDATA[first release]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/b0d93d59486c191dddbc3b1cbf0e59adce8a9c0e/ApiParser/ReaperDefinitionsGenerator.lua</source>
       </version>
     </reapack>
   </category>
