@@ -1,9 +1,14 @@
 -- @description Reaper VSCode Definitions Generator
 -- @author Sexan, Cfillion, Docs source X-Raym - https://www.extremraym.com/cloud/reascript-doc/
 -- @license GPL v3
--- @version 1.0
+-- @version 1.01
 -- @changelog
---  first release
+--  Add workaround for docs error return type for GetItemFromPoint
+--  Add workaround for docs error optional type for gfx.setcursor
+--  Add workaround for docs different html tags for JS_Composite optional boolean
+--  Add workaround for docs error optional type for GetSet_ArrangeView2 start_time, end_time
+--  Hardcode ImGui_GetBuiltinPath
+--  Remove genGuid parameter
 
 local r = reaper
 local API_PATH = reaper.GetResourcePath() .. "/api_file.txt"
@@ -73,6 +78,10 @@ function reaper.gmem_read(index) end
 ---@param index integer
 ---@param value number
 function reaper.gmem_write(index, value) end
+
+---Returns the path to the directory containing imgui.lua, imgui.py and gfx2imgui.lua.
+---@return string path
+function reaper.ImGui_GetBuiltinPath() end
 ]]
 
 local gfx_start_str = [[
@@ -329,12 +338,18 @@ end
 
 CurlToFile()
 
-local function ParseReturns(tbl, ret_str)
+local function ParseReturns(tbl, ret_str, name)
     if not ret_str then return end
     if ret_str then
         -- MULTIPLE RETURNS
         if ret_str:find(",") then
             for ret in ret_str:gmatch('[^,]+') do
+                -- WORKAROUND FOR GetItemFromPoint DOC RETURN ERROR
+                if name == "reaper.GetItemFromPoint" then
+                    if ret == "<em>MediaItem</em>" then
+                        ret = ret .. " retval"
+                    end
+                end
                 for ret_type, ret_name in ret:gmatch('<em>(.+)</em>(.+ ?)') do
                     local opt
                     ret_type = ret_type:match("identifier") and "userdata" or trim(ret_type)
@@ -366,8 +381,10 @@ local function ParseReturns(tbl, ret_str)
     end
 end
 
-local function ParseArguments(tbl, arg_str)
+local function ParseArguments(tbl, arg_str, name)
     if not arg_str then return end
+    -- genGuid DOES NOT TAKE ANY PARAMETERS
+    if name == "reaper.genGuid" then return end
     for arg in arg_str:gmatch('[^,]+') do
         for arg_type, arg_name in arg:gmatch('<em>(.+)</em>(.+ ?)') do
             local opt
@@ -377,6 +394,13 @@ local function ParseArguments(tbl, arg_str)
             if arg_type:find("optional") then
                 arg_type = arg_type:gsub("optional ", "")
                 opt = "?"
+            end
+
+            -- WORKAROUND FOR GetSet_ArrangeView2 MISSING OPTIONALS TAGS
+            if name == "reaper.GetSet_ArrangeView2" then
+                if arg_name == "start_time" or arg_name == "end_time" then
+                    opt = "?"
+                end            
             end
             tbl[#tbl + 1] = {
                 type = arg_type:gsub("</em><em>", ""),
@@ -401,6 +425,7 @@ local function ParseGfxArguments(arg_tbl, ret_tbl, arg_str, name)
                 arg_tbl[#arg_tbl + 1] = {
                     type = arg_type,
                     name = trim(arg_name:gsub('"', "")),
+                    opt = (name == "setcursor" and arg_name == "custom_cursor_name") and "?" or nil
                 }
             end
         end
@@ -461,6 +486,8 @@ local function GenerateApiTbl(api)
         -- ARG_STR =                                                   <em>string</em> path, <em>integer</em> ignored
         local html_str = line:match('<div class="l_func"><code>(.+)</code>')
         if html_str and not html_str:match("ImGui") then
+            -- JS_API JS_Composite Docs workaround
+            html_str = html_str:gsub("strong", "em"):gsub("unsupported", "optional boolean")
             local name = html_str:match('({?reaper.%S+)%(') or html_str:match('(gfx.%S+)%(')
             if name then
                 if not name:match("reaper.array") and not name:match("new_array") and not name:match("gfx%.") and not api_blacklist[name] then
@@ -468,9 +495,9 @@ local function GenerateApiTbl(api)
                     GET_DESC = true
                     CUR_API[#CUR_API + 1] = { api_name = name, rets = {}, args = {} }
                     local return_str = html_str:match('(.-) reaper%.')
-                    ParseReturns(CUR_API[#CUR_API].rets, return_str)
+                    ParseReturns(CUR_API[#CUR_API].rets, return_str, name)
                     local argument_str = html_str:match("%((.+)%)")
-                    ParseArguments(CUR_API[#CUR_API].args, argument_str)
+                    ParseArguments(CUR_API[#CUR_API].args, argument_str, name)
                 elseif name:match("gfx%.") then
                     CUR_API = GFX_API
                     GET_DESC = true
