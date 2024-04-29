@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="b0d93d59486c191dddbc3b1cbf0e59adce8a9c0e" name="Sexan_Scripts">
+<index version="1" commit="44d1aa745b171306f1dc69cbfeb9584729dc9304" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -52,6 +52,15 @@
       <version name="1.0" author="Sexan, Cfillion, Docs source X-Raym - https://www.extremraym.com/cloud/reascript-doc/" time="2024-04-28T20:53:24Z">
         <changelog><![CDATA[first release]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/b0d93d59486c191dddbc3b1cbf0e59adce8a9c0e/ApiParser/ReaperDefinitionsGenerator.lua</source>
+      </version>
+      <version name="1.01" author="Sexan, Cfillion, Docs source X-Raym - https://www.extremraym.com/cloud/reascript-doc/" time="2024-04-29T08:33:30Z">
+        <changelog><![CDATA[Add workaround for docs error return type for GetItemFromPoint
+Add workaround for docs error optional type for gfx.setcursor
+Add workaround for docs different html tags for JS_Composite optional boolean
+Add workaround for docs error optional type for GetSet_ArrangeView2 start_time, end_time
+Hardcode ImGui_GetBuiltinPath
+Remove genGuid parameter]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/44d1aa745b171306f1dc69cbfeb9584729dc9304/ApiParser/ReaperDefinitionsGenerator.lua</source>
       </version>
     </reapack>
   </category>
