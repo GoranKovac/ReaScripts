@@ -129,7 +129,7 @@ function Main()
         --WriteFxData()
         return
     end
-    if pluginName and pluginName:match("Cockos") then
+    if pluginName then
         local png_name = pluginName:gsub("[-:_/%s><]", "_")
         local path = folder .. png_name
         if not r.file_exists(path .. ".png") then
