@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="b25b89734bebadc34caf1bf86d1217cac5858461" name="Sexan_Scripts">
+<index version="1" commit="e2c1ac1d25c86c777e111fb0fbf1bd50e588329a" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -68,6 +68,10 @@ Make ShowActionList both parameters optional
 Add union_types table for union types (ReaProj, KbdSectionInfo)
 Allow passing integer values in KbdSectionInfo parameters]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/b25b89734bebadc34caf1bf86d1217cac5858461/ApiParser/ReaperDefinitionsGenerator.lua</source>
+      </version>
+      <version name="1.03" author="Sexan, Cfillion, Docs source X-Raym - https://www.extremraym.com/cloud/reascript-doc/" time="2024-04-30T16:18:56Z">
+        <changelog><![CDATA[Remove @see annotation since not very useful]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/e2c1ac1d25c86c777e111fb0fbf1bd50e588329a/ApiParser/ReaperDefinitionsGenerator.lua</source>
       </version>
     </reapack>
   </category>
