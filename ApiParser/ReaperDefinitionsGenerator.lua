@@ -1,14 +1,12 @@
 -- @description Reaper VSCode Definitions Generator
 -- @author Sexan, Cfillion, Docs source X-Raym - https://www.extremraym.com/cloud/reascript-doc/
 -- @license GPL v3
--- @version 1.01
+-- @version 1.02
 -- @changelog
---  Add workaround for docs error return type for GetItemFromPoint
---  Add workaround for docs error optional type for gfx.setcursor
---  Add workaround for docs different html tags for JS_Composite optional boolean
---  Add workaround for docs error optional type for GetSet_ArrangeView2 start_time, end_time
---  Hardcode ImGui_GetBuiltinPath
---  Remove genGuid parameter
+--  Track C function for optionals since in lua some are missing
+--  Make ShowActionList both parameters optional
+--  Add union_types table for union types (ReaProj, KbdSectionInfo)
+--  Allow passing integer values in KbdSectionInfo parameters
 
 local r = reaper
 local API_PATH = reaper.GetResourcePath() .. "/api_file.txt"
@@ -381,7 +379,7 @@ local function ParseReturns(tbl, ret_str, name)
     end
 end
 
-local function ParseArguments(tbl, arg_str, name)
+local function ParseArguments(tbl, arg_str, c_str, name)
     if not arg_str then return end
     -- genGuid DOES NOT TAKE ANY PARAMETERS
     if name == "reaper.genGuid" then return end
@@ -394,13 +392,19 @@ local function ParseArguments(tbl, arg_str, name)
             if arg_type:find("optional") then
                 arg_type = arg_type:gsub("optional ", "")
                 opt = "?"
+            elseif arg_name and c_str:find(arg_name.."Optional") then
+                --r.ShowConsoleMsg("C OPT FOUND - " .. name .. "  :  " .. arg_name.."\n")             
+                opt = "?"
             end
 
             -- WORKAROUND FOR GetSet_ArrangeView2 MISSING OPTIONALS TAGS
             if name == "reaper.GetSet_ArrangeView2" then
                 if arg_name == "start_time" or arg_name == "end_time" then
                     opt = "?"
-                end            
+                end
+            --  WORKAROUND FOR DOCS NOT REPORTING BOTH PARAMETERS OPTIONAL
+            elseif name == "reaper.ShowActionList" then
+                opt = "?"    
             end
             tbl[#tbl + 1] = {
                 type = arg_type:gsub("</em><em>", ""),
@@ -415,7 +419,7 @@ local function ParseGfxArguments(arg_tbl, ret_tbl, arg_str, name)
     if arg_str then
         -- GET OPTIONAL PART "[...]"
         local opt_str = arg_str:match('%[(.-)]')
-        -- GET OPTIONAL PART "...["
+        -- GET REQUIRED PART "...["
         local req_str = trim(arg_str:match('[^%[]*'))
         req_str = (req_str and #req_str ~= 0) and req_str or nil
         if req_str then
@@ -455,6 +459,7 @@ local function GenerateApiTbl(api)
 
     local dsc_tbl = {}
     local htmlstring = ReadApiFile(API_PATH)
+    local c_str = ""
     for line in htmlstring:gmatch('[^\r\n]+') do
         -- GET DESCRIPTION
         -- DESCRIPTION IS LOCATED BELLOW THE FUNCTION
@@ -485,6 +490,9 @@ local function GenerateApiTbl(api)
         -- NAME =                      reaper.RecursiveCreateDirectory
         -- ARG_STR =                                                   <em>string</em> path, <em>integer</em> ignored
         local html_str = line:match('<div class="l_func"><code>(.+)</code>')
+        if line:match('<div class="c_func"><code>(.+)</code>') then
+            c_str = line:match('<div class="c_func"><code>(.+)</code>')
+        end
         if html_str and not html_str:match("ImGui") then
             -- JS_API JS_Composite Docs workaround
             html_str = html_str:gsub("strong", "em"):gsub("unsupported", "optional boolean")
@@ -497,7 +505,10 @@ local function GenerateApiTbl(api)
                     local return_str = html_str:match('(.-) reaper%.')
                     ParseReturns(CUR_API[#CUR_API].rets, return_str, name)
                     local argument_str = html_str:match("%((.+)%)")
-                    ParseArguments(CUR_API[#CUR_API].args, argument_str, name)
+                    c_str = c_str:match("%((.+)%)") or ""
+                    --r.ShowConsoleMsg(c_str.."\n")
+                    ParseArguments(CUR_API[#CUR_API].args, argument_str, c_str, name)
+                    c_str = ""
                 elseif name:match("gfx%.") then
                     CUR_API = GFX_API
                     GET_DESC = true
@@ -527,6 +538,11 @@ local html_entities = { amp = '&', gt = '>', lt = '>', nbsp = '\u{A0}' }
 local reaper_api, gfx_api = GenerateApiTbl()
 local reaper_str_tbl, gfx_str_tbl, array_str_tbl = { "\n" }, {}, {}
 
+local union_types = {
+    ["ReaProject"] = "|nil|0",
+    ["KbdSectionInfo"] = "|integer"
+}
+
 local function CreateApiString(api, str)
     for i = 1, #api do
         local references = {}
@@ -554,7 +570,7 @@ local function CreateApiString(api, str)
             local opt_str = api[i].args[j].opt or ""
             str[#str + 1] = "---@param " ..
                 api[i].args[j].name ..
-                opt_str .. " " .. api[i].args[j].type .. (api[i].args[j].type == "ReaProject" and "|nil|0" or "")
+                opt_str .. " " .. api[i].args[j].type .. (union_types[api[i].args[j].type] or "")
             args[#args + 1] = api[i].args[j].name
         end
 

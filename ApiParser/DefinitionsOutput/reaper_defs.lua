@@ -207,7 +207,7 @@ function reaper.ColorToNative(r, g, b) end
 ---Returns the number of shortcuts that exist for the given command ID.<br>
 ---see GetActionShortcutDesc, DeleteActionShortcut, DoActionShortcutDialog.
 ---    
----@param section KbdSectionInfo
+---@param section KbdSectionInfo|integer
 ---@param cmdID integer
 ---@return integer retval
 ---@see reaper.GetActionShortcutDesc
@@ -315,7 +315,7 @@ function reaper.CountTrackEnvelopes(track) end
 function reaper.CountTrackMediaItems(track) end
 
 ---count the number of tracks in the project (proj=0 for active project)
----@param proj ReaProject|nil|0
+---@param proj? ReaProject|nil|0
 ---@return integer retval
 function reaper.CountTracks(proj) end
 
@@ -354,7 +354,7 @@ function reaper.CreateTrackAudioAccessor(track) end
 ---Create a send/receive (desttrInOptional!=NULL), or a hardware output (desttrInOptional==NULL) with default properties, return >=0 on success (== new send/receive index). See RemoveTrackSend, GetSetTrackSendInfo, GetTrackSendInfo_Value, SetTrackSendInfo_Value.
 ---    
 ---@param tr MediaTrack
----@param desttrIn MediaTrack
+---@param desttrIn? MediaTrack
 ---@return integer retval
 ---@see reaper.RemoveTrackSend
 ---@see reaper.GetSetTrackSendInfo
@@ -607,7 +607,7 @@ function reaper.DB2SLIDER(x) end
 ---Delete the specific shortcut for the given command ID.<br>
 ---See CountActionShortcuts, GetActionShortcutDesc, DoActionShortcutDialog.
 ---    
----@param section KbdSectionInfo
+---@param section KbdSectionInfo|integer
 ---@param cmdID integer
 ---@param shortcutidx integer
 ---@return boolean retval
@@ -724,7 +724,7 @@ function reaper.DestroyAudioAccessor(accessor) end
 ---See CountActionShortcuts, GetActionShortcutDesc, DeleteActionShortcut.
 ---    
 ---@param hwnd HWND
----@param section KbdSectionInfo
+---@param section KbdSectionInfo|integer
 ---@param cmdID integer
 ---@param shortcutidx integer
 ---@return boolean retval
@@ -1017,7 +1017,7 @@ function reaper.get_ini_file() end
 ---Get the text description of a specific shortcut for the given command ID.<br>
 ---See CountActionShortcuts,DeleteActionShortcut,DoActionShortcutDialog.
 ---    
----@param section KbdSectionInfo
+---@param section KbdSectionInfo|integer
 ---@param cmdID integer
 ---@param shortcutidx integer
 ---@return boolean retval
@@ -1245,7 +1245,7 @@ function reaper.GetEnvelopeScalingMode(env) end
 ---Gets the RPPXML state of an envelope, returns true if successful. Undo flag is a performance/caching hint.
 ---@param env TrackEnvelope
 ---@param str string
----@param isundo boolean
+---@param isundo? boolean
 ---@return boolean retval
 ---@return string str
 function reaper.GetEnvelopeStateChunk(env, str, isundo) end
@@ -1346,7 +1346,7 @@ function reaper.GetItemProjectContext(item) end
 ---Gets the RPPXML state of an item, returns true if successful. Undo flag is a performance/caching hint.
 ---@param item MediaItem
 ---@param str string
----@param isundo boolean
+---@param isundo? boolean
 ---@return boolean retval
 ---@return string str
 function reaper.GetItemStateChunk(item, str, isundo) end
@@ -2300,7 +2300,7 @@ function reaper.GetTempoTimeSigMarker(proj, ptidx) end
 ---Returns the theme color specified, or -1 on failure. If the low bit of flags is set, the color as originally specified by the theme (before any transformations) is returned, otherwise the current (possibly transformed and modified) color is returned. See SetThemeColor for a list of valid ini_key.
 ---    
 ---@param ini_key string
----@param flags integer
+---@param flags? integer
 ---@return integer retval
 ---@see reaper.SetThemeColor
 function reaper.GetThemeColor(ini_key, flags) end
@@ -2549,7 +2549,7 @@ function reaper.GetTrackState(track) end
 ---Gets the RPPXML state of a track, returns true if successful. Undo flag is a performance/caching hint.
 ---@param track MediaTrack
 ---@param str string
----@param isundo boolean
+---@param isundo? boolean
 ---@return boolean retval
 ---@return string str
 function reaper.GetTrackStateChunk(track, str, isundo) end
@@ -2793,14 +2793,14 @@ function reaper.joystick_getpov(dev, pov) end
 ---@return boolean retval
 function reaper.joystick_update(dev) end
 
----@param section KbdSectionInfo
+---@param section KbdSectionInfo|integer
 ---@param idx integer
 ---@return integer retval
 ---@return string name
 function reaper.kbd_enumerateActions(section, idx) end
 
 ---@param cmd integer
----@param section KbdSectionInfo
+---@param section KbdSectionInfo|integer
 ---@return string retval
 function reaper.kbd_getTextFromCmd(cmd, section) end
 
@@ -2823,7 +2823,7 @@ function reaper.LICE_ClipLine(pX1, pY1, pX2, pY2, xLo, yLo, xHi, yHi) end
 ---Returns a localized version of src_string, in section section. flags can have 1 set to only localize if sprintf-style formatting matches the original.
 ---@param src_string string
 ---@param section string
----@param flags integer
+---@param flags? integer
 ---@return string retval
 function reaper.LocalizeString(src_string, section, flags) end
 
@@ -2855,7 +2855,7 @@ function reaper.Main_openProject(name) end
 
 ---Save the project.
 ---@param proj ReaProject|nil|0
----@param forceSaveAsIn boolean
+---@param forceSaveAsIn? boolean
 function reaper.Main_SaveProject(proj, forceSaveAsIn) end
 
 ---Save the project. options: &1=save selected tracks as track template, &2=include media with track template, &4=include envelopes with track template. See Main_openProject, Main_SaveProject.
@@ -3726,7 +3726,7 @@ function reaper.SetCurrentBPM(__proj, bpm, wantUndo) end
 
 ---You must use this to change the focus programmatically. mode=0 to focus track panels, 1 to focus the arrange window, 2 to focus the arrange window and select env (or env==NULL to clear the current track/take envelope selection)
 ---@param mode integer
----@param envIn TrackEnvelope
+---@param envIn? TrackEnvelope
 function reaper.SetCursorContext(mode, envIn) end
 
 ---@param time number
@@ -3780,7 +3780,7 @@ function reaper.SetEnvelopePointEx(envelope, autoitem_idx, ptidx, timeIn, valueI
 ---Sets the RPPXML state of an envelope, returns true if successful. Undo flag is a performance/caching hint.
 ---@param env TrackEnvelope
 ---@param str string
----@param isundo boolean
+---@param isundo? boolean
 ---@return boolean retval
 function reaper.SetEnvelopeStateChunk(env, str, isundo) end
 
@@ -3804,7 +3804,7 @@ function reaper.SetGlobalAutomationOverride(mode) end
 ---Sets the RPPXML state of an item, returns true if successful. Undo flag is a performance/caching hint.
 ---@param item MediaItem
 ---@param str string
----@param isundo boolean
+---@param isundo? boolean
 ---@return boolean retval
 function reaper.SetItemStateChunk(item, str, isundo) end
 
@@ -4537,7 +4537,7 @@ function reaper.SetTempoTimeSigMarker(proj, ptidx, timepos, measurepos, beatpos,
 ---    
 ---@param ini_key string
 ---@param color integer
----@param flags integer
+---@param flags? integer
 ---@return integer retval
 ---@see reaper.GetThemeColor
 function reaper.SetThemeColor(ini_key, color, flags) end
@@ -4638,7 +4638,7 @@ function reaper.SetTrackSendUIVol(track, send_idx, vol, isend) end
 ---Sets the RPPXML state of a track, returns true if successful. Undo flag is a performance/caching hint.
 ---@param track MediaTrack
 ---@param str string
----@param isundo boolean
+---@param isundo? boolean
 ---@return boolean retval
 function reaper.SetTrackStateChunk(track, str, isundo) end
 
@@ -4704,8 +4704,8 @@ function reaper.SetTrackUIVolume(track, volume, relative, done, igngroupflags) e
 ---@return number retval
 function reaper.SetTrackUIWidth(track, width, relative, done, igngroupflags) end
 
----@param section KbdSectionInfo
----@param callerWnd HWND
+---@param section? KbdSectionInfo|integer
+---@param callerWnd? HWND
 function reaper.ShowActionList(section, callerWnd) end
 
 ---Show a message to the user (also useful for debugging). Send "\n" for newline, "" to clear the console. Prefix string with "!SHOW:" and text will be added to console without opening the window. See ClearConsole
@@ -4723,12 +4723,12 @@ function reaper.ShowMessageBox(msg, title, type) end
 
 ---shows a context menu, valid names include: track_input, track_panel, track_area, track_routing, item, ruler, envelope, envelope_point, envelope_item. ctxOptional can be a track pointer for track_*, item pointer for item* (but is optional). for envelope_point, ctx2Optional has point index, ctx3Optional has item index (0=main envelope, 1=first AI). for envelope_item, ctx2Optional has AI index (1=first AI)
 ---@param name string
----@param x integer
+---@param x? integer
 ---@param y integer
----@param hwndParent HWND
----@param ctx userdata
----@param ctx2 integer
----@param ctx3 integer
+---@param hwndParent? HWND
+---@param ctx? userdata
+---@param ctx2? integer
+---@param ctx3? integer
 function reaper.ShowPopupMenu(name, x, y, hwndParent, ctx, ctx2, ctx3) end
 
 ---@param y number
@@ -7634,7 +7634,7 @@ function reaper.JS_Composite_ListBitmaps(windowHWND) end
 ---
 ---If no bitmap is specified, all bitmaps composited to the window will be unlinked -- even those by other scripts.
 ---@param windowHWND userdata
----@param bitmap userdata
+---@param bitmap? userdata
 ---@param autoUpdate? boolean
 function reaper.JS_Composite_Unlink(windowHWND, bitmap, autoUpdate) end
 
@@ -7839,7 +7839,7 @@ function reaper.JS_GDI_Polyline(deviceHDC, packedX, packedY, numPoints) end
 ---
 ---NOTE: Any GDI HDC should be released immediately after drawing, and deferred scripts should get and release new DCs in each cycle.
 ---@param deviceHDC userdata
----@param windowHWND userdata
+---@param windowHWND? userdata
 ---@return integer retval
 function reaper.JS_GDI_ReleaseDC(deviceHDC, windowHWND) end
 
@@ -8773,7 +8773,7 @@ function reaper.JS_Window_ClientToScreen(windowHWND, x, y) end
 ---@param w integer
 ---@param h integer
 ---@param style? string
----@param ownerHWND userdata
+---@param ownerHWND? userdata
 ---@return userdata retval
 ---@return string? style
 function reaper.JS_Window_Create(title, className, x, y, w, h, style, ownerHWND) end
@@ -9145,7 +9145,7 @@ function reaper.JS_Window_SetOpacity(windowHWND, mode, value) end
 ---
 ---Only on WindowsOS: If parentHWND is not specified, the desktop window becomes the new parent window.
 ---@param childHWND userdata
----@param parentHWND userdata
+---@param parentHWND? userdata
 ---@return userdata retval
 function reaper.JS_Window_SetParent(childHWND, parentHWND) end
 
@@ -9203,7 +9203,7 @@ function reaper.JS_Window_SetTitle(windowHWND, title) end
 ---* InsertAfterHWND: For compatibility with older versions, this parameter is still available, and is optional. If ZOrder is "INSERTAFTER", insertAfterHWND must be a handle to the window behind which windowHWND will be placed in the Z order, equivalent to setting ZOrder to this HWND; otherwise, insertAfterHWND is ignored and can be left out (or it can simply be set to the same value as windowHWND).
 ---@param windowHWND userdata
 ---@param ZOrder string
----@param insertAfterHWND userdata
+---@param insertAfterHWND? userdata
 ---@return boolean retval
 function reaper.JS_Window_SetZOrder(windowHWND, ZOrder, insertAfterHWND) end
 
@@ -9221,7 +9221,7 @@ function reaper.JS_Window_Update(windowHWND) end
 
 ---Closes the zip archive, using either the file name or the zip handle. Finalizes entries and releases resources.
 ---@param zipFile string
----@param zipHandle userdata
+---@param zipHandle? userdata
 ---@return integer retval
 function reaper.JS_Zip_Close(zipFile, zipHandle) end
 
@@ -9355,8 +9355,8 @@ function reaper.Llm_Do() end
 
 ---Get paths. Returns a string of the form "start:fx#1.fx#2...;track:fxs;...;end:fxs" where track is the track number and fx is the fx index. The string is truncated to pathStringOut_sz. 1-based indexing is used. If no MediaTrack* start is provided, all monitored input tracks are used. If no MediaTrack* end is provided, all hardware output tracks are used. If includeFx is true, the fx indices are included.
 ---@param includeFx boolean
----@param startIn MediaTrack
----@param endIn MediaTrack
+---@param startIn? MediaTrack
+---@param endIn? MediaTrack
 ---@return string retval
 function reaper.Llm_GetPaths(includeFx, startIn, endIn) end
 
