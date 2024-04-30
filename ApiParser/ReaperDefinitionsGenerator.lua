@@ -1,12 +1,9 @@
 -- @description Reaper VSCode Definitions Generator
 -- @author Sexan, Cfillion, Docs source X-Raym - https://www.extremraym.com/cloud/reascript-doc/
 -- @license GPL v3
--- @version 1.02
+-- @version 1.03
 -- @changelog
---  Track C function for optionals since in lua some are missing
---  Make ShowActionList both parameters optional
---  Add union_types table for union types (ReaProj, KbdSectionInfo)
---  Allow passing integer values in KbdSectionInfo parameters
+--  Remove @see annotation since not very useful
 
 local r = reaper
 local API_PATH = reaper.GetResourcePath() .. "/api_file.txt"
@@ -560,9 +557,9 @@ local function CreateApiString(api, str)
 
         str[#str + 1] = api[i].desc
 
-        if #references ~= 0 then
-            str[#str + 1] = "---    "
-        end
+        -- if #references ~= 0 then
+        --     str[#str + 1] = "---    "
+        -- end
 
         local args = {}
         for j = 1, #api[i].args do
@@ -580,11 +577,11 @@ local function CreateApiString(api, str)
             str[#str + 1] = "---@return " .. api[i].rets[j].type .. opt_str .. " " .. api[i].rets[j].name
         end
 
-        if #references ~= 0 then
-            for _, reference in ipairs(references) do
-                str[#str + 1] = ('---@see reaper.' .. reference)
-            end
-        end
+        -- if #references ~= 0 then
+        --     for _, reference in ipairs(references) do
+        --         str[#str + 1] = ('---@see reaper.' .. reference)
+        --     end
+        -- end
 
         str[#str + 1] = "function " .. name .. "(" .. table.concat(args, ", ") .. ") end\n"
     end

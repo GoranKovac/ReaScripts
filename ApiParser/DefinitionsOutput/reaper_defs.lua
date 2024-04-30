@@ -131,26 +131,12 @@ function reaper.Audio_IsRunning() end
 function reaper.Audio_Quit() end
 
 ---Returns true if the underlying samples (track or media item take) have changed, but does not update the audio accessor, so the user can selectively call AudioAccessorValidateState only when needed. See CreateTakeAudioAccessor, CreateTrackAudioAccessor, DestroyAudioAccessor, GetAudioAccessorEndTime, GetAudioAccessorSamples.
----    
 ---@param accessor AudioAccessor
 ---@return boolean retval
----@see reaper.CreateTakeAudioAccessor
----@see reaper.CreateTrackAudioAccessor
----@see reaper.DestroyAudioAccessor
----@see reaper.GetAudioAccessorEndTime
----@see reaper.GetAudioAccessorSamples
 function reaper.AudioAccessorStateChanged(accessor) end
 
 ---Force the accessor to reload its state from the underlying track or media item take. See CreateTakeAudioAccessor, CreateTrackAudioAccessor, DestroyAudioAccessor, AudioAccessorStateChanged, GetAudioAccessorStartTime, GetAudioAccessorEndTime, GetAudioAccessorSamples.
----    
 ---@param accessor AudioAccessor
----@see reaper.CreateTakeAudioAccessor
----@see reaper.CreateTrackAudioAccessor
----@see reaper.DestroyAudioAccessor
----@see reaper.AudioAccessorStateChanged
----@see reaper.GetAudioAccessorStartTime
----@see reaper.GetAudioAccessorEndTime
----@see reaper.GetAudioAccessorSamples
 function reaper.AudioAccessorUpdate(accessor) end
 
 ---Validates the current state of the audio accessor -- must ONLY call this from the main thread. Returns true if the state changed.
@@ -179,54 +165,40 @@ function reaper.CalculateNormalization(source, normalizeTo, normalizeTarget, nor
 function reaper.ClearAllRecArmed() end
 
 ---Clear the ReaScript console. See ShowConsoleMsg
----    
----@see reaper.ShowConsoleMsg
 function reaper.ClearConsole() end
 
 ---resets the global peak caches
 function reaper.ClearPeakCache() end
 
 ---Extract RGB values from an OS dependent color. See ColorToNative.
----    
 ---@param col integer
 ---@return integer r
 ---@return integer g
 ---@return integer b
----@see reaper.ColorToNative
 function reaper.ColorFromNative(col) end
 
 ---Make an OS dependent color from RGB values (e.g. RGB() macro on Windows). r,g and b are in [0..255]. See ColorFromNative.
----    
 ---@param r integer
 ---@param g integer
 ---@param b integer
 ---@return integer retval
----@see reaper.ColorFromNative
 function reaper.ColorToNative(r, g, b) end
 
 ---Returns the number of shortcuts that exist for the given command ID.<br>
 ---see GetActionShortcutDesc, DeleteActionShortcut, DoActionShortcutDialog.
----    
 ---@param section KbdSectionInfo|integer
 ---@param cmdID integer
 ---@return integer retval
----@see reaper.GetActionShortcutDesc
----@see reaper.DeleteActionShortcut
----@see reaper.DoActionShortcutDialog
 function reaper.CountActionShortcuts(section, cmdID) end
 
 ---Returns the number of automation items on this envelope. See GetSetAutomationItemInfo
----    
 ---@param env TrackEnvelope
 ---@return integer retval
----@see reaper.GetSetAutomationItemInfo
 function reaper.CountAutomationItems(env) end
 
 ---Returns the number of points in the envelope. See CountEnvelopePointsEx.
----    
 ---@param envelope TrackEnvelope
 ---@return integer retval
----@see reaper.CountEnvelopePointsEx
 function reaper.CountEnvelopePoints(envelope) end
 
 ---Returns the number of points in the envelope.<br>
@@ -235,14 +207,9 @@ function reaper.CountEnvelopePoints(envelope) end
 ---even if the automation item is trimmed so that not all points are visible.<br>
 ---Otherwise, ptidx will be based on the number of visible points in the automation item, including all loop iterations.<br>
 ---See GetEnvelopePointEx, SetEnvelopePointEx, InsertEnvelopePointEx, DeleteEnvelopePointEx.
----    
 ---@param envelope TrackEnvelope
 ---@param autoitem_idx integer
 ---@return integer retval
----@see reaper.GetEnvelopePointEx
----@see reaper.SetEnvelopePointEx
----@see reaper.InsertEnvelopePointEx
----@see reaper.DeleteEnvelopePointEx
 function reaper.CountEnvelopePointsEx(envelope, autoitem_idx) end
 
 ---count the number of items in the project (proj=0 for active project)
@@ -263,10 +230,8 @@ function reaper.CountProjectMarkers(proj) end
 function reaper.CountSelectedMediaItems(proj) end
 
 ---Count the number of selected tracks in the project (proj=0 for active project). This function ignores the master track, see CountSelectedTracks2.
----    
 ---@param proj ReaProject|nil|0
 ---@return integer retval
----@see reaper.CountSelectedTracks2
 function reaper.CountSelectedTracks(proj) end
 
 ---Count the number of selected tracks in the project (proj=0 for active project).
@@ -276,10 +241,8 @@ function reaper.CountSelectedTracks(proj) end
 function reaper.CountSelectedTracks2(proj, wantmaster) end
 
 ---See GetTakeEnvelope
----    
 ---@param take MediaItem_Take
 ---@return integer retval
----@see reaper.GetTakeEnvelope
 function reaper.CountTakeEnvelopes(take) end
 
 ---count the number of takes in the item
@@ -294,19 +257,13 @@ function reaper.CountTakes(item) end
 function reaper.CountTCPFXParms(project, track) end
 
 ---Count the number of tempo/time signature markers in the project. See GetTempoTimeSigMarker, SetTempoTimeSigMarker, AddTempoTimeSigMarker.
----    
 ---@param proj ReaProject|nil|0
 ---@return integer retval
----@see reaper.GetTempoTimeSigMarker
----@see reaper.SetTempoTimeSigMarker
----@see reaper.AddTempoTimeSigMarker
 function reaper.CountTempoTimeSigMarkers(proj) end
 
 ---see GetTrackEnvelope
----    
 ---@param track MediaTrack
 ---@return integer retval
----@see reaper.GetTrackEnvelope
 function reaper.CountTrackEnvelopes(track) end
 
 ---count the number of items in the track
@@ -328,38 +285,19 @@ function reaper.CountTracks(proj) end
 function reaper.CreateNewMIDIItemInProj(track, starttime, endtime, qnIn) end
 
 ---Create an audio accessor object for this take. Must only call from the main thread. See CreateTrackAudioAccessor, DestroyAudioAccessor, AudioAccessorStateChanged, GetAudioAccessorStartTime, GetAudioAccessorEndTime, GetAudioAccessorSamples.
----    
 ---@param take MediaItem_Take
 ---@return AudioAccessor retval
----@see reaper.CreateTrackAudioAccessor
----@see reaper.DestroyAudioAccessor
----@see reaper.AudioAccessorStateChanged
----@see reaper.GetAudioAccessorStartTime
----@see reaper.GetAudioAccessorEndTime
----@see reaper.GetAudioAccessorSamples
 function reaper.CreateTakeAudioAccessor(take) end
 
 ---Create an audio accessor object for this track. Must only call from the main thread. See CreateTakeAudioAccessor, DestroyAudioAccessor, AudioAccessorStateChanged, GetAudioAccessorStartTime, GetAudioAccessorEndTime, GetAudioAccessorSamples.
----    
 ---@param track MediaTrack
 ---@return AudioAccessor retval
----@see reaper.CreateTakeAudioAccessor
----@see reaper.DestroyAudioAccessor
----@see reaper.AudioAccessorStateChanged
----@see reaper.GetAudioAccessorStartTime
----@see reaper.GetAudioAccessorEndTime
----@see reaper.GetAudioAccessorSamples
 function reaper.CreateTrackAudioAccessor(track) end
 
 ---Create a send/receive (desttrInOptional!=NULL), or a hardware output (desttrInOptional==NULL) with default properties, return >=0 on success (== new send/receive index). See RemoveTrackSend, GetSetTrackSendInfo, GetTrackSendInfo_Value, SetTrackSendInfo_Value.
----    
 ---@param tr MediaTrack
 ---@param desttrIn? MediaTrack
 ---@return integer retval
----@see reaper.RemoveTrackSend
----@see reaper.GetSetTrackSendInfo
----@see reaper.GetTrackSendInfo_Value
----@see reaper.SetTrackSendInfo_Value
 function reaper.CreateTrackSend(tr, desttrIn) end
 
 ---call this to force flushing of the undo states after using CSurf_On*Change()
@@ -606,14 +544,10 @@ function reaper.DB2SLIDER(x) end
 
 ---Delete the specific shortcut for the given command ID.<br>
 ---See CountActionShortcuts, GetActionShortcutDesc, DoActionShortcutDialog.
----    
 ---@param section KbdSectionInfo|integer
 ---@param cmdID integer
 ---@param shortcutidx integer
 ---@return boolean retval
----@see reaper.CountActionShortcuts
----@see reaper.GetActionShortcutDesc
----@see reaper.DoActionShortcutDialog
 function reaper.DeleteActionShortcut(section, cmdID, shortcutidx) end
 
 ---Delete an envelope point. If setting multiple points at once, set noSort=true, and call Envelope_SortPoints when done.<br>
@@ -622,25 +556,17 @@ function reaper.DeleteActionShortcut(section, cmdID, shortcutidx) end
 ---even if the automation item is trimmed so that not all points are visible.<br>
 ---Otherwise, ptidx will be based on the number of visible points in the automation item, including all loop iterations.<br>
 ---See CountEnvelopePointsEx, GetEnvelopePointEx, SetEnvelopePointEx, InsertEnvelopePointEx.
----    
 ---@param envelope TrackEnvelope
 ---@param autoitem_idx integer
 ---@param ptidx integer
 ---@return boolean retval
----@see reaper.CountEnvelopePointsEx
----@see reaper.GetEnvelopePointEx
----@see reaper.SetEnvelopePointEx
----@see reaper.InsertEnvelopePointEx
 function reaper.DeleteEnvelopePointEx(envelope, autoitem_idx, ptidx) end
 
 ---Delete a range of envelope points. See DeleteEnvelopePointRangeEx, DeleteEnvelopePointEx.
----    
 ---@param envelope TrackEnvelope
 ---@param time_start number
 ---@param time_end number
 ---@return boolean retval
----@see reaper.DeleteEnvelopePointRangeEx
----@see reaper.DeleteEnvelopePointEx
 function reaper.DeleteEnvelopePointRange(envelope, time_start, time_end) end
 
 ---Delete a range of envelope points. autoitem_idx=-1 for the underlying envelope, 0 for the first automation item on the envelope, etc.
@@ -652,13 +578,9 @@ function reaper.DeleteEnvelopePointRange(envelope, time_start, time_end) end
 function reaper.DeleteEnvelopePointRangeEx(envelope, autoitem_idx, time_start, time_end) end
 
 ---Delete the extended state value for a specific section and key. persist=true means the value should remain deleted the next time REAPER is opened. See SetExtState, GetExtState, HasExtState.
----    
 ---@param section string
 ---@param key string
 ---@param persist boolean
----@see reaper.SetExtState
----@see reaper.GetExtState
----@see reaper.HasExtState
 function reaper.DeleteExtState(section, key, persist) end
 
 ---Delete a marker.  proj==NULL for the active project.
@@ -669,22 +591,15 @@ function reaper.DeleteExtState(section, key, persist) end
 function reaper.DeleteProjectMarker(proj, markrgnindexnumber, isrgn) end
 
 ---Differs from DeleteProjectMarker only in that markrgnidx is 0 for the first marker/region, 1 for the next, etc (see EnumProjectMarkers3), rather than representing the displayed marker/region ID number (see SetProjectMarker4).
----    
 ---@param proj ReaProject|nil|0
 ---@param markrgnidx integer
 ---@return boolean retval
----@see reaper.EnumProjectMarkers3
----@see reaper.SetProjectMarker4
 function reaper.DeleteProjectMarkerByIndex(proj, markrgnidx) end
 
 ---Delete a take marker. Note that idx will change for all following take markers. See GetNumTakeMarkers, GetTakeMarker, SetTakeMarker
----    
 ---@param take MediaItem_Take
 ---@param idx integer
 ---@return boolean retval
----@see reaper.GetNumTakeMarkers
----@see reaper.GetTakeMarker
----@see reaper.SetTakeMarker
 function reaper.DeleteTakeMarker(take, idx) end
 
 ---Deletes one or more stretch markers. Returns number of stretch markers deleted.
@@ -710,27 +625,16 @@ function reaper.DeleteTrack(tr) end
 function reaper.DeleteTrackMediaItem(tr, it) end
 
 ---Destroy an audio accessor. Must only call from the main thread. See CreateTakeAudioAccessor, CreateTrackAudioAccessor, AudioAccessorStateChanged, GetAudioAccessorStartTime, GetAudioAccessorEndTime, GetAudioAccessorSamples. 
----    
 ---@param accessor AudioAccessor
----@see reaper.CreateTakeAudioAccessor
----@see reaper.CreateTrackAudioAccessor
----@see reaper.AudioAccessorStateChanged
----@see reaper.GetAudioAccessorStartTime
----@see reaper.GetAudioAccessorEndTime
----@see reaper.GetAudioAccessorSamples
 function reaper.DestroyAudioAccessor(accessor) end
 
 ---Open the action shortcut dialog to edit or add a shortcut for the given command ID. If (shortcutidx >= 0 && shortcutidx > CountActionShortcuts()), that specific shortcut will be replaced, otherwise a new shortcut will be added.<br>
 ---See CountActionShortcuts, GetActionShortcutDesc, DeleteActionShortcut.
----    
 ---@param hwnd HWND
 ---@param section KbdSectionInfo|integer
 ---@param cmdID integer
 ---@param shortcutidx integer
 ---@return boolean retval
----@see reaper.CountActionShortcuts
----@see reaper.GetActionShortcutDesc
----@see reaper.DeleteActionShortcut
 function reaper.DoActionShortcutDialog(hwnd, section, cmdID, shortcutidx) end
 
 ---updates preference for docker window ident_str to be in dock whichDock on next open
@@ -790,19 +694,15 @@ function reaper.EditTempoTimeSigMarker(project, markerindex) end
 function reaper.EnsureNotCompletelyOffscreen(r_left, r_top, r_right, r_bot) end
 
 ---List the files in the "path" directory. Returns NULL/nil when all files have been listed. Use fileindex = -1 to force re-read of directory (invalidate cache). See EnumerateSubdirectories
----    
 ---@param path string
 ---@param fileindex integer
 ---@return string retval
----@see reaper.EnumerateSubdirectories
 function reaper.EnumerateFiles(path, fileindex) end
 
 ---List the subdirectories in the "path" directory. Use subdirindex = -1 to force re-read of directory (invalidate cache). Returns NULL/nil when all subdirectories have been listed. See EnumerateFiles
----    
 ---@param path string
 ---@param subdirindex integer
 ---@return string retval
----@see reaper.EnumerateFiles
 function reaper.EnumerateSubdirectories(path, subdirindex) end
 
 ---Enumerates installed FX. Returns true if successful, sets nameOut and identOut to name and ident of FX at index.
@@ -861,15 +761,12 @@ function reaper.EnumProjectMarkers3(proj, idx) end
 function reaper.EnumProjects(idx) end
 
 ---Enumerate the data stored with the project for a specific extname. Returns false when there is no more data. See SetProjExtState, GetProjExtState.
----    
 ---@param proj ReaProject|nil|0
 ---@param extname string
 ---@param idx integer
 ---@return boolean retval
 ---@return string? key
 ---@return string? val
----@see reaper.SetProjExtState
----@see reaper.GetProjExtState
 function reaper.EnumProjExtState(proj, extname, idx) end
 
 ---Enumerate which tracks will be rendered within this region when using the region render matrix. When called with rendertrack==0, the function returns the first track that will be rendered (which may be the master track); rendertrack==1 will return the next track rendered, and so on. The function returns NULL when there are no more tracks that will be rendered within this region.
@@ -897,7 +794,6 @@ function reaper.EnumTrackMIDIProgramNames(track, programNumber, programName) end
 function reaper.EnumTrackMIDIProgramNamesEx(proj, track, programNumber, programName) end
 
 ---Get the effective envelope value at a given time position. samplesRequested is how long the caller expects until the next call to Envelope_Evaluate (often, the buffer block size). The return value is how many samples beyond that time position that the returned values are valid. dVdS is the change in value per sample (first derivative), ddVdS is the second derivative, dddVdS is the third derivative. See GetEnvelopeScalingMode.
----    
 ---@param envelope TrackEnvelope
 ---@param time number
 ---@param samplerate number
@@ -907,7 +803,6 @@ function reaper.EnumTrackMIDIProgramNamesEx(proj, track, programNumber, programN
 ---@return number dVdS
 ---@return number ddVdS
 ---@return number dddVdS
----@see reaper.GetEnvelopeScalingMode
 function reaper.Envelope_Evaluate(envelope, time, samplerate, samplesRequested) end
 
 ---Formats the value of an envelope to a user-readable form
@@ -931,20 +826,14 @@ function reaper.Envelope_GetParentTake(env) end
 function reaper.Envelope_GetParentTrack(env) end
 
 ---Sort envelope points by time. See SetEnvelopePoint, InsertEnvelopePoint.
----    
 ---@param envelope TrackEnvelope
 ---@return boolean retval
----@see reaper.SetEnvelopePoint
----@see reaper.InsertEnvelopePoint
 function reaper.Envelope_SortPoints(envelope) end
 
 ---Sort envelope points by time. autoitem_idx=-1 for the underlying envelope, 0 for the first automation item on the envelope, etc. See SetEnvelopePoint, InsertEnvelopePoint.
----    
 ---@param envelope TrackEnvelope
 ---@param autoitem_idx integer
 ---@return boolean retval
----@see reaper.SetEnvelopePoint
----@see reaper.InsertEnvelopePoint
 function reaper.Envelope_SortPointsEx(envelope, autoitem_idx) end
 
 ---Executes command line, returns NULL on total failure, otherwise the return value, a newline, and then the output of the command. If timeoutmsec is 0, command will be allowed to run indefinitely (recommended for large amounts of returned output). timeoutmsec is -1 for no wait/terminate, -2 for no wait and minimize
@@ -965,12 +854,9 @@ function reaper.file_exists(path) end
 function reaper.FindTempoTimeSigMarker(project, time) end
 
 ---Format tpos (which is time in seconds) as hh:mm:ss.sss. See format_timestr_pos, format_timestr_len.
----    
 ---@param tpos number
 ---@param buf string
 ---@return string retval
----@see reaper.format_timestr_pos
----@see reaper.format_timestr_len
 function reaper.format_timestr(tpos, buf) end
 
 ---time formatting mode overrides: -1=proj default.<br>
@@ -1016,15 +902,11 @@ function reaper.get_ini_file() end
 
 ---Get the text description of a specific shortcut for the given command ID.<br>
 ---See CountActionShortcuts,DeleteActionShortcut,DoActionShortcutDialog.
----    
 ---@param section KbdSectionInfo|integer
 ---@param cmdID integer
 ---@param shortcutidx integer
 ---@return boolean retval
 ---@return string desc
----@see reaper.CountActionShortcuts
----@see reaper.DeleteActionShortcut
----@see reaper.DoActionShortcutDialog
 function reaper.GetActionShortcutDesc(section, cmdID, shortcutidx) end
 
 ---get the active take in this item
@@ -1047,23 +929,14 @@ function reaper.GetAppVersion() end
 function reaper.GetArmedCommand() end
 
 ---Get the end time of the audio that can be returned from this accessor. See CreateTakeAudioAccessor, CreateTrackAudioAccessor, DestroyAudioAccessor, AudioAccessorStateChanged, GetAudioAccessorStartTime, GetAudioAccessorSamples.
----    
 ---@param accessor AudioAccessor
 ---@return number retval
----@see reaper.CreateTakeAudioAccessor
----@see reaper.CreateTrackAudioAccessor
----@see reaper.DestroyAudioAccessor
----@see reaper.AudioAccessorStateChanged
----@see reaper.GetAudioAccessorStartTime
----@see reaper.GetAudioAccessorSamples
 function reaper.GetAudioAccessorEndTime(accessor) end
 
 ---Deprecated. See AudioAccessorStateChanged instead.
----    
 ---@param accessor AudioAccessor
 ---@param hashNeed128 string
 ---@return string retval
----@see reaper.AudioAccessorStateChanged
 function reaper.GetAudioAccessorHash(accessor, hashNeed128) end
 
 ---Get a block of samples from the audio accessor. Samples are extracted immediately pre-FX, and returned interleaved (first sample of first channel, first sample of second channel...). Returns 0 if no audio, 1 if audio, -1 on error. See CreateTakeAudioAccessor, CreateTrackAudioAccessor, DestroyAudioAccessor, AudioAccessorStateChanged, GetAudioAccessorStartTime, GetAudioAccessorEndTime.
@@ -1078,7 +951,6 @@ function reaper.GetAudioAccessorHash(accessor, hashNeed128) end
 ---# buf now holds the first 2*1024 audio samples from the track.<br>
 ---# typically GetAudioAccessorSamples() would be called within a loop, increasing pos each time.<br>
 ---</code>
----    
 ---@param accessor AudioAccessor
 ---@param samplerate integer
 ---@param numchannels integer
@@ -1086,24 +958,11 @@ function reaper.GetAudioAccessorHash(accessor, hashNeed128) end
 ---@param numsamplesperchannel integer
 ---@param samplebuffer reaper.array
 ---@return integer retval
----@see reaper.CreateTakeAudioAccessor
----@see reaper.CreateTrackAudioAccessor
----@see reaper.DestroyAudioAccessor
----@see reaper.AudioAccessorStateChanged
----@see reaper.GetAudioAccessorStartTime
----@see reaper.GetAudioAccessorEndTime
 function reaper.GetAudioAccessorSamples(accessor, samplerate, numchannels, starttime_sec, numsamplesperchannel, samplebuffer) end
 
 ---Get the start time of the audio that can be returned from this accessor. See CreateTakeAudioAccessor, CreateTrackAudioAccessor, DestroyAudioAccessor, AudioAccessorStateChanged, GetAudioAccessorEndTime, GetAudioAccessorSamples.
----    
 ---@param accessor AudioAccessor
 ---@return number retval
----@see reaper.CreateTakeAudioAccessor
----@see reaper.CreateTrackAudioAccessor
----@see reaper.DestroyAudioAccessor
----@see reaper.AudioAccessorStateChanged
----@see reaper.GetAudioAccessorEndTime
----@see reaper.GetAudioAccessorSamples
 function reaper.GetAudioAccessorStartTime(accessor) end
 
 ---get information about the currently open audio device. attribute can be MODE, IDENT_IN, IDENT_OUT, BSIZE, SRATE, BPS. returns false if unknown attribute or device not open.
@@ -1140,10 +999,8 @@ function reaper.GetCursorPosition() end
 function reaper.GetCursorPositionEx(proj) end
 
 ---see GetDisplayedMediaItemColor2.
----    
 ---@param item MediaItem
 ---@return integer retval
----@see reaper.GetDisplayedMediaItemColor2
 function reaper.GetDisplayedMediaItemColor(item) end
 
 ---Returns the custom take, item, or track color that is used (according to the user preference) to color the media item. The returned color is OS dependent|0x01000000 (i.e. ColorToNative(r,g,b)|0x01000000), so a return of zero means "no color", not black.
@@ -1175,7 +1032,6 @@ function reaper.GetEnvelopeInfo_Value(env, parmname) end
 function reaper.GetEnvelopeName(env) end
 
 ---Get the attributes of an envelope point. See GetEnvelopePointEx.
----    
 ---@param envelope TrackEnvelope
 ---@param ptidx integer
 ---@return boolean retval
@@ -1184,15 +1040,12 @@ function reaper.GetEnvelopeName(env) end
 ---@return integer shape
 ---@return number tension
 ---@return boolean selected
----@see reaper.GetEnvelopePointEx
 function reaper.GetEnvelopePoint(envelope, ptidx) end
 
 ---Returns the envelope point at or immediately prior to the given time position. See GetEnvelopePointByTimeEx.
----    
 ---@param envelope TrackEnvelope
 ---@param time number
 ---@return integer retval
----@see reaper.GetEnvelopePointByTimeEx
 function reaper.GetEnvelopePointByTime(envelope, time) end
 
 ---Returns the envelope point at or immediately prior to the given time position.<br>
@@ -1201,15 +1054,10 @@ function reaper.GetEnvelopePointByTime(envelope, time) end
 ---even if the automation item is trimmed so that not all points are visible.<br>
 ---Otherwise, ptidx will be based on the number of visible points in the automation item, including all loop iterations.<br>
 ---See GetEnvelopePointEx, SetEnvelopePointEx, InsertEnvelopePointEx, DeleteEnvelopePointEx.
----    
 ---@param envelope TrackEnvelope
 ---@param autoitem_idx integer
 ---@param time number
 ---@return integer retval
----@see reaper.GetEnvelopePointEx
----@see reaper.SetEnvelopePointEx
----@see reaper.InsertEnvelopePointEx
----@see reaper.DeleteEnvelopePointEx
 function reaper.GetEnvelopePointByTimeEx(envelope, autoitem_idx, time) end
 
 ---Get the attributes of an envelope point.<br>
@@ -1218,7 +1066,6 @@ function reaper.GetEnvelopePointByTimeEx(envelope, autoitem_idx, time) end
 ---even if the automation item is trimmed so that not all points are visible.<br>
 ---Otherwise, ptidx will be based on the number of visible points in the automation item, including all loop iterations.<br>
 ---See CountEnvelopePointsEx, SetEnvelopePointEx, InsertEnvelopePointEx, DeleteEnvelopePointEx.
----    
 ---@param envelope TrackEnvelope
 ---@param autoitem_idx integer
 ---@param ptidx integer
@@ -1228,18 +1075,11 @@ function reaper.GetEnvelopePointByTimeEx(envelope, autoitem_idx, time) end
 ---@return integer shape
 ---@return number tension
 ---@return boolean selected
----@see reaper.CountEnvelopePointsEx
----@see reaper.SetEnvelopePointEx
----@see reaper.InsertEnvelopePointEx
----@see reaper.DeleteEnvelopePointEx
 function reaper.GetEnvelopePointEx(envelope, autoitem_idx, ptidx) end
 
 ---Returns the envelope scaling mode: 0=no scaling, 1=fader scaling. All API functions deal with raw envelope point values, to convert raw from/to scaled values see ScaleFromEnvelopeMode, ScaleToEnvelopeMode.
----    
 ---@param env TrackEnvelope
 ---@return integer retval
----@see reaper.ScaleFromEnvelopeMode
----@see reaper.ScaleToEnvelopeMode
 function reaper.GetEnvelopeScalingMode(env) end
 
 ---Gets the RPPXML state of an envelope, returns true if successful. Undo flag is a performance/caching hint.
@@ -1260,32 +1100,23 @@ function reaper.GetEnvelopeUIState(env) end
 function reaper.GetExePath() end
 
 ---Get the extended state value for a specific section and key. See SetExtState, DeleteExtState, HasExtState.
----    
 ---@param section string
 ---@param key string
 ---@return string retval
----@see reaper.SetExtState
----@see reaper.DeleteExtState
----@see reaper.HasExtState
 function reaper.GetExtState(section, key) end
 
 ---This function is deprecated (returns GetFocusedFX2()&3), see GetTouchedOrFocusedFX.
----    
 ---@return integer retval
 ---@return integer tracknumber
 ---@return integer itemnumber
 ---@return integer fxnumber
----@see reaper.GetTouchedOrFocusedFX
 function reaper.GetFocusedFX() end
 
 ---Return value has 1 set if track FX, 2 if take/item FX, 4 set if FX is no longer focused but still open. tracknumber==0 means the master track, 1 means track 1, etc. itemnumber is zero-based (or -1 if not an item). For interpretation of fxnumber, see GetLastTouchedFX. Deprecated, see GetTouchedOrFocusedFX
----    
 ---@return integer retval
 ---@return integer tracknumber
 ---@return integer itemnumber
 ---@return integer fxnumber
----@see reaper.GetLastTouchedFX
----@see reaper.GetTouchedOrFocusedFX
 function reaper.GetFocusedFX2() end
 
 ---returns free disk space in megabytes, pathIdx 0 for normal, 1 for alternate.
@@ -1330,13 +1161,11 @@ function reaper.GetInputOutputLatency() end
 function reaper.GetItemEditingTime2() end
 
 ---Returns the first item at the screen coordinates specified. If allow_locked is false, locked items are ignored. If takeOutOptional specified, returns the take hit. See GetThingFromPoint.
----    
 ---@param screen_x integer
 ---@param screen_y integer
 ---@param allow_locked boolean
 ---@return MediaItem retval
 ---@return MediaItem_Take take
----@see reaper.GetThingFromPoint
 function reaper.GetItemFromPoint(screen_x, screen_y, allow_locked) end
 
 ---@param item MediaItem
@@ -1355,21 +1184,17 @@ function reaper.GetItemStateChunk(item, str, isundo) end
 function reaper.GetLastColorThemeFile() end
 
 ---Get the last project marker before time, and/or the project region that includes time. markeridx and regionidx are returned not necessarily as the displayed marker/region index, but as the index that can be passed to EnumProjectMarkers. Either or both of markeridx and regionidx may be NULL. See EnumProjectMarkers.
----    
 ---@param proj ReaProject|nil|0
 ---@param time number
 ---@return integer markeridx
 ---@return integer regionidx
----@see reaper.EnumProjectMarkers
 function reaper.GetLastMarkerAndCurRegion(proj, time) end
 
 ---Returns true if the last touched FX parameter is valid, false otherwise. The low word of tracknumber is the 1-based track index -- 0 means the master track, 1 means track 1, etc. If the high word of tracknumber is nonzero, it refers to the 1-based item index (1 is the first item on the track, etc). For track FX, the low 24 bits of fxnumber refer to the FX index in the chain, and if the next 8 bits are 01, then the FX is record FX. For item FX, the low word defines the FX index in the chain, and the high word defines the take number. Deprecated, see GetTouchedOrFocusedFX.
----    
 ---@return boolean retval
 ---@return integer tracknumber
 ---@return integer fxnumber
 ---@return integer paramnumber
----@see reaper.GetTouchedOrFocusedFX
 function reaper.GetLastTouchedFX() end
 
 ---@return MediaTrack retval
@@ -1387,9 +1212,7 @@ function reaper.GetMasterMuteSoloFlags() end
 function reaper.GetMasterTrack(proj) end
 
 ---returns &1 if the master track is visible in the TCP, &2 if NOT visible in the mixer. See SetMasterTrackVisibility.
----    
 ---@return integer retval
----@see reaper.SetMasterTrackVisibility
 function reaper.GetMasterTrackVisibility() end
 
 ---returns max dev for midi inputs/outputs
@@ -1527,10 +1350,8 @@ function reaper.GetMediaItemTakeInfo_Value(take, parmname) end
 function reaper.GetMediaItemTrack(item) end
 
 ---Copies the media source filename to filenamebuf. Note that in-project MIDI media sources have no associated filename. See GetMediaSourceParent.
----    
 ---@param source PCM_source
 ---@return string retval
----@see reaper.GetMediaSourceParent
 function reaper.GetMediaSourceFileName(source) end
 
 ---Returns the length of the source media. If the media source is beat-based, the length will be in quarter notes, otherwise it will be in seconds.
@@ -1652,11 +1473,9 @@ function reaper.GetMixerScroll() end
 ---or built-in REAPER command ID, or the custom action ID string.<br>
 ---Note: the action string may have a space and 'c' or 'm' appended to it to specify command ID vs mouse modifier ID.<br>
 ---See SetMouseModifier for more information.
----    
 ---@param context string
 ---@param modifier_flag integer
 ---@return string retval
----@see reaper.SetMouseModifier
 function reaper.GetMouseModifier(context, modifier_flag) end
 
 ---get mouse position in screen coordinates
@@ -1681,12 +1500,8 @@ function reaper.GetNumMIDIInputs() end
 function reaper.GetNumMIDIOutputs() end
 
 ---Returns number of take markers. See GetTakeMarker, SetTakeMarker, DeleteTakeMarker
----    
 ---@param take MediaItem_Take
 ---@return integer retval
----@see reaper.GetTakeMarker
----@see reaper.SetTakeMarker
----@see reaper.DeleteTakeMarker
 function reaper.GetNumTakeMarkers(take) end
 
 ---@return integer retval
@@ -1797,14 +1612,11 @@ function reaper.GetProjectTimeSignature() end
 function reaper.GetProjectTimeSignature2(proj) end
 
 ---Get the value previously associated with this extname and key, the last time the project was saved. See SetProjExtState, EnumProjExtState.
----    
 ---@param proj ReaProject|nil|0
 ---@param extname string
 ---@param key string
 ---@return integer retval
 ---@return string val
----@see reaper.SetProjExtState
----@see reaper.EnumProjExtState
 function reaper.GetProjExtState(proj, extname, key) end
 
 ---returns path where ini files are stored, other things are in subdirectories.
@@ -1823,11 +1635,9 @@ function reaper.GetSelectedEnvelope(proj) end
 function reaper.GetSelectedMediaItem(proj, selitem) end
 
 ---Get a selected track from a project (proj=0 for active project) by selected track count (zero-based). This function ignores the master track, see GetSelectedTrack2.
----    
 ---@param proj ReaProject|nil|0
 ---@param seltrackidx integer
 ---@return MediaTrack retval
----@see reaper.GetSelectedTrack2
 function reaper.GetSelectedTrack(proj, seltrackidx) end
 
 ---Get a selected track from a project (proj=0 for active project) by selected track count (zero-based).
@@ -1915,45 +1725,33 @@ function reaper.GetSetAutomationItemInfo_String(env, autoitem_idx, desc, valuest
 function reaper.GetSetEnvelopeInfo_String(env, parmname, stringNeedBig, setNewValue) end
 
 ---deprecated -- see SetEnvelopeStateChunk, GetEnvelopeStateChunk
----    
 ---@param env TrackEnvelope
 ---@param str string
 ---@return boolean retval
 ---@return string str
----@see reaper.SetEnvelopeStateChunk
----@see reaper.GetEnvelopeStateChunk
 function reaper.GetSetEnvelopeState(env, str) end
 
 ---deprecated -- see SetEnvelopeStateChunk, GetEnvelopeStateChunk
----    
 ---@param env TrackEnvelope
 ---@param str string
 ---@param isundo boolean
 ---@return boolean retval
 ---@return string str
----@see reaper.SetEnvelopeStateChunk
----@see reaper.GetEnvelopeStateChunk
 function reaper.GetSetEnvelopeState2(env, str, isundo) end
 
 ---deprecated -- see SetItemStateChunk, GetItemStateChunk
----    
 ---@param item MediaItem
 ---@param str string
 ---@return boolean retval
 ---@return string str
----@see reaper.SetItemStateChunk
----@see reaper.GetItemStateChunk
 function reaper.GetSetItemState(item, str) end
 
 ---deprecated -- see SetItemStateChunk, GetItemStateChunk
----    
 ---@param item MediaItem
 ---@param str string
 ---@param isundo boolean
 ---@return boolean retval
 ---@return string str
----@see reaper.SetItemStateChunk
----@see reaper.GetItemStateChunk
 function reaper.GetSetItemState2(item, str, isundo) end
 
 ---Gets/sets an item attribute string:<br>
@@ -2002,12 +1800,10 @@ function reaper.GetSetMediaItemTakeInfo_String(tk, parmname, stringNeedBig, setN
 function reaper.GetSetMediaTrackInfo_String(tr, parmname, stringNeedBig, setNewValue) end
 
 ---deprecated, see GetSetProjectInfo_String with desc="PROJECT_AUTHOR"
----    
 ---@param proj ReaProject|nil|0
 ---@param set boolean
 ---@param author string
 ---@return string retval
----@see reaper.GetSetProjectInfo_String
 function reaper.GetSetProjectAuthor(proj, set, author) end
 
 ---Get or set the arrange view grid division. 0.25=quarter note, 1.0/3.0=half note triplet, etc. swingmode can be 1 for swing enabled, swingamt is -1..1. swingmode can be 3 for measure-grid. Returns grid configuration flags
@@ -2070,14 +1866,12 @@ function reaper.GetSetProjectInfo(project, desc, value, is_set) end
 ---RENDER_FORMAT2 : base64-encoded secondary sink configuration. Callers can also pass a simple 4-byte string (non-base64-encoded), e.g. "evaw" or "l3pm", to use default settings for that sink type, or "" to disable secondary render.<br>
 ---    Formats available on this machine:<br>
 ---    <code>"wave" "aiff" "caff" "raw " "iso " "ddp " "flac" "mp3l" "oggv" "OggS" "FFMP" "WMF " "GIF " "LCF " "wvpk" </code>
----    
 ---@param project ReaProject|nil|0
 ---@param desc string
 ---@param valuestrNeedBig string
 ---@param is_set boolean
 ---@return boolean retval
 ---@return string valuestrNeedBig
----@see reaper.GetProjectPathEx
 function reaper.GetSetProjectInfo_String(project, desc, valuestrNeedBig, is_set) end
 
 ---gets or sets project notes, notesNeedBig_sz is ignored when setting
@@ -2181,24 +1975,18 @@ function reaper.GetSetTrackGroupMembershipHigh(tr, groupname, setmask, setvalue)
 function reaper.GetSetTrackSendInfo_String(tr, category, sendidx, parmname, stringNeedBig, setNewValue) end
 
 ---deprecated -- see SetTrackStateChunk, GetTrackStateChunk
----    
 ---@param track MediaTrack
 ---@param str string
 ---@return boolean retval
 ---@return string str
----@see reaper.SetTrackStateChunk
----@see reaper.GetTrackStateChunk
 function reaper.GetSetTrackState(track, str) end
 
 ---deprecated -- see SetTrackStateChunk, GetTrackStateChunk
----    
 ---@param track MediaTrack
 ---@param str string
 ---@param isundo boolean
 ---@return boolean retval
 ---@return string str
----@see reaper.SetTrackStateChunk
----@see reaper.GetTrackStateChunk
 function reaper.GetSetTrackState2(track, str, isundo) end
 
 ---@param src PCM_source
@@ -2222,15 +2010,11 @@ function reaper.GetTakeEnvelope(take, envidx) end
 function reaper.GetTakeEnvelopeByName(take, envname) end
 
 ---Get information about a take marker. Returns the position in media item source time, or -1 if the take marker does not exist. See GetNumTakeMarkers, SetTakeMarker, DeleteTakeMarker
----    
 ---@param take MediaItem_Take
 ---@param idx integer
 ---@return number retval
 ---@return string name
 ---@return integer? color
----@see reaper.GetNumTakeMarkers
----@see reaper.SetTakeMarker
----@see reaper.DeleteTakeMarker
 function reaper.GetTakeMarker(take, idx) end
 
 ---returns NULL if the take is not valid
@@ -2252,22 +2036,18 @@ function reaper.GetTakeNumStretchMarkers(take) end
 function reaper.GetTakeStretchMarker(take, idx) end
 
 ---See SetTakeStretchMarkerSlope
----    
 ---@param take MediaItem_Take
 ---@param idx integer
 ---@return number retval
----@see reaper.SetTakeStretchMarkerSlope
 function reaper.GetTakeStretchMarkerSlope(take, idx) end
 
 ---Get information about a specific FX parameter knob (see CountTCPFXParms).
----    
 ---@param project ReaProject|nil|0
 ---@param track MediaTrack
 ---@param index integer
 ---@return boolean retval
 ---@return integer fxindex
 ---@return integer parmidx
----@see reaper.CountTCPFXParms
 function reaper.GetTCPFXParm(project, track, index) end
 
 ---finds the playrate and target length to insert this item stretched to a round power-of-2 number of bars, between 1/8 and 256
@@ -2281,7 +2061,6 @@ function reaper.GetTCPFXParm(project, track, index) end
 function reaper.GetTempoMatchPlayRate(source, srcscale, position, mult) end
 
 ---Get information about a tempo/time signature marker. See CountTempoTimeSigMarkers, SetTempoTimeSigMarker, AddTempoTimeSigMarker.
----    
 ---@param proj ReaProject|nil|0
 ---@param ptidx integer
 ---@return boolean retval
@@ -2292,17 +2071,12 @@ function reaper.GetTempoMatchPlayRate(source, srcscale, position, mult) end
 ---@return integer timesig_num
 ---@return integer timesig_denom
 ---@return boolean lineartempo
----@see reaper.CountTempoTimeSigMarkers
----@see reaper.SetTempoTimeSigMarker
----@see reaper.AddTempoTimeSigMarker
 function reaper.GetTempoTimeSigMarker(proj, ptidx) end
 
 ---Returns the theme color specified, or -1 on failure. If the low bit of flags is set, the color as originally specified by the theme (before any transformations) is returned, otherwise the current (possibly transformed and modified) color is returned. See SetThemeColor for a list of valid ini_key.
----    
 ---@param ini_key string
 ---@param flags? integer
 ---@return integer retval
----@see reaper.SetThemeColor
 function reaper.GetThemeColor(ini_key, flags) end
 
 ---Hit tests a point in screen coordinates. Updates infoOut with information such as "arrange", "fx_chain", "fx_0" (first FX in chain, floating), "spacer_0" (spacer before first track). If a track panel is hit, string will begin with "tcp" or "mcp" or "tcp.mute" etc (future versions may append additional information). May return NULL with valid info string to indicate non-track thing.
@@ -2313,10 +2087,8 @@ function reaper.GetThemeColor(ini_key, flags) end
 function reaper.GetThingFromPoint(screen_x, screen_y) end
 
 ---See GetToggleCommandStateEx.
----    
 ---@param command_id integer
 ---@return integer retval
----@see reaper.GetToggleCommandStateEx
 function reaper.GetToggleCommandState(command_id) end
 
 ---For the main action context, the MIDI editor, or the media explorer, returns the toggle state of the action. 0=off, 1=on, -1=NA because the action does not have on/off states. For the MIDI editor, the action state for the most recently focused window will be returned.
@@ -2376,12 +2148,10 @@ function reaper.GetTrackEnvelopeByChunkName(tr, cfgchunkname_or_guid) end
 function reaper.GetTrackEnvelopeByName(track, envname) end
 
 ---Returns the track from the screen coordinates specified. If the screen coordinates refer to a window associated to the track (such as FX), the track will be returned. infoOutOptional will be set to 1 if it is likely an envelope, 2 if it is likely a track FX. For a free item positioning or fixed lane track, the second byte of infoOutOptional will be set to the (approximate, for fipm tracks) item lane underneath the mouse. See GetThingFromPoint.
----    
 ---@param screen_x integer
 ---@param screen_y integer
 ---@return MediaTrack retval
 ---@return integer? info
----@see reaper.GetThingFromPoint
 function reaper.GetTrackFromPoint(screen_x, screen_y) end
 
 ---@param tr MediaTrack
@@ -2394,31 +2164,25 @@ function reaper.GetTrackGUID(tr) end
 function reaper.GetTrackMediaItem(tr, itemidx) end
 
 ---Get all MIDI lyrics on the track. Lyrics will be returned as one string with tabs between each word. flag&1: double tabs at the end of each measure and triple tabs when skipping measures, flag&2: each lyric is preceded by its beat position in the project (example with flag=2: "1.1.2\tLyric for measure 1 beat 2\t2.1.1\tLyric for measure 2 beat 1	"). See SetTrackMIDILyrics
----    
 ---@param track MediaTrack
 ---@param flag integer
 ---@return boolean retval
 ---@return string buf
----@see reaper.SetTrackMIDILyrics
 function reaper.GetTrackMIDILyrics(track, flag) end
 
 ---see GetTrackMIDINoteNameEx
----    
 ---@param track integer
 ---@param pitch integer
 ---@param chan integer
 ---@return string retval
----@see reaper.GetTrackMIDINoteNameEx
 function reaper.GetTrackMIDINoteName(track, pitch, chan) end
 
 ---Get note/CC name. pitch 128 for CC0 name, 129 for CC1 name, etc. See SetTrackMIDINoteNameEx
----    
 ---@param proj ReaProject|nil|0
 ---@param track MediaTrack
 ---@param pitch integer
 ---@param chan integer
 ---@return string retval
----@see reaper.SetTrackMIDINoteNameEx
 function reaper.GetTrackMIDINoteNameEx(proj, track, pitch, chan) end
 
 ---@param proj ReaProject|nil|0
@@ -2444,31 +2208,25 @@ function reaper.GetTrackNumMediaItems(tr) end
 function reaper.GetTrackNumSends(tr, category) end
 
 ---See GetTrackSendName.
----    
 ---@param track MediaTrack
 ---@param recv_index integer
 ---@return boolean retval
 ---@return string buf
----@see reaper.GetTrackSendName
 function reaper.GetTrackReceiveName(track, recv_index) end
 
 ---See GetTrackSendUIMute.
----    
 ---@param track MediaTrack
 ---@param recv_index integer
 ---@return boolean retval
 ---@return boolean mute
----@see reaper.GetTrackSendUIMute
 function reaper.GetTrackReceiveUIMute(track, recv_index) end
 
 ---See GetTrackSendUIVolPan.
----    
 ---@param track MediaTrack
 ---@param recv_index integer
 ---@return boolean retval
 ---@return number volume
 ---@return number pan
----@see reaper.GetTrackSendUIVolPan
 function reaper.GetTrackReceiveUIVolPan(track, recv_index) end
 
 ---Get send/receive/hardware output numerical-value attributes.<br>
@@ -2489,43 +2247,33 @@ function reaper.GetTrackReceiveUIVolPan(track, recv_index) end
 ---P_SRCTRACK : MediaTrack * : source track, only applies for sends/recvs (read-only)<br>
 ---P_ENV:>envchunkname : TrackEnvelope * : call with :>VOLENV, :>PANENV, etc appended (read-only)<br>
 ---See CreateTrackSend, RemoveTrackSend, GetTrackNumSends.
----    
 ---@param tr MediaTrack
 ---@param category integer
 ---@param sendidx integer
 ---@param parmname string
 ---@return number retval
----@see reaper.CreateTrackSend
----@see reaper.RemoveTrackSend
----@see reaper.GetTrackNumSends
 function reaper.GetTrackSendInfo_Value(tr, category, sendidx, parmname) end
 
 ---send_idx>=0 for hw ouputs, >=nb_of_hw_ouputs for sends. See GetTrackReceiveName.
----    
 ---@param track MediaTrack
 ---@param send_index integer
 ---@return boolean retval
 ---@return string buf
----@see reaper.GetTrackReceiveName
 function reaper.GetTrackSendName(track, send_index) end
 
 ---send_idx>=0 for hw ouputs, >=nb_of_hw_ouputs for sends. See GetTrackReceiveUIMute.
----    
 ---@param track MediaTrack
 ---@param send_index integer
 ---@return boolean retval
 ---@return boolean mute
----@see reaper.GetTrackReceiveUIMute
 function reaper.GetTrackSendUIMute(track, send_index) end
 
 ---send_idx>=0 for hw ouputs, >=nb_of_hw_ouputs for sends. See GetTrackReceiveUIVolPan.
----    
 ---@param track MediaTrack
 ---@param send_index integer
 ---@return boolean retval
 ---@return number volume
 ---@return number pan
----@see reaper.GetTrackReceiveUIVolPan
 function reaper.GetTrackSendUIVolPan(track, send_index) end
 
 ---Gets track state, returns track name.<br>
@@ -2627,13 +2375,9 @@ function reaper.GSC_mainwnd(t) end
 function reaper.guidToString(gGUID, destNeed64) end
 
 ---Returns true if there exists an extended state value for a specific section and key. See SetExtState, GetExtState, DeleteExtState.
----    
 ---@param section string
 ---@param key string
 ---@return boolean retval
----@see reaper.SetExtState
----@see reaper.GetExtState
----@see reaper.DeleteExtState
 function reaper.HasExtState(section, key) end
 
 ---returns name of track plugin that is supplying MIDI programs,or NULL if there is none
@@ -2657,17 +2401,14 @@ function reaper.Help_Set(helpstring, is_temporary_help) end
 function reaper.image_resolve_fn(in, out) end
 
 ---Insert a new automation item. pool_id > 0 collects existing envelope points into the automation item; if pool_id is >= 0 the automation item will be a new instance of that pool (which will be created as an empty instance if it does not exist). Returns the index of the item, suitable for passing to other automation item API functions. See GetSetAutomationItemInfo.
----    
 ---@param env TrackEnvelope
 ---@param pool_id integer
 ---@param position number
 ---@param length number
 ---@return integer retval
----@see reaper.GetSetAutomationItemInfo
 function reaper.InsertAutomationItem(env, pool_id, position, length) end
 
 ---Insert an envelope point. If setting multiple points at once, set noSort=true, and call Envelope_SortPoints when done. See InsertEnvelopePointEx.
----    
 ---@param envelope TrackEnvelope
 ---@param time number
 ---@param value number
@@ -2676,7 +2417,6 @@ function reaper.InsertAutomationItem(env, pool_id, position, length) end
 ---@param selected boolean
 ---@param noSortIn? boolean
 ---@return boolean retval
----@see reaper.InsertEnvelopePointEx
 function reaper.InsertEnvelopePoint(envelope, time, value, shape, tension, selected, noSortIn) end
 
 ---Insert an envelope point. If setting multiple points at once, set noSort=true, and call Envelope_SortPoints when done.<br>
@@ -2685,7 +2425,6 @@ function reaper.InsertEnvelopePoint(envelope, time, value, shape, tension, selec
 ---even if the automation item is trimmed so that not all points are visible.<br>
 ---Otherwise, ptidx will be based on the number of visible points in the automation item, including all loop iterations.<br>
 ---See CountEnvelopePointsEx, GetEnvelopePointEx, SetEnvelopePointEx, DeleteEnvelopePointEx.
----    
 ---@param envelope TrackEnvelope
 ---@param autoitem_idx integer
 ---@param time number
@@ -2695,10 +2434,6 @@ function reaper.InsertEnvelopePoint(envelope, time, value, shape, tension, selec
 ---@param selected boolean
 ---@param noSortIn? boolean
 ---@return boolean retval
----@see reaper.CountEnvelopePointsEx
----@see reaper.GetEnvelopePointEx
----@see reaper.SetEnvelopePointEx
----@see reaper.DeleteEnvelopePointEx
 function reaper.InsertEnvelopePointEx(envelope, autoitem_idx, time, value, shape, tension, selected, noSortIn) end
 
 ---mode: 0=add to current track, 1=add new track, 3=add to selected items as takes, &4=stretch/loop to fit time sel, &8=try to match tempo 1x, &16=try to match tempo 0.5x, &32=try to match tempo 2x, &64=don't preserve pitch when matching tempo, &128=no loop/section if startpct/endpct set, &256=force loop regardless of global preference for looping imported items, &512=use high word as absolute track index if mode&3==0 or mode&2048, &1024=insert into reasamplomatic on a new track (add 1 to insert on last selected track), &2048=insert into open reasamplomatic instance (add 512 to use high word as absolute track index), &4096=move to source preferred position (BWF start offset), &8192=reverse
@@ -2708,14 +2443,12 @@ function reaper.InsertEnvelopePointEx(envelope, autoitem_idx, time, value, shape
 function reaper.InsertMedia(file, mode) end
 
 ---See InsertMedia.
----    
 ---@param file string
 ---@param mode integer
 ---@param startpct number
 ---@param endpct number
 ---@param pitchshift number
 ---@return integer retval
----@see reaper.InsertMedia
 function reaper.InsertMediaSection(file, mode, startpct, endpct, pitchshift) end
 
 ---inserts a track at idx,of course this will be clamped to 0..GetNumTracks(). wantDefaults=TRUE for default envelopes/FX,otherwise no enabled fx/env
@@ -2834,18 +2567,14 @@ function reaper.LocalizeString(src_string, section, flags) end
 function reaper.Loop_OnArrow(project, direction) end
 
 ---See Main_OnCommandEx.
----    
 ---@param command integer
 ---@param flag integer
----@see reaper.Main_OnCommandEx
 function reaper.Main_OnCommand(command, flag) end
 
 ---Performs an action belonging to the main action section. To perform non-native actions (ReaScripts, custom or extension plugins' actions) safely, see NamedCommandLookup().
----    
 ---@param command integer
 ---@param flag integer
 ---@param proj ReaProject|nil|0
----@see reaper.NamedCommandLookup
 function reaper.Main_OnCommandEx(command, flag, proj) end
 
 ---opens a project. will prompt the user to save unless name is prefixed with 'noprompt:'. If name is prefixed with 'template:', project file will be loaded as a template.<br>
@@ -2859,12 +2588,9 @@ function reaper.Main_openProject(name) end
 function reaper.Main_SaveProject(proj, forceSaveAsIn) end
 
 ---Save the project. options: &1=save selected tracks as track template, &2=include media with track template, &4=include envelopes with track template. See Main_openProject, Main_SaveProject.
----    
 ---@param proj ReaProject|nil|0
 ---@param filename string
 ---@param options integer
----@see reaper.Main_openProject
----@see reaper.Main_SaveProject
 function reaper.Main_SaveProjectEx(proj, filename, options) end
 
 ---@param ignoremask integer
@@ -2991,11 +2717,9 @@ function reaper.MIDI_EnumSelTextSysexEvts(take, textsyxidx) end
 ---A meta-event of type 0xF followed by 'CCBZ ' and 5 more bytes represents bezier curve data for the previous MIDI event: 1 byte for the bezier type (usually 0) and 4 bytes for the bezier tension as a float.<br>
 ---For tick intervals longer than a 32 bit word can represent, zero-length meta events may be placed between valid events.<br>
 ---See MIDI_SetAllEvts.
----    
 ---@param take MediaItem_Take
 ---@return boolean retval
 ---@return string buf
----@see reaper.MIDI_SetAllEvts
 function reaper.MIDI_GetAllEvts(take) end
 
 ---Get MIDI CC event properties.
@@ -3012,14 +2736,11 @@ function reaper.MIDI_GetAllEvts(take) end
 function reaper.MIDI_GetCC(take, ccidx) end
 
 ---Get CC shape and bezier tension. See MIDI_GetCC, MIDI_SetCCShape
----    
 ---@param take MediaItem_Take
 ---@param ccidx integer
 ---@return boolean retval
 ---@return integer shape
 ---@return number beztension
----@see reaper.MIDI_GetCC
----@see reaper.MIDI_SetCCShape
 function reaper.MIDI_GetCCShape(take, ccidx) end
 
 ---Get MIDI event properties.
@@ -3040,12 +2761,10 @@ function reaper.MIDI_GetEvt(take, evtidx) end
 function reaper.MIDI_GetGrid(take) end
 
 ---Get a string that only changes when the MIDI data changes. If notesonly==true, then the string changes only when the MIDI notes change. See MIDI_GetTrackHash
----    
 ---@param take MediaItem_Take
 ---@param notesonly boolean
 ---@return boolean retval
 ---@return string hash
----@see reaper.MIDI_GetTrackHash
 function reaper.MIDI_GetHash(take, notesonly) end
 
 ---Get MIDI note properties.
@@ -3116,7 +2835,6 @@ function reaper.MIDI_GetRecentInputEvent(idx) end
 function reaper.MIDI_GetScale(take) end
 
 ---Get MIDI meta-event properties. Allowable types are -1:sysex (msg should not include bounding F0..F7), 1-14:MIDI text event types, 15=REAPER notation event. For all other meta-messages, type is returned as -2 and msg returned as all zeroes. See MIDI_GetEvt.
----    
 ---@param take MediaItem_Take
 ---@param textsyxevtidx integer
 ---@param selected? boolean
@@ -3130,16 +2848,13 @@ function reaper.MIDI_GetScale(take) end
 ---@return number? ppqpos
 ---@return integer? type
 ---@return string? msg
----@see reaper.MIDI_GetEvt
 function reaper.MIDI_GetTextSysexEvt(take, textsyxevtidx, selected, muted, ppqpos, type, msg) end
 
 ---Get a string that only changes when the MIDI data changes. If notesonly==true, then the string changes only when the MIDI notes change. See MIDI_GetHash
----    
 ---@param track MediaTrack
 ---@param notesonly boolean
 ---@return boolean retval
 ---@return string hash
----@see reaper.MIDI_GetHash
 function reaper.MIDI_GetTrackHash(track, notesonly) end
 
 ---Opens MIDI devices as configured in preferences. force_reinit_input and force_reinit_output force a particular device index to close/re-open (pass -1 to not force any devices to reopen).
@@ -3207,11 +2922,9 @@ function reaper.MIDI_SelectAll(take, select) end
 ---A meta-event of type 0xF followed by 'CCBZ ' and 5 more bytes represents bezier curve data for the previous MIDI event: 1 byte for the bezier type (usually 0) and 4 bytes for the bezier tension as a float.<br>
 ---For tick intervals longer than a 32 bit word can represent, zero-length meta events may be placed between valid events.<br>
 ---See MIDI_GetAllEvts.
----    
 ---@param take MediaItem_Take
 ---@param buf string
 ---@return boolean retval
----@see reaper.MIDI_GetAllEvts
 function reaper.MIDI_SetAllEvts(take, buf) end
 
 ---Set MIDI CC event properties. Properties passed as NULL will not be set. set noSort if setting multiple events, then call MIDI_Sort when done.
@@ -3229,15 +2942,12 @@ function reaper.MIDI_SetAllEvts(take, buf) end
 function reaper.MIDI_SetCC(take, ccidx, selectedIn, mutedIn, ppqposIn, chanmsgIn, chanIn, msg2In, msg3In, noSortIn) end
 
 ---Set CC shape and bezier tension. set noSort if setting multiple events, then call MIDI_Sort when done. See MIDI_SetCC, MIDI_GetCCShape
----    
 ---@param take MediaItem_Take
 ---@param ccidx integer
 ---@param shape integer
 ---@param beztension number
 ---@param noSortIn? boolean
 ---@return boolean retval
----@see reaper.MIDI_SetCC
----@see reaper.MIDI_GetCCShape
 function reaper.MIDI_SetCCShape(take, ccidx, shape, beztension, noSortIn) end
 
 ---Set MIDI event properties. Properties passed as NULL will not be set.  set noSort if setting multiple events, then call MIDI_Sort when done.
@@ -3289,29 +2999,21 @@ function reaper.MIDI_SetTextSysexEvt(take, textsyxevtidx, selectedIn, mutedIn, p
 function reaper.MIDI_Sort(take) end
 
 ---list the takes that are currently being edited in this MIDI editor, starting with the active take. See MIDIEditor_GetTake
----    
 ---@param midieditor HWND
 ---@param takeindex integer
 ---@param editable_only boolean
 ---@return MediaItem_Take retval
----@see reaper.MIDIEditor_GetTake
 function reaper.MIDIEditor_EnumTakes(midieditor, takeindex, editable_only) end
 
 ---get a pointer to the focused MIDI editor window<br>
 ---see MIDIEditor_GetMode, MIDIEditor_OnCommand
----    
 ---@return HWND retval
----@see reaper.MIDIEditor_GetMode
----@see reaper.MIDIEditor_OnCommand
 function reaper.MIDIEditor_GetActive() end
 
 ---get the mode of a MIDI editor (0=piano roll, 1=event list, -1=invalid editor)<br>
 ---see MIDIEditor_GetActive, MIDIEditor_OnCommand
----    
 ---@param midieditor HWND
 ---@return integer retval
----@see reaper.MIDIEditor_GetActive
----@see reaper.MIDIEditor_OnCommand
 function reaper.MIDIEditor_GetMode(midieditor) end
 
 ---Get settings from a MIDI editor. setting_desc can be:<br>
@@ -3326,13 +3028,9 @@ function reaper.MIDIEditor_GetMode(midieditor) end
 ---list_cnt: if viewing list view, returns event count<br>
 ---if setting_desc is unsupported, the function returns -1.<br>
 ---See MIDIEditor_SetSetting_int, MIDIEditor_GetActive, MIDIEditor_GetSetting_str
----    
 ---@param midieditor HWND
 ---@param setting_desc string
 ---@return integer retval
----@see reaper.MIDIEditor_SetSetting_int
----@see reaper.MIDIEditor_GetActive
----@see reaper.MIDIEditor_GetSetting_str
 function reaper.MIDIEditor_GetSetting_int(midieditor, setting_desc) end
 
 ---Get settings from a MIDI editor. setting_desc can be:<br>
@@ -3341,50 +3039,38 @@ function reaper.MIDIEditor_GetSetting_int(midieditor, setting_desc) end
 ---list_X: if viewing list view, returns string describing event at row X (0-based). String will have a list of key=value pairs, e.g. 'pos=4.0 len=4.0 offvel=127 msg=90317F'. pos/len times are in QN, len/offvel may not be present if event is not a note. other keys which may be present include pos_pq/len_pq, sel, mute, ccval14, ccshape, ccbeztension.<br>
 ---if setting_desc is unsupported, the function returns false.<br>
 ---See MIDIEditor_GetActive, MIDIEditor_GetSetting_int
----    
 ---@param midieditor HWND
 ---@param setting_desc string
 ---@return boolean retval
 ---@return string buf
----@see reaper.MIDIEditor_GetActive
----@see reaper.MIDIEditor_GetSetting_int
 function reaper.MIDIEditor_GetSetting_str(midieditor, setting_desc) end
 
 ---get the take that is currently being edited in this MIDI editor. see MIDIEditor_EnumTakes
----    
 ---@param midieditor HWND
 ---@return MediaItem_Take retval
----@see reaper.MIDIEditor_EnumTakes
 function reaper.MIDIEditor_GetTake(midieditor) end
 
 ---Send an action command to the last focused MIDI editor. Returns false if there is no MIDI editor open, or if the view mode (piano roll or event list) does not match the input.<br>
 ---see MIDIEditor_OnCommand
----    
 ---@param command_id integer
 ---@param islistviewcommand boolean
 ---@return boolean retval
----@see reaper.MIDIEditor_OnCommand
 function reaper.MIDIEditor_LastFocused_OnCommand(command_id, islistviewcommand) end
 
 ---Send an action command to a MIDI editor. Returns false if the supplied MIDI editor pointer is not valid (not an open MIDI editor).<br>
 ---see MIDIEditor_GetActive, MIDIEditor_LastFocused_OnCommand
----    
 ---@param midieditor HWND
 ---@param command_id integer
 ---@return boolean retval
----@see reaper.MIDIEditor_GetActive
----@see reaper.MIDIEditor_LastFocused_OnCommand
 function reaper.MIDIEditor_OnCommand(midieditor, command_id) end
 
 ---Set settings for a MIDI editor. setting_desc can be:<br>
 ---active_note_row: 0-127<br>
 ---See MIDIEditor_GetSetting_int
----    
 ---@param midieditor HWND
 ---@param setting_desc string
 ---@param setting integer
 ---@return boolean retval
----@see reaper.MIDIEditor_GetSetting_int
 function reaper.MIDIEditor_SetSetting_int(midieditor, setting_desc, setting) end
 
 ---Get or set MIDI editor settings for this track. pitchwheelrange: semitones up or down. flags &1: snap pitch lane edits to semitones if pitchwheel range is defined.
@@ -3478,11 +3164,8 @@ function reaper.OpenMediaExplorer(mediafn, play) end
 function reaper.OscLocalMessageToHost(message, valueIn) end
 
 ---Parse hh:mm:ss.sss time string, return time in seconds (or 0.0 on error). See parse_timestr_pos, parse_timestr_len.
----    
 ---@param buf string
 ---@return number retval
----@see reaper.parse_timestr_pos
----@see reaper.parse_timestr_len
 function reaper.parse_timestr(buf) end
 
 ---time formatting mode overrides: -1=proj default.<br>
@@ -3535,10 +3218,8 @@ function reaper.PCM_Sink_ShowConfig(cfg, hwndParent) end
 function reaper.PCM_Source_BuildPeaks(src, mode) end
 
 ---See PCM_Source_CreateFromFileEx.
----    
 ---@param filename string
 ---@return PCM_source retval
----@see reaper.PCM_Source_CreateFromFileEx
 function reaper.PCM_Source_CreateFromFile(filename) end
 
 ---Create a PCM_source from filename, and override pref of MIDI files being imported as in-project MIDI events.
@@ -3606,9 +3287,7 @@ function reaper.RecursiveCreateDirectory(path, ignored) end
 function reaper.reduce_open_files(flags) end
 
 ---See RefreshToolbar2.
----    
 ---@param command_id integer
----@see reaper.RefreshToolbar2
 function reaper.RefreshToolbar(command_id) end
 
 ---Refresh the toolbar button states of a toggle action.
@@ -3623,16 +3302,10 @@ function reaper.RefreshToolbar2(section_id, command_id) end
 function reaper.relative_fn(in, out) end
 
 ---Remove a send/receive/hardware output, return true on success. category is >0 for receives, 0=sends, >0 for hardware outputs. See CreateTrackSend, GetSetTrackSendInfo, GetTrackSendInfo_Value, SetTrackSendInfo_Value, GetTrackNumSends.
----    
 ---@param tr MediaTrack
 ---@param category integer
 ---@param sendidx integer
 ---@return boolean retval
----@see reaper.CreateTrackSend
----@see reaper.GetSetTrackSendInfo
----@see reaper.GetTrackSendInfo_Value
----@see reaper.SetTrackSendInfo_Value
----@see reaper.GetTrackNumSends
 function reaper.RemoveTrackSend(tr, category, sendidx) end
 
 ---Not available while playing back.
@@ -3655,11 +3328,9 @@ function reaper.ReorderSelectedTracks(beforeTrackIdx, makePrevFolder) end
 function reaper.Resample_EnumModes(mode) end
 
 ---See resolve_fn2.
----    
 ---@param in string
 ---@param out string
 ---@return string retval
----@see reaper.resolve_fn2
 function reaper.resolve_fn(in, out) end
 
 ---Resolves a filename "in" by using project settings etc. If no file found, out will be a copy of in.
@@ -3675,19 +3346,15 @@ function reaper.resolve_fn2(in, out, checkSubDir) end
 function reaper.ReverseNamedCommandLookup(command_id) end
 
 ---See GetEnvelopeScalingMode.
----    
 ---@param scaling_mode integer
 ---@param val number
 ---@return number retval
----@see reaper.GetEnvelopeScalingMode
 function reaper.ScaleFromEnvelopeMode(scaling_mode, val) end
 
 ---See GetEnvelopeScalingMode.
----    
 ---@param scaling_mode integer
 ---@param val number
 ---@return number retval
----@see reaper.GetEnvelopeScalingMode
 function reaper.ScaleToEnvelopeMode(scaling_mode, val) end
 
 ---@param uniqueID integer
@@ -3741,7 +3408,6 @@ function reaper.SetEditCurPos(time, moveview, seekplay) end
 function reaper.SetEditCurPos2(proj, time, moveview, seekplay) end
 
 ---Set attributes of an envelope point. Values that are not supplied will be ignored. If setting multiple points at once, set noSort=true, and call Envelope_SortPoints when done. See SetEnvelopePointEx.
----    
 ---@param envelope TrackEnvelope
 ---@param ptidx integer
 ---@param timeIn? number
@@ -3751,7 +3417,6 @@ function reaper.SetEditCurPos2(proj, time, moveview, seekplay) end
 ---@param selectedIn? boolean
 ---@param noSortIn? boolean
 ---@return boolean retval
----@see reaper.SetEnvelopePointEx
 function reaper.SetEnvelopePoint(envelope, ptidx, timeIn, valueIn, shapeIn, tensionIn, selectedIn, noSortIn) end
 
 ---Set attributes of an envelope point. Values that are not supplied will be ignored. If setting multiple points at once, set noSort=true, and call Envelope_SortPoints when done.<br>
@@ -3760,7 +3425,6 @@ function reaper.SetEnvelopePoint(envelope, ptidx, timeIn, valueIn, shapeIn, tens
 ---even if the automation item is trimmed so that not all points are visible.<br>
 ---Otherwise, ptidx will be based on the number of visible points in the automation item, including all loop iterations.<br>
 ---See CountEnvelopePointsEx, GetEnvelopePointEx, InsertEnvelopePointEx, DeleteEnvelopePointEx.
----    
 ---@param envelope TrackEnvelope
 ---@param autoitem_idx integer
 ---@param ptidx integer
@@ -3771,10 +3435,6 @@ function reaper.SetEnvelopePoint(envelope, ptidx, timeIn, valueIn, shapeIn, tens
 ---@param selectedIn? boolean
 ---@param noSortIn? boolean
 ---@return boolean retval
----@see reaper.CountEnvelopePointsEx
----@see reaper.GetEnvelopePointEx
----@see reaper.InsertEnvelopePointEx
----@see reaper.DeleteEnvelopePointEx
 function reaper.SetEnvelopePointEx(envelope, autoitem_idx, ptidx, timeIn, valueIn, shapeIn, tensionIn, selectedIn, noSortIn) end
 
 ---Sets the RPPXML state of an envelope, returns true if successful. Undo flag is a performance/caching hint.
@@ -3785,20 +3445,14 @@ function reaper.SetEnvelopePointEx(envelope, autoitem_idx, ptidx, timeIn, valueI
 function reaper.SetEnvelopeStateChunk(env, str, isundo) end
 
 ---Set the extended state value for a specific section and key. persist=true means the value should be stored and reloaded the next time REAPER is opened. See GetExtState, DeleteExtState, HasExtState.
----    
 ---@param section string
 ---@param key string
 ---@param value string
 ---@param persist boolean
----@see reaper.GetExtState
----@see reaper.DeleteExtState
----@see reaper.HasExtState
 function reaper.SetExtState(section, key, value, persist) end
 
 ---mode: see GetGlobalAutomationOverride
----    
 ---@param mode integer
----@see reaper.GetGlobalAutomationOverride
 function reaper.SetGlobalAutomationOverride(mode) end
 
 ---Sets the RPPXML state of an item, returns true if successful. Undo flag is a performance/caching hint.
@@ -3809,10 +3463,8 @@ function reaper.SetGlobalAutomationOverride(mode) end
 function reaper.SetItemStateChunk(item, str, isundo) end
 
 ---set &1 to show the master track in the TCP, &2 to HIDE in the mixer. Returns the previous visibility state. See GetMasterTrackVisibility.
----    
 ---@param flag integer
 ---@return integer retval
----@see reaper.GetMasterTrackVisibility
 function reaper.SetMasterTrackVisibility(flag) end
 
 ---Set media item numerical-value attributes.<br>
@@ -3856,22 +3508,18 @@ function reaper.SetMediaItemInfo_Value(item, parmname, newvalue) end
 
 ---Redraws the screen only if refreshUI == true.<br>
 ---See UpdateArrange().
----    
 ---@param item MediaItem
 ---@param length number
 ---@param refreshUI boolean
 ---@return boolean retval
----@see reaper.UpdateArrange
 function reaper.SetMediaItemLength(item, length, refreshUI) end
 
 ---Redraws the screen only if refreshUI == true.<br>
 ---See UpdateArrange().
----    
 ---@param item MediaItem
 ---@param position number
 ---@param refreshUI boolean
 ---@return boolean retval
----@see reaper.UpdateArrange
 function reaper.SetMediaItemPosition(item, position, refreshUI) end
 
 ---@param item MediaItem
@@ -4002,11 +3650,9 @@ function reaper.SetMixerScroll(leftmosttrack) end
 ---SetMouseModifier(context, -1, -1) will reset the entire context to default.<br>
 ---SetMouseModifier(-1, -1, -1) will reset all contexts to default.<br>
 ---See GetMouseModifier.
----    
 ---@param context string
 ---@param modifier_flag integer
 ---@param action string
----@see reaper.GetMouseModifier
 function reaper.SetMouseModifier(context, modifier_flag, action) end
 
 ---Set exactly one track selected, deselect all others
@@ -4019,18 +3665,15 @@ function reaper.SetOnlyTrackSelected(track) end
 function reaper.SetProjectGrid(project, division) end
 
 ---Note: this function can't clear a marker's name (an empty string will leave the name unchanged), see SetProjectMarker4.
----    
 ---@param markrgnindexnumber integer
 ---@param isrgn boolean
 ---@param pos number
 ---@param rgnend number
 ---@param name string
 ---@return boolean retval
----@see reaper.SetProjectMarker4
 function reaper.SetProjectMarker(markrgnindexnumber, isrgn, pos, rgnend, name) end
 
 ---Note: this function can't clear a marker's name (an empty string will leave the name unchanged), see SetProjectMarker4.
----    
 ---@param proj ReaProject|nil|0
 ---@param markrgnindexnumber integer
 ---@param isrgn boolean
@@ -4038,11 +3681,9 @@ function reaper.SetProjectMarker(markrgnindexnumber, isrgn, pos, rgnend, name) e
 ---@param rgnend number
 ---@param name string
 ---@return boolean retval
----@see reaper.SetProjectMarker4
 function reaper.SetProjectMarker2(proj, markrgnindexnumber, isrgn, pos, rgnend, name) end
 
 ---Note: this function can't clear a marker's name (an empty string will leave the name unchanged), see SetProjectMarker4.
----    
 ---@param proj ReaProject|nil|0
 ---@param markrgnindexnumber integer
 ---@param isrgn boolean
@@ -4051,7 +3692,6 @@ function reaper.SetProjectMarker2(proj, markrgnindexnumber, isrgn, pos, rgnend, 
 ---@param name string
 ---@param color integer
 ---@return boolean retval
----@see reaper.SetProjectMarker4
 function reaper.SetProjectMarker3(proj, markrgnindexnumber, isrgn, pos, rgnend, name, color) end
 
 ---color should be 0 to not change, or ColorToNative(r,g,b)|0x1000000, flags&1 to clear name
@@ -4067,7 +3707,6 @@ function reaper.SetProjectMarker3(proj, markrgnindexnumber, isrgn, pos, rgnend, 
 function reaper.SetProjectMarker4(proj, markrgnindexnumber, isrgn, pos, rgnend, name, color, flags) end
 
 ---See SetProjectMarkerByIndex2.
----    
 ---@param proj ReaProject|nil|0
 ---@param markrgnidx integer
 ---@param isrgn boolean
@@ -4077,11 +3716,9 @@ function reaper.SetProjectMarker4(proj, markrgnindexnumber, isrgn, pos, rgnend, 
 ---@param name string
 ---@param color integer
 ---@return boolean retval
----@see reaper.SetProjectMarkerByIndex2
 function reaper.SetProjectMarkerByIndex(proj, markrgnidx, isrgn, pos, rgnend, IDnumber, name, color) end
 
 ---Differs from SetProjectMarker4 in that markrgnidx is 0 for the first marker/region, 1 for the next, etc (see EnumProjectMarkers3), rather than representing the displayed marker/region ID number (see SetProjectMarker3). Function will fail if attempting to set a duplicate ID number for a region (duplicate ID numbers for markers are OK). , flags&1 to clear name. If flags&2, markers will not be re-sorted, and after making updates, you MUST call SetProjectMarkerByIndex2 with markrgnidx=-1 and flags&2 to force re-sort/UI updates.
----    
 ---@param proj ReaProject|nil|0
 ---@param markrgnidx integer
 ---@param isrgn boolean
@@ -4092,19 +3729,14 @@ function reaper.SetProjectMarkerByIndex(proj, markrgnidx, isrgn, pos, rgnend, ID
 ---@param color integer
 ---@param flags integer
 ---@return boolean retval
----@see reaper.EnumProjectMarkers3
----@see reaper.SetProjectMarker3
 function reaper.SetProjectMarkerByIndex2(proj, markrgnidx, isrgn, pos, rgnend, IDnumber, name, color, flags) end
 
 ---Save a key/value pair for a specific extension, to be restored the next time this specific project is loaded. Typically extname will be the name of a reascript or extension section. If key is NULL or "", all extended data for that extname will be deleted.  If val is NULL or "", the data previously associated with that key will be deleted. Returns the size of the state for this extname. See GetProjExtState, EnumProjExtState.
----    
 ---@param proj ReaProject|nil|0
 ---@param extname string
 ---@param key string
 ---@param value string
 ---@return integer retval
----@see reaper.GetProjExtState
----@see reaper.EnumProjExtState
 function reaper.SetProjExtState(proj, extname, key, value) end
 
 ---Add (flag > 0) or remove (flag > 0) a track from this region when using the region render matrix. If adding, flag==2 means force mono, flag==4 means force stereo, flag==N means force N/2 channels.
@@ -4115,16 +3747,12 @@ function reaper.SetProjExtState(proj, extname, key, value) end
 function reaper.SetRegionRenderMatrix(proj, regionindex, track, flag) end
 
 ---Inserts or updates a take marker. If idx>0, a take marker will be added, otherwise an existing take marker will be updated. Returns the index of the new or updated take marker (which may change if srcPos is updated). See GetNumTakeMarkers, GetTakeMarker, DeleteTakeMarker
----    
 ---@param take MediaItem_Take
 ---@param idx integer
 ---@param nameIn string
 ---@param srcposIn? number
 ---@param colorIn? integer
 ---@return integer retval
----@see reaper.GetNumTakeMarkers
----@see reaper.GetTakeMarker
----@see reaper.DeleteTakeMarker
 function reaper.SetTakeMarker(take, idx, nameIn, srcposIn, colorIn) end
 
 ---Adds or updates a stretch marker. If idx>0, stretch marker will be added. If idx>=0, stretch marker will be updated. When adding, if srcposInOptional is omitted, source position will be auto-calculated. When updating a stretch marker, if srcposInOptional is omitted, srcpos will not be modified. Position/srcposition values will be constrained to nearby stretch markers. Returns index of stretch marker, or -1 if did not insert (or marker already existed at time).
@@ -4136,16 +3764,13 @@ function reaper.SetTakeMarker(take, idx, nameIn, srcposIn, colorIn) end
 function reaper.SetTakeStretchMarker(take, idx, pos, srcposIn) end
 
 ---See GetTakeStretchMarkerSlope
----    
 ---@param take MediaItem_Take
 ---@param idx integer
 ---@param slope number
 ---@return boolean retval
----@see reaper.GetTakeStretchMarkerSlope
 function reaper.SetTakeStretchMarkerSlope(take, idx, slope) end
 
 ---Set parameters of a tempo/time signature marker. Provide either timepos (with measurepos=-1, beatpos=-1), or measurepos and beatpos (with timepos=-1). If timesig_num and timesig_denom are zero, the previous time signature will be used. ptidx=-1 will insert a new tempo/time signature marker. See CountTempoTimeSigMarkers, GetTempoTimeSigMarker, AddTempoTimeSigMarker.
----    
 ---@param proj ReaProject|nil|0
 ---@param ptidx integer
 ---@param timepos number
@@ -4156,9 +3781,6 @@ function reaper.SetTakeStretchMarkerSlope(take, idx, slope) end
 ---@param timesig_denom integer
 ---@param lineartempo boolean
 ---@return boolean retval
----@see reaper.CountTempoTimeSigMarkers
----@see reaper.GetTempoTimeSigMarker
----@see reaper.AddTempoTimeSigMarker
 function reaper.SetTempoTimeSigMarker(proj, ptidx, timepos, measurepos, beatpos, bpm, timesig_num, timesig_denom, lineartempo) end
 
 ---Temporarily updates the theme color to the color specified (or the theme default color if -1 is specified). Returns -1 on failure, otherwise returns the color (or transformed-color). Note that the UI is not updated by this, the caller should call UpdateArrange() etc as necessary. If the low bit of flags is set, any color transformations are bypassed. To read a value see GetThemeColor.<br>Currently valid ini_keys:*
@@ -4534,21 +4156,17 @@ function reaper.SetTempoTimeSigMarker(proj, ptidx, timepos, measurepos, beatpos,
 ---* <strong>group_61</strong> : Group #62
 ---* <strong>group_62</strong> : Group #63
 ---* <strong>group_63</strong> : Group #64
----    
 ---@param ini_key string
 ---@param color integer
 ---@param flags? integer
 ---@return integer retval
----@see reaper.GetThemeColor
 function reaper.SetThemeColor(ini_key, color, flags) end
 
 ---Updates the toggle state of an action, returns true if succeeded. Only ReaScripts can have their toggle states changed programmatically. See RefreshToolbar2.
----    
 ---@param section_id integer
 ---@param command_id integer
 ---@param state integer
 ---@return boolean retval
----@see reaper.RefreshToolbar2
 function reaper.SetToggleCommandState(section_id, command_id, state) end
 
 ---@param tr MediaTrack
@@ -4556,19 +4174,15 @@ function reaper.SetToggleCommandState(section_id, command_id, state) end
 function reaper.SetTrackAutomationMode(tr, mode) end
 
 ---Set the custom track color, color is OS dependent (i.e. ColorToNative(r,g,b). To unset the track color, see SetMediaTrackInfo_Value I_CUSTOMCOLOR
----    
 ---@param track MediaTrack
 ---@param color integer
----@see reaper.SetMediaTrackInfo_Value
 function reaper.SetTrackColor(track, color) end
 
 ---Set all MIDI lyrics on the track. Lyrics will be stuffed into any MIDI items found in range. Flag is unused at present. str is passed in as beat position, tab, text, tab (example with flag=2: "1.1.2\tLyric for measure 1 beat 2\t2.1.1\tLyric for measure 2 beat 1	"). See GetTrackMIDILyrics
----    
 ---@param track MediaTrack
 ---@param flag integer
 ---@param str string
 ---@return boolean retval
----@see reaper.GetTrackMIDILyrics
 function reaper.SetTrackMIDILyrics(track, flag, str) end
 
 ---channel > 0 assigns these note names to all channels.
@@ -4607,16 +4221,12 @@ function reaper.SetTrackSelected(track, selected) end
 ---I_DSTCHAN : int * : low 10 bits are destination index, &1024 set to mix to mono.<br>
 ---I_MIDIFLAGS : int * : low 5 bits=source channel 0=all, 1-16, 31=MIDI send disabled, next 5 bits=dest channel, 0=orig, 1-16=chan. &1024 for faders-send MIDI vol/pan. (>>14)&255 = src bus (0 for all, 1 for normal, 2+). (>>22)&255=destination bus (0 for all, 1 for normal, 2+)<br>
 ---See CreateTrackSend, RemoveTrackSend, GetTrackNumSends.
----    
 ---@param tr MediaTrack
 ---@param category integer
 ---@param sendidx integer
 ---@param parmname string
 ---@param newvalue number
 ---@return boolean retval
----@see reaper.CreateTrackSend
----@see reaper.RemoveTrackSend
----@see reaper.GetTrackNumSends
 function reaper.SetTrackSendInfo_Value(tr, category, sendidx, parmname, newvalue) end
 
 ---send_idx>0 for receives, >=0 for hw ouputs, >=nb_of_hw_ouputs for sends. isend=1 for end of edit, -1 for an instant edit (such as reset), 0 for normal tweak.
@@ -4709,9 +4319,7 @@ function reaper.SetTrackUIWidth(track, width, relative, done, igngroupflags) end
 function reaper.ShowActionList(section, callerWnd) end
 
 ---Show a message to the user (also useful for debugging). Send "\n" for newline, "" to clear the console. Prefix string with "!SHOW:" and text will be added to console without opening the window. See ClearConsole
----    
 ---@param msg string
----@see reaper.ClearConsole
 function reaper.ShowConsoleMsg(msg) end
 
 ---type 0=OK,1=OKCANCEL,2=ABORTRETRYIGNORE,3=YESNOCANCEL,4=YESNO,5=RETRYCANCEL : ret 1=OK,2=CANCEL,3=ABORT,4=RETRY,5=IGNORE,6=YES,7=NO
@@ -4760,75 +4368,58 @@ function reaper.SplitMediaItem(item, position) end
 function reaper.stringToGuid(str, gGUID) end
 
 ---Stuffs a 3 byte MIDI message into either the Virtual MIDI Keyboard queue, or the MIDI-as-control input queue, or sends to a MIDI hardware output. mode=0 for VKB, 1 for control (actions map etc), 2 for VKB-on-current-channel; 16 for external MIDI device 0, 17 for external MIDI device 1, etc; see GetNumMIDIOutputs, GetMIDIOutputName.
----    
 ---@param mode integer
 ---@param msg1 integer
 ---@param msg2 integer
 ---@param msg3 integer
----@see reaper.GetNumMIDIOutputs
----@see reaper.GetMIDIOutputName
 function reaper.StuffMIDIMessage(mode, msg1, msg2, msg3) end
 
 ---Adds or queries the position of a named FX in a take. See TrackFX_AddByName() for information on fxname and instantiate. FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fxname string
 ---@param instantiate integer
 ---@return integer retval
----@see reaper.TrackFX_AddByName
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_AddByName(take, fxname, instantiate) end
 
 ---Copies (or moves) FX from src_take to dest_take. Can be used with src_take=dest_take to reorder. FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param src_take MediaItem_Take
 ---@param src_fx integer
 ---@param dest_take MediaItem_Take
 ---@param dest_fx integer
 ---@param is_move boolean
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_CopyToTake(src_take, src_fx, dest_take, dest_fx, is_move) end
 
 ---Copies (or moves) FX from src_take to dest_track. dest_fx can have 0x1000000 set to reference input FX. FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param src_take MediaItem_Take
 ---@param src_fx integer
 ---@param dest_track MediaTrack
 ---@param dest_fx integer
 ---@param is_move boolean
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_CopyToTrack(src_take, src_fx, dest_track, dest_fx, is_move) end
 
 ---Remove a FX from take chain (returns true on success) FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fx integer
 ---@return boolean retval
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_Delete(take, fx) end
 
 --- FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fx integer
 ---@param param integer
 ---@return boolean retval
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_EndParamEdit(take, fx, param) end
 
 ---Note: only works with FX that support Cockos VST extensions. FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fx integer
 ---@param param integer
 ---@param val number
 ---@return boolean retval
 ---@return string buf
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_FormatParamValue(take, fx, param, val) end
 
 ---Note: only works with FX that support Cockos VST extensions. FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fx integer
 ---@param param integer
@@ -4836,7 +4427,6 @@ function reaper.TakeFX_FormatParamValue(take, fx, param, val) end
 ---@param buf string
 ---@return boolean retval
 ---@return string buf
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_FormatParamValueNormalized(take, fx, param, value, buf) end
 
 ---returns index of effect visible in chain, or -1 for chain hidden, or -2 for chain visible but no effect selected
@@ -4849,119 +4439,90 @@ function reaper.TakeFX_GetChainVisible(take) end
 function reaper.TakeFX_GetCount(take) end
 
 ---See TakeFX_SetEnabled FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fx integer
 ---@return boolean retval
----@see reaper.TakeFX_SetEnabled
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_GetEnabled(take, fx) end
 
 ---Returns the FX parameter envelope. If the envelope does not exist and create=true, the envelope will be created. If the envelope already exists and is bypassed and create=true, then the envelope will be unbypassed. FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fxindex integer
 ---@param parameterindex integer
 ---@param create boolean
 ---@return TrackEnvelope retval
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_GetEnvelope(take, fxindex, parameterindex, create) end
 
 ---returns HWND of floating window for effect index, if any FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param index integer
 ---@return HWND retval
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_GetFloatingWindow(take, index) end
 
 --- FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fx integer
 ---@param param integer
 ---@return boolean retval
 ---@return string buf
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_GetFormattedParamValue(take, fx, param) end
 
 --- FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fx integer
 ---@return string retval
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_GetFXGUID(take, fx) end
 
 --- FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fx integer
 ---@return boolean retval
 ---@return string buf
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_GetFXName(take, fx) end
 
 ---Gets the number of input/output pins for FX if available, returns plug-in type or -1 on error FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fx integer
 ---@return integer retval
 ---@return integer inputPins
 ---@return integer outputPins
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_GetIOSize(take, fx) end
 
 ---gets plug-in specific named configuration value (returns true on success). see TrackFX_GetNamedConfigParm FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fx integer
 ---@param parmname string
 ---@return boolean retval
 ---@return string buf
----@see reaper.TrackFX_GetNamedConfigParm
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_GetNamedConfigParm(take, fx, parmname) end
 
 --- FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fx integer
 ---@return integer retval
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_GetNumParams(take, fx) end
 
 ---See TakeFX_SetOffline FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fx integer
 ---@return boolean retval
----@see reaper.TakeFX_SetOffline
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_GetOffline(take, fx) end
 
 ---Returns true if this FX UI is open in the FX chain window or a floating window. See TakeFX_SetOpen FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fx integer
 ---@return boolean retval
----@see reaper.TakeFX_SetOpen
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_GetOpen(take, fx) end
 
 --- FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fx integer
 ---@param param integer
 ---@return number retval
 ---@return number minval
 ---@return number maxval
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_GetParam(take, fx, param) end
 
 --- FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fx integer
 ---@param param integer
@@ -4970,11 +4531,9 @@ function reaper.TakeFX_GetParam(take, fx, param) end
 ---@return number smallstep
 ---@return number largestep
 ---@return boolean istoggle
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_GetParameterStepSizes(take, fx, param) end
 
 --- FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fx integer
 ---@param param integer
@@ -4982,155 +4541,117 @@ function reaper.TakeFX_GetParameterStepSizes(take, fx, param) end
 ---@return number minval
 ---@return number maxval
 ---@return number midval
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_GetParamEx(take, fx, param) end
 
 ---gets the parameter index from an identifying string (:wet, :bypass, or a string returned from GetParamIdent), or -1 if unknown. FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fx integer
 ---@param ident_str string
 ---@return integer retval
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_GetParamFromIdent(take, fx, ident_str) end
 
 ---gets an identifying string for the parameter FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fx integer
 ---@param param integer
 ---@return boolean retval
 ---@return string buf
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_GetParamIdent(take, fx, param) end
 
 --- FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fx integer
 ---@param param integer
 ---@return boolean retval
 ---@return string buf
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_GetParamName(take, fx, param) end
 
 --- FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fx integer
 ---@param param integer
 ---@return number retval
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_GetParamNormalized(take, fx, param) end
 
 ---gets the effective channel mapping bitmask for a particular pin. high32Out will be set to the high 32 bits. Add 0x1000000 to pin index in order to access the second 64 bits of mappings independent of the first 64 bits. FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fx integer
 ---@param isoutput integer
 ---@param pin integer
 ---@return integer retval
 ---@return integer high32
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_GetPinMappings(take, fx, isoutput, pin) end
 
 ---Get the name of the preset currently showing in the REAPER dropdown, or the full path to a factory preset file for VST3 plug-ins (.vstpreset). See TakeFX_SetPreset. FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fx integer
 ---@return boolean retval
 ---@return string presetname
----@see reaper.TakeFX_SetPreset
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_GetPreset(take, fx) end
 
 ---Returns current preset index, or -1 if error. numberOfPresetsOut will be set to total number of presets available. See TakeFX_SetPresetByIndex FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fx integer
 ---@return integer retval
 ---@return integer numberOfPresets
----@see reaper.TakeFX_SetPresetByIndex
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_GetPresetIndex(take, fx) end
 
 --- FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fx integer
 ---@return string retval
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_GetUserPresetFilename(take, fx) end
 
 ---presetmove==1 activates the next preset, presetmove==-1 activates the previous preset, etc. FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fx integer
 ---@param presetmove integer
 ---@return boolean retval
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_NavigatePresets(take, fx, presetmove) end
 
 ---See TakeFX_GetEnabled FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fx integer
 ---@param enabled boolean
----@see reaper.TakeFX_GetEnabled
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_SetEnabled(take, fx, enabled) end
 
 ---gets plug-in specific named configuration value (returns true on success). see TrackFX_SetNamedConfigParm FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fx integer
 ---@param parmname string
 ---@param value string
 ---@return boolean retval
----@see reaper.TrackFX_SetNamedConfigParm
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_SetNamedConfigParm(take, fx, parmname, value) end
 
 ---See TakeFX_GetOffline FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fx integer
 ---@param offline boolean
----@see reaper.TakeFX_GetOffline
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_SetOffline(take, fx, offline) end
 
 ---Open this FX UI. See TakeFX_GetOpen FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fx integer
 ---@param open boolean
----@see reaper.TakeFX_GetOpen
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_SetOpen(take, fx, open) end
 
 --- FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fx integer
 ---@param param integer
 ---@param val number
 ---@return boolean retval
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_SetParam(take, fx, param, val) end
 
 --- FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fx integer
 ---@param param integer
 ---@param value number
 ---@return boolean retval
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_SetParamNormalized(take, fx, param, value) end
 
 ---sets the channel mapping bitmask for a particular pin. returns false if unsupported (not all types of plug-ins support this capability). Add 0x1000000 to pin index in order to access the second 64 bits of mappings independent of the first 64 bits. FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fx integer
 ---@param isoutput integer
@@ -5138,35 +4659,26 @@ function reaper.TakeFX_SetParamNormalized(take, fx, param, value) end
 ---@param low32bits integer
 ---@param hi32bits integer
 ---@return boolean retval
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_SetPinMappings(take, fx, isoutput, pin, low32bits, hi32bits) end
 
 ---Activate a preset with the name shown in the REAPER dropdown. Full paths to .vstpreset files are also supported for VST3 plug-ins. See TakeFX_GetPreset. FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fx integer
 ---@param presetname string
 ---@return boolean retval
----@see reaper.TakeFX_GetPreset
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_SetPreset(take, fx, presetname) end
 
 ---Sets the preset idx, or the factory preset (idx==-2), or the default user preset (idx==-1). Returns true on success. See TakeFX_GetPresetIndex. FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param fx integer
 ---@param idx integer
 ---@return boolean retval
----@see reaper.TakeFX_GetPresetIndex
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_SetPresetByIndex(take, fx, idx) end
 
 ---showflag=0 for hidechain, =1 for show chain(index valid), =2 for hide floating window(index valid), =3 for show floating window (index valid) FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param take MediaItem_Take
 ---@param index integer
 ---@param showFlag integer
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TakeFX_Show(take, index, showFlag) end
 
 ---Returns true if the active take contains MIDI.
@@ -5308,11 +4820,9 @@ function reaper.TimeMap_QNToMeasures(proj, qn) end
 function reaper.TimeMap_QNToTime(qn) end
 
 ---Converts project quarter note count (QN) to time. QN is counted from the start of the project, regardless of any partial measures. See TimeMap2_QNToTime
----    
 ---@param proj ReaProject|nil|0
 ---@param qn number
 ---@return number retval
----@see reaper.TimeMap2_QNToTime
 function reaper.TimeMap_QNToTime_abs(proj, qn) end
 
 ---converts project QN position to time.
@@ -5321,11 +4831,9 @@ function reaper.TimeMap_QNToTime_abs(proj, qn) end
 function reaper.TimeMap_timeToQN(tpos) end
 
 ---Converts project time position to quarter note count (QN). QN is counted from the start of the project, regardless of any partial measures. See TimeMap2_timeToQN
----    
 ---@param proj ReaProject|nil|0
 ---@param tpos number
 ---@return number retval
----@see reaper.TimeMap2_timeToQN
 function reaper.TimeMap_timeToQN_abs(proj, tpos) end
 
 ---send_idx>0 for receives, >=0 for hw ouputs, >=nb_of_hw_ouputs for sends.
@@ -5355,65 +4863,52 @@ function reaper.Track_GetPeakInfo(track, channel) end
 function reaper.TrackCtl_SetToolTip(fmt, xpos, ypos, topmost) end
 
 ---Adds or queries the position of a named FX from the track FX chain (recFX=false) or record input FX/monitoring FX (recFX=true, monitoring FX are on master track). Specify a negative value for instantiate to always create a new effect, 0 to only query the first instance of an effect, or a positive value to add an instance if one is not found. If instantiate is >= -1000, it is used for the insertion position (-1000 is first item in chain, -1001 is second, etc). fxname can have prefix to specify type: VST3:,VST2:,VST:,AU:,JS:, or DX:, or FXADD: which adds selected items from the currently-open FX browser, FXADD:2 to limit to 2 FX added, or FXADD:2e to only succeed if exactly 2 FX are selected. Returns -1 on failure or the new position in chain on success. FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fxname string
 ---@param recFX boolean
 ---@param instantiate integer
 ---@return integer retval
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_AddByName(track, fxname, recFX, instantiate) end
 
 ---Copies (or moves) FX from src_track to dest_take. src_fx can have 0x1000000 set to reference input FX. FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param src_track MediaTrack
 ---@param src_fx integer
 ---@param dest_take MediaItem_Take
 ---@param dest_fx integer
 ---@param is_move boolean
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_CopyToTake(src_track, src_fx, dest_take, dest_fx, is_move) end
 
 ---Copies (or moves) FX from src_track to dest_track. Can be used with src_track=dest_track to reorder, FX indices have 0x1000000 set to reference input FX. FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param src_track MediaTrack
 ---@param src_fx integer
 ---@param dest_track MediaTrack
 ---@param dest_fx integer
 ---@param is_move boolean
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_CopyToTrack(src_track, src_fx, dest_track, dest_fx, is_move) end
 
 ---Remove a FX from track chain (returns true on success) FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fx integer
 ---@return boolean retval
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_Delete(track, fx) end
 
 --- FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fx integer
 ---@param param integer
 ---@return boolean retval
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_EndParamEdit(track, fx, param) end
 
 ---Note: only works with FX that support Cockos VST extensions. FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fx integer
 ---@param param integer
 ---@param val number
 ---@return boolean retval
 ---@return string buf
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_FormatParamValue(track, fx, param, val) end
 
 ---Note: only works with FX that support Cockos VST extensions. FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fx integer
 ---@param param integer
@@ -5421,17 +4916,13 @@ function reaper.TrackFX_FormatParamValue(track, fx, param, val) end
 ---@param buf string
 ---@return boolean retval
 ---@return string buf
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_FormatParamValueNormalized(track, fx, param, value, buf) end
 
 ---Get the index of the first track FX insert that matches fxname. If the FX is not in the chain and instantiate is true, it will be inserted. See TrackFX_GetInstrument, TrackFX_GetEQ. Deprecated in favor of TrackFX_AddByName.
----    
 ---@param track MediaTrack
 ---@param fxname string
 ---@param instantiate boolean
 ---@return integer retval
----@see reaper.TrackFX_GetInstrument
----@see reaper.TrackFX_GetEQ
 function reaper.TrackFX_GetByName(track, fxname, instantiate) end
 
 ---returns index of effect visible in chain, or -1 for chain hidden, or -2 for chain visible but no effect selected
@@ -5444,21 +4935,15 @@ function reaper.TrackFX_GetChainVisible(track) end
 function reaper.TrackFX_GetCount(track) end
 
 ---See TrackFX_SetEnabled FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fx integer
 ---@return boolean retval
----@see reaper.TrackFX_SetEnabled
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_GetEnabled(track, fx) end
 
 ---Get the index of ReaEQ in the track FX chain. If ReaEQ is not in the chain and instantiate is true, it will be inserted. See TrackFX_GetInstrument, TrackFX_GetByName.
----    
 ---@param track MediaTrack
 ---@param instantiate boolean
 ---@return integer retval
----@see reaper.TrackFX_GetInstrument
----@see reaper.TrackFX_GetByName
 function reaper.TrackFX_GetEQ(track, instantiate) end
 
 ---Returns true if the EQ band is enabled.<br>
@@ -5467,17 +4952,11 @@ function reaper.TrackFX_GetEQ(track, instantiate) end
 ---Bandidx (ignored for master gain): 0=target first band matching bandtype, 1=target 2nd band matching bandtype, etc.
 ---
 ---See TrackFX_GetEQ, TrackFX_GetEQParam, TrackFX_SetEQParam, TrackFX_SetEQBandEnabled. FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fxidx integer
 ---@param bandtype integer
 ---@param bandidx integer
 ---@return boolean retval
----@see reaper.TrackFX_GetEQ
----@see reaper.TrackFX_GetEQParam
----@see reaper.TrackFX_SetEQParam
----@see reaper.TrackFX_SetEQBandEnabled
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_GetEQBandEnabled(track, fxidx, bandtype, bandidx) end
 
 ---Returns false if track/fxidx is not ReaEQ.<br>
@@ -5485,7 +4964,6 @@ function reaper.TrackFX_GetEQBandEnabled(track, fxidx, bandtype, bandidx) end
 ---Bandidx (ignored for master gain): 0=target first band matching bandtype, 1=target 2nd band matching bandtype, etc.<br>
 ---Paramtype (ignored for master gain): 0=freq, 1=gain, 2=Q.<br>
 ---See TrackFX_GetEQ, TrackFX_SetEQParam, TrackFX_GetEQBandEnabled, TrackFX_SetEQBandEnabled. FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fxidx integer
 ---@param paramidx integer
@@ -5494,64 +4972,46 @@ function reaper.TrackFX_GetEQBandEnabled(track, fxidx, bandtype, bandidx) end
 ---@return integer bandidx
 ---@return integer paramtype
 ---@return number normval
----@see reaper.TrackFX_GetEQ
----@see reaper.TrackFX_SetEQParam
----@see reaper.TrackFX_GetEQBandEnabled
----@see reaper.TrackFX_SetEQBandEnabled
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_GetEQParam(track, fxidx, paramidx) end
 
 ---returns HWND of floating window for effect index, if any FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param index integer
 ---@return HWND retval
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_GetFloatingWindow(track, index) end
 
 --- FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fx integer
 ---@param param integer
 ---@return boolean retval
 ---@return string buf
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_GetFormattedParamValue(track, fx, param) end
 
 --- FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fx integer
 ---@return string retval
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_GetFXGUID(track, fx) end
 
 --- FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fx integer
 ---@return boolean retval
 ---@return string buf
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_GetFXName(track, fx) end
 
 ---Get the index of the first track FX insert that is a virtual instrument, or -1 if none. See TrackFX_GetEQ, TrackFX_GetByName.
----    
 ---@param track MediaTrack
 ---@return integer retval
----@see reaper.TrackFX_GetEQ
----@see reaper.TrackFX_GetByName
 function reaper.TrackFX_GetInstrument(track) end
 
 ---Gets the number of input/output pins for FX if available, returns plug-in type or -1 on error FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fx integer
 ---@return integer retval
 ---@return integer inputPins
 ---@return integer outputPins
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_GetIOSize(track, fx) end
 
 ---gets plug-in specific named configuration value (returns true on success). 
@@ -5607,54 +5067,41 @@ function reaper.TrackFX_GetIOSize(track, fx) end
 ---focused : reading returns 1 if focused. Writing a positive value to this sets the FX UI as "last focused."<br>
 ---last_touched : reading returns two integers, one indicates whether FX is the last-touched FX, the second indicates which parameter was last touched. Writing a negative value ensures this plug-in is not set as last touched, otherwise the FX is set "last touched," and last touched parameter index is set to the value in the string (if valid).<br>
 ---FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fx integer
 ---@param parmname string
 ---@return boolean retval
 ---@return string buf
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_GetNamedConfigParm(track, fx, parmname) end
 
 --- FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fx integer
 ---@return integer retval
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_GetNumParams(track, fx) end
 
 ---See TrackFX_SetOffline FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fx integer
 ---@return boolean retval
----@see reaper.TrackFX_SetOffline
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_GetOffline(track, fx) end
 
 ---Returns true if this FX UI is open in the FX chain window or a floating window. See TrackFX_SetOpen FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fx integer
 ---@return boolean retval
----@see reaper.TrackFX_SetOpen
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_GetOpen(track, fx) end
 
 --- FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fx integer
 ---@param param integer
 ---@return number retval
 ---@return number minval
 ---@return number maxval
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_GetParam(track, fx, param) end
 
 --- FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fx integer
 ---@param param integer
@@ -5663,11 +5110,9 @@ function reaper.TrackFX_GetParam(track, fx, param) end
 ---@return number smallstep
 ---@return number largestep
 ---@return boolean istoggle
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_GetParameterStepSizes(track, fx, param) end
 
 --- FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fx integer
 ---@param param integer
@@ -5675,76 +5120,59 @@ function reaper.TrackFX_GetParameterStepSizes(track, fx, param) end
 ---@return number minval
 ---@return number maxval
 ---@return number midval
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_GetParamEx(track, fx, param) end
 
 ---gets the parameter index from an identifying string (:wet, :bypass, :delta, or a string returned from GetParamIdent), or -1 if unknown. FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fx integer
 ---@param ident_str string
 ---@return integer retval
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_GetParamFromIdent(track, fx, ident_str) end
 
 ---gets an identifying string for the parameter FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fx integer
 ---@param param integer
 ---@return boolean retval
 ---@return string buf
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_GetParamIdent(track, fx, param) end
 
 --- FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fx integer
 ---@param param integer
 ---@return boolean retval
 ---@return string buf
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_GetParamName(track, fx, param) end
 
 --- FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fx integer
 ---@param param integer
 ---@return number retval
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_GetParamNormalized(track, fx, param) end
 
 ---gets the effective channel mapping bitmask for a particular pin. high32Out will be set to the high 32 bits. Add 0x1000000 to pin index in order to access the second 64 bits of mappings independent of the first 64 bits. FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param tr MediaTrack
 ---@param fx integer
 ---@param isoutput integer
 ---@param pin integer
 ---@return integer retval
 ---@return integer high32
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_GetPinMappings(tr, fx, isoutput, pin) end
 
 ---Get the name of the preset currently showing in the REAPER dropdown, or the full path to a factory preset file for VST3 plug-ins (.vstpreset). See TrackFX_SetPreset. FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fx integer
 ---@return boolean retval
 ---@return string presetname
----@see reaper.TrackFX_SetPreset
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_GetPreset(track, fx) end
 
 ---Returns current preset index, or -1 if error. numberOfPresetsOut will be set to total number of presets available. See TrackFX_SetPresetByIndex FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fx integer
 ---@return integer retval
 ---@return integer numberOfPresets
----@see reaper.TrackFX_SetPresetByIndex
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_GetPresetIndex(track, fx) end
 
 ---returns index of effect visible in record input chain, or -1 for chain hidden, or -2 for chain visible but no effect selected
@@ -5758,29 +5186,22 @@ function reaper.TrackFX_GetRecChainVisible(track) end
 function reaper.TrackFX_GetRecCount(track) end
 
 --- FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fx integer
 ---@return string retval
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_GetUserPresetFilename(track, fx) end
 
 ---presetmove==1 activates the next preset, presetmove==-1 activates the previous preset, etc. FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fx integer
 ---@param presetmove integer
 ---@return boolean retval
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_NavigatePresets(track, fx, presetmove) end
 
 ---See TrackFX_GetEnabled FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fx integer
 ---@param enabled boolean
----@see reaper.TrackFX_GetEnabled
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_SetEnabled(track, fx, enabled) end
 
 ---Enable or disable a ReaEQ band.<br>
@@ -5789,18 +5210,12 @@ function reaper.TrackFX_SetEnabled(track, fx, enabled) end
 ---Bandidx (ignored for master gain): 0=target first band matching bandtype, 1=target 2nd band matching bandtype, etc.
 ---
 ---See TrackFX_GetEQ, TrackFX_GetEQParam, TrackFX_SetEQParam, TrackFX_GetEQBandEnabled. FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fxidx integer
 ---@param bandtype integer
 ---@param bandidx integer
 ---@param enable boolean
 ---@return boolean retval
----@see reaper.TrackFX_GetEQ
----@see reaper.TrackFX_GetEQParam
----@see reaper.TrackFX_SetEQParam
----@see reaper.TrackFX_GetEQBandEnabled
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_SetEQBandEnabled(track, fxidx, bandtype, bandidx, enable) end
 
 ---Returns false if track/fxidx is not ReaEQ. Targets a band matching bandtype.<br>
@@ -5808,7 +5223,6 @@ function reaper.TrackFX_SetEQBandEnabled(track, fxidx, bandtype, bandidx, enable
 ---Bandidx (ignored for master gain): 0=target first band matching bandtype, 1=target 2nd band matching bandtype, etc.<br>
 ---Paramtype (ignored for master gain): 0=freq, 1=gain, 2=Q.<br>
 ---See TrackFX_GetEQ, TrackFX_GetEQParam, TrackFX_GetEQBandEnabled, TrackFX_SetEQBandEnabled. FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fxidx integer
 ---@param bandtype integer
@@ -5817,11 +5231,6 @@ function reaper.TrackFX_SetEQBandEnabled(track, fxidx, bandtype, bandidx, enable
 ---@param val number
 ---@param isnorm boolean
 ---@return boolean retval
----@see reaper.TrackFX_GetEQ
----@see reaper.TrackFX_GetEQParam
----@see reaper.TrackFX_GetEQBandEnabled
----@see reaper.TrackFX_SetEQBandEnabled
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_SetEQParam(track, fxidx, bandtype, bandidx, paramtype, val, isnorm) end
 
 ---sets plug-in specific named configuration value (returns true on success).
@@ -5860,55 +5269,42 @@ function reaper.TrackFX_SetEQParam(track, fxidx, bandtype, bandidx, paramtype, v
 ---focused : reading returns 1 if focused. Writing a positive value to this sets the FX UI as "last focused."<br>
 ---last_touched : reading returns two integers, one indicates whether FX is the last-touched FX, the second indicates which parameter was last touched. Writing a negative value ensures this plug-in is not set as last touched, otherwise the FX is set "last touched," and last touched parameter index is set to the value in the string (if valid).<br>
 ---FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fx integer
 ---@param parmname string
 ---@param value string
 ---@return boolean retval
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_SetNamedConfigParm(track, fx, parmname, value) end
 
 ---See TrackFX_GetOffline FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fx integer
 ---@param offline boolean
----@see reaper.TrackFX_GetOffline
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_SetOffline(track, fx, offline) end
 
 ---Open this FX UI. See TrackFX_GetOpen FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fx integer
 ---@param open boolean
----@see reaper.TrackFX_GetOpen
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_SetOpen(track, fx, open) end
 
 --- FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fx integer
 ---@param param integer
 ---@param val number
 ---@return boolean retval
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_SetParam(track, fx, param, val) end
 
 --- FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fx integer
 ---@param param integer
 ---@param value number
 ---@return boolean retval
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_SetParamNormalized(track, fx, param, value) end
 
 ---sets the channel mapping bitmask for a particular pin. returns false if unsupported (not all types of plug-ins support this capability). Add 0x1000000 to pin index in order to access the second 64 bits of mappings independent of the first 64 bits. FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param tr MediaTrack
 ---@param fx integer
 ---@param isoutput integer
@@ -5916,35 +5312,26 @@ function reaper.TrackFX_SetParamNormalized(track, fx, param, value) end
 ---@param low32bits integer
 ---@param hi32bits integer
 ---@return boolean retval
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_SetPinMappings(tr, fx, isoutput, pin, low32bits, hi32bits) end
 
 ---Activate a preset with the name shown in the REAPER dropdown. Full paths to .vstpreset files are also supported for VST3 plug-ins. See TrackFX_GetPreset. FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fx integer
 ---@param presetname string
 ---@return boolean retval
----@see reaper.TrackFX_GetPreset
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_SetPreset(track, fx, presetname) end
 
 ---Sets the preset idx, or the factory preset (idx==-2), or the default user preset (idx==-1). Returns true on success. See TrackFX_GetPresetIndex. FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param fx integer
 ---@param idx integer
 ---@return boolean retval
----@see reaper.TrackFX_GetPresetIndex
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_SetPresetByIndex(track, fx, idx) end
 
 ---showflag=0 for hidechain, =1 for show chain(index valid), =2 for hide floating window(index valid), =3 for show floating window (index valid) FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
----    
 ---@param track MediaTrack
 ---@param index integer
 ---@param showFlag integer
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.TrackFX_Show(track, index, showFlag) end
 
 ---@param isMinor boolean
@@ -6032,11 +5419,9 @@ function reaper.UpdateItemLanes(proj) end
 function reaper.UpdateTimeline() end
 
 ---see ValidatePtr2
----    
 ---@param pointer userdata
 ---@param ctypename string
 ---@return boolean retval
----@see reaper.ValidatePtr2
 function reaper.ValidatePtr(pointer, ctypename) end
 
 ---Return true if the pointer is a valid object of the right type in proj (proj is ignored if pointer is itself a project). Supported types are: ReaProject*, MediaTrack*, MediaItem*, MediaItem_Take*, TrackEnvelope* and PCM_source*.
@@ -6055,89 +5440,58 @@ function reaper.ViewPrefs(page, pageByName) end
 ---takeEnvelopesUseProjectTime: take envelope points' positions are counted from take position, not project start time. If you want to work with project time instead, pass this as true.
 ---
 ---For further manipulation see BR_EnvCountPoints, BR_EnvDeletePoint, BR_EnvFind, BR_EnvFindNext, BR_EnvFindPrevious, BR_EnvGetParentTake, BR_EnvGetParentTrack, BR_EnvGetPoint, BR_EnvGetProperties, BR_EnvSetPoint, BR_EnvSetProperties, BR_EnvValueAtPos.
----    
 ---@param envelope TrackEnvelope
 ---@param takeEnvelopesUseProjectTime boolean
 ---@return BR_Envelope retval
----@see reaper.BR_EnvFree
----@see reaper.BR_EnvCountPoints
----@see reaper.BR_EnvDeletePoint
----@see reaper.BR_EnvFind
----@see reaper.BR_EnvFindNext
----@see reaper.BR_EnvFindPrevious
----@see reaper.BR_EnvGetParentTake
----@see reaper.BR_EnvGetParentTrack
----@see reaper.BR_EnvGetPoint
----@see reaper.BR_EnvGetProperties
----@see reaper.BR_EnvSetPoint
----@see reaper.BR_EnvSetProperties
----@see reaper.BR_EnvValueAtPos
 function reaper.BR_EnvAlloc(envelope, takeEnvelopesUseProjectTime) end
 
 ---[BR] Count envelope points in the envelope object allocated with BR_EnvAlloc.
----    
 ---@param envelope BR_Envelope
 ---@return integer retval
----@see reaper.BR_EnvAlloc
 function reaper.BR_EnvCountPoints(envelope) end
 
 ---[BR] Delete envelope point by index (zero-based) in the envelope object allocated with BR_EnvAlloc. Returns true on success.
----    
 ---@param envelope BR_Envelope
 ---@param id integer
 ---@return boolean retval
----@see reaper.BR_EnvAlloc
 function reaper.BR_EnvDeletePoint(envelope, id) end
 
 ---[BR] Find envelope point at time position in the envelope object allocated with BR_EnvAlloc. Pass delta > 0 to search surrounding range - in that case the closest point to position within delta will be searched for. Returns envelope point id (zero-based) on success or -1 on failure.
----    
 ---@param envelope BR_Envelope
 ---@param position number
 ---@param delta number
 ---@return integer retval
----@see reaper.BR_EnvAlloc
 function reaper.BR_EnvFind(envelope, position, delta) end
 
 ---[BR] Find next envelope point after time position in the envelope object allocated with BR_EnvAlloc. Returns envelope point id (zero-based) on success or -1 on failure.
----    
 ---@param envelope BR_Envelope
 ---@param position number
 ---@return integer retval
----@see reaper.BR_EnvAlloc
 function reaper.BR_EnvFindNext(envelope, position) end
 
 ---[BR] Find previous envelope point before time position in the envelope object allocated with BR_EnvAlloc. Returns envelope point id (zero-based) on success or -1 on failure.
----    
 ---@param envelope BR_Envelope
 ---@param position number
 ---@return integer retval
----@see reaper.BR_EnvAlloc
 function reaper.BR_EnvFindPrevious(envelope, position) end
 
 ---[BR] Free envelope object allocated with BR_EnvAlloc and commit changes if needed. Returns true if changes were committed successfully. Note that when envelope object wasn't modified nothing will get committed even if commit = true - in that case function returns false.
----    
 ---@param envelope BR_Envelope
 ---@param commit boolean
 ---@return boolean retval
----@see reaper.BR_EnvAlloc
 function reaper.BR_EnvFree(envelope, commit) end
 
 ---[BR] If envelope object allocated with BR_EnvAlloc is take envelope, returns parent media item take, otherwise NULL.
----    
 ---@param envelope BR_Envelope
 ---@return MediaItem_Take retval
----@see reaper.BR_EnvAlloc
 function reaper.BR_EnvGetParentTake(envelope) end
 
 ---[BR] Get parent track of envelope object allocated with BR_EnvAlloc. If take envelope, returns NULL.
----    
 ---@param envelope BR_Envelope
 ---@return MediaTrack retval
----@see reaper.BR_EnvAlloc
 function reaper.BR_EnvGetParentTrack(envelope) end
 
 ---[BR] Get envelope point by id (zero-based) from the envelope object allocated with BR_EnvAlloc. Returns true on success.
----    
 ---@param envelope BR_Envelope
 ---@param id integer
 ---@return boolean retval
@@ -6146,7 +5500,6 @@ function reaper.BR_EnvGetParentTrack(envelope) end
 ---@return integer shape
 ---@return boolean selected
 ---@return number bezier
----@see reaper.BR_EnvAlloc
 function reaper.BR_EnvGetPoint(envelope, id) end
 
 ---[BR] Get envelope properties for the envelope object allocated with BR_EnvAlloc.
@@ -6162,7 +5515,6 @@ function reaper.BR_EnvGetPoint(envelope, id) end
 ---type: envelope type: 0->Volume, 1->Volume (Pre-FX), 2->Pan, 3->Pan (Pre-FX), 4->Width, 5->Width (Pre-FX), 6->Mute, 7->Pitch, 8->Playrate, 9->Tempo map, 10->Parameter<br>
 ---faderScaling: true if envelope uses fader scaling<br>
 ---automationItemsOptions: -1->project default, &1=0->don't attach to underl. env., &1->attach to underl. env. on right side,  &2->attach to underl. env. on both sides, &4: bypass underl. env.
----    
 ---@param envelope BR_Envelope
 ---@return boolean active
 ---@return boolean visible
@@ -6176,12 +5528,10 @@ function reaper.BR_EnvGetPoint(envelope, id) end
 ---@return integer type
 ---@return boolean faderScaling
 ---@return integer? automationItemsOptions
----@see reaper.BR_EnvAlloc
 function reaper.BR_EnvGetProperties(envelope) end
 
 ---[BR] Set envelope point by id (zero-based) in the envelope object allocated with BR_EnvAlloc. To create point instead, pass id = -1. Note that if new point is inserted or existing point's time position is changed, points won't automatically get sorted. To do that, see BR_EnvSortPoints.<br>
 ---Returns true on success.
----    
 ---@param envelope BR_Envelope
 ---@param id integer
 ---@param position number
@@ -6190,13 +5540,10 @@ function reaper.BR_EnvGetProperties(envelope) end
 ---@param selected boolean
 ---@param bezier number
 ---@return boolean retval
----@see reaper.BR_EnvAlloc
----@see reaper.BR_EnvSortPoints
 function reaper.BR_EnvSetPoint(envelope, id, position, value, shape, selected, bezier) end
 
 ---[BR] Set envelope properties for the envelope object allocated with BR_EnvAlloc. For parameter description see BR_EnvGetProperties.<br>
 ---Setting automationItemsOptions requires REAPER 5.979+.
----    
 ---@param envelope BR_Envelope
 ---@param active boolean
 ---@param visible boolean
@@ -6206,41 +5553,27 @@ function reaper.BR_EnvSetPoint(envelope, id, position, value, shape, selected, b
 ---@param defaultShape integer
 ---@param faderScaling boolean
 ---@param automationItemsOptionsIn? integer
----@see reaper.BR_EnvAlloc
----@see reaper.BR_EnvGetProperties
 function reaper.BR_EnvSetProperties(envelope, active, visible, armed, inLane, laneHeight, defaultShape, faderScaling, automationItemsOptionsIn) end
 
 ---[BR] Sort envelope points by position. The only reason to call this is if sorted points are explicitly needed after editing them with BR_EnvSetPoint. Note that you do not have to call this before doing BR_EnvFree since it does handle unsorted points too.
----    
 ---@param envelope BR_Envelope
----@see reaper.BR_EnvSetPoint
----@see reaper.BR_EnvFree
 function reaper.BR_EnvSortPoints(envelope) end
 
 ---[BR] Get envelope value at time position for the envelope object allocated with BR_EnvAlloc.
----    
 ---@param envelope BR_Envelope
 ---@param position number
 ---@return number retval
----@see reaper.BR_EnvAlloc
 function reaper.BR_EnvValueAtPos(envelope, position) end
 
 ---[BR] Deprecated, see GetSet_ArrangeView2 (REAPER v5.12pre4+) -- Get start and end time position of arrange view. To set arrange view instead, see BR_SetArrangeView.
----    
 ---@param proj ReaProject|nil|0
 ---@return number startTime
 ---@return number endTime
----@see reaper.GetSet_ArrangeView2
----@see reaper.BR_SetArrangeView
 function reaper.BR_GetArrangeView(proj) end
 
 ---[BR] Get closest grid division to position. Note that this functions is different from SnapToGrid in two regards. SnapToGrid() needs snap enabled to work and this one works always. Secondly, grid divisions are different from grid lines because some grid lines may be hidden due to zoom level - this function ignores grid line visibility and always searches for the closest grid division at given position. For more grid division functions, see BR_GetNextGridDivision and BR_GetPrevGridDivision.
----    
 ---@param position number
 ---@return number retval
----@see reaper.SnapToGrid
----@see reaper.BR_GetNextGridDivision
----@see reaper.BR_GetPrevGridDivision
 function reaper.BR_GetClosestGridDivision(position) end
 
 ---[BR] Get current theme information. themePathOut is set to full theme path and themeNameOut is set to theme name excluding any path info and extension
@@ -6249,39 +5582,30 @@ function reaper.BR_GetClosestGridDivision(position) end
 function reaper.BR_GetCurrentTheme() end
 
 ---[BR] Get media item from GUID string. Note that the GUID must be enclosed in braces {}. To get item's GUID as a string, see BR_GetMediaItemGUID.
----    
 ---@param proj ReaProject|nil|0
 ---@param guidStringIn string
 ---@return MediaItem retval
----@see reaper.BR_GetMediaItemGUID
 function reaper.BR_GetMediaItemByGUID(proj, guidStringIn) end
 
 ---[BR] Get media item GUID as a string (guidStringOut_sz should be at least 64). To get media item back from GUID string, see BR_GetMediaItemByGUID.
----    
 ---@param item MediaItem
 ---@return string retval
----@see reaper.BR_GetMediaItemByGUID
 function reaper.BR_GetMediaItemGUID(item) end
 
 ---[BR] Get currently loaded image resource and its flags for a given item. Returns false if there is no image resource set. To set image resource, see BR_SetMediaItemImageResource.
----    
 ---@param item MediaItem
 ---@return boolean retval
 ---@return string image
 ---@return integer imageFlags
----@see reaper.BR_SetMediaItemImageResource
 function reaper.BR_GetMediaItemImageResource(item) end
 
 ---[BR] Get media item take GUID as a string (guidStringOut_sz should be at least 64). To get take from GUID string, see SNM_GetMediaItemTakeByGUID.
----    
 ---@param take MediaItem_Take
 ---@return string retval
----@see reaper.SNM_GetMediaItemTakeByGUID
 function reaper.BR_GetMediaItemTakeGUID(take) end
 
 ---[BR] Get take media source properties as they appear in <em>Item properties</em>. Returns false if take can't have them (MIDI items etc.).<br>
 ---To set source properties, see BR_SetMediaSourceProperties.
----    
 ---@param take MediaItem_Take
 ---@return boolean retval
 ---@return boolean section
@@ -6289,15 +5613,12 @@ function reaper.BR_GetMediaItemTakeGUID(take) end
 ---@return number length
 ---@return number fade
 ---@return boolean reverse
----@see reaper.BR_SetMediaSourceProperties
 function reaper.BR_GetMediaSourceProperties(take) end
 
 ---[BR] Get media track from GUID string. Note that the GUID must be enclosed in braces {}. To get track's GUID as a string, see GetSetMediaTrackInfo_String.
----    
 ---@param proj ReaProject|nil|0
 ---@param guidStringIn string
 ---@return MediaTrack retval
----@see reaper.GetSetMediaTrackInfo_String
 function reaper.BR_GetMediaTrackByGUID(proj, guidStringIn) end
 
 ---[BR] Get media track freeze count (if track isn't frozen at all, returns 0).
@@ -6306,20 +5627,14 @@ function reaper.BR_GetMediaTrackByGUID(proj, guidStringIn) end
 function reaper.BR_GetMediaTrackFreezeCount(track) end
 
 ---[BR] Deprecated, see GetSetMediaTrackInfo_String (v5.95+). Get media track GUID as a string (guidStringOut_sz should be at least 64). To get media track back from GUID string, see BR_GetMediaTrackByGUID.
----    
 ---@param track MediaTrack
 ---@return string retval
----@see reaper.GetSetMediaTrackInfo_String
----@see reaper.BR_GetMediaTrackByGUID
 function reaper.BR_GetMediaTrackGUID(track) end
 
 ---[BR] Deprecated, see GetSetMediaTrackInfo (REAPER v5.02+). Get media track layouts for MCP and TCP. Empty string ("") means that layout is set to the default layout. To set media track layouts, see BR_SetMediaTrackLayouts.
----    
 ---@param track MediaTrack
 ---@return string mcpLayoutName
 ---@return string tcpLayoutName
----@see reaper.GetSetMediaTrackInfo
----@see reaper.BR_SetMediaTrackLayouts
 function reaper.BR_GetMediaTrackLayouts(track) end
 
 ---[BR] Get track envelope for send/receive/hardware output.
@@ -6329,15 +5644,11 @@ function reaper.BR_GetMediaTrackLayouts(track) end
 ---envelopeType determines which envelope is returned (0=volume, 1=pan, 2=mute)
 ---
 ---Note: To get or set other send attributes, see BR_GetSetTrackSendInfo and BR_GetMediaTrackSendInfo_Track.
----    
 ---@param track MediaTrack
 ---@param category integer
 ---@param sendidx integer
 ---@param envelopeType integer
 ---@return TrackEnvelope retval
----@see reaper.GetTrackNumSends
----@see reaper.BR_GetSetTrackSendInfo
----@see reaper.BR_GetMediaTrackSendInfo_Track
 function reaper.BR_GetMediaTrackSendInfo_Envelope(track, category, sendidx, envelopeType) end
 
 ---[BR] Get source or destination media track for send/receive.
@@ -6347,15 +5658,11 @@ function reaper.BR_GetMediaTrackSendInfo_Envelope(track, category, sendidx, enve
 ---trackType determines which track is returned (0=source track, 1=destination track)
 ---
 ---Note: To get or set other send attributes, see BR_GetSetTrackSendInfo and BR_GetMediaTrackSendInfo_Envelope.
----    
 ---@param track MediaTrack
 ---@param category integer
 ---@param sendidx integer
 ---@param trackType integer
 ---@return MediaTrack retval
----@see reaper.GetTrackNumSends
----@see reaper.BR_GetSetTrackSendInfo
----@see reaper.BR_GetMediaTrackSendInfo_Envelope
 function reaper.BR_GetMediaTrackSendInfo_Track(track, category, sendidx, trackType) end
 
 ---[BR] Get MIDI take source length in PPQ. In case the take isn't MIDI, return value will be -1.
@@ -6381,29 +5688,18 @@ function reaper.BR_GetMidiTakeTempoInfo(take) end
 ---[BR] Get mouse cursor context. Each parameter returns information in a form of string as specified in the table below.
 ---
 ---To get more info on stuff that was found under mouse cursor see BR_GetMouseCursorContext_Envelope, BR_GetMouseCursorContext_Item, BR_GetMouseCursorContext_MIDI, BR_GetMouseCursorContext_Position, BR_GetMouseCursorContext_Take, BR_GetMouseCursorContext_Track 
----    
 ---@return string window
 ---@return string segment
 ---@return string details
----@see reaper.BR_GetMouseCursorContext_Envelope
----@see reaper.BR_GetMouseCursorContext_Item
----@see reaper.BR_GetMouseCursorContext_MIDI
----@see reaper.BR_GetMouseCursorContext_Position
----@see reaper.BR_GetMouseCursorContext_Take
----@see reaper.BR_GetMouseCursorContext_Track
 function reaper.BR_GetMouseCursorContext() end
 
 ---[BR] Returns envelope that was captured with the last call to BR_GetMouseCursorContext. In case the envelope belongs to take, takeEnvelope will be true.
----    
 ---@return TrackEnvelope retval
 ---@return boolean takeEnvelope
----@see reaper.BR_GetMouseCursorContext
 function reaper.BR_GetMouseCursorContext_Envelope() end
 
 ---[BR] Returns item under mouse cursor that was captured with the last call to BR_GetMouseCursorContext. Note that the function will return item even if mouse cursor is over some other track lane element like stretch marker or envelope. This enables for easier identification of items when you want to ignore elements within the item.
----    
 ---@return MediaItem retval
----@see reaper.BR_GetMouseCursorContext
 function reaper.BR_GetMouseCursorContext_Item() end
 
 ---[BR] Returns midi editor under mouse cursor that was captured with the last call to BR_GetMouseCursorContext.
@@ -6415,54 +5711,38 @@ function reaper.BR_GetMouseCursorContext_Item() end
 ---ccLaneId: lane position, counting from the top (0 based)
 ---
 ---Note: due to API limitations, if mouse is over inline MIDI editor with some note rows hidden, noteRow will be -1
----    
 ---@return userdata retval
 ---@return boolean inlineEditor
 ---@return integer noteRow
 ---@return integer ccLane
 ---@return integer ccLaneVal
 ---@return integer ccLaneId
----@see reaper.BR_GetMouseCursorContext
 function reaper.BR_GetMouseCursorContext_MIDI() end
 
 ---[BR] Returns project time position in arrange/ruler/midi editor that was captured with the last call to BR_GetMouseCursorContext.
----    
 ---@return number retval
----@see reaper.BR_GetMouseCursorContext
 function reaper.BR_GetMouseCursorContext_Position() end
 
 ---[BR] Returns id of a stretch marker under mouse cursor that was captured with the last call to BR_GetMouseCursorContext.
----    
 ---@return integer retval
----@see reaper.BR_GetMouseCursorContext
 function reaper.BR_GetMouseCursorContext_StretchMarker() end
 
 ---[BR] Returns take under mouse cursor that was captured with the last call to BR_GetMouseCursorContext.
----    
 ---@return MediaItem_Take retval
----@see reaper.BR_GetMouseCursorContext
 function reaper.BR_GetMouseCursorContext_Take() end
 
 ---[BR] Returns track under mouse cursor that was captured with the last call to BR_GetMouseCursorContext.
----    
 ---@return MediaTrack retval
----@see reaper.BR_GetMouseCursorContext
 function reaper.BR_GetMouseCursorContext_Track() end
 
 ---[BR] Get next grid division after the time position. For more grid divisions function, see BR_GetClosestGridDivision and BR_GetPrevGridDivision.
----    
 ---@param position number
 ---@return number retval
----@see reaper.BR_GetClosestGridDivision
----@see reaper.BR_GetPrevGridDivision
 function reaper.BR_GetNextGridDivision(position) end
 
 ---[BR] Get previous grid division before the time position. For more grid division functions, see BR_GetClosestGridDivision and BR_GetNextGridDivision.
----    
 ---@param position number
 ---@return number retval
----@see reaper.BR_GetClosestGridDivision
----@see reaper.BR_GetNextGridDivision
 function reaper.BR_GetPrevGridDivision(position) end
 
 ---[BR] Get or set send attributes.
@@ -6488,7 +5768,6 @@ function reaper.BR_GetPrevGridDivision(position) end
 ---I_MIDI_LINK_VOLPAN : link volume/pan controls to MIDI
 ---
 ---Note: To get or set other send attributes, see BR_GetMediaTrackSendInfo_Envelope and BR_GetMediaTrackSendInfo_Track.
----    
 ---@param track MediaTrack
 ---@param category integer
 ---@param sendidx integer
@@ -6496,9 +5775,6 @@ function reaper.BR_GetPrevGridDivision(position) end
 ---@param setNewValue boolean
 ---@param newValue number
 ---@return number retval
----@see reaper.GetTrackNumSends
----@see reaper.BR_GetMediaTrackSendInfo_Envelope
----@see reaper.BR_GetMediaTrackSendInfo_Track
 function reaper.BR_GetSetTrackSendInfo(track, category, sendidx, parmname, setNewValue, newValue) end
 
 ---[BR] Returns FX count for supplied take
@@ -6542,12 +5818,9 @@ function reaper.BR_MIDI_CCLaneReplace(midiEditor, laneId, newCC) end
 function reaper.BR_PositionAtMouseCursor(checkRuler) end
 
 ---[BR] Deprecated, see GetSet_ArrangeView2 (REAPER v5.12pre4+) -- Set start and end time position of arrange view. To get arrange view instead, see BR_GetArrangeView.
----    
 ---@param proj ReaProject|nil|0
 ---@param startTime number
 ---@param endTime number
----@see reaper.GetSet_ArrangeView2
----@see reaper.BR_GetArrangeView
 function reaper.BR_SetArrangeView(proj, startTime, endTime) end
 
 ---[BR] Set item start and end edges' position - returns true in case of any changes
@@ -6561,16 +5834,13 @@ function reaper.BR_SetItemEdges(item, startTime, endTime) end
 ---imageFlags: &1=0: don't display image, &1: center / tile, &3: stretch, &5: full height (REAPER 5.974+).<br>
 ---Can also be used to display existing text in empty items unstretched (pass imageIn = "", imageFlags = 0) or stretched (pass imageIn = "". imageFlags = 3).<br>
 ---To get image resource, see BR_GetMediaItemImageResource.
----    
 ---@param item MediaItem
 ---@param imageIn string
 ---@param imageFlags integer
----@see reaper.BR_GetMediaItemImageResource
 function reaper.BR_SetMediaItemImageResource(item, imageIn, imageFlags) end
 
 ---[BR] Set take media source properties. Returns false if take can't have them (MIDI items etc.). Section parameters have to be valid only when passing section=true.<br>
 ---To get source properties, see BR_GetMediaSourceProperties.
----    
 ---@param take MediaItem_Take
 ---@param section boolean
 ---@param start number
@@ -6578,18 +5848,14 @@ function reaper.BR_SetMediaItemImageResource(item, imageIn, imageFlags) end
 ---@param fade number
 ---@param reverse boolean
 ---@return boolean retval
----@see reaper.BR_GetMediaSourceProperties
 function reaper.BR_SetMediaSourceProperties(take, section, start, length, fade, reverse) end
 
 ---[BR] Deprecated, see GetSetMediaTrackInfo (REAPER v5.02+). Set media track layouts for MCP and TCP. To set default layout, pass empty string ("") as layout name. In case layouts were successfully set, returns true (if layouts are already set to supplied layout names, it will return false since no changes were made).<br>
 ---To get media track layouts, see BR_GetMediaTrackLayouts.
----    
 ---@param track MediaTrack
 ---@param mcpLayoutNameIn string
 ---@param tcpLayoutNameIn string
 ---@return boolean retval
----@see reaper.GetSetMediaTrackInfo
----@see reaper.BR_GetMediaTrackLayouts
 function reaper.BR_SetMediaTrackLayouts(track, mcpLayoutNameIn, tcpLayoutNameIn) end
 
 ---[BR] Set "ignore project tempo" information for MIDI take. Returns true in case the take was successfully updated.
@@ -6604,23 +5870,18 @@ function reaper.BR_SetMidiTakeTempoInfo(take, ignoreProjTempo, bpm, num, den) en
 ---[BR] Set new take source from file. To import MIDI file as in-project source data pass inProjectData=true. Returns false if failed.<br>
 ---Any take source properties from the previous source will be lost - to preserve them, see BR_SetTakeSourceFromFile2.<br>
 ---Note: To set source from existing take, see SNM_GetSetSourceState2.
----    
 ---@param take MediaItem_Take
 ---@param filenameIn string
 ---@param inProjectData boolean
 ---@return boolean retval
----@see reaper.BR_SetTakeSourceFromFile2
----@see reaper.SNM_GetSetSourceState2
 function reaper.BR_SetTakeSourceFromFile(take, filenameIn, inProjectData) end
 
 ---[BR] Differs from BR_SetTakeSourceFromFile only that it can also preserve existing take media source properties.
----    
 ---@param take MediaItem_Take
 ---@param filenameIn string
 ---@param inProjectData boolean
 ---@param keepSourceProperties boolean
 ---@return boolean retval
----@see reaper.BR_SetTakeSourceFromFile
 function reaper.BR_SetTakeSourceFromFile2(take, filenameIn, inProjectData, keepSourceProperties) end
 
 ---[BR] Get take under mouse cursor. Position is mouse cursor position in arrange.
@@ -6637,12 +5898,10 @@ function reaper.BR_TakeAtMouseCursor() end
 function reaper.BR_TrackAtMouseCursor() end
 
 ---[BR] Deprecated, see TrackFX_GetNamedConfigParm/'fx_ident' (v6.37+). Get the exact name (like effect.dll, effect.vst3, etc...) of an FX.
----    
 ---@param track MediaTrack
 ---@param fx integer
 ---@return boolean retval
 ---@return string name
----@see reaper.TrackFX_GetNamedConfigParm
 function reaper.BR_TrackFX_GetFXModuleName(track, fx) end
 
 ---[BR] Equivalent to win32 API ComboBox_FindString().
@@ -6668,7 +5927,6 @@ function reaper.BR_Win32_CB_FindStringExact(comboBoxHwnd, startId, string) end
 function reaper.BR_Win32_ClientToScreen(hwnd, xIn, yIn) end
 
 ---[BR] Equivalent to win32 API FindWindowEx(). Since ReaScript doesn't allow passing NULL (None in Python, nil in Lua etc...) parameters, to search by supplied class or name set searchClass and searchName accordingly. HWND parameters should be passed as either "0" to signify NULL or as string obtained from BR_Win32_HwndToString.
----    
 ---@param hwndParent string
 ---@param hwndChildAfter string
 ---@param className string
@@ -6676,7 +5934,6 @@ function reaper.BR_Win32_ClientToScreen(hwnd, xIn, yIn) end
 ---@param searchClass boolean
 ---@param searchName boolean
 ---@return userdata retval
----@see reaper.BR_Win32_HwndToString
 function reaper.BR_Win32_FindWindowEx(hwndParent, hwndChildAfter, className, windowName, searchClass, searchName) end
 
 ---[BR] Equivalent to win32 API GET_X_LPARAM().
@@ -6719,9 +5976,7 @@ function reaper.BR_Win32_GetFocus() end
 function reaper.BR_Win32_GetForegroundWindow() end
 
 ---[BR] Alternative to GetMainHwnd. REAPER seems to have problems with extensions using HWND type for exported functions so all BR_Win32 functions use void* instead of HWND type
----    
 ---@return userdata retval
----@see reaper.GetMainHwnd
 function reaper.BR_Win32_GetMainHwnd() end
 
 ---[BR] Get mixer window HWND. isDockedOut will be set to true if mixer is docked
@@ -6793,10 +6048,8 @@ function reaper.BR_Win32_HIBYTE(value) end
 function reaper.BR_Win32_HIWORD(value) end
 
 ---[BR] Convert HWND to string. To convert string back to HWND, see BR_Win32_StringToHwnd.
----    
 ---@param hwnd userdata
 ---@return string retval
----@see reaper.BR_Win32_StringToHwnd
 function reaper.BR_Win32_HwndToString(hwnd) end
 
 ---[BR] Equivalent to win32 API IsWindow().
@@ -6850,9 +6103,7 @@ function reaper.BR_Win32_MAKEWORD(low, high) end
 function reaper.BR_Win32_MAKEWPARAM(low, high) end
 
 ---[BR] Alternative to MIDIEditor_GetActive. REAPER seems to have problems with extensions using HWND type for exported functions so all BR_Win32 functions use void* instead of HWND type.
----    
 ---@return userdata retval
----@see reaper.MIDIEditor_GetActive
 function reaper.BR_Win32_MIDIEditor_GetActive() end
 
 ---[BR] Equivalent to win32 API ClientToScreen().
@@ -6890,7 +6141,6 @@ function reaper.BR_Win32_SetWindowLong(hwnd, index, newLong) end
 
 ---[BR] Equivalent to win32 API SetWindowPos().<br>
 ---hwndInsertAfter may be a string: "HWND_BOTTOM", "HWND_NOTOPMOST", "HWND_TOP", "HWND_TOPMOST" or a string obtained with BR_Win32_HwndToString.
----    
 ---@param hwnd userdata
 ---@param hwndInsertAfter string
 ---@param x integer
@@ -6899,7 +6149,6 @@ function reaper.BR_Win32_SetWindowLong(hwnd, index, newLong) end
 ---@param height integer
 ---@param flags integer
 ---@return boolean retval
----@see reaper.BR_Win32_HwndToString
 function reaper.BR_Win32_SetWindowPos(hwnd, hwndInsertAfter, x, y, width, height, flags) end
 
 ---[BR] Equivalent to win32 API ShellExecute() with HWND set to main window
@@ -6918,10 +6167,8 @@ function reaper.BR_Win32_ShellExecute(operation, file, parameters, directory, sh
 function reaper.BR_Win32_ShowWindow(hwnd, cmdShow) end
 
 ---[BR] Convert string to HWND. To convert HWND back to string, see BR_Win32_HwndToString.
----    
 ---@param string string
 ---@return userdata retval
----@see reaper.BR_Win32_HwndToString
 function reaper.BR_Win32_StringToHwnd(string) end
 
 ---[BR] Equivalent to win32 API WindowFromPoint().
@@ -7085,10 +6332,8 @@ function reaper.Blink_StartStop() end
 ---- playback finished<br>
 ---- playback was not started using CF_Preview_Play<br>
 ---- the output track no longer exists
----    
 ---@param source PCM_source
 ---@return CF_Preview retval
----@see reaper.CF_Preview_Play
 function reaper.CF_CreatePreview(source) end
 
 ---Enumerate the source's media cues. Returns the next index or 0 when finished.
@@ -7110,12 +6355,10 @@ function reaper.CF_EnumSelectedFX(hwnd, index) end
 
 ---Deprecated, see kbd_enumerateActions (v6.71+). Wrapper for the unexposed kbd_enumerateActions API function.<br>
 ---Main=0, Main (alt recording)=100, MIDI Editor=32060, MIDI Event List Editor=32061, MIDI Inline Editor=32062, Media Explorer=32063
----    
 ---@param section integer
 ---@param index integer
 ---@return integer retval
 ---@return string name
----@see reaper.kbd_enumerateActions
 function reaper.CF_EnumerateActions(section, index) end
 
 ---Export the source to the given file (MIDI only).
@@ -7129,21 +6372,14 @@ function reaper.CF_ExportMediaSource(src, fn) end
 function reaper.CF_GetClipboard() end
 
 ---[DEPRECATED: Use CF_GetClipboard] Read the contents of the system clipboard. See SNM_CreateFastString and SNM_DeleteFastString.
----    
 ---@param output WDL_FastString
 ---@return string retval
----@see reaper.CF_GetClipboard
----@see reaper.SNM_CreateFastString
----@see reaper.SNM_DeleteFastString
 function reaper.CF_GetClipboardBig(output) end
 
 ---Deprecated, see kbd_getTextFromCmd (v6.71+). Wrapper for the unexposed kbd_getTextFromCmd API function. See CF_EnumerateActions for common section IDs.
----    
 ---@param section integer
 ---@param command integer
 ---@return string retval
----@see reaper.kbd_getTextFromCmd
----@see reaper.CF_EnumerateActions
 function reaper.CF_GetCommandText(section, command) end
 
 ---Get one of 16 SWS custom colors (0xBBGGRR on Windows, 0xRRGGBB everyhwere else). Index is zero-based.
@@ -7259,14 +6495,10 @@ function reaper.CF_Preview_GetPeak(preview, channel) end
 ---D_VOLUME       playback volume<br>
 ---I_OUTCHAN      first hardware output channel (&1024=mono, reads -1 when playing through a track, see CF_Preview_SetOutputTrack)<br>
 ---I_PITCHMODE    highest 16 bits=pitch shift mode (see EnumPitchShiftModes), lower 16 bits=pitch shift submode (see EnumPitchShiftSubModes)
----    
 ---@param preview CF_Preview
 ---@param name string
 ---@return boolean retval
 ---@return number value
----@see reaper.CF_Preview_SetOutputTrack
----@see reaper.EnumPitchShiftModes
----@see reaper.EnumPitchShiftSubModes
 function reaper.CF_Preview_GetValue(preview, name) end
 
 ---Start playback of the configured preview object.
@@ -7281,12 +6513,10 @@ function reaper.CF_Preview_Play(preview) end
 function reaper.CF_Preview_SetOutputTrack(preview, project, track) end
 
 ---See CF_Preview_GetValue.
----    
 ---@param preview CF_Preview
 ---@param name string
 ---@param newValue number
 ---@return boolean retval
----@see reaper.CF_Preview_GetValue
 function reaper.CF_Preview_SetValue(preview, name, newValue) end
 
 ---Stop and destroy a preview object.
@@ -7313,13 +6543,11 @@ function reaper.CF_SelectTrackFX(track, index) end
 ---
 ---Keys are Windows <a href="https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes">virtual key codes</a>. &0x8000 for an extended key (eg. Numpad Enter = VK_RETURN & 0x8000).<br>
 ---Modifier values: nil = read from keyboard, 0 = no modifier, &4 = Control (Cmd on macOS), &8 = Shift, &16 = Alt, &32 = Super
----    
 ---@param hwnd userdata
 ---@param section integer
 ---@param key integer
 ---@param modifiersIn? integer
 ---@return boolean retval
----@see reaper.CF_EnumerateActions
 function reaper.CF_SendActionShortcut(hwnd, section, key, modifiersIn) end
 
 ---Write the given string into the system clipboard.
@@ -7337,10 +6565,8 @@ function reaper.CF_SetCustomColor(index, color) end
 function reaper.CF_SetMediaSourceOnline(src, set) end
 
 ---Open the given file or URL in the default application. See also CF_LocateInExplorer.
----    
 ---@param file string
 ---@return boolean retval
----@see reaper.CF_LocateInExplorer
 function reaper.CF_ShellExecute(file) end
 
 ---[FNG] Add MIDI note to MIDI take
@@ -9816,7 +9042,6 @@ function reaper.NF_AnalyzeMediaItemPeakAndRMS(item, windowSize, reaper_array_pea
 function reaper.NF_AnalyzeTakeLoudness(take, analyzeTruePeak) end
 
 ---Same as NF_AnalyzeTakeLoudness but additionally returns shortTermMaxPos and momentaryMaxPos (in absolute project time). Note: shortTermMaxPos and momentaryMaxPos indicate the beginning of time <em>intervalls</em>, (3 sec. and 0.4 sec. resp.). 
----    
 ---@param take MediaItem_Take
 ---@param analyzeTruePeak boolean
 ---@return boolean retval
@@ -9828,15 +9053,12 @@ function reaper.NF_AnalyzeTakeLoudness(take, analyzeTruePeak) end
 ---@return number momentaryMax
 ---@return number shortTermMaxPos
 ---@return number momentaryMaxPos
----@see reaper.NF_AnalyzeTakeLoudness
 function reaper.NF_AnalyzeTakeLoudness2(take, analyzeTruePeak) end
 
 ---Does LUFS integrated analysis only. Faster than full loudness analysis (NF_AnalyzeTakeLoudness) . Use this if only LUFS integrated is required. Take vol. env. is taken into account. See: <a href="http://wiki.cockos.com/wiki/index.php/Measure_and_normalize_loudness_with_SWS">Signal flow</a>
----    
 ---@param take MediaItem_Take
 ---@return boolean retval
 ---@return number lufsIntegrated
----@see reaper.NF_AnalyzeTakeLoudness
 function reaper.NF_AnalyzeTakeLoudness_IntegratedOnly(take) end
 
 ---Returns true on success.
@@ -9888,11 +9110,9 @@ function reaper.NF_GetMediaItemAverageRMS(item) end
 function reaper.NF_GetMediaItemMaxPeak(item) end
 
 ---See NF_GetMediaItemMaxPeak, additionally returns maxPeakPos (relative to item position).
----    
 ---@param item MediaItem
 ---@return number retval
 ---@return number maxPeakPos
----@see reaper.NF_GetMediaItemMaxPeak
 function reaper.NF_GetMediaItemMaxPeakAndMaxPeakPos(item) end
 
 ---Returns the greatest overall (non-windowed) dB RMS peak level of all active channels of an audio item active take, post item gain, post take volume envelope, post-fade, pre fader, pre item FX. <br>
@@ -9920,10 +9140,8 @@ function reaper.NF_GetProjectStartupAction() end
 function reaper.NF_GetProjectTrackSelectionAction() end
 
 ---Returns SWS/S&M marker/region subtitle. markerRegionIdx: Refers to index that can be passed to EnumProjectMarkers (not displayed marker/region index). Returns empty string if marker/region with specified index not found or marker/region subtitle not set. Lua code example <a href="https://github.com/ReaTeam/ReaScripts-Templates/blob/master/Markers%20and%20Regions/NF_Get%20SWS%20markers%20and%20regions%20notes.lua">here</a>.
----    
 ---@param markerRegionIdx integer
 ---@return string retval
----@see reaper.EnumProjectMarkers
 function reaper.NF_GetSWSMarkerRegionSub(markerRegionIdx) end
 
 ---@param track MediaTrack
@@ -9931,10 +9149,8 @@ function reaper.NF_GetSWSMarkerRegionSub(markerRegionIdx) end
 function reaper.NF_GetSWSTrackNotes(track) end
 
 ---Get SWS analysis/normalize options. See NF_SetSWS_RMSoptions.
----    
 ---@return number target
 ---@return number windowSize
----@see reaper.NF_SetSWS_RMSoptions
 function reaper.NF_GetSWS_RMSoptions() end
 
 ---@return integer supercollapsed
@@ -9974,11 +9190,9 @@ function reaper.NF_SetProjectStartupAction(str) end
 function reaper.NF_SetProjectTrackSelectionAction(str) end
 
 ---Set SWS/S&M marker/region subtitle. markerRegionIdx: Refers to index that can be passed to EnumProjectMarkers (not displayed marker/region index). Returns true if subtitle is set successfully (i.e. marker/region with specified index is present in project). Lua code example <a href="https://github.com/ReaTeam/ReaScripts-Templates/blob/master/Markers%20and%20Regions/NF_Get%20SWS%20markers%20and%20regions%20notes.lua">here</a>.
----    
 ---@param markerRegionSub string
 ---@param markerRegionIdx integer
 ---@return boolean retval
----@see reaper.EnumProjectMarkers
 function reaper.NF_SetSWSMarkerRegionSub(markerRegionSub, markerRegionIdx) end
 
 ---@param track MediaTrack
@@ -9992,18 +9206,13 @@ function reaper.NF_SetSWSTrackNotes(track, str) end
 function reaper.NF_SetSWS_RMSoptions(targetLevel, windowSize) end
 
 ---Deprecated, see TakeFX_GetNamedConfigParm/'fx_ident' (v6.37+). See BR_TrackFX_GetFXModuleName. fx: counted consecutively across all takes (zero-based).
----    
 ---@param item MediaItem
 ---@param fx integer
 ---@return boolean retval
 ---@return string name
----@see reaper.TakeFX_GetNamedConfigParm
----@see reaper.BR_TrackFX_GetFXModuleName
 function reaper.NF_TakeFX_GetFXModuleName(item, fx) end
 
 ---Redraw the Notes window (call if you've changed a subtitle via NF_SetSWSMarkerRegionSub which is currently displayed in the Notes window and you want to appear the new subtitle immediately.)
----    
----@see reaper.NF_SetSWSMarkerRegionSub
 function reaper.NF_UpdateSWSMarkerRegionSubWindow() end
 
 ---Equivalent to win32 API GetSystemMetrics(). Note: Only SM_C[XY]SCREEN, SM_C[XY][HV]SCROLL and SM_CYMENU are currently supported on macOS and Linux as of REAPER 6.68. Check the <a href="https://github.com/justinfrankel/WDL/blob/main/WDL/swell">SWELL source code</a> for up-to-date support information (swell-wnd.mm, swell-wnd-generic.cpp).
@@ -10026,14 +9235,12 @@ function reaper.ReaPack_AboutRepository(repoName) end
 ---Add or modify a repository. Set url to nullptr (or empty string in Lua) to keep the existing URL. Call ReaPack_ProcessQueue(true) when done to process the new list and update the GUI.
 ---
 ---autoInstall: usually set to 2 (obey user setting).
----    
 ---@param name string
 ---@param url string
 ---@param enable boolean
 ---@param autoInstall integer
 ---@return boolean retval
 ---@return string error
----@see reaper.ReaPack_ProcessQueue
 function reaper.ReaPack_AddSetRepository(name, url, enable, autoInstall) end
 
 ---Opens the package browser with the given filter string.
@@ -10051,14 +9258,12 @@ function reaper.ReaPack_CompareVersions(ver1, ver2) end
 ---
 ---sections: 0=not in action list, &1=main, &2=midi editor, &4=midi inline editor<br>
 ---type: see ReaPack_GetEntryInfo.
----    
 ---@param entry PackageEntry
 ---@param index integer
 ---@return boolean retval
 ---@return string path
 ---@return integer sections
 ---@return integer type
----@see reaper.ReaPack_GetEntryInfo
 function reaper.ReaPack_EnumOwnedFiles(entry, index) end
 
 ---Free resources allocated for the given package entry.
@@ -10084,11 +9289,9 @@ function reaper.ReaPack_GetEntryInfo(entry) end
 
 ---Returns the package entry owning the given file.<br>
 ---Delete the returned object from memory after use with ReaPack_FreeEntry.
----    
 ---@param fn string
 ---@return PackageEntry retval
 ---@return string error
----@see reaper.ReaPack_FreeEntry
 function reaper.ReaPack_GetOwner(fn) end
 
 ---Get the infos of the given repository.
@@ -10108,12 +9311,10 @@ function reaper.ReaPack_ProcessQueue(refreshUI) end
 ---[S&M] Deprecated, see CreateTrackSend (v5.15pre1+). Adds a receive. Returns false if nothing updated.<br>
 ---type -1=Default type (user preferences), 0=Post-Fader (Post-Pan), 1=Pre-FX, 2=deprecated, 3=Pre-Fader (Post-FX).<br>
 ---Note: obeys default sends preferences, supports frozen tracks, etc..
----    
 ---@param src MediaTrack
 ---@param dest MediaTrack
 ---@param type integer
 ---@return boolean retval
----@see reaper.CreateTrackSend
 function reaper.SNM_AddReceive(src, dest, type) end
 
 ---[S&M] Add an FX parameter knob in the TCP. Returns false if nothing updated (invalid parameters, knob already present, etc..)
@@ -10124,10 +9325,8 @@ function reaper.SNM_AddReceive(src, dest, type) end
 function reaper.SNM_AddTCPFXParm(tr, fxId, prmId) end
 
 ---[S&M] Instantiates a new "fast string". You must delete this string, see SNM_DeleteFastString.
----    
 ---@param str string
 ---@return WDL_FastString retval
----@see reaper.SNM_DeleteFastString
 function reaper.SNM_CreateFastString(str) end
 
 ---[S&M] Deletes a "fast string" instance.
@@ -10141,12 +9340,10 @@ function reaper.SNM_DeleteFastString(str) end
 function reaper.SNM_GetDoubleConfigVar(varname, errvalue) end
 
 ---[S&M] See SNM_GetDoubleConfigVar.
----    
 ---@param proj ReaProject|nil|0
 ---@param varname string
 ---@param errvalue number
 ---@return number retval
----@see reaper.SNM_GetDoubleConfigVar
 function reaper.SNM_GetDoubleConfigVarEx(proj, varname, errvalue) end
 
 ---[S&M] Gets the "fast string" content.
@@ -10166,12 +9363,10 @@ function reaper.SNM_GetFastStringLength(str) end
 function reaper.SNM_GetIntConfigVar(varname, errvalue) end
 
 ---[S&M] See SNM_GetIntConfigVar.
----    
 ---@param proj ReaProject|nil|0
 ---@param varname string
 ---@param errvalue integer
 ---@return integer retval
----@see reaper.SNM_GetIntConfigVar
 function reaper.SNM_GetIntConfigVarEx(proj, varname, errvalue) end
 
 ---[S&M] Reads a 64-bit integer preference split in two 32-bit integers (look in project prefs first, then in general prefs). Returns false if failed (e.g. varname not found).
@@ -10182,21 +9377,17 @@ function reaper.SNM_GetIntConfigVarEx(proj, varname, errvalue) end
 function reaper.SNM_GetLongConfigVar(varname) end
 
 ---[S&M] See SNM_GetLongConfigVar.
----    
 ---@param proj ReaProject|nil|0
 ---@param varname string
 ---@return boolean retval
 ---@return integer high
 ---@return integer low
----@see reaper.SNM_GetLongConfigVar
 function reaper.SNM_GetLongConfigVarEx(proj, varname) end
 
 ---[S&M] Gets a take by GUID as string. The GUID must be enclosed in braces {}. To get take GUID as string, see BR_GetMediaItemTakeGUID
----    
 ---@param project ReaProject|nil|0
 ---@param guid string
 ---@return MediaItem_Take retval
----@see reaper.BR_GetMediaItemTakeGUID
 function reaper.SNM_GetMediaItemTakeByGUID(project, guid) end
 
 ---[S&M] Gets a marker/region name. Returns true if marker/region found.
@@ -10219,31 +9410,25 @@ function reaper.SNM_GetSetObjectState(obj, state, setnewvalue, wantminimalstate)
 
 ---[S&M] Gets or sets a take source state. Returns false if failed. Use takeidx=-1 to get/alter the active take.<br>
 ---Note: this function does not use a MediaItem_Take* param in order to manage empty takes (i.e. takes with MediaItem_Take*==NULL), see SNM_GetSetSourceState2.
----    
 ---@param item MediaItem
 ---@param takeidx integer
 ---@param state WDL_FastString
 ---@param setnewvalue boolean
 ---@return boolean retval
----@see reaper.SNM_GetSetSourceState2
 function reaper.SNM_GetSetSourceState(item, takeidx, state, setnewvalue) end
 
 ---[S&M] Gets or sets a take source state. Returns false if failed.<br>
 ---Note: this function cannot deal with empty takes, see SNM_GetSetSourceState.
----    
 ---@param take MediaItem_Take
 ---@param state WDL_FastString
 ---@param setnewvalue boolean
 ---@return boolean retval
----@see reaper.SNM_GetSetSourceState
 function reaper.SNM_GetSetSourceState2(take, state, setnewvalue) end
 
 ---[S&M] Deprecated, see GetMediaSourceType. Gets the source type of a take. Returns false if failed (e.g. take with empty source, etc..)
----    
 ---@param take MediaItem_Take
 ---@param type WDL_FastString
 ---@return boolean retval
----@see reaper.GetMediaSourceType
 function reaper.SNM_GetSourceType(take, type) end
 
 ---[S&M] Deprecated, see TrackFX_{CopyToTrack,Delete} (v5.95+). Move or removes a track FX. Returns true if tr has been updated.<br>
@@ -10255,20 +9440,16 @@ function reaper.SNM_GetSourceType(take, type) end
 function reaper.SNM_MoveOrRemoveTrackFX(tr, fxId, what) end
 
 ---[S&M] Reads a media file tag. Supported tags: "artist", "album", "genre", "comment", "title", "track" (track number) or "year". Returns false if tag was not found. See SNM_TagMediaFile.
----    
 ---@param fn string
 ---@param tag string
 ---@return boolean retval
 ---@return string tagval
----@see reaper.SNM_TagMediaFile
 function reaper.SNM_ReadMediaFileTag(fn, tag) end
 
 ---[S&M] Deprecated, see RemoveTrackSend (v5.15pre1+). Removes a receive. Returns false if nothing updated.
----    
 ---@param tr MediaTrack
 ---@param rcvidx integer
 ---@return boolean retval
----@see reaper.RemoveTrackSend
 function reaper.SNM_RemoveReceive(tr, rcvidx) end
 
 ---[S&M] Removes all receives from srctr. Returns false if nothing updated.
@@ -10289,12 +9470,10 @@ function reaper.SNM_SelectResourceBookmark(name) end
 function reaper.SNM_SetDoubleConfigVar(varname, newvalue) end
 
 ---[S&M] See SNM_SetDoubleConfigVar.
----    
 ---@param proj ReaProject|nil|0
 ---@param varname string
 ---@param newvalue number
 ---@return boolean retval
----@see reaper.SNM_SetDoubleConfigVar
 function reaper.SNM_SetDoubleConfigVarEx(proj, varname, newvalue) end
 
 ---[S&M] Sets the "fast string" content. Returns str for facility.
@@ -10310,12 +9489,10 @@ function reaper.SNM_SetFastString(str, newstr) end
 function reaper.SNM_SetIntConfigVar(varname, newvalue) end
 
 ---[S&M] See SNM_SetIntConfigVar.
----    
 ---@param proj ReaProject|nil|0
 ---@param varname string
 ---@param newvalue integer
 ---@return boolean retval
----@see reaper.SNM_SetIntConfigVar
 function reaper.SNM_SetIntConfigVarEx(proj, varname, newvalue) end
 
 ---[S&M] Sets a 64-bit integer preference from two 32-bit integers (look in project prefs first, then in general prefs). Returns false if failed (e.g. varname not found).
@@ -10334,7 +9511,6 @@ function reaper.SNM_SetLongConfigVar(varname, newHighValue, newLowValue) end
 function reaper.SNM_SetLongConfigVarEx(proj, varname, newHighValue, newLowValue) end
 
 ---[S&M] Deprecated, see SetProjectMarker4 -- Same function as SetProjectMarker3() except it can set empty names "".
----    
 ---@param proj ReaProject|nil|0
 ---@param num integer
 ---@param isrgn boolean
@@ -10343,24 +9519,19 @@ function reaper.SNM_SetLongConfigVarEx(proj, varname, newHighValue, newLowValue)
 ---@param name string
 ---@param color integer
 ---@return boolean retval
----@see reaper.SetProjectMarker4
 function reaper.SNM_SetProjectMarker(proj, num, isrgn, pos, rgnend, name, color) end
 
 ---[S&M] Sets a string preference (general prefs only). Returns false if failed (e.g. varname not found or value too long). See get_config_var_string.
----    
 ---@param varname string
 ---@param newvalue string
 ---@return boolean retval
----@see reaper.get_config_var_string
 function reaper.SNM_SetStringConfigVar(varname, newvalue) end
 
 ---[S&M] Tags a media file thanks to <a href="https://taglib.github.io">TagLib</a>. Supported tags: "artist", "album", "genre", "comment", "title", "track" (track number) or "year". Use an empty tagval to clear a tag. When a file is opened in REAPER, turn it offline before using this function. Returns false if nothing updated. See SNM_ReadMediaFileTag.
----    
 ---@param fn string
 ---@param tag string
 ---@param tagval string
 ---@return boolean retval
----@see reaper.SNM_ReadMediaFileTag
 function reaper.SNM_TagMediaFile(fn, tag, tagval) end
 
 ---[S&M] Attach Resources slot actions to a given bookmark.
@@ -10371,17 +9542,13 @@ function reaper.SNM_TieResourceSlotActions(bookmarkId) end
 function reaper.SN_FocusMIDIEditor() end
 
 ---[ULT] Deprecated, see GetSetMediaItemInfo_String (v5.95+). Get item notes.
----    
 ---@param item MediaItem
 ---@return string retval
----@see reaper.GetSetMediaItemInfo_String
 function reaper.ULT_GetMediaItemNote(item) end
 
 ---[ULT] Deprecated, see GetSetMediaItemInfo_String (v5.95+). Set item notes.
----    
 ---@param item MediaItem
 ---@param note string
----@see reaper.GetSetMediaItemInfo_String
 function reaper.ULT_SetMediaItemNote(item, note) end
 
 ---Creates writer for 32 bit floating point WAV
