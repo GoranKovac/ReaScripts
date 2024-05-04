@@ -3120,6 +3120,10 @@ function reaper.MuteAllTracks(mute) end
 ---@param sr_right integer
 ---@param sr_bot integer
 ---@param wantWorkArea boolean
+---@return integer left
+---@return integer top
+---@return integer right
+---@return integer bottom
 function reaper.my_getViewport(r_left, r_top, r_right, r_bot, sr_left, sr_top, sr_right, sr_bot, wantWorkArea) end
 
 ---Get the command ID number for named command that was registered by an extension such as "_SWS_ABOUT" or "_113088d11ae641c193a2b7ede3041ad5" for a ReaScript or a custom action.

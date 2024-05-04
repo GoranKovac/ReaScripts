@@ -1,9 +1,9 @@
 -- @description Reaper VSCode Definitions Generator
 -- @author Sexan, Cfillion, Docs source X-Raym - https://www.extremraym.com/cloud/reascript-doc/
 -- @license GPL v3
--- @version 1.03
+-- @version 1.04
 -- @changelog
---  Remove @see annotation since not very useful
+--  Inject returns for reaper.my_getViewport since they dont exist in docs
 
 local r = reaper
 local API_PATH = reaper.GetResourcePath() .. "/api_file.txt"
@@ -334,6 +334,12 @@ end
 CurlToFile()
 
 local function ParseReturns(tbl, ret_str, name)
+    if name == "reaper.my_getViewport" then
+        tbl[#tbl + 1] = {type = "integer", name = "left"}
+        tbl[#tbl + 1] = {type = "integer", name = "top"}
+        tbl[#tbl + 1] = {type = "integer", name = "right"}
+        tbl[#tbl + 1] = {type = "integer", name = "bottom"} 
+    end
     if not ret_str then return end
     if ret_str then
         -- MULTIPLE RETURNS
@@ -570,7 +576,7 @@ local function CreateApiString(api, str)
                 opt_str .. " " .. api[i].args[j].type .. (union_types[api[i].args[j].type] or "")
             args[#args + 1] = api[i].args[j].name
         end
-
+       
         for j = 1, #api[i].rets do
             CheckType(api[i].rets[j].type, reaper_str_tbl)
             local opt_str = api[i].rets[j].opt or ""
