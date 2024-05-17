@@ -1,12 +1,13 @@
 -- @description Reaper VSCode Definitions Generator
 -- @author Sexan, Cfillion, Docs source X-Raym - https://www.extremraym.com/cloud/reascript-doc/
 -- @license GPL v3
--- @version 1.04
+-- @version 1.05
 -- @changelog
---  Inject returns for reaper.my_getViewport since they dont exist in docs
+--  Make output in scripts folder instead of reapers
 
 local r = reaper
-local API_PATH = reaper.GetResourcePath() .. "/api_file.txt"
+local script_path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]]
+local API_PATH = script_path .. "api_file.txt"
 
 local lua_func_str = [[
 ---is_new_value,filename,sectionID,cmdID,mode,resolution,val,contextstr = reaper.get_action_context()
@@ -456,12 +457,12 @@ local function ParseGfxArguments(arg_tbl, ret_tbl, arg_str, name)
     ret_tbl.rets = gfx_ret[name]
 end
 
-local function GenerateApiTbl(api)
+local function GenerateApiTbl(api_str)
     local API, GFX_API = {}, {}
     local CUR_API = API
 
     local dsc_tbl = {}
-    local htmlstring = ReadApiFile(API_PATH)
+    local htmlstring = api_str--ReadApiFile(API_PATH)
     local c_str = ""
     for line in htmlstring:gmatch('[^\r\n]+') do
         -- GET DESCRIPTION
@@ -538,7 +539,8 @@ end
 
 local html_entities = { amp = '&', gt = '>', lt = '>', nbsp = '\u{A0}' }
 
-local reaper_api, gfx_api = GenerateApiTbl()
+local html_string = ReadApiFile(API_PATH)
+local reaper_api, gfx_api = GenerateApiTbl(html_string)
 local reaper_str_tbl, gfx_str_tbl, array_str_tbl = { "\n" }, {}, {}
 
 local union_types = {
@@ -609,4 +611,4 @@ local final_str = table.concat(reaper_str_tbl, "\n") ..
     "\n" .. table.concat(gfx_str_tbl, "\n") .. "\n" .. table.concat(array_str_tbl, "\n")
 
 -- EXPORT IN REAPER FOLDER
-SaveToFile(final_str, reaper.GetResourcePath() .. "/reaper_defs.lua")
+SaveToFile(final_str, script_path .. "DefinitionsOutput/reaper_defs.lua")
