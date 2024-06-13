@@ -1,16 +1,16 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.37.51
+-- @version 1.37.52
 -- @changelog
---  Imgui Shims
+--  Stereo to surround (FR)
+--  Maps stereo plugins to multichannel surround configuration
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
 --   JSFX/*.jsfx
 --   FXChains/*.RfxChain
 --   [effect] JSFX/*.jsfx
-
 local r         = reaper
 local ImGui     = {}
 local track_api = {}
@@ -558,5 +558,5 @@ else
     pdefer(Main)
 end
 
--- profiler.attachToWorld() -- after all functions have been defined
--- profiler.run()
+--profiler.attachToWorld() -- after all functions have been defined
+--profiler.run()

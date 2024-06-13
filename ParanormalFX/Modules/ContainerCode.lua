@@ -674,3 +674,35 @@ function Paste(replace, parallel, serial, enclose)
     UpdateClipboardInfo()
 end
 
+function SetContainerSurround(fx_id, ch_num)
+    API.SetNamedConfigParm(TARGET, fx_id, "container_nch", ch_num)
+    API.SetNamedConfigParm(TARGET, fx_id, "container_nch_in", ch_num)
+    API.SetNamedConfigParm(TARGET, fx_id, "container_nch_out", ch_num)
+end
+
+local surround_mapping = {
+    [1] = 1,
+    [2] = 3,
+    [3] = 5,
+    [4] = 7,
+    [5] = 9,
+    [6] = 11,
+}
+
+function SetChildSurround(fx_tbl, max_ch)
+    local max_allowed = max_ch/2
+    for i = 1, #fx_tbl do
+        local child = GetFx(fx_tbl[i].guid)
+        if surround_mapping[i] then
+            local pin = surround_mapping[i]
+            API.SetNamedConfigParm(TARGET, child.FX_ID, "container_nch", max_ch)
+            -- IN
+            API.SetPinMappings(TARGET, child.FX_ID, 0, 0, 2^(pin-1), 0)--Set pin
+            API.SetPinMappings(TARGET, child.FX_ID, 0, 1, 2^(pin), 0)  --Set pin 
+            -- OUT
+            API.SetPinMappings(TARGET, child.FX_ID, 1, 0, 2^(pin-1), 0)--Set pin
+            API.SetPinMappings(TARGET, child.FX_ID, 1, 1, 2^(pin), 0)  --Set pin 
+        end
+    end
+end
+

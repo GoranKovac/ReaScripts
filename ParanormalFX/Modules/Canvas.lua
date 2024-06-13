@@ -284,6 +284,28 @@ local function RightClickMenu()
                     ExplodeContainer(RC_DATA.tbl, RC_DATA.i)
                 end
                 if not can_explode or no_childs then r.ImGui_EndDisabled(ctx) end
+                if r.ImGui_BeginMenu(ctx, "SURROUND MAPPING") then
+                    local parrent_container = GetParentContainerByGuid(RC_DATA.tbl[RC_DATA.i])
+                    local item_id = CalcFxID(parrent_container, RC_DATA.i)                   
+
+                    if r.ImGui_MenuItem(ctx, "Quad - 4ch", nil) then
+                        SetContainerSurround(item_id, 4)
+                        SetChildSurround(RC_DATA.tbl[RC_DATA.i].sub, 4)
+                    end
+                    if r.ImGui_MenuItem(ctx, "5.1 - 6ch", nil) then
+                        SetContainerSurround(item_id, 6)
+                        SetChildSurround(RC_DATA.tbl[RC_DATA.i].sub, 6)
+                    end
+                    if r.ImGui_MenuItem(ctx, "7.1 - 8ch", nil) then
+                        SetContainerSurround(item_id, 8)
+                        SetChildSurround(RC_DATA.tbl[RC_DATA.i].sub, 8)
+                    end
+                    if r.ImGui_MenuItem(ctx, "7.1.4 - 12ch", nil) then
+                        SetContainerSurround(item_id, 12)
+                        SetChildSurround(RC_DATA.tbl[RC_DATA.i].sub, 12)
+                    end
+                    r.ImGui_EndMenu(ctx)
+                end
             end
         end
         r.ImGui_Separator(ctx)
