@@ -1,16 +1,16 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.37.52
+-- @version 1.37.53
 -- @changelog
---  Stereo to surround (FR)
---  Maps stereo plugins to multichannel surround configuration
+--  The return of the name
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
 --   JSFX/*.jsfx
 --   FXChains/*.RfxChain
 --   [effect] JSFX/*.jsfx
+
 local r         = reaper
 local ImGui     = {}
 local track_api = {}
