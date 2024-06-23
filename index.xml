@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="b4d3f7b15f1c3aefcd092ea1833a0e53295b8875" name="Sexan_Scripts">
+<index version="1" commit="71bbf73f540f2483f45e46eeb3e9fa76f74a1720" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -7392,6 +7392,14 @@ Refresh Library on export]]></changelog>
       <version name="1.03" author="SeXan" time="2018-02-27T14:40:19Z">
         <changelog><![CDATA[+ Fixed for 64 group remove]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/c6910bc30cb0bbca6014ea8fd22fe2694eed0560/Track/Sexan_Remove%20selected%20VCA%20master%20and%20its%20slaves%20with%20all%20flags.lua</source>
+      </version>
+    </reapack>
+  </category>
+  <category name="Various">
+    <reapack name="Track_Icon_Selector.lua" type="script" desc="Track Icon Selector">
+      <version name="1.0" author="Sexan" time="2024-06-23T14:57:42Z">
+        <changelog><![CDATA[Initial release]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/71bbf73f540f2483f45e46eeb3e9fa76f74a1720/Various/Track_Icon_Selector.lua</source>
       </version>
     </reapack>
   </category>
