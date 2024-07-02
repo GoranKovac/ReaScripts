@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.50
+-- @version 0.35.51
 -- @changelog
---  Fix deleting menus in DropDown Mode
+--  Better deleting menus in DropDown Mode
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua

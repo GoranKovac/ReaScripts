@@ -1817,27 +1817,26 @@ local function DropDownMenuPopup(pie)
                 end
             else
                 if r.ImGui_Selectable(ctx, pie[i].name, selected, r.ImGui_SelectableFlags_AllowDoubleClick()) then
-                    if r.ImGui_IsMouseDoubleClicked(ctx, 0) then
-                        local src_menu, menu_id = InTbl(GetMenus(), pie[i].guid)
-                        if STATE == "PIE" then
-                            table.insert(PIE_LIST, {
-                                col = pie[i].col,
-                                icon = pie[i].icon,
-                                name = pie[i].name,
-                                pid = pie,
-                                prev_i = i,
-                            })
-                        else
-                            LAST_MENU_SEL = menu_id
-                        end
-                        SWITCH_PIE = src_menu
-                    end
-                end
-                if r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseReleased(ctx, 0) then
                     if ALT then
                         REMOVE = { tbl = pie, i = i }
+                    else
+                        if r.ImGui_IsMouseDoubleClicked(ctx, 0) then
+                            local src_menu, menu_id = InTbl(GetMenus(), pie[i].guid)
+                            if STATE == "PIE" then
+                                table.insert(PIE_LIST, {
+                                    col = pie[i].col,
+                                    icon = pie[i].icon,
+                                    name = pie[i].name,
+                                    pid = pie,
+                                    prev_i = i,
+                                })
+                            else
+                                LAST_MENU_SEL = menu_id
+                            end
+                            SWITCH_PIE = src_menu
+                        end
                     end
-                end
+                end                
                 if SETUP then
                     DNDSwapSRC(pie, i)
                     DNDSwapDST(pie, i, pie[i])
