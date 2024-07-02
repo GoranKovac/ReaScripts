@@ -1833,6 +1833,11 @@ local function DropDownMenuPopup(pie)
                         SWITCH_PIE = src_menu
                     end
                 end
+                if r.ImGui_IsItemHovered(ctx) and r.ImGui_IsMouseReleased(ctx, 0) then
+                    if ALT then
+                        REMOVE = { tbl = pie, i = i }
+                    end
+                end
                 if SETUP then
                     DNDSwapSRC(pie, i)
                     DNDSwapDST(pie, i, pie[i])
