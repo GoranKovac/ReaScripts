@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.37.54
+-- @version 1.37.55
 -- @changelog
---  Recenter the view to remaining available space when creating new track
+--  Move window information data on top of loop (AW,AH,WX,WY)
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -445,6 +445,10 @@ local function Main()
 
     ImGui.PopStyleColor(ctx)
     if visible then
+        AW, AH = r.ImGui_GetContentRegionAvail(ctx)
+        WX, WY = r.ImGui_GetWindowPos(ctx)
+        MX, MY = r.ImGui_GetMousePos(ctx)
+        DRAGX, DRAGY = r.ImGui_GetMouseDragDelta(ctx, nil, nil, 0)
         r.ImGui_PushFont(ctx, CUSTOM_FONT and SYSTEM_FONT_FACTORY or DEFAULT_FONT_FACTORY)
 
         r.ImGui_Text(ctx, "MODE ")
@@ -469,10 +473,10 @@ local function Main()
         end
 
         MonitorLastTouchedFX()
-        AW, AH = r.ImGui_GetContentRegionAvail(ctx)
-        WX, WY = r.ImGui_GetWindowPos(ctx)
-        MX, MY = r.ImGui_GetMousePos(ctx)
-        DRAGX, DRAGY = r.ImGui_GetMouseDragDelta(ctx, nil, nil, 0)
+        -- AW, AH = r.ImGui_GetContentRegionAvail(ctx)
+        -- WX, WY = r.ImGui_GetWindowPos(ctx)
+        -- MX, MY = r.ImGui_GetMousePos(ctx)
+        -- DRAGX, DRAGY = r.ImGui_GetMouseDragDelta(ctx, nil, nil, 0)
         --r.ImGui_PushFont(ctx, CUSTOM_FONT and SYSTEM_FONT_FACTORY or DEFAULT_FONT_FACTORY)
         CanvasLoop()
         r.ImGui_PopFont(ctx)
