@@ -52,7 +52,7 @@ function updateZoom()
     CANVAS.scale = new_scale
 end
 
-local function ResetView(force)
+function ResetView(force)
     if V_LAYOUT then
         if force then
             CANVAS.off_x = AW / 2

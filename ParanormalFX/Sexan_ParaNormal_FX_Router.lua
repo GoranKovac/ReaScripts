@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.37.53
+-- @version 1.37.54
 -- @changelog
---  The return of the name
+--  Recenter the view to remaining available space when creating new track
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -394,6 +394,7 @@ local function UpdateLastTargetCanvas()
         LASTTOUCH_RV, LASTTOUCH_TR_NUM, LASTTOUCH_FX_ID, LASTTOUCH_P_ID = nil, nil, nil, nil
         if not RestoreFromPEXT(MODE) then
             CANVAS = InitCanvas()
+            ResetView(true)
             InitTrackContainers()
         end
     elseif MODE == "ITEM" and LAST_TAKE ~= TAKE then
@@ -403,6 +404,7 @@ local function UpdateLastTargetCanvas()
         LASTTOUCH_RV, LASTTOUCH_TR_NUM, LASTTOUCH_FX_ID, LASTTOUCH_P_ID = nil, nil, nil, nil
         if not RestoreFromPEXT(MODE) then
             CANVAS = InitCanvas()
+            ResetView(true)
             InitTrackContainers()
         end
     end
