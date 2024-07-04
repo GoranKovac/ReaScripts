@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.37.55
+-- @version 1.37.56
 -- @changelog
---  Move window information data on top of loop (AW,AH,WX,WY)
+--  Init AW,AH values 0,0
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -27,7 +27,7 @@ take_api["GetFXEnvelope"] = r.TakeFX_GetEnvelope
 track_api["GetFXEnvelope"] = r.GetFXEnvelope
 
 API = track_api
-
+AW, AH = 0,0
 for name, func in pairs(reaper) do
     name = name:match('^ImGui_(.+)$')
     if name then ImGui[name] = func end
