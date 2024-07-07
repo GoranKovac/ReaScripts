@@ -133,7 +133,7 @@ local KEYS_IGNORE_LIST = {
     ["rightsuper"] = true,
 }
 
-local KEYS = { "" }
+local KEYS = {}
 for name, func in pairs(r) do
     name = name:match('^ImGui_Key_(.+)$')
     if name and not KEYS_IGNORE_LIST[name:lower()] then KEYS[func()] = name end
@@ -943,25 +943,27 @@ local function DrawShortcut(pie, button_pos, selected)
     local xx = button_pos.kx - ((key_w + 15) / 2) * style_offset
     local txt_c = xx + ((key_w + 15) / 2)
 
-    r.ImGui_SetCursorScreenPos(ctx, button_pos.kx - ((key_w + 15) / 2) * style_offset, button_pos.ky)
-    r.ImGui_InvisibleButton(ctx, KEYS[pie.key], (key_w + 15), key_h + 2)
-    local xs, ys = r.ImGui_GetItemRectMin(ctx)
-    local xe, ye = r.ImGui_GetItemRectMax(ctx)
-    -- SHADOW
-    r.ImGui_DrawList_AddRectFilled(draw_list, xs, ys, xe + 4, ye + 4, LerpAlpha(0x44, CENTER_BTN_PROG), 7,
-        r.ImGui_DrawFlags_RoundCornersAll())
-    -- RING
-    r.ImGui_DrawList_AddRectFilled(draw_list, xs - 2, ys - 2, xe + 2, ye + 2, LerpAlpha(def_out_ring, CENTER_BTN_PROG), 7,
-        r.ImGui_DrawFlags_RoundCornersAll())
-    -- MAIN
-    r.ImGui_DrawList_AddRectFilled(draw_list, xs, ys, xe, ye, LerpAlpha(0x1d1f27ff, CENTER_BTN_PROG), 5,
-        r.ImGui_DrawFlags_RoundCornersAll())
-    -- SHADOW
-    r.ImGui_DrawList_AddTextEx(draw_list, nil, GUI_FONT_SIZE * CENTER_BTN_PROG, txt_c - (key_w / 2) + 1,
-        button_pos.ky + 1, LerpAlpha(0xFF, CENTER_BTN_PROG), KEYS[pie.key])
-    -- MAIN
-    r.ImGui_DrawList_AddTextEx(draw_list, nil, GUI_FONT_SIZE * CENTER_BTN_PROG, txt_c - (key_w / 2), button_pos.ky,
-        LerpAlpha(0x8cc3ffff, CENTER_BTN_PROG), KEYS[pie.key])
+    if KEYS[pie.key] then
+        r.ImGui_SetCursorScreenPos(ctx, button_pos.kx - ((key_w + 15) / 2) * style_offset, button_pos.ky)
+        r.ImGui_InvisibleButton(ctx, KEYS[pie.key], (key_w + 15), key_h + 2)
+        local xs, ys = r.ImGui_GetItemRectMin(ctx)
+        local xe, ye = r.ImGui_GetItemRectMax(ctx)
+        -- SHADOW
+        r.ImGui_DrawList_AddRectFilled(draw_list, xs, ys, xe + 4, ye + 4, LerpAlpha(0x44, CENTER_BTN_PROG), 7,
+            r.ImGui_DrawFlags_RoundCornersAll())
+        -- RING
+        r.ImGui_DrawList_AddRectFilled(draw_list, xs - 2, ys - 2, xe + 2, ye + 2, LerpAlpha(def_out_ring, CENTER_BTN_PROG), 7,
+            r.ImGui_DrawFlags_RoundCornersAll())
+        -- MAIN
+        r.ImGui_DrawList_AddRectFilled(draw_list, xs, ys, xe, ye, LerpAlpha(0x1d1f27ff, CENTER_BTN_PROG), 5,
+            r.ImGui_DrawFlags_RoundCornersAll())
+        -- SHADOW
+        r.ImGui_DrawList_AddTextEx(draw_list, nil, GUI_FONT_SIZE * CENTER_BTN_PROG, txt_c - (key_w / 2) + 1,
+            button_pos.ky + 1, LerpAlpha(0xFF, CENTER_BTN_PROG), KEYS[pie.key])
+        -- MAIN
+        r.ImGui_DrawList_AddTextEx(draw_list, nil, GUI_FONT_SIZE * CENTER_BTN_PROG, txt_c - (key_w / 2), button_pos.ky,
+            LerpAlpha(0x8cc3ffff, CENTER_BTN_PROG), KEYS[pie.key])
+    end
     r.ImGui_PopFont(ctx)
 end
 
