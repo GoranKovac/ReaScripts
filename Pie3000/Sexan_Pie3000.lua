@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.54
+-- @version 0.35.55
 -- @changelog
---  DropDown mode fix menus not being selected
+--  DropDown mode focus only on shortcut in curent focused window (menu)
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
