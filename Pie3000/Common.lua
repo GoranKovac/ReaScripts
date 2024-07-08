@@ -1836,6 +1836,9 @@ local function DropDownMenuPopup(pie)
                                 LAST_MENU_SEL = menu_id
                             end
                             SWITCH_PIE = src_menu
+                        else
+                            pie.selected = i
+                            LAST_MSG = pie[i].name
                         end
                     end
                 end                
