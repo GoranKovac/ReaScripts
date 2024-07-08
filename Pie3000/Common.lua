@@ -1895,8 +1895,12 @@ local function DropDownMenuPopup(pie)
             r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Text(), 0x3aCCffff)
             r.ImGui_Selectable(ctx, "   - " .. KEYS[pie[i].key], false)
             r.ImGui_PopStyleColor(ctx)
+            if r.ImGui_IsKeyReleased(ctx, pie[i].key) then
+                LAST_ACTION = pie[i]
+                KEY_TRIGGER = true
+            end
         end
-    end
+    end    
     --r.ImGui_DrawListSplitter_Merge(SPLITTER_DD)
 end
 

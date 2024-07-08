@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.52
+-- @version 0.35.53
 -- @changelog
---  Potential fix for empty key (shortcut) name
+--  DropDown mode run action when shortcut is pressed
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
