@@ -1,9 +1,10 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.55
+-- @version 0.35.56
 -- @changelog
---  DropDown mode focus only on shortcut in curent focused window (menu)
+--  Fix context crash on arrange view/tcp
+--  DropDown mode activate shortcut only on release
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -171,7 +172,7 @@ local function GetMouseContext()
         end
     end
 
-    if #info == 0 and CUSTOM_SCRIPT_CONTEXT then
+    if info and #info == 0 and CUSTOM_SCRIPT_CONTEXT then
         info = title
     end
     --r.ShowConsoleMsg(tostring(info) .. "\n")

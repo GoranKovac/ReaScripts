@@ -1852,7 +1852,8 @@ local function DropDownMenuPopup(pie)
                 r.ImGui_PopFont(ctx)
             end
             r.ImGui_PopID(ctx)
-            if key_pressed then
+            --if key_pressed then
+            if key_released then
                 local menu_x, menu_y = r.ImGui_GetCursorScreenPos(ctx)
                 local w, h = r.ImGui_GetItemRectSize(ctx)
                 local x, y = r.ImGui_PointConvertNative(ctx, menu_x + w // 2, menu_y - h // 2)
