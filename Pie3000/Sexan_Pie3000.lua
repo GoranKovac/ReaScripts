@@ -1,10 +1,10 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.56
+-- @version 0.35.57
 -- @changelog
---  Fix context crash on arrange view/tcp
---  DropDown mode activate shortcut only on release
+--  Remove Beta context inject function
+--  DropDown mode reset last action if no item is hovered
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -16,6 +16,7 @@
 --   fontello1.ttf
 --   Roboto-Medium.ttf
 --   [main] Sexan_PieCleanFiles.lua
+
 local r = reaper
 local getinfo = debug.getinfo(1, 'S');
 local script_path = getinfo.source:match [[^@?(.*[\/])[^\/]-$]];

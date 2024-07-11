@@ -351,7 +351,7 @@ local function BetaAddContextToData()
     --! REMOVE LATER ------------------------------------------------------------------------------------------------------------------------------------------
 end
 
-BetaAddContextToData() --! REMOVE ON FINAL RELEASE
+--BetaAddContextToData() --! REMOVE ON FINAL RELEASE
 
 local MENUS = ReadFromFile(menu_file) or {}
 

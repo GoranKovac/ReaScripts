@@ -1747,6 +1747,7 @@ local function DrawCenter(pie, center)
 end
 
 local function DropDownMenuPopup(pie)
+    LAST_ACTION = nil
     --local SPLITTER_DD
     -- if not r.ImGui_ValidatePtr(SPLITTER_DD, 'ImGui_DrawListSplitter*') then
     --   SPLITTER_DD = r.ImGui_CreateDrawListSplitter(draw_list)
