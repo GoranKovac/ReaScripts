@@ -1,9 +1,9 @@
 -- @description Create VCA Master from selection
 -- @author SeXan
 -- @license GPL v3
--- @version 1.711
+-- @version 1.8
 -- @changelog
---  Name groups by provided name or (VCA:x)
+--  MEDIA_EDIT_LEAD/FOLLOW FLAGS
 
 
 
@@ -18,7 +18,8 @@ local warning = 0     -- (gives user a warning popup to select tracks if no trac
 --------------------------------------------------------------------------------------
 -- GROUP FLAGS
 
-local VCA_FLAGS = { "VOLUME_MASTER",
+local VCA_FLAGS = {
+    "VOLUME_MASTER",
     "VOLUME_SLAVE",
     "VOLUME_VCA_MASTER",
     "VOLUME_VCA_SLAVE",
@@ -35,7 +36,9 @@ local VCA_FLAGS = { "VOLUME_MASTER",
     "POLARITY_MASTER",
     "POLARITY_SLAVE",
     "AUTOMODE_MASTER",
-    "AUTOMODE_SLAVE"
+    "AUTOMODE_SLAVE",
+    "MEDIA_EDIT_LEAD",
+    "MEDIA_EDIT_FOLLOW",
 }
 local free_group, master_pos = nil, nil
 local tracks, vca_group, cnt = {}, {}, 1
