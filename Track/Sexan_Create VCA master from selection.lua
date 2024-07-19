@@ -1,7 +1,7 @@
 -- @description Create VCA Master from selection
 -- @author SeXan
 -- @license GPL v3
--- @version 1.8
+-- @version 1.712
 -- @changelog
 --  MEDIA_EDIT_LEAD/FOLLOW FLAGS
 
