@@ -1504,6 +1504,7 @@ function reaper.GetNumMIDIOutputs() end
 ---@return integer retval
 function reaper.GetNumTakeMarkers(take) end
 
+---Returns number of tracks in current project, see CountTracks()
 ---@return integer retval
 function reaper.GetNumTracks() end
 
@@ -1836,8 +1837,8 @@ function reaper.GetSetProjectGrid(project, set, division, swingmode, swingamt) e
 ---RENDER_FADEOUT: render fade-out (0.001 means 1 ms, requires RENDER_NORMALIZE&1024)<br>
 ---RENDER_FADEINSHAPE: render fade-in shape<br>
 ---RENDER_FADEOUTSHAPE: render fade-out shape<br>
----PROJECT_SRATE : samplerate (ignored unless PROJECT_SRATE_USE set)<br>
----PROJECT_SRATE_USE : set to 1 if project samplerate is used
+---PROJECT_SRATE : sample rate (ignored unless PROJECT_SRATE_USE set)<br>
+---PROJECT_SRATE_USE : set to 1 if project sample rate is used
 ---@param project ReaProject|nil|0
 ---@param desc string
 ---@param value number
@@ -2451,10 +2452,16 @@ function reaper.InsertMedia(file, mode) end
 ---@return integer retval
 function reaper.InsertMediaSection(file, mode, startpct, endpct, pitchshift) end
 
----inserts a track at idx,of course this will be clamped to 0..GetNumTracks(). wantDefaults=TRUE for default envelopes/FX,otherwise no enabled fx/env
+---inserts a track at idx,of course this will be clamped to 0..GetNumTracks(). wantDefaults=TRUE for default envelopes/FX,otherwise no enabled fx/env. Superseded, see InsertTrackInProject 
 ---@param idx integer
 ---@param wantDefaults boolean
 function reaper.InsertTrackAtIndex(idx, wantDefaults) end
+
+---inserts a track in project proj at idx, this will be clamped to 0..CountTracks(proj). flags&1 for default envelopes/FX, otherwise no enabled fx/envelopes will be added.
+---@param proj ReaProject|nil|0
+---@param idx integer
+---@param flags integer
+function reaper.InsertTrackInProject(proj, idx, flags) end
 
 ---Tests a file extension (i.e. "wav" or "mid") to see if it's a media extension.<br>
 ---If wantOthers is set, then "RPP", "TXT" and other project-type formats will also pass.
@@ -2905,6 +2912,10 @@ function reaper.MIDI_InsertNote(take, selected, muted, startppqpos, endppqpos, c
 ---@param bytestr string
 ---@return boolean retval
 function reaper.MIDI_InsertTextSysexEvt(take, selected, muted, ppqpos, type, bytestr) end
+
+---Synchronously updates any open MIDI editors for MIDI take
+---@param tk MediaItem_Take
+function reaper.MIDI_RefreshEditors(tk) end
 
 ---Reset (close and re-open) all MIDI devices
 function reaper.midi_reinit() end
@@ -3844,8 +3855,8 @@ function reaper.SetTempoTimeSigMarker(proj, ptidx, timepos, measurepos, beatpos,
 ---* <strong>col_mi_label_sel</strong> : Media item label (selected)
 ---* <strong>col_mi_label_float</strong> : Floating media item label
 ---* <strong>col_mi_label_float_sel</strong> : Floating media item label (selected)
----* <strong>col_mi_bg</strong> : Media item background (odd tracks)
----* <strong>col_mi_bg2</strong> : Media item background (even tracks)
+---* <strong>col_mi_bg2</strong> : Media item background (odd tracks)
+---* <strong>col_mi_bg</strong> : Media item background (even tracks)
 ---* <strong>col_tr1_itembgsel</strong> : Media item background selected (odd tracks)
 ---* <strong>col_tr2_itembgsel</strong> : Media item background selected (even tracks)
 ---* <strong>itembg_drawmode</strong> : Media item background fill mode
@@ -3878,6 +3889,7 @@ function reaper.SetTempoTimeSigMarker(proj, ptidx, timepos, measurepos, beatpos,
 ---* <strong>col_stretchmarker_text</strong> : Media item stretch marker text
 ---* <strong>col_stretchmarker_tm</strong> : Media item transient guide handle
 ---* <strong>take_marker</strong> : Media item take marker
+---* <strong>take_marker_sel</strong> : Media item take marker when item selected
 ---* <strong>selitem_tag</strong> : Selected media item bar color
 ---* <strong>activetake_tag</strong> : Active media item take bar color
 ---* <strong>col_tr1_bg</strong> : Track background (odd tracks)
@@ -3929,10 +3941,14 @@ function reaper.SetTempoTimeSigMarker(proj, ptidx, timepos, measurepos, beatpos,
 ---* <strong>guideline_drawmode</strong> : Editing guide fill mode
 ---* <strong>region</strong> : Regions
 ---* <strong>region_lane_bg</strong> : Region lane background
----* <strong>region_lane_text</strong> : Region lane text
+---* <strong>region_lane_text</strong> : Region text
+---* <strong>region_edge</strong> : Region edge
+---* <strong>region_edge_sel</strong> : Region text and edge (selected)
 ---* <strong>marker</strong> : Markers
 ---* <strong>marker_lane_bg</strong> : Marker lane background
----* <strong>marker_lane_text</strong> : Marker lane text
+---* <strong>marker_lane_text</strong> : Marker text
+---* <strong>marker_edge</strong> : Marker edge
+---* <strong>marker_edge_sel</strong> : Marker text and edge (selected)
 ---* <strong>col_tsigmark</strong> : Time signature change marker
 ---* <strong>ts_lane_bg</strong> : Time signature lane background
 ---* <strong>ts_lane_text</strong> : Time signature lane text
@@ -5035,7 +5051,9 @@ function reaper.TrackFX_GetIOSize(track, fx) end
 ---param.X.container_map.delete : read this value in order to remove the mapping for this parameter<br>
 ---container_map.add : read from this value to add a new container parameter mapping -- will return new parameter index (accessed via param.X.container_map.*)<br>
 ---container_map.add.FXID.PARMIDX : read from this value to add/get container parameter mapping for FXID/PARMIDX -- will return the parameter index (accessed via param.X.container_map.*). FXID can be a full address (must be a child of the container) or a 0-based sub-index (v7.06+).<br>
----container_map.get.FXID.PARMIDX : read from this value to get container parameter mapping for FXID/PARMIDX -- will return the parameter index (accessed via param.X.container_map.*). FXID can be a full address (must be a child of the container) or a 0-based sub-index (v7.06+).
+---container_map.get.FXID.PARMIDX : read from this value to get container parameter mapping for FXID/PARMIDX -- will return the parameter index (accessed via param.X.container_map.*). FXID can be a full address (must be a child of the container) or a 0-based sub-index (v7.06+).<br>
+---chain_pdc_actual : returns the actual chain latency in samples, only valid after playback has commenced, may be rounded up to block size.<br>
+---chain_pdc_reporting : returns the reported chain latency, always valid, not rounded to block size.
 ---
 ---Supported values for read/write:<br>
 ---vst_chunk[_program] : base64-encoded VST-specific chunk.<br>
