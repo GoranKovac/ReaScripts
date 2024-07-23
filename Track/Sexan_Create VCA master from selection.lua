@@ -1,14 +1,16 @@
 -- @description Create VCA Master from selection
 -- @author SeXan
 -- @license GPL v3
--- @version 1.712
+-- @version 1.713
 -- @changelog
---  MEDIA_EDIT_LEAD/FOLLOW FLAGS
+--  User setting "reverse" to set groups in non reverse order (1-64)
+--  Script default is reverse
 
 
 
 -- USER SETTING
 ---------------
+local reverse = 1     -- (1 groups set from 64-1 , 0 groups set from 1-64)  
 local group_range = 1 -- (1 creates from 64-1, 32 creates 32-64)
 local popup = 0       -- (set to 0 for no popup, set to 1 for popup asking to name the VCA group)
 local mute_solo = 1   -- (set to 0 to disable mute and solo flags)
@@ -77,6 +79,7 @@ function create_VCAs()
                 free_group = 2 ^ (i - 1)
             end
             if group_range == 32 then break end -- ADD BREAK TO ITERIATE FROM 1 to 32, without its 32 to 1
+            if reverse == 0 then break end
         end
     end
     local group_idx = math.log(free_group, 2) + (high and 32 or 0) + 1
