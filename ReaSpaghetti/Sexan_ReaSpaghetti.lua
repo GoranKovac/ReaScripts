@@ -1,9 +1,9 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.49.2
+-- @version 0.49.3
 -- @changelog
---  Improve data serializer to handle inf,-inf,nan (hopefully)
+--  Improve data serializer to handle inf,-inf,nan (hopefully) V2
 -- @provides
 --   api_file.txt
 --   Modules/*.lua
