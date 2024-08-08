@@ -138,17 +138,21 @@ function SerializeTableEXTSTATE(val, name, skipnewlines, depth)
             tmp = tmp .. SerializeTable(v, k, skipnewlines, depth + 1) --.. "," .. (not skipnewlines and "\n" or "")
         end
         tmp = tmp .. string.rep(" ", depth) .. "}"
-    elseif type(val) == "number" then
-        tmp = tmp .. tostring(val)
-    elseif type(val) == "string" then
-        tmp = tmp .. string.format("%q", val)
-    elseif type(val) == "boolean" then
-        tmp = tmp .. (val and "true" or "false")
     else
-        --! THIS IS MODIFICATION FOR THIS SCRIPT
-        --! POINTERS GET RECALCULATED ON RUN SO WE NIL HERE (MEDIATRACKS, MEDIAITEMS... )
-        tmp = tmp .. "nil"
-        --tmp = tmp .. "\"[inserializeable datatype:" .. type(val) .. "]\""
+        -- HOPE TO FIX INF, -INF, NAN 
+        val = type(val) ~= 'userdata' and val or nil
+        tmp = tmp .. ('%q'):format(val)
+    -- elseif type(val) == "number" then
+    --     tmp = tmp .. tostring(val)
+    -- elseif type(val) == "string" then
+    --     tmp = tmp .. string.format("%q", val)
+    -- elseif type(val) == "boolean" then
+    --     tmp = tmp .. (val and "true" or "false")
+    -- else
+    --     --! THIS IS MODIFICATION FOR THIS SCRIPT
+    --     --! POINTERS GET RECALCULATED ON RUN SO WE NIL HERE (MEDIATRACKS, MEDIAITEMS... )
+    --     tmp = tmp .. "nil"
+    --     --tmp = tmp .. "\"[inserializeable datatype:" .. type(val) .. "]\""
     end
     return tmp
 end

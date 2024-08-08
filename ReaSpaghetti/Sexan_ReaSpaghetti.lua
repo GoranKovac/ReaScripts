@@ -1,9 +1,9 @@
 -- @description ReaSpaghetti Visual Scripter
 -- @author Sexan
 -- @license GPL v3
--- @version 0.49.1
+-- @version 0.49.2
 -- @changelog
---  Fix Integer/number fields from reading strings (PushStyleVar, DragDouble and similar nodes)
+--  Improve data serializer to handle inf,-inf,nan (hopefully)
 -- @provides
 --   api_file.txt
 --   Modules/*.lua
