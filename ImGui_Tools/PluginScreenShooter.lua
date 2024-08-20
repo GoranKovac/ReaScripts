@@ -19,7 +19,7 @@ if #deps ~= 0 then
 end
 
 local ctx = r.ImGui_CreateContext('FX SCREENSHOTER')
-local png_folder = "\\Scripts\\FX_PNG\\"
+local png_folder = "/Scripts/FX_PNG/"
 local folder = r.GetResourcePath() .. png_folder
 if not r.file_exists(folder) then
     os.execute("mkdir " .. folder)
