@@ -125,8 +125,8 @@ local function takeScreenshot(fxIndex, path)
     if retval then
         local destBmp
         local w, h = right - left, bottom - top
+        local off_y = FxOffset()
         if not IsOSX() then
-            local off_y = FxOffset()
             local srcDC = r.JS_GDI_GetClientDC(window)
             destBmp = r.JS_LICE_CreateBitmap(true, w, h - off_y)
             local destDC = r.JS_LICE_GetDC(destBmp)
@@ -136,7 +136,7 @@ local function takeScreenshot(fxIndex, path)
             r.JS_LICE_DestroyBitmap(destBmp)
         else
             h = top - bottom
-            destBmp = ScreenshotOSX(path, right - 1, top, 1, h)
+            destBmp = ScreenshotOSX(path, right, top, left, h - off_y)
         end
         if r.ValidatePtr(track, "MediaTrack*") then
             r.TrackFX_Delete(track, fxIndex)
