@@ -109,7 +109,7 @@ end
 
 local function ScreenshotOSX(path, x, y, w, h)
     x, y = r.ImGui_PointConvertNative(ctx, x, y, false)
-    local filename = os.tmpname() -- a shell-safe value
+    --local filename = os.tmpname() -- a shell-safe value
     local command = 'screencapture -x -R %d,%d,%d,%d -t png "%s"'
     os.execute(command:format(x, y, w, h, path .. ".png"))
     --local png = r.JS_LICE_LoadPNG(filename)
