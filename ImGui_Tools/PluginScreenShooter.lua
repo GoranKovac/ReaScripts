@@ -136,7 +136,7 @@ local function takeScreenshot(fxIndex, path)
             r.JS_LICE_DestroyBitmap(destBmp)
         else
             h = top - bottom
-            destBmp = ScreenshotOSX(path, right, top, left, h - off_y)
+            destBmp = ScreenshotOSX(path, right, top, w, h - off_y)
         end
         if r.ValidatePtr(track, "MediaTrack*") then
             r.TrackFX_Delete(track, fxIndex)
