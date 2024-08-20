@@ -1,8 +1,8 @@
 -- Credits nihilboy for idea
 
 local r = reaper
+local running_os = r.GetOS()
 local deps = {}
-
 local proc_delay = 0.5
 local SIZE_DATA = {}
 if not r.ImGui_GetVersion then
@@ -101,18 +101,43 @@ local function FxOffset()
     return pluginName:match("^JS") and 0 or 27
 end
 
+local function IsOSX()
+    if running_os:match("OSX") or running_os:match("macOS") then
+        return true
+    end
+end
+
+local function ScreenshotOSX(path, x, y, w, h)
+    x, y = r.ImGui_PointConvertNative(ctx, x, y, false)
+    local filename = os.tmpname() -- a shell-safe value
+    local command = 'screencapture -x -R %d,%d,%d,%d -t png "%s"'
+    os.execute(command:format(x, y, w, h, path .. ".png"))
+    --local png = r.JS_LICE_LoadPNG(filename)
+    --os.remove(filename)
+    --return png
+end
+
 local function takeScreenshot(fxIndex, path)
     local window = r.TrackFX_GetFloatingWindow(track, fxIndex)
-    local retval, w, h = r.JS_Window_GetClientSize(window)
+    --local retval, w, h = r.JS_Window_GetClientSize(window)
+    --local retval, left, top, right, bottom = r.JS_Window_GetRect(window)
+    local retval, left, top, right, bottom = r.JS_Window_GetClientRect( window )
     if retval then
-        local off_y = FxOffset()
-        local srcDC = r.JS_GDI_GetClientDC(window)
-        local destBmp = r.JS_LICE_CreateBitmap(true, w, h - off_y)
-        local destDC = r.JS_LICE_GetDC(destBmp)
-        r.JS_GDI_Blit(destDC, 0, -off_y, srcDC, 0, 0, w, h)
-        r.JS_LICE_WritePNG(path .. ".png", destBmp, false)
-        r.JS_GDI_ReleaseDC(window, srcDC)
-        r.JS_LICE_DestroyBitmap(destBmp)
+        local destBmp
+        local w, h = right - left, bottom - top
+        if not IsOSX() then
+            local off_y = FxOffset()
+            local srcDC = r.JS_GDI_GetClientDC(window)
+            destBmp = r.JS_LICE_CreateBitmap(true, w, h - off_y)
+            local destDC = r.JS_LICE_GetDC(destBmp)
+            r.JS_GDI_Blit(destDC, 0, -off_y, srcDC, 0, 0, w, h)
+            r.JS_LICE_WritePNG(path .. ".png", destBmp, false)
+            r.JS_GDI_ReleaseDC(window, srcDC)
+            r.JS_LICE_DestroyBitmap(destBmp)
+        else
+            h = top - bottom
+            destBmp = ScreenshotOSX(path, right - 1, top, 1, h)
+        end
         if r.ValidatePtr(track, "MediaTrack*") then
             r.TrackFX_Delete(track, fxIndex)
         end
