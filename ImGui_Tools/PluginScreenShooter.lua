@@ -1,11 +1,16 @@
 -- Credits nihilboy for idea
 
 local r = reaper
-local running_os = r.GetOS()
+package.path = r.ImGui_GetBuiltinPath() .. '/?.lua'
+local im = require 'imgui' '0.9.2'
+
+local platform = r.GetOS()
+
 local deps = {}
 local proc_delay = 0.5
 local SIZE_DATA = {}
-if not r.ImGui_GetVersion then
+
+if not im.GetVersion then
     deps[#deps + 1] = '"Dear Imgui"'
 end
 if not r.JS_ReaScriptAPI_Version then
@@ -18,18 +23,54 @@ if #deps ~= 0 then
     return true
 end
 
-local ctx = r.ImGui_CreateContext('FX SCREENSHOTER')
+local function PrintTraceback(err)
+    local byLine = "([^\r\n]*)\r?\n?"
+    local trimPath = "[\\/]([^\\/]-:%d+:.+)$"
+    local stack = {}
+    for line in string.gmatch(err, byLine) do
+        local str = string.match(line, trimPath) or line
+        stack[#stack + 1] = str
+    end
+    r.ShowConsoleMsg(
+        "Error: " .. stack[1] .. "\n\n" ..
+        "Stack traceback:\n\t" .. table.concat(stack, "\n\t", 3) .. "\n\n" ..
+        "Reaper:       \t" .. r.GetAppVersion() .. "\n" ..
+        "Platform:     \t" .. r.GetOS()
+    )
+end
+
+function PDefer(func)
+    r.defer(function()
+        local status, err = xpcall(func, debug.traceback)
+        if not status then
+            PrintTraceback(err)
+            Exit()
+        end
+    end)
+end
+
+local ctx = im.CreateContext('FX SCREENSHOTER')
+
 local png_folder = "/Scripts/FX_PNG/"
 local folder = r.GetResourcePath() .. png_folder
+
 if not r.file_exists(folder) then
     os.execute("mkdir " .. folder)
 end
 
 r.InsertTrackAtIndex(r.CountTracks(0), false)
-local track = r.GetTrack(r.CountTracks(0), 0)
-local i = 0
 
-function SerializeToFile(val, name, skipnewlines, depth)
+local track = r.GetTrack(r.CountTracks(0), 0)
+local fx_idx = 0
+
+local total_fx = 0
+for j = 1, math.huge do
+    local retval = r.EnumInstalledFX(j)
+    if not retval then break end
+    total_fx = total_fx + 1
+end
+
+local function SerializeTable(val, name, skipnewlines, depth)
     skipnewlines = skipnewlines or false
     depth = depth or 0
     local tmp = string.rep(" ", depth)
@@ -43,35 +84,19 @@ function SerializeToFile(val, name, skipnewlines, depth)
         tmp = tmp .. name .. " = "
     end
     if type(val) == "table" then
-        tmp = tmp .. "{" .. (not skipnewlines and "\n" or "")
+        tmp = tmp .. "{"                                               .. (not skipnewlines and "\n" or "")
         for k, v in pairs(val) do
-            tmp = tmp .. SerializeToFile(v, k, skipnewlines, depth + 1) .. "," .. (not skipnewlines and "\n" or "")
+            tmp = tmp .. SerializeTable(v, k, skipnewlines, depth + 1) .. "," .. (not skipnewlines and "\n" or "")
         end
         tmp = tmp .. string.rep(" ", depth) .. "}"
-    elseif type(val) == "number" then
-        tmp = tmp .. tostring(val)
-    elseif type(val) == "string" then
-        tmp = tmp .. string.format("%q", val)
-    elseif type(val) == "boolean" then
-        tmp = tmp .. (val and "true" or "false")
     else
-        --! THIS IS MODIFICATION FOR THIS SCRIPT
-        --! POINTERS GET RECALCULATED ON RUN SO WE NIL HERE (MEDIATRACKS, MEDIAITEMS... )
-        tmp = tmp .. "nil"
-        --tmp = tmp .. "\"[inserializeable datatype:" .. type(val) .. "]\""
+        val = type(val) ~= 'userdata' and val or nil
+        tmp = tmp .. ('%q'):format(val)    
     end
     return tmp
 end
 
-function StringToTable(str)
-    local f, err = load("return " .. str)
-    if err then
-        reaper.ShowConsoleMsg("\nerror" .. err)
-    end
-    return f ~= nil and f() or nil
-end
-
-function TableToString(table) return SerializeToFile(table) end
+function TableToString(table) return SerializeTable(table) end
 
 function WriteToFile(path, data)
     local file_cat = io.open(path, "w")
@@ -90,7 +115,7 @@ function Wait(startTime, callback)
     PROCESS = true
     if r.time_precise() - startTime > proc_delay then
         callback()
-        i = i + 1
+        fx_idx = fx_idx + 1
         PROCESS = nil
     else
         r.defer(function() Wait(startTime, callback) end)
@@ -102,13 +127,13 @@ local function FxOffset()
 end
 
 local function IsOSX()
-    if running_os:match("OSX") or running_os:match("macOS") then
+    if platform:match("OSX") or platform:match("macOS") then
         return true
     end
 end
 
 local function ScreenshotOSX(path, x, y, w, h)
-    x, y = r.ImGui_PointConvertNative(ctx, x, y, false)
+    x, y = im.PointConvertNative(ctx, x, y, false)
     --local filename = os.tmpname() -- a shell-safe value
     local command = 'screencapture -x -R %d,%d,%d,%d -t png "%s"'
     os.execute(command:format(x, y, w, h, path .. ".png"))
@@ -119,8 +144,6 @@ end
 
 local function takeScreenshot(fxIndex, path)
     local window = r.TrackFX_GetFloatingWindow(track, fxIndex)
-    --local retval, w, h = r.JS_Window_GetClientSize(window)
-    --local retval, left, top, right, bottom = r.JS_Window_GetRect(window)
     local retval, left, top, right, bottom = r.JS_Window_GetClientRect( window )
     if retval then
         local destBmp
@@ -136,7 +159,7 @@ local function takeScreenshot(fxIndex, path)
             r.JS_LICE_DestroyBitmap(destBmp)
         else
             h = top - bottom
-            destBmp = ScreenshotOSX(path, right, top, w, h - off_y)
+            ScreenshotOSX(path, right, top, w, h - off_y)
         end
         if r.ValidatePtr(track, "MediaTrack*") then
             r.TrackFX_Delete(track, fxIndex)
@@ -145,13 +168,29 @@ local function takeScreenshot(fxIndex, path)
     end
 end
 
-function Main()
+local function BuildDatabase()
+    SIZE_DATA = {}
+    for j = 1, math.huge do
+        local retval, pluginName = r.EnumInstalledFX(j)
+        if not retval then break end
+        local png_name = pluginName:gsub("[-:_/%s><]", "_")
+        local path = folder .. png_name .. ".png"
+        if r.file_exists(path) then
+            local img = im.CreateImage(path)
+            local w, h = im.Image_GetSize(img)
+            SIZE_DATA[pluginName] = { path = png_folder .. png_name .. ".png", w = w, h = h }
+        end
+    end
+    WriteFxData()
+end
+
+local function Process()
     if DONE then return end
-    retval, pluginName = r.EnumInstalledFX(i)
+    retval, pluginName = r.EnumInstalledFX(fx_idx)
     if not retval then
         START = false
         DONE = true
-        --WriteFxData()
+        BuildDatabase()
         return
     end
     if pluginName then
@@ -169,50 +208,37 @@ function Main()
                 )
             end
         else
-            i = i + 1
+            fx_idx = fx_idx + 1
         end
     else
-        i = i + 1
-    end
+        fx_idx = fx_idx + 1
+    end 
 end
 
-local function BuildDatabase()
-    SIZE_DATA = {}
-    for j = 1, math.huge do
-        local retval, pluginName = r.EnumInstalledFX(j)
-        if not retval then break end
-        local png_name = pluginName:gsub("[-:_/%s><]", "_")
-        local path = folder .. png_name .. ".png"
-        if r.file_exists(path) then
-            local img = r.ImGui_CreateImage(path)
-            local w, h = r.ImGui_Image_GetSize(img)
-            SIZE_DATA[pluginName] = { path = png_folder .. png_name .. ".png", w = w, h = h }
-        end
-    end
-    WriteFxData()
-end
-
-local function gui()
-    local visible, open = r.ImGui_Begin(ctx, 'FX SCREENSHOTER', true)
+local function Main()
+    local visible, open = im.Begin(ctx, 'FX SCREENSHOTER', true)
     if visible then
-        if r.ImGui_Button(ctx, START and "STOP" or "START") then
+        if START then Process() end
+        if im.Button(ctx, START and "STOP" or "START") then
+            if not START then
+              BuildDatabase()
+            end
             START = not START
             if DONE then DONE = nil end
         end
-        r.ImGui_SameLine(ctx)
-
-        if START then Main() end
-        r.ImGui_Text(ctx, DONE and "FINISHED" or (START and "PROCESSING : ID " .. i .. " - " .. (pluginName or "") or ""))
-        if not START then
-            if r.ImGui_Button(ctx, "BUILD PNG DATABASE") then
-                BuildDatabase()
-            end
+        if fx_idx > 0 then
+          im.SameLine(ctx)
+          im.Text(ctx, fx_idx .. " of " .. total_fx)
+          im.ProgressBar(ctx,fx_idx/total_fx)
+          if START then
+            im.Text(ctx, DONE and "FINISHED" or (START and "PROCESSING : " .. (pluginName or "") or ""))
+          end
         end
-        r.ImGui_End(ctx)
+        im.End(ctx)
     end
 
     if open then
-        r.defer(gui)
+        PDefer(Main)
     end
 end
 
@@ -223,4 +249,4 @@ function Exit()
 end
 
 r.atexit(Exit)
-gui()
+PDefer(Main)
