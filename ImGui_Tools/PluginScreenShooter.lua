@@ -134,12 +134,8 @@ end
 
 local function ScreenshotOSX(path, x, y, w, h)
     x, y = im.PointConvertNative(ctx, x, y, false)
-    --local filename = os.tmpname() -- a shell-safe value
     local command = 'screencapture -x -R %d,%d,%d,%d -t png "%s"'
     os.execute(command:format(x, y, w, h, path .. ".png"))
-    --local png = r.JS_LICE_LoadPNG(filename)
-    --os.remove(filename)
-    --return png
 end
 
 local function takeScreenshot(fxIndex, path)
@@ -159,7 +155,7 @@ local function takeScreenshot(fxIndex, path)
             r.JS_LICE_DestroyBitmap(destBmp)
         else
             h = top - bottom
-            ScreenshotOSX(path, right, top - off_y, w, h - off_y)
+            ScreenshotOSX(path, left, top - off_y, w, h - off_y)
         end
         if r.ValidatePtr(track, "MediaTrack*") then
             r.TrackFX_Delete(track, fxIndex)
