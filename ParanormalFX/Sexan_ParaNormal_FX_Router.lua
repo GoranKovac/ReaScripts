@@ -1,9 +1,10 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.37.56
+-- @version 1.37.57
 -- @changelog
---  Init AW,AH values 0,0
+--  Added option "CENTER RESET" in BEHAVIOR settings
+--  Centers/Resets view on track change or script start
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -163,6 +164,8 @@ CTRL_DRAG_AUTOCONTAINER = false
 TOOLTIPS                = true
 SHOW_C_CONTENT_TOOLTIP  = true
 V_LAYOUT                = true
+CENTER_RESET            = false
+
 
 OPEN_PM_INSPECTOR       = false
 MODE                    = "TRACK"
@@ -207,6 +210,7 @@ if r.HasExtState("PARANORMALFX2", "SETTINGS") then
             ZOOM_MAX = storedTable.zoom_max and storedTable.zoom_max or 1
             ADD_BTN_H = storedTable.add_btn_h
             ADD_BTN_W = storedTable.add_btn_w
+            CENTER_RESET = storedTable.center_reset ~= nil and storedTable.center_reset or CENTER_RESET
             WireThickness = storedTable.wirethickness
             COLOR["wire"] = storedTable.wire_color
             COLOR["n"] = storedTable.fx_color
@@ -278,9 +282,15 @@ function RestoreFromPEXT(mode)
             if mode == "TRACK" and r.ValidatePtr(TRACK, "MediaTrack*") then
                 CANVAS = storedTable.CANVAS
                 SetTRContainerData(storedTable.CONTAINERS)
+                if CENTER_RESET then
+                    ResetView(true)
+                end
             elseif mode == "ITEM" and r.ValidatePtr(TAKE, "MediaItem_Take*") then
                 CANVAS = storedTable.CANVAS
                 SetTRContainerData(storedTable.CONTAINERS)
+                if CENTER_RESET then
+                    ResetView(true)
+                end
             end
             return true
         end
@@ -422,7 +432,7 @@ local function Main()
     ITEM = r.GetSelectedMediaItem(0, 0)
     TAKE = PIN and SEL_LIST_TAKE or (ITEM and r.GetActiveTake(ITEM))
     UpdateTarget()
-    UpdateLastTargetCanvas()
+    --UpdateLastTargetCanvas()
 
     -- if REAPER_DND then
     --     ImGui.SetNextWindowSizeConstraints(ctx, 500, 500, FLT_MAX, FLT_MAX)
@@ -449,6 +459,8 @@ local function Main()
         WX, WY = r.ImGui_GetWindowPos(ctx)
         MX, MY = r.ImGui_GetMousePos(ctx)
         DRAGX, DRAGY = r.ImGui_GetMouseDragDelta(ctx, nil, nil, 0)
+        UpdateLastTargetCanvas()
+        
         r.ImGui_PushFont(ctx, CUSTOM_FONT and SYSTEM_FONT_FACTORY or DEFAULT_FONT_FACTORY)
 
         r.ImGui_Text(ctx, "MODE ")

@@ -615,6 +615,7 @@ local function StoreSettings()
             offline_color = COLOR["offline"],
             anim_color = COLOR["sine_anim"],
             background = COLOR["bg"],
+            center_reset = CENTER_RESET,
         }
     )
     r.SetExtState("PARANORMALFX2", "SETTINGS", data, true)
@@ -1057,7 +1058,7 @@ function DrawUserSettings()
         settings_min_h = settings_min_h + 230
     end
     if CLH_BEHAVIORS then
-        settings_min_h = settings_min_h + 157
+        settings_min_h = settings_min_h + 180
     end
     if r.ImGui_BeginChild(ctx, "USERSETTIGS", 220, settings_min_h, true) then --718
         SETTINGS_HOVERED = r.ImGui_IsWindowHovered(ctx)
@@ -1157,6 +1158,9 @@ function DrawUserSettings()
             SettingsTooltips("+ || BUTTONS HAVE ANIMATED COLOR\nFOR BETTER VISIBILITY WHEN DRAGGING")
             _, CTRL_DRAG_AUTOCONTAINER = r.ImGui_Checkbox(ctx, "CTRL-DRAG AUTOCONTAINER", CTRL_DRAG_AUTOCONTAINER)
             SettingsTooltips("CTRL-DRAG COPYING FX OVER ANOTHER FX\nWILL ENCLOSE BOTH IN CONTAINER")
+            _, CENTER_RESET = r.ImGui_Checkbox(ctx, "CENTER RESET", CENTER_RESET)
+            SettingsTooltips("RESET/CENTER VIEW ON TRACK CHANGE, SCRIPT START")
+
             if r.ImGui_BeginListBox(ctx, "NEW FX\nDND", nil, 38) then
                 if r.ImGui_Selectable(ctx, "REPLACE", DEFAULT_DND == true) then
                     DEFAULT_DND = true
@@ -1187,6 +1191,7 @@ function DrawUserSettings()
             WireThickness = 1
             ADD_BTN_W = 55
             ADD_BTN_H = 14
+            CENTER_RESET = false
             local NEW_COLOR = {
                 ["bg"]           = 0x111111FF,
                 ["n"]            = 0x315e94ff,
