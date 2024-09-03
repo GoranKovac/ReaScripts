@@ -1,10 +1,10 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.37.57
+-- @version 1.37.58
 -- @changelog
---  Added option "CENTER RESET" in BEHAVIOR settings
---  Centers/Resets view on track change or script start
+--  Check if fxdata is not nil when updating fx table
+--  Prevents crash when marquee deleting container with its children
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf

@@ -93,10 +93,12 @@ local function CheckKeys()
             for k in pairs(SEL_TBL) do
                 UpdateFxData()
                 local updated_fx = GetFx(k)
-                local parrent_container = GetParentContainerByGuid(updated_fx)
-                local item_id = CalcFxID(parrent_container, updated_fx.IDX)
-                CheckNextItemParallel(updated_fx.IDX, parrent_container)
-                API.Delete(TARGET, item_id)
+                if updated_fx then
+                    local parrent_container = GetParentContainerByGuid(updated_fx)
+                    local item_id = CalcFxID(parrent_container, updated_fx.IDX)
+                    CheckNextItemParallel(updated_fx.IDX, parrent_container)
+                    API.Delete(TARGET, item_id)
+                end
             end
             SEL_TBL = {}
             ValidateClipboardFX()
