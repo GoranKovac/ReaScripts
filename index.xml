@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="545c7547163f39cd93c0297827155aff4dcce0df" name="Sexan_Scripts">
+<index version="1" commit="f30b37ffccd0a547c15e450b5526fb9905a6bc08" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -7776,14 +7776,6 @@ Script default is reverse]]></changelog>
 Change buffer/rate
 Reset to default settings]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/a2bad0112c51634bc8b9f6e7ddc3f070c2d5c3ec/Utils/PipeWireConfig.lua</source>
-      </version>
-    </reapack>
-  </category>
-  <category name="Various">
-    <reapack name="Track_Icon_Selector.lua" type="script" desc="Track Icon Selector">
-      <version name="1.0" author="Sexan" time="2024-06-23T14:57:42Z">
-        <changelog><![CDATA[Initial release]]></changelog>
-        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/71bbf73f540f2483f45e46eeb3e9fa76f74a1720/Various/Track_Icon_Selector.lua</source>
       </version>
     </reapack>
   </category>
