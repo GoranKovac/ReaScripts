@@ -1,10 +1,3 @@
--- @description Track Icon Selector
--- @author Sexan
--- @license GPL v3
--- @version 1.0
--- @changelog
---  Initial release
-
 local r                = reaper
 package.path           = r.ImGui_GetBuiltinPath() .. '/?.lua'
 local os_separator     = package.config:sub(1, 1)
