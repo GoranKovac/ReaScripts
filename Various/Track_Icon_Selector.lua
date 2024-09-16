@@ -12,6 +12,20 @@ local os_separator     = package.config:sub(1, 1)
 local imgui            = require "imgui" "0.9.1"
 local reaper_path      = r.GetResourcePath()
 
+local function NeedDeps()
+    local deps = {}
+
+    if not r.ImGui_GetVersion then
+        deps[#deps + 1] = '"Dear Imgui"'
+    end
+    if #deps ~= 0 then
+        r.ShowMessageBox("Script needs ReaImGui.\nPlease Install it in next window", "MISSING DEPENDENCIES", 0)
+        r.ReaPack_BrowsePackages(table.concat(deps, " OR "))
+        return true
+    end
+end
+if NeedDeps() then return end
+
 local COLORS           = {
     ["win_bg"] = 0x282828ff,
     ["sidebar_col"] = 0x2c2c2cff,
@@ -128,16 +142,6 @@ for i = 0, #MAIN_PNG_TBL do
     table.sort(MAIN_PNG_TBL[i], function(a, b) if a.name and b.name then return a.name:lower() < b.name:lower() end end)
 end
 
--- local function RefreshImgObj2()
---     for i = 1, #MAIN_PNG_TBL do
---         for j = 1, #MAIN_PNG_TBL[i] do
---             if MAIN_PNG_TBL[i][j].img_obj then
---                 MAIN_PNG_TBL[i][j].img_obj = nil
---             end
---         end
---     end
--- end
-
 local function RefreshImgObj()
     for i = 1, #FILTERED_PNG do
         if FILTERED_PNG[i].img_obj then
@@ -146,7 +150,11 @@ local function RefreshImgObj()
     end
 end
 
+local old_t, old_filter
 local function FilterActions(actions, filter_text)
+    if old_filter == filter_text then
+        return old_t
+    end
     local t = {}
     for i = 1, #actions do
         local action = actions[i]
@@ -164,6 +172,8 @@ local function FilterActions(actions, filter_text)
             end
         end
     end
+    old_filter = filter_text
+    old_t = t
     return t
 end
 
@@ -188,6 +198,7 @@ local cur_category = 0
 local sl_val = 1
 local function PngSelector(button_size)
     local ww = imgui.GetWindowSize(ctx)
+    local padding = imgui.GetStyleVar(ctx, imgui.StyleVar_FramePadding)
 
     imgui.PushStyleColor(ctx, imgui.Col_Text, COLORS["text_active"])
     imgui.PushStyleColor(ctx, imgui.Col_ChildBg, COLORS["win_bg"])
@@ -258,36 +269,38 @@ local function PngSelector(button_size)
 
             imgui.PushID(ctx, n)
             imgui.Dummy(ctx, button_size, button_size) -- PLACE HOLDER
-
-            if not imgui.ValidatePtr(FILTERED_PNG[n + 1].img_obj, 'ImGui_Image*') then
-                FILTERED_PNG[n + 1].img_obj = imgui.CreateImage(image)
-            end
-
-            imgui.SetCursorPos(ctx, xx, yy)
-
-            if imgui.ImageButton(ctx, "##png_select", FILTERED_PNG[n + 1].img_obj, button_size, button_size, 0, 0, 1, 1) then
-                for i = 1, #TRACKS do
-                    r.GetSetMediaTrackInfo_String(TRACKS[i], "P_ICON", image, true)
-                end
-                if QUIT_ON_SELECT then
-                    WANT_CLOSE = true
-                end
-                LAST_ICON = image
-                CUR_ICON = image
-            end
-
-            if imgui.IsItemHovered(ctx) and TOOLTIPS then
-                DrawTooltips(stripped_name)
-            end
-
+            
             local minx, miny = imgui.GetItemRectMin(ctx)
             local maxx, maxy = imgui.GetItemRectMax(ctx)
+            if imgui.IsRectVisibleEx(ctx, minx, miny, maxx, maxy) then
+                if not imgui.ValidatePtr(FILTERED_PNG[n + 1].img_obj, 'ImGui_Image*') then
+                    FILTERED_PNG[n + 1].img_obj = imgui.CreateImage(image)
+                end
+
+                imgui.SetCursorPos(ctx, xx, yy)
+
+                if imgui.ImageButton(ctx, "##png_select", FILTERED_PNG[n + 1].img_obj, button_size, button_size, 0, 0, 1, 1) then
+                    for i = 1, #TRACKS do
+                        r.GetSetMediaTrackInfo_String(TRACKS[i], "P_ICON", image, true)
+                    end
+                    if QUIT_ON_SELECT then
+                        WANT_CLOSE = true
+                    end
+                    LAST_ICON = image
+                    CUR_ICON = image
+                end
+
+                if imgui.IsItemHovered(ctx) and TOOLTIPS then
+                    DrawTooltips(stripped_name)
+                end
+            end
+
             if CUR_ICON == image then
                 if LAST_ICON ~= CUR_ICON then
                     SCROLL_TO_IMG = true
                     LAST_ICON = CUR_ICON
                 end
-                imgui.DrawList_AddRect(DRAW_LIST, minx, miny, maxx, maxy, COLORS["outline_col"], 0, 0, 2)
+                imgui.DrawList_AddRect(DRAW_LIST, minx, miny, maxx + (padding*2), maxy + padding*2, COLORS["outline_col"], 0, 0, 2)
                 if SCROLL_TO_IMG then
                     SCROLL_TO_IMG = nil
                     imgui.SetScrollHereY(ctx)
@@ -330,12 +343,14 @@ local function Categories()
                 if imgui.Selectable(ctx, "  All Icons", cur_category == 0, nil) then
                     cur_category = 0
                     NEED_REFRESH = true
+                    old_filter = nil
                 end
             else
                 if MAIN_PNG_TBL[i].dir then
                     if imgui.Selectable(ctx, "  " .. MAIN_PNG_TBL[i].dir, cur_category == i, nil) then
                         cur_category = i
                         NEED_REFRESH = true
+                        old_filter = nil
                     end
                 end
             end
@@ -491,4 +506,5 @@ local function main()
         r.defer(main)
     end
 end
+
 r.defer(main)
