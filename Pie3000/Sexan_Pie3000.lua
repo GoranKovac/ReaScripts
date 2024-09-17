@@ -1,10 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.57
+-- @version 0.35.58
 -- @changelog
---  Remove Beta context inject function
---  DropDown mode reset last action if no item is hovered
+--  Move early return prior checking main table data
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -242,13 +241,12 @@ else
     --end
 end
 
-if PIE_MENU.use_main then
-    PIE_MENU = PIES[PIE_MENU.main_name]
-end
-
 if not PIE_MENU then
     Release()
     return
+end
+if PIE_MENU.use_main then
+    PIE_MENU = PIES[PIE_MENU.main_name]
 end
 
 local function ConvertAndSetCursor(x, y)
