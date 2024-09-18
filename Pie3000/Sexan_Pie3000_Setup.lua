@@ -611,7 +611,7 @@ local function DeleteMenuFromPie(guid, tbl)
     end
     if #PIE_LIST ~= 0 then
         for i = #PIE_LIST, 1, -1 do
-            if PIE_LIST[i][1].guid == guid then
+            if PIE_LIST[i][1] and PIE_LIST[i][1].guid == guid then
                 table.remove(PIE_LIST, i)
             end
         end
