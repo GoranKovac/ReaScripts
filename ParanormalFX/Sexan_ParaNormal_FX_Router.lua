@@ -1,10 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.37.58
+-- @version 1.38
 -- @changelog
---  Check if fxdata is not nil when updating fx table
---  Prevents crash when marquee deleting container with its children
+--  Added support for saving item chains
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf

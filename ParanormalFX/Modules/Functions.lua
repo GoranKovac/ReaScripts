@@ -122,9 +122,9 @@ function OpenFX(id)
 end
 
 -- lb0 FUNCTION
-local function Chunk_GetFXChainSection(chunk)
+local function Chunk_GetFXChainSection(chunk, chunk_start)
     -- MAKE SURE WE FOUND FXCHAIN (CAN BE WITHOUT THIS ALSO)
-    local s1 = find(chunk, '<FXCHAIN.-\n')
+    local s1 = find(chunk, chunk_start)
     -- CHAIN STARTS WITH BYPASS
     s1 = find(chunk, 'BYPASS ', s1)
     if s1 then
@@ -159,7 +159,7 @@ end
 -- REVERSE EVERYTHING WE ARE LOOKIG FROM END TO START (WE FIND GUID THEN WE FIND ITS PARENT)
 function ExtractContainer(chunk, guid)
     local r_chunk = chunk:reverse()
-    local r_guid = guid:reverse()
+    local r_guid = ("FXID ".. guid):reverse() -- DONT MATCH EXTSTATE
     local s1 = find(r_chunk, r_guid, 1, true)
     if s1 then
         local s = s1
@@ -266,11 +266,18 @@ end
 
 function CreateFxChain(guid)
     --r.ShowConsoleMsg(tostring(TARGET))
-    local _, chunk = r.GetTrackStateChunk(TARGET, "")
-
+    local _, chunk, chunk_start
+    if MODE == "TRACK" then 
+        _, chunk = r.GetTrackStateChunk(TARGET, "")
+        chunk_start = '<FXCHAIN.-\n'
+    elseif MODE == "ITEM" then
+        chunk_start = '<TAKEFX.-\n'
+        _, chunk  = r.GetItemStateChunk( ITEM, "" )
+    end
+    
     local chain_chunk, s1, cl
     if not guid then
-        chain_chunk, s1, cl = Chunk_GetFXChainSection(chunk)
+        chain_chunk, s1, cl = Chunk_GetFXChainSection(chunk, chunk_start)
     else
         chain_chunk, s1, cl = ExtractContainer(chunk, guid)
     end
