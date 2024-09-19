@@ -9,6 +9,16 @@ local platform = r.GetOS()
 local deps = {}
 local proc_delay = 0.5
 local SIZE_DATA = {}
+local osx, linux, win
+local linux_app
+if platform:match("OSX") or platform:match("macOS") then
+    osx = true
+elseif platform:match("Other") then
+    linux = true
+    --AAA = reaper.ExecProcess('/bin/bash -c "which gnome-screenshot"',0)
+else
+    win = true
+end
 
 if not im.GetVersion then
     deps[#deps + 1] = '"Dear Imgui"'
@@ -55,7 +65,7 @@ local png_folder = "/Scripts/FX_PNG/"
 local folder = r.GetResourcePath() .. png_folder
 
 if not r.file_exists(folder) then
-    os.execute("mkdir " .. folder)
+    reaper.RecursiveCreateDirectory(folder,0)
 end
 
 r.InsertTrackAtIndex(r.CountTracks(0), false)
@@ -126,15 +136,15 @@ local function FxOffset()
     return pluginName:match("^JS") and 0 or 27
 end
 
-local function IsOSX()
-    if platform:match("OSX") or platform:match("macOS") then
-        return true
-    end
-end
-
 local function ScreenshotOSX(path, x, y, w, h)
     x, y = im.PointConvertNative(ctx, x, y, false)
     local command = 'screencapture -x -R %d,%d,%d,%d -t png "%s"'
+    os.execute(command:format(x, y, w, h, path .. ".png"))
+end
+
+local function ScreenshotLinux(path, x, y, w, h)
+    x, y = im.PointConvertNative(ctx, x, y, false)
+    local command = 'shutter -s %d,%d,%d,%d -e -o "%s"'
     os.execute(command:format(x, y, w, h, path .. ".png"))
 end
 
@@ -145,7 +155,7 @@ local function takeScreenshot(fxIndex, path)
         local destBmp
         local w, h = right - left, bottom - top
         local off_y = FxOffset()
-        if not IsOSX() then
+        if win or linux then
             local srcDC = r.JS_GDI_GetClientDC(window)
             destBmp = r.JS_LICE_CreateBitmap(true, w, h - off_y)
             local destDC = r.JS_LICE_GetDC(destBmp)
@@ -153,9 +163,11 @@ local function takeScreenshot(fxIndex, path)
             r.JS_LICE_WritePNG(path .. ".png", destBmp, false)
             r.JS_GDI_ReleaseDC(window, srcDC)
             r.JS_LICE_DestroyBitmap(destBmp)
-        else
+        elseif osx then
             h = top - bottom
             ScreenshotOSX(path, left, top - off_y, w, h - off_y)
+        else
+           -- ScreenshotLinux(path, left, top - off_y, w, h - off_y)
         end
         if r.ValidatePtr(track, "MediaTrack*") then
             r.TrackFX_Delete(track, fxIndex)
