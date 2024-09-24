@@ -81,10 +81,20 @@ local function CheckKeys()
 
     Z = ImGui.IsKeyPressed(ctx, ImGui.Key_Z())
     C = ImGui.IsKeyPressed(ctx, ImGui.Key_C())
+    B = ImGui.IsKeyPressed(ctx, ImGui.Key_B())
 
     DEL = ImGui.IsKeyPressed(ctx, ImGui.Key_Delete())
 
     if HOME then ResetView() end
+
+    -- TOGGLE FX BYPASS
+    if CTRL and B then
+        if TARGET then
+            for k, v in pairs(SEL_TBL) do   
+                API.SetEnabled(TARGET, v.FX_ID, not API.GetEnabled(TARGET, v.FX_ID))
+            end
+        end
+    end
 
     if DEL then
         if TARGET then

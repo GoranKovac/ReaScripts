@@ -1,9 +1,10 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.38
+-- @version 1.39
 -- @changelog
---  Added support for saving item chains
+--  Added shortcut for FX bypass toggle CTRL + B
+--  Toggle inverts current bypass state
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
