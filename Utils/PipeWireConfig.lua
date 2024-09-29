@@ -1,11 +1,9 @@
 -- @description PipeWire configurator (Linux)
 -- @author SeXan
 -- @license GPL v3
--- @version 1.01
+-- @version 1.02
 -- @changelog
---  Read current buffer/rate settings
---  Change buffer/rate
---  Reset to default settings
+--  Hardcode buffers and sample rates
 
 local r = reaper
 
@@ -50,18 +48,20 @@ end
 GetUpdate()
 
 local ctx = im.CreateContext('PW BUFFER')
+local HC_BUFS = { 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192 }
+local HC_RATES = { 44100, 48000, 96000, 192000, 384000 }
 
 local function loop()
-    im.SetNextWindowSizeConstraints(ctx, 150, 270, 150, 270)
+    im.SetNextWindowSizeConstraints(ctx, 150, 320, 150, 320)
     local visible, open = im.Begin(ctx, 'PipeWire', true)
     local cur_rate = FORCE_RATE ~= 0 and FORCE_RATE or DEF_RATE
     local cur_buffer = FORCE_BUF ~= 0 and FORCE_BUF or DEF_BUF
     if visible then
         im.BeginGroup(ctx)
         im.Text(ctx, "BUFFER")
-        for i = 1, #BUFFERS do
-            if im.RadioButton(ctx, BUFFERS[i], cur_buffer == BUFFERS[i]) then
-                local cmd = ("pw-metadata -n settings 0 clock.force-quantum %s"):format(BUFFERS[i])
+        for i = 1, #HC_BUFS do
+            if im.RadioButton(ctx, HC_BUFS[i], cur_buffer == HC_BUFS[i]) then
+                local cmd = ("pw-metadata -n settings 0 clock.force-quantum %s"):format(HC_BUFS[i])
                 r.ExecProcess(('/usr/bin/%s'):format(cmd), 1000)
                 GetUpdate()
             end
@@ -70,19 +70,21 @@ local function loop()
         im.SameLine(ctx)
         im.BeginGroup(ctx)
         im.Text(ctx, "SAMPLE RATE")
-        for i = 1, #RATES do
-            if im.RadioButton(ctx, RATES[i], cur_rate == RATES[i]) then
-                local cmd = ("pw-metadata -n settings 0 clock.force-rate %s"):format(RATES[i])
+        for i = 1, #HC_RATES do
+            if im.RadioButton(ctx, HC_RATES[i], cur_rate == HC_RATES[i]) then
+                local cmd = ("pw-metadata -n settings 0 clock.force-rate %s"):format(HC_RATES[i])
                 r.ExecProcess(('/usr/bin/%s'):format(cmd), 1000)
                 GetUpdate()
             end
         end
         im.EndGroup(ctx)
         if im.Button(ctx, "RESET TO DEFAULTS") then
-            local cmd = "pw-metadata -n settings 0 clock.force-rate 0; pw-metadata -n settings 0 clock.force-quantum 0"
+            local cmd =
+            "pw-metadata -n settings 0 clock.force-rate 0; pw-metadata -n settings 0 clock.force-quantum 0"
             r.ExecProcess(('/bin/bash -c "%s"'):format(cmd), 1000)
             GetUpdate()
         end
+
         im.End(ctx)
     end
 
