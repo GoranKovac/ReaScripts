@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="060ac92d3ca51651a4112de2605985883f6e3887" name="Sexan_Scripts">
+<index version="1" commit="e9927a6e5a8f2054fd6138271deca7d8c6f97fa3" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -7865,6 +7865,10 @@ Script default is reverse]]></changelog>
 Change buffer/rate
 Reset to default settings]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/a2bad0112c51634bc8b9f6e7ddc3f070c2d5c3ec/Utils/PipeWireConfig.lua</source>
+      </version>
+      <version name="1.02" author="SeXan" time="2024-09-29T08:18:01Z">
+        <changelog><![CDATA[Hardcode buffers and sample rates]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/e9927a6e5a8f2054fd6138271deca7d8c6f97fa3/Utils/PipeWireConfig.lua</source>
       </version>
     </reapack>
   </category>
