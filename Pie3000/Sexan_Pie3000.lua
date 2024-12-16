@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.59
+-- @version 0.35.60
 -- @changelog
---  Check for null when deleting menu
+--  Text Button style, calculate screen edge offset by largest name in the pie
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -273,12 +273,24 @@ local function NearEdge()
     PREV_X, PREV_Y = START_X, START_Y
 
     local len = ((PIE_MENU.RADIUS / sqrt(2)) * 2) // 1
-    if START_X - len < LEFT then
-        START_X = LEFT + len
+    -- AUTO DETECT TEXT STYLE LARGEST NAME
+    local text_style_len
+    if STYLE == 2 then
+        local longest = 0
+        for i = 1, #PIE_MENU do
+            local w = r.ImGui_CalcTextSize(ctx, PIE_MENU[i].name)
+            longest = w > longest and w or longest
+        end
+        text_style_len = (PIE_MENU.RADIUS / sqrt(2)) + longest
+    end
+    local lr_len = (STYLE == 2 and text_style_len or len)
+    -- AUTO DETECT TEXT STYLE LARGEST NAME
+    if START_X - lr_len < LEFT then
+        START_X = LEFT + lr_len
         OUT_SCREEN = true
     end
-    if START_X + len > RIGHT then
-        START_X = RIGHT - len
+    if START_X + lr_len > RIGHT then
+        START_X = RIGHT - lr_len
         OUT_SCREEN = true
     end
     if START_Y - len < TOP then
