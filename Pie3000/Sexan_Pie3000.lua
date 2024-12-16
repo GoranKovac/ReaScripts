@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.60
+-- @version 0.35.61
 -- @changelog
---  Text Button style, calculate screen edge offset by largest name in the pie
+--  Fix MASTER MCP and regular MCP names (MASTER appeared on regular mcp)
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua

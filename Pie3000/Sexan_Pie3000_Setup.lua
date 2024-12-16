@@ -35,14 +35,14 @@ local DEFAULT_PIE = {
     ["mastertcp"] = { RADIUS = RADIUS_START, name = "MASTER TCP", guid = r.genGuid() },
     ["mastertcpfxparm"] = { RADIUS = RADIUS_START, name = "MASTER TCP FX PARM", guid = r.genGuid(), use_main = true, main_name = "mastertcp" },
     -----------------------------
-    ["mcp"] = { RADIUS = RADIUS_START, name = "MASTER MCP", guid = r.genGuid() },
-    ["mcpfxlist"] = { RADIUS = RADIUS_START, name = "MASTER MCP FX LIST", guid = r.genGuid(), use_main = true, main_name = "mcp" },
-    ["mcpsendlist"] = { RADIUS = RADIUS_START, name = "MASTER MCP SEND LIST", guid = r.genGuid(), use_main = true, main_name = "mcp" },
+    ["mcp"] = { RADIUS = RADIUS_START, name = "MCP", guid = r.genGuid() },
+    ["mcpfxlist"] = { RADIUS = RADIUS_START, name = "MCP FX LIST", guid = r.genGuid(), use_main = true, main_name = "mcp" },
+    ["mcpsendlist"] = { RADIUS = RADIUS_START, name = "MCP SEND LIST", guid = r.genGuid(), use_main = true, main_name = "mcp" },
     -----------------------------
-    ["mastermcp"] = { RADIUS = RADIUS_START, name = "MCP", guid = r.genGuid() },
-    ["mastermcpfxlist"] = { RADIUS = RADIUS_START, name = "MCP FX LIST", guid = r.genGuid(), use_main = true, main_name = "mastermcp" },
-    ["mastermcpsendlist"] = { RADIUS = RADIUS_START, name = "MCP SEND LIST", guid = r.genGuid(), use_main = true, main_name = "mastermcp" },
-    ["mastermcpempty"] = { RADIUS = RADIUS_START, name = "MCP EMPTY", guid = r.genGuid(), use_main = true, main_name = "mastermcp" },
+    ["mastermcp"] = { RADIUS = RADIUS_START, name = "MASTER MCP", guid = r.genGuid() },
+    ["mastermcpfxlist"] = { RADIUS = RADIUS_START, name = "MASTER MCP FX LIST", guid = r.genGuid(), use_main = true, main_name = "mastermcp" },
+    ["mastermcpsendlist"] = { RADIUS = RADIUS_START, name = "MASTER MCP SEND LIST", guid = r.genGuid(), use_main = true, main_name = "mastermcp" },
+    ["mastermcpempty"] = { RADIUS = RADIUS_START, name = "MASTER MCP EMPTY", guid = r.genGuid(), use_main = true, main_name = "mastermcp" },
     -----------------------------
     ["envelope"] = { RADIUS = RADIUS_START, name = "ENVELOPE", guid = r.genGuid(), as_global = true },
     ["envcp"] = { RADIUS = RADIUS_START, name = "ENV CP", guid = r.genGuid() },
