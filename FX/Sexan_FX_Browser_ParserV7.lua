@@ -1,9 +1,9 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.32
+-- @version 1.33
 -- @changelog
---  One more fix (I've set the same table for both chains and templates...)
+--  Fix forgoten DEV_LIST return
 
 local r                                = reaper
 local os                               = r.GetOS()
@@ -47,7 +47,7 @@ function MakeFXFiles()
     local serialized_dev_list = TableToString(DEVELOPER_LIST)
     WriteToFile(FX_DEV_LIST_FILE, serialized_dev_list)
 
-    return PLUGIN_LIST, CAT
+    return PLUGIN_LIST, CAT, DEVELOPER_LIST
 end
 
 function ReadFXFile()
@@ -75,7 +75,7 @@ function ReadFXFile()
         DEVELOPER_LIST = StringToTable(dev_list_string)
     end
 
-    return PLUGIN_LIST, CAT
+    return PLUGIN_LIST, CAT, DEVELOPER_LIST
 end
 
 function WriteToFile(path, data)
