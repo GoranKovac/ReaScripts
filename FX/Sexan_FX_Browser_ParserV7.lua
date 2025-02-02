@@ -1,9 +1,9 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.35
+-- @version 1.36
 -- @changelog
---  Smart Folders support
+--  Smart Folders Implementation example 906-917
 
 local r                                = reaper
 local os                               = r.GetOS()
@@ -902,9 +902,21 @@ end
 --     end
 -- end
 
+
+-- local last_smart
+-- local function ParseSmartFolder(tbl)
+--     if last_smart ~= tbl.fx then
+--         tbl.fx = SmartFolder(tbl.filter)
+--         last_smart = tbl.fx;
+--     end
+-- end
+
 -- local function DrawItems(tbl, main_cat_name)
 --     for i = 1, #tbl do
 --         if r.ImGui_BeginMenu(ctx, tbl[i].name) then
+--             if tbl[i].smart then
+--                 ParseSmartFolder(tbl[i])
+--             end
 --             for j = 1, #tbl[i].fx do
 --                 if tbl[i].fx[j] then
 --                     local name = tbl[i].fx[j]
