@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="c0806e3af23f18c910331adb3a921063e0006268" name="Sexan_Scripts">
+<index version="1" commit="ad42735b64e8f9306dd71150f7187d6353855671" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -707,6 +707,10 @@ Found FX is added last to list then flags get deleted to ensure numeric key orde
       <version name="1.35" author="Sexan" time="2025-02-02T21:35:57Z">
         <changelog><![CDATA[Smart Folders support]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/c0806e3af23f18c910331adb3a921063e0006268/FX/Sexan_FX_Browser_ParserV7.lua</source>
+      </version>
+      <version name="1.36" author="Sexan" time="2025-02-02T21:47:33Z">
+        <changelog><![CDATA[Smart Folders Implementation example 906-917]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/ad42735b64e8f9306dd71150f7187d6353855671/FX/Sexan_FX_Browser_ParserV7.lua</source>
       </version>
     </reapack>
   </category>
