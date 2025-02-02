@@ -1,7 +1,7 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.34
+-- @version 1.35
 -- @changelog
 --  Smart Folders support
 
