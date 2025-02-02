@@ -1,9 +1,9 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.33
+-- @version 1.34
 -- @changelog
---  Fix forgoten DEV_LIST return
+--  Smart Folders support
 
 local r                                = reaper
 local os                               = r.GetOS()
@@ -157,7 +157,7 @@ local function GetDirFilesRecursive(dir, tbl, filter)
     for index = 0, math.huge do
         local file = r.EnumerateFiles(dir, index)
         if not file then break end
-        if file:find(filter,nil,true) then
+        if file:find(filter, nil, true) then
             tbl[#tbl + 1] = file:gsub(filter, "")
         end
     end
@@ -373,28 +373,28 @@ local function SortFoldersINI(fav_str)
     for line in fav_str:gmatch('[^\r\n]+') do
         local category = line:match("%[(.-)%]")
         if category then
-            if category:find("Folder",nil,true) then
+            if category:find("Folder", nil, true) then
                 add = true
                 --cur_folder = category
-                folders[#folders+1] = {name = category}
+                folders[#folders + 1] = { name = category }
             else
                 add = false
             end
         end
         if folders[#folders] and not category and add then
-            folders[#folders][#folders[#folders]+1] = line .. "\n"
+            folders[#folders][#folders[#folders] + 1] = line .. "\n"
         end
     end
-    
+
     local main_folder
-    for i = #folders, 1,-1 do
+    for i = #folders, 1, -1 do
         table.sort(folders[i])
-        table.insert(folders[i],1,"[" .. folders[i].name .. "]".. "\n")
+        table.insert(folders[i], 1, "[" .. folders[i].name .. "]" .. "\n")
         if folders[i].name == "Folders" then
-            main_folder = table.remove(folders,i)
+            main_folder = table.remove(folders, i)
         end
     end
-    folders[#folders+1] = main_folder
+    folders[#folders + 1] = main_folder
 
     local sorted = ""
     for i = 1, #folders do
@@ -410,7 +410,7 @@ local function ParseFavorites()
     local fav_path = r.GetResourcePath() .. "/reaper-fxfolders.ini"
     local fav_str  = GetFileContext(fav_path)
 
-    fav_str = SortFoldersINI(fav_str)
+    fav_str        = SortFoldersINI(fav_str)
 
     CAT[#CAT + 1]  = { name = "FOLDERS", list = {} }
 
@@ -490,7 +490,9 @@ local function ParseFavorites()
                     end
                 end
             elseif fx_type == "1048576" then -- SMART FOLDER
+                local folder_item = CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1]
                 CAT[#CAT].list[#CAT[#CAT].list].smart = true
+                CAT[#CAT].list[#CAT[#CAT].list].filter = folder_item:gsub("R_ITEM_", "", 1)
             end
         end
         -- RENAME ORIGINAL FOLDER NAME "[Folder0]" TO PROPER ID NAME (Name0=Favorites)
@@ -602,7 +604,7 @@ function GenerateFxList()
     end
     local TRACK_TEMPLATES = ParseTrackTemplates()
     if #TRACK_TEMPLATES ~= 0 then
-       CAT[#CAT + 1] = { name = "TRACK TEMPLATES", list = TRACK_TEMPLATES }
+        CAT[#CAT + 1] = { name = "TRACK TEMPLATES", list = TRACK_TEMPLATES }
     end
     AllPluginsCategory()
 
@@ -653,11 +655,72 @@ function UpdateChainsTrackTemplates(cat_tbl)
         end
     end
     if not chain_found then
-        cat_tbl[#cat_tbl+1] = {name = "FX CHAINS", list = FX_CHAINS}
+        cat_tbl[#cat_tbl + 1] = { name = "FX CHAINS", list = FX_CHAINS }
     end
     if not template_found then
-        cat_tbl[#cat_tbl+1] = {name = "TRACK TEMPLATES", list = TRACK_TEMPLATES}
+        cat_tbl[#cat_tbl + 1] = { name = "TRACK TEMPLATES", list = TRACK_TEMPLATES }
     end
+end
+
+local magic = {
+    ["not"] = 'and not string.match(%s,"%s") ',
+    ["or"] = ' or string.match(%s,"%s") ',
+    ["and"] = ' and string.match(%s,"%s") ',
+}
+function SmartFolder(smart_string)
+    local smart_terms = {}
+    local FX_LIST
+    local SMART_FX = {}
+
+    for i = 1, #CAT do
+        if CAT[i].name == "ALL PLUGINS" then
+            FX_LIST = CAT[i].list
+            break
+        end
+    end
+    for term in smart_string:gmatch("([^%s]+)") do
+        smart_terms[#smart_terms + 1] = term:lower()
+    end
+
+    local code_gen = { "for i = 1, #FX_LIST do", "" }
+
+    local add_magic
+    for i = 1, #smart_terms do
+        if magic[smart_terms[i]] then
+            add_magic = magic[smart_terms[i]]
+        else
+            if add_magic then
+                code_gen[2] = code_gen[2] .. add_magic:format("FX_LIST[i]:lower()", smart_terms[i])
+                add_magic = nil
+            else
+                code_gen[2] = i > 1 and
+                code_gen[2] .. " and " .. (' string.match(%s,"%s")'):format("FX_LIST[i]:lower()", smart_terms[i]) or
+                code_gen[2] .. (' string.match(%s,"%s")'):format("FX_LIST[i]:lower()", smart_terms[i])
+            end
+        end
+    end
+
+    code_gen[2] = 'if' .. code_gen[2] .. 'then'
+    code_gen[#code_gen + 1] = 'SMART_FX[#SMART_FX+1] = FX_LIST[i]\nend\nend'
+
+    local code_str = table.concat(code_gen, "\n")
+    --reaper.ShowConsoleMsg(code_str)
+
+    local func_env = {
+        SMART_FX = SMART_FX,
+        FX_LIST = FX_LIST,
+        string = string,
+    }
+
+    local func, err = load(code_str, "ScriptRun", "t", func_env)
+
+    if func then
+        local status, err2 = pcall(func)
+        if err2 then
+            reaper.ShowConsoleMsg("ERROR RUNNING SMART FOLDER CODE GEN : \n" .. err2)
+        end
+    end
+    return SMART_FX
 end
 
 ---------------------------------------------------------------------------------
