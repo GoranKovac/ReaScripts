@@ -1,9 +1,9 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.36
+-- @version 1.37
 -- @changelog
---  Smart Folders Implementation example 906-917
+--  Forgot to merge local code...
 
 local r                                = reaper
 local os                               = r.GetOS()
@@ -667,6 +667,7 @@ local magic = {
     ["or"] = ' or string.match(%s,"%s") ',
     ["and"] = ' and string.match(%s,"%s") ',
 }
+
 function SmartFolder(smart_string)
     local smart_terms = {}
     local FX_LIST
@@ -682,7 +683,7 @@ function SmartFolder(smart_string)
         smart_terms[#smart_terms + 1] = term:lower()
     end
 
-    local code_gen = { "for i = 1, #FX_LIST do", "" }
+    local code_gen = { "for i = 1, #FX_LIST do", "for j = 1, #FX_LIST[i].fx do", "" }
 
     local add_magic
     for i = 1, #smart_terms do
@@ -690,21 +691,20 @@ function SmartFolder(smart_string)
             add_magic = magic[smart_terms[i]]
         else
             if add_magic then
-                code_gen[2] = code_gen[2] .. add_magic:format("FX_LIST[i]:lower()", smart_terms[i])
+                code_gen[3] = code_gen[3] .. add_magic:format("FX_LIST[i].fx[j]:lower()", smart_terms[i])
                 add_magic = nil
             else
-                code_gen[2] = i > 1 and
-                code_gen[2] .. " and " .. (' string.match(%s,"%s")'):format("FX_LIST[i]:lower()", smart_terms[i]) or
-                code_gen[2] .. (' string.match(%s,"%s")'):format("FX_LIST[i]:lower()", smart_terms[i])
+                code_gen[3] = i > 1 and
+                code_gen[3] .. " and " .. (' string.match(%s,"%s")'):format("FX_LIST[i].fx[j]:lower()", smart_terms[i]) or
+                code_gen[3] .. (' string.match(%s,"%s")'):format("FX_LIST[i].fx[j]:lower()", smart_terms[i])
             end
         end
     end
 
-    code_gen[2] = 'if' .. code_gen[2] .. 'then'
-    code_gen[#code_gen + 1] = 'SMART_FX[#SMART_FX+1] = FX_LIST[i]\nend\nend'
+    code_gen[3] = 'if' .. code_gen[3] .. 'then'
+    code_gen[#code_gen + 1] = 'SMART_FX[#SMART_FX+1] = FX_LIST[i].fx[j]\nend\nend\nend\n'
 
     local code_str = table.concat(code_gen, "\n")
-    --reaper.ShowConsoleMsg(code_str)
 
     local func_env = {
         SMART_FX = SMART_FX,
@@ -717,7 +717,7 @@ function SmartFolder(smart_string)
     if func then
         local status, err2 = pcall(func)
         if err2 then
-            reaper.ShowConsoleMsg("ERROR RUNNING SMART FOLDER CODE GEN : \n" .. err2)
+            r.ShowConsoleMsg("ERROR RUNNING SMART FOLDER CODE GEN : \n" .. err2)
         end
     end
     return SMART_FX
