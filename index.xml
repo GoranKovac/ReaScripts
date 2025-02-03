@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="89bb701b1fd5ade766af42da108b57680c2ed2b9" name="Sexan_Scripts">
+<index version="1" commit="76cc9d7a561f3adaf4e7916d3973ab76259e3dbe" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -727,6 +727,10 @@ Fix code gen when operators are first (if `and`)]]></changelog>
         <changelog><![CDATA[Swapped match with find for optimization
 literalize smart string input]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/89bb701b1fd5ade766af42da108b57680c2ed2b9/FX/Sexan_FX_Browser_ParserV7.lua</source>
+      </version>
+      <version name="1.41" author="Sexan" time="2025-02-03T15:23:16Z">
+        <changelog><![CDATA[find fix]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/76cc9d7a561f3adaf4e7916d3973ab76259e3dbe/FX/Sexan_FX_Browser_ParserV7.lua</source>
       </version>
     </reapack>
   </category>
