@@ -1,9 +1,12 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.37
+-- @version 1.38
 -- @changelog
---  Forgot to merge local code...
+--  Refactor
+--  Parse SmartFolders on startup/rescan
+--  Quote support for exact match
+--  Fix code gen when operators are first (if `and`)
 
 local r                                = reaper
 local os                               = r.GetOS()
@@ -405,6 +408,81 @@ local function SortFoldersINI(fav_str)
     return sorted
 end
 
+local magic = {
+    ["not"] = { ' and ', ' not %s:match("%s") ' },
+    ["or"] = { ' or ', ' %s:match("%s") ' },
+    ["and"] = { ' and ', '%s:match("%s") ' },
+}
+
+local function ParseSmartFolder(smart_string)
+    local smart_terms = {}
+    local SMART_FX = {}
+
+    -- TAG QUOTED WORDS
+    for exact in smart_string:gmatch '"(.-)"' do
+        smart_string = smart_string:gsub(exact, '_schwa_magic_' .. exact:gsub(' ', '|||')) -- APPEND MAGIC WORD SO WE CAN FIND IT LATER FOR PATTERN MATCHING
+    end
+
+    smart_string = smart_string:gsub('"', '')
+
+    -- SEPARATE FILTER BY WHITESPACE
+for term in smart_string:gmatch("([^%s]+)") do
+    term = term:lower()
+    -- TAGGED QUOTED STRING FOUND
+    if term:match('_schwa_magic_') then
+      term = term:gsub('_schwa_magic_','')
+      if term:match('|||') then
+        -- exact match multiple words as single pattern
+        term = '(' .. term:gsub('|||',' ') .. ')' 
+      else
+        -- exact match single word
+        term = '%A' .. term .. '%A'
+      end
+      -- EXCLUDE MAGIC TAGS AND APPED PATTERN FOR EXACT MATCH
+      --term = '%A' .. term:gsub('_schwa_magic_',''):gsub('|||',' ') .. '%A'
+    end
+    smart_terms[#smart_terms + 1] = term
+  end
+
+    local code_gen = { "for i = 1, #PLUGIN_LIST do\nlocal target = PLUGIN_LIST[i]:lower()", "" }
+
+    local add_magic
+    for i = 1, #smart_terms do
+        if magic[smart_terms[i]] then
+            add_magic = i > 1 and (magic[smart_terms[i]][1] .. magic[smart_terms[i]][2]) or magic[smart_terms[i]][2]
+        else
+            if add_magic then
+                code_gen[2] = code_gen[2] .. add_magic:format("target", smart_terms[i])
+                add_magic = nil
+            else
+                code_gen[2] = i > 1 and code_gen[2] .. " and " .. (' %s:match("%s")'):format("target", smart_terms[i]) or
+                code_gen[2] .. (' %s:match("%s")'):format("target", smart_terms[i])
+            end
+        end
+    end
+
+    code_gen[2] = 'if ' .. code_gen[2] .. ' then'
+    code_gen[#code_gen + 1] = 'SMART_FX[#SMART_FX+1] = PLUGIN_LIST[i]\nend\nend\n'
+
+    local code_str = table.concat(code_gen, "\n")
+
+    local func_env = {
+        SMART_FX = SMART_FX,
+        PLUGIN_LIST = PLUGIN_LIST,
+        string = string,
+    }
+
+    local func, err = load(code_str, "ScriptRun", "t", func_env)
+
+    if func then
+        local status, err2 = pcall(func)
+        if err2 then
+            r.ShowConsoleMsg("ERROR RUNNING SMART FOLDER CODE GEN : \n" .. err2)
+        end
+    end
+    return SMART_FX
+end
+
 local function ParseFavorites()
     -- PARSE FAVORITES FOLDER
     local fav_path = r.GetResourcePath() .. "/reaper-fxfolders.ini"
@@ -492,7 +570,8 @@ local function ParseFavorites()
             elseif fx_type == "1048576" then -- SMART FOLDER
                 local folder_item = CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1]
                 CAT[#CAT].list[#CAT[#CAT].list].smart = true
-                CAT[#CAT].list[#CAT[#CAT].list].filter = folder_item:gsub("R_ITEM_", "", 1)
+                CAT[#CAT].list[#CAT[#CAT].list].fx = ParseSmartFolder(folder_item:gsub("R_ITEM_", "", 1))
+                --CAT[#CAT].list[#CAT[#CAT].list].filter = folder_item:gsub("R_ITEM_", "", 1)
             end
         end
         -- RENAME ORIGINAL FOLDER NAME "[Folder0]" TO PROPER ID NAME (Name0=Favorites)
@@ -515,7 +594,7 @@ local function ParseFavorites()
     -- REMOVE SMART FOLDERS FOR NOW
     for i = 1, #CAT do
         for j = #CAT[i].list, 1, -1 do
-            if CAT[i].list[j].smart then table.remove(CAT[i].list, j) end
+            --if CAT[i].list[j].smart then table.remove(CAT[i].list, j) end
             if CAT[i].list[j] then
                 for f = #CAT[i].list[j].fx, 1, -1 do
                     if CAT[i].list[j].fx[f]:find("R_ITEM_") then
@@ -660,67 +739,6 @@ function UpdateChainsTrackTemplates(cat_tbl)
     if not template_found then
         cat_tbl[#cat_tbl + 1] = { name = "TRACK TEMPLATES", list = TRACK_TEMPLATES }
     end
-end
-
-local magic = {
-    ["not"] = 'and not string.match(%s,"%s") ',
-    ["or"] = ' or string.match(%s,"%s") ',
-    ["and"] = ' and string.match(%s,"%s") ',
-}
-
-function SmartFolder(smart_string)
-    local smart_terms = {}
-    local FX_LIST
-    local SMART_FX = {}
-
-    for i = 1, #CAT do
-        if CAT[i].name == "ALL PLUGINS" then
-            FX_LIST = CAT[i].list
-            break
-        end
-    end
-    for term in smart_string:gmatch("([^%s]+)") do
-        smart_terms[#smart_terms + 1] = term:lower()
-    end
-
-    local code_gen = { "for i = 1, #FX_LIST do", "for j = 1, #FX_LIST[i].fx do", "" }
-
-    local add_magic
-    for i = 1, #smart_terms do
-        if magic[smart_terms[i]] then
-            add_magic = magic[smart_terms[i]]
-        else
-            if add_magic then
-                code_gen[3] = code_gen[3] .. add_magic:format("FX_LIST[i].fx[j]:lower()", smart_terms[i])
-                add_magic = nil
-            else
-                code_gen[3] = i > 1 and
-                code_gen[3] .. " and " .. (' string.match(%s,"%s")'):format("FX_LIST[i].fx[j]:lower()", smart_terms[i]) or
-                code_gen[3] .. (' string.match(%s,"%s")'):format("FX_LIST[i].fx[j]:lower()", smart_terms[i])
-            end
-        end
-    end
-
-    code_gen[3] = 'if' .. code_gen[3] .. 'then'
-    code_gen[#code_gen + 1] = 'SMART_FX[#SMART_FX+1] = FX_LIST[i].fx[j]\nend\nend\nend\n'
-
-    local code_str = table.concat(code_gen, "\n")
-
-    local func_env = {
-        SMART_FX = SMART_FX,
-        FX_LIST = FX_LIST,
-        string = string,
-    }
-
-    local func, err = load(code_str, "ScriptRun", "t", func_env)
-
-    if func then
-        local status, err2 = pcall(func)
-        if err2 then
-            r.ShowConsoleMsg("ERROR RUNNING SMART FOLDER CODE GEN : \n" .. err2)
-        end
-    end
-    return SMART_FX
 end
 
 ---------------------------------------------------------------------------------
@@ -902,21 +920,9 @@ end
 --     end
 -- end
 
-
--- local last_smart
--- local function ParseSmartFolder(tbl)
---     if last_smart ~= tbl.fx then
---         tbl.fx = SmartFolder(tbl.filter)
---         last_smart = tbl.fx;
---     end
--- end
-
 -- local function DrawItems(tbl, main_cat_name)
 --     for i = 1, #tbl do
---         if r.ImGui_BeginMenu(ctx, tbl[i].name) then
---             if tbl[i].smart then
---                 ParseSmartFolder(tbl[i])
---             end
+--         if r.ImGui_BeginMenu(ctx, tbl[i].name) then--             
 --             for j = 1, #tbl[i].fx do
 --                 if tbl[i].fx[j] then
 --                     local name = tbl[i].fx[j]
