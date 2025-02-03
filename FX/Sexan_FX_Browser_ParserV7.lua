@@ -1,10 +1,9 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.39
+-- @version 1.41
 -- @changelog
---  Swapped match with find for optimization
---  literalize smart string input
+--  find fix
 
 local r                                = reaper
 local os                               = r.GetOS()
@@ -407,9 +406,9 @@ local function SortFoldersINI(fav_str)
 end
 
 local magic = {
-    ["not"] = { ' and ', ' not %s:match("%s") ' },
-    ["or"] = { ' or ', ' %s:match("%s") ' },
-    ["and"] = { ' and ', '%s:match("%s") ' },
+    ["not"] = { ' and ', ' not %s:find("%s") ' },
+    ["or"] = { ' or ', ' %s:find("%s") ' },
+    ["and"] = { ' and ', '%s:find("%s") ' },
 }
 
 local function ParseSmartFolder(smart_string)
@@ -427,9 +426,9 @@ local function ParseSmartFolder(smart_string)
     for term in smart_string:gmatch("([^%s]+)") do
         term = term:lower():gsub('[%(%)%.%+%-%*%?%[%]%^%$%%]', '%%%1')
         -- TAGGED QUOTED STRING FOUND
-        if term:match('_schwa_magic_') then
+        if term:find('_schwa_magic_') then
             term = term:gsub('_schwa_magic_', '')
-            if term:match('|||') then
+            if term:find('|||') then
                 -- exact match multiple words as single pattern
                 term = '(' .. term:gsub('|||', ' ') .. ')'
             else
@@ -453,8 +452,8 @@ local function ParseSmartFolder(smart_string)
                 code_gen[2] = code_gen[2] .. add_magic:format("target", smart_terms[i])
                 add_magic = nil
             else
-                code_gen[2] = i > 1 and code_gen[2] .. " and " .. (' %s:match("%s")'):format("target", smart_terms[i]) or
-                    code_gen[2] .. (' %s:match("%s")'):format("target", smart_terms[i])
+                code_gen[2] = i > 1 and code_gen[2] .. " and " .. (' %s:find("%s")'):format("target", smart_terms[i]) or
+                    code_gen[2] .. (' %s:find("%s")'):format("target", smart_terms[i])
             end
         end
     end
