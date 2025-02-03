@@ -1,12 +1,10 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.38
+-- @version 1.39
 -- @changelog
---  Refactor
---  Parse SmartFolders on startup/rescan
---  Quote support for exact match
---  Fix code gen when operators are first (if `and`)
+--  Swapped match with find for optimization
+--  literalize smart string input
 
 local r                                = reaper
 local os                               = r.GetOS()
@@ -426,23 +424,23 @@ local function ParseSmartFolder(smart_string)
     smart_string = smart_string:gsub('"', '')
 
     -- SEPARATE FILTER BY WHITESPACE
-for term in smart_string:gmatch("([^%s]+)") do
-    term = term:lower()
-    -- TAGGED QUOTED STRING FOUND
-    if term:match('_schwa_magic_') then
-      term = term:gsub('_schwa_magic_','')
-      if term:match('|||') then
-        -- exact match multiple words as single pattern
-        term = '(' .. term:gsub('|||',' ') .. ')' 
-      else
-        -- exact match single word
-        term = '%A' .. term .. '%A'
-      end
-      -- EXCLUDE MAGIC TAGS AND APPED PATTERN FOR EXACT MATCH
-      --term = '%A' .. term:gsub('_schwa_magic_',''):gsub('|||',' ') .. '%A'
+    for term in smart_string:gmatch("([^%s]+)") do
+        term = term:lower():gsub('[%(%)%.%+%-%*%?%[%]%^%$%%]', '%%%1')
+        -- TAGGED QUOTED STRING FOUND
+        if term:match('_schwa_magic_') then
+            term = term:gsub('_schwa_magic_', '')
+            if term:match('|||') then
+                -- exact match multiple words as single pattern
+                term = '(' .. term:gsub('|||', ' ') .. ')'
+            else
+                -- exact match single word
+                term = '%A' .. term .. '%A'
+            end
+            -- EXCLUDE MAGIC TAGS AND APPED PATTERN FOR EXACT MATCH
+            --term = '%A' .. term:gsub('_schwa_magic_',''):gsub('|||',' ') .. '%A'
+        end
+        smart_terms[#smart_terms + 1] = term
     end
-    smart_terms[#smart_terms + 1] = term
-  end
 
     local code_gen = { "for i = 1, #PLUGIN_LIST do\nlocal target = PLUGIN_LIST[i]:lower()", "" }
 
@@ -456,7 +454,7 @@ for term in smart_string:gmatch("([^%s]+)") do
                 add_magic = nil
             else
                 code_gen[2] = i > 1 and code_gen[2] .. " and " .. (' %s:match("%s")'):format("target", smart_terms[i]) or
-                code_gen[2] .. (' %s:match("%s")'):format("target", smart_terms[i])
+                    code_gen[2] .. (' %s:match("%s")'):format("target", smart_terms[i])
             end
         end
     end
@@ -922,7 +920,7 @@ end
 
 -- local function DrawItems(tbl, main_cat_name)
 --     for i = 1, #tbl do
---         if r.ImGui_BeginMenu(ctx, tbl[i].name) then--             
+--         if r.ImGui_BeginMenu(ctx, tbl[i].name) then--
 --             for j = 1, #tbl[i].fx do
 --                 if tbl[i].fx[j] then
 --                     local name = tbl[i].fx[j]
