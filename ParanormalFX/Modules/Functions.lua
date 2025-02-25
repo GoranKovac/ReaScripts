@@ -461,3 +461,5 @@ function SetOnlyItemSelected(target_take)
     r.PreventUIRefresh(1)
     r.UpdateArrange()
 end
+
+--profiler.attachToWorld() -- after all functions have been defined

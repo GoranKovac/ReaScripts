@@ -184,3 +184,5 @@ function M_TEST()
         LAST_CLICK = nil
     end
 end
+
+--profiler.attachToWorld() -- after all functions have been defined

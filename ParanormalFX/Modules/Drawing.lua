@@ -1256,7 +1256,7 @@ local function IterateContainer(depth, track, container_id, parent_fx_count, pre
             offline = offline,
             exclude_ara = FindBlackListedFX(original_fx_name),
             is_helper = is_helper,
-            PM_active = CheckPMActive(0x2000000 + fx_id),
+            -- PM_active = CheckPMActive(0x2000000 + fx_id),
             auto_color = color,
             sc_tracks = sc_tracks,
             sc_channels = sc_channels,
@@ -1370,7 +1370,7 @@ local function GenerateFXData()
             offline = offline,
             exclude_ara = FindBlackListedFX(original_fx_name),
             is_helper = is_helper,
-            PM_active = CheckPMActive(i - 1),
+            -- PM_active = CheckPMActive(i - 1),
             auto_color = color,
             sc_tracks = sc_tracks,
             sc_channels = sc_channels,
@@ -2843,3 +2843,5 @@ function Draw()
 
     DrawLines()
 end
+
+--profiler.attachToWorld() -- after all functions have been defined

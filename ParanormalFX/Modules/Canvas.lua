@@ -1539,3 +1539,5 @@ function CanvasLoop()
     CheckKeys()
     Popups()
 end
+
+--profiler.attachToWorld() -- after all functions have been defined

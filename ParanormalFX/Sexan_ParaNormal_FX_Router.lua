@@ -1,17 +1,15 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.39
+-- @version 1.40
 -- @changelog
---  Added shortcut for FX bypass toggle CTRL + B
---  Toggle inverts current bypass state
+--  Remove checking active parameter modulation on fx
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
 --   JSFX/*.jsfx
 --   FXChains/*.RfxChain
 --   [effect] JSFX/*.jsfx
-
 local r         = reaper
 local ImGui     = {}
 local track_api = {}
@@ -170,9 +168,9 @@ CENTER_RESET            = false
 OPEN_PM_INSPECTOR       = false
 MODE                    = "TRACK"
 
--- profiler = dofile(reaper.GetResourcePath() ..
---   '/Scripts/ReaTeam Scripts/Development/cfillion_Lua profiler.lua')
--- reaper.defer = profiler.defer
+--profiler = dofile(reaper.GetResourcePath() ..
+--  '/Scripts/ReaTeam Scripts/Development/cfillion_Lua profiler.lua')
+--reaper.defer = profiler.defer
 
 if r.file_exists(fx_browser_script_path) then
     dofile(fx_browser_script_path)

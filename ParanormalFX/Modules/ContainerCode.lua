@@ -706,3 +706,4 @@ function SetChildSurround(fx_tbl, max_ch)
     end
 end
 
+--profiler.attachToWorld() -- after all functions have been defined
