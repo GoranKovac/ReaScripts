@@ -1,7 +1,7 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.40
+-- @version 1.41
 -- @changelog
 --  Remove checking active parameter modulation on fx
 -- @provides
@@ -10,6 +10,7 @@
 --   JSFX/*.jsfx
 --   FXChains/*.RfxChain
 --   [effect] JSFX/*.jsfx
+
 local r         = reaper
 local ImGui     = {}
 local track_api = {}
