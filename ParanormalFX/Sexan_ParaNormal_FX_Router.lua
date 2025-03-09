@@ -1,10 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.42
+-- @version 1.43
 -- @changelog
---  Added settings for setting default zoom value
---  Zoom value is dependent on max zoom (cannot be greater)
+--  Adjust Settings height
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf

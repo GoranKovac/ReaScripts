@@ -1066,7 +1066,7 @@ function DrawUserSettings()
     r.ImGui_SetNextWindowPos(ctx, WX + 5, WY + 85)
     local settings_min_h = 196
     if CLH_LAYOUT then
-        settings_min_h = settings_min_h + 157
+        settings_min_h = settings_min_h + 180
     end
     if CLH_COLORING then
         settings_min_h = settings_min_h + 230
