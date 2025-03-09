@@ -1,9 +1,9 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.41
+-- @version 1.42
 -- @changelog
---  find fix
+--  Fix folder sorting function not to grab [xxxx] if category does not start with it
 
 local r                                = reaper
 local os                               = r.GetOS()
@@ -371,7 +371,7 @@ local function SortFoldersINI(fav_str)
     --local cur_folder
     local add
     for line in fav_str:gmatch('[^\r\n]+') do
-        local category = line:match("%[(.-)%]")
+        local category = line:match("^%[(.-)%]")
         if category then
             if category:find("Folder", nil, true) then
                 add = true
