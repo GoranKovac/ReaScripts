@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="5386a17125ca1819a193572e1533ccdc3085f5af" name="Sexan_Scripts">
+<index version="1" commit="aa3b3ea4ec6f0614f27d3820050b4bd52a8dabd1" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -731,6 +731,10 @@ literalize smart string input]]></changelog>
       <version name="1.41" author="Sexan" time="2025-02-03T15:23:16Z">
         <changelog><![CDATA[find fix]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/76cc9d7a561f3adaf4e7916d3973ab76259e3dbe/FX/Sexan_FX_Browser_ParserV7.lua</source>
+      </version>
+      <version name="1.42" author="Sexan" time="2025-03-09T11:41:33Z">
+        <changelog><![CDATA[Fix folder sorting function not to grab [xxxx] if category does not start with it]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/aa3b3ea4ec6f0614f27d3820050b4bd52a8dabd1/FX/Sexan_FX_Browser_ParserV7.lua</source>
       </version>
     </reapack>
   </category>
