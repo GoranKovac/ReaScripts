@@ -15,7 +15,7 @@ function InitCanvas()
     if not V_LAYOUT then
         init_x, init_y = 50, 250
     end
-    return { view_x = 0, view_y = 0, off_x = init_x, off_y = init_y, scale = 1 }
+    return { view_x = 0, view_y = 0, off_x = init_x, off_y = init_y, scale = ZOOM_DEFAULT }
 end
 
 function UpdateScroll()
@@ -30,6 +30,7 @@ function UpdateScroll()
 end
 
 ZOOM_MIN, ZOOM_MAX, ZOOM_SPEED = 0.2, 1, 1 / 8
+ZOOM_DEFAULT = 1
 
 function round(num) return (num + 0.5) // 1 end
 
@@ -606,6 +607,7 @@ local function StoreSettings()
         {
             v_layout = V_LAYOUT,
             zoom_max = ZOOM_MAX,
+            zoom_default = ZOOM_DEFAULT,
             show_c_content_tooltips = SHOW_C_CONTENT_TOOLTIP,
             tooltips = TOOLTIPS,
             animated_highlight = ANIMATED_HIGLIGHT,
@@ -1116,7 +1118,20 @@ function DrawUserSettings()
                 r.ImGui_EndListBox(ctx)
             end
             r.ImGui_SetNextItemWidth(ctx, 50)
-            _, ZOOM_MAX = r.ImGui_SliderInt(ctx, "MAX ZOOM", ZOOM_MAX, 1, 3)
+            max_zoom_rv, ZOOM_MAX = r.ImGui_SliderInt(ctx, "MAX ZOOM", ZOOM_MAX, 1, 3)
+            r.ImGui_SetNextItemWidth(ctx, 50)
+            zoom_rv, ZOOM_DEFAULT = r.ImGui_SliderInt(ctx, "DEFAULT ZOOM", ZOOM_DEFAULT, 1, ZOOM_MAX)
+            --zoom_rv, ZOOM_DEFAULT = r.ImGui_Slideri( ctx, "DEFAULT ZOOM", ZOOM_DEFAULT, 0.5, 2.0 )
+            if zoom_rv then
+                CANVAS.scale = 0.5 + (0.5 * ZOOM_DEFAULT)
+            end
+            if max_zoom_rv then
+                if ZOOM_MAX < ZOOM_DEFAULT then
+                    ZOOM_DEFAULT = ZOOM_MAX
+                    CANVAS.scale = 0.5 + (0.5 * ZOOM_DEFAULT)
+                end
+            end
+
             r.ImGui_SetNextItemWidth(ctx, 100)
             _, new_spacing_y = r.ImGui_SliderInt(ctx, "SPACING", new_spacing_y, 0, 20)
             r.ImGui_SetNextItemWidth(ctx, 100)

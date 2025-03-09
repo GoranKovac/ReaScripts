@@ -1,9 +1,10 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.41
+-- @version 1.42
 -- @changelog
---  Remove checking active parameter modulation on fx
+--  Added settings for setting default zoom value
+--  Zoom value is dependent on max zoom (cannot be greater)
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -207,6 +208,7 @@ if r.HasExtState("PARANORMALFX2", "SETTINGS") then
             AUTO_COLORING = storedTable.auto_color
             new_spacing_y = storedTable.spacing
             ZOOM_MAX = storedTable.zoom_max and storedTable.zoom_max or 1
+            ZOOM_DEFAULT = storedTable.zoom_default and storedTable.zoom_default or 1
             ADD_BTN_H = storedTable.add_btn_h
             ADD_BTN_W = storedTable.add_btn_w
             CENTER_RESET = storedTable.center_reset ~= nil and storedTable.center_reset or CENTER_RESET
