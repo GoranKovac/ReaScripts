@@ -1,9 +1,9 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.42
+-- @version 1.43
 -- @changelog
---  Fix folder sorting function not to grab [xxxx] if category does not start with it
+--  Check if plugin is already added in category from other ini files
 
 local r                                = reaper
 local os                               = r.GetOS()
@@ -272,6 +272,13 @@ local function ParseLV2(name, ident)
     PLUGIN_LIST[#PLUGIN_LIST + 1] = name
 end
 
+local function has_fx(tbl, val)
+    for i = 1, #tbl do
+      if tbl[i] == val then return true end
+    end
+    return false
+end
+
 local function ParseFXTags()
     -- PARSE CATEGORIES
     local tags_path = r.GetResourcePath() .. "/reaper-fxtags.ini"
@@ -306,7 +313,9 @@ local function ParseFXTags()
                         if not dev_tbl then
                             table.insert(CAT[#CAT].list, { name = category_type, fx = { fx_name } })
                         else
-                            table.insert(dev_tbl, fx_name)
+                            if not has_fx(dev_tbl, fx_name) then
+                                table.insert(dev_tbl, fx_name)
+                            end
                         end
                     end
                 end
@@ -318,7 +327,9 @@ local function ParseFXTags()
                     if not dev_tbl then
                         table.insert(CAT[#CAT].list, { name = dev_category, fx = { fx_name } })
                     else
-                        table.insert(dev_tbl, fx_name)
+                        if not has_fx(dev_tbl, fx_name) then
+                            table.insert(dev_tbl, fx_name)
+                        end
                     end
                 end
             end
@@ -357,7 +368,9 @@ local function ParseCustomCategories()
                         if not dev_tbl then
                             table.insert(cur_cat_tbl, { name = category_type, fx = { fx_name } })
                         else
-                            table.insert(dev_tbl, fx_name)
+                            if not has_fx(dev_tbl, fx_name) then
+                                table.insert(dev_tbl, fx_name)
+                            end
                         end
                     end
                 end
