@@ -1,13 +1,15 @@
 -- @description Reaper VSCode Definitions Generator
 -- @author Sexan, Cfillion, Docs source X-Raym - https://www.extremraym.com/cloud/reascript-doc/
 -- @license GPL v3
--- @version 1.05
+-- @version 1.06
 -- @changelog
---  Make output in scripts folder instead of reapers
+--  Remove Reaper as deps
+--  Script is now Lua standalone
 
-local r = reaper
+--local r = reaper
 local script_path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]]
-local API_PATH = script_path .. "api_file.txt"
+print(debug.getinfo(1, "S").source)
+local API_PATH = "api_file.txt"
 
 local lua_func_str = [[
 ---is_new_value,filename,sectionID,cmdID,mode,resolution,val,contextstr = reaper.get_action_context()
@@ -317,14 +319,16 @@ end
 -- DOWNLOAD RAW HTML FROM XRAYMS SITE
 local function CurlToFile()
     local curl_cmd
-    if r.GetOS():sub(1, 3) == 'Win' then
+    if package.config:sub(1, 1) == '\\' then
+        -- if r.GetOS():sub(1, 3) == 'Win' then
         curl_cmd = 'curl'
     else
         curl_cmd = '/usr/bin/curl'
     end
-
-    r.ExecProcess(
-        ([[%s -so "%s" https://www.extremraym.com/cloud/reascript-doc/ --ssl-no-revoke]]):format(curl_cmd, API_PATH), 0)
+    os.execute(([[%s -so "%s" https://www.extremraym.com/cloud/reascript-doc/ --ssl-no-revoke]]):format(curl_cmd,
+        API_PATH))
+    -- r.ExecProcess(
+    --     ([[%s -so "%s" https://www.extremraym.com/cloud/reascript-doc/ --ssl-no-revoke]]):format(curl_cmd, API_PATH), 0)
 end
 
 local function trim(s)
@@ -336,10 +340,10 @@ CurlToFile()
 
 local function ParseReturns(tbl, ret_str, name)
     if name == "reaper.my_getViewport" then
-        tbl[#tbl + 1] = {type = "integer", name = "left"}
-        tbl[#tbl + 1] = {type = "integer", name = "top"}
-        tbl[#tbl + 1] = {type = "integer", name = "right"}
-        tbl[#tbl + 1] = {type = "integer", name = "bottom"} 
+        tbl[#tbl + 1] = { type = "integer", name = "left" }
+        tbl[#tbl + 1] = { type = "integer", name = "top" }
+        tbl[#tbl + 1] = { type = "integer", name = "right" }
+        tbl[#tbl + 1] = { type = "integer", name = "bottom" }
     end
     if not ret_str then return end
     if ret_str then
@@ -396,8 +400,8 @@ local function ParseArguments(tbl, arg_str, c_str, name)
             if arg_type:find("optional") then
                 arg_type = arg_type:gsub("optional ", "")
                 opt = "?"
-            elseif arg_name and c_str:find(arg_name.."Optional") then
-                --r.ShowConsoleMsg("C OPT FOUND - " .. name .. "  :  " .. arg_name.."\n")             
+            elseif arg_name and c_str:find(arg_name .. "Optional") then
+                --r.ShowConsoleMsg("C OPT FOUND - " .. name .. "  :  " .. arg_name.."\n")
                 opt = "?"
             end
 
@@ -406,9 +410,9 @@ local function ParseArguments(tbl, arg_str, c_str, name)
                 if arg_name == "start_time" or arg_name == "end_time" then
                     opt = "?"
                 end
-            --  WORKAROUND FOR DOCS NOT REPORTING BOTH PARAMETERS OPTIONAL
+                --  WORKAROUND FOR DOCS NOT REPORTING BOTH PARAMETERS OPTIONAL
             elseif name == "reaper.ShowActionList" then
-                opt = "?"    
+                opt = "?"
             end
             tbl[#tbl + 1] = {
                 type = arg_type:gsub("</em><em>", ""),
@@ -462,7 +466,7 @@ local function GenerateApiTbl(api_str)
     local CUR_API = API
 
     local dsc_tbl = {}
-    local htmlstring = api_str--ReadApiFile(API_PATH)
+    local htmlstring = api_str --ReadApiFile(API_PATH)
     local c_str = ""
     for line in htmlstring:gmatch('[^\r\n]+') do
         -- GET DESCRIPTION
@@ -578,7 +582,7 @@ local function CreateApiString(api, str)
                 opt_str .. " " .. api[i].args[j].type .. (union_types[api[i].args[j].type] or "")
             args[#args + 1] = api[i].args[j].name
         end
-       
+
         for j = 1, #api[i].rets do
             CheckType(api[i].rets[j].type, reaper_str_tbl)
             local opt_str = api[i].rets[j].opt or ""
@@ -611,4 +615,4 @@ local final_str = table.concat(reaper_str_tbl, "\n") ..
     "\n" .. table.concat(gfx_str_tbl, "\n") .. "\n" .. table.concat(array_str_tbl, "\n")
 
 -- EXPORT IN REAPER FOLDER
-SaveToFile(final_str, script_path .. "DefinitionsOutput/reaper_defs.lua")
+SaveToFile(final_str, "DefinitionsOutput/reaper_defs.lua")
