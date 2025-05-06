@@ -1,10 +1,9 @@
 -- @description Reaper VSCode Definitions Generator
 -- @author Sexan, Cfillion, Docs source X-Raym - https://www.extremraym.com/cloud/reascript-doc/
 -- @license GPL v3
--- @version 1.07
+-- @version 1.08
 -- @changelog
---  Fix single retvals to return name instead of "retval" if exists
---  Fix descrition show always greaten than
+--  Properly add optional to single return values
 
 --local r = reaper
 local script_path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]]
@@ -377,10 +376,17 @@ local function ParseReturns(tbl, ret_str, name)
             end
         else
             -- SINGLE RETURNS
-            for ret_type, ret_name in ret_str:gmatch('<em>([^<]-)</em>(.+ ?) =') do
+            for ret_type, ret_name in ret_str:gmatch('<em>([^<]-)</em>(.* ?)') do
+                local opt = nil
+                ret_name = ret_name:gsub(" =", "")
+                ret_name = #ret_name > 0 and ret_name or nil
+                if name == "reaper.SplitMediaItem" then
+                    opt = "?"
+                end
                 tbl[#tbl + 1] = {
                     type = ret_type:match("identifier") and "userdata" or trim(ret_type),
                     name = ret_name and ret_name or "retval",
+                    opt = opt
                 }
             end
         end
