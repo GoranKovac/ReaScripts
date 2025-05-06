@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="52e8c745e62c0347648b6a68dd8a706fcfd22650" name="Sexan_Scripts">
+<index version="1" commit="f6474b9fbce66f54aff68e227b0ea835b9414fd7" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -94,6 +94,15 @@ Fix descrition show always greaten than]]></changelog>
       <version name="1.08" author="Sexan, Cfillion, Docs source X-Raym - https://www.extremraym.com/cloud/reascript-doc/" time="2025-05-06T13:04:40Z">
         <changelog><![CDATA[Properly add optional to single return values]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/52e8c745e62c0347648b6a68dd8a706fcfd22650/ApiParser/ReaperDefinitionsGenerator.lua</source>
+      </version>
+      <version name="1.09" author="Sexan, Cfillion, Docs source X-Raym - https://www.extremraym.com/cloud/reascript-doc/" time="2025-05-06T16:16:51Z">
+        <changelog><![CDATA[More fixes to single return types
+Workaround CF_GetFocusedFXChain having = in the string]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/1b65941dfd64925bbcecbb463f3620e7aad6994b/ApiParser/ReaperDefinitionsGenerator.lua</source>
+      </version>
+      <version name="1.10" author="Sexan, Cfillion, Docs source X-Raym - https://www.extremraym.com/cloud/reascript-doc/" time="2025-05-06T16:37:50Z">
+        <changelog><![CDATA[More fixes to single return types]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/f6474b9fbce66f54aff68e227b0ea835b9414fd7/ApiParser/ReaperDefinitionsGenerator.lua</source>
       </version>
     </reapack>
   </category>
