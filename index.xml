@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="f87a0d665b68bfd34c7947ce6cbcd62b5498994e" name="Sexan_Scripts">
+<index version="1" commit="52e8c745e62c0347648b6a68dd8a706fcfd22650" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -90,6 +90,10 @@ Script is now Lua standalone]]></changelog>
         <changelog><![CDATA[Fix single retvals to return name instead of "retval" if exists
 Fix descrition show always greaten than]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/f87a0d665b68bfd34c7947ce6cbcd62b5498994e/ApiParser/ReaperDefinitionsGenerator.lua</source>
+      </version>
+      <version name="1.08" author="Sexan, Cfillion, Docs source X-Raym - https://www.extremraym.com/cloud/reascript-doc/" time="2025-05-06T13:04:40Z">
+        <changelog><![CDATA[Properly add optional to single return values]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/52e8c745e62c0347648b6a68dd8a706fcfd22650/ApiParser/ReaperDefinitionsGenerator.lua</source>
       </version>
     </reapack>
   </category>
