@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="96a48ec46a0985a4bac736ed0c57f9e3bf80c0a9" name="Sexan_Scripts">
+<index version="1" commit="f87a0d665b68bfd34c7947ce6cbcd62b5498994e" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -85,6 +85,11 @@ Allow passing integer values in KbdSectionInfo parameters]]></changelog>
         <changelog><![CDATA[Remove Reaper as deps
 Script is now Lua standalone]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/96a48ec46a0985a4bac736ed0c57f9e3bf80c0a9/ApiParser/ReaperDefinitionsGenerator.lua</source>
+      </version>
+      <version name="1.07" author="Sexan, Cfillion, Docs source X-Raym - https://www.extremraym.com/cloud/reascript-doc/" time="2025-05-06T11:11:44Z">
+        <changelog><![CDATA[Fix single retvals to return name instead of "retval" if exists
+Fix descrition show always greaten than]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/f87a0d665b68bfd34c7947ce6cbcd62b5498994e/ApiParser/ReaperDefinitionsGenerator.lua</source>
       </version>
     </reapack>
   </category>
