@@ -1,10 +1,10 @@
 -- @description Reaper VSCode Definitions Generator
 -- @author Sexan, Cfillion, Docs source X-Raym - https://www.extremraym.com/cloud/reascript-doc/
 -- @license GPL v3
--- @version 1.06
+-- @version 1.07
 -- @changelog
---  Remove Reaper as deps
---  Script is now Lua standalone
+--  Fix single retvals to return name instead of "retval" if exists
+--  Fix descrition show always greaten than
 
 --local r = reaper
 local script_path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]]
@@ -377,10 +377,10 @@ local function ParseReturns(tbl, ret_str, name)
             end
         else
             -- SINGLE RETURNS
-            for ret_type in ret_str:gmatch('<em>([^<]-)</em>') do
+            for ret_type, ret_name in ret_str:gmatch('<em>([^<]-)</em>(.+ ?) =') do
                 tbl[#tbl + 1] = {
                     type = ret_type:match("identifier") and "userdata" or trim(ret_type),
-                    name = "retval",
+                    name = ret_name and ret_name or "retval",
                 }
             end
         end
@@ -413,6 +413,10 @@ local function ParseArguments(tbl, arg_str, c_str, name)
                 --  WORKAROUND FOR DOCS NOT REPORTING BOTH PARAMETERS OPTIONAL
             elseif name == "reaper.ShowActionList" then
                 opt = "?"
+            elseif name == "reaper.ShowPopupMenu" then
+                if arg_name == "y" then
+                    opt = "?"
+                end
             end
             tbl[#tbl + 1] = {
                 type = arg_type:gsub("</em><em>", ""),
@@ -541,7 +545,7 @@ local function CheckType(v_type, str)
     end
 end
 
-local html_entities = { amp = '&', gt = '>', lt = '>', nbsp = '\u{A0}' }
+local html_entities = { amp = '&', gt = '>', lt = '<', nbsp = '\u{A0}' }
 
 local html_string = ReadApiFile(API_PATH)
 local reaper_api, gfx_api = GenerateApiTbl(html_string)
