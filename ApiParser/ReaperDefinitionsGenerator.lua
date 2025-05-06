@@ -1,9 +1,10 @@
 -- @description Reaper VSCode Definitions Generator
 -- @author Sexan, Cfillion, Docs source X-Raym - https://www.extremraym.com/cloud/reascript-doc/
 -- @license GPL v3
--- @version 1.08
+-- @version 1.09
 -- @changelog
---  Properly add optional to single return values
+--  More fixes to single return types
+--  Workaround CF_GetFocusedFXChain having = in the string
 
 --local r = reaper
 local script_path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]]
@@ -378,10 +379,14 @@ local function ParseReturns(tbl, ret_str, name)
             -- SINGLE RETURNS
             for ret_type, ret_name in ret_str:gmatch('<em>([^<]-)</em>(.* ?)') do
                 local opt = nil
-                ret_name = ret_name:gsub(" =", "")
+                ret_name:gsub('%s+', '')
+                ret_name = ret_name:gsub("=", "")
                 ret_name = #ret_name > 0 and ret_name or nil
                 if name == "reaper.SplitMediaItem" then
                     opt = "?"
+                end
+                if name == "reaper.CF_GetFocusedFXChain" then
+                    ret_name = nil
                 end
                 tbl[#tbl + 1] = {
                     type = ret_type:match("identifier") and "userdata" or trim(ret_type),
