@@ -95,11 +95,11 @@ function reaper.APIExists(function_name) end
 ---Displays a message window if the API was successfully called.
 function reaper.APITest() end
 
----nudgeflag: &1=set to value (otherwise nudge by value), &2=snap<br>
----nudgewhat: 0=position, 1=left trim, 2=left edge, 3=right edge, 4=contents, 5=duplicate, 6=edit cursor<br>
----nudgeunit: 0=ms, 1=seconds, 2=grid, 3=256th notes, ..., 15=whole notes, 16=measures.beats (1.15 = 1 measure + 1.5 beats), 17=samples, 18=frames, 19=pixels, 20=item lengths, 21=item selections<br>
----value: amount to nudge by, or value to set to<br>
----reverse: in nudge mode, nudges left (otherwise ignored)<br>
+---nudgeflag: &1=set to value (otherwise nudge by value), &2=snap  
+---nudgewhat: 0=position, 1=left trim, 2=left edge, 3=right edge, 4=contents, 5=duplicate, 6=edit cursor  
+---nudgeunit: 0=ms, 1=seconds, 2=grid, 3=256th notes, ..., 15=whole notes, 16=measures.beats (1.15 = 1 measure + 1.5 beats), 17=samples, 18=frames, 19=pixels, 20=item lengths, 21=item selections  
+---value: amount to nudge by, or value to set to  
+---reverse: in nudge mode, nudges left (otherwise ignored)  
 ---copies: in nudge duplicate mode, number of copies (otherwise ignored)
 ---@param project ReaProject|nil|0
 ---@param nudgeflag integer
@@ -184,7 +184,7 @@ function reaper.ColorFromNative(col) end
 ---@return integer retval
 function reaper.ColorToNative(r, g, b) end
 
----Returns the number of shortcuts that exist for the given command ID.<br>
+---Returns the number of shortcuts that exist for the given command ID.  
 ---see GetActionShortcutDesc, DeleteActionShortcut, DoActionShortcutDialog.
 ---@param section KbdSectionInfo|integer
 ---@param cmdID integer
@@ -201,11 +201,11 @@ function reaper.CountAutomationItems(env) end
 ---@return integer retval
 function reaper.CountEnvelopePoints(envelope) end
 
----Returns the number of points in the envelope.<br>
----autoitem_idx=-1 for the underlying envelope, 0 for the first automation item on the envelope, etc.<br>
----For automation items, pass autoitem_idx|0x10000000 to base ptidx on the number of points in one full loop iteration,<br>
----even if the automation item is trimmed so that not all points are visible.<br>
----Otherwise, ptidx will be based on the number of visible points in the automation item, including all loop iterations.<br>
+---Returns the number of points in the envelope.  
+---autoitem_idx=-1 for the underlying envelope, 0 for the first automation item on the envelope, etc.  
+---For automation items, pass autoitem_idx|0x10000000 to base ptidx on the number of points in one full loop iteration,  
+---even if the automation item is trimmed so that not all points are visible.  
+---Otherwise, ptidx will be based on the number of visible points in the automation item, including all loop iterations.  
 ---See GetEnvelopePointEx, SetEnvelopePointEx, InsertEnvelopePointEx, DeleteEnvelopePointEx.
 ---@param envelope TrackEnvelope
 ---@param autoitem_idx integer
@@ -542,7 +542,7 @@ function reaper.CSurf_TrackToID(track, mcpView) end
 ---@return number retval
 function reaper.DB2SLIDER(x) end
 
----Delete the specific shortcut for the given command ID.<br>
+---Delete the specific shortcut for the given command ID.  
 ---See CountActionShortcuts, GetActionShortcutDesc, DoActionShortcutDialog.
 ---@param section KbdSectionInfo|integer
 ---@param cmdID integer
@@ -550,11 +550,11 @@ function reaper.DB2SLIDER(x) end
 ---@return boolean retval
 function reaper.DeleteActionShortcut(section, cmdID, shortcutidx) end
 
----Delete an envelope point. If setting multiple points at once, set noSort=true, and call Envelope_SortPoints when done.<br>
----autoitem_idx=-1 for the underlying envelope, 0 for the first automation item on the envelope, etc.<br>
----For automation items, pass autoitem_idx|0x10000000 to base ptidx on the number of points in one full loop iteration,<br>
----even if the automation item is trimmed so that not all points are visible.<br>
----Otherwise, ptidx will be based on the number of visible points in the automation item, including all loop iterations.<br>
+---Delete an envelope point. If setting multiple points at once, set noSort=true, and call Envelope_SortPoints when done.  
+---autoitem_idx=-1 for the underlying envelope, 0 for the first automation item on the envelope, etc.  
+---For automation items, pass autoitem_idx|0x10000000 to base ptidx on the number of points in one full loop iteration,  
+---even if the automation item is trimmed so that not all points are visible.  
+---Otherwise, ptidx will be based on the number of visible points in the automation item, including all loop iterations.  
 ---See CountEnvelopePointsEx, GetEnvelopePointEx, SetEnvelopePointEx, InsertEnvelopePointEx.
 ---@param envelope TrackEnvelope
 ---@param autoitem_idx integer
@@ -628,7 +628,7 @@ function reaper.DeleteTrackMediaItem(tr, it) end
 ---@param accessor AudioAccessor
 function reaper.DestroyAudioAccessor(accessor) end
 
----Open the action shortcut dialog to edit or add a shortcut for the given command ID. If (shortcutidx >= 0 && shortcutidx < CountActionShortcuts()), that specific shortcut will be replaced, otherwise a new shortcut will be added.<br>
+---Open the action shortcut dialog to edit or add a shortcut for the given command ID. If (shortcutidx >= 0 && shortcutidx < CountActionShortcuts()), that specific shortcut will be replaced, otherwise a new shortcut will be added.  
 ---See CountActionShortcuts, GetActionShortcutDesc, DeleteActionShortcut.
 ---@param hwnd HWND
 ---@param section KbdSectionInfo|integer
@@ -859,13 +859,13 @@ function reaper.FindTempoTimeSigMarker(project, time) end
 ---@return string buf
 function reaper.format_timestr(tpos, buf) end
 
----time formatting mode overrides: -1=proj default.<br>
----0=time<br>
----1=measures.beats + time<br>
----2=measures.beats<br>
----3=seconds<br>
----4=samples<br>
----5=h:m:s:f<br>
+---time formatting mode overrides: -1=proj default.  
+---0=time  
+---1=measures.beats + time  
+---2=measures.beats  
+---3=seconds  
+---4=samples  
+---5=h:m:s:f  
 ---offset is start of where the length will be calculated from
 ---@param tpos number
 ---@param buf string
@@ -874,13 +874,13 @@ function reaper.format_timestr(tpos, buf) end
 ---@return string buf
 function reaper.format_timestr_len(tpos, buf, offset, modeoverride) end
 
----time formatting mode overrides: -1=proj default.<br>
----0=time<br>
----1=measures.beats + time<br>
----2=measures.beats<br>
----3=seconds<br>
----4=samples<br>
----5=h:m:s:f
+---time formatting mode overrides: -1=proj default.  
+---0=time  
+---1=measures.beats + time  
+---2=measures.beats  
+---3=seconds  
+---4=samples  
+---5=h:m:s:f  
 ---@param tpos number
 ---@param buf string
 ---@param modeoverride integer
@@ -900,7 +900,7 @@ function reaper.get_config_var_string(name) end
 ---@return string retval
 function reaper.get_ini_file() end
 
----Get the text description of a specific shortcut for the given command ID.<br>
+---Get the text description of a specific shortcut for the given command ID.  
 ---See CountActionShortcuts,DeleteActionShortcut,DoActionShortcutDialog.
 ---@param section KbdSectionInfo|integer
 ---@param cmdID integer
@@ -939,17 +939,15 @@ function reaper.GetAudioAccessorEndTime(accessor) end
 ---@return string hashNeed128
 function reaper.GetAudioAccessorHash(accessor, hashNeed128) end
 
----Get a block of samples from the audio accessor. Samples are extracted immediately pre-FX, and returned interleaved (first sample of first channel, first sample of second channel...). Returns 0 if no audio, 1 if audio, -1 on error. See CreateTakeAudioAccessor, CreateTrackAudioAccessor, DestroyAudioAccessor, AudioAccessorStateChanged, GetAudioAccessorStartTime, GetAudioAccessorEndTime.
----
----This function has special handling in Python, and only returns two objects, the API function return value, and the sample buffer. Example usage:
----
----<code>RPR_GetTrack(0, 0)<br>
----aa = RPR_CreateTrackAudioAccessor(tr)<br>
----buf = list([0]*2*1024) # 2 channels, 1024 samples each, initialized to zero<br>
----pos = 0.0<br>
----(ret, buf) = GetAudioAccessorSamples(aa, 44100, 2, pos, 1024, buf)<br>
----# buf now holds the first 2*1024 audio samples from the track.<br>
----# typically GetAudioAccessorSamples() would be called within a loop, increasing pos each time.<br>
+---Get a block of samples from the audio accessor. Samples are extracted immediately pre-FX, and returned interleaved (first sample of first channel, first sample of second channel...). Returns 0 if no audio, 1 if audio, -1 on error. See CreateTakeAudioAccessor, CreateTrackAudioAccessor, DestroyAudioAccessor, AudioAccessorStateChanged, GetAudioAccessorStartTime, GetAudioAccessorEndTime.  
+---This function has special handling in Python, and only returns two objects, the API function return value, and the sample buffer. Example usage:  
+---<code>RPR_GetTrack(0, 0)  
+---aa = RPR_CreateTrackAudioAccessor(tr)  
+---buf = list([0]*2*1024) # 2 channels, 1024 samples each, initialized to zero  
+---pos = 0.0  
+---(ret, buf) = GetAudioAccessorSamples(aa, 44100, 2, pos, 1024, buf)  
+---# buf now holds the first 2*1024 audio samples from the track.  
+---# typically GetAudioAccessorSamples() would be called within a loop, increasing pos each time.  
 ---</code>
 ---@param accessor AudioAccessor
 ---@param samplerate integer
@@ -1009,18 +1007,18 @@ function reaper.GetDisplayedMediaItemColor(item) end
 ---@return integer retval
 function reaper.GetDisplayedMediaItemColor2(item, take) end
 
----Gets an envelope numerical-value attribute:<br>
----I_TCPY : int : Y offset of envelope relative to parent track (may be separate lane or overlap with track contents)<br>
----I_TCPH : int : visible height of envelope<br>
----I_TCPY_USED : int : Y offset of envelope relative to parent track, exclusive of padding<br>
----I_TCPH_USED : int : visible height of envelope, exclusive of padding<br>
----P_TRACK : MediaTrack * : parent track pointer (if any)<br>
----P_DESTTRACK : MediaTrack * : destination track pointer, if on a send<br>
----P_ITEM : MediaItem * : parent item pointer (if any)<br>
----P_TAKE : MediaItem_Take * : parent take pointer (if any)<br>
----I_SEND_IDX : int : 1-based index of send in P_TRACK, or 0 if not a send<br>
----I_HWOUT_IDX : int : 1-based index of hardware output in P_TRACK or 0 if not a hardware output<br>
----I_RECV_IDX : int : 1-based index of receive in P_DESTTRACK or 0 if not a send/receive
+---Gets an envelope numerical-value attribute:  
+---I_TCPY : int : Y offset of envelope relative to parent track (may be separate lane or overlap with track contents)  
+---I_TCPH : int : visible height of envelope  
+---I_TCPY_USED : int : Y offset of envelope relative to parent track, exclusive of padding  
+---I_TCPH_USED : int : visible height of envelope, exclusive of padding  
+---P_TRACK : MediaTrack * : parent track pointer (if any)  
+---P_DESTTRACK : MediaTrack * : destination track pointer, if on a send  
+---P_ITEM : MediaItem * : parent item pointer (if any)  
+---P_TAKE : MediaItem_Take * : parent take pointer (if any)  
+---I_SEND_IDX : int : 1-based index of send in P_TRACK, or 0 if not a send  
+---I_HWOUT_IDX : int : 1-based index of hardware output in P_TRACK or 0 if not a hardware output  
+---I_RECV_IDX : int : 1-based index of receive in P_DESTTRACK or 0 if not a send/receive  
 ---@param env TrackEnvelope
 ---@param parmname string
 ---@return number retval
@@ -1048,11 +1046,11 @@ function reaper.GetEnvelopePoint(envelope, ptidx) end
 ---@return integer retval
 function reaper.GetEnvelopePointByTime(envelope, time) end
 
----Returns the envelope point at or immediately prior to the given time position.<br>
----autoitem_idx=-1 for the underlying envelope, 0 for the first automation item on the envelope, etc.<br>
----For automation items, pass autoitem_idx|0x10000000 to base ptidx on the number of points in one full loop iteration,<br>
----even if the automation item is trimmed so that not all points are visible.<br>
----Otherwise, ptidx will be based on the number of visible points in the automation item, including all loop iterations.<br>
+---Returns the envelope point at or immediately prior to the given time position.  
+---autoitem_idx=-1 for the underlying envelope, 0 for the first automation item on the envelope, etc.  
+---For automation items, pass autoitem_idx|0x10000000 to base ptidx on the number of points in one full loop iteration,  
+---even if the automation item is trimmed so that not all points are visible.  
+---Otherwise, ptidx will be based on the number of visible points in the automation item, including all loop iterations.  
 ---See GetEnvelopePointEx, SetEnvelopePointEx, InsertEnvelopePointEx, DeleteEnvelopePointEx.
 ---@param envelope TrackEnvelope
 ---@param autoitem_idx integer
@@ -1060,11 +1058,11 @@ function reaper.GetEnvelopePointByTime(envelope, time) end
 ---@return integer retval
 function reaper.GetEnvelopePointByTimeEx(envelope, autoitem_idx, time) end
 
----Get the attributes of an envelope point.<br>
----autoitem_idx=-1 for the underlying envelope, 0 for the first automation item on the envelope, etc.<br>
----For automation items, pass autoitem_idx|0x10000000 to base ptidx on the number of points in one full loop iteration,<br>
----even if the automation item is trimmed so that not all points are visible.<br>
----Otherwise, ptidx will be based on the number of visible points in the automation item, including all loop iterations.<br>
+---Get the attributes of an envelope point.  
+---autoitem_idx=-1 for the underlying envelope, 0 for the first automation item on the envelope, etc.  
+---For automation items, pass autoitem_idx|0x10000000 to base ptidx on the number of points in one full loop iteration,  
+---even if the automation item is trimmed so that not all points are visible.  
+---Otherwise, ptidx will be based on the number of visible points in the automation item, including all loop iterations.  
 ---See CountEnvelopePointsEx, SetEnvelopePointEx, InsertEnvelopePointEx, DeleteEnvelopePointEx.
 ---@param envelope TrackEnvelope
 ---@param autoitem_idx integer
@@ -1240,40 +1238,40 @@ function reaper.GetMediaItem(proj, itemidx) end
 ---@return MediaTrack retval
 function reaper.GetMediaItem_Track(item) end
 
----Get media item numerical-value attributes.<br>
----B_MUTE : bool * : muted (item solo overrides). setting this value will clear C_MUTE_SOLO.<br>
----B_MUTE_ACTUAL : bool * : muted (ignores solo). setting this value will not affect C_MUTE_SOLO.<br>
----C_LANEPLAYS : char * : on fixed lane tracks, 0=this item lane does not play, 1=this item lane plays exclusively, 2=this item lane plays and other lanes also play, -1=this item is on a non-visible, non-playing lane on a formerly fixed-lane track (read-only)<br>
----C_MUTE_SOLO : char * : solo override (-1=soloed, 0=no override, 1=unsoloed). note that this API does not automatically unsolo other items when soloing (nor clear the unsolos when clearing the last soloed item), it must be done by the caller via action or via this API.<br>
----B_LOOPSRC : bool * : loop source<br>
----B_ALLTAKESPLAY : bool * : all takes play<br>
----B_UISEL : bool * : selected in arrange view<br>
----C_BEATATTACHMODE : char * : item timebase, -1=track or project default, 1=beats (position, length, rate), 2=beats (position only). for auto-stretch timebase: C_BEATATTACHMODE=1, C_AUTOSTRETCH=1<br>
----C_AUTOSTRETCH: : char * : auto-stretch at project tempo changes, 1=enabled, requires C_BEATATTACHMODE=1<br>
----C_LOCK : char * : locked, &1=locked<br>
----D_VOL : double * : item volume,  0=-inf, 0.5=-6dB, 1=+0dB, 2=+6dB, etc<br>
----D_POSITION : double * : item position in seconds<br>
----D_LENGTH : double * : item length in seconds<br>
----D_SNAPOFFSET : double * : item snap offset in seconds<br>
----D_FADEINLEN : double * : item manual fadein length in seconds<br>
----D_FADEOUTLEN : double * : item manual fadeout length in seconds<br>
----D_FADEINDIR : double * : item fadein curvature, -1..1<br>
----D_FADEOUTDIR : double * : item fadeout curvature, -1..1<br>
----D_FADEINLEN_AUTO : double * : item auto-fadein length in seconds, -1=no auto-fadein<br>
----D_FADEOUTLEN_AUTO : double * : item auto-fadeout length in seconds, -1=no auto-fadeout<br>
----C_FADEINSHAPE : int * : fadein shape, 0..6, 0=linear<br>
----C_FADEOUTSHAPE : int * : fadeout shape, 0..6, 0=linear<br>
----I_GROUPID : int * : group ID, 0=no group<br>
----I_LASTY : int * : Y-position (relative to top of track) in pixels (read-only)<br>
----I_LASTH : int * : height in pixels (read-only)<br>
----I_CUSTOMCOLOR : int * : custom color, OS dependent color|0x1000000 (i.e. ColorToNative(r,g,b)|0x1000000). If you do not |0x1000000, then it will not be used, but will store the color<br>
----I_CURTAKE : int * : active take number<br>
----IP_ITEMNUMBER : int : item number on this track (read-only, returns the item number directly)<br>
----F_FREEMODE_Y : float * : free item positioning or fixed lane Y-position. 0=top of track, 1.0=bottom of track<br>
----F_FREEMODE_H : float * : free item positioning or fixed lane height. 0.5=half the track height, 1.0=full track height<br>
----I_FIXEDLANE : int * : fixed lane of item (fine to call with setNewValue, but returned value is read-only)<br>
----B_FIXEDLANE_HIDDEN : bool * : true if displaying only one fixed lane and this item is in a different lane (read-only)<br>
----P_TRACK : MediaTrack * : (read-only)
+---Get media item numerical-value attributes.  
+---B_MUTE : bool * : muted (item solo overrides). setting this value will clear C_MUTE_SOLO.  
+---B_MUTE_ACTUAL : bool * : muted (ignores solo). setting this value will not affect C_MUTE_SOLO.  
+---C_LANEPLAYS : char * : on fixed lane tracks, 0=this item lane does not play, 1=this item lane plays exclusively, 2=this item lane plays and other lanes also play, -1=this item is on a non-visible, non-playing lane on a formerly fixed-lane track (read-only)  
+---C_MUTE_SOLO : char * : solo override (-1=soloed, 0=no override, 1=unsoloed). note that this API does not automatically unsolo other items when soloing (nor clear the unsolos when clearing the last soloed item), it must be done by the caller via action or via this API.  
+---B_LOOPSRC : bool * : loop source  
+---B_ALLTAKESPLAY : bool * : all takes play  
+---B_UISEL : bool * : selected in arrange view  
+---C_BEATATTACHMODE : char * : item timebase, -1=track or project default, 1=beats (position, length, rate), 2=beats (position only). for auto-stretch timebase: C_BEATATTACHMODE=1, C_AUTOSTRETCH=1  
+---C_AUTOSTRETCH: : char * : auto-stretch at project tempo changes, 1=enabled, requires C_BEATATTACHMODE=1  
+---C_LOCK : char * : locked, &1=locked  
+---D_VOL : double * : item volume,  0=-inf, 0.5=-6dB, 1=+0dB, 2=+6dB, etc  
+---D_POSITION : double * : item position in seconds  
+---D_LENGTH : double * : item length in seconds  
+---D_SNAPOFFSET : double * : item snap offset in seconds  
+---D_FADEINLEN : double * : item manual fadein length in seconds  
+---D_FADEOUTLEN : double * : item manual fadeout length in seconds  
+---D_FADEINDIR : double * : item fadein curvature, -1..1  
+---D_FADEOUTDIR : double * : item fadeout curvature, -1..1  
+---D_FADEINLEN_AUTO : double * : item auto-fadein length in seconds, -1=no auto-fadein  
+---D_FADEOUTLEN_AUTO : double * : item auto-fadeout length in seconds, -1=no auto-fadeout  
+---C_FADEINSHAPE : int * : fadein shape, 0..6, 0=linear  
+---C_FADEOUTSHAPE : int * : fadeout shape, 0..6, 0=linear  
+---I_GROUPID : int * : group ID, 0=no group  
+---I_LASTY : int * : Y-position (relative to top of track) in pixels (read-only)  
+---I_LASTH : int * : height in pixels (read-only)  
+---I_CUSTOMCOLOR : int * : custom color, OS dependent color|0x1000000 (i.e. ColorToNative(r,g,b)|0x1000000). If you do not |0x1000000, then it will not be used, but will store the color  
+---I_CURTAKE : int * : active take number  
+---IP_ITEMNUMBER : int : item number on this track (read-only, returns the item number directly)  
+---F_FREEMODE_Y : float * : free item positioning or fixed lane Y-position. 0=top of track, 1.0=bottom of track  
+---F_FREEMODE_H : float * : free item positioning or fixed lane height. 0.5=half the track height, 1.0=full track height  
+---I_FIXEDLANE : int * : fixed lane of item (fine to call with setNewValue, but returned value is read-only)  
+---B_FIXEDLANE_HIDDEN : bool * : true if displaying only one fixed lane and this item is in a different lane (read-only)  
+---P_TRACK : MediaTrack * : (read-only)  
 ---@param item MediaItem
 ---@param parmname string
 ---@return number retval
@@ -1319,56 +1317,56 @@ function reaper.GetMediaItemTake_Track(take) end
 ---@return MediaItem_Take retval
 function reaper.GetMediaItemTakeByGUID(project, guidGUID) end
 
----Get media item take numerical-value attributes.<br>
----D_STARTOFFS : double * : start offset in source media, in seconds<br>
----D_VOL : double * : take volume, 0=-inf, 0.5=-6dB, 1=+0dB, 2=+6dB, etc, negative if take polarity is flipped<br>
----D_PAN : double * : take pan, -1..1<br>
----D_PANLAW : double * : take pan law, -1=default, 0.5=-6dB, 1.0=+0dB, etc<br>
----D_PLAYRATE : double * : take playback rate, 0.5=half speed, 1=normal, 2=double speed, etc<br>
----D_PITCH : double * : take pitch adjustment in semitones, -12=one octave down, 0=normal, +12=one octave up, etc<br>
----B_PPITCH : bool * : preserve pitch when changing playback rate<br>
----I_LASTY : int * : Y-position (relative to top of track) in pixels (read-only)<br>
----I_LASTH : int * : height in pixels (read-only)<br>
----I_CHANMODE : int * : channel mode, 0=normal, 1=reverse stereo, 2=downmix, 3=left, 4=right<br>
----I_PITCHMODE : int * : pitch shifter mode, -1=project default, otherwise high 2 bytes=shifter, low 2 bytes=parameter<br>
----I_STRETCHFLAGS : int * : stretch marker flags (&7 mask for mode override: 0=default, 1=balanced, 2/3/6=tonal, 4=transient, 5=no pre-echo)<br>
----F_STRETCHFADESIZE : float * : stretch marker fade size in seconds (0.0025 default)<br>
----I_RECPASSID : int * : record pass ID<br>
----I_TAKEFX_NCH : int * : number of internal audio channels for per-take FX to use (OK to call with setNewValue, but the returned value is read-only)<br>
----I_CUSTOMCOLOR : int * : custom color, OS dependent color|0x1000000 (i.e. ColorToNative(r,g,b)|0x1000000). If you do not |0x1000000, then it will not be used, but will store the color<br>
----IP_SPECEDIT:CNT : int : spectral edit count (read-only)<br>
----IP_SPECEDIT:DELETE:x : int : read or write this key to remove the spectral edit specified<br>
----IP_SPECEDIT:ADD : int : read or write this key to add a new spectral edit (returns index)<br>
----IP_SPECEDIT:SORT : int : read or write this key to re-sort spectral edits (be sure to do this following a position change or insert of new edit)<br>
----I_SPECEDIT:FFT_SIZE : int * : FFT size used by spectral edits for this take<br>
----D_SPECEDIT:x:POSITION : double * : position of spectral edit start (changing this requires a resort of spectral edits)<br>
----D_SPECEDIT:x:LENGTH : double * : length of spectral edit<br>
----F_SPECEDIT:x:GAIN : float * : gain of spectral edit<br>
----F_SPECEDIT:x:FADE_IN : float * : fade-in size 0..1<br>
----F_SPECEDIT:x:FADE_OUT : float * : fade-out size 0..1<br>
----F_SPECEDIT:x:FADE_LOW : float * : fade-lf size 0..1<br>
----F_SPECEDIT:x:FADE_HI : float * : fade-hf size 0..1<br>
----I_SPECEDIT:x:CHAN : int * : channel index, -1 for omni<br>
----I_SPECEDIT:x:FLAGS : int * : flags, &1=bypassed, &2=solo<br>
----F_SPECEDIT:x:GATE_THRESH : float * : gate threshold<br>
----F_SPECEDIT:x:GATE_FLOOR : float * : gate floor<br>
----F_SPECEDIT:x:COMP_THRESH : float * : comp threshold<br>
----F_SPECEDIT:x:COMP_RATIO : float * : comp ratio<br>
----B_SPECEDIT:x:SELECTED : bool * : selection state<br>
----I_SPECEDIT:x:TOPFREQ_CNT : int * : (read-only) number of top frequency-points<br>
----I_SPECEDIT:x:TOPFREQ_ADD:pos:val : int * : reading or writing will insert top frequency-point with position/value pair, returns index<br>
----I_SPECEDIT:x:TOPFREQ_DEL:y : int * : reading or writing will delete top frequency-point y. there will always be at least one point.<br>
----F_SPECEDIT:x:TOPFREQ_POS:y : float * : (read-only) get position of top frequency-point y<br>
----F_SPECEDIT:x:TOPFREQ_FREQ:y : float * : (read-only) get frequency of top frequency-point y<br>
----I_SPECEDIT:x:BOTFREQ_CNT : int * : number of bottom frequency-points<br>
----I_SPECEDIT:x:BOTFREQ_ADD:pos:val : int * : reading or writing will insert bottom frequency-point with position/value pair, returns index<br>
----I_SPECEDIT:x:BOTFREQ_DEL:y : int * : reading or writing will delete bottom frequency-point y. there will always be at least one point.<br>
----F_SPECEDIT:x:BOTFREQ_POS:y : float * : (read-only) get position of bottom frequency-point y<br>
----F_SPECEDIT:x:BOTFREQ_FREQ:y : float * : (read-only) get frequency of bottom frequency-point y<br>
----IP_TAKENUMBER : int : take number (read-only, returns the take number directly)<br>
----P_TRACK : pointer to MediaTrack (read-only)<br>
----P_ITEM : pointer to MediaItem (read-only)<br>
----P_SOURCE : PCM_source *. Note that if setting this, you should first retrieve the old source, set the new, THEN delete the old.
+---Get media item take numerical-value attributes.  
+---D_STARTOFFS : double * : start offset in source media, in seconds  
+---D_VOL : double * : take volume, 0=-inf, 0.5=-6dB, 1=+0dB, 2=+6dB, etc, negative if take polarity is flipped  
+---D_PAN : double * : take pan, -1..1  
+---D_PANLAW : double * : take pan law, -1=default, 0.5=-6dB, 1.0=+0dB, etc  
+---D_PLAYRATE : double * : take playback rate, 0.5=half speed, 1=normal, 2=double speed, etc  
+---D_PITCH : double * : take pitch adjustment in semitones, -12=one octave down, 0=normal, +12=one octave up, etc  
+---B_PPITCH : bool * : preserve pitch when changing playback rate  
+---I_LASTY : int * : Y-position (relative to top of track) in pixels (read-only)  
+---I_LASTH : int * : height in pixels (read-only)  
+---I_CHANMODE : int * : channel mode, 0=normal, 1=reverse stereo, 2=downmix, 3=left, 4=right  
+---I_PITCHMODE : int * : pitch shifter mode, -1=project default, otherwise high 2 bytes=shifter, low 2 bytes=parameter  
+---I_STRETCHFLAGS : int * : stretch marker flags (&7 mask for mode override: 0=default, 1=balanced, 2/3/6=tonal, 4=transient, 5=no pre-echo)  
+---F_STRETCHFADESIZE : float * : stretch marker fade size in seconds (0.0025 default)  
+---I_RECPASSID : int * : record pass ID  
+---I_TAKEFX_NCH : int * : number of internal audio channels for per-take FX to use (OK to call with setNewValue, but the returned value is read-only)  
+---I_CUSTOMCOLOR : int * : custom color, OS dependent color|0x1000000 (i.e. ColorToNative(r,g,b)|0x1000000). If you do not |0x1000000, then it will not be used, but will store the color  
+---IP_SPECEDIT:CNT : int : spectral edit count (read-only)  
+---IP_SPECEDIT:DELETE:x : int : read or write this key to remove the spectral edit specified  
+---IP_SPECEDIT:ADD : int : read or write this key to add a new spectral edit (returns index)  
+---IP_SPECEDIT:SORT : int : read or write this key to re-sort spectral edits (be sure to do this following a position change or insert of new edit)  
+---I_SPECEDIT:FFT_SIZE : int * : FFT size used by spectral edits for this take  
+---D_SPECEDIT:x:POSITION : double * : position of spectral edit start (changing this requires a resort of spectral edits)  
+---D_SPECEDIT:x:LENGTH : double * : length of spectral edit  
+---F_SPECEDIT:x:GAIN : float * : gain of spectral edit  
+---F_SPECEDIT:x:FADE_IN : float * : fade-in size 0..1  
+---F_SPECEDIT:x:FADE_OUT : float * : fade-out size 0..1  
+---F_SPECEDIT:x:FADE_LOW : float * : fade-lf size 0..1  
+---F_SPECEDIT:x:FADE_HI : float * : fade-hf size 0..1  
+---I_SPECEDIT:x:CHAN : int * : channel index, -1 for omni  
+---I_SPECEDIT:x:FLAGS : int * : flags, &1=bypassed, &2=solo  
+---F_SPECEDIT:x:GATE_THRESH : float * : gate threshold  
+---F_SPECEDIT:x:GATE_FLOOR : float * : gate floor  
+---F_SPECEDIT:x:COMP_THRESH : float * : comp threshold  
+---F_SPECEDIT:x:COMP_RATIO : float * : comp ratio  
+---B_SPECEDIT:x:SELECTED : bool * : selection state  
+---I_SPECEDIT:x:TOPFREQ_CNT : int * : (read-only) number of top frequency-points  
+---I_SPECEDIT:x:TOPFREQ_ADD:pos:val : int * : reading or writing will insert top frequency-point with position/value pair, returns index  
+---I_SPECEDIT:x:TOPFREQ_DEL:y : int * : reading or writing will delete top frequency-point y. there will always be at least one point.  
+---F_SPECEDIT:x:TOPFREQ_POS:y : float * : (read-only) get position of top frequency-point y  
+---F_SPECEDIT:x:TOPFREQ_FREQ:y : float * : (read-only) get frequency of top frequency-point y  
+---I_SPECEDIT:x:BOTFREQ_CNT : int * : number of bottom frequency-points  
+---I_SPECEDIT:x:BOTFREQ_ADD:pos:val : int * : reading or writing will insert bottom frequency-point with position/value pair, returns index  
+---I_SPECEDIT:x:BOTFREQ_DEL:y : int * : reading or writing will delete bottom frequency-point y. there will always be at least one point.  
+---F_SPECEDIT:x:BOTFREQ_POS:y : float * : (read-only) get position of bottom frequency-point y  
+---F_SPECEDIT:x:BOTFREQ_FREQ:y : float * : (read-only) get frequency of bottom frequency-point y  
+---IP_TAKENUMBER : int : take number (read-only, returns the take number directly)  
+---P_TRACK : pointer to MediaTrack (read-only)  
+---P_ITEM : pointer to MediaItem (read-only)  
+---P_SOURCE : PCM_source *. Note that if setting this, you should first retrieve the old source, set the new, THEN delete the old.  
 ---@param take MediaItem_Take
 ---@param parmname string
 ---@return number retval
@@ -1409,71 +1407,71 @@ function reaper.GetMediaSourceSampleRate(source) end
 ---@return string typebuf
 function reaper.GetMediaSourceType(source) end
 
----Get track numerical-value attributes.<br>
----B_MUTE : bool * : muted<br>
----B_PHASE : bool * : track phase inverted<br>
----B_RECMON_IN_EFFECT : bool * : record monitoring in effect (current audio-thread playback state, read-only)<br>
----IP_TRACKNUMBER : int : track number 1-based, 0=not found, -1=master track (read-only, returns the int directly)<br>
----I_SOLO : int * : soloed, 0=not soloed, 1=soloed, 2=soloed in place, 5=safe soloed, 6=safe soloed in place<br>
----B_SOLO_DEFEAT : bool * : when set, if anything else is soloed and this track is not muted, this track acts soloed<br>
----I_FXEN : int * : fx enabled, 0=bypassed, !0=fx active<br>
----I_RECARM : int * : record armed, 0=not record armed, 1=record armed<br>
----I_RECINPUT : int * : record input, <0=no input. if 4096 set, input is MIDI and low 5 bits represent channel (0=all, 1-16=only chan), next 6 bits represent physical input (63=all, 62=VKB). If 4096 is not set, low 10 bits (0..1023) are input start channel (ReaRoute/Loopback start at 512). If 2048 is set, input is multichannel input (using track channel count), or if 1024 is set, input is stereo input, otherwise input is mono.<br>
----I_RECMODE : int * : record mode, 0=input, 1=stereo out, 2=none, 3=stereo out w/latency compensation, 4=midi output, 5=mono out, 6=mono out w/ latency compensation, 7=midi overdub, 8=midi replace<br>
----I_RECMODE_FLAGS : int * : record mode flags, &3=output recording mode (0=post fader, 1=pre-fx, 2=post-fx/pre-fader)<br>
----I_RECMON : int * : record monitoring, 0=off, 1=normal, 2=not when playing (tape style)<br>
----I_RECMONITEMS : int * : monitor items while recording, 0=off, 1=on<br>
----B_AUTO_RECARM : bool * : automatically set record arm when selected (does not immediately affect recarm state, script should set directly if desired)<br>
----I_VUMODE : int * : track vu mode, &1:disabled, &30==0:stereo peaks, &30==2:multichannel peaks, &30==4:stereo RMS, &30==8:combined RMS, &30==12:LUFS-M, &30==16:LUFS-S (readout=max), &30==20:LUFS-S (readout=current), &32:LUFS calculation on channels 1+2 only<br>
----I_AUTOMODE : int * : track automation mode, 0=trim/off, 1=read, 2=touch, 3=write, 4=latch<br>
----I_NCHAN : int * : number of track channels, 2-128, even numbers only<br>
----I_SELECTED : int * : track selected, 0=unselected, 1=selected<br>
----I_WNDH : int * : current TCP window height in pixels including envelopes (read-only)<br>
----I_TCPH : int * : current TCP window height in pixels not including envelopes (read-only)<br>
----I_TCPY : int * : current TCP window Y-position in pixels relative to top of arrange view (read-only)<br>
----I_MCPX : int * : current MCP X-position in pixels relative to mixer container (read-only)<br>
----I_MCPY : int * : current MCP Y-position in pixels relative to mixer container (read-only)<br>
----I_MCPW : int * : current MCP width in pixels (read-only)<br>
----I_MCPH : int * : current MCP height in pixels (read-only)<br>
----I_FOLDERDEPTH : int * : folder depth change, 0=normal, 1=track is a folder parent, -1=track is the last in the innermost folder, -2=track is the last in the innermost and next-innermost folders, etc<br>
----I_FOLDERCOMPACT : int * : folder collapsed state (only valid on folders), 0=normal, 1=collapsed, 2=fully collapsed<br>
----I_MIDIHWOUT : int * : track midi hardware output index, <0=disabled, low 5 bits are which channels (0=all, 1-16), next 5 bits are output device index (0-31)<br>
----I_MIDI_INPUT_CHANMAP : int * : -1 maps to source channel, otherwise 1-16 to map to MIDI channel<br>
----I_MIDI_CTL_CHAN : int * : -1 no link, 0-15 link to MIDI volume/pan on channel, 16 link to MIDI volume/pan on all channels<br>
----I_MIDI_TRACKSEL_FLAG : int * : MIDI editor track list options: &1=expand media items, &2=exclude from list, &4=auto-pruned<br>
----I_PERFFLAGS : int * : track performance flags, &1=no media buffering, &2=no anticipative FX<br>
----I_CUSTOMCOLOR : int * : custom color, OS dependent color|0x1000000 (i.e. ColorToNative(r,g,b)|0x1000000). If you do not |0x1000000, then it will not be used, but will store the color<br>
----I_HEIGHTOVERRIDE : int * : custom height override for TCP window, 0 for none, otherwise size in pixels<br>
----I_SPACER : int * : 1=TCP track spacer above this trackB_HEIGHTLOCK : bool * : track height lock (must set I_HEIGHTOVERRIDE before locking)<br>
----D_VOL : double * : trim volume of track, 0=-inf, 0.5=-6dB, 1=+0dB, 2=+6dB, etc<br>
----D_PAN : double * : trim pan of track, -1..1<br>
----D_WIDTH : double * : width of track, -1..1<br>
----D_DUALPANL : double * : dualpan position 1, -1..1, only if I_PANMODE==6<br>
----D_DUALPANR : double * : dualpan position 2, -1..1, only if I_PANMODE==6<br>
----I_PANMODE : int * : pan mode, 0=classic 3.x, 3=new balance, 5=stereo pan, 6=dual pan<br>
----D_PANLAW : double * : pan law of track, <0=project default, 0.5=-6dB, 0.707..=-3dB, 1=+0dB, 1.414..=-3dB with gain compensation, 2=-6dB with gain compensation, etc<br>
----I_PANLAW_FLAGS : int * : pan law flags, 0=sine taper, 1=hybrid taper with deprecated behavior when gain compensation enabled, 2=linear taper, 3=hybrid taper<br>
----P_ENV:<envchunkname or P_ENV:{GUID... : TrackEnvelope * : (read-only) chunkname can be <VOLENV, <PANENV, etc; GUID is the stringified envelope GUID.<br>
----B_SHOWINMIXER : bool * : track control panel visible in mixer (do not use on master track)<br>
----B_SHOWINTCP : bool * : track control panel visible in arrange view (do not use on master track)<br>
----B_MAINSEND : bool * : track sends audio to parent<br>
----C_MAINSEND_OFFS : char * : channel offset of track send to parent<br>
----C_MAINSEND_NCH : char * : channel count of track send to parent (0=use all child track channels, 1=use one channel only)<br>
----I_FREEMODE : int * : 1=track free item positioning enabled, 2=track fixed lanes enabled (call UpdateTimeline() after changing)<br>
----I_NUMFIXEDLANES : int * : number of track fixed lanes (fine to call with setNewValue, but returned value is read-only)<br>
----C_LANESCOLLAPSED : char * : fixed lane collapse state (1=lanes collapsed, 2=track displays as non-fixed-lanes but hidden lanes exist)<br>
----C_LANESETTINGS : char * : fixed lane settings (&1=auto-remove empty lanes at bottom, &2=do not auto-comp new recording, &4=newly recorded lanes play exclusively (else add lanes in layers), &8=big lanes (else small lanes), &16=add new recording at bottom (else record into first available lane), &32=hide lane buttons<br>
----C_LANEPLAYS:N : char * :  on fixed lane tracks, 0=lane N does not play, 1=lane N plays exclusively, 2=lane N plays and other lanes also play (fine to call with setNewValue, but returned value is read-only)<br>
----C_ALLLANESPLAY : char * : on fixed lane tracks, 0=no lanes play, 1=all lanes play, 2=some lanes play (fine to call with setNewValue 0 or 1, but returned value is read-only)<br>
----C_BEATATTACHMODE : char * : track timebase, -1=project default, 0=time, 1=beats (position, length, rate), 2=beats (position only)<br>
----F_MCP_FXSEND_SCALE : float * : scale of fx+send area in MCP (0=minimum allowed, 1=maximum allowed)<br>
----F_MCP_FXPARM_SCALE : float * : scale of fx parameter area in MCP (0=minimum allowed, 1=maximum allowed)<br>
----F_MCP_SENDRGN_SCALE : float * : scale of send area as proportion of the fx+send total area (0=minimum allowed, 1=maximum allowed)<br>
----F_TCP_FXPARM_SCALE : float * : scale of TCP parameter area when TCP FX are embedded (0=min allowed, default, 1=max allowed)<br>
----I_PLAY_OFFSET_FLAG : int * : track media playback offset state, &1=bypassed, &2=offset value is measured in samples (otherwise measured in seconds)<br>
----D_PLAY_OFFSET : double * : track media playback offset, units depend on I_PLAY_OFFSET_FLAG<br>
----P_PARTRACK : MediaTrack * : parent track (read-only)<br>
----P_PROJECT : ReaProject * : parent project (read-only)
+---Get track numerical-value attributes.  
+---B_MUTE : bool * : muted  
+---B_PHASE : bool * : track phase inverted  
+---B_RECMON_IN_EFFECT : bool * : record monitoring in effect (current audio-thread playback state, read-only)  
+---IP_TRACKNUMBER : int : track number 1-based, 0=not found, -1=master track (read-only, returns the int directly)  
+---I_SOLO : int * : soloed, 0=not soloed, 1=soloed, 2=soloed in place, 5=safe soloed, 6=safe soloed in place  
+---B_SOLO_DEFEAT : bool * : when set, if anything else is soloed and this track is not muted, this track acts soloed  
+---I_FXEN : int * : fx enabled, 0=bypassed, !0=fx active  
+---I_RECARM : int * : record armed, 0=not record armed, 1=record armed  
+---I_RECINPUT : int * : record input, <0=no input. if 4096 set, input is MIDI and low 5 bits represent channel (0=all, 1-16=only chan), next 6 bits represent physical input (63=all, 62=VKB). If 4096 is not set, low 10 bits (0..1023) are input start channel (ReaRoute/Loopback start at 512). If 2048 is set, input is multichannel input (using track channel count), or if 1024 is set, input is stereo input, otherwise input is mono.  
+---I_RECMODE : int * : record mode, 0=input, 1=stereo out, 2=none, 3=stereo out w/latency compensation, 4=midi output, 5=mono out, 6=mono out w/ latency compensation, 7=midi overdub, 8=midi replace  
+---I_RECMODE_FLAGS : int * : record mode flags, &3=output recording mode (0=post fader, 1=pre-fx, 2=post-fx/pre-fader)  
+---I_RECMON : int * : record monitoring, 0=off, 1=normal, 2=not when playing (tape style)  
+---I_RECMONITEMS : int * : monitor items while recording, 0=off, 1=on  
+---B_AUTO_RECARM : bool * : automatically set record arm when selected (does not immediately affect recarm state, script should set directly if desired)  
+---I_VUMODE : int * : track vu mode, &1:disabled, &30==0:stereo peaks, &30==2:multichannel peaks, &30==4:stereo RMS, &30==8:combined RMS, &30==12:LUFS-M, &30==16:LUFS-S (readout=max), &30==20:LUFS-S (readout=current), &32:LUFS calculation on channels 1+2 only  
+---I_AUTOMODE : int * : track automation mode, 0=trim/off, 1=read, 2=touch, 3=write, 4=latch  
+---I_NCHAN : int * : number of track channels, 2-128, even numbers only  
+---I_SELECTED : int * : track selected, 0=unselected, 1=selected  
+---I_WNDH : int * : current TCP window height in pixels including envelopes (read-only)  
+---I_TCPH : int * : current TCP window height in pixels not including envelopes (read-only)  
+---I_TCPY : int * : current TCP window Y-position in pixels relative to top of arrange view (read-only)  
+---I_MCPX : int * : current MCP X-position in pixels relative to mixer container (read-only)  
+---I_MCPY : int * : current MCP Y-position in pixels relative to mixer container (read-only)  
+---I_MCPW : int * : current MCP width in pixels (read-only)  
+---I_MCPH : int * : current MCP height in pixels (read-only)  
+---I_FOLDERDEPTH : int * : folder depth change, 0=normal, 1=track is a folder parent, -1=track is the last in the innermost folder, -2=track is the last in the innermost and next-innermost folders, etc  
+---I_FOLDERCOMPACT : int * : folder collapsed state (only valid on folders), 0=normal, 1=collapsed, 2=fully collapsed  
+---I_MIDIHWOUT : int * : track midi hardware output index, <0=disabled, low 5 bits are which channels (0=all, 1-16), next 5 bits are output device index (0-31)  
+---I_MIDI_INPUT_CHANMAP : int * : -1 maps to source channel, otherwise 1-16 to map to MIDI channel  
+---I_MIDI_CTL_CHAN : int * : -1 no link, 0-15 link to MIDI volume/pan on channel, 16 link to MIDI volume/pan on all channels  
+---I_MIDI_TRACKSEL_FLAG : int * : MIDI editor track list options: &1=expand media items, &2=exclude from list, &4=auto-pruned  
+---I_PERFFLAGS : int * : track performance flags, &1=no media buffering, &2=no anticipative FX  
+---I_CUSTOMCOLOR : int * : custom color, OS dependent color|0x1000000 (i.e. ColorToNative(r,g,b)|0x1000000). If you do not |0x1000000, then it will not be used, but will store the color  
+---I_HEIGHTOVERRIDE : int * : custom height override for TCP window, 0 for none, otherwise size in pixels  
+---I_SPACER : int * : 1=TCP track spacer above this trackB_HEIGHTLOCK : bool * : track height lock (must set I_HEIGHTOVERRIDE before locking)  
+---D_VOL : double * : trim volume of track, 0=-inf, 0.5=-6dB, 1=+0dB, 2=+6dB, etc  
+---D_PAN : double * : trim pan of track, -1..1  
+---D_WIDTH : double * : width of track, -1..1  
+---D_DUALPANL : double * : dualpan position 1, -1..1, only if I_PANMODE==6  
+---D_DUALPANR : double * : dualpan position 2, -1..1, only if I_PANMODE==6  
+---I_PANMODE : int * : pan mode, 0=classic 3.x, 3=new balance, 5=stereo pan, 6=dual pan  
+---D_PANLAW : double * : pan law of track, <0=project default, 0.5=-6dB, 0.707..=-3dB, 1=+0dB, 1.414..=-3dB with gain compensation, 2=-6dB with gain compensation, etc  
+---I_PANLAW_FLAGS : int * : pan law flags, 0=sine taper, 1=hybrid taper with deprecated behavior when gain compensation enabled, 2=linear taper, 3=hybrid taper  
+---P_ENV:<envchunkname or P_ENV:{GUID... : TrackEnvelope * : (read-only) chunkname can be <VOLENV, <PANENV, etc; GUID is the stringified envelope GUID.  
+---B_SHOWINMIXER : bool * : track control panel visible in mixer (do not use on master track)  
+---B_SHOWINTCP : bool * : track control panel visible in arrange view (do not use on master track)  
+---B_MAINSEND : bool * : track sends audio to parent  
+---C_MAINSEND_OFFS : char * : channel offset of track send to parent  
+---C_MAINSEND_NCH : char * : channel count of track send to parent (0=use all child track channels, 1=use one channel only)  
+---I_FREEMODE : int * : 1=track free item positioning enabled, 2=track fixed lanes enabled (call UpdateTimeline() after changing)  
+---I_NUMFIXEDLANES : int * : number of track fixed lanes (fine to call with setNewValue, but returned value is read-only)  
+---C_LANESCOLLAPSED : char * : fixed lane collapse state (1=lanes collapsed, 2=track displays as non-fixed-lanes but hidden lanes exist)  
+---C_LANESETTINGS : char * : fixed lane settings (&1=auto-remove empty lanes at bottom, &2=do not auto-comp new recording, &4=newly recorded lanes play exclusively (else add lanes in layers), &8=big lanes (else small lanes), &16=add new recording at bottom (else record into first available lane), &32=hide lane buttons  
+---C_LANEPLAYS:N : char * :  on fixed lane tracks, 0=lane N does not play, 1=lane N plays exclusively, 2=lane N plays and other lanes also play (fine to call with setNewValue, but returned value is read-only)  
+---C_ALLLANESPLAY : char * : on fixed lane tracks, 0=no lanes play, 1=all lanes play, 2=some lanes play (fine to call with setNewValue 0 or 1, but returned value is read-only)  
+---C_BEATATTACHMODE : char * : track timebase, -1=project default, 0=time, 1=beats (position, length, rate), 2=beats (position only)  
+---F_MCP_FXSEND_SCALE : float * : scale of fx+send area in MCP (0=minimum allowed, 1=maximum allowed)  
+---F_MCP_FXPARM_SCALE : float * : scale of fx parameter area in MCP (0=minimum allowed, 1=maximum allowed)  
+---F_MCP_SENDRGN_SCALE : float * : scale of send area as proportion of the fx+send total area (0=minimum allowed, 1=maximum allowed)  
+---F_TCP_FXPARM_SCALE : float * : scale of TCP parameter area when TCP FX are embedded (0=min allowed, default, 1=max allowed)  
+---I_PLAY_OFFSET_FLAG : int * : track media playback offset state, &1=bypassed, &2=offset value is measured in samples (otherwise measured in seconds)  
+---D_PLAY_OFFSET : double * : track media playback offset, units depend on I_PLAY_OFFSET_FLAG  
+---P_PARTRACK : MediaTrack * : parent track (read-only)  
+---P_PROJECT : ReaProject * : parent project (read-only)  
 ---@param tr MediaTrack
 ---@param parmname string
 ---@return number retval
@@ -1497,11 +1495,11 @@ function reaper.GetMIDIOutputName(dev, nameout) end
 ---@return MediaTrack retval
 function reaper.GetMixerScroll() end
 
----Get the current mouse modifier assignment for a specific modifier key assignment, in a specific context.<br>
----action will be filled in with the command ID number for a built-in mouse modifier<br>
----or built-in REAPER command ID, or the custom action ID string.<br>
----Note: the action string may have a space and 'c' or 'm' appended to it to specify command ID vs mouse modifier ID.<br>
----See SetMouseModifier for more information.
+---Get the current mouse modifier assignment for a specific modifier key assignment, in a specific context.  
+---action will be filled in with the command ID number for a built-in mouse modifier  
+---or built-in REAPER command ID, or the custom action ID string.  
+---Note: the action string may have a space and 'c' or 'm' appended to it to specify command ID vs mouse modifier ID.  
+---See SetMouseModifier for more information.  
 ---@param context string
 ---@param modifier_flag integer
 ---@return string action
@@ -1634,7 +1632,7 @@ function reaper.GetProjectTimeOffset(proj, rndframe) end
 ---@return number bpi
 function reaper.GetProjectTimeSignature() end
 
----Gets basic time signature (beats per minute, numerator of time signature in bpi)<br>
+---Gets basic time signature (beats per minute, numerator of time signature in bpi)  
 ---this does not reflect tempo envelopes but is purely what is set in the project settings.
 ---@param proj ReaProject|nil|0
 ---@return number bpm
@@ -1712,17 +1710,17 @@ function reaper.GetSet_LoopTimeRange(isSet, isLoop, start, end, allowautoseek) e
 ---@return number end
 function reaper.GetSet_LoopTimeRange2(proj, isSet, isLoop, start, end, allowautoseek) end
 
----Get or set automation item information. autoitem_idx=0 for the first automation item on an envelope, 1 for the second item, etc. desc can be any of the following:<br>
----D_POOL_ID : double * : automation item pool ID (as an integer); edits are propagated to all other automation items that share a pool ID<br>
----D_POSITION : double * : automation item timeline position in seconds<br>
----D_LENGTH : double * : automation item length in seconds<br>
----D_STARTOFFS : double * : automation item start offset in seconds<br>
----D_PLAYRATE : double * : automation item playback rate<br>
----D_BASELINE : double * : automation item baseline value in the range [0,1]<br>
----D_AMPLITUDE : double * : automation item amplitude in the range [-1,1]<br>
----D_LOOPSRC : double * : nonzero if the automation item contents are looped<br>
----D_UISEL : double * : nonzero if the automation item is selected in the arrange view<br>
----D_POOL_QNLEN : double * : automation item pooled source length in quarter notes (setting will affect all pooled instances)
+---Get or set automation item information. autoitem_idx=0 for the first automation item on an envelope, 1 for the second item, etc. desc can be any of the following:  
+---D_POOL_ID : double * : automation item pool ID (as an integer); edits are propagated to all other automation items that share a pool ID  
+---D_POSITION : double * : automation item timeline position in seconds  
+---D_LENGTH : double * : automation item length in seconds  
+---D_STARTOFFS : double * : automation item start offset in seconds  
+---D_PLAYRATE : double * : automation item playback rate  
+---D_BASELINE : double * : automation item baseline value in the range [0,1]  
+---D_AMPLITUDE : double * : automation item amplitude in the range [-1,1]  
+---D_LOOPSRC : double * : nonzero if the automation item contents are looped  
+---D_UISEL : double * : nonzero if the automation item is selected in the arrange view  
+---D_POOL_QNLEN : double * : automation item pooled source length in quarter notes (setting will affect all pooled instances)  
 ---@param env TrackEnvelope
 ---@param autoitem_idx integer
 ---@param desc string
@@ -1731,9 +1729,9 @@ function reaper.GetSet_LoopTimeRange2(proj, isSet, isLoop, start, end, allowauto
 ---@return number retval
 function reaper.GetSetAutomationItemInfo(env, autoitem_idx, desc, value, is_set) end
 
----Get or set automation item information. autoitem_idx=0 for the first automation item on an envelope, 1 for the second item, etc. returns true on success. desc can be any of the following:<br>
----P_POOL_NAME : char * : name of the underlying automation item pool<br>
----P_POOL_EXT:xyz : char * : extension-specific persistent data
+---Get or set automation item information. autoitem_idx=0 for the first automation item on an envelope, 1 for the second item, etc. returns true on success. desc can be any of the following:  
+---P_POOL_NAME : char * : name of the underlying automation item pool  
+---P_POOL_EXT:xyz : char * : extension-specific persistent data  
 ---@param env TrackEnvelope
 ---@param autoitem_idx integer
 ---@param desc string
@@ -1743,13 +1741,13 @@ function reaper.GetSetAutomationItemInfo(env, autoitem_idx, desc, value, is_set)
 ---@return string valuestrNeedBig
 function reaper.GetSetAutomationItemInfo_String(env, autoitem_idx, desc, valuestrNeedBig, is_set) end
 
----Gets/sets an attribute string:<br>
----ACTIVE : active state (bool as a string "0" or "1")<br>
----ARM : armed state (bool...)<br>
----VISIBLE : visible state (bool...)<br>
----SHOWLANE : show envelope in separate lane (bool...)<br>
----GUID : (read-only) GUID as a string {xyz-....}<br>
----P_EXT:xyz : extension-specific persistent data<br>
+---Gets/sets an attribute string:  
+---ACTIVE : active state (bool as a string "0" or "1")  
+---ARM : armed state (bool...)  
+---VISIBLE : visible state (bool...)  
+---SHOWLANE : show envelope in separate lane (bool...)  
+---GUID : (read-only) GUID as a string {xyz-....}  
+---P_EXT:xyz : extension-specific persistent data  
 ---Note that when writing some of these attributes you will need to manually update the arrange and/or track panels, see TrackList_AdjustWindows
 ---@param env TrackEnvelope
 ---@param parmname string
@@ -1789,10 +1787,10 @@ function reaper.GetSetItemState(item, str) end
 ---@return string str
 function reaper.GetSetItemState2(item, str, isundo) end
 
----Gets/sets an item attribute string:<br>
----P_NOTES : char * : item note text (do not write to returned pointer, use setNewValue to update)<br>
----P_EXT:xyz : char * : extension-specific persistent data<br>
----GUID : GUID * : 16-byte GUID, can query or update. If using a _String() function, GUID is a string {xyz-...}.
+---Gets/sets an item attribute string:  
+---P_NOTES : char * : item note text (do not write to returned pointer, use setNewValue to update)  
+---P_EXT:xyz : char * : extension-specific persistent data  
+---GUID : GUID * : 16-byte GUID, can query or update. If using a _String() function, GUID is a string {xyz-...}.  
 ---@param item MediaItem
 ---@param parmname string
 ---@param stringNeedBig string
@@ -1801,10 +1799,10 @@ function reaper.GetSetItemState2(item, str, isundo) end
 ---@return string stringNeedBig
 function reaper.GetSetMediaItemInfo_String(item, parmname, stringNeedBig, setNewValue) end
 
----Gets/sets a take attribute string:<br>
----P_NAME : char * : take name<br>
----P_EXT:xyz : char * : extension-specific persistent data<br>
----GUID : GUID * : 16-byte GUID, can query or update. If using a _String() function, GUID is a string {xyz-...}.
+---Gets/sets a take attribute string:  
+---P_NAME : char * : take name  
+---P_EXT:xyz : char * : extension-specific persistent data  
+---GUID : GUID * : 16-byte GUID, can query or update. If using a _String() function, GUID is a string {xyz-...}.  
 ---@param tk MediaItem_Take
 ---@param parmname string
 ---@param stringNeedBig string
@@ -1813,19 +1811,19 @@ function reaper.GetSetMediaItemInfo_String(item, parmname, stringNeedBig, setNew
 ---@return string stringNeedBig
 function reaper.GetSetMediaItemTakeInfo_String(tk, parmname, stringNeedBig, setNewValue) end
 
----Get or set track string attributes.<br>
----P_NAME : char * : track name (on master returns NULL)<br>
----P_ICON : const char * : track icon (full filename, or relative to resource_path/data/track_icons)<br>
----P_LANENAME:n : char * : lane name (returns NULL for non-fixed-lane-tracks)<br>
----P_MCP_LAYOUT : const char * : layout name<br>
----P_RAZOREDITS : const char * : list of razor edit areas, as space-separated triples of start time, end time, and envelope GUID string.<br>
----Example: "0.0 1.0 \"\" 0.0 1.0 "{xyz-...}"<br>
----P_RAZOREDITS_EXT : const char * : list of razor edit areas, as comma-separated sets of space-separated tuples of start time, end time, optional: envelope GUID string, fixed/fipm top y-position, fixed/fipm bottom y-position.<br>
----Example: "0.0 1.0,0.0 1.0 "{xyz-...}",1.0 2.0 "" 0.25 0.75"<br>
----P_TCP_LAYOUT : const char * : layout name<br>
----P_EXT:xyz : char * : extension-specific persistent data<br>
----P_UI_RECT:tcp.mute : char * : read-only, allows querying screen position + size of track WALTER elements (tcp.size queries screen position and size of entire TCP, etc).<br>
----GUID : GUID * : 16-byte GUID, can query or update. If using a _String() function, GUID is a string {xyz-...}.
+---Get or set track string attributes.  
+---P_NAME : char * : track name (on master returns NULL)  
+---P_ICON : const char * : track icon (full filename, or relative to resource_path/data/track_icons)  
+---P_LANENAME:n : char * : lane name (returns NULL for non-fixed-lane-tracks)  
+---P_MCP_LAYOUT : const char * : layout name  
+---P_RAZOREDITS : const char * : list of razor edit areas, as space-separated triples of start time, end time, and envelope GUID string.  
+---Example: "0.0 1.0 \"\" 0.0 1.0 "{xyz-...}"  
+---P_RAZOREDITS_EXT : const char * : list of razor edit areas, as comma-separated sets of space-separated tuples of start time, end time, optional: envelope GUID string, fixed/fipm top y-position, fixed/fipm bottom y-position.  
+---Example: "0.0 1.0,0.0 1.0 "{xyz-...}",1.0 2.0 "" 0.25 0.75"  
+---P_TCP_LAYOUT : const char * : layout name  
+---P_EXT:xyz : char * : extension-specific persistent data  
+---P_UI_RECT:tcp.mute : char * : read-only, allows querying screen position + size of track WALTER elements (tcp.size queries screen position and size of entire TCP, etc).  
+---GUID : GUID * : 16-byte GUID, can query or update. If using a _String() function, GUID is a string {xyz-...}.  
 ---@param tr MediaTrack
 ---@param parmname string
 ---@param stringNeedBig string
@@ -1853,26 +1851,26 @@ function reaper.GetSetProjectAuthor(proj, set, author) end
 ---@return number? swingamt
 function reaper.GetSetProjectGrid(project, set, division, swingmode, swingamt) end
 
----Get or set project information.<br>
----RENDER_SETTINGS : &(1|2)=0:master mix, &1=stems+master mix, &2=stems only, &4=multichannel tracks to multichannel files, &8=use render matrix, &16=tracks with only mono media to mono files, &32=selected media items, &64=selected media items via master, &128=selected tracks via master, &256=embed transients if format supports, &512=embed metadata if format supports, &1024=embed take markers if format supports, &2048=2nd pass render<br>
----RENDER_BOUNDSFLAG : 0=custom time bounds, 1=entire project, 2=time selection, 3=all project regions, 4=selected media items, 5=selected project regions, 6=all project markers, 7=selected project markers<br>
----RENDER_CHANNELS : number of channels in rendered file<br>
----RENDER_SRATE : sample rate of rendered file (or 0 for project sample rate)<br>
----RENDER_STARTPOS : render start time when RENDER_BOUNDSFLAG=0<br>
----RENDER_ENDPOS : render end time when RENDER_BOUNDSFLAG=0<br>
----RENDER_TAILFLAG : apply render tail setting when rendering: &1=custom time bounds, &2=entire project, &4=time selection, &8=all project markers/regions, &16=selected media items, &32=selected project markers/regions<br>
----RENDER_TAILMS : tail length in ms to render (only used if RENDER_BOUNDSFLAG and RENDER_TAILFLAG are set)<br>
----RENDER_ADDTOPROJ : &1=add rendered files to project, &2=do not render files that are likely silent<br>
----RENDER_DITHER : &1=dither, &2=noise shaping, &4=dither stems, &8=noise shaping on stems<br>
----RENDER_NORMALIZE: &1=enable, (&14==0)=LUFS-I, (&14==2)=RMS, (&14==4)=peak, (&14==6)=true peak, (&14==8)=LUFS-M max, (&14==10)=LUFS-S max, &64=enable brickwall limit, &128=brickwall limit true peak, (&(256|2048)==256)=only normalize files that are too loud, (&(256|2048)==2048)=only normalize files that are too quiet, &512=apply fade-in, &1024=apply fade-out, (&(32|4096)==32)=normalize stems as if files play together (common gain), (&(32|4096)==4096)=normalize to loudest file, (&(32|4096)==4128)=normalize as if files play together, &8192=adjust mono media additional -3dB, &(1<<16)=pad start with silence, &(2<<16)=pad end with silence, &(4<<16)=disable all render postprocessing, &(32<<16)=limit as if files play together<br>
----RENDER_NORMALIZE_TARGET: render normalization target (0.5 means -6.02dB, requires RENDER_NORMALIZE&1)<br>
----RENDER_BRICKWALL: render brickwall limit (0.5 means -6.02dB, requires RENDER_NORMALIZE&64)<br>
----RENDER_FADEIN: render fade-in (0.001 means 1 ms, requires RENDER_NORMALIZE&512)<br>
----RENDER_FADEOUT: render fade-out (0.001 means 1 ms, requires RENDER_NORMALIZE&1024)<br>
----RENDER_FADEINSHAPE: render fade-in shape<br>
----RENDER_FADEOUTSHAPE: render fade-out shape<br>
----RENDER_PADSTART: pad render start with silence (0.001 means 1ms, requires RENDER_NORMALIZE&(1<<16))RENDER_PADEND: pad render end with silence (0.001 means 1ms, requires RENDER_NORMALIZE&(2<<16))PROJECT_SRATE : sample rate (ignored unless PROJECT_SRATE_USE set)<br>
----PROJECT_SRATE_USE : set to 1 if project sample rate is used
+---Get or set project information.  
+---RENDER_SETTINGS : &(1|2)=0:master mix, &1=stems+master mix, &2=stems only, &4=multichannel tracks to multichannel files, &8=use render matrix, &16=tracks with only mono media to mono files, &32=selected media items, &64=selected media items via master, &128=selected tracks via master, &256=embed transients if format supports, &512=embed metadata if format supports, &1024=embed take markers if format supports, &2048=2nd pass render  
+---RENDER_BOUNDSFLAG : 0=custom time bounds, 1=entire project, 2=time selection, 3=all project regions, 4=selected media items, 5=selected project regions, 6=all project markers, 7=selected project markers  
+---RENDER_CHANNELS : number of channels in rendered file  
+---RENDER_SRATE : sample rate of rendered file (or 0 for project sample rate)  
+---RENDER_STARTPOS : render start time when RENDER_BOUNDSFLAG=0  
+---RENDER_ENDPOS : render end time when RENDER_BOUNDSFLAG=0  
+---RENDER_TAILFLAG : apply render tail setting when rendering: &1=custom time bounds, &2=entire project, &4=time selection, &8=all project markers/regions, &16=selected media items, &32=selected project markers/regions  
+---RENDER_TAILMS : tail length in ms to render (only used if RENDER_BOUNDSFLAG and RENDER_TAILFLAG are set)  
+---RENDER_ADDTOPROJ : &1=add rendered files to project, &2=do not render files that are likely silent  
+---RENDER_DITHER : &1=dither, &2=noise shaping, &4=dither stems, &8=noise shaping on stems  
+---RENDER_NORMALIZE: &1=enable, (&14==0)=LUFS-I, (&14==2)=RMS, (&14==4)=peak, (&14==6)=true peak, (&14==8)=LUFS-M max, (&14==10)=LUFS-S max, &64=enable brickwall limit, &128=brickwall limit true peak, (&(256|2048)==256)=only normalize files that are too loud, (&(256|2048)==2048)=only normalize files that are too quiet, &512=apply fade-in, &1024=apply fade-out, (&(32|4096)==32)=normalize stems as if files play together (common gain), (&(32|4096)==4096)=normalize to loudest file, (&(32|4096)==4128)=normalize as if files play together, &8192=adjust mono media additional -3dB, &(1<<16)=pad start with silence, &(2<<16)=pad end with silence, &(4<<16)=disable all render postprocessing, &(32<<16)=limit as if files play together  
+---RENDER_NORMALIZE_TARGET: render normalization target (0.5 means -6.02dB, requires RENDER_NORMALIZE&1)  
+---RENDER_BRICKWALL: render brickwall limit (0.5 means -6.02dB, requires RENDER_NORMALIZE&64)  
+---RENDER_FADEIN: render fade-in (0.001 means 1 ms, requires RENDER_NORMALIZE&512)  
+---RENDER_FADEOUT: render fade-out (0.001 means 1 ms, requires RENDER_NORMALIZE&1024)  
+---RENDER_FADEINSHAPE: render fade-in shape  
+---RENDER_FADEOUTSHAPE: render fade-out shape  
+---RENDER_PADSTART: pad render start with silence (0.001 means 1ms, requires RENDER_NORMALIZE&(1<<16))RENDER_PADEND: pad render end with silence (0.001 means 1ms, requires RENDER_NORMALIZE&(2<<16))PROJECT_SRATE : sample rate (ignored unless PROJECT_SRATE_USE set)  
+---PROJECT_SRATE_USE : set to 1 if project sample rate is used  
 ---@param project ReaProject|nil|0
 ---@param desc string
 ---@param value number
@@ -1880,27 +1878,27 @@ function reaper.GetSetProjectGrid(project, set, division, swingmode, swingamt) e
 ---@return number retval
 function reaper.GetSetProjectInfo(project, desc, value, is_set) end
 
----Get or set project information.<br>
----PROJECT_NAME : project file name (read-only, is_set will be ignored)<br>
----PROJECT_TITLE : title field from Project Settings/Notes dialog<br>
----PROJECT_AUTHOR : author field from Project Settings/Notes dialog<br>
----TRACK_GROUP_NAME:X : track group name, X should be 1..64<br>
----MARKER_GUID:X : get the GUID (unique ID) of the marker or region with index X, where X is the index passed to EnumProjectMarkers, not necessarily the displayed number (read-only)<br>
----MARKER_INDEX_FROM_GUID:{GUID} : get the GUID index of the marker or region with GUID {GUID} (read-only)<br>
----OPENCOPY_CFGIDX : integer for the configuration of format to use when creating copies/applying FX. 0=wave (auto-depth), 1=APPLYFX_FORMAT, 2=RECORD_FORMAT<br>
----RECORD_PATH : recording directory -- may be blank or a relative path, to get the effective path see GetProjectPathEx()<br>
----RECORD_PATH_SECONDARY : secondary recording directory<br>
----RECORD_FORMAT : base64-encoded sink configuration (see project files, etc). Callers can also pass a simple 4-byte string (non-base64-encoded), e.g. "evaw" or "l3pm", to use default settings for that sink type.<br>
----APPLYFX_FORMAT : base64-encoded sink configuration (see project files, etc). Used only if RECFMT_OPENCOPY is set to 1. Callers can also pass a simple 4-byte string (non-base64-encoded), e.g. "evaw" or "l3pm", to use default settings for that sink type.<br>
----RECTAG : project recording tag wildcard ($rectag). Can be used in Preferences/Audio/Recording to auto-name recorded files.<br>
----RENDER_FILE : render directory<br>
----RENDER_PATTERN : render file name (may contain wildcards)<br>
----RENDER_METADATA : get or set the metadata saved with the project (not metadata embedded in project media). Example, ID3 album name metadata: valuestr="ID3:TALB" to get, valuestr="ID3:TALB|my album name" to set. Call with valuestr="" and is_set=false to get a semicolon-separated list of defined project metadata identifiers.<br>
----RENDER_TARGETS : semicolon separated list of files that would be written if the project is rendered using the most recent render settings<br>
----RENDER_STATS : (read-only) semicolon separated list of statistics for the most recently rendered files. call with valuestr="XXX" to run an action (for example, "42437"=dry run render selected items) before returning statistics.<br>
----RENDER_FORMAT : base64-encoded sink configuration (see project files, etc). Callers can also pass a simple 4-byte string (non-base64-encoded), e.g. "evaw" or "l3pm", to use default settings for that sink type.<br>
----RENDER_FORMAT2 : base64-encoded secondary sink configuration. Callers can also pass a simple 4-byte string (non-base64-encoded), e.g. "evaw" or "l3pm", to use default settings for that sink type, or "" to disable secondary render.<br>
----    Formats available on this machine:<br>
+---Get or set project information.  
+---PROJECT_NAME : project file name (read-only, is_set will be ignored)  
+---PROJECT_TITLE : title field from Project Settings/Notes dialog  
+---PROJECT_AUTHOR : author field from Project Settings/Notes dialog  
+---TRACK_GROUP_NAME:X : track group name, X should be 1..64  
+---MARKER_GUID:X : get the GUID (unique ID) of the marker or region with index X, where X is the index passed to EnumProjectMarkers, not necessarily the displayed number (read-only)  
+---MARKER_INDEX_FROM_GUID:{GUID} : get the GUID index of the marker or region with GUID {GUID} (read-only)  
+---OPENCOPY_CFGIDX : integer for the configuration of format to use when creating copies/applying FX. 0=wave (auto-depth), 1=APPLYFX_FORMAT, 2=RECORD_FORMAT  
+---RECORD_PATH : recording directory -- may be blank or a relative path, to get the effective path see GetProjectPathEx()  
+---RECORD_PATH_SECONDARY : secondary recording directory  
+---RECORD_FORMAT : base64-encoded sink configuration (see project files, etc). Callers can also pass a simple 4-byte string (non-base64-encoded), e.g. "evaw" or "l3pm", to use default settings for that sink type.  
+---APPLYFX_FORMAT : base64-encoded sink configuration (see project files, etc). Used only if RECFMT_OPENCOPY is set to 1. Callers can also pass a simple 4-byte string (non-base64-encoded), e.g. "evaw" or "l3pm", to use default settings for that sink type.  
+---RECTAG : project recording tag wildcard ($rectag). Can be used in Preferences/Audio/Recording to auto-name recorded files.  
+---RENDER_FILE : render directory  
+---RENDER_PATTERN : render file name (may contain wildcards)  
+---RENDER_METADATA : get or set the metadata saved with the project (not metadata embedded in project media). Example, ID3 album name metadata: valuestr="ID3:TALB" to get, valuestr="ID3:TALB|my album name" to set. Call with valuestr="" and is_set=false to get a semicolon-separated list of defined project metadata identifiers.  
+---RENDER_TARGETS : semicolon separated list of files that would be written if the project is rendered using the most recent render settings  
+---RENDER_STATS : (read-only) semicolon separated list of statistics for the most recently rendered files. call with valuestr="XXX" to run an action (for example, "42437"=dry run render selected items) before returning statistics.  
+---RENDER_FORMAT : base64-encoded sink configuration (see project files, etc). Callers can also pass a simple 4-byte string (non-base64-encoded), e.g. "evaw" or "l3pm", to use default settings for that sink type.  
+---RENDER_FORMAT2 : base64-encoded secondary sink configuration. Callers can also pass a simple 4-byte string (non-base64-encoded), e.g. "evaw" or "l3pm", to use default settings for that sink type, or "" to disable secondary render.  
+---    Formats available on this machine:  
 ---    <code>"wave" "aiff" "caff" "raw " "iso " "ddp " "flac" "mp3l" "oggv" "OggS" "FFMP" "WMF " "GIF " "LCF " "wvpk" </code>
 ---@param project ReaProject|nil|0
 ---@param desc string
@@ -1936,34 +1934,33 @@ function reaper.GetSetRepeatEx(proj, val) end
 ---@return integer retval
 function reaper.GetSetTempoTimeSigMarkerFlag(project, point_index, flag, is_set) end
 
----Gets or modifies the group membership for a track. Returns group state prior to call (each bit represents one of the 32 group numbers). if setmask has bits set, those bits in setvalue will be applied to group. Group can be one of:<br>
----MEDIA_EDIT_LEAD<br>
----MEDIA_EDIT_FOLLOW<br>
----VOLUME_LEAD<br>
----VOLUME_FOLLOW<br>
----VOLUME_VCA_LEAD<br>
----VOLUME_VCA_FOLLOW<br>
----PAN_LEAD<br>
----PAN_FOLLOW<br>
----WIDTH_LEAD<br>
----WIDTH_FOLLOW<br>
----MUTE_LEAD<br>
----MUTE_FOLLOW<br>
----SOLO_LEAD<br>
----SOLO_FOLLOW<br>
----RECARM_LEAD<br>
----RECARM_FOLLOW<br>
----POLARITY_LEAD<br>
----POLARITY_FOLLOW<br>
----AUTOMODE_LEAD<br>
----AUTOMODE_FOLLOW<br>
----VOLUME_REVERSE<br>
----PAN_REVERSE<br>
----WIDTH_REVERSE<br>
----NO_LEAD_WHEN_FOLLOW<br>
----VOLUME_VCA_FOLLOW_ISPREFX
----
----Note: REAPER v6.11 and earlier used _MASTER and _SLAVE rather than _LEAD and _FOLLOW, which is deprecated but still supported (scripts that must support v6.11 and earlier can use the deprecated strings).
+---Gets or modifies the group membership for a track. Returns group state prior to call (each bit represents one of the 32 group numbers). if setmask has bits set, those bits in setvalue will be applied to group. Group can be one of:  
+---MEDIA_EDIT_LEAD  
+---MEDIA_EDIT_FOLLOW  
+---VOLUME_LEAD  
+---VOLUME_FOLLOW  
+---VOLUME_VCA_LEAD  
+---VOLUME_VCA_FOLLOW  
+---PAN_LEAD  
+---PAN_FOLLOW  
+---WIDTH_LEAD  
+---WIDTH_FOLLOW  
+---MUTE_LEAD  
+---MUTE_FOLLOW  
+---SOLO_LEAD  
+---SOLO_FOLLOW  
+---RECARM_LEAD  
+---RECARM_FOLLOW  
+---POLARITY_LEAD  
+---POLARITY_FOLLOW  
+---AUTOMODE_LEAD  
+---AUTOMODE_FOLLOW  
+---VOLUME_REVERSE  
+---PAN_REVERSE  
+---WIDTH_REVERSE  
+---NO_LEAD_WHEN_FOLLOW  
+---VOLUME_VCA_FOLLOW_ISPREFX  
+---Note: REAPER v6.11 and earlier used _MASTER and _SLAVE rather than _LEAD and _FOLLOW, which is deprecated but still supported (scripts that must support v6.11 and earlier can use the deprecated strings).  
 ---@param tr MediaTrack
 ---@param groupname string
 ---@param setmask integer
@@ -1971,34 +1968,33 @@ function reaper.GetSetTempoTimeSigMarkerFlag(project, point_index, flag, is_set)
 ---@return integer retval
 function reaper.GetSetTrackGroupMembership(tr, groupname, setmask, setvalue) end
 
----Gets or modifies 32 bits (at offset, where 0 is the low 32 bits of the grouping) of the group membership for a track. Returns group state prior to call. if setmask has bits set, those bits in setvalue will be applied to group. Group can be one of:<br>
----MEDIA_EDIT_LEAD<br>
----MEDIA_EDIT_FOLLOW<br>
----VOLUME_LEAD<br>
----VOLUME_FOLLOW<br>
----VOLUME_VCA_LEAD<br>
----VOLUME_VCA_FOLLOW<br>
----PAN_LEAD<br>
----PAN_FOLLOW<br>
----WIDTH_LEAD<br>
----WIDTH_FOLLOW<br>
----MUTE_LEAD<br>
----MUTE_FOLLOW<br>
----SOLO_LEAD<br>
----SOLO_FOLLOW<br>
----RECARM_LEAD<br>
----RECARM_FOLLOW<br>
----POLARITY_LEAD<br>
----POLARITY_FOLLOW<br>
----AUTOMODE_LEAD<br>
----AUTOMODE_FOLLOW<br>
----VOLUME_REVERSE<br>
----PAN_REVERSE<br>
----WIDTH_REVERSE<br>
----NO_LEAD_WHEN_FOLLOW<br>
----VOLUME_VCA_FOLLOW_ISPREFX
----
----Note: REAPER v6.11 and earlier used _MASTER and _SLAVE rather than _LEAD and _FOLLOW, which is deprecated but still supported (scripts that must support v6.11 and earlier can use the deprecated strings).
+---Gets or modifies 32 bits (at offset, where 0 is the low 32 bits of the grouping) of the group membership for a track. Returns group state prior to call. if setmask has bits set, those bits in setvalue will be applied to group. Group can be one of:  
+---MEDIA_EDIT_LEAD  
+---MEDIA_EDIT_FOLLOW  
+---VOLUME_LEAD  
+---VOLUME_FOLLOW  
+---VOLUME_VCA_LEAD  
+---VOLUME_VCA_FOLLOW  
+---PAN_LEAD  
+---PAN_FOLLOW  
+---WIDTH_LEAD  
+---WIDTH_FOLLOW  
+---MUTE_LEAD  
+---MUTE_FOLLOW  
+---SOLO_LEAD  
+---SOLO_FOLLOW  
+---RECARM_LEAD  
+---RECARM_FOLLOW  
+---POLARITY_LEAD  
+---POLARITY_FOLLOW  
+---AUTOMODE_LEAD  
+---AUTOMODE_FOLLOW  
+---VOLUME_REVERSE  
+---PAN_REVERSE  
+---WIDTH_REVERSE  
+---NO_LEAD_WHEN_FOLLOW  
+---VOLUME_VCA_FOLLOW_ISPREFX  
+---Note: REAPER v6.11 and earlier used _MASTER and _SLAVE rather than _LEAD and _FOLLOW, which is deprecated but still supported (scripts that must support v6.11 and earlier can use the deprecated strings).  
 ---@param tr MediaTrack
 ---@param groupname string
 ---@param offset integer
@@ -2007,34 +2003,33 @@ function reaper.GetSetTrackGroupMembership(tr, groupname, setmask, setvalue) end
 ---@return integer retval
 function reaper.GetSetTrackGroupMembershipEx(tr, groupname, offset, setmask, setvalue) end
 
----Gets or modifies the group membership for a track. Returns group state prior to call (each bit represents one of the high 32 group numbers). if setmask has bits set, those bits in setvalue will be applied to group. Group can be one of:<br>
----MEDIA_EDIT_LEAD<br>
----MEDIA_EDIT_FOLLOW<br>
----VOLUME_LEAD<br>
----VOLUME_FOLLOW<br>
----VOLUME_VCA_LEAD<br>
----VOLUME_VCA_FOLLOW<br>
----PAN_LEAD<br>
----PAN_FOLLOW<br>
----WIDTH_LEAD<br>
----WIDTH_FOLLOW<br>
----MUTE_LEAD<br>
----MUTE_FOLLOW<br>
----SOLO_LEAD<br>
----SOLO_FOLLOW<br>
----RECARM_LEAD<br>
----RECARM_FOLLOW<br>
----POLARITY_LEAD<br>
----POLARITY_FOLLOW<br>
----AUTOMODE_LEAD<br>
----AUTOMODE_FOLLOW<br>
----VOLUME_REVERSE<br>
----PAN_REVERSE<br>
----WIDTH_REVERSE<br>
----NO_LEAD_WHEN_FOLLOW<br>
----VOLUME_VCA_FOLLOW_ISPREFX
----
----Note: REAPER v6.11 and earlier used _MASTER and _SLAVE rather than _LEAD and _FOLLOW, which is deprecated but still supported (scripts that must support v6.11 and earlier can use the deprecated strings).
+---Gets or modifies the group membership for a track. Returns group state prior to call (each bit represents one of the high 32 group numbers). if setmask has bits set, those bits in setvalue will be applied to group. Group can be one of:  
+---MEDIA_EDIT_LEAD  
+---MEDIA_EDIT_FOLLOW  
+---VOLUME_LEAD  
+---VOLUME_FOLLOW  
+---VOLUME_VCA_LEAD  
+---VOLUME_VCA_FOLLOW  
+---PAN_LEAD  
+---PAN_FOLLOW  
+---WIDTH_LEAD  
+---WIDTH_FOLLOW  
+---MUTE_LEAD  
+---MUTE_FOLLOW  
+---SOLO_LEAD  
+---SOLO_FOLLOW  
+---RECARM_LEAD  
+---RECARM_FOLLOW  
+---POLARITY_LEAD  
+---POLARITY_FOLLOW  
+---AUTOMODE_LEAD  
+---AUTOMODE_FOLLOW  
+---VOLUME_REVERSE  
+---PAN_REVERSE  
+---WIDTH_REVERSE  
+---NO_LEAD_WHEN_FOLLOW  
+---VOLUME_VCA_FOLLOW_ISPREFX  
+---Note: REAPER v6.11 and earlier used _MASTER and _SLAVE rather than _LEAD and _FOLLOW, which is deprecated but still supported (scripts that must support v6.11 and earlier can use the deprecated strings).  
 ---@param tr MediaTrack
 ---@param groupname string
 ---@param setmask integer
@@ -2042,8 +2037,8 @@ function reaper.GetSetTrackGroupMembershipEx(tr, groupname, offset, setmask, set
 ---@return integer retval
 function reaper.GetSetTrackGroupMembershipHigh(tr, groupname, setmask, setvalue) end
 
----Gets/sets a send attribute string:<br>
----P_EXT:xyz : char * : extension-specific persistent data
+---Gets/sets a send attribute string:  
+---P_EXT:xyz : char * : extension-specific persistent data  
 ---@param tr MediaTrack
 ---@param category integer
 ---@param sendidx integer
@@ -2216,7 +2211,7 @@ function reaper.GetTrackDepth(track) end
 ---@return TrackEnvelope retval
 function reaper.GetTrackEnvelope(track, envidx) end
 
----Gets a built-in track envelope by configuration chunk name, like "<VOLENV", or GUID string, like "{B577250D-146F-B544-9B34-F24FBE488F1F}".
+---Gets a built-in track envelope by configuration chunk name, like "<VOLENV", or GUID string, like "{B577250D-146F-B544-9B34-F24FBE488F1F}".  
 ---@param tr MediaTrack
 ---@param cfgchunkname_or_guid string
 ---@return TrackEnvelope retval
@@ -2309,23 +2304,23 @@ function reaper.GetTrackReceiveUIMute(track, recv_index) end
 ---@return number pan
 function reaper.GetTrackReceiveUIVolPan(track, recv_index) end
 
----Get send/receive/hardware output numerical-value attributes.<br>
----category is <0 for receives, 0=sends, >0 for hardware outputs<br>
----parameter names:<br>
----B_MUTE : bool *<br>
----B_PHASE : bool * : true to flip phase<br>
----B_MONO : bool *<br>
----D_VOL : double * : 1.0 = +0dB etc<br>
----D_PAN : double * : -1..+1<br>
----D_PANLAW : double * : 1.0=+0.0db, 0.5=-6dB, -1.0 = projdef etc<br>
----I_SENDMODE : int * : 0=post-fader, 1=pre-fx, 2=post-fx (deprecated), 3=post-fx<br>
----I_AUTOMODE : int * : automation mode (-1=use track automode, 0=trim/off, 1=read, 2=touch, 3=write, 4=latch)<br>
----I_SRCCHAN : int * : -1 for no audio send. Low 10 bits specify channel offset, and higher bits specify channel count. (srcchan>>10) == 0 for stereo, 1 for mono, 2 for 4 channel, 3 for 6 channel, etc.<br>
----I_DSTCHAN : int * : low 10 bits are destination index, &1024 set to mix to mono.<br>
----I_MIDIFLAGS : int * : low 5 bits=source channel 0=all, 1-16, 31=MIDI send disabled, next 5 bits=dest channel, 0=orig, 1-16=chan. &1024 for faders-send MIDI vol/pan. (>>14)&255 = src bus (0 for all, 1 for normal, 2+). (>>22)&255=destination bus (0 for all, 1 for normal, 2+)<br>
----P_DESTTRACK : MediaTrack * : destination track, only applies for sends/recvs (read-only)<br>
----P_SRCTRACK : MediaTrack * : source track, only applies for sends/recvs (read-only)<br>
----P_ENV:<envchunkname : TrackEnvelope * : call with :<VOLENV, :<PANENV, etc appended (read-only)<br>
+---Get send/receive/hardware output numerical-value attributes.  
+---category is <0 for receives, 0=sends, >0 for hardware outputs  
+---parameter names:  
+---B_MUTE : bool *  
+---B_PHASE : bool * : true to flip phase  
+---B_MONO : bool *  
+---D_VOL : double * : 1.0 = +0dB etc  
+---D_PAN : double * : -1..+1  
+---D_PANLAW : double * : 1.0=+0.0db, 0.5=-6dB, -1.0 = projdef etc  
+---I_SENDMODE : int * : 0=post-fader, 1=pre-fx, 2=post-fx (deprecated), 3=post-fx  
+---I_AUTOMODE : int * : automation mode (-1=use track automode, 0=trim/off, 1=read, 2=touch, 3=write, 4=latch)  
+---I_SRCCHAN : int * : -1 for no audio send. Low 10 bits specify channel offset, and higher bits specify channel count. (srcchan>>10) == 0 for stereo, 1 for mono, 2 for 4 channel, 3 for 6 channel, etc.  
+---I_DSTCHAN : int * : low 10 bits are destination index, &1024 set to mix to mono.  
+---I_MIDIFLAGS : int * : low 5 bits=source channel 0=all, 1-16, 31=MIDI send disabled, next 5 bits=dest channel, 0=orig, 1-16=chan. &1024 for faders-send MIDI vol/pan. (>>14)&255 = src bus (0 for all, 1 for normal, 2+). (>>22)&255=destination bus (0 for all, 1 for normal, 2+)  
+---P_DESTTRACK : MediaTrack * : destination track, only applies for sends/recvs (read-only)  
+---P_SRCTRACK : MediaTrack * : source track, only applies for sends/recvs (read-only)  
+---P_ENV:<envchunkname : TrackEnvelope * : call with :<VOLENV, :<PANENV, etc appended (read-only)  
 ---See CreateTrackSend, RemoveTrackSend, GetTrackNumSends.
 ---@param tr MediaTrack
 ---@param category integer
@@ -2356,18 +2351,18 @@ function reaper.GetTrackSendUIMute(track, send_index) end
 ---@return number pan
 function reaper.GetTrackSendUIVolPan(track, send_index) end
 
----Gets track state, returns track name.<br>
----flags will be set to:<br>
----&1=folder<br>
----&2=selected<br>
----&4=has fx enabled<br>
----&8=muted<br>
----&16=soloed<br>
----&32=SIP'd (with &16)<br>
----&64=rec armed<br>
----&128=rec monitoring on<br>
----&256=rec monitoring auto<br>
----&512=hide from TCP<br>
+---Gets track state, returns track name.  
+---flags will be set to:  
+---&1=folder  
+---&2=selected  
+---&4=has fx enabled  
+---&8=muted  
+---&16=soloed  
+---&32=SIP'd (with &16)  
+---&64=rec armed  
+---&128=rec monitoring on  
+---&256=rec monitoring auto  
+---&512=hide from TCP  
 ---&1024=hide from MCP
 ---@param track MediaTrack
 ---@return string retval
@@ -2414,8 +2409,8 @@ function reaper.GetUnderrunTime() end
 ---@return string filenameNeed4096
 function reaper.GetUserFileNameForRead(filenameNeed4096, title, defext) end
 
----Get values from the user.<br>
----If a caption begins with *, for example "*password", the edit field will not display the input text.<br>
+---Get values from the user.  
+---If a caption begins with *, for example "*password", the edit field will not display the input text.  
 ---Maximum fields is 16. Values are returned as a comma-separated string. Returns false if the user canceled the dialog. You can supply special extra information via additional caption fields: extrawidth=XXX to increase text field width, separator=X to use a different separator for returned fields.
 ---@param title string
 ---@param num_inputs integer
@@ -2499,11 +2494,11 @@ function reaper.InsertAutomationItem(env, pool_id, position, length) end
 ---@return boolean retval
 function reaper.InsertEnvelopePoint(envelope, time, value, shape, tension, selected, noSortIn) end
 
----Insert an envelope point. If setting multiple points at once, set noSort=true, and call Envelope_SortPoints when done.<br>
----autoitem_idx=-1 for the underlying envelope, 0 for the first automation item on the envelope, etc.<br>
----For automation items, pass autoitem_idx|0x10000000 to base ptidx on the number of points in one full loop iteration,<br>
----even if the automation item is trimmed so that not all points are visible.<br>
----Otherwise, ptidx will be based on the number of visible points in the automation item, including all loop iterations.<br>
+---Insert an envelope point. If setting multiple points at once, set noSort=true, and call Envelope_SortPoints when done.  
+---autoitem_idx=-1 for the underlying envelope, 0 for the first automation item on the envelope, etc.  
+---For automation items, pass autoitem_idx|0x10000000 to base ptidx on the number of points in one full loop iteration,  
+---even if the automation item is trimmed so that not all points are visible.  
+---Otherwise, ptidx will be based on the number of visible points in the automation item, including all loop iterations.  
 ---See CountEnvelopePointsEx, GetEnvelopePointEx, SetEnvelopePointEx, DeleteEnvelopePointEx.
 ---@param envelope TrackEnvelope
 ---@param autoitem_idx integer
@@ -2542,7 +2537,7 @@ function reaper.InsertTrackAtIndex(idx, wantDefaults) end
 ---@param flags integer
 function reaper.InsertTrackInProject(proj, idx, flags) end
 
----Tests a file extension (i.e. "wav" or "mid") to see if it's a media extension.<br>
+---Tests a file extension (i.e. "wav" or "mid") to see if it's a media extension.  
 ---If wantOthers is set, then "RPP", "TXT" and other project-type formats will also pass.
 ---@param ext string
 ---@param wantOthers boolean
@@ -2663,7 +2658,7 @@ function reaper.Main_OnCommand(command, flag) end
 ---@param proj ReaProject|nil|0
 function reaper.Main_OnCommandEx(command, flag, proj) end
 
----opens a project. will prompt the user to save unless name is prefixed with 'noprompt:'. If name is prefixed with 'template:', project file will be loaded as a template.<br>
+---opens a project. will prompt the user to save unless name is prefixed with 'noprompt:'. If name is prefixed with 'template:', project file will be loaded as a template.  
 ---If passed a .RTrackTemplate file, adds the template to the existing project.
 ---@param name string
 function reaper.Main_openProject(name) end
@@ -2808,13 +2803,13 @@ function reaper.MIDI_EnumSelNotes(take, noteidx) end
 ---@return integer retval
 function reaper.MIDI_EnumSelTextSysexEvts(take, textsyxidx) end
 
----Get all MIDI data. MIDI buffer is returned as a list of { int offset, char flag, int msglen, unsigned char msg[] }.<br>
----offset: MIDI ticks from previous event<br>
----flag: &1=selected &2=muted<br>
----flag high 4 bits for CC shape: &16=linear, &32=slow start/end, &16|32=fast start, &64=fast end, &64|16=bezier<br>
----msg: the MIDI message.<br>
----A meta-event of type 0xF followed by 'CCBZ ' and 5 more bytes represents bezier curve data for the previous MIDI event: 1 byte for the bezier type (usually 0) and 4 bytes for the bezier tension as a float.<br>
----For tick intervals longer than a 32 bit word can represent, zero-length meta events may be placed between valid events.<br>
+---Get all MIDI data. MIDI buffer is returned as a list of { int offset, char flag, int msglen, unsigned char msg[] }.  
+---offset: MIDI ticks from previous event  
+---flag: &1=selected &2=muted  
+---flag high 4 bits for CC shape: &16=linear, &32=slow start/end, &16|32=fast start, &64=fast end, &64|16=bezier  
+---msg: the MIDI message.  
+---A meta-event of type 0xF followed by 'CCBZ ' and 5 more bytes represents bezier curve data for the previous MIDI event: 1 byte for the bezier type (usually 0) and 4 bytes for the bezier tension as a float.  
+---For tick intervals longer than a 32 bit word can represent, zero-length meta events may be placed between valid events.  
 ---See MIDI_SetAllEvts.
 ---@param take MediaItem_Take
 ---@return boolean retval
@@ -3017,13 +3012,13 @@ function reaper.midi_reinit() end
 ---@param select boolean
 function reaper.MIDI_SelectAll(take, select) end
 
----Set all MIDI data. MIDI buffer is passed in as a list of { int offset, char flag, int msglen, unsigned char msg[] }.<br>
----offset: MIDI ticks from previous event<br>
----flag: &1=selected &2=muted<br>
----flag high 4 bits for CC shape: &16=linear, &32=slow start/end, &16|32=fast start, &64=fast end, &64|16=bezier<br>
----msg: the MIDI message.<br>
----A meta-event of type 0xF followed by 'CCBZ ' and 5 more bytes represents bezier curve data for the previous MIDI event: 1 byte for the bezier type (usually 0) and 4 bytes for the bezier tension as a float.<br>
----For tick intervals longer than a 32 bit word can represent, zero-length meta events may be placed between valid events.<br>
+---Set all MIDI data. MIDI buffer is passed in as a list of { int offset, char flag, int msglen, unsigned char msg[] }.  
+---offset: MIDI ticks from previous event  
+---flag: &1=selected &2=muted  
+---flag high 4 bits for CC shape: &16=linear, &32=slow start/end, &16|32=fast start, &64=fast end, &64|16=bezier  
+---msg: the MIDI message.  
+---A meta-event of type 0xF followed by 'CCBZ ' and 5 more bytes represents bezier curve data for the previous MIDI event: 1 byte for the bezier type (usually 0) and 4 bytes for the bezier tension as a float.  
+---For tick intervals longer than a 32 bit word can represent, zero-length meta events may be placed between valid events.  
 ---See MIDI_GetAllEvts.
 ---@param take MediaItem_Take
 ---@param buf string
@@ -3108,40 +3103,40 @@ function reaper.MIDI_Sort(take) end
 ---@return MediaItem_Take retval
 function reaper.MIDIEditor_EnumTakes(midieditor, takeindex, editable_only) end
 
----get a pointer to the focused MIDI editor window<br>
+---get a pointer to the focused MIDI editor window  
 ---see MIDIEditor_GetMode, MIDIEditor_OnCommand
 ---@return HWND retval
 function reaper.MIDIEditor_GetActive() end
 
----get the mode of a MIDI editor (0=piano roll, 1=event list, -1=invalid editor)<br>
+---get the mode of a MIDI editor (0=piano roll, 1=event list, -1=invalid editor)  
 ---see MIDIEditor_GetActive, MIDIEditor_OnCommand
 ---@param midieditor HWND
 ---@return integer retval
 function reaper.MIDIEditor_GetMode(midieditor) end
 
----Get settings from a MIDI editor. setting_desc can be:<br>
----snap_enabled: returns 0 or 1<br>
----active_note_row: returns 0-127<br>
----last_clicked_cc_lane: returns 0-127=CC, 0x100|(0-31)=14-bit CC, 0x200=velocity, 0x201=pitch, 0x202=program, 0x203=channel pressure, 0x204=bank/program select, 0x205=text, 0x206=sysex, 0x207=off velocity, 0x208=notation events, 0x209=aftertouch, 0x210=media item lane<br>
----default_note_vel: returns 0-127<br>
----default_note_chan: returns 0-15<br>
----default_note_len: returns default length in MIDI ticks<br>
----scale_enabled: returns 0-1<br>
----scale_root: returns 0-12 (0=C)<br>
----list_cnt: if viewing list view, returns event count<br>
----if setting_desc is unsupported, the function returns -1.<br>
----See MIDIEditor_SetSetting_int, MIDIEditor_GetActive, MIDIEditor_GetSetting_str
+---Get settings from a MIDI editor. setting_desc can be:  
+---snap_enabled: returns 0 or 1  
+---active_note_row: returns 0-127  
+---last_clicked_cc_lane: returns 0-127=CC, 0x100|(0-31)=14-bit CC, 0x200=velocity, 0x201=pitch, 0x202=program, 0x203=channel pressure, 0x204=bank/program select, 0x205=text, 0x206=sysex, 0x207=off velocity, 0x208=notation events, 0x209=aftertouch, 0x210=media item lane  
+---default_note_vel: returns 0-127  
+---default_note_chan: returns 0-15  
+---default_note_len: returns default length in MIDI ticks  
+---scale_enabled: returns 0-1  
+---scale_root: returns 0-12 (0=C)  
+---list_cnt: if viewing list view, returns event count  
+---if setting_desc is unsupported, the function returns -1.  
+---See MIDIEditor_SetSetting_int, MIDIEditor_GetActive, MIDIEditor_GetSetting_str  
 ---@param midieditor HWND
 ---@param setting_desc string
 ---@return integer retval
 function reaper.MIDIEditor_GetSetting_int(midieditor, setting_desc) end
 
----Get settings from a MIDI editor. setting_desc can be:<br>
----last_clicked_cc_lane: returns text description ("velocity", "pitch", etc)<br>
----scale: returns the scale record, for example "102034050607" for a major scale<br>
----list_X: if viewing list view, returns string describing event at row X (0-based). String will have a list of key=value pairs, e.g. 'pos=4.0 len=4.0 offvel=127 msg=90317F'. pos/len times are in QN, len/offvel may not be present if event is not a note. other keys which may be present include pos_pq/len_pq, sel, mute, ccval14, ccshape, ccbeztension.<br>
----if setting_desc is unsupported, the function returns false.<br>
----See MIDIEditor_GetActive, MIDIEditor_GetSetting_int
+---Get settings from a MIDI editor. setting_desc can be:  
+---last_clicked_cc_lane: returns text description ("velocity", "pitch", etc)  
+---scale: returns the scale record, for example "102034050607" for a major scale  
+---list_X: if viewing list view, returns string describing event at row X (0-based). String will have a list of key=value pairs, e.g. 'pos=4.0 len=4.0 offvel=127 msg=90317F'. pos/len times are in QN, len/offvel may not be present if event is not a note. other keys which may be present include pos_pq/len_pq, sel, mute, ccval14, ccshape, ccbeztension.  
+---if setting_desc is unsupported, the function returns false.  
+---See MIDIEditor_GetActive, MIDIEditor_GetSetting_int  
 ---@param midieditor HWND
 ---@param setting_desc string
 ---@return boolean retval
@@ -3153,23 +3148,23 @@ function reaper.MIDIEditor_GetSetting_str(midieditor, setting_desc) end
 ---@return MediaItem_Take retval
 function reaper.MIDIEditor_GetTake(midieditor) end
 
----Send an action command to the last focused MIDI editor. Returns false if there is no MIDI editor open, or if the view mode (piano roll or event list) does not match the input.<br>
+---Send an action command to the last focused MIDI editor. Returns false if there is no MIDI editor open, or if the view mode (piano roll or event list) does not match the input.  
 ---see MIDIEditor_OnCommand
 ---@param command_id integer
 ---@param islistviewcommand boolean
 ---@return boolean retval
 function reaper.MIDIEditor_LastFocused_OnCommand(command_id, islistviewcommand) end
 
----Send an action command to a MIDI editor. Returns false if the supplied MIDI editor pointer is not valid (not an open MIDI editor).<br>
+---Send an action command to a MIDI editor. Returns false if the supplied MIDI editor pointer is not valid (not an open MIDI editor).  
 ---see MIDIEditor_GetActive, MIDIEditor_LastFocused_OnCommand
 ---@param midieditor HWND
 ---@param command_id integer
 ---@return boolean retval
 function reaper.MIDIEditor_OnCommand(midieditor, command_id) end
 
----Set settings for a MIDI editor. setting_desc can be:<br>
----active_note_row: 0-127<br>
----See MIDIEditor_GetSetting_int
+---Set settings for a MIDI editor. setting_desc can be:  
+---active_note_row: 0-127  
+---See MIDIEditor_GetSetting_int  
 ---@param midieditor HWND
 ---@param setting_desc string
 ---@param setting integer
@@ -3275,26 +3270,26 @@ function reaper.OscLocalMessageToHost(message, valueIn) end
 ---@return number retval
 function reaper.parse_timestr(buf) end
 
----time formatting mode overrides: -1=proj default.<br>
----0=time<br>
----1=measures.beats + time<br>
----2=measures.beats<br>
----3=seconds<br>
----4=samples<br>
----5=h:m:s:f
+---time formatting mode overrides: -1=proj default.  
+---0=time  
+---1=measures.beats + time  
+---2=measures.beats  
+---3=seconds  
+---4=samples  
+---5=h:m:s:f  
 ---@param buf string
 ---@param offset number
 ---@param modeoverride integer
 ---@return number retval
 function reaper.parse_timestr_len(buf, offset, modeoverride) end
 
----Parse time string, time formatting mode overrides: -1=proj default.<br>
----0=time<br>
----1=measures.beats + time<br>
----2=measures.beats<br>
----3=seconds<br>
----4=samples<br>
----5=h:m:s:f
+---Parse time string, time formatting mode overrides: -1=proj default.  
+---0=time  
+---1=measures.beats + time  
+---2=measures.beats  
+---3=seconds  
+---4=samples  
+---5=h:m:s:f  
 ---@param buf string
 ---@param modeoverride integer
 ---@return number retval
@@ -3335,7 +3330,7 @@ function reaper.PCM_Source_CreateFromFile(filename) end
 ---@return PCM_source retval
 function reaper.PCM_Source_CreateFromFileEx(filename, forcenoMidiImp) end
 
----Create a PCM_source from a "type" (use this if you're going to load its state via LoadState/ProjectStateContext).<br>
+---Create a PCM_source from a "type" (use this if you're going to load its state via LoadState/ProjectStateContext).  
 ---Valid types include "WAVE", "MIDI", or whatever plug-ins define as well.
 ---@param sourcetype string
 ---@return PCM_source retval
@@ -3475,9 +3470,9 @@ function reaper.SelectAllMediaItems(proj, selected) end
 ---@param proj ReaProject|nil|0
 function reaper.SelectProjectInstance(proj) end
 
----Sends a MIDI message to output device specified by output. Message is sent in immediate mode. Lua example of how to pack the message string:<br>
----sysex = { 0xF0, 0x00, 0xF7 }<br>
----msg = ""<br>
+---Sends a MIDI message to output device specified by output. Message is sent in immediate mode. Lua example of how to pack the message string:  
+---sysex = { 0xF0, 0x00, 0xF7 }  
+---msg = ""  
 ---for i=1, #sysex do msg = msg .. string.char(sysex[i]) end
 ---@param output integer
 ---@param msg string
@@ -3526,11 +3521,11 @@ function reaper.SetEditCurPos2(proj, time, moveview, seekplay) end
 ---@return boolean retval
 function reaper.SetEnvelopePoint(envelope, ptidx, timeIn, valueIn, shapeIn, tensionIn, selectedIn, noSortIn) end
 
----Set attributes of an envelope point. Values that are not supplied will be ignored. If setting multiple points at once, set noSort=true, and call Envelope_SortPoints when done.<br>
----autoitem_idx=-1 for the underlying envelope, 0 for the first automation item on the envelope, etc.<br>
----For automation items, pass autoitem_idx|0x10000000 to base ptidx on the number of points in one full loop iteration,<br>
----even if the automation item is trimmed so that not all points are visible.<br>
----Otherwise, ptidx will be based on the number of visible points in the automation item, including all loop iterations.<br>
+---Set attributes of an envelope point. Values that are not supplied will be ignored. If setting multiple points at once, set noSort=true, and call Envelope_SortPoints when done.  
+---autoitem_idx=-1 for the underlying envelope, 0 for the first automation item on the envelope, etc.  
+---For automation items, pass autoitem_idx|0x10000000 to base ptidx on the number of points in one full loop iteration,  
+---even if the automation item is trimmed so that not all points are visible.  
+---Otherwise, ptidx will be based on the number of visible points in the automation item, including all loop iterations.  
 ---See CountEnvelopePointsEx, GetEnvelopePointEx, InsertEnvelopePointEx, DeleteEnvelopePointEx.
 ---@param envelope TrackEnvelope
 ---@param autoitem_idx integer
@@ -3574,46 +3569,46 @@ function reaper.SetItemStateChunk(item, str, isundo) end
 ---@return integer retval
 function reaper.SetMasterTrackVisibility(flag) end
 
----Set media item numerical-value attributes.<br>
----B_MUTE : bool * : muted (item solo overrides). setting this value will clear C_MUTE_SOLO.<br>
----B_MUTE_ACTUAL : bool * : muted (ignores solo). setting this value will not affect C_MUTE_SOLO.<br>
----C_LANEPLAYS : char * : on fixed lane tracks, 0=this item lane does not play, 1=this item lane plays exclusively, 2=this item lane plays and other lanes also play, -1=this item is on a non-visible, non-playing lane on a formerly fixed-lane track (read-only)<br>
----C_MUTE_SOLO : char * : solo override (-1=soloed, 0=no override, 1=unsoloed). note that this API does not automatically unsolo other items when soloing (nor clear the unsolos when clearing the last soloed item), it must be done by the caller via action or via this API.<br>
----B_LOOPSRC : bool * : loop source<br>
----B_ALLTAKESPLAY : bool * : all takes play<br>
----B_UISEL : bool * : selected in arrange view<br>
----C_BEATATTACHMODE : char * : item timebase, -1=track or project default, 1=beats (position, length, rate), 2=beats (position only). for auto-stretch timebase: C_BEATATTACHMODE=1, C_AUTOSTRETCH=1<br>
----C_AUTOSTRETCH: : char * : auto-stretch at project tempo changes, 1=enabled, requires C_BEATATTACHMODE=1<br>
----C_LOCK : char * : locked, &1=locked<br>
----D_VOL : double * : item volume,  0=-inf, 0.5=-6dB, 1=+0dB, 2=+6dB, etc<br>
----D_POSITION : double * : item position in seconds<br>
----D_LENGTH : double * : item length in seconds<br>
----D_SNAPOFFSET : double * : item snap offset in seconds<br>
----D_FADEINLEN : double * : item manual fadein length in seconds<br>
----D_FADEOUTLEN : double * : item manual fadeout length in seconds<br>
----D_FADEINDIR : double * : item fadein curvature, -1..1<br>
----D_FADEOUTDIR : double * : item fadeout curvature, -1..1<br>
----D_FADEINLEN_AUTO : double * : item auto-fadein length in seconds, -1=no auto-fadein<br>
----D_FADEOUTLEN_AUTO : double * : item auto-fadeout length in seconds, -1=no auto-fadeout<br>
----C_FADEINSHAPE : int * : fadein shape, 0..6, 0=linear<br>
----C_FADEOUTSHAPE : int * : fadeout shape, 0..6, 0=linear<br>
----I_GROUPID : int * : group ID, 0=no group<br>
----I_LASTY : int * : Y-position (relative to top of track) in pixels (read-only)<br>
----I_LASTH : int * : height in pixels (read-only)<br>
----I_CUSTOMCOLOR : int * : custom color, OS dependent color|0x1000000 (i.e. ColorToNative(r,g,b)|0x1000000). If you do not |0x1000000, then it will not be used, but will store the color<br>
----I_CURTAKE : int * : active take number<br>
----IP_ITEMNUMBER : int : item number on this track (read-only, returns the item number directly)<br>
----F_FREEMODE_Y : float * : free item positioning or fixed lane Y-position. 0=top of track, 1.0=bottom of track<br>
----F_FREEMODE_H : float * : free item positioning or fixed lane height. 0.5=half the track height, 1.0=full track height<br>
----I_FIXEDLANE : int * : fixed lane of item (fine to call with setNewValue, but returned value is read-only)<br>
----B_FIXEDLANE_HIDDEN : bool * : true if displaying only one fixed lane and this item is in a different lane (read-only)
+---Set media item numerical-value attributes.  
+---B_MUTE : bool * : muted (item solo overrides). setting this value will clear C_MUTE_SOLO.  
+---B_MUTE_ACTUAL : bool * : muted (ignores solo). setting this value will not affect C_MUTE_SOLO.  
+---C_LANEPLAYS : char * : on fixed lane tracks, 0=this item lane does not play, 1=this item lane plays exclusively, 2=this item lane plays and other lanes also play, -1=this item is on a non-visible, non-playing lane on a formerly fixed-lane track (read-only)  
+---C_MUTE_SOLO : char * : solo override (-1=soloed, 0=no override, 1=unsoloed). note that this API does not automatically unsolo other items when soloing (nor clear the unsolos when clearing the last soloed item), it must be done by the caller via action or via this API.  
+---B_LOOPSRC : bool * : loop source  
+---B_ALLTAKESPLAY : bool * : all takes play  
+---B_UISEL : bool * : selected in arrange view  
+---C_BEATATTACHMODE : char * : item timebase, -1=track or project default, 1=beats (position, length, rate), 2=beats (position only). for auto-stretch timebase: C_BEATATTACHMODE=1, C_AUTOSTRETCH=1  
+---C_AUTOSTRETCH: : char * : auto-stretch at project tempo changes, 1=enabled, requires C_BEATATTACHMODE=1  
+---C_LOCK : char * : locked, &1=locked  
+---D_VOL : double * : item volume,  0=-inf, 0.5=-6dB, 1=+0dB, 2=+6dB, etc  
+---D_POSITION : double * : item position in seconds  
+---D_LENGTH : double * : item length in seconds  
+---D_SNAPOFFSET : double * : item snap offset in seconds  
+---D_FADEINLEN : double * : item manual fadein length in seconds  
+---D_FADEOUTLEN : double * : item manual fadeout length in seconds  
+---D_FADEINDIR : double * : item fadein curvature, -1..1  
+---D_FADEOUTDIR : double * : item fadeout curvature, -1..1  
+---D_FADEINLEN_AUTO : double * : item auto-fadein length in seconds, -1=no auto-fadein  
+---D_FADEOUTLEN_AUTO : double * : item auto-fadeout length in seconds, -1=no auto-fadeout  
+---C_FADEINSHAPE : int * : fadein shape, 0..6, 0=linear  
+---C_FADEOUTSHAPE : int * : fadeout shape, 0..6, 0=linear  
+---I_GROUPID : int * : group ID, 0=no group  
+---I_LASTY : int * : Y-position (relative to top of track) in pixels (read-only)  
+---I_LASTH : int * : height in pixels (read-only)  
+---I_CUSTOMCOLOR : int * : custom color, OS dependent color|0x1000000 (i.e. ColorToNative(r,g,b)|0x1000000). If you do not |0x1000000, then it will not be used, but will store the color  
+---I_CURTAKE : int * : active take number  
+---IP_ITEMNUMBER : int : item number on this track (read-only, returns the item number directly)  
+---F_FREEMODE_Y : float * : free item positioning or fixed lane Y-position. 0=top of track, 1.0=bottom of track  
+---F_FREEMODE_H : float * : free item positioning or fixed lane height. 0.5=half the track height, 1.0=full track height  
+---I_FIXEDLANE : int * : fixed lane of item (fine to call with setNewValue, but returned value is read-only)  
+---B_FIXEDLANE_HIDDEN : bool * : true if displaying only one fixed lane and this item is in a different lane (read-only)  
 ---@param item MediaItem
 ---@param parmname string
 ---@param newvalue number
 ---@return boolean retval
 function reaper.SetMediaItemInfo_Value(item, parmname, newvalue) end
 
----Redraws the screen only if refreshUI == true.<br>
+---Redraws the screen only if refreshUI == true.  
 ---See UpdateArrange().
 ---@param item MediaItem
 ---@param length number
@@ -3621,7 +3616,7 @@ function reaper.SetMediaItemInfo_Value(item, parmname, newvalue) end
 ---@return boolean retval
 function reaper.SetMediaItemLength(item, length, refreshUI) end
 
----Redraws the screen only if refreshUI == true.<br>
+---Redraws the screen only if refreshUI == true.  
 ---See UpdateArrange().
 ---@param item MediaItem
 ---@param position number
@@ -3639,122 +3634,122 @@ function reaper.SetMediaItemSelected(item, selected) end
 ---@return boolean retval
 function reaper.SetMediaItemTake_Source(take, source) end
 
----Set media item take numerical-value attributes.<br>
----D_STARTOFFS : double * : start offset in source media, in seconds<br>
----D_VOL : double * : take volume, 0=-inf, 0.5=-6dB, 1=+0dB, 2=+6dB, etc, negative if take polarity is flipped<br>
----D_PAN : double * : take pan, -1..1<br>
----D_PANLAW : double * : take pan law, -1=default, 0.5=-6dB, 1.0=+0dB, etc<br>
----D_PLAYRATE : double * : take playback rate, 0.5=half speed, 1=normal, 2=double speed, etc<br>
----D_PITCH : double * : take pitch adjustment in semitones, -12=one octave down, 0=normal, +12=one octave up, etc<br>
----B_PPITCH : bool * : preserve pitch when changing playback rate<br>
----I_LASTY : int * : Y-position (relative to top of track) in pixels (read-only)<br>
----I_LASTH : int * : height in pixels (read-only)<br>
----I_CHANMODE : int * : channel mode, 0=normal, 1=reverse stereo, 2=downmix, 3=left, 4=right<br>
----I_PITCHMODE : int * : pitch shifter mode, -1=project default, otherwise high 2 bytes=shifter, low 2 bytes=parameter<br>
----I_STRETCHFLAGS : int * : stretch marker flags (&7 mask for mode override: 0=default, 1=balanced, 2/3/6=tonal, 4=transient, 5=no pre-echo)<br>
----F_STRETCHFADESIZE : float * : stretch marker fade size in seconds (0.0025 default)<br>
----I_RECPASSID : int * : record pass ID<br>
----I_TAKEFX_NCH : int * : number of internal audio channels for per-take FX to use (OK to call with setNewValue, but the returned value is read-only)<br>
----I_CUSTOMCOLOR : int * : custom color, OS dependent color|0x1000000 (i.e. ColorToNative(r,g,b)|0x1000000). If you do not |0x1000000, then it will not be used, but will store the color<br>
----IP_SPECEDIT:CNT : int : spectral edit count (read-only)<br>
----IP_SPECEDIT:DELETE:x : int : read or write this key to remove the spectral edit specified<br>
----IP_SPECEDIT:ADD : int : read or write this key to add a new spectral edit (returns index)<br>
----IP_SPECEDIT:SORT : int : read or write this key to re-sort spectral edits (be sure to do this following a position change or insert of new edit)<br>
----I_SPECEDIT:FFT_SIZE : int * : FFT size used by spectral edits for this take<br>
----D_SPECEDIT:x:POSITION : double * : position of spectral edit start (changing this requires a resort of spectral edits)<br>
----D_SPECEDIT:x:LENGTH : double * : length of spectral edit<br>
----F_SPECEDIT:x:GAIN : float * : gain of spectral edit<br>
----F_SPECEDIT:x:FADE_IN : float * : fade-in size 0..1<br>
----F_SPECEDIT:x:FADE_OUT : float * : fade-out size 0..1<br>
----F_SPECEDIT:x:FADE_LOW : float * : fade-lf size 0..1<br>
----F_SPECEDIT:x:FADE_HI : float * : fade-hf size 0..1<br>
----I_SPECEDIT:x:CHAN : int * : channel index, -1 for omni<br>
----I_SPECEDIT:x:FLAGS : int * : flags, &1=bypassed, &2=solo<br>
----F_SPECEDIT:x:GATE_THRESH : float * : gate threshold<br>
----F_SPECEDIT:x:GATE_FLOOR : float * : gate floor<br>
----F_SPECEDIT:x:COMP_THRESH : float * : comp threshold<br>
----F_SPECEDIT:x:COMP_RATIO : float * : comp ratio<br>
----B_SPECEDIT:x:SELECTED : bool * : selection state<br>
----I_SPECEDIT:x:TOPFREQ_CNT : int * : (read-only) number of top frequency-points<br>
----I_SPECEDIT:x:TOPFREQ_ADD:pos:val : int * : reading or writing will insert top frequency-point with position/value pair, returns index<br>
----I_SPECEDIT:x:TOPFREQ_DEL:y : int * : reading or writing will delete top frequency-point y. there will always be at least one point.<br>
----F_SPECEDIT:x:TOPFREQ_POS:y : float * : (read-only) get position of top frequency-point y<br>
----F_SPECEDIT:x:TOPFREQ_FREQ:y : float * : (read-only) get frequency of top frequency-point y<br>
----I_SPECEDIT:x:BOTFREQ_CNT : int * : number of bottom frequency-points<br>
----I_SPECEDIT:x:BOTFREQ_ADD:pos:val : int * : reading or writing will insert bottom frequency-point with position/value pair, returns index<br>
----I_SPECEDIT:x:BOTFREQ_DEL:y : int * : reading or writing will delete bottom frequency-point y. there will always be at least one point.<br>
----F_SPECEDIT:x:BOTFREQ_POS:y : float * : (read-only) get position of bottom frequency-point y<br>
----F_SPECEDIT:x:BOTFREQ_FREQ:y : float * : (read-only) get frequency of bottom frequency-point y<br>
----IP_TAKENUMBER : int : take number (read-only, returns the take number directly)
+---Set media item take numerical-value attributes.  
+---D_STARTOFFS : double * : start offset in source media, in seconds  
+---D_VOL : double * : take volume, 0=-inf, 0.5=-6dB, 1=+0dB, 2=+6dB, etc, negative if take polarity is flipped  
+---D_PAN : double * : take pan, -1..1  
+---D_PANLAW : double * : take pan law, -1=default, 0.5=-6dB, 1.0=+0dB, etc  
+---D_PLAYRATE : double * : take playback rate, 0.5=half speed, 1=normal, 2=double speed, etc  
+---D_PITCH : double * : take pitch adjustment in semitones, -12=one octave down, 0=normal, +12=one octave up, etc  
+---B_PPITCH : bool * : preserve pitch when changing playback rate  
+---I_LASTY : int * : Y-position (relative to top of track) in pixels (read-only)  
+---I_LASTH : int * : height in pixels (read-only)  
+---I_CHANMODE : int * : channel mode, 0=normal, 1=reverse stereo, 2=downmix, 3=left, 4=right  
+---I_PITCHMODE : int * : pitch shifter mode, -1=project default, otherwise high 2 bytes=shifter, low 2 bytes=parameter  
+---I_STRETCHFLAGS : int * : stretch marker flags (&7 mask for mode override: 0=default, 1=balanced, 2/3/6=tonal, 4=transient, 5=no pre-echo)  
+---F_STRETCHFADESIZE : float * : stretch marker fade size in seconds (0.0025 default)  
+---I_RECPASSID : int * : record pass ID  
+---I_TAKEFX_NCH : int * : number of internal audio channels for per-take FX to use (OK to call with setNewValue, but the returned value is read-only)  
+---I_CUSTOMCOLOR : int * : custom color, OS dependent color|0x1000000 (i.e. ColorToNative(r,g,b)|0x1000000). If you do not |0x1000000, then it will not be used, but will store the color  
+---IP_SPECEDIT:CNT : int : spectral edit count (read-only)  
+---IP_SPECEDIT:DELETE:x : int : read or write this key to remove the spectral edit specified  
+---IP_SPECEDIT:ADD : int : read or write this key to add a new spectral edit (returns index)  
+---IP_SPECEDIT:SORT : int : read or write this key to re-sort spectral edits (be sure to do this following a position change or insert of new edit)  
+---I_SPECEDIT:FFT_SIZE : int * : FFT size used by spectral edits for this take  
+---D_SPECEDIT:x:POSITION : double * : position of spectral edit start (changing this requires a resort of spectral edits)  
+---D_SPECEDIT:x:LENGTH : double * : length of spectral edit  
+---F_SPECEDIT:x:GAIN : float * : gain of spectral edit  
+---F_SPECEDIT:x:FADE_IN : float * : fade-in size 0..1  
+---F_SPECEDIT:x:FADE_OUT : float * : fade-out size 0..1  
+---F_SPECEDIT:x:FADE_LOW : float * : fade-lf size 0..1  
+---F_SPECEDIT:x:FADE_HI : float * : fade-hf size 0..1  
+---I_SPECEDIT:x:CHAN : int * : channel index, -1 for omni  
+---I_SPECEDIT:x:FLAGS : int * : flags, &1=bypassed, &2=solo  
+---F_SPECEDIT:x:GATE_THRESH : float * : gate threshold  
+---F_SPECEDIT:x:GATE_FLOOR : float * : gate floor  
+---F_SPECEDIT:x:COMP_THRESH : float * : comp threshold  
+---F_SPECEDIT:x:COMP_RATIO : float * : comp ratio  
+---B_SPECEDIT:x:SELECTED : bool * : selection state  
+---I_SPECEDIT:x:TOPFREQ_CNT : int * : (read-only) number of top frequency-points  
+---I_SPECEDIT:x:TOPFREQ_ADD:pos:val : int * : reading or writing will insert top frequency-point with position/value pair, returns index  
+---I_SPECEDIT:x:TOPFREQ_DEL:y : int * : reading or writing will delete top frequency-point y. there will always be at least one point.  
+---F_SPECEDIT:x:TOPFREQ_POS:y : float * : (read-only) get position of top frequency-point y  
+---F_SPECEDIT:x:TOPFREQ_FREQ:y : float * : (read-only) get frequency of top frequency-point y  
+---I_SPECEDIT:x:BOTFREQ_CNT : int * : number of bottom frequency-points  
+---I_SPECEDIT:x:BOTFREQ_ADD:pos:val : int * : reading or writing will insert bottom frequency-point with position/value pair, returns index  
+---I_SPECEDIT:x:BOTFREQ_DEL:y : int * : reading or writing will delete bottom frequency-point y. there will always be at least one point.  
+---F_SPECEDIT:x:BOTFREQ_POS:y : float * : (read-only) get position of bottom frequency-point y  
+---F_SPECEDIT:x:BOTFREQ_FREQ:y : float * : (read-only) get frequency of bottom frequency-point y  
+---IP_TAKENUMBER : int : take number (read-only, returns the take number directly)  
 ---@param take MediaItem_Take
 ---@param parmname string
 ---@param newvalue number
 ---@return boolean retval
 function reaper.SetMediaItemTakeInfo_Value(take, parmname, newvalue) end
 
----Set track numerical-value attributes.<br>
----B_MUTE : bool * : muted<br>
----B_PHASE : bool * : track phase inverted<br>
----B_RECMON_IN_EFFECT : bool * : record monitoring in effect (current audio-thread playback state, read-only)<br>
----IP_TRACKNUMBER : int : track number 1-based, 0=not found, -1=master track (read-only, returns the int directly)<br>
----I_SOLO : int * : soloed, 0=not soloed, 1=soloed, 2=soloed in place, 5=safe soloed, 6=safe soloed in place<br>
----B_SOLO_DEFEAT : bool * : when set, if anything else is soloed and this track is not muted, this track acts soloed<br>
----I_FXEN : int * : fx enabled, 0=bypassed, !0=fx active<br>
----I_RECARM : int * : record armed, 0=not record armed, 1=record armed<br>
----I_RECINPUT : int * : record input, <0=no input. if 4096 set, input is MIDI and low 5 bits represent channel (0=all, 1-16=only chan), next 6 bits represent physical input (63=all, 62=VKB). If 4096 is not set, low 10 bits (0..1023) are input start channel (ReaRoute/Loopback start at 512). If 2048 is set, input is multichannel input (using track channel count), or if 1024 is set, input is stereo input, otherwise input is mono.<br>
----I_RECMODE : int * : record mode, 0=input, 1=stereo out, 2=none, 3=stereo out w/latency compensation, 4=midi output, 5=mono out, 6=mono out w/ latency compensation, 7=midi overdub, 8=midi replace<br>
----I_RECMODE_FLAGS : int * : record mode flags, &3=output recording mode (0=post fader, 1=pre-fx, 2=post-fx/pre-fader)<br>
----I_RECMON : int * : record monitoring, 0=off, 1=normal, 2=not when playing (tape style)<br>
----I_RECMONITEMS : int * : monitor items while recording, 0=off, 1=on<br>
----B_AUTO_RECARM : bool * : automatically set record arm when selected (does not immediately affect recarm state, script should set directly if desired)<br>
----I_VUMODE : int * : track vu mode, &1:disabled, &30==0:stereo peaks, &30==2:multichannel peaks, &30==4:stereo RMS, &30==8:combined RMS, &30==12:LUFS-M, &30==16:LUFS-S (readout=max), &30==20:LUFS-S (readout=current), &32:LUFS calculation on channels 1+2 only<br>
----I_AUTOMODE : int * : track automation mode, 0=trim/off, 1=read, 2=touch, 3=write, 4=latch<br>
----I_NCHAN : int * : number of track channels, 2-128, even numbers only<br>
----I_SELECTED : int * : track selected, 0=unselected, 1=selected<br>
----I_WNDH : int * : current TCP window height in pixels including envelopes (read-only)<br>
----I_TCPH : int * : current TCP window height in pixels not including envelopes (read-only)<br>
----I_TCPY : int * : current TCP window Y-position in pixels relative to top of arrange view (read-only)<br>
----I_MCPX : int * : current MCP X-position in pixels relative to mixer container (read-only)<br>
----I_MCPY : int * : current MCP Y-position in pixels relative to mixer container (read-only)<br>
----I_MCPW : int * : current MCP width in pixels (read-only)<br>
----I_MCPH : int * : current MCP height in pixels (read-only)<br>
----I_FOLDERDEPTH : int * : folder depth change, 0=normal, 1=track is a folder parent, -1=track is the last in the innermost folder, -2=track is the last in the innermost and next-innermost folders, etc<br>
----I_FOLDERCOMPACT : int * : folder collapsed state (only valid on folders), 0=normal, 1=collapsed, 2=fully collapsed<br>
----I_MIDIHWOUT : int * : track midi hardware output index, <0=disabled, low 5 bits are which channels (0=all, 1-16), next 5 bits are output device index (0-31)<br>
----I_MIDI_INPUT_CHANMAP : int * : -1 maps to source channel, otherwise 1-16 to map to MIDI channel<br>
----I_MIDI_CTL_CHAN : int * : -1 no link, 0-15 link to MIDI volume/pan on channel, 16 link to MIDI volume/pan on all channels<br>
----I_MIDI_TRACKSEL_FLAG : int * : MIDI editor track list options: &1=expand media items, &2=exclude from list, &4=auto-pruned<br>
----I_PERFFLAGS : int * : track performance flags, &1=no media buffering, &2=no anticipative FX<br>
----I_CUSTOMCOLOR : int * : custom color, OS dependent color|0x1000000 (i.e. ColorToNative(r,g,b)|0x1000000). If you do not |0x1000000, then it will not be used, but will store the color<br>
----I_HEIGHTOVERRIDE : int * : custom height override for TCP window, 0 for none, otherwise size in pixels<br>
----I_SPACER : int * : 1=TCP track spacer above this trackB_HEIGHTLOCK : bool * : track height lock (must set I_HEIGHTOVERRIDE before locking)<br>
----D_VOL : double * : trim volume of track, 0=-inf, 0.5=-6dB, 1=+0dB, 2=+6dB, etc<br>
----D_PAN : double * : trim pan of track, -1..1<br>
----D_WIDTH : double * : width of track, -1..1<br>
----D_DUALPANL : double * : dualpan position 1, -1..1, only if I_PANMODE==6<br>
----D_DUALPANR : double * : dualpan position 2, -1..1, only if I_PANMODE==6<br>
----I_PANMODE : int * : pan mode, 0=classic 3.x, 3=new balance, 5=stereo pan, 6=dual pan<br>
----D_PANLAW : double * : pan law of track, <0=project default, 0.5=-6dB, 0.707..=-3dB, 1=+0dB, 1.414..=-3dB with gain compensation, 2=-6dB with gain compensation, etc<br>
----I_PANLAW_FLAGS : int * : pan law flags, 0=sine taper, 1=hybrid taper with deprecated behavior when gain compensation enabled, 2=linear taper, 3=hybrid taper<br>
----P_ENV:<envchunkname or P_ENV:{GUID... : TrackEnvelope * : (read-only) chunkname can be <VOLENV, <PANENV, etc; GUID is the stringified envelope GUID.<br>
----B_SHOWINMIXER : bool * : track control panel visible in mixer (do not use on master track)<br>
----B_SHOWINTCP : bool * : track control panel visible in arrange view (do not use on master track)<br>
----B_MAINSEND : bool * : track sends audio to parent<br>
----C_MAINSEND_OFFS : char * : channel offset of track send to parent<br>
----C_MAINSEND_NCH : char * : channel count of track send to parent (0=use all child track channels, 1=use one channel only)<br>
----I_FREEMODE : int * : 1=track free item positioning enabled, 2=track fixed lanes enabled (call UpdateTimeline() after changing)<br>
----I_NUMFIXEDLANES : int * : number of track fixed lanes (fine to call with setNewValue, but returned value is read-only)<br>
----C_LANESCOLLAPSED : char * : fixed lane collapse state (1=lanes collapsed, 2=track displays as non-fixed-lanes but hidden lanes exist)<br>
----C_LANESETTINGS : char * : fixed lane settings (&1=auto-remove empty lanes at bottom, &2=do not auto-comp new recording, &4=newly recorded lanes play exclusively (else add lanes in layers), &8=big lanes (else small lanes), &16=add new recording at bottom (else record into first available lane), &32=hide lane buttons<br>
----C_LANEPLAYS:N : char * :  on fixed lane tracks, 0=lane N does not play, 1=lane N plays exclusively, 2=lane N plays and other lanes also play (fine to call with setNewValue, but returned value is read-only)<br>
----C_ALLLANESPLAY : char * : on fixed lane tracks, 0=no lanes play, 1=all lanes play, 2=some lanes play (fine to call with setNewValue 0 or 1, but returned value is read-only)<br>
----C_BEATATTACHMODE : char * : track timebase, -1=project default, 0=time, 1=beats (position, length, rate), 2=beats (position only)<br>
----F_MCP_FXSEND_SCALE : float * : scale of fx+send area in MCP (0=minimum allowed, 1=maximum allowed)<br>
----F_MCP_FXPARM_SCALE : float * : scale of fx parameter area in MCP (0=minimum allowed, 1=maximum allowed)<br>
----F_MCP_SENDRGN_SCALE : float * : scale of send area as proportion of the fx+send total area (0=minimum allowed, 1=maximum allowed)<br>
----F_TCP_FXPARM_SCALE : float * : scale of TCP parameter area when TCP FX are embedded (0=min allowed, default, 1=max allowed)<br>
----I_PLAY_OFFSET_FLAG : int * : track media playback offset state, &1=bypassed, &2=offset value is measured in samples (otherwise measured in seconds)<br>
----D_PLAY_OFFSET : double * : track media playback offset, units depend on I_PLAY_OFFSET_FLAG
+---Set track numerical-value attributes.  
+---B_MUTE : bool * : muted  
+---B_PHASE : bool * : track phase inverted  
+---B_RECMON_IN_EFFECT : bool * : record monitoring in effect (current audio-thread playback state, read-only)  
+---IP_TRACKNUMBER : int : track number 1-based, 0=not found, -1=master track (read-only, returns the int directly)  
+---I_SOLO : int * : soloed, 0=not soloed, 1=soloed, 2=soloed in place, 5=safe soloed, 6=safe soloed in place  
+---B_SOLO_DEFEAT : bool * : when set, if anything else is soloed and this track is not muted, this track acts soloed  
+---I_FXEN : int * : fx enabled, 0=bypassed, !0=fx active  
+---I_RECARM : int * : record armed, 0=not record armed, 1=record armed  
+---I_RECINPUT : int * : record input, <0=no input. if 4096 set, input is MIDI and low 5 bits represent channel (0=all, 1-16=only chan), next 6 bits represent physical input (63=all, 62=VKB). If 4096 is not set, low 10 bits (0..1023) are input start channel (ReaRoute/Loopback start at 512). If 2048 is set, input is multichannel input (using track channel count), or if 1024 is set, input is stereo input, otherwise input is mono.  
+---I_RECMODE : int * : record mode, 0=input, 1=stereo out, 2=none, 3=stereo out w/latency compensation, 4=midi output, 5=mono out, 6=mono out w/ latency compensation, 7=midi overdub, 8=midi replace  
+---I_RECMODE_FLAGS : int * : record mode flags, &3=output recording mode (0=post fader, 1=pre-fx, 2=post-fx/pre-fader)  
+---I_RECMON : int * : record monitoring, 0=off, 1=normal, 2=not when playing (tape style)  
+---I_RECMONITEMS : int * : monitor items while recording, 0=off, 1=on  
+---B_AUTO_RECARM : bool * : automatically set record arm when selected (does not immediately affect recarm state, script should set directly if desired)  
+---I_VUMODE : int * : track vu mode, &1:disabled, &30==0:stereo peaks, &30==2:multichannel peaks, &30==4:stereo RMS, &30==8:combined RMS, &30==12:LUFS-M, &30==16:LUFS-S (readout=max), &30==20:LUFS-S (readout=current), &32:LUFS calculation on channels 1+2 only  
+---I_AUTOMODE : int * : track automation mode, 0=trim/off, 1=read, 2=touch, 3=write, 4=latch  
+---I_NCHAN : int * : number of track channels, 2-128, even numbers only  
+---I_SELECTED : int * : track selected, 0=unselected, 1=selected  
+---I_WNDH : int * : current TCP window height in pixels including envelopes (read-only)  
+---I_TCPH : int * : current TCP window height in pixels not including envelopes (read-only)  
+---I_TCPY : int * : current TCP window Y-position in pixels relative to top of arrange view (read-only)  
+---I_MCPX : int * : current MCP X-position in pixels relative to mixer container (read-only)  
+---I_MCPY : int * : current MCP Y-position in pixels relative to mixer container (read-only)  
+---I_MCPW : int * : current MCP width in pixels (read-only)  
+---I_MCPH : int * : current MCP height in pixels (read-only)  
+---I_FOLDERDEPTH : int * : folder depth change, 0=normal, 1=track is a folder parent, -1=track is the last in the innermost folder, -2=track is the last in the innermost and next-innermost folders, etc  
+---I_FOLDERCOMPACT : int * : folder collapsed state (only valid on folders), 0=normal, 1=collapsed, 2=fully collapsed  
+---I_MIDIHWOUT : int * : track midi hardware output index, <0=disabled, low 5 bits are which channels (0=all, 1-16), next 5 bits are output device index (0-31)  
+---I_MIDI_INPUT_CHANMAP : int * : -1 maps to source channel, otherwise 1-16 to map to MIDI channel  
+---I_MIDI_CTL_CHAN : int * : -1 no link, 0-15 link to MIDI volume/pan on channel, 16 link to MIDI volume/pan on all channels  
+---I_MIDI_TRACKSEL_FLAG : int * : MIDI editor track list options: &1=expand media items, &2=exclude from list, &4=auto-pruned  
+---I_PERFFLAGS : int * : track performance flags, &1=no media buffering, &2=no anticipative FX  
+---I_CUSTOMCOLOR : int * : custom color, OS dependent color|0x1000000 (i.e. ColorToNative(r,g,b)|0x1000000). If you do not |0x1000000, then it will not be used, but will store the color  
+---I_HEIGHTOVERRIDE : int * : custom height override for TCP window, 0 for none, otherwise size in pixels  
+---I_SPACER : int * : 1=TCP track spacer above this trackB_HEIGHTLOCK : bool * : track height lock (must set I_HEIGHTOVERRIDE before locking)  
+---D_VOL : double * : trim volume of track, 0=-inf, 0.5=-6dB, 1=+0dB, 2=+6dB, etc  
+---D_PAN : double * : trim pan of track, -1..1  
+---D_WIDTH : double * : width of track, -1..1  
+---D_DUALPANL : double * : dualpan position 1, -1..1, only if I_PANMODE==6  
+---D_DUALPANR : double * : dualpan position 2, -1..1, only if I_PANMODE==6  
+---I_PANMODE : int * : pan mode, 0=classic 3.x, 3=new balance, 5=stereo pan, 6=dual pan  
+---D_PANLAW : double * : pan law of track, <0=project default, 0.5=-6dB, 0.707..=-3dB, 1=+0dB, 1.414..=-3dB with gain compensation, 2=-6dB with gain compensation, etc  
+---I_PANLAW_FLAGS : int * : pan law flags, 0=sine taper, 1=hybrid taper with deprecated behavior when gain compensation enabled, 2=linear taper, 3=hybrid taper  
+---P_ENV:<envchunkname or P_ENV:{GUID... : TrackEnvelope * : (read-only) chunkname can be <VOLENV, <PANENV, etc; GUID is the stringified envelope GUID.  
+---B_SHOWINMIXER : bool * : track control panel visible in mixer (do not use on master track)  
+---B_SHOWINTCP : bool * : track control panel visible in arrange view (do not use on master track)  
+---B_MAINSEND : bool * : track sends audio to parent  
+---C_MAINSEND_OFFS : char * : channel offset of track send to parent  
+---C_MAINSEND_NCH : char * : channel count of track send to parent (0=use all child track channels, 1=use one channel only)  
+---I_FREEMODE : int * : 1=track free item positioning enabled, 2=track fixed lanes enabled (call UpdateTimeline() after changing)  
+---I_NUMFIXEDLANES : int * : number of track fixed lanes (fine to call with setNewValue, but returned value is read-only)  
+---C_LANESCOLLAPSED : char * : fixed lane collapse state (1=lanes collapsed, 2=track displays as non-fixed-lanes but hidden lanes exist)  
+---C_LANESETTINGS : char * : fixed lane settings (&1=auto-remove empty lanes at bottom, &2=do not auto-comp new recording, &4=newly recorded lanes play exclusively (else add lanes in layers), &8=big lanes (else small lanes), &16=add new recording at bottom (else record into first available lane), &32=hide lane buttons  
+---C_LANEPLAYS:N : char * :  on fixed lane tracks, 0=lane N does not play, 1=lane N plays exclusively, 2=lane N plays and other lanes also play (fine to call with setNewValue, but returned value is read-only)  
+---C_ALLLANESPLAY : char * : on fixed lane tracks, 0=no lanes play, 1=all lanes play, 2=some lanes play (fine to call with setNewValue 0 or 1, but returned value is read-only)  
+---C_BEATATTACHMODE : char * : track timebase, -1=project default, 0=time, 1=beats (position, length, rate), 2=beats (position only)  
+---F_MCP_FXSEND_SCALE : float * : scale of fx+send area in MCP (0=minimum allowed, 1=maximum allowed)  
+---F_MCP_FXPARM_SCALE : float * : scale of fx parameter area in MCP (0=minimum allowed, 1=maximum allowed)  
+---F_MCP_SENDRGN_SCALE : float * : scale of send area as proportion of the fx+send total area (0=minimum allowed, 1=maximum allowed)  
+---F_TCP_FXPARM_SCALE : float * : scale of TCP parameter area when TCP FX are embedded (0=min allowed, default, 1=max allowed)  
+---I_PLAY_OFFSET_FLAG : int * : track media playback offset state, &1=bypassed, &2=offset value is measured in samples (otherwise measured in seconds)  
+---D_PLAY_OFFSET : double * : track media playback offset, units depend on I_PLAY_OFFSET_FLAG  
 ---@param tr MediaTrack
 ---@param parmname string
 ---@param newvalue number
@@ -3771,21 +3766,21 @@ function reaper.SetMIDIEditorGrid(project, division) end
 ---@return MediaTrack retval
 function reaper.SetMixerScroll(leftmosttrack) end
 
----Set the mouse modifier assignment for a specific modifier key assignment, in a specific context.<br>
----Context is a string like "MM_CTX_ITEM" (see reaper-mouse.ini) or "Media item left drag" (unlocalized).<br>
----Modifier flag is a number from 0 to 15: add 1 for shift, 2 for control, 4 for alt, 8 for win.<br>
----(macOS: add 1 for shift, 2 for command, 4 for opt, 8 for control.)<br>
----For left-click and double-click contexts, the action can be any built-in command ID number<br>
----or any custom action ID string. Find built-in command IDs in the REAPER actions window<br>
----(enable "show command IDs" in the context menu), and find custom action ID strings in reaper-kb.ini.<br>
----The action string may be a mouse modifier ID (see reaper-mouse.ini) with " m" appended to it,<br>
----or (for click/double-click contexts) a command ID with " c" appended to it,<br>
----or the text that appears in the mouse modifiers preferences dialog, like "Move item" (unlocalized).<br>
----For example, SetMouseModifier("MM_CTX_ITEM", 0, "1 m") and SetMouseModifier("Media item left drag", 0, "Move item") are equivalent.<br>
----SetMouseModifier(context, modifier_flag, -1) will reset that mouse modifier to default.<br>
----SetMouseModifier(context, -1, -1) will reset the entire context to default.<br>
----SetMouseModifier(-1, -1, -1) will reset all contexts to default.<br>
----See GetMouseModifier.
+---Set the mouse modifier assignment for a specific modifier key assignment, in a specific context.  
+---Context is a string like "MM_CTX_ITEM" (see reaper-mouse.ini) or "Media item left drag" (unlocalized).  
+---Modifier flag is a number from 0 to 15: add 1 for shift, 2 for control, 4 for alt, 8 for win.  
+---(macOS: add 1 for shift, 2 for command, 4 for opt, 8 for control.)  
+---For left-click and double-click contexts, the action can be any built-in command ID number  
+---or any custom action ID string. Find built-in command IDs in the REAPER actions window  
+---(enable "show command IDs" in the context menu), and find custom action ID strings in reaper-kb.ini.  
+---The action string may be a mouse modifier ID (see reaper-mouse.ini) with " m" appended to it,  
+---or (for click/double-click contexts) a command ID with " c" appended to it,  
+---or the text that appears in the mouse modifiers preferences dialog, like "Move item" (unlocalized).  
+---For example, SetMouseModifier("MM_CTX_ITEM", 0, "1 m") and SetMouseModifier("Media item left drag", 0, "Move item") are equivalent.  
+---SetMouseModifier(context, modifier_flag, -1) will reset that mouse modifier to default.  
+---SetMouseModifier(context, -1, -1) will reset the entire context to default.  
+---SetMouseModifier(-1, -1, -1) will reset all contexts to default.  
+---See GetMouseModifier.  
 ---@param context string
 ---@param modifier_flag integer
 ---@param action string
@@ -3919,7 +3914,7 @@ function reaper.SetTakeStretchMarkerSlope(take, idx, slope) end
 ---@return boolean retval
 function reaper.SetTempoTimeSigMarker(proj, ptidx, timepos, measurepos, beatpos, bpm, timesig_num, timesig_denom, lineartempo) end
 
----Temporarily updates the theme color to the color specified (or the theme default color if -1 is specified). Returns -1 on failure, otherwise returns the color (or transformed-color). Note that the UI is not updated by this, the caller should call UpdateArrange() etc as necessary. If the low bit of flags is set, any color transformations are bypassed. To read a value see GetThemeColor.<br>Currently valid ini_keys:*
+---Temporarily updates the theme color to the color specified (or the theme default color if -1 is specified). Returns -1 on failure, otherwise returns the color (or transformed-color). Note that the UI is not updated by this, the caller should call UpdateArrange() etc as necessary. If the low bit of flags is set, any color transformations are bypassed. To read a value see GetThemeColor.  Currently valid ini_keys:*
 ---* <strong>col_main_bg2</strong> : Main window/transport background
 ---* <strong>col_main_text2</strong> : Main window/transport text
 ---* <strong>col_main_textshadow</strong> : Main window text shadow (ignored if too close to text color)
@@ -4351,20 +4346,20 @@ function reaper.SetTrackMIDINoteNameEx(proj, track, pitch, chan, name) end
 ---@param selected boolean
 function reaper.SetTrackSelected(track, selected) end
 
----Set send/receive/hardware output numerical-value attributes, return true on success.<br>
----category is <0 for receives, 0=sends, >0 for hardware outputs<br>
----parameter names:<br>
----B_MUTE : bool *<br>
----B_PHASE : bool * : true to flip phase<br>
----B_MONO : bool *<br>
----D_VOL : double * : 1.0 = +0dB etc<br>
----D_PAN : double * : -1..+1<br>
----D_PANLAW : double * : 1.0=+0.0db, 0.5=-6dB, -1.0 = projdef etc<br>
----I_SENDMODE : int * : 0=post-fader, 1=pre-fx, 2=post-fx (deprecated), 3=post-fx<br>
----I_AUTOMODE : int * : automation mode (-1=use track automode, 0=trim/off, 1=read, 2=touch, 3=write, 4=latch)<br>
----I_SRCCHAN : int * : -1 for no audio send. Low 10 bits specify channel offset, and higher bits specify channel count. (srcchan>>10) == 0 for stereo, 1 for mono, 2 for 4 channel, 3 for 6 channel, etc.<br>
----I_DSTCHAN : int * : low 10 bits are destination index, &1024 set to mix to mono.<br>
----I_MIDIFLAGS : int * : low 5 bits=source channel 0=all, 1-16, 31=MIDI send disabled, next 5 bits=dest channel, 0=orig, 1-16=chan. &1024 for faders-send MIDI vol/pan. (>>14)&255 = src bus (0 for all, 1 for normal, 2+). (>>22)&255=destination bus (0 for all, 1 for normal, 2+)<br>
+---Set send/receive/hardware output numerical-value attributes, return true on success.  
+---category is <0 for receives, 0=sends, >0 for hardware outputs  
+---parameter names:  
+---B_MUTE : bool *  
+---B_PHASE : bool * : true to flip phase  
+---B_MONO : bool *  
+---D_VOL : double * : 1.0 = +0dB etc  
+---D_PAN : double * : -1..+1  
+---D_PANLAW : double * : 1.0=+0.0db, 0.5=-6dB, -1.0 = projdef etc  
+---I_SENDMODE : int * : 0=post-fader, 1=pre-fx, 2=post-fx (deprecated), 3=post-fx  
+---I_AUTOMODE : int * : automation mode (-1=use track automode, 0=trim/off, 1=read, 2=touch, 3=write, 4=latch)  
+---I_SRCCHAN : int * : -1 for no audio send. Low 10 bits specify channel offset, and higher bits specify channel count. (srcchan>>10) == 0 for stereo, 1 for mono, 2 for 4 channel, 3 for 6 channel, etc.  
+---I_DSTCHAN : int * : low 10 bits are destination index, &1024 set to mix to mono.  
+---I_MIDIFLAGS : int * : low 5 bits=source channel 0=all, 1-16, 31=MIDI send disabled, next 5 bits=dest channel, 0=orig, 1-16=chan. &1024 for faders-send MIDI vol/pan. (>>14)&255 = src bus (0 for all, 1 for normal, 2+). (>>22)&255=destination bus (0 for all, 1 for normal, 2+)  
 ---See CreateTrackSend, RemoveTrackSend, GetTrackNumSends.
 ---@param tr MediaTrack
 ---@param category integer
@@ -4893,10 +4888,10 @@ function reaper.TimeMap2_GetNextChangeTime(proj, time) end
 ---@return number retval
 function reaper.TimeMap2_QNToTime(proj, qn) end
 
----convert a time into beats.<br>
----if measures is non-NULL, measures will be set to the measure count, return value will be beats since measure.<br>
----if cml is non-NULL, will be set to current measure length in beats (i.e. time signature numerator)<br>
----if fullbeats is non-NULL, and measures is non-NULL, fullbeats will get the full beat count (same value returned if measures is NULL).<br>
+---convert a time into beats.  
+---if measures is non-NULL, measures will be set to the measure count, return value will be beats since measure.  
+---if cml is non-NULL, will be set to current measure length in beats (i.e. time signature numerator)  
+---if fullbeats is non-NULL, and measures is non-NULL, fullbeats will get the full beat count (same value returned if measures is NULL).  
 ---if cdenom is non-NULL, will be set to the current time signature denominator.
 ---@param proj ReaProject|nil|0
 ---@param tpos number
@@ -5091,11 +5086,10 @@ function reaper.TrackFX_GetEnabled(track, fx) end
 ---@return integer retval
 function reaper.TrackFX_GetEQ(track, instantiate) end
 
----Returns true if the EQ band is enabled.<br>
----Returns false if the band is disabled, or if track/fxidx is not ReaEQ.<br>
----Bandtype: -1=master gain, 0=hipass, 1=loshelf, 2=band, 3=notch, 4=hishelf, 5=lopass, 6=bandpass, 7=parallel bandpass.<br>
----Bandidx (ignored for master gain): 0=target first band matching bandtype, 1=target 2nd band matching bandtype, etc.
----
+---Returns true if the EQ band is enabled.  
+---Returns false if the band is disabled, or if track/fxidx is not ReaEQ.  
+---Bandtype: -1=master gain, 0=hipass, 1=loshelf, 2=band, 3=notch, 4=hishelf, 5=lopass, 6=bandpass, 7=parallel bandpass.  
+---Bandidx (ignored for master gain): 0=target first band matching bandtype, 1=target 2nd band matching bandtype, etc.  
 ---See TrackFX_GetEQ, TrackFX_GetEQParam, TrackFX_SetEQParam, TrackFX_SetEQBandEnabled. FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
 ---@param track MediaTrack
 ---@param fxidx integer
@@ -5104,10 +5098,10 @@ function reaper.TrackFX_GetEQ(track, instantiate) end
 ---@return boolean retval
 function reaper.TrackFX_GetEQBandEnabled(track, fxidx, bandtype, bandidx) end
 
----Returns false if track/fxidx is not ReaEQ.<br>
----Bandtype: -1=master gain, 0=hipass, 1=loshelf, 2=band, 3=notch, 4=hishelf, 5=lopass, 6=bandpass, 7=parallel bandpass.<br>
----Bandidx (ignored for master gain): 0=target first band matching bandtype, 1=target 2nd band matching bandtype, etc.<br>
----Paramtype (ignored for master gain): 0=freq, 1=gain, 2=Q.<br>
+---Returns false if track/fxidx is not ReaEQ.  
+---Bandtype: -1=master gain, 0=hipass, 1=loshelf, 2=band, 3=notch, 4=hishelf, 5=lopass, 6=bandpass, 7=parallel bandpass.  
+---Bandidx (ignored for master gain): 0=target first band matching bandtype, 1=target 2nd band matching bandtype, etc.  
+---Paramtype (ignored for master gain): 0=freq, 1=gain, 2=Q.  
 ---See TrackFX_GetEQ, TrackFX_SetEQParam, TrackFX_GetEQBandEnabled, TrackFX_SetEQBandEnabled. FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
 ---@param track MediaTrack
 ---@param fxidx integer
@@ -5159,60 +5153,58 @@ function reaper.TrackFX_GetInstrument(track) end
 ---@return integer outputPins
 function reaper.TrackFX_GetIOSize(track, fx) end
 
----gets plug-in specific named configuration value (returns true on success). 
----
----Supported values for read:<br>
----pdc : PDC latency<br>
----in_pin_X : name of input pin X<br>
----out_pin_X : name of output pin X<br>
----fx_type : type string<br>
----fx_ident : type-specific identifier<br>
----fx_name : name of FX (also supported as original_name)<br>
----GainReduction_dB : [ReaComp + other supported compressors]<br>
----parent_container : FX ID of parent container, if any (v7.06+)<br>
----container_count : [Container] number of FX in container<br>
----container_item.X : FX ID of item in container (first item is container_item.0) (v7.06+)<br>
----param.X.container_map.hint_id : unique ID of mapping (preserved if mapping order changes)<br>
----param.X.container_map.delete : read this value in order to remove the mapping for this parameter<br>
----container_map.add : read from this value to add a new container parameter mapping -- will return new parameter index (accessed via param.X.container_map.*)<br>
----container_map.add.FXID.PARMIDX : read from this value to add/get container parameter mapping for FXID/PARMIDX -- will return the parameter index (accessed via param.X.container_map.*). FXID can be a full address (must be a child of the container) or a 0-based sub-index (v7.06+).<br>
----container_map.get.FXID.PARMIDX : read from this value to get container parameter mapping for FXID/PARMIDX -- will return the parameter index (accessed via param.X.container_map.*). FXID can be a full address (must be a child of the container) or a 0-based sub-index (v7.06+).<br>
----chain_pdc_actual : returns the actual chain latency in samples, only valid after playback has commenced, may be rounded up to block size.<br>
----chain_pdc_reporting : returns the reported chain latency, always valid, not rounded to block size.
----
----Supported values for read/write:<br>
----vst_chunk[_program] : base64-encoded VST-specific chunk.<br>
----clap_chunk : base64-encoded CLAP-specific chunk.<br>
----param.X.lfo.[active,dir,phase,speed,strength,temposync,free,shape] : parameter moduation LFO state<br>
----param.X.acs.[active,dir,strength,attack,release,dblo,dbhi,chan,stereo,x2,y2] : parameter modulation ACS state<br>
----param.X.plink.[active,scale,offset,effect,param,midi_bus,midi_chan,midi_msg,midi_msg2] : parameter link/MIDI link: set effect=-100 to support midi_*<br>
----param.X.mod.[active,baseline,visible] : parameter module global settings<br>
----param.X.learn.[midi1,midi2,osc] : first two bytes of MIDI message, or OSC string if set<br>
----param.X.learn.mode : absolution/relative mode flag (0: Absolute, 1: 127=-1,1=+1, 2: 63=-1, 65=+1, 3: 65=-1, 1=+1, 4: toggle if nonzero)<br>
----param.X.learn.flags : &1=selected track only, &2=soft takeover, &4=focused FX only, &8=LFO retrigger, &16=visible FX only<br>
----param.X.container_map.fx_index : index of FX contained in container<br>
----param.X.container_map.fx_parm : parameter index of parameter of FX contained in container<br>
----param.X.container_map.aliased_name : name of parameter (if user-renamed, otherwise fails)<br>
----BANDTYPEx, BANDENABLEDx : band configuration [ReaEQ]<br>
----THRESHOLD, CEILING, TRUEPEAK : [ReaLimit]<br>
----NUMCHANNELS, NUMSPEAKERS, RESETCHANNELS : [ReaSurroundPan]<br>
----ITEMx : [ReaVerb] state configuration line, when writing should be followed by a write of DONE<br>
----FILE, FILEx, -FILEx, +FILEx, -FILE* : [RS5k] file list, -/+ prefixes are write-only, when writing any, should be followed by a write of DONE<br>
----MODE, RSMODE : [RS5k] general mode, resample mode<br>
----VIDEO_CODE : [video processor] code<br>
----force_auto_bypass : 0 or 1 - force auto-bypass plug-in on silence<br>
----parallel : 0, 1 or 2 - 1=process plug-in in parallel with previous, 2=process plug-in parallel and merge MIDI<br>
----instance_oversample_shift : instance oversampling shift amount, 0=none, 1=~96k, 2=~192k, etc. When setting requires playback stop/start to take effect<br>
----chain_oversample_shift : chain oversampling shift amount, 0=none, 1=~96k, 2=~192k, etc. When setting requires playback stop/start to take effect<br>
----chain_pdc_mode : chain PDC mode (0=classic, 1=new-default, 2=ignore PDC, 3=hwcomp-master)<br>
----chain_sel : selected/visible FX in chain<br>
----renamed_name : renamed FX instance name (empty string = not renamed)<br>
----container_nch : number of internal channels for container<br>
----container_nch_in : number of input pins for container<br>
----container_nch_out : number of output pints for container<br>
----container_nch_feedback : number of internal feedback channels enabled in container<br>
----focused : reading returns 1 if focused. Writing a positive value to this sets the FX UI as "last focused."<br>
----last_touched : reading returns two integers, one indicates whether FX is the last-touched FX, the second indicates which parameter was last touched. Writing a negative value ensures this plug-in is not set as last touched, otherwise the FX is set "last touched," and last touched parameter index is set to the value in the string (if valid).<br>
+---gets plug-in specific named configuration value (returns true on success).   
+---Supported values for read:  
+---pdc : PDC latency  
+---in_pin_X : name of input pin X  
+---out_pin_X : name of output pin X  
+---fx_type : type string  
+---fx_ident : type-specific identifier  
+---fx_name : name of FX (also supported as original_name)  
+---GainReduction_dB : [ReaComp + other supported compressors]  
+---parent_container : FX ID of parent container, if any (v7.06+)  
+---container_count : [Container] number of FX in container  
+---container_item.X : FX ID of item in container (first item is container_item.0) (v7.06+)  
+---param.X.container_map.hint_id : unique ID of mapping (preserved if mapping order changes)  
+---param.X.container_map.delete : read this value in order to remove the mapping for this parameter  
+---container_map.add : read from this value to add a new container parameter mapping -- will return new parameter index (accessed via param.X.container_map.*)  
+---container_map.add.FXID.PARMIDX : read from this value to add/get container parameter mapping for FXID/PARMIDX -- will return the parameter index (accessed via param.X.container_map.*). FXID can be a full address (must be a child of the container) or a 0-based sub-index (v7.06+).  
+---container_map.get.FXID.PARMIDX : read from this value to get container parameter mapping for FXID/PARMIDX -- will return the parameter index (accessed via param.X.container_map.*). FXID can be a full address (must be a child of the container) or a 0-based sub-index (v7.06+).  
+---chain_pdc_actual : returns the actual chain latency in samples, only valid after playback has commenced, may be rounded up to block size.  
+---chain_pdc_reporting : returns the reported chain latency, always valid, not rounded to block size.  
+---Supported values for read/write:  
+---vst_chunk[_program] : base64-encoded VST-specific chunk.  
+---clap_chunk : base64-encoded CLAP-specific chunk.  
+---param.X.lfo.[active,dir,phase,speed,strength,temposync,free,shape] : parameter moduation LFO state  
+---param.X.acs.[active,dir,strength,attack,release,dblo,dbhi,chan,stereo,x2,y2] : parameter modulation ACS state  
+---param.X.plink.[active,scale,offset,effect,param,midi_bus,midi_chan,midi_msg,midi_msg2] : parameter link/MIDI link: set effect=-100 to support midi_*  
+---param.X.mod.[active,baseline,visible] : parameter module global settings  
+---param.X.learn.[midi1,midi2,osc] : first two bytes of MIDI message, or OSC string if set  
+---param.X.learn.mode : absolution/relative mode flag (0: Absolute, 1: 127=-1,1=+1, 2: 63=-1, 65=+1, 3: 65=-1, 1=+1, 4: toggle if nonzero)  
+---param.X.learn.flags : &1=selected track only, &2=soft takeover, &4=focused FX only, &8=LFO retrigger, &16=visible FX only  
+---param.X.container_map.fx_index : index of FX contained in container  
+---param.X.container_map.fx_parm : parameter index of parameter of FX contained in container  
+---param.X.container_map.aliased_name : name of parameter (if user-renamed, otherwise fails)  
+---BANDTYPEx, BANDENABLEDx : band configuration [ReaEQ]  
+---THRESHOLD, CEILING, TRUEPEAK : [ReaLimit]  
+---NUMCHANNELS, NUMSPEAKERS, RESETCHANNELS : [ReaSurroundPan]  
+---ITEMx : [ReaVerb] state configuration line, when writing should be followed by a write of DONE  
+---FILE, FILEx, -FILEx, +FILEx, -FILE* : [RS5k] file list, -/+ prefixes are write-only, when writing any, should be followed by a write of DONE  
+---MODE, RSMODE : [RS5k] general mode, resample mode  
+---VIDEO_CODE : [video processor] code  
+---force_auto_bypass : 0 or 1 - force auto-bypass plug-in on silence  
+---parallel : 0, 1 or 2 - 1=process plug-in in parallel with previous, 2=process plug-in parallel and merge MIDI  
+---instance_oversample_shift : instance oversampling shift amount, 0=none, 1=~96k, 2=~192k, etc. When setting requires playback stop/start to take effect  
+---chain_oversample_shift : chain oversampling shift amount, 0=none, 1=~96k, 2=~192k, etc. When setting requires playback stop/start to take effect  
+---chain_pdc_mode : chain PDC mode (0=classic, 1=new-default, 2=ignore PDC, 3=hwcomp-master)  
+---chain_sel : selected/visible FX in chain  
+---renamed_name : renamed FX instance name (empty string = not renamed)  
+---container_nch : number of internal channels for container  
+---container_nch_in : number of input pins for container  
+---container_nch_out : number of output pints for container  
+---container_nch_feedback : number of internal feedback channels enabled in container  
+---focused : reading returns 1 if focused. Writing a positive value to this sets the FX UI as "last focused."  
+---last_touched : reading returns two integers, one indicates whether FX is the last-touched FX, the second indicates which parameter was last touched. Writing a negative value ensures this plug-in is not set as last touched, otherwise the FX is set "last touched," and last touched parameter index is set to the value in the string (if valid).  
 ---FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
 ---@param track MediaTrack
 ---@param fx integer
@@ -5351,11 +5343,10 @@ function reaper.TrackFX_NavigatePresets(track, fx, presetmove) end
 ---@param enabled boolean
 function reaper.TrackFX_SetEnabled(track, fx, enabled) end
 
----Enable or disable a ReaEQ band.<br>
----Returns false if track/fxidx is not ReaEQ.<br>
----Bandtype: -1=master gain, 0=hipass, 1=loshelf, 2=band, 3=notch, 4=hishelf, 5=lopass, 6=bandpass, 7=parallel bandpass.<br>
----Bandidx (ignored for master gain): 0=target first band matching bandtype, 1=target 2nd band matching bandtype, etc.
----
+---Enable or disable a ReaEQ band.  
+---Returns false if track/fxidx is not ReaEQ.  
+---Bandtype: -1=master gain, 0=hipass, 1=loshelf, 2=band, 3=notch, 4=hishelf, 5=lopass, 6=bandpass, 7=parallel bandpass.  
+---Bandidx (ignored for master gain): 0=target first band matching bandtype, 1=target 2nd band matching bandtype, etc.  
 ---See TrackFX_GetEQ, TrackFX_GetEQParam, TrackFX_SetEQParam, TrackFX_GetEQBandEnabled. FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
 ---@param track MediaTrack
 ---@param fxidx integer
@@ -5365,10 +5356,10 @@ function reaper.TrackFX_SetEnabled(track, fx, enabled) end
 ---@return boolean retval
 function reaper.TrackFX_SetEQBandEnabled(track, fxidx, bandtype, bandidx, enable) end
 
----Returns false if track/fxidx is not ReaEQ. Targets a band matching bandtype.<br>
----Bandtype: -1=master gain, 0=hipass, 1=loshelf, 2=band, 3=notch, 4=hishelf, 5=lopass, 6=bandpass, 7=parallel bandpass.<br>
----Bandidx (ignored for master gain): 0=target first band matching bandtype, 1=target 2nd band matching bandtype, etc.<br>
----Paramtype (ignored for master gain): 0=freq, 1=gain, 2=Q.<br>
+---Returns false if track/fxidx is not ReaEQ. Targets a band matching bandtype.  
+---Bandtype: -1=master gain, 0=hipass, 1=loshelf, 2=band, 3=notch, 4=hishelf, 5=lopass, 6=bandpass, 7=parallel bandpass.  
+---Bandidx (ignored for master gain): 0=target first band matching bandtype, 1=target 2nd band matching bandtype, etc.  
+---Paramtype (ignored for master gain): 0=freq, 1=gain, 2=Q.  
 ---See TrackFX_GetEQ, TrackFX_GetEQParam, TrackFX_GetEQBandEnabled, TrackFX_SetEQBandEnabled. FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
 ---@param track MediaTrack
 ---@param fxidx integer
@@ -5380,41 +5371,40 @@ function reaper.TrackFX_SetEQBandEnabled(track, fxidx, bandtype, bandidx, enable
 ---@return boolean retval
 function reaper.TrackFX_SetEQParam(track, fxidx, bandtype, bandidx, paramtype, val, isnorm) end
 
----sets plug-in specific named configuration value (returns true on success).
----
----Support values for write:<br>
----vst_chunk[_program] : base64-encoded VST-specific chunk.<br>
----clap_chunk : base64-encoded CLAP-specific chunk.<br>
----param.X.lfo.[active,dir,phase,speed,strength,temposync,free,shape] : parameter moduation LFO state<br>
----param.X.acs.[active,dir,strength,attack,release,dblo,dbhi,chan,stereo,x2,y2] : parameter modulation ACS state<br>
----param.X.plink.[active,scale,offset,effect,param,midi_bus,midi_chan,midi_msg,midi_msg2] : parameter link/MIDI link: set effect=-100 to support midi_*<br>
----param.X.mod.[active,baseline,visible] : parameter module global settings<br>
----param.X.learn.[midi1,midi2,osc] : first two bytes of MIDI message, or OSC string if set<br>
----param.X.learn.mode : absolution/relative mode flag (0: Absolute, 1: 127=-1,1=+1, 2: 63=-1, 65=+1, 3: 65=-1, 1=+1, 4: toggle if nonzero)<br>
----param.X.learn.flags : &1=selected track only, &2=soft takeover, &4=focused FX only, &8=LFO retrigger, &16=visible FX only<br>
----param.X.container_map.fx_index : index of FX contained in container<br>
----param.X.container_map.fx_parm : parameter index of parameter of FX contained in container<br>
----param.X.container_map.aliased_name : name of parameter (if user-renamed, otherwise fails)<br>
----BANDTYPEx, BANDENABLEDx : band configuration [ReaEQ]<br>
----THRESHOLD, CEILING, TRUEPEAK : [ReaLimit]<br>
----NUMCHANNELS, NUMSPEAKERS, RESETCHANNELS : [ReaSurroundPan]<br>
----ITEMx : [ReaVerb] state configuration line, when writing should be followed by a write of DONE<br>
----FILE, FILEx, -FILEx, +FILEx, -FILE* : [RS5k] file list, -/+ prefixes are write-only, when writing any, should be followed by a write of DONE<br>
----MODE, RSMODE : [RS5k] general mode, resample mode<br>
----VIDEO_CODE : [video processor] code<br>
----force_auto_bypass : 0 or 1 - force auto-bypass plug-in on silence<br>
----parallel : 0, 1 or 2 - 1=process plug-in in parallel with previous, 2=process plug-in parallel and merge MIDI<br>
----instance_oversample_shift : instance oversampling shift amount, 0=none, 1=~96k, 2=~192k, etc. When setting requires playback stop/start to take effect<br>
----chain_oversample_shift : chain oversampling shift amount, 0=none, 1=~96k, 2=~192k, etc. When setting requires playback stop/start to take effect<br>
----chain_pdc_mode : chain PDC mode (0=classic, 1=new-default, 2=ignore PDC, 3=hwcomp-master)<br>
----chain_sel : selected/visible FX in chain<br>
----renamed_name : renamed FX instance name (empty string = not renamed)<br>
----container_nch : number of internal channels for container<br>
----container_nch_in : number of input pins for container<br>
----container_nch_out : number of output pints for container<br>
----container_nch_feedback : number of internal feedback channels enabled in container<br>
----focused : reading returns 1 if focused. Writing a positive value to this sets the FX UI as "last focused."<br>
----last_touched : reading returns two integers, one indicates whether FX is the last-touched FX, the second indicates which parameter was last touched. Writing a negative value ensures this plug-in is not set as last touched, otherwise the FX is set "last touched," and last touched parameter index is set to the value in the string (if valid).<br>
+---sets plug-in specific named configuration value (returns true on success).  
+---Support values for write:  
+---vst_chunk[_program] : base64-encoded VST-specific chunk.  
+---clap_chunk : base64-encoded CLAP-specific chunk.  
+---param.X.lfo.[active,dir,phase,speed,strength,temposync,free,shape] : parameter moduation LFO state  
+---param.X.acs.[active,dir,strength,attack,release,dblo,dbhi,chan,stereo,x2,y2] : parameter modulation ACS state  
+---param.X.plink.[active,scale,offset,effect,param,midi_bus,midi_chan,midi_msg,midi_msg2] : parameter link/MIDI link: set effect=-100 to support midi_*  
+---param.X.mod.[active,baseline,visible] : parameter module global settings  
+---param.X.learn.[midi1,midi2,osc] : first two bytes of MIDI message, or OSC string if set  
+---param.X.learn.mode : absolution/relative mode flag (0: Absolute, 1: 127=-1,1=+1, 2: 63=-1, 65=+1, 3: 65=-1, 1=+1, 4: toggle if nonzero)  
+---param.X.learn.flags : &1=selected track only, &2=soft takeover, &4=focused FX only, &8=LFO retrigger, &16=visible FX only  
+---param.X.container_map.fx_index : index of FX contained in container  
+---param.X.container_map.fx_parm : parameter index of parameter of FX contained in container  
+---param.X.container_map.aliased_name : name of parameter (if user-renamed, otherwise fails)  
+---BANDTYPEx, BANDENABLEDx : band configuration [ReaEQ]  
+---THRESHOLD, CEILING, TRUEPEAK : [ReaLimit]  
+---NUMCHANNELS, NUMSPEAKERS, RESETCHANNELS : [ReaSurroundPan]  
+---ITEMx : [ReaVerb] state configuration line, when writing should be followed by a write of DONE  
+---FILE, FILEx, -FILEx, +FILEx, -FILE* : [RS5k] file list, -/+ prefixes are write-only, when writing any, should be followed by a write of DONE  
+---MODE, RSMODE : [RS5k] general mode, resample mode  
+---VIDEO_CODE : [video processor] code  
+---force_auto_bypass : 0 or 1 - force auto-bypass plug-in on silence  
+---parallel : 0, 1 or 2 - 1=process plug-in in parallel with previous, 2=process plug-in parallel and merge MIDI  
+---instance_oversample_shift : instance oversampling shift amount, 0=none, 1=~96k, 2=~192k, etc. When setting requires playback stop/start to take effect  
+---chain_oversample_shift : chain oversampling shift amount, 0=none, 1=~96k, 2=~192k, etc. When setting requires playback stop/start to take effect  
+---chain_pdc_mode : chain PDC mode (0=classic, 1=new-default, 2=ignore PDC, 3=hwcomp-master)  
+---chain_sel : selected/visible FX in chain  
+---renamed_name : renamed FX instance name (empty string = not renamed)  
+---container_nch : number of internal channels for container  
+---container_nch_in : number of input pins for container  
+---container_nch_out : number of output pints for container  
+---container_nch_feedback : number of internal feedback channels enabled in container  
+---focused : reading returns 1 if focused. Writing a positive value to this sets the FX UI as "last focused."  
+---last_touched : reading returns two integers, one indicates whether FX is the last-touched FX, the second indicates which parameter was last touched. Writing a negative value ensures this plug-in is not set as last touched, otherwise the FX is set "last touched," and last touched parameter index is set to the value in the string (if valid).  
 ---FX indices for tracks can have 0x1000000 added to them in order to reference record input FX (normal tracks) or hardware output FX (master track). FX indices can have 0x2000000 added to them, in which case they will be used to address FX in containers. To address a container, the 1-based subitem is multiplied by one plus the count of the FX chain and added to the 1-based container item index. e.g. to address the third item in the container at the second position of the track FX chain for tr, the index would be 0x2000000 + 3*(TrackFX_GetCount(tr)+1) + 2. This can be extended to sub-containers using TrackFX_GetNamedConfigParm with container_count and similar logic. In REAPER v7.06+, you can use the much more convenient method to navigate hierarchies, see TrackFX_GetNamedConfigParm with parent_container and container_item.X.
 ---@param track MediaTrack
 ---@param fx integer
@@ -5583,9 +5573,8 @@ function reaper.ValidatePtr2(proj, pointer, ctypename) end
 ---@param pageByName string
 function reaper.ViewPrefs(page, pageByName) end
 
----[BR] Allocate envelope object from track or take envelope pointer. Always call BR_EnvFree when done to release the object and commit changes if needed.<br>
----takeEnvelopesUseProjectTime: take envelope points' positions are counted from take position, not project start time. If you want to work with project time instead, pass this as true.
----
+---[BR] Allocate envelope object from track or take envelope pointer. Always call BR_EnvFree when done to release the object and commit changes if needed.  
+---takeEnvelopesUseProjectTime: take envelope points' positions are counted from take position, not project start time. If you want to work with project time instead, pass this as true.  
 ---For further manipulation see BR_EnvCountPoints, BR_EnvDeletePoint, BR_EnvFind, BR_EnvFindNext, BR_EnvFindPrevious, BR_EnvGetParentTake, BR_EnvGetParentTrack, BR_EnvGetPoint, BR_EnvGetProperties, BR_EnvSetPoint, BR_EnvSetProperties, BR_EnvValueAtPos.
 ---@param envelope TrackEnvelope
 ---@param takeEnvelopesUseProjectTime boolean
@@ -5649,18 +5638,17 @@ function reaper.BR_EnvGetParentTrack(envelope) end
 ---@return number bezier
 function reaper.BR_EnvGetPoint(envelope, id) end
 
----[BR] Get envelope properties for the envelope object allocated with BR_EnvAlloc.
----
----active: true if envelope is active<br>
----visible: true if envelope is visible<br>
----armed: true if envelope is armed<br>
----inLane: true if envelope has it's own envelope lane<br>
----laneHeight: envelope lane override height. 0 for none, otherwise size in pixels<br>
----defaultShape: default point shape: 0->Linear, 1->Square, 2->Slow start/end, 3->Fast start, 4->Fast end, 5->Bezier<br>
----minValue: minimum envelope value<br>
----maxValue: maximum envelope value<br>
----type: envelope type: 0->Volume, 1->Volume (Pre-FX), 2->Pan, 3->Pan (Pre-FX), 4->Width, 5->Width (Pre-FX), 6->Mute, 7->Pitch, 8->Playrate, 9->Tempo map, 10->Parameter<br>
----faderScaling: true if envelope uses fader scaling<br>
+---[BR] Get envelope properties for the envelope object allocated with BR_EnvAlloc.  
+---active: true if envelope is active  
+---visible: true if envelope is visible  
+---armed: true if envelope is armed  
+---inLane: true if envelope has it's own envelope lane  
+---laneHeight: envelope lane override height. 0 for none, otherwise size in pixels  
+---defaultShape: default point shape: 0->Linear, 1->Square, 2->Slow start/end, 3->Fast start, 4->Fast end, 5->Bezier  
+---minValue: minimum envelope value  
+---maxValue: maximum envelope value  
+---type: envelope type: 0->Volume, 1->Volume (Pre-FX), 2->Pan, 3->Pan (Pre-FX), 4->Width, 5->Width (Pre-FX), 6->Mute, 7->Pitch, 8->Playrate, 9->Tempo map, 10->Parameter  
+---faderScaling: true if envelope uses fader scaling  
 ---automationItemsOptions: -1->project default, &1=0->don't attach to underl. env., &1->attach to underl. env. on right side,  &2->attach to underl. env. on both sides, &4: bypass underl. env.
 ---@param envelope BR_Envelope
 ---@return boolean active
@@ -5677,7 +5665,7 @@ function reaper.BR_EnvGetPoint(envelope, id) end
 ---@return integer? automationItemsOptions
 function reaper.BR_EnvGetProperties(envelope) end
 
----[BR] Set envelope point by id (zero-based) in the envelope object allocated with BR_EnvAlloc. To create point instead, pass id = -1. Note that if new point is inserted or existing point's time position is changed, points won't automatically get sorted. To do that, see BR_EnvSortPoints.<br>
+---[BR] Set envelope point by id (zero-based) in the envelope object allocated with BR_EnvAlloc. To create point instead, pass id = -1. Note that if new point is inserted or existing point's time position is changed, points won't automatically get sorted. To do that, see BR_EnvSortPoints.  
 ---Returns true on success.
 ---@param envelope BR_Envelope
 ---@param id integer
@@ -5689,7 +5677,7 @@ function reaper.BR_EnvGetProperties(envelope) end
 ---@return boolean retval
 function reaper.BR_EnvSetPoint(envelope, id, position, value, shape, selected, bezier) end
 
----[BR] Set envelope properties for the envelope object allocated with BR_EnvAlloc. For parameter description see BR_EnvGetProperties.<br>
+---[BR] Set envelope properties for the envelope object allocated with BR_EnvAlloc. For parameter description see BR_EnvGetProperties.  
 ---Setting automationItemsOptions requires REAPER 5.979+.
 ---@param envelope BR_Envelope
 ---@param active boolean
@@ -5751,7 +5739,7 @@ function reaper.BR_GetMediaItemImageResource(item) end
 ---@return string guidString
 function reaper.BR_GetMediaItemTakeGUID(take) end
 
----[BR] Get take media source properties as they appear in <em>Item properties</em>. Returns false if take can't have them (MIDI items etc.).<br>
+---[BR] Get take media source properties as they appear in <em>Item properties</em>. Returns false if take can't have them (MIDI items etc.).  
 ---To set source properties, see BR_SetMediaSourceProperties.
 ---@param take MediaItem_Take
 ---@return boolean retval
@@ -5784,12 +5772,10 @@ function reaper.BR_GetMediaTrackGUID(track) end
 ---@return string tcpLayoutName
 function reaper.BR_GetMediaTrackLayouts(track) end
 
----[BR] Get track envelope for send/receive/hardware output.
----
----category is <0 for receives, 0=sends, >0 for hardware outputs<br>
----sendidx is zero-based (see GetTrackNumSends to count track sends/receives/hardware outputs)<br>
----envelopeType determines which envelope is returned (0=volume, 1=pan, 2=mute)
----
+---[BR] Get track envelope for send/receive/hardware output.  
+---category is <0 for receives, 0=sends, >0 for hardware outputs  
+---sendidx is zero-based (see GetTrackNumSends to count track sends/receives/hardware outputs)  
+---envelopeType determines which envelope is returned (0=volume, 1=pan, 2=mute)  
 ---Note: To get or set other send attributes, see BR_GetSetTrackSendInfo and BR_GetMediaTrackSendInfo_Track.
 ---@param track MediaTrack
 ---@param category integer
@@ -5798,12 +5784,10 @@ function reaper.BR_GetMediaTrackLayouts(track) end
 ---@return TrackEnvelope retval
 function reaper.BR_GetMediaTrackSendInfo_Envelope(track, category, sendidx, envelopeType) end
 
----[BR] Get source or destination media track for send/receive.
----
----category is <0 for receives, 0=sends<br>
----sendidx is zero-based (see GetTrackNumSends to count track sends/receives)<br>
----trackType determines which track is returned (0=source track, 1=destination track)
----
+---[BR] Get source or destination media track for send/receive.  
+---category is <0 for receives, 0=sends  
+---sendidx is zero-based (see GetTrackNumSends to count track sends/receives)  
+---trackType determines which track is returned (0=source track, 1=destination track)  
 ---Note: To get or set other send attributes, see BR_GetSetTrackSendInfo and BR_GetMediaTrackSendInfo_Envelope.
 ---@param track MediaTrack
 ---@param category integer
@@ -5832,9 +5816,9 @@ function reaper.BR_GetMidiTakePoolGUID(take) end
 ---@return integer den
 function reaper.BR_GetMidiTakeTempoInfo(take) end
 
----[BR] Get mouse cursor context. Each parameter returns information in a form of string as specified in the table below.
----
----To get more info on stuff that was found under mouse cursor see BR_GetMouseCursorContext_Envelope, BR_GetMouseCursorContext_Item, BR_GetMouseCursorContext_MIDI, BR_GetMouseCursorContext_Position, BR_GetMouseCursorContext_Take, BR_GetMouseCursorContext_Track 
+---[BR] Get mouse cursor context. Each parameter returns information in a form of string as specified in the table below.  
+---To get more info on stuff that was found under mouse cursor see BR_GetMouseCursorContext_Envelope, BR_GetMouseCursorContext_Item, BR_GetMouseCursorContext_MIDI, BR_GetMouseCursorContext_Position, BR_GetMouseCursorContext_Take, BR_GetMouseCursorContext_Track   
+---<table><tr><th style="width:100px">Window</th> <th style="width:100px">Segment</th> <th style="width:300px">Details</th>                                           </tr><tr><th rowspan="1"> unknown     </th>    <td> ""        </td>   <td> ""                                                           </td> </tr><tr><th rowspan="4"> ruler       </th>    <td> region_lane </td>   <td> ""                                                           </td> </tr><tr>                                                           <td> marker_lane </td>   <td> ""                                                           </td> </tr><tr>                                                           <td> tempo_lane  </td>   <td> ""                                                           </td> </tr><tr>                                                           <td> timeline    </td>   <td> ""                                                           </td> </tr><tr><th rowspan="1"> transport   </th>    <td> ""        </td>   <td> ""                                                           </td> </tr><tr><th rowspan="3"> tcp         </th>    <td> track       </td>   <td> ""                                                           </td> </tr><tr>                                                           <td> envelope    </td>   <td> ""                                                           </td> </tr><tr>                                                           <td> empty       </td>   <td> ""                                                           </td> </tr><tr><th rowspan="2"> mcp         </th>    <td> track       </td>   <td> ""                                                           </td> </tr><tr>                                                           <td> empty       </td>   <td> ""                                                           </td> </tr><tr><th rowspan="3"> arrange     </th>    <td> track       </td>   <td> empty,  item, item_stretch_marker,  env_point, env_segment </td> </tr><tr>                                                           <td> envelope    </td>   <td> empty, env_point, env_segment                                  </td> </tr><tr>                                                           <td> empty       </td>   <td> ""                                                           </td> </tr><tr><th rowspan="5"> midi_editor </th>    <td> unknown     </td>   <td> ""                                                           </td> </tr><tr>                                                           <td> ruler       </td>   <td> ""                                                           </td> </tr><tr>                                                           <td> piano       </td>   <td> ""                                                           </td> </tr><tr>                                                           <td> notes       </td>   <td> ""                                                           </td> </tr><tr>                                                           <td> cc_lane     </td>   <td> cc_selector, cc_lane                                           </td> </tr></table>
 ---@return string window
 ---@return string segment
 ---@return string details
@@ -5849,14 +5833,12 @@ function reaper.BR_GetMouseCursorContext_Envelope() end
 ---@return MediaItem retval
 function reaper.BR_GetMouseCursorContext_Item() end
 
----[BR] Returns midi editor under mouse cursor that was captured with the last call to BR_GetMouseCursorContext.
----
----inlineEditor: if mouse was captured in inline MIDI editor, this will be true (consequentially, returned MIDI editor will be NULL)<br>
----noteRow: note row or piano key under mouse cursor (0-127)<br>
----ccLane: CC lane under mouse cursor (CC0-127=CC, 0x100|(0-31)=14-bit CC, 0x200=velocity, 0x201=pitch, 0x202=program, 0x203=channel pressure, 0x204=bank/program select, 0x205=text, 0x206=sysex, 0x207=off velocity, 0x208=notation events)<br>
----ccLaneVal: value in CC lane under mouse cursor (0-127 or 0-16383)<br>
----ccLaneId: lane position, counting from the top (0 based)
----
+---[BR] Returns midi editor under mouse cursor that was captured with the last call to BR_GetMouseCursorContext.  
+---inlineEditor: if mouse was captured in inline MIDI editor, this will be true (consequentially, returned MIDI editor will be NULL)  
+---noteRow: note row or piano key under mouse cursor (0-127)  
+---ccLane: CC lane under mouse cursor (CC0-127=CC, 0x100|(0-31)=14-bit CC, 0x200=velocity, 0x201=pitch, 0x202=program, 0x203=channel pressure, 0x204=bank/program select, 0x205=text, 0x206=sysex, 0x207=off velocity, 0x208=notation events)  
+---ccLaneVal: value in CC lane under mouse cursor (0-127 or 0-16383)  
+---ccLaneId: lane position, counting from the top (0 based)  
 ---Note: due to API limitations, if mouse is over inline MIDI editor with some note rows hidden, noteRow will be -1
 ---@return userdata retval
 ---@return boolean inlineEditor
@@ -5892,28 +5874,25 @@ function reaper.BR_GetNextGridDivision(position) end
 ---@return number retval
 function reaper.BR_GetPrevGridDivision(position) end
 
----[BR] Get or set send attributes.
----
----category is <0 for receives, 0=sends, >0 for hardware outputs<br>
----sendidx is zero-based (see GetTrackNumSends to count track sends/receives/hardware outputs)<br>
----To set attribute, pass setNewValue as true
----
----List of possible parameters:<br>
----B_MUTE : send mute state (1.0 if muted, otherwise 0.0)<br>
----B_PHASE : send phase state (1.0 if phase is inverted, otherwise 0.0)<br>
----B_MONO : send mono state (1.0 if send is set to mono, otherwise 0.0)<br>
----D_VOL : send volume (1.0=+0dB etc...)<br>
----D_PAN : send pan (-1.0=100%L, 0=center, 1.0=100%R)<br>
----D_PANLAW : send pan law (1.0=+0.0db, 0.5=-6dB, -1.0=project default etc...)<br>
----I_SENDMODE : send mode (0=post-fader, 1=pre-fx, 2=post-fx(deprecated), 3=post-fx)<br>
----I_SRCCHAN : audio source starting channel index or -1 if audio send is disabled (&1024=mono...note that in that case, when reading index, you should do (index XOR 1024) to get starting channel index)<br>
----I_DSTCHAN : audio destination starting channel index (&1024=mono (and in case of hardware output &512=rearoute)...note that in that case, when reading index, you should do (index XOR (1024 OR 512)) to get starting channel index)<br>
----I_MIDI_SRCCHAN : source MIDI channel, -1 if MIDI send is disabled (0=all, 1-16)<br>
----I_MIDI_DSTCHAN : destination MIDI channel, -1 if MIDI send is disabled (0=original, 1-16)<br>
----I_MIDI_SRCBUS : source MIDI bus, -1 if MIDI send is disabled (0=all, otherwise bus index)<br>
----I_MIDI_DSTBUS : receive MIDI bus, -1 if MIDI send is disabled (0=all, otherwise bus index)<br>
----I_MIDI_LINK_VOLPAN : link volume/pan controls to MIDI
----
+---[BR] Get or set send attributes.  
+---category is <0 for receives, 0=sends, >0 for hardware outputs  
+---sendidx is zero-based (see GetTrackNumSends to count track sends/receives/hardware outputs)  
+---To set attribute, pass setNewValue as true  
+---List of possible parameters:  
+---B_MUTE : send mute state (1.0 if muted, otherwise 0.0)  
+---B_PHASE : send phase state (1.0 if phase is inverted, otherwise 0.0)  
+---B_MONO : send mono state (1.0 if send is set to mono, otherwise 0.0)  
+---D_VOL : send volume (1.0=+0dB etc...)  
+---D_PAN : send pan (-1.0=100%L, 0=center, 1.0=100%R)  
+---D_PANLAW : send pan law (1.0=+0.0db, 0.5=-6dB, -1.0=project default etc...)  
+---I_SENDMODE : send mode (0=post-fader, 1=pre-fx, 2=post-fx(deprecated), 3=post-fx)  
+---I_SRCCHAN : audio source starting channel index or -1 if audio send is disabled (&1024=mono...note that in that case, when reading index, you should do (index XOR 1024) to get starting channel index)  
+---I_DSTCHAN : audio destination starting channel index (&1024=mono (and in case of hardware output &512=rearoute)...note that in that case, when reading index, you should do (index XOR (1024 OR 512)) to get starting channel index)  
+---I_MIDI_SRCCHAN : source MIDI channel, -1 if MIDI send is disabled (0=all, 1-16)  
+---I_MIDI_DSTCHAN : destination MIDI channel, -1 if MIDI send is disabled (0=original, 1-16)  
+---I_MIDI_SRCBUS : source MIDI bus, -1 if MIDI send is disabled (0=all, otherwise bus index)  
+---I_MIDI_DSTBUS : receive MIDI bus, -1 if MIDI send is disabled (0=all, otherwise bus index)  
+---I_MIDI_LINK_VOLPAN : link volume/pan controls to MIDI  
 ---Note: To get or set other send attributes, see BR_GetMediaTrackSendInfo_Envelope and BR_GetMediaTrackSendInfo_Track.
 ---@param track MediaTrack
 ---@param category integer
@@ -5951,7 +5930,7 @@ function reaper.BR_ItemAtMouseCursor() end
 ---@return boolean retval
 function reaper.BR_MIDI_CCLaneRemove(midiEditor, laneId) end
 
----[BR] Replace CC lane in midi editor. Top visible CC lane is laneId 0. Returns true on success.<br>
+---[BR] Replace CC lane in midi editor. Top visible CC lane is laneId 0. Returns true on success.  
 ---Valid CC lanes: CC0-127=CC, 0x100|(0-31)=14-bit CC, 0x200=velocity, 0x201=pitch, 0x202=program, 0x203=channel pressure, 0x204=bank/program select, 0x205=text, 0x206=sysex, 0x207
 ---@param midiEditor userdata
 ---@param laneId integer
@@ -5977,16 +5956,16 @@ function reaper.BR_SetArrangeView(proj, startTime, endTime) end
 ---@return boolean retval
 function reaper.BR_SetItemEdges(item, startTime, endTime) end
 
----[BR] Set image resource and its flags for a given item. To clear current image resource, pass imageIn as "".<br>
----imageFlags: &1=0: don't display image, &1: center / tile, &3: stretch, &5: full height (REAPER 5.974+).<br>
----Can also be used to display existing text in empty items unstretched (pass imageIn = "", imageFlags = 0) or stretched (pass imageIn = "". imageFlags = 3).<br>
+---[BR] Set image resource and its flags for a given item. To clear current image resource, pass imageIn as "".  
+---imageFlags: &1=0: don't display image, &1: center / tile, &3: stretch, &5: full height (REAPER 5.974+).  
+---Can also be used to display existing text in empty items unstretched (pass imageIn = "", imageFlags = 0) or stretched (pass imageIn = "". imageFlags = 3).  
 ---To get image resource, see BR_GetMediaItemImageResource.
 ---@param item MediaItem
 ---@param imageIn string
 ---@param imageFlags integer
 function reaper.BR_SetMediaItemImageResource(item, imageIn, imageFlags) end
 
----[BR] Set take media source properties. Returns false if take can't have them (MIDI items etc.). Section parameters have to be valid only when passing section=true.<br>
+---[BR] Set take media source properties. Returns false if take can't have them (MIDI items etc.). Section parameters have to be valid only when passing section=true.  
 ---To get source properties, see BR_GetMediaSourceProperties.
 ---@param take MediaItem_Take
 ---@param section boolean
@@ -5997,7 +5976,7 @@ function reaper.BR_SetMediaItemImageResource(item, imageIn, imageFlags) end
 ---@return boolean retval
 function reaper.BR_SetMediaSourceProperties(take, section, start, length, fade, reverse) end
 
----[BR] Deprecated, see GetSetMediaTrackInfo (REAPER v5.02+). Set media track layouts for MCP and TCP. To set default layout, pass empty string ("") as layout name. In case layouts were successfully set, returns true (if layouts are already set to supplied layout names, it will return false since no changes were made).<br>
+---[BR] Deprecated, see GetSetMediaTrackInfo (REAPER v5.02+). Set media track layouts for MCP and TCP. To set default layout, pass empty string ("") as layout name. In case layouts were successfully set, returns true (if layouts are already set to supplied layout names, it will return false since no changes were made).  
 ---To get media track layouts, see BR_GetMediaTrackLayouts.
 ---@param track MediaTrack
 ---@param mcpLayoutNameIn string
@@ -6014,8 +5993,8 @@ function reaper.BR_SetMediaTrackLayouts(track, mcpLayoutNameIn, tcpLayoutNameIn)
 ---@return boolean retval
 function reaper.BR_SetMidiTakeTempoInfo(take, ignoreProjTempo, bpm, num, den) end
 
----[BR] Set new take source from file. To import MIDI file as in-project source data pass inProjectData=true. Returns false if failed.<br>
----Any take source properties from the previous source will be lost - to preserve them, see BR_SetTakeSourceFromFile2.<br>
+---[BR] Set new take source from file. To import MIDI file as in-project source data pass inProjectData=true. Returns false if failed.  
+---Any take source properties from the previous source will be lost - to preserve them, see BR_SetTakeSourceFromFile2.  
 ---Note: To set source from existing take, see SNM_GetSetSourceState2.
 ---@param take MediaItem_Take
 ---@param filenameIn string
@@ -6036,8 +6015,8 @@ function reaper.BR_SetTakeSourceFromFile2(take, filenameIn, inProjectData, keepS
 ---@return number position
 function reaper.BR_TakeAtMouseCursor() end
 
----[BR] Get track under mouse cursor.<br>
----Context signifies where the track was found: 0 = TCP, 1 = MCP, 2 = Arrange.<br>
+---[BR] Get track under mouse cursor.  
+---Context signifies where the track was found: 0 = TCP, 1 = MCP, 2 = Arrange.  
 ---Position will hold mouse cursor position in arrange if applicable.
 ---@return MediaTrack retval
 ---@return integer context
@@ -6093,16 +6072,16 @@ function reaper.BR_Win32_GET_X_LPARAM(lParam) end
 ---@return integer retval
 function reaper.BR_Win32_GET_Y_LPARAM(lParam) end
 
----[BR] Returns various constants needed for BR_Win32 functions.<br>
----Supported constants are:<br>
----CB_ERR, CB_GETCOUNT, CB_GETCURSEL, CB_SETCURSEL<br>
----EM_SETSEL<br>
----GW_CHILD, GW_HWNDFIRST, GW_HWNDLAST, GW_HWNDNEXT, GW_HWNDPREV, GW_OWNER<br>
----GWL_STYLE<br>
----SW_HIDE, SW_MAXIMIZE, SW_SHOW, SW_SHOWMINIMIZED, SW_SHOWNA, SW_SHOWNOACTIVATE, SW_SHOWNORMAL<br>
----SWP_FRAMECHANGED, SWP_FRAMECHANGED, SWP_NOMOVE, SWP_NOOWNERZORDER, SWP_NOSIZE, SWP_NOZORDER<br>
----VK_DOWN, VK_UP<br>
----WM_CLOSE, WM_KEYDOWN<br>
+---[BR] Returns various constants needed for BR_Win32 functions.  
+---Supported constants are:  
+---CB_ERR, CB_GETCOUNT, CB_GETCURSEL, CB_SETCURSEL  
+---EM_SETSEL  
+---GW_CHILD, GW_HWNDFIRST, GW_HWNDLAST, GW_HWNDNEXT, GW_HWNDPREV, GW_OWNER  
+---GWL_STYLE  
+---SW_HIDE, SW_MAXIMIZE, SW_SHOW, SW_SHOWMINIMIZED, SW_SHOWNA, SW_SHOWNOACTIVATE, SW_SHOWNORMAL  
+---SWP_FRAMECHANGED, SWP_FRAMECHANGED, SWP_NOMOVE, SWP_NOOWNERZORDER, SWP_NOSIZE, SWP_NOZORDER  
+---VK_DOWN, VK_UP  
+---WM_CLOSE, WM_KEYDOWN  
 ---WS_MAXIMIZE, WS_OVERLAPPEDWINDOW
 ---@param constantName string
 ---@return integer retval
@@ -6286,7 +6265,7 @@ function reaper.BR_Win32_SetForegroundWindow(hwnd) end
 ---@return integer retval
 function reaper.BR_Win32_SetWindowLong(hwnd, index, newLong) end
 
----[BR] Equivalent to win32 API SetWindowPos().<br>
+---[BR] Equivalent to win32 API SetWindowPos().  
 ---hwndInsertAfter may be a string: "HWND_BOTTOM", "HWND_NOTOPMOST", "HWND_TOP", "HWND_TOPMOST" or a string obtained with BR_Win32_HwndToString.
 ---@param hwnd userdata
 ---@param hwndInsertAfter string
@@ -6473,11 +6452,10 @@ function reaper.Blink_SetTempoAtTime(bpm, time) end
 ---Transport start/stop.
 function reaper.Blink_StartStop() end
 
----Create a new preview object. Does not take ownership of the source (don't forget to destroy it unless it came from a take!). See CF_Preview_Play and the others CF_Preview_* functions.
----
----The preview object is automatically destroyed at the end of a defer cycle if at least one of these conditions are met:<br>
----- playback finished<br>
----- playback was not started using CF_Preview_Play<br>
+---Create a new preview object. Does not take ownership of the source (don't forget to destroy it unless it came from a take!). See CF_Preview_Play and the others CF_Preview_* functions.  
+---The preview object is automatically destroyed at the end of a defer cycle if at least one of these conditions are met:  
+---- playback finished  
+---- playback was not started using CF_Preview_Play  
 ---- the output track no longer exists
 ---@param source PCM_source
 ---@return CF_Preview retval
@@ -6500,7 +6478,7 @@ function reaper.CF_EnumMediaSourceCues(src, index) end
 ---@return integer retval
 function reaper.CF_EnumSelectedFX(hwnd, index) end
 
----Deprecated, see kbd_enumerateActions (v6.71+). Wrapper for the unexposed kbd_enumerateActions API function.<br>
+---Deprecated, see kbd_enumerateActions (v6.71+). Wrapper for the unexposed kbd_enumerateActions API function.  
 ---Main=0, Main (alt recording)=100, MIDI Editor=32060, MIDI Event List Editor=32061, MIDI Inline Editor=32062, Media Explorer=32063
 ---@param section integer
 ---@param index integer
@@ -6593,16 +6571,14 @@ function reaper.CF_GetTrackFXChainEx(project, track, wantInputChain) end
 ---@return boolean retval
 function reaper.CF_LocateInExplorer(file) end
 
----Apply <a href="https://unicode.org/reports/tr15/">Unicode normalization</a> to the provided UTF-8 string.
----
----Mode values:<br>
----- Bit 0 (composition mode):<br>
----* 0 = decomposition only<br>
----* 1 = decomposition + canonical composition<br>
----- Bit 1 (decomposition mode):<br>
----* 0 = canonical decomposition<br>
----* 1 = compatibility decomposition
----
+---Apply <a href="https://unicode.org/reports/tr15/">Unicode normalization</a> to the provided UTF-8 string.  
+---Mode values:  
+---- Bit 0 (composition mode):  
+---* 0 = decomposition only  
+---* 1 = decomposition + canonical composition  
+---- Bit 1 (decomposition mode):  
+---* 0 = canonical decomposition  
+---* 1 = compatibility decomposition  
 ---Warning: this function is no-op on Windows XP (the input string is returned as-is).
 ---@param input string
 ---@param mode integer
@@ -6630,19 +6606,19 @@ function reaper.CF_Preview_GetOutputTrack(preview) end
 ---@return number peakvol
 function reaper.CF_Preview_GetPeak(preview, channel) end
 
----Supported attributes:<br>
----B_LOOP         seek to the beginning when reaching the end of the source<br>
----B_PPITCH       preserve pitch when changing playback rate<br>
----D_FADEINLEN    length in seconds of playback fade in<br>
----D_FADEOUTLEN   length in seconds of playback fade out<br>
----D_LENGTH       (read only) length of the source * playback rate<br>
----D_MEASUREALIGN >0 = wait until the next bar before starting playback (note: this causes playback to silently continue when project is paused and previewing through a track)<br>
----D_PAN          playback pan<br>
----D_PITCH        pitch adjustment in semitones<br>
----D_PLAYRATE     playback rate (0.01..100)<br>
----D_POSITION     current playback position<br>
----D_VOLUME       playback volume<br>
----I_OUTCHAN      first hardware output channel (&1024=mono, reads -1 when playing through a track, see CF_Preview_SetOutputTrack)<br>
+---Supported attributes:  
+---B_LOOP         seek to the beginning when reaching the end of the source  
+---B_PPITCH       preserve pitch when changing playback rate  
+---D_FADEINLEN    length in seconds of playback fade in  
+---D_FADEOUTLEN   length in seconds of playback fade out  
+---D_LENGTH       (read only) length of the source * playback rate  
+---D_MEASUREALIGN >0 = wait until the next bar before starting playback (note: this causes playback to silently continue when project is paused and previewing through a track)  
+---D_PAN          playback pan  
+---D_PITCH        pitch adjustment in semitones  
+---D_PLAYRATE     playback rate (0.01..100)  
+---D_POSITION     current playback position  
+---D_VOLUME       playback volume  
+---I_OUTCHAN      first hardware output channel (&1024=mono, reads -1 when playing through a track, see CF_Preview_SetOutputTrack)  
 ---I_PITCHMODE    highest 16 bits=pitch shift mode (see EnumPitchShiftModes), lower 16 bits=pitch shift submode (see EnumPitchShiftSubModes)
 ---@param preview CF_Preview
 ---@param name string
@@ -6688,9 +6664,8 @@ function reaper.CF_SelectTakeFX(take, index) end
 ---@return boolean retval
 function reaper.CF_SelectTrackFX(track, index) end
 
----Run in the specified window the action command ID associated with the shortcut key in the given section. See CF_EnumerateActions for common section IDs.
----
----Keys are Windows <a href="https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes">virtual key codes</a>. &0x8000 for an extended key (eg. Numpad Enter = VK_RETURN & 0x8000).<br>
+---Run in the specified window the action command ID associated with the shortcut key in the given section. See CF_EnumerateActions for common section IDs.  
+---Keys are Windows <a href="https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes">virtual key codes</a>. &0x8000 for an extended key (eg. Numpad Enter = VK_RETURN & 0x8000).  
 ---Modifier values: nil = read from keyboard, 0 = no modifier, &4 = Control (Cmd on macOS), &8 = Shift, &16 = Alt, &32 = Super
 ---@param hwnd userdata
 ---@param section integer
@@ -6787,15 +6762,15 @@ function reaper.Fab_Dump() end
 ---@return integer param
 function reaper.Fab_Get(command) end
 
----Creates control mapping for ReaFab command.<br>
----fxId e.g. "ReaComp".<br>
----command 1-8 for encoders, 9-24 for buttons.<br>
----paramId e.g. "Ratio".<br>
----control 1 = direct, 2 = band selector, 3 = cycle, 4 = invert, 5 = force toggle, 6 = force range, 7 = 5 and 6, 8 = force continuous.<br>
----bands define, if target fx has multiple identical target bands. In this case, paramId must include 00 placeholder, e.g. "Band 00 Gain".<br>
----step overrides built-in default step of ~0.001 for continuous parameters.<br>
----accel overrides built-in default control acceleration step of 1.0.<br>
----minval & maxval override default detected target param value range.<br>
+---Creates control mapping for ReaFab command.  
+---fxId e.g. "ReaComp".  
+---command 1-8 for encoders, 9-24 for buttons.  
+---paramId e.g. "Ratio".  
+---control 1 = direct, 2 = band selector, 3 = cycle, 4 = invert, 5 = force toggle, 6 = force range, 7 = 5 and 6, 8 = force continuous.  
+---bands define, if target fx has multiple identical target bands. In this case, paramId must include 00 placeholder, e.g. "Band 00 Gain".  
+---step overrides built-in default step of ~0.001 for continuous parameters.  
+---accel overrides built-in default control acceleration step of 1.0.  
+---minval & maxval override default detected target param value range.  
 ---Prefixing paramId with "-" reverses direction; useful for creating separate next/previous mappings for bands or list type value navigation.
 ---@param fxId string
 ---@param command integer
@@ -6911,14 +6886,14 @@ function reaper.JB_GetSWSExtraProjectNotes(project) end
 ---@param str string
 function reaper.JB_SetSWSExtraProjectNotes(project, str) end
 
----Section:<br>
+---Section:  
 ---0 = Main, 100 = Main (alt recording), 32060 = MIDI Editor, 32061 = MIDI Event List Editor, 32062 = MIDI Inline Editor, 32063 = Media Explorer.
 ---@param section integer
 ---@param cmdID integer
 ---@return integer retval
 function reaper.JS_Actions_CountShortcuts(section, cmdID) end
 
----Section:<br>
+---Section:  
 ---0 = Main, 100 = Main (alt recording), 32060 = MIDI Editor, 32061 = MIDI Event List Editor, 32062 = MIDI Inline Editor, 32063 = Media Explorer.
 ---@param section integer
 ---@param cmdID integer
@@ -6926,9 +6901,8 @@ function reaper.JS_Actions_CountShortcuts(section, cmdID) end
 ---@return boolean retval
 function reaper.JS_Actions_DeleteShortcut(section, cmdID, shortcutidx) end
 
----Section:<br>
----0 = Main, 100 = Main (alt recording), 32060 = MIDI Editor, 32061 = MIDI Event List Editor, 32062 = MIDI Inline Editor, 32063 = Media Explorer.
----
+---Section:  
+---0 = Main, 100 = Main (alt recording), 32060 = MIDI Editor, 32061 = MIDI Event List Editor, 32062 = MIDI Inline Editor, 32063 = Media Explorer.  
 ---If the shortcut index is higher than the current number of shortcuts, it will add a new shortcut.
 ---@param section integer
 ---@param cmdID integer
@@ -6936,7 +6910,7 @@ function reaper.JS_Actions_DeleteShortcut(section, cmdID, shortcutidx) end
 ---@return boolean retval
 function reaper.JS_Actions_DoShortcutDialog(section, cmdID, shortcutidx) end
 
----Section:<br>
+---Section:  
 ---0 = Main, 100 = Main (alt recording), 32060 = MIDI Editor, 32061 = MIDI Event List Editor, 32062 = MIDI Inline Editor, 32063 = Media Explorer.
 ---@param section integer
 ---@param cmdID integer
@@ -6951,25 +6925,16 @@ function reaper.JS_Actions_GetShortcutDesc(section, cmdID, shortcutidx) end
 ---@return integer byte
 function reaper.JS_Byte(pointer, offset) end
 
----Composites a LICE bitmap with a REAPER window.  Each time that the window is re-drawn, the bitmap will be blitted over the window's client area (with per-pixel alpha blending).
----
----* If dstw or dsth is -1, the bitmap will be stretched to fill the width or height of the window, respectively.
----
----* autoUpdate is an optional parameter that is false by default. If true, JS_Composite will automatically invalidate and re-draw the part of the window that covers the current position of the bitmap, and if the bitmap is being moved, also the previous position. (If only one or a handful of bitmaps are being moved across the screen, autoUpdate should result in smoother animation on WindowsOS; if numerous bitmaps are spread over the entire window, it may be faster to disable autoUpdate and instead call JS_Window_InvalidateRect explicitly once all bitmaps have been moved.)
----
----* InvalidateRect should also be called whenever the contents of the bitmap contents have been changed, but not the position, to trigger a window update.
----
----* On WindowsOS, the key to reducing flickering is to slow down the frequency at which the window is re-drawn. InvalidateRect should only be called when absolutely necessary, preferably not more than 20 times per second.  (Also refer to the JS_Composite_Delay function.)
----
----* On WindowsOS, flickering can further be reduced by keeping the invalidated area as small as possible, covering only the bitmaps that have been edited or moved.  However, if numerous bitmaps are spread over the entire window, it may be faster to simply invalidate the entire client area. 
----
----* This function should not be applied directly to top-level windows, but rather to child windows.
----
----* Some classes of UI elements, particularly buttons, do not take kindly to being composited, and may crash REAPER.
----
----* On WindowsOS, GDI blitting does not perform alpha multiplication of the source bitmap. For proper color rendering, a separate pre-multiplication step is therefore required, using either LICE_Blit or LICE_ProcessRect.
----
----Returns:<br>
+---Composites a LICE bitmap with a REAPER window.  Each time that the window is re-drawn, the bitmap will be blitted over the window's client area (with per-pixel alpha blending).  
+---* If dstw or dsth is -1, the bitmap will be stretched to fill the width or height of the window, respectively.  
+---* autoUpdate is an optional parameter that is false by default. If true, JS_Composite will automatically invalidate and re-draw the part of the window that covers the current position of the bitmap, and if the bitmap is being moved, also the previous position. (If only one or a handful of bitmaps are being moved across the screen, autoUpdate should result in smoother animation on WindowsOS; if numerous bitmaps are spread over the entire window, it may be faster to disable autoUpdate and instead call JS_Window_InvalidateRect explicitly once all bitmaps have been moved.)  
+---* InvalidateRect should also be called whenever the contents of the bitmap contents have been changed, but not the position, to trigger a window update.  
+---* On WindowsOS, the key to reducing flickering is to slow down the frequency at which the window is re-drawn. InvalidateRect should only be called when absolutely necessary, preferably not more than 20 times per second.  (Also refer to the JS_Composite_Delay function.)  
+---* On WindowsOS, flickering can further be reduced by keeping the invalidated area as small as possible, covering only the bitmaps that have been edited or moved.  However, if numerous bitmaps are spread over the entire window, it may be faster to simply invalidate the entire client area.   
+---* This function should not be applied directly to top-level windows, but rather to child windows.  
+---* Some classes of UI elements, particularly buttons, do not take kindly to being composited, and may crash REAPER.  
+---* On WindowsOS, GDI blitting does not perform alpha multiplication of the source bitmap. For proper color rendering, a separate pre-multiplication step is therefore required, using either LICE_Blit or LICE_ProcessRect.  
+---Returns:  
 ---1 if successful, otherwise -1 = windowHWND is not a window, -3 = Could not obtain the original window process, -4 = sysBitmap is not a LICE bitmap, -5 = sysBitmap is not a system bitmap, -6 = Could not obtain the window HDC, -7 = Error when subclassing to new window process.
 ---@param windowHWND userdata
 ---@param dstx integer
@@ -6985,14 +6950,11 @@ function reaper.JS_Byte(pointer, offset) end
 ---@return integer retval
 function reaper.JS_Composite(windowHWND, dstx, dsty, dstw, dsth, sysBitmap, srcx, srcy, srcw, srch, autoUpdate) end
 
----On WindowsOS, flickering of composited images can be improved considerably by slowing the refresh rate of the window.  The optimal refresh rate may depend on the number of composited bitmaps.
----
----minTime is the minimum refresh delay, in seconds, when only one bitmap is composited onto the window.  The delay time will increase linearly with the number of bitmaps, up to a maximum of maxTime when numBitmapsWhenMax is reached.
----
----If both minTime and maxTime are 0, all delay settings for the window are cleared.
----
----Returns:<br>
----* retval = 1 if successful, 0 if arguments are invalid (i.e. if maxTime < minTime, or maxBitmaps < 1).<br>
+---On WindowsOS, flickering of composited images can be improved considerably by slowing the refresh rate of the window.  The optimal refresh rate may depend on the number of composited bitmaps.  
+---minTime is the minimum refresh delay, in seconds, when only one bitmap is composited onto the window.  The delay time will increase linearly with the number of bitmaps, up to a maximum of maxTime when numBitmapsWhenMax is reached.  
+---If both minTime and maxTime are 0, all delay settings for the window are cleared.  
+---Returns:  
+---* retval = 1 if successful, 0 if arguments are invalid (i.e. if maxTime < minTime, or maxBitmaps < 1).  
 ---* If delay times have not previously been set for this window, prev time values are 0.
 ---@param windowHWND userdata
 ---@param minTime number
@@ -7004,20 +6966,16 @@ function reaper.JS_Composite(windowHWND, dstx, dsty, dstw, dsth, sysBitmap, srcx
 ---@return integer prevBitmaps
 function reaper.JS_Composite_Delay(windowHWND, minTime, maxTime, numBitmapsWhenMax) end
 
----Returns all bitmaps composited to the given window.
----
----The list is formatted as a comma-separated string of hexadecimal values, each representing a LICE_IBitmap* pointer.
----
+---Returns all bitmaps composited to the given window.  
+---The list is formatted as a comma-separated string of hexadecimal values, each representing a LICE_IBitmap* pointer.  
 ---retval is the number of linked bitmaps found, or negative if an error occured.
 ---@param windowHWND userdata
 ---@return integer retval
 ---@return string list
 function reaper.JS_Composite_ListBitmaps(windowHWND) end
 
----Unlinks the window and bitmap.
----
----* autoUpdate is an optional parameter. If unlinking a single bitmap and autoUpdate is true, the function will automatically re-draw the window to remove the blitted image.
----
+---Unlinks the window and bitmap.  
+---* autoUpdate is an optional parameter. If unlinking a single bitmap and autoUpdate is true, the function will automatically re-draw the window to remove the blitted image.  
 ---If no bitmap is specified, all bitmaps composited to the window will be unlinked -- even those by other scripts.
 ---@param windowHWND userdata
 ---@param bitmap? userdata
@@ -7031,22 +6989,17 @@ function reaper.JS_Composite_Unlink(windowHWND, bitmap, autoUpdate) end
 ---@return string folder
 function reaper.JS_Dialog_BrowseForFolder(caption, initialFolder) end
 
----If allowMultiple is true, multiple files may be selected. The returned string is \0-separated, with the first substring containing the folder path and subsequent substrings containing the file names.<br>
----* On macOS, the first substring may be empty, and each file name will then contain its entire path.<br>
----* This function only allows selection of existing files, and does not allow creation of new files.
----
----extensionList is a string containing pairs of \0-terminated substrings. The last substring must be terminated by two \0 characters. Each pair defines one filter pattern:<br>
----* The first substring in each pair describes the filter in user-readable form (for example, "Lua script files (*.lua)") and will be displayed in the dialog box.<br>
----* The second substring specifies the filter that the operating system must use to search for the files (for example, "*.txt"; the wildcard should not be omitted). To specify multiple extensions for a single display string, use a semicolon to separate the patterns (for example, "*.lua;*.eel").
----
----An example of an extensionList string:<br>
----"ReaScript files\0*.lua;*.eel\0Lua files (.lua)\0*.lua\0EEL files (.eel)\0*.eel\0\0".
----
----On macOS, file dialogs do not accept empty extensionLists, nor wildcard extensions (such as "All files\0*.*\0\0"), so each acceptable extension must be listed explicitly. On Linux and Windows, wildcard extensions are acceptable, and if the extensionList string is empty, the dialog will display a default "All files (*.*)" filter.
----
----retval is 1 if one or more files were selected, 0 if the user cancelled the dialog, or negative if an error occurred.
----
----Displaying \0-separated strings:<br>
+---If allowMultiple is true, multiple files may be selected. The returned string is \0-separated, with the first substring containing the folder path and subsequent substrings containing the file names.  
+---* On macOS, the first substring may be empty, and each file name will then contain its entire path.  
+---* This function only allows selection of existing files, and does not allow creation of new files.  
+---extensionList is a string containing pairs of \0-terminated substrings. The last substring must be terminated by two \0 characters. Each pair defines one filter pattern:  
+---* The first substring in each pair describes the filter in user-readable form (for example, "Lua script files (*.lua)") and will be displayed in the dialog box.  
+---* The second substring specifies the filter that the operating system must use to search for the files (for example, "*.txt"; the wildcard should not be omitted). To specify multiple extensions for a single display string, use a semicolon to separate the patterns (for example, "*.lua;*.eel").  
+---An example of an extensionList string:  
+---"ReaScript files\0*.lua;*.eel\0Lua files (.lua)\0*.lua\0EEL files (.eel)\0*.eel\0\0".  
+---On macOS, file dialogs do not accept empty extensionLists, nor wildcard extensions (such as "All files\0*.*\0\0"), so each acceptable extension must be listed explicitly. On Linux and Windows, wildcard extensions are acceptable, and if the extensionList string is empty, the dialog will display a default "All files (*.*)" filter.  
+---retval is 1 if one or more files were selected, 0 if the user cancelled the dialog, or negative if an error occurred.  
+---Displaying \0-separated strings:  
 ---* REAPER's IDE and ShowConsoleMsg only display strings up to the first \0 byte. If multiple files were selected, only the first substring containing the path will be displayed. This is not a problem for Lua or EEL, which can access the full string beyond the first \0 byte as usual.
 ---@param windowTitle string
 ---@param initialFolder string
@@ -7057,8 +7010,7 @@ function reaper.JS_Dialog_BrowseForFolder(caption, initialFolder) end
 ---@return string fileNames
 function reaper.JS_Dialog_BrowseForOpenFiles(windowTitle, initialFolder, initialFile, extensionList, allowMultiple) end
 
----retval is 1 if a file was selected, 0 if the user cancelled the dialog, or negative if an error occurred.
----
+---retval is 1 if a file was selected, 0 if the user cancelled the dialog, or negative if an error occurred.  
 ---extensionList is as described for JS_Dialog_BrowseForOpenFiles.
 ---@param windowTitle string
 ---@param initialFolder string
@@ -7074,10 +7026,8 @@ function reaper.JS_Dialog_BrowseForSaveFile(windowTitle, initialFolder, initialF
 ---@return number double
 function reaper.JS_Double(pointer, offset) end
 
----Returns information about a file.
----
----cTime is not implemented on all systems. If it does return a time, the value may differ depending on the OS: on WindowsOS, it may refer to the time that the file was either created or copied, whereas on Linux and macOS, it may refer to the time of last status change.
----
+---Returns information about a file.  
+---cTime is not implemented on all systems. If it does return a time, the value may differ depending on the OS: on WindowsOS, it may refer to the time that the file was either created or copied, whereas on Linux and macOS, it may refer to the time of last status change.  
 ---retval is 0 if successful, negative if not.
 ---@param filePath string
 ---@return integer retval
@@ -7094,10 +7044,8 @@ function reaper.JS_Double(pointer, offset) end
 ---@return integer ownerGroupID
 function reaper.JS_File_Stat(filePath) end
 
----Blits between two device contexts, which may include LICE "system bitmaps".
----
----mode: Optional parameter. "SRCCOPY" by default, or specify "ALPHA" to enable per-pixel alpha blending.
----
+---Blits between two device contexts, which may include LICE "system bitmaps".  
+---mode: Optional parameter. "SRCCOPY" by default, or specify "ALPHA" to enable per-pixel alpha blending.  
 ---WARNING: On WindowsOS, GDI_Blit does not perform alpha multiplication of the source bitmap. For proper color rendering, a separate pre-multiplication step is therefore required, using either LICE_Blit or LICE_ProcessRect.
 ---@param destHDC userdata
 ---@param dstx integer
@@ -7114,11 +7062,10 @@ function reaper.JS_GDI_Blit(destHDC, dstx, dsty, sourceHDC, srcx, srxy, width, h
 ---@return userdata retval
 function reaper.JS_GDI_CreateFillBrush(color) end
 
----Parameters:<br>
----* weight: 0 - 1000, with 0 = auto, 400 = normal and 700 = bold.<br>
----* angle: the angle, in tenths of degrees, between the text and the x-axis of the device.<br>
----* fontName: If empty string "", uses first font that matches the other specified attributes.
----
+---Parameters:  
+---* weight: 0 - 1000, with 0 = auto, 400 = normal and 700 = bold.  
+---* angle: the angle, in tenths of degrees, between the text and the x-axis of the device.  
+---* fontName: If empty string "", uses first font that matches the other specified attributes.  
 ---Note: Text color must be set separately.
 ---@param height integer
 ---@param weight integer
@@ -7138,7 +7085,7 @@ function reaper.JS_GDI_CreatePen(width, color) end
 ---@param GDIObject userdata
 function reaper.JS_GDI_DeleteObject(GDIObject) end
 
----Parameters:<br>
+---Parameters:  
 ---* align: Combination of: "TOP", "VCENTER", "LEFT", "HCENTER", "RIGHT", "BOTTOM", "WORDBREAK", "SINGLELINE", "NOCLIP", "CALCRECT", "NOPREFIX" or "ELLIPSIS"
 ---@param deviceHDC userdata
 ---@param text string
@@ -7186,8 +7133,7 @@ function reaper.JS_GDI_FillRoundRect(deviceHDC, left, top, right, bottom, xrnd, 
 ---@return userdata retval
 function reaper.JS_GDI_GetClientDC(windowHWND) end
 
----Returns a device context for the entire screen.
----
+---Returns a device context for the entire screen.  
 ---WARNING: Only available on Windows, not Linux or macOS.
 ---@return userdata retval
 function reaper.JS_GDI_GetScreenDC() end
@@ -7219,10 +7165,8 @@ function reaper.JS_GDI_Line(deviceHDC, x1, y1, x2, y2) end
 ---@param numPoints integer
 function reaper.JS_GDI_Polyline(deviceHDC, packedX, packedY, numPoints) end
 
----To release a window HDC, both arguments must be supplied: the HWND as well as the HDC.  To release a screen DC, only the HDC needs to be supplied.  
----
----For compatibility with previous versions, the HWND and HDC can be supplied in any order.
----
+---To release a window HDC, both arguments must be supplied: the HWND as well as the HDC.  To release a screen DC, only the HDC needs to be supplied.    
+---For compatibility with previous versions, the HWND and HDC can be supplied in any order.  
 ---NOTE: Any GDI HDC should be released immediately after drawing, and deferred scripts should get and release new DCs in each cycle.
 ---@param deviceHDC userdata
 ---@param windowHWND? userdata
@@ -7253,10 +7197,8 @@ function reaper.JS_GDI_SetTextBkMode(deviceHDC, mode) end
 ---@param color integer
 function reaper.JS_GDI_SetTextColor(deviceHDC, color) end
 
----Blits between two device contexts, which may include LICE "system bitmaps".
----
----modeOptional: "SRCCOPY" by default, or specify "ALPHA" to enable per-pixel alpha blending.
----
+---Blits between two device contexts, which may include LICE "system bitmaps".  
+---modeOptional: "SRCCOPY" by default, or specify "ALPHA" to enable per-pixel alpha blending.  
 ---WARNING: On WindowsOS, GDI_Blit does not perform alpha multiplication of the source bitmap. For proper color rendering, a separate pre-multiplication step is therefore required, using either LICE_Blit or LICE_ProcessRect.
 ---@param destHDC userdata
 ---@param dstx integer
@@ -7299,8 +7241,7 @@ function reaper.JS_LICE_AlterBitmapHSV(bitmap, hue, saturation, value) end
 ---@param value number
 function reaper.JS_LICE_AlterRectHSV(bitmap, x, y, w, h, hue, saturation, value) end
 
----LICE modes: "COPY" (default if empty string), "MASK", "ADD", "DODGE", "MUL", "OVERLAY" or "HSVADJ", any of which may be combined with "ALPHA".
----
+---LICE modes: "COPY" (default if empty string), "MASK", "ADD", "DODGE", "MUL", "OVERLAY" or "HSVADJ", any of which may be combined with "ALPHA".  
 ---LICE color format: 0xAARRGGBB (AA is only used in ALPHA mode).
 ---@param bitmap userdata
 ---@param cx number
@@ -7318,8 +7259,7 @@ function reaper.JS_LICE_Arc(bitmap, cx, cy, r, minAngle, maxAngle, color, alpha,
 ---@return integer retval
 function reaper.JS_LICE_ArrayAllBitmaps(reaperarray) end
 
----LICE modes: "COPY" (default if empty string), "MASK", "ADD", "DODGE", "MUL", "OVERLAY" or "HSVADJ", any of which may be combined with "ALPHA" to enable per-pixel alpha blending.
----
+---LICE modes: "COPY" (default if empty string), "MASK", "ADD", "DODGE", "MUL", "OVERLAY" or "HSVADJ", any of which may be combined with "ALPHA" to enable per-pixel alpha blending.  
 ---LICE color format: 0xAARRGGBB (AA is only used in ALPHA mode).
 ---@param bitmap userdata
 ---@param xstart number
@@ -7337,11 +7277,10 @@ function reaper.JS_LICE_ArrayAllBitmaps(reaperarray) end
 ---@param antialias boolean
 function reaper.JS_LICE_Bezier(bitmap, xstart, ystart, xctl1, yctl1, xctl2, yctl2, xend, yend, tol, color, alpha, mode, antialias) end
 
----Standard LICE modes: "COPY" (default if empty string), "MASK", "ADD", "DODGE", "MUL", "OVERLAY" or "HSVADJ", any of which may be combined with "ALPHA" to enable per-pixel alpha blending.
----
----In addition to the standard LICE modes, LICE_Blit also offers:<br>
----* "CHANCOPY_XTOY", with X and Y any of the four channels, A, R, G or B. (CHANCOPY_ATOA is similar to MASK mode.)<br>
----* "BLUR"<br>
+---Standard LICE modes: "COPY" (default if empty string), "MASK", "ADD", "DODGE", "MUL", "OVERLAY" or "HSVADJ", any of which may be combined with "ALPHA" to enable per-pixel alpha blending.  
+---In addition to the standard LICE modes, LICE_Blit also offers:  
+---* "CHANCOPY_XTOY", with X and Y any of the four channels, A, R, G or B. (CHANCOPY_ATOA is similar to MASK mode.)  
+---* "BLUR"  
 ---* "ALPHAMUL", which overwrites the destination with a per-pixel alpha-multiplied copy of the source. (Similar to first clearing the destination with 0x00000000 and then blitting with "COPY,ALPHA".)
 ---@param destBitmap userdata
 ---@param dstx integer
@@ -7355,8 +7294,7 @@ function reaper.JS_LICE_Bezier(bitmap, xstart, ystart, xctl1, yctl1, xctl2, yctl
 ---@param mode string
 function reaper.JS_LICE_Blit(destBitmap, dstx, dsty, sourceBitmap, srcx, srcy, width, height, alpha, mode) end
 
----LICE modes: "COPY" (default if empty string), "MASK", "ADD", "DODGE", "MUL", "OVERLAY" or "HSVADJ", any of which may be combined with "ALPHA".
----
+---LICE modes: "COPY" (default if empty string), "MASK", "ADD", "DODGE", "MUL", "OVERLAY" or "HSVADJ", any of which may be combined with "ALPHA".  
 ---LICE color format: 0xAARRGGBB (AA is only used in ALPHA mode).
 ---@param bitmap userdata
 ---@param cx number
@@ -7408,8 +7346,7 @@ function reaper.JS_LICE_DrawChar(bitmap, x, y, c, color, alpha, mode) end
 ---@return integer retval
 function reaper.JS_LICE_DrawText(bitmap, LICEFont, text, textLen, x1, y1, x2, y2) end
 
----LICE modes: "COPY" (default if empty string), "MASK", "ADD", "DODGE", "MUL", "OVERLAY" or "HSVADJ", any of which may be combined with "ALPHA".
----
+---LICE modes: "COPY" (default if empty string), "MASK", "ADD", "DODGE", "MUL", "OVERLAY" or "HSVADJ", any of which may be combined with "ALPHA".  
 ---LICE color format: 0xAARRGGBB (AA is only used in ALPHA mode).
 ---@param bitmap userdata
 ---@param cx number
@@ -7421,10 +7358,8 @@ function reaper.JS_LICE_DrawText(bitmap, LICEFont, text, textLen, x1, y1, x2, y2
 ---@param antialias boolean
 function reaper.JS_LICE_FillCircle(bitmap, cx, cy, r, color, alpha, mode, antialias) end
 
----packedX and packedY are two strings of coordinates, each packed as "<i4".
----
----LICE modes : "COPY" (default if empty string), "MASK", "ADD", "DODGE", "MUL", "OVERLAY" or "HSVADJ", any of which may be combined with "ALPHA" to enable per-pixel alpha blending.
----
+---packedX and packedY are two strings of coordinates, each packed as "<i4".  
+---LICE modes : "COPY" (default if empty string), "MASK", "ADD", "DODGE", "MUL", "OVERLAY" or "HSVADJ", any of which may be combined with "ALPHA" to enable per-pixel alpha blending.  
 ---LICE color format: 0xAARRGGBB (AA is only used in ALPHA mode).
 ---@param bitmap userdata
 ---@param packedX string
@@ -7435,8 +7370,7 @@ function reaper.JS_LICE_FillCircle(bitmap, cx, cy, r, color, alpha, mode, antial
 ---@param mode string
 function reaper.JS_LICE_FillPolygon(bitmap, packedX, packedY, numPoints, color, alpha, mode) end
 
----LICE modes: "COPY" (default if empty string), "MASK", "ADD", "DODGE", "MUL", "OVERLAY" or "HSVADJ", any of which may be combined with "ALPHA".
----
+---LICE modes: "COPY" (default if empty string), "MASK", "ADD", "DODGE", "MUL", "OVERLAY" or "HSVADJ", any of which may be combined with "ALPHA".  
 ---LICE color format: 0xAARRGGBB (AA is only used in ALPHA mode).
 ---@param bitmap userdata
 ---@param x integer
@@ -7448,8 +7382,7 @@ function reaper.JS_LICE_FillPolygon(bitmap, packedX, packedY, numPoints, color, 
 ---@param mode string
 function reaper.JS_LICE_FillRect(bitmap, x, y, w, h, color, alpha, mode) end
 
----LICE modes: "COPY" (default if empty string), "MASK", "ADD", "DODGE", "MUL", "OVERLAY" or "HSVADJ", any of which may be combined with "ALPHA".
----
+---LICE modes: "COPY" (default if empty string), "MASK", "ADD", "DODGE", "MUL", "OVERLAY" or "HSVADJ", any of which may be combined with "ALPHA".  
 ---LICE color format: 0xAARRGGBB (AA is only used in ALPHA mode).
 ---@param bitmap userdata
 ---@param x1 integer
@@ -7506,8 +7439,7 @@ function reaper.JS_LICE_GradRect(bitmap, dstx, dsty, dstw, dsth, ir, ig, ib, ia,
 ---@return boolean retval
 function reaper.JS_LICE_IsFlipped(bitmap) end
 
----LICE modes: "COPY" (default if empty string), "MASK", "ADD", "DODGE", "MUL", "OVERLAY" or "HSVADJ", any of which may be combined with "ALPHA".
----
+---LICE modes: "COPY" (default if empty string), "MASK", "ADD", "DODGE", "MUL", "OVERLAY" or "HSVADJ", any of which may be combined with "ALPHA".  
 ---LICE color format: 0xAARRGGBB (AA is only used in ALPHA mode).
 ---@param bitmap userdata
 ---@param x1 number
@@ -7551,17 +7483,14 @@ function reaper.JS_LICE_LoadPNGFromMemory(buffer, bufsize) end
 ---@return integer Height
 function reaper.JS_LICE_MeasureText(text) end
 
----Applies bitwise operations to each pixel in the target rectangle.
----
----operand: a color in 0xAARRGGBB format.
----
----modes:<br>
----* "XOR", "OR" or "AND".<br>
----* "SET_XYZ", with XYZ any combination of A, R, G, and B: copies the specified channels from operand to the bitmap. (Useful for setting the alpha values of a bitmap.)<br>
----* "ALPHAMUL": Performs alpha pre-multiplication on each pixel in the rect. operand is ignored in this mode. (On WindowsOS, GDI_Blit does not perform alpha multiplication on the fly, and a separate alpha pre-multiplication step is therefore required.)
----
----NOTE:<br>
----LICE_Blit and LICE_ScaledBlit are also useful for processing bitmap colors. For example, to multiply all channel values by 1.5:<br>
+---Applies bitwise operations to each pixel in the target rectangle.  
+---operand: a color in 0xAARRGGBB format.  
+---modes:  
+---* "XOR", "OR" or "AND".  
+---* "SET_XYZ", with XYZ any combination of A, R, G, and B: copies the specified channels from operand to the bitmap. (Useful for setting the alpha values of a bitmap.)  
+---* "ALPHAMUL": Performs alpha pre-multiplication on each pixel in the rect. operand is ignored in this mode. (On WindowsOS, GDI_Blit does not perform alpha multiplication on the fly, and a separate alpha pre-multiplication step is therefore required.)  
+---NOTE:  
+---LICE_Blit and LICE_ScaledBlit are also useful for processing bitmap colors. For example, to multiply all channel values by 1.5:  
 ---reaper.JS_LICE_Blit(bitmap, x, y, bitmap, x, y, w, h, 0.5, "ADD").
 ---@param bitmap userdata
 ---@param x integer
@@ -7573,8 +7502,7 @@ function reaper.JS_LICE_MeasureText(text) end
 ---@return boolean retval
 function reaper.JS_LICE_ProcessRect(bitmap, x, y, w, h, mode, operand) end
 
----LICE modes: "COPY" (default if empty string), "MASK", "ADD", "DODGE", "MUL", "OVERLAY" or "HSVADJ", any of which may be combined with "ALPHA".
----
+---LICE modes: "COPY" (default if empty string), "MASK", "ADD", "DODGE", "MUL", "OVERLAY" or "HSVADJ", any of which may be combined with "ALPHA".  
 ---LICE color format: 0xAARRGGBB (AA is only used in ALPHA mode).
 ---@param bitmap userdata
 ---@param x integer
@@ -7608,8 +7536,7 @@ function reaper.JS_LICE_Resize(bitmap, width, height) end
 ---@param mode string
 function reaper.JS_LICE_RotatedBlit(destBitmap, dstx, dsty, dstw, dsth, sourceBitmap, srcx, srcy, srcw, srch, angle, rotxcent, rotycent, cliptosourcerect, alpha, mode) end
 
----LICE modes: "COPY" (default if empty string), "MASK", "ADD", "DODGE", "MUL", "OVERLAY" or "HSVADJ", any of which may be combined with "ALPHA".
----
+---LICE modes: "COPY" (default if empty string), "MASK", "ADD", "DODGE", "MUL", "OVERLAY" or "HSVADJ", any of which may be combined with "ALPHA".  
 ---LICE color format: 0xAARRGGBB (AA is only used in ALPHA mode).
 ---@param bitmap userdata
 ---@param x number
@@ -7657,18 +7584,16 @@ function reaper.JS_LICE_SetFontColor(LICEFont, color) end
 ---@param color integer
 function reaper.JS_LICE_SetFontFXColor(LICEFont, color) end
 
----Converts a GDI font into a LICE font.
----
----The font can be modified by the following flags, in a comma-separated list:<br>
+---Converts a GDI font into a LICE font.  
+---The font can be modified by the following flags, in a comma-separated list:  
 ---"VERTICAL", "BOTTOMUP", "NATIVE", "BLUR", "INVERT", "MONO", "SHADOW" or "OUTLINE".
 ---@param LICEFont userdata
 ---@param GDIFont userdata
 ---@param moreFormats string
 function reaper.JS_LICE_SetFontFromGDI(LICEFont, GDIFont, moreFormats) end
 
----Parameters:
----
----* quality is an integer in the range 1..100.<br>
+---Parameters:  
+---* quality is an integer in the range 1..100.  
 ---* forceBaseline is an optional boolean parameter that ensures compatibility with all JPEG viewers by preventing too low quality, "cubist" settings.
 ---@param filename string
 ---@param bitmap userdata
@@ -7726,9 +7651,8 @@ function reaper.JS_ListView_GetItemCount(listviewHWND) end
 ---@return integer bottom
 function reaper.JS_ListView_GetItemRect(listviewHWND, index) end
 
----State is a bitmask:<br>
----1 = focused, 2 = selected. On Windows only, cut-and-paste marked = 4, drag-and-drop highlighted = 8.
----
+---State is a bitmask:  
+---1 = focused, 2 = selected. On Windows only, cut-and-paste marked = 4, drag-and-drop highlighted = 8.  
 ---Warning: this function uses the Win32 bitmask values, which differ from the values used by WDL/swell.
 ---@param listviewHWND userdata
 ---@param index integer
@@ -7757,18 +7681,15 @@ function reaper.JS_ListView_GetTopIndex(listviewHWND) end
 ---@return integer flags
 function reaper.JS_ListView_HitTest(listviewHWND, clientX, clientY) end
 
----Returns the indices of all selected items as a comma-separated list.
----
+---Returns the indices of all selected items as a comma-separated list.  
 ---* retval: Number of selected items found; negative or zero if an error occured.
 ---@param listviewHWND userdata
 ---@return integer retval
 ---@return string items
 function reaper.JS_ListView_ListAllSelItems(listviewHWND) end
 
----The mask parameter specifies the state bits that must be set, and the state parameter specifies the new values for those bits.
----
----1 = focused, 2 = selected. On Windows only, cut-and-paste marked = 4, drag-and-drop highlighted = 8.
----
+---The mask parameter specifies the state bits that must be set, and the state parameter specifies the new values for those bits.  
+---1 = focused, 2 = selected. On Windows only, cut-and-paste marked = 4, drag-and-drop highlighted = 8.  
 ---Warning: this function uses the Win32 bitmask values, which differ from the values used by WDL/swell.
 ---@param listviewHWND userdata
 ---@param index integer
@@ -7783,31 +7704,25 @@ function reaper.JS_ListView_SetItemState(listviewHWND, index, state, mask) end
 ---@param text string
 function reaper.JS_ListView_SetItemText(listviewHWND, index, subItem, text) end
 
----Returns the translation of the given US English text, according to the currently loaded Language Pack.
----
----Parameters:<br>
----* LangPackSection: Language Packs are divided into sections such as "common" or "DLG_102".<br>
----* In Lua, by default, text of up to 1024 chars can be returned. To increase (or reduce) the default buffer size, a string and size can be included as optional 3rd and 4th arguments.
----
+---Returns the translation of the given US English text, according to the currently loaded Language Pack.  
+---Parameters:  
+---* LangPackSection: Language Packs are divided into sections such as "common" or "DLG_102".  
+---* In Lua, by default, text of up to 1024 chars can be returned. To increase (or reduce) the default buffer size, a string and size can be included as optional 3rd and 4th arguments.  
 ---Example: reaper.JS_Localize("Actions", "common", "", 20)
 ---@param USEnglish string
 ---@param LangPackSection string
 ---@return string translation
 function reaper.JS_Localize(USEnglish, LangPackSection) end
 
----Finds all open MIDI windows (whether docked or not).
----
----* retval: The number of MIDI editor windows found; negative if an error occurred.
----
+---Finds all open MIDI windows (whether docked or not).  
+---* retval: The number of MIDI editor windows found; negative if an error occurred.  
 ---* The address of each MIDI editor window is stored in the provided reaper.array. Each address can be converted to a REAPER object (HWND) by the function JS_Window_HandleFromAddress.
 ---@param reaperarray userdata
 ---@return integer retval
 function reaper.JS_MIDIEditor_ArrayAll(reaperarray) end
 
----Finds all open MIDI windows (whether docked or not).
----
----* retval: The number of MIDI editor windows found; negative if an error occurred.
----
+---Finds all open MIDI windows (whether docked or not).  
+---* retval: The number of MIDI editor windows found; negative if an error occurred.  
 ---* list: Comma-separated string of hexadecimal values. Each value is an address that can be converted to a HWND by the function Window_HandleFromAddress.
 ---@return integer retval
 ---@return string list
@@ -7831,35 +7746,30 @@ function reaper.JS_Mem_Free(mallocPointer) end
 ---@return boolean retval
 function reaper.JS_Mem_FromString(mallocPointer, offset, packedString, stringLength) end
 
----On Windows, retrieves a handle to the current mouse cursor.<br>
+---On Windows, retrieves a handle to the current mouse cursor.  
 ---On Linux and macOS, retrieves a handle to the last cursor set by REAPER or its extensions via SWELL.
 ---@return userdata retval
 function reaper.JS_Mouse_GetCursor() end
 
----Retrieves the states of mouse buttons and modifiers keys.
----
----Parameters:<br>
+---Retrieves the states of mouse buttons and modifiers keys.  
+---Parameters:  
 ---* flags, state: The parameter and the return value both use the same format as gfx.mouse_cap. For example, to get the states of the left mouse button and the ctrl key, use flags = 0b00000101.
 ---@param flags integer
 ---@return integer retval
 function reaper.JS_Mouse_GetState(flags) end
 
----Loads a cursor by number.
----
----cursorNumber: Same as used for gfx.setcursor, and includes some of Windows' predefined cursors (with numbers > 32000; refer to documentation for the Win32 C++ function LoadCursor), and REAPER's own cursors (with numbers < 2000).
----
+---Loads a cursor by number.  
+---cursorNumber: Same as used for gfx.setcursor, and includes some of Windows' predefined cursors (with numbers > 32000; refer to documentation for the Win32 C++ function LoadCursor), and REAPER's own cursors (with numbers < 2000).  
 ---If successful, returns a handle to the cursor, which can be used in JS_Mouse_SetCursor.
 ---@param cursorNumber integer
 ---@return userdata retval
 function reaper.JS_Mouse_LoadCursor(cursorNumber) end
 
----Loads a cursor from a .cur file.
----
----forceNewLoad is an optional boolean parameter:<br>
----* If omitted or false, and if the cursor file has already been loaded previously during the REAPER session by any script, the file will not be re-loaded, and the existing handle will be returned.<br>
----* If true, the file will be re-loaded and a new handle will be returned.<br>
----* WARNING: Each time that a cursor file is re-loaded, the number of GDI objects increases for the entire duration of the REAPER session.
----
+---Loads a cursor from a .cur file.  
+---forceNewLoad is an optional boolean parameter:  
+---* If omitted or false, and if the cursor file has already been loaded previously during the REAPER session by any script, the file will not be re-loaded, and the existing handle will be returned.  
+---* If true, the file will be re-loaded and a new handle will be returned.  
+---* WARNING: Each time that a cursor file is re-loaded, the number of GDI objects increases for the entire duration of the REAPER session.  
 ---If successful, returns a handle to the cursor, which can be used in JS_Mouse_SetCursor.
 ---@param pathAndFileName string
 ---@param forceNewLoad? boolean
@@ -7870,10 +7780,9 @@ function reaper.JS_Mouse_LoadCursorFromFile(pathAndFileName, forceNewLoad) end
 ---@param cursorHandle userdata
 function reaper.JS_Mouse_SetCursor(cursorHandle) end
 
----Moves the mouse cursor to the specified screen coordinates.
----
----NOTES:<br>
----* On Windows and Linux, screen coordinates are relative to *upper* left corner of the primary display, and the positive Y-axis points downward.<br>
+---Moves the mouse cursor to the specified screen coordinates.  
+---NOTES:  
+---* On Windows and Linux, screen coordinates are relative to *upper* left corner of the primary display, and the positive Y-axis points downward.  
 ---* On macOS, screen coordinates are relative to the *bottom* left corner of the primary display, and the positive Y-axis points upward.
 ---@param x integer
 ---@param y integer
@@ -7892,67 +7801,57 @@ function reaper.JS_ReaScriptAPI_Version() end
 ---@return string buf
 function reaper.JS_String(pointer, offset, lengthChars) end
 
----Returns a 255-byte array that specifies which virtual keys, from 0x01 to 0xFF, have sent KEYDOWN messages since cutoffTime.
----
----Notes:<br>
----* Mouse buttons and modifier keys are not (currently) reliably detected, and JS_Mouse_GetState can be used instead.<br>
+---Returns a 255-byte array that specifies which virtual keys, from 0x01 to 0xFF, have sent KEYDOWN messages since cutoffTime.  
+---Notes:  
+---* Mouse buttons and modifier keys are not (currently) reliably detected, and JS_Mouse_GetState can be used instead.  
 ---* Auto-repeated KEYDOWN messages are ignored.
 ---@param cutoffTime number
 ---@return string state
 function reaper.JS_VKeys_GetDown(cutoffTime) end
 
----Retrieves the current states (0 or 1) of all virtual keys, from 0x01 to 0xFF, in a 255-byte array.
----
----cutoffTime: A key is only regarded as down if it sent a KEYDOWN message after the cut-off time, not followed by KEYUP. (This is useful for excluding old KEYDOWN messages that weren't properly followed by KEYUP.) <br>
----If cutoffTime is positive, is it interpreted as absolute time in similar format as time_precise().<br>
----If cutoffTime is negative, it is relative to the current time.
----
----Notes:<br>
----* Mouse buttons and modifier keys are not (currently) reliably detected, and JS_Mouse_GetState can be used instead.<br>
+---Retrieves the current states (0 or 1) of all virtual keys, from 0x01 to 0xFF, in a 255-byte array.  
+---cutoffTime: A key is only regarded as down if it sent a KEYDOWN message after the cut-off time, not followed by KEYUP. (This is useful for excluding old KEYDOWN messages that weren't properly followed by KEYUP.)   
+---If cutoffTime is positive, is it interpreted as absolute time in similar format as time_precise().  
+---If cutoffTime is negative, it is relative to the current time.  
+---Notes:  
+---* Mouse buttons and modifier keys are not (currently) reliably detected, and JS_Mouse_GetState can be used instead.  
 ---* Auto-repeated KEYDOWN messages are ignored.
 ---@param cutoffTime number
 ---@return string state
 function reaper.JS_VKeys_GetState(cutoffTime) end
 
----Return a 255-byte array that specifies which virtual keys, from 0x01 to 0xFF, have sent KEYUP messages since cutoffTime.
----
+---Return a 255-byte array that specifies which virtual keys, from 0x01 to 0xFF, have sent KEYUP messages since cutoffTime.  
 ---Note: Mouse buttons and modifier keys are not (currently) reliably detected, and JS_Mouse_GetState can be used instead.
 ---@param cutoffTime number
 ---@return string state
 function reaper.JS_VKeys_GetUp(cutoffTime) end
 
----Intercepting (blocking) virtual keys work similar to the native function PreventUIRefresh:  Each key has a (non-negative) intercept state, and the key is passed through as usual if the state equals 0, or blocked if the state is greater than 0.
----
----keyCode: The virtual key code of the key, or -1 to change the state of all keys.
----
----intercept: A script can increase the intercept state by passing +1, or lower the state by passing -1.  Multiple scripts can block the same key, and the intercept state may reach up to 255. If zero is passed, the intercept state is not changed, but the current state is returned.
----
+---Intercepting (blocking) virtual keys work similar to the native function PreventUIRefresh:  Each key has a (non-negative) intercept state, and the key is passed through as usual if the state equals 0, or blocked if the state is greater than 0.  
+---keyCode: The virtual key code of the key, or -1 to change the state of all keys.  
+---intercept: A script can increase the intercept state by passing +1, or lower the state by passing -1.  Multiple scripts can block the same key, and the intercept state may reach up to 255. If zero is passed, the intercept state is not changed, but the current state is returned.  
 ---Returns: If keyCode refers to a single key, the intercept state of that key is returned.  If keyCode = -1, the state of the key that is most strongly blocked (highest intercept state) is returned.
 ---@param keyCode integer
 ---@param intercept integer
 ---@return integer retval
 function reaper.JS_VKeys_Intercept(keyCode, intercept) end
 
----Begins intercepting a window message type to specified window.
----
----Parameters:<br>
----* message: a single message type to be intercepted, either in WM_ or hexadecimal format. For example "WM_SETCURSOR" or "0x0020".<br>
----* passThrough: Whether message should be blocked (false) or passed through (true) to the window.<br>
----For more information on message codes, refer to the Win32 C++ API documentation.<br>
----All WM_ and CB_ message types listed in swell-types.h should be valid cross-platform, and the function can recognize all of these by name. Other messages can be specified by their hex code.
----
----Returns:<br>
----* 1: Success.<br>
----* 0: The message type is already being intercepted by another script.<br>
----* -2: message string could not be parsed.<br>
----* -3: Failure getting original window process / window not valid.<br>
----* -6: Could not obtain the window client HDC.
----
----Notes:<br>
----* Intercepted messages can be polled using JS_WindowMessage_Peek.<br>
----* Intercepted messages can be edited, if necessary, and then forwarded to their original destination using JS_WindowMessage_Post or JS_WindowMessage_Send.<br>
----* To check whether a message type is being blocked or passed through, Peek the message type, or retrieve the entire List of intercepts.<br>
----* Mouse events are typically received by the child window under the mouse, not the parent window.<br>
+---Begins intercepting a window message type to specified window.  
+---Parameters:  
+---* message: a single message type to be intercepted, either in WM_ or hexadecimal format. For example "WM_SETCURSOR" or "0x0020".  
+---* passThrough: Whether message should be blocked (false) or passed through (true) to the window.  
+---For more information on message codes, refer to the Win32 C++ API documentation.  
+---All WM_ and CB_ message types listed in swell-types.h should be valid cross-platform, and the function can recognize all of these by name. Other messages can be specified by their hex code.  
+---Returns:  
+---* 1: Success.  
+---* 0: The message type is already being intercepted by another script.  
+---* -2: message string could not be parsed.  
+---* -3: Failure getting original window process / window not valid.  
+---* -6: Could not obtain the window client HDC.  
+---Notes:  
+---* Intercepted messages can be polled using JS_WindowMessage_Peek.  
+---* Intercepted messages can be edited, if necessary, and then forwarded to their original destination using JS_WindowMessage_Post or JS_WindowMessage_Send.  
+---* To check whether a message type is being blocked or passed through, Peek the message type, or retrieve the entire List of intercepts.  
+---* Mouse events are typically received by the child window under the mouse, not the parent window.  
 ---Keyboard events are usually *not* received by any individual window. To intercept keyboard events, use the VKey functions.
 ---@param windowHWND userdata
 ---@param message string
@@ -7960,24 +7859,21 @@ function reaper.JS_VKeys_Intercept(keyCode, intercept) end
 ---@return integer retval
 function reaper.JS_WindowMessage_Intercept(windowHWND, message, passThrough) end
 
----Begins intercepting window messages to specified window.
----
----Parameters:<br>
----* messages: comma-separated string of message types to be intercepted (either in WM_ or hexadecimal format), each with a "block" or "passthrough" modifier to specify whether the message should be blocked or passed through to the window. For example "WM_SETCURSOR:block, 0x0201:passthrough".<br>
----For more information on message codes, refer to the Win32 C++ API documentation.<br>
----All WM_ and CB_ message types listed in swell-types.h should be valid cross-platform, and the function can recognize all of these by name. Other messages can be specified by their hex code.
----
----Returns:<br>
----* 1: Success.<br>
----* 0: The message type is already being intercepted by another script.<br>
----* -1: windowHWND is not a valid window.<br>
----* -2: message string could not be parsed.<br>
----* -3: Failure getting original window process.<br>
----* -6: COuld not obtain the window client HDC.
----
----Notes:<br>
----* Intercepted messages can be polled using JS_WindowMessage_Peek.<br>
----* Intercepted messages can be edited, if necessary, and then forwarded to their original destination using JS_WindowMessage_Post or JS_WindowMessage_Send.<br>
+---Begins intercepting window messages to specified window.  
+---Parameters:  
+---* messages: comma-separated string of message types to be intercepted (either in WM_ or hexadecimal format), each with a "block" or "passthrough" modifier to specify whether the message should be blocked or passed through to the window. For example "WM_SETCURSOR:block, 0x0201:passthrough".  
+---For more information on message codes, refer to the Win32 C++ API documentation.  
+---All WM_ and CB_ message types listed in swell-types.h should be valid cross-platform, and the function can recognize all of these by name. Other messages can be specified by their hex code.  
+---Returns:  
+---* 1: Success.  
+---* 0: The message type is already being intercepted by another script.  
+---* -1: windowHWND is not a valid window.  
+---* -2: message string could not be parsed.  
+---* -3: Failure getting original window process.  
+---* -6: COuld not obtain the window client HDC.  
+---Notes:  
+---* Intercepted messages can be polled using JS_WindowMessage_Peek.  
+---* Intercepted messages can be edited, if necessary, and then forwarded to their original destination using JS_WindowMessage_Post or JS_WindowMessage_Send.  
 ---* To check whether a message type is being blocked or passed through, Peek the message type, or retrieve the entire List of intercepts.
 ---@param windowHWND userdata
 ---@param messages string
@@ -7990,8 +7886,7 @@ function reaper.JS_WindowMessage_InterceptList(windowHWND, messages) end
 ---@return string list
 function reaper.JS_WindowMessage_ListIntercepts(windowHWND) end
 
----Changes the passthrough setting of a message type that is already being intercepted.
----
+---Changes the passthrough setting of a message type that is already being intercepted.  
 ---Returns 1 if successful, 0 if the message type is not yet being intercepted, or -2 if the argument could not be parsed.
 ---@param windowHWND userdata
 ---@param message string
@@ -7999,17 +7894,15 @@ function reaper.JS_WindowMessage_ListIntercepts(windowHWND) end
 ---@return integer retval
 function reaper.JS_WindowMessage_PassThrough(windowHWND, message, passThrough) end
 
----Polls the state of an intercepted message.
----
----Parameters:<br>
----* message: String containing a single message name, such as "WM_SETCURSOR", or in hexadecimal format, "0x0020".<br>
----(For a list of WM_ and CB_ message types that are valid cross-platform, refer to swell-types.h. Only these will be recognized by WM_ or CB_ name.)
----
----Returns:<br>
----* A retval of false indicates that the message type is not being intercepted in the specified window.<br>
----* All messages are timestamped. A time of 0 indicates that no message if this type has been intercepted yet.<br>
----* For more information about wParam and lParam for different message types, refer to Win32 C++ documentation.<br>
----* For example, in the case of mousewheel, returns mousewheel delta, modifier keys, x position and y position.<br>
+---Polls the state of an intercepted message.  
+---Parameters:  
+---* message: String containing a single message name, such as "WM_SETCURSOR", or in hexadecimal format, "0x0020".  
+---(For a list of WM_ and CB_ message types that are valid cross-platform, refer to swell-types.h. Only these will be recognized by WM_ or CB_ name.)  
+---Returns:  
+---* A retval of false indicates that the message type is not being intercepted in the specified window.  
+---* All messages are timestamped. A time of 0 indicates that no message if this type has been intercepted yet.  
+---* For more information about wParam and lParam for different message types, refer to Win32 C++ documentation.  
+---* For example, in the case of mousewheel, returns mousewheel delta, modifier keys, x position and y position.  
 ---* wParamHigh, lParamLow and lParamHigh are signed, whereas wParamLow is unsigned.
 ---@param windowHWND userdata
 ---@param message string
@@ -8022,19 +7915,16 @@ function reaper.JS_WindowMessage_PassThrough(windowHWND, message, passThrough) e
 ---@return integer lParamHigh
 function reaper.JS_WindowMessage_Peek(windowHWND, message) end
 
----If the specified window and message type are not currently being intercepted by a script, this function will post the message in the message queue of the specified window, and return without waiting.
----
----If the window and message type are currently being intercepted, the message will be sent directly to the original window process, similar to WindowMessage_Send, thereby skipping any intercepts.
----
----Parameters:<br>
----* message: String containing a single message name, such as "WM_SETCURSOR", or in hexadecimal format, "0x0020".<br>
----(For a list of WM_ and CB_ message types that are valid cross-platform, refer to swell-types.h. Only these will be recognized by WM_ or CB_ name.)<br>
----* wParam, wParamHigh, lParam and lParamHigh: Low and high 16-bit WORDs of the WPARAM and LPARAM parameters.<br>
----(Most window messages encode separate information into the two WORDs. However, for those rare cases in which the entire WPARAM and LPARAM must be used to post a large pointer, the script can store this address in wParam or lParam, and keep wParamHigh and lParamHigh zero.)
----
----Notes:<br>
----* For more information about parameter values, refer to documentation for the Win32 C++ function PostMessage.<br>
----* Messages should only be sent to windows that were created from the main thread.<br>
+---If the specified window and message type are not currently being intercepted by a script, this function will post the message in the message queue of the specified window, and return without waiting.  
+---If the window and message type are currently being intercepted, the message will be sent directly to the original window process, similar to WindowMessage_Send, thereby skipping any intercepts.  
+---Parameters:  
+---* message: String containing a single message name, such as "WM_SETCURSOR", or in hexadecimal format, "0x0020".  
+---(For a list of WM_ and CB_ message types that are valid cross-platform, refer to swell-types.h. Only these will be recognized by WM_ or CB_ name.)  
+---* wParam, wParamHigh, lParam and lParamHigh: Low and high 16-bit WORDs of the WPARAM and LPARAM parameters.  
+---(Most window messages encode separate information into the two WORDs. However, for those rare cases in which the entire WPARAM and LPARAM must be used to post a large pointer, the script can store this address in wParam or lParam, and keep wParamHigh and lParamHigh zero.)  
+---Notes:  
+---* For more information about parameter values, refer to documentation for the Win32 C++ function PostMessage.  
+---* Messages should only be sent to windows that were created from the main thread.  
 ---* Useful for simulating mouse clicks and calling mouse modifier actions from scripts.
 ---@param windowHWND userdata
 ---@param message string
@@ -8045,9 +7935,8 @@ function reaper.JS_WindowMessage_Peek(windowHWND, message) end
 ---@return boolean retval
 function reaper.JS_WindowMessage_Post(windowHWND, message, wParam, wParamHighWord, lParam, lParamHighWord) end
 
----Release intercepts of specified message types.
----
----Parameters:<br>
+---Release intercepts of specified message types.  
+---Parameters:  
 ---* messages: "WM_SETCURSOR,WM_MOUSEHWHEEL" or "0x0020,0x020E", for example.
 ---@param windowHWND userdata
 ---@param messages string
@@ -8061,17 +7950,15 @@ function reaper.JS_WindowMessage_ReleaseAll() end
 ---@param windowHWND userdata
 function reaper.JS_WindowMessage_ReleaseWindow(windowHWND) end
 
----Sends a message to the specified window by calling the window process directly, and only returns after the message has been processed. Any intercepts of the message by scripts will be skipped, and the message can therefore not be blocked.
----
----Parameters:<br>
----* message: String containing a single message name, such as "WM_SETCURSOR", or in hexadecimal format, "0x0020".<br>
----(For a list of WM_ and CB_ message types that are valid cross-platform, refer to swell-types.h. Only these will be recognized by WM_ or CB_ name.)<br>
----* wParam, wParamHigh, lParam and lParamHigh: Low and high 16-bit WORDs of the WPARAM and LPARAM parameters.<br>
----(Most window messages encode separate information into the two WORDs. However, for those rare cases in which the entire WPARAM and LPARAM must be used to post a large pointer, the script can store this address in wParam or lParam, and keep wParamHigh and lParamHigh zero.)
----
----Notes:<br>
----* For more information about parameter and return values, refer to documentation for the Win32 C++ function SendMessage.<br>
----* Messages should only be sent to windows that were created from the main thread.<br>
+---Sends a message to the specified window by calling the window process directly, and only returns after the message has been processed. Any intercepts of the message by scripts will be skipped, and the message can therefore not be blocked.  
+---Parameters:  
+---* message: String containing a single message name, such as "WM_SETCURSOR", or in hexadecimal format, "0x0020".  
+---(For a list of WM_ and CB_ message types that are valid cross-platform, refer to swell-types.h. Only these will be recognized by WM_ or CB_ name.)  
+---* wParam, wParamHigh, lParam and lParamHigh: Low and high 16-bit WORDs of the WPARAM and LPARAM parameters.  
+---(Most window messages encode separate information into the two WORDs. However, for those rare cases in which the entire WPARAM and LPARAM must be used to post a large pointer, the script can store this address in wParam or lParam, and keep wParamHigh and lParamHigh zero.)  
+---Notes:  
+---* For more information about parameter and return values, refer to documentation for the Win32 C++ function SendMessage.  
+---* Messages should only be sent to windows that were created from the main thread.  
 ---* Useful for simulating mouse clicks and calling mouse modifier actions from scripts.
 ---@param windowHWND userdata
 ---@param message string
@@ -8086,32 +7973,28 @@ function reaper.JS_WindowMessage_Send(windowHWND, message, wParam, wParamHighWor
 ---@return number address
 function reaper.JS_Window_AddressFromHandle(handle) end
 
----Finds all child windows of the specified parent.
----
----Returns:<br>
----* retval: The number of windows found; negative if an error occurred.<br>
+---Finds all child windows of the specified parent.  
+---Returns:  
+---* retval: The number of windows found; negative if an error occurred.  
 ---* The addresses are stored in the provided reaper.array, and can be converted to REAPER objects (HWNDs) by the function JS_Window_HandleFromAddress.
 ---@param parentHWND userdata
 ---@param reaperarray userdata
 ---@return integer retval
 function reaper.JS_Window_ArrayAllChild(parentHWND, reaperarray) end
 
----Finds all top-level windows.
----
----Returns:<br>
----* retval: The number of windows found; negative if an error occurred.<br>
+---Finds all top-level windows.  
+---Returns:  
+---* retval: The number of windows found; negative if an error occurred.  
 ---* The addresses are stored in the provided reaper.array, and can be converted to REAPER objects (HWNDs) by the function JS_Window_HandleFromAddress.
 ---@param reaperarray userdata
 ---@return integer retval
 function reaper.JS_Window_ArrayAllTop(reaperarray) end
 
----Finds all windows, whether top-level or child, whose titles match the specified string.
----
----Returns:<br>
----* retval: The number of windows found; negative if an error occurred.<br>
----* The addresses are stored in the provided reaper.array, and can be converted to REAPER objects (HWNDs) by the function JS_Window_HandleFromAddress.
----
----Parameters:<br>
+---Finds all windows, whether top-level or child, whose titles match the specified string.  
+---Returns:  
+---* retval: The number of windows found; negative if an error occurred.  
+---* The addresses are stored in the provided reaper.array, and can be converted to REAPER objects (HWNDs) by the function JS_Window_HandleFromAddress.  
+---Parameters:  
 ---* exact: Match entire title exactly, or match substring of title.
 ---@param title string
 ---@param exact boolean
@@ -8122,17 +8005,15 @@ function reaper.JS_Window_ArrayFind(title, exact, reaperarray) end
 ---@param windowHWND userdata
 function reaper.JS_Window_AttachResizeGrip(windowHWND) end
 
----Attaches a "pin on top" button to the window frame. The button should remember its state when closing and re-opening the window.
----
+---Attaches a "pin on top" button to the window frame. The button should remember its state when closing and re-opening the window.  
 ---WARNING: This function does not yet work on Linux.
 ---@param windowHWND userdata
 function reaper.JS_Window_AttachTopmostPin(windowHWND) end
 
----Converts the client-area coordinates of a specified point to screen coordinates.
----
----NOTES:<br>
----* On Windows and Linux, screen coordinates are relative to *upper* left corner of the primary display, and the positive Y-axis points downward.<br>
----* On macOS, screen coordinates are relative to the *bottom* left corner of the primary display, and the positive Y-axis points upward.<br>
+---Converts the client-area coordinates of a specified point to screen coordinates.  
+---NOTES:  
+---* On Windows and Linux, screen coordinates are relative to *upper* left corner of the primary display, and the positive Y-axis points downward.  
+---* On macOS, screen coordinates are relative to the *bottom* left corner of the primary display, and the positive Y-axis points upward.  
 ---* On all platforms, client coordinates are relative to the upper left corner of the client area.
 ---@param windowHWND userdata
 ---@param x integer
@@ -8141,16 +8022,11 @@ function reaper.JS_Window_AttachTopmostPin(windowHWND) end
 ---@return integer y
 function reaper.JS_Window_ClientToScreen(windowHWND, x, y) end
 
----Creates a modeless window with WS_OVERLAPPEDWINDOW style and only rudimentary features. Scripts can paint into the window using GDI or LICE/Composite functions (and JS_Window_InvalidateRect to trigger re-painting).
----
----style: An optional parameter that overrides the default style. The string may include any combination of standard window styles, such as "POPUP" for a frameless window, or "CAPTION,SIZEBOX,SYSMENU" for a standard framed window.
----
----On Linux and macOS, "MAXIMIZE" has not yet been implemented, and the remaining styles may appear slightly different from their WindowsOS counterparts.
----
----className: On Windows, only standard ANSI characters are supported.
----
----ownerHWND: Optional parameter, only available on WindowsOS.  Usually either the REAPER main window or another script window, and useful for ensuring that the created window automatically closes when the owner is closed.
----
+---Creates a modeless window with WS_OVERLAPPEDWINDOW style and only rudimentary features. Scripts can paint into the window using GDI or LICE/Composite functions (and JS_Window_InvalidateRect to trigger re-painting).  
+---style: An optional parameter that overrides the default style. The string may include any combination of standard window styles, such as "POPUP" for a frameless window, or "CAPTION,SIZEBOX,SYSMENU" for a standard framed window.  
+---On Linux and macOS, "MAXIMIZE" has not yet been implemented, and the remaining styles may appear slightly different from their WindowsOS counterparts.  
+---className: On Windows, only standard ANSI characters are supported.  
+---ownerHWND: Optional parameter, only available on WindowsOS.  Usually either the REAPER main window or another script window, and useful for ensuring that the created window automatically closes when the owner is closed.  
 ---NOTE: On Linux and macOS, the window contents are only updated *between* defer cycles, so the window cannot be animated by for/while loops within a single defer cycle.
 ---@param title string
 ---@param className string
@@ -8173,33 +8049,30 @@ function reaper.JS_Window_Destroy(windowHWND) end
 ---@param enable boolean
 function reaper.JS_Window_Enable(windowHWND, enable) end
 
----On macOS, returns the Metal graphics setting:<br>
----2 = Metal enabled and support GetDC()/ReleaseDC() for drawing (more overhead).<br>
----1 = Metal enabled.<br>
----0 = N/A (Windows and Linux).<br>
-----1 = non-metal async layered mode.<br>
-----2 = non-metal non-async layered mode.
----
+---On macOS, returns the Metal graphics setting:  
+---2 = Metal enabled and support GetDC()/ReleaseDC() for drawing (more overhead).  
+---1 = Metal enabled.  
+---0 = N/A (Windows and Linux).  
+----1 = non-metal async layered mode.  
+----2 = non-metal non-async layered mode.  
 ---WARNING: If using mode -1, any BitBlt()/StretchBlt() MUST have the source bitmap persist. If it is resized after Blit it could cause crashes.
 ---@param windowHWND userdata
 ---@return integer retval
 function reaper.JS_Window_EnableMetal(windowHWND) end
 
----Returns a HWND to a window whose title matches the specified string.<br>
----* Unlike the Win32 function FindWindow, this function searches top-level as well as child windows, so that the target window can be found irrespective of docked state.<br>
----* In addition, the function can optionally match substrings of the title.<br>
----* Matching is not case sensitive.
----
----Parameters:<br>
+---Returns a HWND to a window whose title matches the specified string.  
+---* Unlike the Win32 function FindWindow, this function searches top-level as well as child windows, so that the target window can be found irrespective of docked state.  
+---* In addition, the function can optionally match substrings of the title.  
+---* Matching is not case sensitive.  
+---Parameters:  
 ---* exact: Match entire title, or match substring of title.
 ---@param title string
 ---@param exact boolean
 ---@return userdata retval
 function reaper.JS_Window_Find(title, exact) end
 
----Returns a HWND to a child window whose title matches the specified string.
----
----Parameters:<br>
+---Returns a HWND to a child window whose title matches the specified string.  
+---Parameters:  
 ---* exact: Match entire title length, or match substring of title. In both cases, matching is not case sensitive.
 ---@param parentHWND userdata
 ---@param title string
@@ -8207,17 +8080,15 @@ function reaper.JS_Window_Find(title, exact) end
 ---@return userdata retval
 function reaper.JS_Window_FindChild(parentHWND, title, exact) end
 
----Similar to the C++ WIN32 function GetDlgItem, this function finds child windows by ID.
----
+---Similar to the C++ WIN32 function GetDlgItem, this function finds child windows by ID.  
 ---(The ID of a window may be retrieved by JS_Window_GetLongPtr.)
 ---@param parentHWND userdata
 ---@param ID integer
 ---@return userdata retval
 function reaper.JS_Window_FindChildByID(parentHWND, ID) end
 
----Returns a handle to a child window whose class and title match the specified strings.
----
----Parameters: * childWindow: The function searches child windows, beginning with the window *after* the specified child window. If childHWND is equal to parentHWND, the search begins with the first child window of parentHWND.<br>
+---Returns a handle to a child window whose class and title match the specified strings.  
+---Parameters: * childWindow: The function searches child windows, beginning with the window *after* the specified child window. If childHWND is equal to parentHWND, the search begins with the first child window of parentHWND.  
 ---* title: An empty string, "", will match all windows. (Search is not case sensitive.)
 ---@param parentHWND userdata
 ---@param childHWND userdata
@@ -8226,19 +8097,17 @@ function reaper.JS_Window_FindChildByID(parentHWND, ID) end
 ---@return userdata retval
 function reaper.JS_Window_FindEx(parentHWND, childHWND, className, title) end
 
----Returns a HWND to a top-level window whose title matches the specified string.
----
----Parameters:<br>
+---Returns a HWND to a top-level window whose title matches the specified string.  
+---Parameters:  
 ---* exact: Match entire title length, or match substring of title. In both cases, matching is not case sensitive.
 ---@param title string
 ---@param exact boolean
 ---@return userdata retval
 function reaper.JS_Window_FindTop(title, exact) end
 
----Retrieves a HWND to the window that contains the specified point.
----
----NOTES:<br>
----* On Windows and Linux, screen coordinates are relative to *upper* left corner of the primary display, and the positive Y-axis points downward.<br>
+---Retrieves a HWND to the window that contains the specified point.  
+---NOTES:  
+---* On Windows and Linux, screen coordinates are relative to *upper* left corner of the primary display, and the positive Y-axis points downward.  
 ---* On macOS, screen coordinates are relative to the *bottom* left corner of the primary display, and the positive Y-axis points upward.
 ---@param x integer
 ---@param y integer
@@ -8250,12 +8119,11 @@ function reaper.JS_Window_FromPoint(x, y) end
 ---@return string class
 function reaper.JS_Window_GetClassName(windowHWND) end
 
----Retrieves the screen coordinates of the client area rectangle of the specified window.
----
----NOTES:<br>
----* Unlike the C++ function GetClientRect, this function returns the screen coordinates, not the width and height. To get the client size, use GetClientSize.<br>
----* The pixel at (right, bottom) lies immediately outside the rectangle.<br>
----* On Windows and Linux, screen coordinates are relative to *upper* left corner of the primary display, and the positive Y-axis points downward.<br>
+---Retrieves the screen coordinates of the client area rectangle of the specified window.  
+---NOTES:  
+---* Unlike the C++ function GetClientRect, this function returns the screen coordinates, not the width and height. To get the client size, use GetClientSize.  
+---* The pixel at (right, bottom) lies immediately outside the rectangle.  
+---* On Windows and Linux, screen coordinates are relative to *upper* left corner of the primary display, and the positive Y-axis points downward.  
 ---* On macOS, screen coordinates are relative to the *bottom* left corner of the primary display, and the positive Y-axis points upward.
 ---@param windowHWND userdata
 ---@return boolean retval
@@ -8279,41 +8147,34 @@ function reaper.JS_Window_GetFocus() end
 ---@return userdata retval
 function reaper.JS_Window_GetForeground() end
 
----Similar to JS_Window_GetLongPtr, but returns the information as a number instead of a pointer. 
----
----In the case of "DLGPROC" and "WNDPROC", the return values can be converted to pointers by JS_Window_HandleFromAddress.
----
+---Similar to JS_Window_GetLongPtr, but returns the information as a number instead of a pointer.   
+---In the case of "DLGPROC" and "WNDPROC", the return values can be converted to pointers by JS_Window_HandleFromAddress.  
 ---If the function fails, the return value is 0.
 ---@param windowHWND userdata
 ---@param info string
 ---@return number retval
 function reaper.JS_Window_GetLong(windowHWND, info) end
 
----Returns information about the specified window.
----
----info: "USERDATA", "WNDPROC", "DLGPROC", "ID", "EXSTYLE" or "STYLE".
----
----For documentation about the types of information returned, refer to the Win32 function GetWindowLongPtr.
----
----The values returned by "DLGPROC" and "WNDPROC" are typically used as-is, as pointers, whereas the others should first be converted to integers.
----
+---Returns information about the specified window.  
+---info: "USERDATA", "WNDPROC", "DLGPROC", "ID", "EXSTYLE" or "STYLE".  
+---For documentation about the types of information returned, refer to the Win32 function GetWindowLongPtr.  
+---The values returned by "DLGPROC" and "WNDPROC" are typically used as-is, as pointers, whereas the others should first be converted to integers.  
 ---If the function fails, a null pointer is returned.
 ---@param windowHWND userdata
 ---@param info string
 ---@return userdata retval
 function reaper.JS_Window_GetLongPtr(windowHWND, info) end
 
----Retrieves a HWND to the specified window's parent or owner.<br>
+---Retrieves a HWND to the specified window's parent or owner.  
 ---Returns NULL if the window is unowned or if the function otherwise fails.
 ---@param windowHWND userdata
 ---@return userdata retval
 function reaper.JS_Window_GetParent(windowHWND) end
 
----Retrieves the screen coordinates of the bounding rectangle of the specified window.
----
----NOTES:<br>
----* On Windows and Linux, coordinates are relative to *upper* left corner of the primary display, and the positive Y-axis points downward.<br>
----* On macOS, coordinates are relative to the *bottom* left corner of the primary display, and the positive Y-axis points upward.<br>
+---Retrieves the screen coordinates of the bounding rectangle of the specified window.  
+---NOTES:  
+---* On Windows and Linux, coordinates are relative to *upper* left corner of the primary display, and the positive Y-axis points downward.  
+---* On macOS, coordinates are relative to the *bottom* left corner of the primary display, and the positive Y-axis points upward.  
 ---* The pixel at (right, bottom) lies immediately outside the rectangle.
 ---@param windowHWND userdata
 ---@return boolean retval
@@ -8323,21 +8184,19 @@ function reaper.JS_Window_GetParent(windowHWND) end
 ---@return integer bottom
 function reaper.JS_Window_GetRect(windowHWND) end
 
----Retrieves a handle to a window that has the specified relationship (Z-Order or owner) to the specified window.<br>
----relation: "LAST", "NEXT", "PREV", "OWNER" or "CHILD".<br>
+---Retrieves a handle to a window that has the specified relationship (Z-Order or owner) to the specified window.  
+---relation: "LAST", "NEXT", "PREV", "OWNER" or "CHILD".  
 ---(Refer to documentation for Win32 C++ function GetWindow.)
 ---@param windowHWND userdata
 ---@param relation string
 ---@return userdata retval
 function reaper.JS_Window_GetRelated(windowHWND, relation) end
 
----Retrieves the scroll information of a window.
----
----Parameters:<br>
----* windowHWND: The window that contains the scrollbar. This is usually a child window, not a top-level, framed window.<br>
----* scrollbar: "v" (or "SB_VERT", or "VERT") for vertical scroll, "h" (or "SB_HORZ" or "HORZ") for horizontal.
----
----Returns:<br>
+---Retrieves the scroll information of a window.  
+---Parameters:  
+---* windowHWND: The window that contains the scrollbar. This is usually a child window, not a top-level, framed window.  
+---* scrollbar: "v" (or "SB_VERT", or "VERT") for vertical scroll, "h" (or "SB_HORZ" or "HORZ") for horizontal.  
+---Returns:  
 ---* Leftmost or topmost visible pixel position, as well as the visible page size, the range minimum and maximum, and scroll box tracking position.
 ---@param windowHWND userdata
 ---@param scrollbar string
@@ -8354,10 +8213,8 @@ function reaper.JS_Window_GetScrollInfo(windowHWND, scrollbar) end
 ---@return string title
 function reaper.JS_Window_GetTitle(windowHWND) end
 
----Retrieves the dimensions of the display monitor that has the largest area of intersection with the specified rectangle.
----
----If the monitor is not the primary display, some of the rectangle's coordinates may be negative.
----
+---Retrieves the dimensions of the display monitor that has the largest area of intersection with the specified rectangle.  
+---If the monitor is not the primary display, some of the rectangle's coordinates may be negative.  
 ---wantWork: Returns the work area of the display, which excludes the system taskbar or application desktop toolbars.
 ---@param x1 integer
 ---@param y1 integer
@@ -8396,42 +8253,36 @@ function reaper.JS_Window_IsChild(parentHWND, childHWND) end
 ---@return boolean retval
 function reaper.JS_Window_IsVisible(windowHWND) end
 
----Determines whether the specified window handle identifies an existing window.
----
----On macOS and Linux, only windows that were created by WDL/swell will be identified (and only such windows should be acted on by scripts).
----
+---Determines whether the specified window handle identifies an existing window.  
+---On macOS and Linux, only windows that were created by WDL/swell will be identified (and only such windows should be acted on by scripts).  
 ---NOTE: Since REAPER v5.974, windows can be checked using the native function ValidatePtr(windowHWND, "HWND").
 ---@param windowHWND userdata
 ---@return boolean retval
 function reaper.JS_Window_IsWindow(windowHWND) end
 
----Finds all child windows of the specified parent.
----
----Returns:<br>
----* retval: The number of windows found; negative if an error occurred.<br>
----* list: A comma-separated string of hexadecimal values.<br>
+---Finds all child windows of the specified parent.  
+---Returns:  
+---* retval: The number of windows found; negative if an error occurred.  
+---* list: A comma-separated string of hexadecimal values.  
 ---Each value is an address that can be converted to a HWND by the function Window_HandleFromAddress.
 ---@param parentHWND userdata
 ---@return integer retval
 ---@return string list
 function reaper.JS_Window_ListAllChild(parentHWND) end
 
----Finds all top-level windows.
----
----Returns:<br>
----* retval: The number of windows found; negative if an error occurred.<br>
+---Finds all top-level windows.  
+---Returns:  
+---* retval: The number of windows found; negative if an error occurred.  
 ---* list: A comma-separated string of hexadecimal values. Each value is an address that can be converted to a HWND by the function Window_HandleFromAddress.
 ---@return integer retval
 ---@return string list
 function reaper.JS_Window_ListAllTop() end
 
----Finds all windows (whether top-level or child) whose titles match the specified string.
----
----Returns:<br>
----* retval: The number of windows found; negative if an error occurred.<br>
----* list: A comma-separated string of hexadecimal values. Each value is an address that can be converted to a HWND by the function Window_HandleFromAddress.
----
----Parameters:<br>
+---Finds all windows (whether top-level or child) whose titles match the specified string.  
+---Returns:  
+---* retval: The number of windows found; negative if an error occurred.  
+---* list: A comma-separated string of hexadecimal values. Each value is an address that can be converted to a HWND by the function Window_HandleFromAddress.  
+---Parameters:  
 ---* exact: Match entire title exactly, or match substring of title.
 ---@param title string
 ---@param exact boolean
@@ -8451,42 +8302,38 @@ function reaper.JS_Window_ListFind(title, exact) end
 ---@return integer bottom
 function reaper.JS_Window_MonitorFromRect(x1, y1, x2, y2, wantWork) end
 
----Changes the position of the specified window, keeping its size constant.
----
----NOTES:<br>
----* For top-level windows, position is relative to the primary display.<br>
----* On Windows and Linux, position is calculated as the coordinates of the upper left corner of the window, relative to upper left corner of the primary display, and the positive Y-axis points downward.<br>
----* On macOS, position is calculated as the coordinates of the bottom left corner of the window, relative to bottom left corner of the display, and the positive Y-axis points upward.<br>
----* For a child window, on all platforms, position is relative to the upper-left corner of the parent window's client area.<br>
+---Changes the position of the specified window, keeping its size constant.  
+---NOTES:  
+---* For top-level windows, position is relative to the primary display.  
+---* On Windows and Linux, position is calculated as the coordinates of the upper left corner of the window, relative to upper left corner of the primary display, and the positive Y-axis points downward.  
+---* On macOS, position is calculated as the coordinates of the bottom left corner of the window, relative to bottom left corner of the display, and the positive Y-axis points upward.  
+---* For a child window, on all platforms, position is relative to the upper-left corner of the parent window's client area.  
 ---* Equivalent to calling JS_Window_SetPosition with NOSIZE, NOZORDER, NOACTIVATE and NOOWNERZORDER flags set.
 ---@param windowHWND userdata
 ---@param left integer
 ---@param top integer
 function reaper.JS_Window_Move(windowHWND, left, top) end
 
----Sends a "WM_COMMAND" message to the specified window, which simulates a user selecting a command in the window menu.
----
----This function is similar to Main_OnCommand and MIDIEditor_OnCommand, but can send commands to any window that has a menu.
----
+---Sends a "WM_COMMAND" message to the specified window, which simulates a user selecting a command in the window menu.  
+---This function is similar to Main_OnCommand and MIDIEditor_OnCommand, but can send commands to any window that has a menu.  
 ---In the case of windows that are listed among the Action list's contexts (such as the Media Explorer), the commandIDs of the actions in the Actions list may be used.
 ---@param windowHWND userdata
 ---@param commandID integer
 ---@return boolean retval
 function reaper.JS_Window_OnCommand(windowHWND, commandID) end
 
----Changes the dimensions of the specified window, keeping the top left corner position constant.<br>
----* If resizing script GUIs, call gfx.update() after resizing.<br>
+---Changes the dimensions of the specified window, keeping the top left corner position constant.  
+---* If resizing script GUIs, call gfx.update() after resizing.  
 ---* Equivalent to calling JS_Window_SetPosition with NOMOVE, NOZORDER, NOACTIVATE and NOOWNERZORDER flags set.
 ---@param windowHWND userdata
 ---@param width integer
 ---@param height integer
 function reaper.JS_Window_Resize(windowHWND, width, height) end
 
----Converts the screen coordinates of a specified point on the screen to client-area coordinates.
----
----NOTES:<br>
----* On Windows and Linux, screen coordinates are relative to *upper* left corner of the primary display, and the positive Y-axis points downward.<br>
----* On macOS, screen coordinates are relative to the *bottom* left corner of the primary display, and the positive Y-axis points upward.<br>
+---Converts the screen coordinates of a specified point on the screen to client-area coordinates.  
+---NOTES:  
+---* On Windows and Linux, screen coordinates are relative to *upper* left corner of the primary display, and the positive Y-axis points downward.  
+---* On macOS, screen coordinates are relative to the *bottom* left corner of the primary display, and the positive Y-axis points upward.  
 ---* On all platforms, client coordinates are relative to the upper left corner of the client area.
 ---@param windowHWND userdata
 ---@param x integer
@@ -8503,8 +8350,7 @@ function reaper.JS_Window_SetFocus(windowHWND) end
 ---@param windowHWND userdata
 function reaper.JS_Window_SetForeground(windowHWND) end
 
----Similar to the Win32 function SetWindowLongPtr. 
----
+---Similar to the Win32 function SetWindowLongPtr.   
 ---info: "USERDATA", "WNDPROC", "DLGPROC", "ID", "EXSTYLE" or "STYLE", and only on WindowOS, "INSTANCE" and "PARENT".
 ---@param windowHWND userdata
 ---@param info string
@@ -8512,14 +8358,12 @@ function reaper.JS_Window_SetForeground(windowHWND) end
 ---@return number retval
 function reaper.JS_Window_SetLong(windowHWND, info, value) end
 
----Sets the window opacity.
----
----Parameters:<br>
----mode: either "ALPHA" or "COLOR". <br>
----value: If ALPHA, the specified value may range from zero to one, and will apply to the entire window, frame included. <br>
----If COLOR, value specifies a 0xRRGGBB color, and all pixels of this color will be made transparent. (All mouse clicks over transparent pixels will pass through, too).  WARNING:<br>
----COLOR mode is only available in Windows, not Linux or macOS.
----
+---Sets the window opacity.  
+---Parameters:  
+---mode: either "ALPHA" or "COLOR".   
+---value: If ALPHA, the specified value may range from zero to one, and will apply to the entire window, frame included.   
+---If COLOR, value specifies a 0xRRGGBB color, and all pixels of this color will be made transparent. (All mouse clicks over transparent pixels will pass through, too).  WARNING:  
+---COLOR mode is only available in Windows, not Linux or macOS.  
 ---Transparency can only be applied to top-level windows. If windowHWND refers to a child window, the entire top-level window that contains windowHWND will be made transparent.
 ---@param windowHWND userdata
 ---@param mode string
@@ -8527,18 +8371,16 @@ function reaper.JS_Window_SetLong(windowHWND, info, value) end
 ---@return boolean retval
 function reaper.JS_Window_SetOpacity(windowHWND, mode, value) end
 
----If successful, returns a handle to the previous parent window.
----
+---If successful, returns a handle to the previous parent window.  
 ---Only on WindowsOS: If parentHWND is not specified, the desktop window becomes the new parent window.
 ---@param childHWND userdata
 ---@param parentHWND? userdata
 ---@return userdata retval
 function reaper.JS_Window_SetParent(childHWND, parentHWND) end
 
----Interface to the Win32/swell function SetWindowPos, with which window position, size, Z-order and visibility can be set, and new frame styles can be applied.
----
----ZOrder and flags are optional parameters. If no arguments are supplied, the window will simply be moved and resized, as if the NOACTIVATE, NOZORDER, NOOWNERZORDER flags were set.<br>
----* ZOrder: "BOTTOM", "TOPMOST", "NOTOPMOST", "TOP" or a window HWND converted to a string, for example by the Lua function tostring.<br>
+---Interface to the Win32/swell function SetWindowPos, with which window position, size, Z-order and visibility can be set, and new frame styles can be applied.  
+---ZOrder and flags are optional parameters. If no arguments are supplied, the window will simply be moved and resized, as if the NOACTIVATE, NOZORDER, NOOWNERZORDER flags were set.  
+---* ZOrder: "BOTTOM", "TOPMOST", "NOTOPMOST", "TOP" or a window HWND converted to a string, for example by the Lua function tostring.  
 ---* flags: Any combination of the standard flags, of which "NOMOVE", "NOSIZE", "NOZORDER", "NOACTIVATE", "SHOWWINDOW", "FRAMECHANGED" and "NOCOPYBITS" should be valid cross-platform.
 ---@param windowHWND userdata
 ---@param left integer
@@ -8552,9 +8394,8 @@ function reaper.JS_Window_SetParent(childHWND, parentHWND) end
 ---@return string? flags
 function reaper.JS_Window_SetPosition(windowHWND, left, top, width, height, ZOrder, flags) end
 
----Parameters:<br>
----* scrollbar: "v" (or "SB_VERT", or "VERT") for vertical scroll, "h" (or "SB_HORZ" or "HORZ") for horizontal.
----
+---Parameters:  
+---* scrollbar: "v" (or "SB_VERT", or "VERT") for vertical scroll, "h" (or "SB_HORZ" or "HORZ") for horizontal.  
 ---NOTE: API functions can scroll REAPER's windows, but cannot zoom them.  Instead, use actions such as "View: Zoom to one loop iteration".
 ---@param windowHWND userdata
 ---@param scrollbar string
@@ -8562,10 +8403,8 @@ function reaper.JS_Window_SetPosition(windowHWND, left, top, width, height, ZOrd
 ---@return boolean retval
 function reaper.JS_Window_SetScrollPos(windowHWND, scrollbar, position) end
 
----Sets and applies a window style.
----
----style may include any combination of standard window styles, such as "POPUP" for a frameless window, or "CAPTION,SIZEBOX,SYSMENU" for a standard framed window.
----
+---Sets and applies a window style.  
+---style may include any combination of standard window styles, such as "POPUP" for a frameless window, or "CAPTION,SIZEBOX,SYSMENU" for a standard framed window.  
 ---On Linux and macOS, "MAXIMIZE" has not yet been implmented, and the remaining styles may appear slightly different from their WindowsOS counterparts.
 ---@param windowHWND userdata
 ---@param style string
@@ -8579,13 +8418,11 @@ function reaper.JS_Window_SetStyle(windowHWND, style) end
 ---@return boolean retval
 function reaper.JS_Window_SetTitle(windowHWND, title) end
 
----Sets the window Z order.<br>
----* Equivalent to calling JS_Window_SetPos with flags NOMOVE | NOSIZE.<br>
----* Not all the Z orders have been implemented in Linux yet.
----
----Parameters:<br>
----* ZOrder: "BOTTOM", "TOPMOST", "NOTOPMOST", "TOP", or a window HWND converted to a string, for example by the Lua function tostring.
----
+---Sets the window Z order.  
+---* Equivalent to calling JS_Window_SetPos with flags NOMOVE | NOSIZE.  
+---* Not all the Z orders have been implemented in Linux yet.  
+---Parameters:  
+---* ZOrder: "BOTTOM", "TOPMOST", "NOTOPMOST", "TOP", or a window HWND converted to a string, for example by the Lua function tostring.  
 ---* InsertAfterHWND: For compatibility with older versions, this parameter is still available, and is optional. If ZOrder is "INSERTAFTER", insertAfterHWND must be a handle to the window behind which windowHWND will be placed in the Z order, equivalent to setting ZOrder to this HWND; otherwise, insertAfterHWND is ignored and can be left out (or it can simply be set to the same value as windowHWND).
 ---@param windowHWND userdata
 ---@param ZOrder string
@@ -8593,9 +8430,8 @@ function reaper.JS_Window_SetTitle(windowHWND, title) end
 ---@return boolean retval
 function reaper.JS_Window_SetZOrder(windowHWND, ZOrder, insertAfterHWND) end
 
----Sets the specified window's show state.
----
----Parameters:<br>
+---Sets the specified window's show state.  
+---Parameters:  
 ---* state: One of the following options: "SHOW", "SHOWNA" (or "SHOWNOACTIVATE"), "SHOWMINIMIZED", "HIDE", "NORMAL", "SHOWNORMAL", "SHOWMAXIMIZED", "SHOWDEFAULT" or "RESTORE". On Linux and macOS, only the first four options are fully implemented.
 ---@param windowHWND userdata
 ---@param state string
@@ -8615,10 +8451,8 @@ function reaper.JS_Zip_Close(zipFile, zipHandle) end
 ---@return integer retval
 function reaper.JS_Zip_CountEntries(zipHandle) end
 
----Deletes the specified entries from an existing Zip file.
----
----entryNames is zero-separated and double-zero-terminated.
----
+---Deletes the specified entries from an existing Zip file.  
+---entryNames is zero-separated and double-zero-terminated.  
 ---Returns the number of deleted entries on success, negative number (< 0) on error.
 ---@param zipHandle userdata
 ---@param entryNames string
@@ -8626,23 +8460,20 @@ function reaper.JS_Zip_CountEntries(zipHandle) end
 ---@return integer retval
 function reaper.JS_Zip_DeleteEntries(zipHandle, entryNames, entryNamesStrLen) end
 
----Closes a zip entry, flushes buffer and releases resources. In WRITE mode, entries must be closed in order to apply and save changes.
----
+---Closes a zip entry, flushes buffer and releases resources. In WRITE mode, entries must be closed in order to apply and save changes.  
 ---Returns 0 on success, negative number (< 0) on error.
 ---@param zipHandle userdata
 ---@return integer retval
 function reaper.JS_Zip_Entry_Close(zipHandle) end
 
----Compresses the specified file into the zip archive's open entry.
----
+---Compresses the specified file into the zip archive's open entry.  
 ---Returns 0 on success, negative number (< 0) on error.
 ---@param zipHandle userdata
 ---@param inputFile string
 ---@return integer retval
 function reaper.JS_Zip_Entry_CompressFile(zipHandle, inputFile) end
 
----Compresses the specified memory buffer into the zip archive's open entry.
----
+---Compresses the specified memory buffer into the zip archive's open entry.  
 ---Returns 0 on success, negative number (< 0) on error.
 ---@param zipHandle userdata
 ---@param buf string
@@ -8650,16 +8481,14 @@ function reaper.JS_Zip_Entry_CompressFile(zipHandle, inputFile) end
 ---@return integer retval
 function reaper.JS_Zip_Entry_CompressMemory(zipHandle, buf, buf_size) end
 
----Extracts the zip archive's open entry.
----
+---Extracts the zip archive's open entry.  
 ---Returns 0 on success, negative number (< 0) on error.
 ---@param zipHandle userdata
 ---@param outputFile string
 ---@return integer retval
 function reaper.JS_Zip_Entry_ExtractToFile(zipHandle, outputFile) end
 
----Extracts and returns the zip archive's open entry.
----
+---Extracts and returns the zip archive's open entry.  
 ---Returns the number of bytes extracted on success, negative number (< 0) on error.
 ---@param zipHandle userdata
 ---@return integer retval
@@ -8676,20 +8505,16 @@ function reaper.JS_Zip_Entry_ExtractToMemory(zipHandle) end
 ---@return number crc32
 function reaper.JS_Zip_Entry_Info(zipHandle) end
 
----Opens a new entry by index in the zip archive.
----
----This function is only valid if zip archive was opened in 'r' (readonly) mode.
----
+---Opens a new entry by index in the zip archive.  
+---This function is only valid if zip archive was opened in 'r' (readonly) mode.  
 ---Returns 0 on success, negative number on error.
 ---@param zipHandle userdata
 ---@param index integer
 ---@return integer retval
 function reaper.JS_Zip_Entry_OpenByIndex(zipHandle, index) end
 
----Opens an entry by name in the zip archive.
----
----For zip archive opened in 'w' or 'a' mode the function will append a new entry. In readonly mode the function tries to locate an existing entry.
----
+---Opens an entry by name in the zip archive.  
+---For zip archive opened in 'w' or 'a' mode the function will append a new entry. In readonly mode the function tries to locate an existing entry.  
 ---Returns 0 on success, negative number (< 0) on error.
 ---@param zipHandle userdata
 ---@param entryName string
@@ -8701,33 +8526,27 @@ function reaper.JS_Zip_Entry_OpenByName(zipHandle, entryName) end
 ---@return string errorStr
 function reaper.JS_Zip_ErrorString(errorNum) end
 
----Extracts an existing Zip file to the specified folder.
----
+---Extracts an existing Zip file to the specified folder.  
 ---Returns the number of extracted files on success, negative number (< 0) on error.
 ---@param zipFile string
 ---@param outputFolder string
 ---@return integer retval
 function reaper.JS_Zip_Extract(zipFile, outputFolder) end
 
----Returns the number of entries and a zero-separated and double-zero-terminated string of entry names.
----
+---Returns the number of entries and a zero-separated and double-zero-terminated string of entry names.  
 ---On error, returns a negative number (< 0).
 ---@param zipHandle userdata
 ---@return integer retval
 ---@return string list
 function reaper.JS_Zip_ListAllEntries(zipHandle) end
 
----Opens a zip archive using the given mode, which can be either "READ" or "WRITE" (or simply 'r' or 'w').
----
----* READ: Opens an existing archive for reading/extracting.<br>
----* WRITE: Opens an archive for writing/deleting. If the file doesn't exist, an empty archive will created.
----
----compressionLevel is only relevant for WRITE mode, and ranges from 0 (fastest, no compression) to 9 (slowest, best compression), with a default of 6.
----
----If successful, returns 0 and a handle to the Zip archive. If failed, returns a negative error code. If the file is already open -- in the given mode -- the existing handle will be returned.
----
----NOTES:<br>
----* The Zip API functions support Unicode file names and entry names.<br>
+---Opens a zip archive using the given mode, which can be either "READ" or "WRITE" (or simply 'r' or 'w').  
+---* READ: Opens an existing archive for reading/extracting.  
+---* WRITE: Opens an archive for writing/deleting. If the file doesn't exist, an empty archive will created.  
+---compressionLevel is only relevant for WRITE mode, and ranges from 0 (fastest, no compression) to 9 (slowest, best compression), with a default of 6.  
+---If successful, returns 0 and a handle to the Zip archive. If failed, returns a negative error code. If the file is already open -- in the given mode -- the existing handle will be returned.  
+---NOTES:  
+---* The Zip API functions support Unicode file names and entry names.  
 ---* The original zip specification did not support Unicode. Some applications still use this outdated specification by default, or try to use the local code page. This may lead to incompatibility and incorrect retrieval of file or entry names.
 ---@param zipFile string
 ---@param mode string
@@ -8824,93 +8643,92 @@ function reaper.MCULive_GetFaderValue(device, faderIdx, param) end
 ---@return string? msg
 function reaper.MCULive_GetMIDIMessage(device, msgIdx) end
 
----Maps MCU Live device# button# to REAPER command ID. E.g. reaper.MCULive_Map(0,0x5b, 40340) maps MCU Rewind to "Track: Unsolo all tracks". Or remap button to another button if your MCU button layout doesnt play nicely with default MCULive mappings. By default range 0x00 .. 0x2d is in use. Button numbers are second column (prefixed with 0x) e.g. '90 5e' 0x5e for 'transport : play', roughly. 
----
----mcu documentation: <br>
----mcu=>pc: <br>
----the mcu seems to send, when it boots (or is reset) f0 00 00 66 14 01 58 59 5a 57 18 61 05 57 18 61 05 f7 <br>
----ex vv vv    :   volume fader move, x=0..7, 8=master, vv vv is int14 <br>
----b0 1x vv    :   pan fader move, x=0..7, vv has 40 set if negative, low bits 0-31 are move amount <br>
----b0 3c vv    :   jog wheel move, 01 or 41 <br>
----to the extent the buttons below have leds, you can set them by sending these messages, with 7f for on, 1 for blink, 0 for off. <br>
----90 0x vv    :   rec arm push x=0..7 (vv:..) <br>
----90 0x vv    :   solo push x=8..f (vv:..) <br>
----90 1x vv    :   mute push x=0..7 (vv:..) <br>
----90 1x vv    :   selected push x=8..f (vv:..) <br>
----90 2x vv    :   pan knob push, x=0..7 (vv:..) <br>
----90 28 vv    :   assignment track <br>
----90 29 vv    :   assignment send <br>
----90 2a vv    :   assignment pan/surround <br>
----90 2b vv    :   assignment plug-in <br>
----90 2c vv    :   assignment eq <br>
----90 2d vv    :   assignment instrument <br>
----90 2e vv    :   bank down button (vv: 00=release, 7f=push) <br>
----90 2f vv    :   channel down button (vv: ..) <br>
----90 30 vv    :   bank up button (vv:..) <br>
----90 31 vv    :   channel up button (vv:..) <br>
----90 32 vv    :   flip button <br>
----90 33 vv    :   global view button <br>
----90 34 vv    :   name/value display button <br>
----90 35 vv    :   smpte/beats mode switch (vv:..) <br>
----90 36 vv    :   f1 <br>
----90 37 vv    :   f2 <br>
----90 38 vv    :   f3 <br>
----90 39 vv    :   f4 <br>
----90 3a vv    :   f5 <br>
----90 3b vv    :   f6 <br>
----90 3c vv    :   f7 <br>
----90 3d vv    :   f8 <br>
----90 3e vv    :   global view : midi tracks <br>
----90 3f vv    :   global view : inputs <br>
----90 40 vv    :   global view : audio tracks <br>
----90 41 vv    :   global view : audio instrument <br>
----90 42 vv    :   global view : aux <br>
----90 43 vv    :   global view : busses <br>
----90 44 vv    :   global view : outputs <br>
----90 45 vv    :   global view : user <br>
----90 46 vv    :   shift modifier (vv:..) <br>
----90 47 vv    :   option modifier <br>
----90 48 vv    :   control modifier <br>
----90 49 vv    :   alt modifier <br>
----90 4a vv    :   automation read/off <br>
----90 4b vv    :   automation write <br>
----90 4c vv    :   automation trim <br>
----90 4d vv    :   automation touch <br>
----90 4e vv    :   automation latch <br>
----90 4f vv    :   automation group <br>
----90 50 vv    :   utilities save <br>
----90 51 vv    :   utilities undo <br>
----90 52 vv    :   utilities cancel <br>
----90 53 vv    :   utilities enter <br>
----90 54 vv    :   marker <br>
----90 55 vv    :   nudge <br>
----90 56 vv    :   cycle <br>
----90 57 vv    :   drop <br>
----90 58 vv    :   replace <br>
----90 59 vv    :   click <br>
----90 5a vv    :   solo <br>
----90 5b vv    :   transport rewind (vv:..) <br>
----90 5c vv    :   transport ffwd (vv:..) <br>
----90 5d vv    :   transport pause (vv:..) <br>
----90 5e vv    :   transport play (vv:..) <br>
----90 5f vv    :   transport record (vv:..) <br>
----90 60 vv    :   up arrow button  (vv:..) <br>
----90 61 vv    :   down arrow button 1 (vv:..) <br>
----90 62 vv    :   left arrow button 1 (vv:..) <br>
----90 63 vv    :   right arrow button 1 (vv:..) <br>
----90 64 vv    :   zoom button (vv:..) <br>
----90 65 vv    :   scrub button (vv:..) <br>
----90 6x vv    :   fader touch x=8..f <br>
----90 70 vv    :   master fader touch <br>
----pc=>mcu: <br>
----f0 00 00 66 14 12 xx <data> f7   : update lcd. xx=offset (0-112), string. display is 55 chars wide, second line begins at 56, though. <br>
----f0 00 00 66 14 08 00 f7          : reset mcu <br>
----f0 00 00 66 14 20 0x 03 f7       : put track in vu meter mode, x=track   <br>
----90 73 vv : rude solo light (vv: 7f=on, 00=off, 01=blink) <br>
----b0 3x vv : pan display, x=0..7, vv=1..17 (hex) or so <br>
----b0 4x vv : right to left of leds. if 0x40 set in vv, dot below char is set (x=0..11) <br>
----d0 yx    : update vu meter, y=track, x=0..d=volume, e=clip on, f=clip off <br>
----ex vv vv : set volume fader, x=track index, 8=master 
+---Maps MCU Live device# button# to REAPER command ID. E.g. reaper.MCULive_Map(0,0x5b, 40340) maps MCU Rewind to "Track: Unsolo all tracks". Or remap button to another button if your MCU button layout doesnt play nicely with default MCULive mappings. By default range 0x00 .. 0x2d is in use. Button numbers are second column (prefixed with 0x) e.g. '90 5e' 0x5e for 'transport : play', roughly.   
+---mcu documentation:   
+---mcu=>pc:   
+---the mcu seems to send, when it boots (or is reset) f0 00 00 66 14 01 58 59 5a 57 18 61 05 57 18 61 05 f7   
+---ex vv vv    :   volume fader move, x=0..7, 8=master, vv vv is int14   
+---b0 1x vv    :   pan fader move, x=0..7, vv has 40 set if negative, low bits 0-31 are move amount   
+---b0 3c vv    :   jog wheel move, 01 or 41   
+---to the extent the buttons below have leds, you can set them by sending these messages, with 7f for on, 1 for blink, 0 for off.   
+---90 0x vv    :   rec arm push x=0..7 (vv:..)   
+---90 0x vv    :   solo push x=8..f (vv:..)   
+---90 1x vv    :   mute push x=0..7 (vv:..)   
+---90 1x vv    :   selected push x=8..f (vv:..)   
+---90 2x vv    :   pan knob push, x=0..7 (vv:..)   
+---90 28 vv    :   assignment track   
+---90 29 vv    :   assignment send   
+---90 2a vv    :   assignment pan/surround   
+---90 2b vv    :   assignment plug-in   
+---90 2c vv    :   assignment eq   
+---90 2d vv    :   assignment instrument   
+---90 2e vv    :   bank down button (vv: 00=release, 7f=push)   
+---90 2f vv    :   channel down button (vv: ..)   
+---90 30 vv    :   bank up button (vv:..)   
+---90 31 vv    :   channel up button (vv:..)   
+---90 32 vv    :   flip button   
+---90 33 vv    :   global view button   
+---90 34 vv    :   name/value display button   
+---90 35 vv    :   smpte/beats mode switch (vv:..)   
+---90 36 vv    :   f1   
+---90 37 vv    :   f2   
+---90 38 vv    :   f3   
+---90 39 vv    :   f4   
+---90 3a vv    :   f5   
+---90 3b vv    :   f6   
+---90 3c vv    :   f7   
+---90 3d vv    :   f8   
+---90 3e vv    :   global view : midi tracks   
+---90 3f vv    :   global view : inputs   
+---90 40 vv    :   global view : audio tracks   
+---90 41 vv    :   global view : audio instrument   
+---90 42 vv    :   global view : aux   
+---90 43 vv    :   global view : busses   
+---90 44 vv    :   global view : outputs   
+---90 45 vv    :   global view : user   
+---90 46 vv    :   shift modifier (vv:..)   
+---90 47 vv    :   option modifier   
+---90 48 vv    :   control modifier   
+---90 49 vv    :   alt modifier   
+---90 4a vv    :   automation read/off   
+---90 4b vv    :   automation write   
+---90 4c vv    :   automation trim   
+---90 4d vv    :   automation touch   
+---90 4e vv    :   automation latch   
+---90 4f vv    :   automation group   
+---90 50 vv    :   utilities save   
+---90 51 vv    :   utilities undo   
+---90 52 vv    :   utilities cancel   
+---90 53 vv    :   utilities enter   
+---90 54 vv    :   marker   
+---90 55 vv    :   nudge   
+---90 56 vv    :   cycle   
+---90 57 vv    :   drop   
+---90 58 vv    :   replace   
+---90 59 vv    :   click   
+---90 5a vv    :   solo   
+---90 5b vv    :   transport rewind (vv:..)   
+---90 5c vv    :   transport ffwd (vv:..)   
+---90 5d vv    :   transport pause (vv:..)   
+---90 5e vv    :   transport play (vv:..)   
+---90 5f vv    :   transport record (vv:..)   
+---90 60 vv    :   up arrow button  (vv:..)   
+---90 61 vv    :   down arrow button 1 (vv:..)   
+---90 62 vv    :   left arrow button 1 (vv:..)   
+---90 63 vv    :   right arrow button 1 (vv:..)   
+---90 64 vv    :   zoom button (vv:..)   
+---90 65 vv    :   scrub button (vv:..)   
+---90 6x vv    :   fader touch x=8..f   
+---90 70 vv    :   master fader touch   
+---pc=>mcu:   
+---f0 00 00 66 14 12 xx <data> f7   : update lcd. xx=offset (0-112), string. display is 55 chars wide, second line begins at 56, though.   
+---f0 00 00 66 14 08 00 f7          : reset mcu   
+---f0 00 00 66 14 20 0x 03 f7       : put track in vu meter mode, x=track     
+---90 73 vv : rude solo light (vv: 7f=on, 00=off, 01=blink)   
+---b0 3x vv : pan display, x=0..7, vv=1..17 (hex) or so   
+---b0 4x vv : right to left of leds. if 0x40 set in vv, dot below char is set (x=0..11)   
+---d0 yx    : update vu meter, y=track, x=0..d=volume, e=clip on, f=clip off   
+---ex vv vv : set volume fader, x=track index, 8=master   
 ---@param device integer
 ---@param button integer
 ---@param command_id integer
@@ -8989,7 +8807,7 @@ function reaper.MCULive_SetFaderValue(device, faderIdx, val, type) end
 ---@return integer retval
 function reaper.MCULive_SetMeterValue(device, meterIdx, val, type) end
 
----1 : surface split point device index <br>
+---1 : surface split point device index   
 ---2 : 'mode-is-global' bitmask/flags, first 6 bits
 ---@param option integer
 ---@param value integer
@@ -9257,13 +9075,13 @@ function reaper.NF_DeleteTakeFromItem(item, takeIdx) end
 ---@return string cmdId
 function reaper.NF_GetGlobalStartupAction() end
 
----Returns the average overall (non-windowed) dB RMS level of active channels of an audio item active take, post item gain, post take volume envelope, post-fade, pre fader, pre item FX. <br>
+---Returns the average overall (non-windowed) dB RMS level of active channels of an audio item active take, post item gain, post take volume envelope, post-fade, pre fader, pre item FX.   
 ---Returns -150.0 if MIDI take or empty item.
 ---@param item MediaItem
 ---@return number retval
 function reaper.NF_GetMediaItemAverageRMS(item) end
 
----Returns the greatest max. peak value in dBFS of all active channels of an audio item active take, post item gain, post take volume envelope, post-fade, pre fader, pre item FX. <br>
+---Returns the greatest max. peak value in dBFS of all active channels of an audio item active take, post item gain, post take volume envelope, post-fade, pre fader, pre item FX.   
 ---Returns -150.0 if MIDI take or empty item.
 ---@param item MediaItem
 ---@return number retval
@@ -9275,13 +9093,13 @@ function reaper.NF_GetMediaItemMaxPeak(item) end
 ---@return number maxPeakPos
 function reaper.NF_GetMediaItemMaxPeakAndMaxPeakPos(item) end
 
----Returns the greatest overall (non-windowed) dB RMS peak level of all active channels of an audio item active take, post item gain, post take volume envelope, post-fade, pre fader, pre item FX. <br>
+---Returns the greatest overall (non-windowed) dB RMS peak level of all active channels of an audio item active take, post item gain, post take volume envelope, post-fade, pre fader, pre item FX.   
 ---Returns -150.0 if MIDI take or empty item.
 ---@param item MediaItem
 ---@return number retval
 function reaper.NF_GetMediaItemPeakRMS_NonWindowed(item) end
 
----Returns the average dB RMS peak level of all active channels of an audio item active take, post item gain, post take volume envelope, post-fade, pre fader, pre item FX. <br>
+---Returns the average dB RMS peak level of all active channels of an audio item active take, post item gain, post take volume envelope, post-fade, pre fader, pre item FX.   
 ---Obeys 'Window size for peak RMS' setting in 'SWS: Set RMS analysis/normalize options' for calculation. Returns -150.0 if MIDI take or empty item.
 ---@param item MediaItem
 ---@return number retval
@@ -9328,22 +9146,22 @@ function reaper.NF_ReadAudioFileBitrate(fn) end
 ---@param amount integer
 function reaper.NF_ScrollHorizontallyByPercentage(amount) end
 
----Returns true if global startup action was set successfully (i.e. valid action ID). Note: For SWS / S&M actions and macros / scripts, you must use identifier strings (e.g. "_SWS_ABOUT", "_f506bc780a0ab34b8fdedb67ed5d3649"), not command IDs (e.g. "47145").<br>
----Tip: to copy such identifiers, right-click the action in the Actions window > Copy selected action cmdID / identifier string.<br>
+---Returns true if global startup action was set successfully (i.e. valid action ID). Note: For SWS / S&M actions and macros / scripts, you must use identifier strings (e.g. "_SWS_ABOUT", "_f506bc780a0ab34b8fdedb67ed5d3649"), not command IDs (e.g. "47145").  
+---Tip: to copy such identifiers, right-click the action in the Actions window > Copy selected action cmdID / identifier string.  
 ---NOnly works for actions / scripts from Main action section.
 ---@param str string
 ---@return boolean retval
 function reaper.NF_SetGlobalStartupAction(str) end
 
----Returns true if project startup action was set successfully (i.e. valid action ID). Note: For SWS / S&M actions and macros / scripts, you must use identifier strings (e.g. "_SWS_ABOUT", "_f506bc780a0ab34b8fdedb67ed5d3649"), not command IDs (e.g. "47145").<br>
----Tip: to copy such identifiers, right-click the action in the Actions window > Copy selected action cmdID / identifier string.<br>
+---Returns true if project startup action was set successfully (i.e. valid action ID). Note: For SWS / S&M actions and macros / scripts, you must use identifier strings (e.g. "_SWS_ABOUT", "_f506bc780a0ab34b8fdedb67ed5d3649"), not command IDs (e.g. "47145").  
+---Tip: to copy such identifiers, right-click the action in the Actions window > Copy selected action cmdID / identifier string.  
 ---Only works for actions / scripts from Main action section. Project must be saved after setting project startup action to be persistent.
 ---@param str string
 ---@return boolean retval
 function reaper.NF_SetProjectStartupAction(str) end
 
----Returns true if project track selection action was set successfully (i.e. valid action ID). Note: For SWS / S&M actions and macros / scripts, you must use identifier strings (e.g. "_SWS_ABOUT", "_f506bc780a0ab34b8fdedb67ed5d3649"), not command IDs (e.g. "47145").<br>
----Tip: to copy such identifiers, right-click the action in the Actions window > Copy selected action cmdID / identifier string.<br>
+---Returns true if project track selection action was set successfully (i.e. valid action ID). Note: For SWS / S&M actions and macros / scripts, you must use identifier strings (e.g. "_SWS_ABOUT", "_f506bc780a0ab34b8fdedb67ed5d3649"), not command IDs (e.g. "47145").  
+---Tip: to copy such identifiers, right-click the action in the Actions window > Copy selected action cmdID / identifier string.  
 ---Only works for actions / scripts from Main action section. Project must be saved after setting project track selection action to be persistent.
 ---@param str string
 ---@return boolean retval
@@ -9380,20 +9198,19 @@ function reaper.NF_UpdateSWSMarkerRegionSubWindow() end
 ---@return integer retval
 function reaper.NF_Win32_GetSystemMetrics(nIndex) end
 
----Show the about dialog of the given package entry.<br>
+---Show the about dialog of the given package entry.  
 ---The repository index is downloaded asynchronously if the cached copy doesn't exist or is older than one week.
 ---@param entry PackageEntry
 ---@return boolean retval
 function reaper.ReaPack_AboutInstalledPackage(entry) end
 
----Show the about dialog of the given repository. Returns true if the repository exists in the user configuration.<br>
+---Show the about dialog of the given repository. Returns true if the repository exists in the user configuration.  
 ---The repository index is downloaded asynchronously if the cached copy doesn't exist or is older than one week.
 ---@param repoName string
 ---@return boolean retval
 function reaper.ReaPack_AboutRepository(repoName) end
 
----Add or modify a repository. Set url to nullptr (or empty string in Lua) to keep the existing URL. Call ReaPack_ProcessQueue(true) when done to process the new list and update the GUI.
----
+---Add or modify a repository. Set url to nullptr (or empty string in Lua) to keep the existing URL. Call ReaPack_ProcessQueue(true) when done to process the new list and update the GUI.  
 ---autoInstall: usually set to 2 (obey user setting).
 ---@param name string
 ---@param url string
@@ -9414,9 +9231,8 @@ function reaper.ReaPack_BrowsePackages(filter) end
 ---@return string error
 function reaper.ReaPack_CompareVersions(ver1, ver2) end
 
----Enumerate the files owned by the given package. Returns false when there is no more data.
----
----sections: 0=not in action list, &1=main, &2=midi editor, &4=midi inline editor<br>
+---Enumerate the files owned by the given package. Returns false when there is no more data.  
+---sections: 0=not in action list, &1=main, &2=midi editor, &4=midi inline editor  
 ---type: see ReaPack_GetEntryInfo.
 ---@param entry PackageEntry
 ---@param index integer
@@ -9431,8 +9247,7 @@ function reaper.ReaPack_EnumOwnedFiles(entry, index) end
 ---@return boolean retval
 function reaper.ReaPack_FreeEntry(entry) end
 
----Get the repository name, category, package name, package description, package type, the currently installed version, author name, flags (&1=Pinned, &2=BleedingEdge) and how many files are owned by the given package entry.
----
+---Get the repository name, category, package name, package description, package type, the currently installed version, author name, flags (&1=Pinned, &2=BleedingEdge) and how many files are owned by the given package entry.  
 ---type: 1=script, 2=extension, 3=effect, 4=data, 5=theme, 6=langpack, 7=webinterface
 ---@param entry PackageEntry
 ---@return boolean retval
@@ -9447,15 +9262,14 @@ function reaper.ReaPack_FreeEntry(entry) end
 ---@return integer fileCount
 function reaper.ReaPack_GetEntryInfo(entry) end
 
----Returns the package entry owning the given file.<br>
+---Returns the package entry owning the given file.  
 ---Delete the returned object from memory after use with ReaPack_FreeEntry.
 ---@param fn string
 ---@return PackageEntry retval
 ---@return string error
 function reaper.ReaPack_GetOwner(fn) end
 
----Get the infos of the given repository.
----
+---Get the infos of the given repository.  
 ---autoInstall: 0=manual, 1=when sychronizing, 2=obey user setting
 ---@param name string
 ---@return boolean retval
@@ -9468,8 +9282,8 @@ function reaper.ReaPack_GetRepositoryInfo(name) end
 ---@param refreshUI boolean
 function reaper.ReaPack_ProcessQueue(refreshUI) end
 
----[S&M] Deprecated, see CreateTrackSend (v5.15pre1+). Adds a receive. Returns false if nothing updated.<br>
----type -1=Default type (user preferences), 0=Post-Fader (Post-Pan), 1=Pre-FX, 2=deprecated, 3=Pre-Fader (Post-FX).<br>
+---[S&M] Deprecated, see CreateTrackSend (v5.15pre1+). Adds a receive. Returns false if nothing updated.  
+---type -1=Default type (user preferences), 0=Post-Fader (Post-Pan), 1=Pre-FX, 2=deprecated, 3=Pre-Fader (Post-FX).  
 ---Note: obeys default sends preferences, supports frozen tracks, etc..
 ---@param src MediaTrack
 ---@param dest MediaTrack
@@ -9558,8 +9372,8 @@ function reaper.SNM_GetMediaItemTakeByGUID(project, guid) end
 ---@return boolean retval
 function reaper.SNM_GetProjectMarkerName(proj, num, isrgn, name) end
 
----[S&M] Gets or sets the state of a track, an item or an envelope. The state chunk size is unlimited. Returns false if failed.<br>
----When getting a track state (and when you are not interested in FX data), you can use wantminimalstate=true to radically reduce the length of the state. Do not set such minimal states back though, this is for read-only applications!<br>
+---[S&M] Gets or sets the state of a track, an item or an envelope. The state chunk size is unlimited. Returns false if failed.  
+---When getting a track state (and when you are not interested in FX data), you can use wantminimalstate=true to radically reduce the length of the state. Do not set such minimal states back though, this is for read-only applications!  
 ---Note: unlike the native GetSetObjectState, calling to FreeHeapPtr() is not required.
 ---@param obj userdata
 ---@param state WDL_FastString
@@ -9568,7 +9382,7 @@ function reaper.SNM_GetProjectMarkerName(proj, num, isrgn, name) end
 ---@return boolean retval
 function reaper.SNM_GetSetObjectState(obj, state, setnewvalue, wantminimalstate) end
 
----[S&M] Gets or sets a take source state. Returns false if failed. Use takeidx=-1 to get/alter the active take.<br>
+---[S&M] Gets or sets a take source state. Returns false if failed. Use takeidx=-1 to get/alter the active take.  
 ---Note: this function does not use a MediaItem_Take* param in order to manage empty takes (i.e. takes with MediaItem_Take*==NULL), see SNM_GetSetSourceState2.
 ---@param item MediaItem
 ---@param takeidx integer
@@ -9577,7 +9391,7 @@ function reaper.SNM_GetSetObjectState(obj, state, setnewvalue, wantminimalstate)
 ---@return boolean retval
 function reaper.SNM_GetSetSourceState(item, takeidx, state, setnewvalue) end
 
----[S&M] Gets or sets a take source state. Returns false if failed.<br>
+---[S&M] Gets or sets a take source state. Returns false if failed.  
 ---Note: this function cannot deal with empty takes, see SNM_GetSetSourceState.
 ---@param take MediaItem_Take
 ---@param state WDL_FastString
@@ -9591,7 +9405,7 @@ function reaper.SNM_GetSetSourceState2(take, state, setnewvalue) end
 ---@return boolean retval
 function reaper.SNM_GetSourceType(take, type) end
 
----[S&M] Deprecated, see TrackFX_{CopyToTrack,Delete} (v5.95+). Move or removes a track FX. Returns true if tr has been updated.<br>
+---[S&M] Deprecated, see TrackFX_{CopyToTrack,Delete} (v5.95+). Move or removes a track FX. Returns true if tr has been updated.  
 ---fxId: fx index in chain or -1 for the selected fx. what: 0 to remove, -1 to move fx up in chain, 1 to move fx down in chain.
 ---@param tr MediaTrack
 ---@param fxId integer
@@ -9741,7 +9555,7 @@ function reaper.Xen_AudioWriter_Write(writer, numframes, data, offset) end
 ---@return integer retval
 function reaper.Xen_GetMediaSourceSamples(src, destbuf, destbufoffset, numframes, numchans, samplerate, sourceposition) end
 
----Start audio preview of a PCM_source. Returns id of a preview handle that can be provided to Xen_StopSourcePreview.<br>
+---Start audio preview of a PCM_source. Returns id of a preview handle that can be provided to Xen_StopSourcePreview.  
 ---If the given PCM_source does not belong to an existing MediaItem/Take, it will be deleted by the preview system when the preview is stopped.
 ---@param source PCM_source
 ---@param gain number
@@ -9761,7 +9575,7 @@ function reaper.Xen_StopSourcePreview(preview_id) end
 ---resolution=127 for 7-bit resolution, =16383 for 14-bit resolution.
 ---sectionID, and cmdID will be set to -1 if the script is not part of the action list.
 ---mode, resolution and val will be set to -1 if the script was not triggered via MIDI/OSC.
----contextstr may be empty or one of:<br>
+---contextstr may be empty or one of:
 ---
 ---* midi:XX[:YY] (one or two bytes hex)
 ---* [wheel|hwheel|mtvert|mthorz|mtzoom|mtrot|mediakbd]:flags
@@ -9856,7 +9670,7 @@ gfx = {}
 ---@return number retval
 function gfx.arc(x, y, r, ang1, ang2, antialias) end
 
----Copies from source (-1 = main framebuffer, or an image from gfx.loadimg() etc), using current opacity and copy mode (set with gfx.a, gfx.mode).<br>If destx/desty are not specified, gfx.x/gfx.y will be used as the destination position.<br>scale (1.0 is unscaled) will be used only if destw/desth are not specified.<br>rotation is an angle in radians<br>srcx/srcy/srcw/srch specify the source rectangle (if omitted srcw/srch default to image size)<br>destx/desty/destw/desth specify destination rectangle (if not specified destw/desth default to srcw/srch * scale).
+---Copies from source (-1 = main framebuffer, or an image from gfx.loadimg() etc), using current opacity and copy mode (set with gfx.a, gfx.mode).  If destx/desty are not specified, gfx.x/gfx.y will be used as the destination position.  scale (1.0 is unscaled) will be used only if destw/desth are not specified.  rotation is an angle in radians  srcx/srcy/srcw/srch specify the source rectangle (if omitted srcw/srch default to image size)  destx/desty/destw/desth specify destination rectangle (if not specified destw/desth default to srcw/srch * scale).
 ---@param source number
 ---@param scale? number
 ---@param rotation? number
@@ -9946,7 +9760,7 @@ function gfx.drawchar(char) end
 ---@return number retval
 function gfx.drawnumber(n, ndigits) end
 
----Draws a string at gfx.x, gfx.y, and updates gfx.x/gfx.y so that subsequent draws will occur in a similar place.<br>If flags, right ,bottom passed in:<br>*
+---Draws a string at gfx.x, gfx.y, and updates gfx.x/gfx.y so that subsequent draws will occur in a similar place.If flags, right ,bottom passed in:*
 ---* flags&1: center horizontally
 ---* flags&2: right justify
 ---* flags&4: center vertically
@@ -9959,7 +9773,7 @@ function gfx.drawnumber(n, ndigits) end
 ---@return number retval
 function gfx.drawstr(str, flags, right, bottom) end
 
----If char is 0 or omitted, returns a character from the keyboard queue, or 0 if no character is available, or -1 if the graphics window is not open. If char is specified and nonzero, that character's status will be checked, and the function will return greater than 0 if it is pressed. Note that calling gfx.getchar() at least once causes gfx.mouse_cap to reflect keyboard modifiers even when the mouse is not captured.<br>Common values are standard ASCII, such as 'a', 'A', '=' and '1', but for many keys multi-byte values are used, including 'home', 'up', 'down', 'left', 'rght', 'f1'.. 'f12', 'pgup', 'pgdn', 'ins', and 'del'.<br>Modified and special keys can also be returned, including:
+---If char is 0 or omitted, returns a character from the keyboard queue, or 0 if no character is available, or -1 if the graphics window is not open. If char is specified and nonzero, that character's status will be checked, and the function will return greater than 0 if it is pressed. Note that calling gfx.getchar() at least once causes gfx.mouse_cap to reflect keyboard modifiers even when the mouse is not captured.Common values are standard ASCII, such as 'a', 'A', '=' and '1', but for many keys multi-byte values are used, including 'home', 'up', 'down', 'left', 'rght', 'f1'.. 'f12', 'pgup', 'pgdn', 'ins', and 'del'.Modified and special keys can also be returned, including:
 ---*
 ---* Ctrl/Cmd+A..Ctrl+Z as 1..26
 ---* Ctrl/Cmd+Alt+A..Z as 257..282
@@ -10018,7 +9832,7 @@ function gfx.getpixel() end
 ---@return number retval
 function gfx.gradrect(x, y, w, h, r, g, b, a, drdx, dgdx, dbdx, dadx, drdy, dgdy, dbdy, dady) end
 
----Initializes the graphics window with title name. Suggested width and height can be specified. If window is already open, a non-empty name will re-title window, or an empty title will resize window.<br>Once the graphics window is open, gfx.update() should be called periodically.
+---Initializes the graphics window with title name. Suggested width and height can be specified. If window is already open, a non-empty name will re-title window, or an empty title will resize window.Once the graphics window is open, gfx.update() should be called periodically.
 ---@param name string
 ---@param width? number
 ---@param height? number
@@ -10159,7 +9973,7 @@ function gfx.setimgdim(image, w, h) end
 ---@return number retval
 function gfx.setpixel(r, g, b) end
 
----Shows a popup menu at gfx.x,gfx.y. str is a list of fields separated by | characters. Each field represents a menu item.<br>Fields can start with special characters:<br># : grayed out<br>! : checked<br>> : this menu item shows a submenu<br>< : last item in the current submenu<br>An empty field will appear as a separator in the menu. gfx.showmenu returns 0 if the user selected nothing from the menu, 1 if the first field is selected, etc.<br>Example:<br>gfx.showmenu("first item, followed by separator||!second item, checked|>third item which spawns a submenu|#first item in submenu, grayed out|<second and last item in submenu|fourth item in top menu")
+---Shows a popup menu at gfx.x,gfx.y. str is a list of fields separated by | characters. Each field represents a menu item.  Fields can start with special characters:# : grayed out  ! : checked  > : this menu item shows a submenu  < : last item in the current submenuAn empty field will appear as a separator in the menu. gfx.showmenu returns 0 if the user selected nothing from the menu, 1 if the first field is selected, etc.  Example:gfx.showmenu("first item, followed by separator||!second item, checked|>third item which spawns a submenu|#first item in submenu, grayed out|<second and last item in submenu|fourth item in top menu")
 ---@param str string
 ---@return number selection
 function gfx.showmenu(str) end
