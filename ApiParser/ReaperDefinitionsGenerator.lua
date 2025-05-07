@@ -1,9 +1,9 @@
 -- @description Reaper VSCode Definitions Generator
 -- @author Sexan, Cfillion, Docs source X-Raym - https://www.extremraym.com/cloud/reascript-doc/
 -- @license GPL v3
--- @version 1.10
+-- @version 1.11
 -- @changelog
---  More fixes to single return types
+--  Replace <br> html tag with markdown two trailing whitespace for better compability with other IDES
 
 --local r = reaper
 --local script_path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]]
@@ -17,7 +17,7 @@ local lua_func_str = [[
 ---resolution=127 for 7-bit resolution, =16383 for 14-bit resolution.
 ---sectionID, and cmdID will be set to -1 if the script is not part of the action list.
 ---mode, resolution and val will be set to -1 if the script was not triggered via MIDI/OSC.
----contextstr may be empty or one of:<br>
+---contextstr may be empty or one of:
 ---
 ---* midi:XX[:YY] (one or two bytes hex)
 ---* [wheel|hwheel|mtvert|mthorz|mtzoom|mtrot|mediakbd]:flags
@@ -494,10 +494,9 @@ local function GenerateApiTbl(api_str)
                 end
                 dsc_tbl = {}
                 -- ADD LINES
-            elseif line:match("<br>$") or line:match("</?p>") or line:match("<li>") or line:match("<ul>") then
-                local str = trim(line):gsub("<p>", ""):gsub("</p>", "<br>"):gsub("<li>", "* "):gsub("</li>", ""):gsub(
-                        "<ul>", "*")
-                    :gsub("</ul>", "")
+            elseif line:match("<br>") or line:match("</?p>") or line:match("<li>") or line:match("<ul>") then
+                local str = trim(line):gsub("<p>", ""):gsub("</p>", ""):gsub("<li>", "* "):gsub("</li>", ""):gsub(
+                    "<ul>", "*"):gsub("</ul>", ""):gsub("<br>\n?", "\x20\x20")
                 if #str ~= 0 then
                     dsc_tbl[#dsc_tbl + 1] = "---" .. str
                 end
