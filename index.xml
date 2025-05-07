@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="f6474b9fbce66f54aff68e227b0ea835b9414fd7" name="Sexan_Scripts">
+<index version="1" commit="119cd145d686dc1f35c10a5f5412852715c5312b" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -103,6 +103,10 @@ Workaround CF_GetFocusedFXChain having = in the string]]></changelog>
       <version name="1.10" author="Sexan, Cfillion, Docs source X-Raym - https://www.extremraym.com/cloud/reascript-doc/" time="2025-05-06T16:37:50Z">
         <changelog><![CDATA[More fixes to single return types]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/f6474b9fbce66f54aff68e227b0ea835b9414fd7/ApiParser/ReaperDefinitionsGenerator.lua</source>
+      </version>
+      <version name="1.11" author="Sexan, Cfillion, Docs source X-Raym - https://www.extremraym.com/cloud/reascript-doc/" time="2025-05-07T14:16:09Z">
+        <changelog><![CDATA[Replace <br> html tag with markdown two trailing whitespace for better compability with other IDES]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/119cd145d686dc1f35c10a5f5412852715c5312b/ApiParser/ReaperDefinitionsGenerator.lua</source>
       </version>
     </reapack>
   </category>
