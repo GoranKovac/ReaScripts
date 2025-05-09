@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.61
+-- @version 0.35.62
 -- @changelog
---  Fix MASTER MCP and regular MCP names (MASTER appeared on regular mcp)
+--  Fix "Open Custom Image folder"
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -328,7 +328,7 @@ local FLAGS =
 -- r.ImGui_WindowFlags_NoBackground() |
     r.ImGui_WindowFlags_NoDecoration() |
     r.ImGui_WindowFlags_NoMove() --|
-   -- r.ImGui_WindowFlags_TopMost()
+-- r.ImGui_WindowFlags_TopMost()
 
 if not MIDI_TRACE_DEBUG then
     FLAGS = FLAGS | r.ImGui_WindowFlags_NoBackground()

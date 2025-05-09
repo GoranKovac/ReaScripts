@@ -952,7 +952,8 @@ local function DrawShortcut(pie, button_pos, selected)
         r.ImGui_DrawList_AddRectFilled(draw_list, xs, ys, xe + 4, ye + 4, LerpAlpha(0x44, CENTER_BTN_PROG), 7,
             r.ImGui_DrawFlags_RoundCornersAll())
         -- RING
-        r.ImGui_DrawList_AddRectFilled(draw_list, xs - 2, ys - 2, xe + 2, ye + 2, LerpAlpha(def_out_ring, CENTER_BTN_PROG), 7,
+        r.ImGui_DrawList_AddRectFilled(draw_list, xs - 2, ys - 2, xe + 2, ye + 2,
+            LerpAlpha(def_out_ring, CENTER_BTN_PROG), 7,
             r.ImGui_DrawFlags_RoundCornersAll())
         -- MAIN
         r.ImGui_DrawList_AddRectFilled(draw_list, xs, ys, xe, ye, LerpAlpha(0x1d1f27ff, CENTER_BTN_PROG), 5,
@@ -1842,7 +1843,7 @@ local function DropDownMenuPopup(pie)
                             LAST_MSG = pie[i].name
                         end
                     end
-                end                
+                end
                 if SETUP then
                     DNDSwapSRC(pie, i)
                     DNDSwapDST(pie, i, pie[i])
@@ -1905,7 +1906,7 @@ local function DropDownMenuPopup(pie)
                 KEY_TRIGGER = true
             end
         end
-    end    
+    end
     --r.ImGui_DrawListSplitter_Merge(SPLITTER_DD)
 end
 

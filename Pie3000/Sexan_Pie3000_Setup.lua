@@ -1323,13 +1323,16 @@ local function Settings()
         r.ImGui_Separator(ctx)
     end
     if r.ImGui_InvisibleButton(ctx, "OPEN CUSTOM IMAGES FOLDER", 190, 26) then
-        local cmd
-        if r.GetOS():sub(1, 3) == 'Win' then
-            cmd = 'cmd.exe /c explorer'
-        else
-            cmd = 'open'
-        end
-        r.ExecProcess(([[%s "%s"]]):format(cmd, r.GetResourcePath() .. png_path_custom:gsub("/", os_separator)), 0)
+        -- local cmd
+        -- if r.GetOS():sub(1, 3) == 'Win' then
+        --     cmd = 'cmd.exe /c explorer'
+        -- else
+        --     cmd = 'open'
+        -- end
+        r.CF_ShellExecute(r.GetResourcePath() .. png_path_custom:gsub("/", os_separator))
+        -- r.ShowConsoleMsg(([[%s "%s"]]):format(cmd, r.GetResourcePath() .. png_path_custom:gsub("/", os_separator)) ..
+        -- "\n")
+        -- r.ExecProcess(([[%s "%s"]]):format(cmd, r.GetResourcePath() .. png_path_custom:gsub("/", os_separator)), 0)
     end
     GeneralDrawlistButton("OPEN CUSTOM IMAGES FOLDER", nil, "A")
     r.ImGui_SameLine(ctx, 0, 100)
