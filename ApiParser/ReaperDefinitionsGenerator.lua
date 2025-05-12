@@ -79,6 +79,44 @@ function reaper.gmem_write(index, value) end
 ---Returns the path to the directory containing imgui.lua, imgui.py and gfx2imgui.lua.
 ---@return string path
 function reaper.ImGui_GetBuiltinPath() end
+
+---[BR] Get mouse cursor context. Each parameter returns information in a form of string as specified in the table below.
+---
+---+------------+----------------+------------------------------------------------+  
+---| Window     | Segment        | Details                                        |  
+---+------------+----------------+------------------------------------------------+  
+---| unknown    | ""             | ""                                             |  
+---+------------+----------------+------------------------------------------------+  
+---| ruler      | region_lane    | ""                                             |  
+---|            | marker_lane    | ""                                             |  
+---|            | tempo_lane     | ""                                             |  
+---|            | timeline       | ""                                             |  
+---+------------+----------------+------------------------------------------------+  
+---| transport  | ""             | ""                                             |  
+---+------------+----------------+------------------------------------------------+  
+---| tcp        | track          | ""                                             |  
+---|            | envelope       | ""                                             |  
+---|            | empty          | ""                                             |  
+---+------------+----------------+------------------------------------------------+  
+---| mcp        | track          | ""                                             |  
+---|            | empty          | ""                                             |  
+---+------------+----------------+------------------------------------------------+  
+---| arrange    | track          | empty, item, item_stretch_marker,              |  
+---|            |                | env_point, env_segment                         |  
+---|            | envelope       | empty, env_point, env_segment                  |  
+---|            | empty          | ""                                             |  
+---+------------+----------------+------------------------------------------------+  
+---| midi_editor| unknown        | ""                                             |  
+---|            | ruler          | ""                                             |  
+---|            | piano          | ""                                             |  
+---|            | notes          | ""                                             |  
+---|            | cc_lane        | cc_selector, cc_lane                           |  
+---+------------+----------------+------------------------------------------------+  
+---To get more info on stuff that was found under mouse cursor see BR_GetMouseCursorContext_Envelope, BR_GetMouseCursorContext_Item, BR_GetMouseCursorContext_MIDI, BR_GetMouseCursorContext_Position, BR_GetMouseCursorContext_Take, BR_GetMouseCursorContext_Track
+---@return string window
+---@return string segment
+---@return string details
+function reaper.BR_GetMouseCursorContext() end
 ]]
 
 local gfx_start_str = [[
@@ -295,6 +333,7 @@ local api_blacklist = {
     ["reaper.gmem_attach"] = true,
     ["reaper.gmem_read"] = true,
     ["reaper.gmem_write"] = true,
+    ["reaper.BR_GetMouseCursorContext"] = true
 }
 
 local function SaveToFile(data, fn)
