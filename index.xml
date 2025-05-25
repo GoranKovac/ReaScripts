@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="77f430bcee56c4624e1b63c7b107b8a334020bd4" name="Sexan_Scripts">
+<index version="1" commit="7456981f4e51ffe6446286534f1318c173cc2743" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -766,6 +766,12 @@ literalize smart string input]]></changelog>
       <version name="1.43" author="Sexan" time="2025-03-29T10:20:00Z">
         <changelog><![CDATA[Check if plugin is already added in category from other ini files]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/a78be82aa1531660df6a6bd77791d299c2fc0b95/FX/Sexan_FX_Browser_ParserV7.lua</source>
+      </version>
+      <version name="1.44" author="Sexan" time="2025-05-25T08:31:27Z">
+        <changelog><![CDATA[Fix parsing user folders
+Properly link fx_type with fx
+Cleanup code a bit]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/7456981f4e51ffe6446286534f1318c173cc2743/FX/Sexan_FX_Browser_ParserV7.lua</source>
       </version>
     </reapack>
   </category>
