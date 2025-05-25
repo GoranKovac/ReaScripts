@@ -1,9 +1,11 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.43
+-- @version 1.44
 -- @changelog
---  Check if plugin is already added in category from other ini files
+--  Fix parsing user folders
+--  Properly link fx_type with fx
+--  Cleanup code a bit
 
 local r                                = reaper
 local os                               = r.GetOS()
@@ -274,7 +276,7 @@ end
 
 local function has_fx(tbl, val)
     for i = 1, #tbl do
-      if tbl[i] == val then return true end
+        if tbl[i] == val then return true end
     end
     return false
 end
@@ -495,13 +497,11 @@ end
 
 local function ParseFavorites()
     -- PARSE FAVORITES FOLDER
-    local fav_path = r.GetResourcePath() .. "/reaper-fxfolders.ini"
-    local fav_str  = GetFileContext(fav_path)
-
-    fav_str        = SortFoldersINI(fav_str)
-
-    CAT[#CAT + 1]  = { name = "FOLDERS", list = {} }
-
+    local fav_path    = r.GetResourcePath() .. "/reaper-fxfolders.ini"
+    local fav_str     = GetFileContext(fav_path)
+    fav_str           = SortFoldersINI(fav_str)
+    CAT[#CAT + 1]     = { name = "FOLDERS", list = {} }
+    local item_lookup = {}
     local current_folder
     for line in fav_str:gmatch('[^\r\n]+') do
         local folder = line:match("^%[(Folder%d+)%]")
@@ -511,7 +511,13 @@ local function ParseFavorites()
 
         -- GET FOLDER ITEMS "Item0=..."
         if line:match("Item%d+") then
-            local item = "R_ITEM_" .. line:match("Item%d+=(.+)")
+            local item_id, item_path = line:match("Item(%d+)=(.+)")
+            local item = "R_ITEM_" .. item_path
+            --------------------------------
+            -- FILL ITEM LOOKUP TABLE
+            --------------------------------
+            item_lookup[item_id] = item_path
+            --------------------------------
             local dev_tbl = InTbl(CAT[#CAT].list, current_folder)
             if not dev_tbl then
                 table.insert(CAT[#CAT].list,
@@ -525,63 +531,33 @@ local function ParseFavorites()
         -- 3 = VST, 2 = JS, 7 = CLAP, 1 = LV2
         if line:match("Type%d+") then
             local line_id, fx_type = line:match("(%d+)=(%d+)")
-            if fx_type == "3" then -- VST
-                local folder_item = CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1]
-                if folder_item then
-                    local item = folder_item:gsub("R_ITEM_", "", 1)
-                    if item then
-                        local id = os:match("Win") and item:reverse():match("(.-)\\") or item:reverse():match("(.-)/")
-                        if id then
-                            -- NEED TO REPLACE WHITESPACES AND DASH WITH LOWER DASH ALSO (HOW ITS IN VST INI FILE)
-                            id = id:reverse():gsub(" ", "_"):gsub("-", "_")
-                            local fx_found = FindFXIDName(VST_INFO, id)
-                            if fx_found then
-                                table.insert(CAT[#CAT].list[#CAT[#CAT].list].fx, fx_found)
-                            end
-                        end
+            local folder_item = item_lookup[line_id]
+            if folder_item then
+                local item = folder_item:gsub("R_ITEM_", "", 1)
+                local fx_found
+                -- VST
+                if fx_type == "3" then -- VST
+                    local id = os:match("Win") and item:reverse():match("(.-)\\") or item:reverse():match("(.-)/")
+                    if id then
+                        -- NEED TO REPLACE WHITESPACES AND DASH WITH LOWER DASH ALSO (HOW ITS IN VST INI FILE)
+                        id = id:reverse():gsub(" ", "_"):gsub("-", "_")
+                        fx_found = FindFXIDName(VST_INFO, id)
                     end
+                elseif fx_type == "2" then       -- JSFX
+                    fx_found = FindFXIDName(JS_INFO, item)
+                elseif fx_type == "7" then       -- CLAP
+                    fx_found = FindFXIDName(CLAP_INFO, item)
+                elseif fx_type == "1" then       -- LV"
+                    fx_found = FindFXIDName(LV2_INFO, item)
+                elseif fx_type == "5" then       -- AU
+                    fx_found = FindFXIDName(AU_INFO, item)
+                elseif fx_type == "1048576" then -- SMART FOLDER
+                    CAT[#CAT].list[#CAT[#CAT].list].smart = true
+                    CAT[#CAT].list[#CAT[#CAT].list].fx = ParseSmartFolder(item)
                 end
-            elseif fx_type == "2" then --JSFX
-                local folder_item = CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1]
-                if folder_item then
-                    local item = folder_item:gsub("R_ITEM_", "", 1)
-                    local fx_found = FindFXIDName(JS_INFO, item)
-                    if fx_found then
-                        table.insert(CAT[#CAT].list[#CAT[#CAT].list].fx, fx_found)
-                    end
+                if fx_found then
+                    table.insert(CAT[#CAT].list[#CAT[#CAT].list].fx, fx_found)
                 end
-            elseif fx_type == "7" then -- CLAP
-                local folder_item = CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1]
-                if folder_item then
-                    local item = folder_item:gsub("R_ITEM_", "", 1)
-                    local fx_found = FindFXIDName(CLAP_INFO, item)
-                    if fx_found then
-                        table.insert(CAT[#CAT].list[#CAT[#CAT].list].fx, fx_found)
-                    end
-                end
-            elseif fx_type == "1" then -- LV2
-                local folder_item = CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1]
-                if folder_item then
-                    local item = folder_item:gsub("R_ITEM_", "", 1)
-                    local fx_found = FindFXIDName(LV2_INFO, item)
-                    if fx_found then
-                        table.insert(CAT[#CAT].list[#CAT[#CAT].list].fx, fx_found)
-                    end
-                end
-            elseif fx_type == "5" then -- AU
-                local folder_item = CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1]
-                if folder_item then
-                    local item = folder_item:gsub("R_ITEM_", "", 1)
-                    local fx_found = FindFXIDName(AU_INFO, item)
-                    if fx_found then
-                        table.insert(CAT[#CAT].list[#CAT[#CAT].list].fx, fx_found)
-                    end
-                end
-            elseif fx_type == "1048576" then -- SMART FOLDER
-                local folder_item = CAT[#CAT].list[#CAT[#CAT].list].fx[line_id + 1]
-                CAT[#CAT].list[#CAT[#CAT].list].smart = true
-                CAT[#CAT].list[#CAT[#CAT].list].fx = ParseSmartFolder(folder_item:gsub("R_ITEM_", "", 1))
-                --CAT[#CAT].list[#CAT[#CAT].list].filter = folder_item:gsub("R_ITEM_", "", 1)
             end
         end
         -- RENAME ORIGINAL FOLDER NAME "[Folder0]" TO PROPER ID NAME (Name0=Favorites)
