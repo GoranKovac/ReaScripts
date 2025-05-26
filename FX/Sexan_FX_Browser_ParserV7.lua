@@ -1,11 +1,10 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.44
+-- @version 1.45
 -- @changelog
---  Fix parsing user folders
---  Properly link fx_type with fx
---  Cleanup code a bit
+--  Add parsing fx chains for favorites (type == 1000)
+--  Include adding folder chains code
 
 local r                                = reaper
 local os                               = r.GetOS()
@@ -554,6 +553,8 @@ local function ParseFavorites()
                 elseif fx_type == "1048576" then -- SMART FOLDER
                     CAT[#CAT].list[#CAT[#CAT].list].smart = true
                     CAT[#CAT].list[#CAT[#CAT].list].fx = ParseSmartFolder(item)
+                elseif fx_type == "1000" then -- FX CHAIN
+                    table.insert(CAT[#CAT].list[#CAT[#CAT].list].fx, item .. ".RfxChain")
                 end
                 if fx_found then
                     table.insert(CAT[#CAT].list[#CAT[#CAT].list].fx, fx_found)
@@ -921,8 +922,13 @@ end
 --                     end
 --                     if r.ImGui_Selectable(ctx, name) then
 --                         if TRACK then
---                             r.TrackFX_AddByName(TRACK, tbl[i].fx[j], false,
+--                             if name:find(".RfxChain") then
+--                              r.TrackFX_AddByName(TRACK, table.concat({os_separator, tbl[i]}), false,
+--                                  -1000 - r.TrackFX_GetCount(TRACK))
+--                              else
+--                                  r.TrackFX_AddByName(TRACK, tbl[i].fx[j], false,
 --                                 -1000 - r.TrackFX_GetCount(TRACK))
+--                              end
 --                             LAST_USED_FX = tbl[i].fx[j]
 --                         end
 --                     end
