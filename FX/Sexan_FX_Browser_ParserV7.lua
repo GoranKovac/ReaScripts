@@ -1,10 +1,9 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.45
+-- @version 1.46
 -- @changelog
---  Add parsing fx chains for favorites (type == 1000)
---  Include adding folder chains code
+--  Fix table item for adding fx chains from user folders
 
 local r                                = reaper
 local os                               = r.GetOS()
@@ -923,7 +922,7 @@ end
 --                     if r.ImGui_Selectable(ctx, name) then
 --                         if TRACK then
 --                             if name:find(".RfxChain") then
---                              r.TrackFX_AddByName(TRACK, table.concat({os_separator, tbl[i]}), false,
+--                              r.TrackFX_AddByName(TRACK, table.concat({os_separator, tbl[i].fx[j]}), false,
 --                                  -1000 - r.TrackFX_GetCount(TRACK))
 --                              else
 --                                  r.TrackFX_AddByName(TRACK, tbl[i].fx[j], false,
