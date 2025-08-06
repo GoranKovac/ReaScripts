@@ -1,9 +1,9 @@
 -- @description Sexan ParaNormal FX Router
 -- @author Sexan
 -- @license GPL v3
--- @version 1.43
+-- @version 1.44
 -- @changelog
---  Adjust Settings height
+--  Load imgui shims for backward compatibility
 -- @provides
 --   Modules/*.lua
 --   Fonts/*.ttf
@@ -11,7 +11,8 @@
 --   FXChains/*.RfxChain
 --   [effect] JSFX/*.jsfx
 
-local r         = reaper
+local r = reaper
+dofile(r.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua')('0.9.3')
 local ImGui     = {}
 local track_api = {}
 local take_api  = {}
@@ -27,7 +28,7 @@ take_api["GetFXEnvelope"] = r.TakeFX_GetEnvelope
 track_api["GetFXEnvelope"] = r.GetFXEnvelope
 
 API = track_api
-AW, AH = 0,0
+AW, AH = 0, 0
 for name, func in pairs(reaper) do
     name = name:match('^ImGui_(.+)$')
     if name then ImGui[name] = func end
@@ -166,8 +167,8 @@ V_LAYOUT                = true
 CENTER_RESET            = false
 
 
-OPEN_PM_INSPECTOR       = false
-MODE                    = "TRACK"
+OPEN_PM_INSPECTOR = false
+MODE              = "TRACK"
 
 --profiler = dofile(reaper.GetResourcePath() ..
 --  '/Scripts/ReaTeam Scripts/Development/cfillion_Lua profiler.lua')
@@ -460,7 +461,7 @@ local function Main()
         MX, MY = r.ImGui_GetMousePos(ctx)
         DRAGX, DRAGY = r.ImGui_GetMouseDragDelta(ctx, nil, nil, 0)
         UpdateLastTargetCanvas()
-        
+
         r.ImGui_PushFont(ctx, CUSTOM_FONT and SYSTEM_FONT_FACTORY or DEFAULT_FONT_FACTORY)
 
         r.ImGui_Text(ctx, "MODE ")
