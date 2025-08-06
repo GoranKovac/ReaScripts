@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.62
+-- @version 0.35.63
 -- @changelog
---  Fix "Open Custom Image folder"
+--  Fix button width in setup script for upcomming imgui
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua

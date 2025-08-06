@@ -516,9 +516,11 @@ end
 
 local function TabButtons()
     r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_WindowPadding(), 0, 2)
+    local fpad_x, fpad_y = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_FramePadding())
     if r.ImGui_BeginChild(ctx, "custom_tab", nil, 30) then
         r.ImGui_SetCursorPosX(ctx, 30)
-        if r.ImGui_InvisibleButton(ctx, "APPLY", 100, 26) then
+        local label_size = r.ImGui_CalcTextSize(ctx, "APPLY Changes")
+        if r.ImGui_InvisibleButton(ctx, "APPLY", label_size + (fpad_x * 2), 26) then
             MakePieFile()
         end
         GeneralDrawlistButton("APPLY Changes", nil, "A")
@@ -526,14 +528,16 @@ local function TabButtons()
 
         r.ImGui_PushStyleVar(ctx, r.ImGui_StyleVar_ItemSpacing(), 0, 0)
         r.ImGui_SetCursorPosX(ctx, math.floor(r.ImGui_GetContentRegionAvail(ctx) / 2) - 130)
-        if r.ImGui_InvisibleButton(ctx, "Pie", 100, 26) then
+        local label_size = r.ImGui_CalcTextSize(ctx, "Pie")
+        if r.ImGui_InvisibleButton(ctx, "Pie", label_size + (fpad_x * 2), 26) then
             STATE = "PIE"
             UPDATE_FILTER = true
             RefreshImgObj(CUR_PIE)
         end
         GeneralDrawlistButton("Pie", (STATE == "PIE"), "L")
         r.ImGui_SameLine(ctx)
-        if r.ImGui_InvisibleButton(ctx, "Menu Editor", 100, 26) then
+        local label_size = r.ImGui_CalcTextSize(ctx, "Menu Editor")
+        if r.ImGui_InvisibleButton(ctx, "Menu Editor", label_size + (fpad_x * 2), 26) then
             STATE = "EDITOR"
             UPDATE_FILTER = true
             RefreshImgObj(CUR_MENU_PIE)
@@ -541,14 +545,16 @@ local function TabButtons()
         GeneralDrawlistButton("Menu Editor", STATE == "EDITOR")
 
         r.ImGui_SameLine(ctx)
-        if r.ImGui_InvisibleButton(ctx, "Settings", 100, 26) then
+        local label_size = r.ImGui_CalcTextSize(ctx, "Settings")
+        if r.ImGui_InvisibleButton(ctx, "Settings", label_size + (fpad_x * 2), 26) then
             STATE = "SETTINGS"
         end
         GeneralDrawlistButton("Settings", STATE == "SETTINGS", "R")
 
         if STATE == "EDITOR" and CUR_MENU_PIE.guid ~= "TEMP" then
             r.ImGui_SameLine(ctx, nil, 100)
-            if r.ImGui_InvisibleButton(ctx, "Export to Action", 100, 26) then
+            local label_size = r.ImGui_CalcTextSize(ctx, "Export to Action")
+            if r.ImGui_InvisibleButton(ctx, "Export to Action", label_size + (fpad_x * 2), 26) then
                 ExportToLuaFile(CUR_MENU_PIE.guid, CUR_MENU_PIE.name)
             end
             GeneralDrawlistButton("Export to Action", SETTINGS ~= nil, "A")
