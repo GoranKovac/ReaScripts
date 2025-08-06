@@ -1328,7 +1328,9 @@ local function Settings()
         r.ImGui_Unindent(ctx)
         r.ImGui_Separator(ctx)
     end
-    if r.ImGui_InvisibleButton(ctx, "OPEN CUSTOM IMAGES FOLDER", 190, 26) then
+    local fpad_x, fpad_y = r.ImGui_GetStyleVar(ctx, r.ImGui_StyleVar_FramePadding())
+    local label_size = r.ImGui_CalcTextSize(ctx, "OPEN CUSTOM IMAGES FOLDER")
+    if r.ImGui_InvisibleButton(ctx, "OPEN CUSTOM IMAGES FOLDER", label_size + (fpad_x * 2), 26) then
         -- local cmd
         -- if r.GetOS():sub(1, 3) == 'Win' then
         --     cmd = 'cmd.exe /c explorer'

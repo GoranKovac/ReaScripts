@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.63
+-- @version 0.35.64
 -- @changelog
---  Fix button width in setup script for upcomming imgui
+--  Fix button width take 2
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
