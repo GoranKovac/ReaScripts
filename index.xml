@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="ed7a3b47809fe555482ea8cebaa6a76589289b89" name="Sexan_Scripts">
+<index version="1" commit="81ece895e176605808f592d2601b1f9a7eb4613e" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -914,6 +914,10 @@ Include adding folder chains code]]></changelog>
         <changelog><![CDATA[Fixed button width]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/2671fd34e728037f50e82bc15dc9a4e2fa4f863b/Lil_Series/Lil_Item_Homie.lua</source>
       </version>
+      <version name="1.25" author="Sexan" time="2025-08-11T15:55:00Z">
+        <changelog><![CDATA[Add backward compatibility for latest imgui]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/81ece895e176605808f592d2601b1f9a7eb4613e/Lil_Series/Lil_Item_Homie.lua</source>
+      </version>
     </reapack>
     <reapack name="Lil_Track_Homie.lua" type="script" desc="Lil Track Homie">
       <version name="1.9" author="Sexan" time="2022-04-14T10:23:50Z">
@@ -939,6 +943,10 @@ Include adding folder chains code]]></changelog>
       <version name="1.14" author="Sexan" time="2023-08-25T21:48:40Z">
         <changelog><![CDATA[+ use mouse under track unless multiple tracks are selected]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/6122b788d19d53d94c59d173d8224556d0f31060/Lil_Series/Lil_Track_Homie.lua</source>
+      </version>
+      <version name="1.15" author="Sexan" time="2025-08-11T15:55:00Z">
+        <changelog><![CDATA[Add backward compatibility for latest imgui]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/81ece895e176605808f592d2601b1f9a7eb4613e/Lil_Series/Lil_Track_Homie.lua</source>
       </version>
     </reapack>
   </category>
