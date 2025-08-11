@@ -1,12 +1,12 @@
 -- @description Lil Track Homie
 -- @author Sexan
 -- @license GPL v3
--- @version 1.14
+-- @version 1.15
 -- @changelog
---   + use mouse under track unless multiple tracks are selected
+--   Add backward compatibility for latest imgui
 
 local reaper = reaper
-
+dofile(reaper.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua')('0.9.3')
 local floor = math.floor
 local max = math.max
 local abs = math.abs
