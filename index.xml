@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="81d3a9c82820c77462505e5d4364f5fee25ceb6d" name="Sexan_Scripts">
+<index version="1" commit="520c39c58b41fe68ab648c0acc59fa1490c381cb" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -785,6 +785,10 @@ Include adding folder chains code]]></changelog>
       <version name="1.47" author="Sexan" time="2025-08-12T11:21:04Z">
         <changelog><![CDATA[Updated example code for requireing]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/81d3a9c82820c77462505e5d4364f5fee25ceb6d/FX/Sexan_FX_Browser_ParserV7.lua</source>
+      </version>
+      <version name="1.48" author="Sexan" time="2025-08-12T11:35:48Z">
+        <changelog><![CDATA[Updated example to require script from ReaPack]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/520c39c58b41fe68ab648c0acc59fa1490c381cb/FX/Sexan_FX_Browser_ParserV7.lua</source>
       </version>
     </reapack>
   </category>
