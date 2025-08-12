@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" commit="d54adbe79dbdde2332ccdded3a21823a3f3ee071" name="Sexan_Scripts">
+<index version="1" commit="81d3a9c82820c77462505e5d4364f5fee25ceb6d" name="Sexan_Scripts">
   <category name="Alpha">
     <reapack name="Sexan_Track_versions_gui.lua" type="script" desc="Track versions v2">
       <metadata>
@@ -781,6 +781,10 @@ Include adding folder chains code]]></changelog>
       <version name="1.46" author="Sexan" time="2025-05-26T10:22:39Z">
         <changelog><![CDATA[Fix table item for adding fx chains from user folders]]></changelog>
         <source main="main">https://github.com/GoranKovac/ReaScripts/raw/737ce5a410028df24727afc22e7663c5dc7f20ed/FX/Sexan_FX_Browser_ParserV7.lua</source>
+      </version>
+      <version name="1.47" author="Sexan" time="2025-08-12T11:21:04Z">
+        <changelog><![CDATA[Updated example code for requireing]]></changelog>
+        <source main="main">https://github.com/GoranKovac/ReaScripts/raw/81d3a9c82820c77462505e5d4364f5fee25ceb6d/FX/Sexan_FX_Browser_ParserV7.lua</source>
       </version>
     </reapack>
   </category>
