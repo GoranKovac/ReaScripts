@@ -741,9 +741,9 @@ end
 
 -- local os_separator = package.config:sub(1, 1)
 -- package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
--- require("Sexan_FX_Browser")
-
 -- local r = reaper
+-- local fx_browser = r.GetResourcePath() .. "/Scripts/Sexan_Scripts/FX/Sexan_FX_Browser_ParserV7.lua"
+-- dofile(fx_browser)
 -- local ctx = r.ImGui_CreateContext('FX INI PARSER')
 
 -- -- USE ONLY NON CHACHING OR CACHING! NOT BOTH AT THE SAME TIME
