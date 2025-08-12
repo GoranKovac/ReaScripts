@@ -1,9 +1,9 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.46
+-- @version 1.47
 -- @changelog
---  Fix table item for adding fx chains from user folders
+--  Updated example code for requireing
 
 local r                                = reaper
 local os                               = r.GetOS()
