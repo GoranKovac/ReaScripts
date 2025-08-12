@@ -1,9 +1,9 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.47
+-- @version 1.48
 -- @changelog
---  Updated example code for requireing
+--  Updated example to require script from ReaPack
 
 local r                                = reaper
 local os                               = r.GetOS()
@@ -742,14 +742,45 @@ end
 -- local os_separator = package.config:sub(1, 1)
 -- package.path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]] .. "?.lua;" -- GET DIRECTORY FOR REQUIRE
 -- local r = reaper
--- local fx_browser = r.GetResourcePath() .. "/Scripts/Sexan_Scripts/FX/Sexan_FX_Browser_ParserV7.lua"
--- dofile(fx_browser)
+-- function ThirdPartyDeps()
+--     local fx_browser = r.GetResourcePath() .. "/Scripts/Sexan_Scripts/FX/Sexan_FX_Browser_ParserV7.lua"
+--     local fx_browser_reapack = '"sexan fx browser parser v7"'
+--     local reapack_process
+--     local repos = {
+--         { name = "Sexan_Scripts",   url = 'https://github.com/GoranKovac/ReaScripts/raw/master/index.xml' }
+--     }
+--     for i = 1, #repos do
+--         local retinfo, url, enabled, autoInstall = r.ReaPack_GetRepositoryInfo(repos[i].name)
+--         if not retinfo then
+--             retval, error = r.ReaPack_AddSetRepository(repos[i].name, repos[i].url, true, 0)
+--             reapack_process = true
+--         end
+--     end
+--     if reapack_process then
+--         r.ShowMessageBox("Added Third-Party ReaPack Repositories", "ADDING REPACK REPOSITORIES", 0)
+--         r.ReaPack_ProcessQueue(true)
+--         reapack_process = nil
+--     end
+--     if not reapack_process then
+--         local deps = {}
+--         if not r.ImGui_GetBuiltinPath then
+--            deps[#deps + 1] = '"Dear Imgui"'
+--         end
+--         if r.file_exists(fx_browser) then
+--             dofile(fx_browser)
+--         else
+--             deps[#deps + 1] = fx_browser_reapack
+--         end
+--         if #deps ~= 0 then
+--             r.ShowMessageBox("Need Additional Packages.\nPlease Install it in next window", "MISSING DEPENDENCIES", 0)
+--             r.ReaPack_BrowsePackages(table.concat(deps, " OR "))
+--             return true
+--         end
+--     end
+-- end
+-- if ThirdPartyDeps() then return end
+
 -- local ctx = r.ImGui_CreateContext('FX INI PARSER')
-
--- -- USE ONLY NON CHACHING OR CACHING! NOT BOTH AT THE SAME TIME
-
--- --NON CACHING -- USE IF YOU WANT RESCAN ON EVERY SCRIPT STARTUP
--- --local FX_LIST_TEST, CAT_TEST = GetFXTbl()
 
 -- --CACHIN TO FILE - USE IF YOU WANT TO SCAN ONLY ONCE THEN USE THAT TXT FILE FOR FASTER LOADS
 -- local FX_LIST_TEST, CAT_TEST = ReadFXFile()
