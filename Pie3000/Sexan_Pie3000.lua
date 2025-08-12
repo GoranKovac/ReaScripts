@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.64
+-- @version 0.35.65
 -- @changelog
---  Fix button width take 2
+--  Potential fix for icon font crash
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -384,8 +384,8 @@ local function AnimationProgress()
         CENTER_BTN_PROG = MAIN_PROG
         if MAIN_PROG < 0.1 then DONE = true end
     else
-        CENTER_BTN_PROG = EasingAnimation(0, 1, 0.3, easingFunctions.inOutCubic, SCRIPT_START_TIME)
-        MAIN_PROG = EasingAnimation(0, 1, 0.3, easingFunctions.outCubic, START_TIME)
+        CENTER_BTN_PROG = EasingAnimation(0.01, 1, 0.3, easingFunctions.inOutCubic, SCRIPT_START_TIME)
+        MAIN_PROG = EasingAnimation(0.01, 1, 0.3, easingFunctions.outCubic, START_TIME)
         if BUTTON_HOVER_TIME then
             BUTTON_PROG = EasingAnimation(0, 1, 0.15, easingFunctions.outCubic, BUTTON_HOVER_TIME)
         end
