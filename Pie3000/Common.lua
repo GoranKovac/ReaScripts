@@ -1044,8 +1044,8 @@ local function PieButtonDrawlist(pie, button_radius, selected, hovered, button_p
 
     if png then
         local png_bg_col = (def_color & ~0xFF) | (pie.col & 0xFF)
-        -- r.ImGui_DrawList_AddCircle(draw_list, button_center.x, button_center.y, (button_radius - 1.5) * CENTER_BTN_PROG,
-        -- LerpAlpha(pie.col == 0xff and main_color or pie.col, CENTER_BTN_PROG), 128, 2.5)
+        r.ImGui_DrawList_AddCircle(draw_list, button_center.x, button_center.y, (button_radius - 1.5) * CENTER_BTN_PROG,
+            LerpAlpha(pie.col == 0xff and main_color or pie.col, CENTER_BTN_PROG), 128, 2.5)
     end
 
     -- COLOR BG
