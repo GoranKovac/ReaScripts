@@ -1105,9 +1105,11 @@ local function PieButtonDrawlist(pie, button_radius, selected, hovered, button_p
         local icon_w, icon_h = r.ImGui_CalcTextSize(ctx, icon)
         local i_x, i_y = button_center.x - icon_w / 2, button_center.y - icon_h / 2
         if not luma_high then
-            r.ImGui_DrawList_AddTextEx(draw_list, nil, icon_font_size * CENTER_BTN_PROG, i_x + 2, i_y + 2, 0xaa, icon)
+            r.ImGui_DrawList_AddTextEx(draw_list, nil, math.max(1, icon_font_size * CENTER_BTN_PROG), i_x + 2, i_y + 2,
+                0xaa, icon)
         end
-        r.ImGui_DrawList_AddTextEx(draw_list, nil, icon_font_size * CENTER_BTN_PROG, i_x, i_y, icon_col, icon)
+        r.ImGui_DrawList_AddTextEx(draw_list, nil, math.max(1, icon_font_size * CENTER_BTN_PROG), i_x, i_y, icon_col,
+            icon)
         r.ImGui_PopFont(ctx)
     end
 

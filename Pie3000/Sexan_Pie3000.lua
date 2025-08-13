@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.35.65
+-- @version 0.35.66
 -- @changelog
---  Potential fix for icon font crash
+--  Make sure animation values dont go to 0 for new imgui
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
