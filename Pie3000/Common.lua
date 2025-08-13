@@ -959,10 +959,11 @@ local function DrawShortcut(pie, button_pos, selected)
         r.ImGui_DrawList_AddRectFilled(draw_list, xs, ys, xe, ye, LerpAlpha(0x1d1f27ff, CENTER_BTN_PROG), 5,
             r.ImGui_DrawFlags_RoundCornersAll())
         -- SHADOW
-        r.ImGui_DrawList_AddTextEx(draw_list, nil, GUI_FONT_SIZE * CENTER_BTN_PROG, txt_c - (key_w / 2) + 1,
+        r.ImGui_DrawList_AddTextEx(draw_list, nil, math.max(1, GUI_FONT_SIZE * CENTER_BTN_PROG), txt_c - (key_w / 2) + 1,
             button_pos.ky + 1, LerpAlpha(0xFF, CENTER_BTN_PROG), KEYS[pie.key])
         -- MAIN
-        r.ImGui_DrawList_AddTextEx(draw_list, nil, GUI_FONT_SIZE * CENTER_BTN_PROG, txt_c - (key_w / 2), button_pos.ky,
+        r.ImGui_DrawList_AddTextEx(draw_list, nil, math.max(1, GUI_FONT_SIZE * CENTER_BTN_PROG), txt_c - (key_w / 2),
+            button_pos.ky,
             LerpAlpha(0x8cc3ffff, CENTER_BTN_PROG), KEYS[pie.key])
     end
     r.ImGui_PopFont(ctx)
