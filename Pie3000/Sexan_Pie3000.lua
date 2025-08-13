@@ -1,10 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.36
+-- @version 0.36.1
 -- @changelog
---  Add alpha support for Modern style
---  Fix one more case with font clamping for latest imgui
+--  forgot to uncoment button actual color
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
