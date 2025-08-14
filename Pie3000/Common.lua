@@ -1962,7 +1962,7 @@ local function OpenDropDownStyle(pie)
     if wnd_hovered then
         if LAST_ACTION then LAST_ACTION = nil end
     end
-    if r.ImGui_BeginChild(ctx, "DropDownSetup", max_w + 50, txt_separator_h + (#pie * font_size) + (wnd_padding * 2) + item_s_y * (#pie), true) then
+    if r.ImGui_BeginChild(ctx, "DropDownSetup", max_w + 50, txt_separator_h + (#pie * r.ImGui_GetTextLineHeight(ctx)) + (wnd_padding * 2) + item_s_y * (#pie), true) then
         local tracker_state = r.GetToggleCommandState(tracker_script_id)
         local prev_x, prev_y = r.ImGui_GetCursorPos(ctx)
         r.ImGui_PushStyleColor(ctx, r.ImGui_Col_Button(), tracker_state == 1 and 0x00ff00cc or 0xff0000cc)
