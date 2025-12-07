@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.36.3
+-- @version 0.36.4
 -- @changelog
---  Fix dropdown drawing
+--  Reduce 5px from all sizes to make some linux compositors happy
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -47,6 +47,10 @@ PIE_LIST = {}
 local function GetMonitorFromPoint()
     local x, y = r.GetMousePosition()
     LEFT, TOP, RIGHT, BOT = r.my_getViewport(x, y, x, y, x, y, x, y, true)
+    LEFT = LEFT + 5
+    TOP = TOP + 5
+    RIGHT = RIGHT - 5
+    BOT = BOT - 5
 end
 local ACTIONS, ACTIONS_PAIRS                                                                                     = GetMainActions()
 local MIDI_ACTIONS, INLINE_ACTIONS, EVENT_ACTIONS, MIDI_ACTIONS_PAIRS, INLINE_ACTIONS_PAIRS, EVENT_ACTIONS_PAIRS =
