@@ -1064,16 +1064,19 @@ function DrawUserSettings()
     if not r.ImGui_BeginChild(ctx, 'toolbars', -FLT_MIN, -FLT_MIN, false, r.ImGui_WindowFlags_NoInputs()) then return end
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x000000EE)
     r.ImGui_SetNextWindowPos(ctx, WX + 5, WY + 85)
-    local settings_min_h = 196
+    local item_h = r.ImGui_GetTextLineHeightWithSpacing(ctx)
+    local new_im_padding = item_h * 2 + s_frame_y * 2
+
+    local settings_min_h = item_h * 11
     if CLH_LAYOUT then
-        settings_min_h = settings_min_h + 180
+        settings_min_h = settings_min_h + item_h * 9
     end
     if CLH_COLORING then
-        settings_min_h = settings_min_h + 230
+        settings_min_h = settings_min_h + item_h * 12
     end
     if CLH_BEHAVIORS then
-        settings_min_h = settings_min_h + 180
-    end
+        settings_min_h = settings_min_h + item_h * 9
+        end
     if r.ImGui_BeginChild(ctx, "USERSETTIGS", 220, settings_min_h, true) then --718
         SETTINGS_HOVERED = r.ImGui_IsWindowHovered(ctx)
         local COLOR = GetColorTbl()
@@ -1084,7 +1087,7 @@ function DrawUserSettings()
 
         r.ImGui_SeparatorText(ctx, "FONT")
         r.ImGui_PushID(ctx, "SETTINGS_FONT")
-        if r.ImGui_BeginListBox(ctx, "", nil, 38) then
+        if r.ImGui_BeginListBox(ctx, "", nil, new_im_padding) then
             if r.ImGui_Selectable(ctx, "DEFAULT", CUSTOM_FONT == nil) then
                 SELECTED_FONT = DEFAULT_FONT
                 CUSTOM_FONT = nil
@@ -1100,7 +1103,7 @@ function DrawUserSettings()
         --! LAYOUT COLLAPSE
         CLH_LAYOUT = r.ImGui_CollapsingHeader(ctx, "LAYOUT", false)
         if CLH_LAYOUT then
-            if r.ImGui_BeginListBox(ctx, "##LAYOUT1234", nil, 38) then
+            if r.ImGui_BeginListBox(ctx, "##LAYOUT1234", nil, new_im_padding) then
                 if r.ImGui_Selectable(ctx, "VERTICAL", V_LAYOUT == true) then
                     if V_LAYOUT ~= true then
                         V_LAYOUT = true
@@ -1188,7 +1191,7 @@ function DrawUserSettings()
             _, CENTER_RESET = r.ImGui_Checkbox(ctx, "CENTER RESET", CENTER_RESET)
             SettingsTooltips("RESET/CENTER VIEW ON TRACK CHANGE, SCRIPT START")
 
-            if r.ImGui_BeginListBox(ctx, "NEW FX\nDND", nil, 38) then
+            if r.ImGui_BeginListBox(ctx, "NEW FX\nDND", nil, new_im_padding) then
                 if r.ImGui_Selectable(ctx, "REPLACE", DEFAULT_DND == true) then
                     DEFAULT_DND = true
                 end

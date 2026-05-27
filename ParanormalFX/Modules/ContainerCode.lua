@@ -23,7 +23,9 @@ function SetTRContainerData(tbl)
 end
 
 function TrackContainers()
-    if not TR_CONTAINERS then return end
+    if not TR_CONTAINERS then
+        return
+    end
     for k in pairs(FX_DATA) do
         if FX_DATA[k].type == "Container" then
             if not TR_CONTAINERS[k] then
@@ -34,22 +36,27 @@ function TrackContainers()
 end
 
 function CheckIfSafeToExplode(tbl, i)
-    if tbl[i].type ~= "Container" then return end
+    if tbl[i].type ~= "Container" then
+        return
+    end
 
     if tbl[i].p > 0 then
-        if #tbl[i].sub > 1 then return end
+        if #tbl[i].sub > 1 then
+            return
+        end
     end
     if tbl[i].p == 0 and tbl[i + 1] and tbl[i + 1].p > 0 then
-        if #tbl[i].sub > 1 then return end
-
+        if #tbl[i].sub > 1 then
+            return
+        end
     end
     return true
 end
 
 function ExplodeContainer(tbl, i)
     local cont_parent = tbl[i].pid
-   r.Undo_BeginBlock()
-   r.PreventUIRefresh(1)
+    r.Undo_BeginBlock()
+    r.PreventUIRefresh(1)
     for child_i = 1, #tbl[i].sub do
         UpdateFxData()
         local cont_parent_tbl = GetFx(cont_parent)
@@ -70,20 +77,28 @@ function ExplodeContainer(tbl, i)
 end
 
 function ValidateTrackContainers()
-    if not TR_CONTAINERS then return end
+    if not TR_CONTAINERS then
+        return
+    end
     for k in pairs(TR_CONTAINERS) do
-        if not FX_DATA[k] then TR_CONTAINERS[k] = nil end
+        if not FX_DATA[k] then
+            TR_CONTAINERS[k] = nil
+        end
     end
 end
 
 function AddCollapseData(tbl, id)
-    if tbl.type ~= "Container" then return end
+    if tbl.type ~= "Container" then
+        return
+    end
     local guid = API.GetFXGUID(TARGET, id)
     TR_CONTAINERS[guid] = { collapse = CheckCollapse(tbl, 1, 1) }
 end
 
 function AddCollapsePASTEData(id)
-    if CLIPBOARD.type ~= "Container" then return end
+    if CLIPBOARD.type ~= "Container" then
+        return
+    end
     local guid = API.GetFXGUID(TARGET, id)
     TR_CONTAINERS[guid] = { collapse = CLIPBOARD.collapsed }
 end
@@ -94,7 +109,9 @@ function InitTrackContainers()
 end
 
 function GetParentContainerByGuid(tbl)
-    if not tbl then return end
+    if not tbl then
+        return
+    end
     return tbl.type == "ROOT" and tbl or GetFx(tbl.pid)
 end
 
@@ -117,7 +134,9 @@ local function IsChildOfContainer(parrent, target, parallel_guid)
     local found
     local dst = target
     while not found do
-        if dst.type == "ROOT" then break end
+        if dst.type == "ROOT" then
+            break
+        end
         if dst.pid == parrent_guid then
             if parallel_guid then
                 -- ALLOW MOVING ON PARENTS PARALLEL BUTTON (ADDING IT NEXT TO IT)
@@ -150,7 +169,9 @@ function IsChildOfParrent(tbl, i, parallel_guid, serial_insert_point)
     local dndtype, payload = GetPayload()
     if dndtype == "DND MOVE FX" then
         if payload ~= "" then
-            if tbl[i].type == "ROOT" then return end
+            if tbl[i].type == "ROOT" then
+                return
+            end
             local src_guid, src_i = payload:match("(.+),(.+)")
             local src_fx = GetFx(src_guid)
             -- DRAG STARTED WITH CONTAINER - DO NOT MOVE INTO ITS FX CHILDS
@@ -170,9 +191,13 @@ end
 
 function IsOnSameParallelLane(tbl, i, parallel, serial_insert_point)
     --! ALLOW DRAG COPY
-    if not parallel then return false end
+    if not parallel then
+        return false
+    end
     --! IGNORE IF DRAG COPY
-    if CTRL_DRAG then return false end
+    if CTRL_DRAG then
+        return false
+    end
     local dndtype, payload = GetPayload()
     if dndtype == "DND MOVE FX" then
         if payload ~= "" then
@@ -190,9 +215,13 @@ end
 
 function IsSameSerialPos(tbl, i, serial_insert_point)
     --! ONLY SERIAL BUTTON
-    if not serial_insert_point then return end
+    if not serial_insert_point then
+        return
+    end
     --! IGNORE IF DRAG COPY
-    if CTRL_DRAG then return false end
+    if CTRL_DRAG then
+        return false
+    end
     local dndtype, payload = GetPayload()
     if dndtype == "DND MOVE FX" then
         if payload ~= "" then
@@ -216,7 +245,9 @@ end
 
 function IsOnSelfEncloseButton(tbl, i)
     --! IGNORE IF DRAG_COPY
-    if CTRL_DRAG then return false end
+    if CTRL_DRAG then
+        return false
+    end
     local dndtype, payload = GetPayload()
     if dndtype == "DND MOVE FX" then
         if payload ~= "" then
@@ -242,7 +273,9 @@ local function CheckIsFirstARA(tbl, i, parallel)
 end
 
 function ARA_Protection(tbl, i, parallel)
-    if CheckIsFirstARA(tbl, i, parallel) then return true end
+    if CheckIsFirstARA(tbl, i, parallel) then
+        return true
+    end
     if DRAG_PREVIEW and DRAG_PREVIEW.is_ara then
         if tbl[i].type ~= "ROOT" then
             tbl[i].no_draw_s = true
@@ -299,7 +332,9 @@ function MoveTargetsToNewContainer(tbl, i, src_guid, src_i)
         src_fx = GetFx(src_guid)
         src_parrent = GetFx(src_fx.pid)
         -- SWAP INFO WITH NEXT FX TO KEEP PLUGINS IN PLACE
-        if is_move then CheckNextItemParallel(src_i, src_parrent) end
+        if is_move then
+            CheckNextItemParallel(src_i, src_parrent)
+        end
     end
     -- ADD CONTAINER AT THE BEGINNING OF THE CHAIN TO MAKE IT EASIER TO INSERT THINGS
     --! CHECK ITS POSITION WITH BLACKLISTED FX (MELODYNE AND SIMILAR NEED TO BE IN SLOT 1 AND CANNOT BE IN CONTAINER)
@@ -454,7 +489,9 @@ end
 
 local function IterateContainerUpdate(depth, track, container_id, parent_fx_count, previous_diff, container_guid)
     local c_ok, c_fx_count = API.GetNamedConfigParm(track, 0x2000000 + container_id, "container_count")
-    if not c_ok then return end
+    if not c_ok then
+        return
+    end
     local diff = depth == 0 and parent_fx_count + 1 or (parent_fx_count + 1) * previous_diff
     local child_guids = {}
 
@@ -474,7 +511,9 @@ local function IterateContainerUpdate(depth, track, container_id, parent_fx_coun
         local _, fx_type = API.GetNamedConfigParm(track, 0x2000000 + fx_id, "fx_type")
         local _, para = API.GetNamedConfigParm(track, 0x2000000 + fx_id, "parallel")
 
-        if i > 1 then row = para == "0" and row + 1 or row end
+        if i > 1 then
+            row = para == "0" and row + 1 or row
+        end
 
         FX_DATA[fx_guid] = {
             type = fx_type,
@@ -496,7 +535,9 @@ local function IterateContainerUpdate(depth, track, container_id, parent_fx_coun
 end
 
 function UpdateFxData()
-    if not TARGET then return end
+    if not TARGET then
+        return
+    end
     FX_DATA = {}
     FX_DATA = {
         ["ROOT"] = {
@@ -504,7 +545,7 @@ function UpdateFxData()
             pid = "ROOT",
             guid = "ROOT",
             ROW = 0,
-        }
+        },
     }
     local row = 1
     local total_fx_count = API.GetCount(TARGET)
@@ -512,7 +553,9 @@ function UpdateFxData()
         local _, fx_type = API.GetNamedConfigParm(TARGET, i - 1, "fx_type")
         local _, para = API.GetNamedConfigParm(TARGET, i - 1, "parallel")
         local fx_guid = API.GetFXGUID(TARGET, i - 1)
-        if i > 1 then row = para == "0" and row + 1 or row end
+        if i > 1 then
+            row = para == "0" and row + 1 or row
+        end
 
         FX_DATA[fx_guid] = {
             type = fx_type,
@@ -532,7 +575,9 @@ function UpdateFxData()
 end
 
 function CollectFxData()
-    if not TARGET then return end
+    if not TARGET then
+        return
+    end
     UpdateFxData()
     ValidateTrackContainers()
     TrackContainers()
@@ -544,8 +589,12 @@ function UpdateClipboardInfo()
         return
     end
     -- DONT RECALCULATE IF PASTING ON DIFFERENT TARGET
-    if MODE == "TRACK" and CLIPBOARD.track ~= TRACK then return end
-    if MODE == "ITEM" and CLIPBOARD.take ~= TARGET then return end
+    if MODE == "TRACK" and CLIPBOARD.track ~= TRACK then
+        return
+    end
+    if MODE == "ITEM" and CLIPBOARD.take ~= TARGET then
+        return
+    end
 
     UpdateFxData()
     local updated = GetFx(CLIPBOARD.tbl[CLIPBOARD.i].guid)
@@ -561,7 +610,9 @@ function ClipBoard()
     local x, y = r.ImGui_GetContentRegionMax(ctx)
     r.ImGui_SetCursorPos(ctx, 5, y - 30)
     -- NIFTY HACK FOR COMMENT BOX NOT OVERLAP UI BUTTONS
-    if not r.ImGui_BeginChild(ctx, 'hack44', -FLT_MIN, -FLT_MIN, false, r.ImGui_WindowFlags_NoInputs()) then return end
+    if not r.ImGui_BeginChild(ctx, "hack44", -FLT_MIN, -FLT_MIN, false, r.ImGui_WindowFlags_NoInputs()) then
+        return
+    end
     r.ImGui_PushStyleColor(ctx, r.ImGui_Col_ChildBg(), 0x000000EE)
 
     if r.HasExtState("PARANORMALFX2", "COPY_BUFFER") then
@@ -582,7 +633,7 @@ function ClipBoard()
                         P_TYPE = storedTable.parrent_TYPE,
                         collapsed = storedTable.collapsed,
                         type = storedTable.type,
-                        take = storedTable.take_guid and  r.GetMediaItemTakeByGUID( 0, storedTable.take_guid )
+                        take = storedTable.take_guid and r.GetMediaItemTakeByGUID(0, storedTable.take_guid),
                     }
                     for i = 0, r.CountTracks(0) do
                         local track = i == 0 and r.GetMasterTrack(0) or r.GetTrack(0, i - 1)
@@ -598,16 +649,19 @@ function ClipBoard()
     end
 
     if CLIPBOARD.tbl then
-        if CLIPBOARD.track and r.ValidatePtr(CLIPBOARD.track, "MediaTrack*") or CLIPBOARD.take and r.ValidatePtr(CLIPBOARD.take, "MediaItem_Take*")  then
+        if
+            CLIPBOARD.track and r.ValidatePtr(CLIPBOARD.track, "MediaTrack*")
+            or CLIPBOARD.take and r.ValidatePtr(CLIPBOARD.take, "MediaItem_Take*")
+        then
             local size = CalculateItemWH({ name = CLIPBOARD.tbl[CLIPBOARD.i].name }) + 190
             if r.ImGui_BeginChild(ctx, "CLIPBOARD", size, def_btn_h + s_window_y, 1) then
                 if r.HasExtState("PARANORMALFX2", "COPY_BUFFER") then
                     if CLIPBOARD.tbl then
                         local rv, name
                         if MODE == "TRACK" then
-                            rv, name  = r.GetTrackName(CLIPBOARD.track)
+                            rv, name = r.GetTrackName(CLIPBOARD.track)
                         else
-                            name = r.GetTakeName( CLIPBOARD.take )
+                            name = r.GetTakeName(CLIPBOARD.take)
                         end
                         r.ImGui_Text(ctx, "CLIPBOARD: " .. name .. " - FX: " .. CLIPBOARD.tbl[CLIPBOARD.i].name)
                     end
@@ -625,7 +679,9 @@ function ClipBoard()
 end
 
 function Paste(replace, parallel, serial, enclose)
-    if not CLIPBOARD.tbl then return end
+    if not CLIPBOARD.tbl then
+        return
+    end
 
     local is_cut = CLIPBOARD.cut and true or false
 
@@ -637,13 +693,25 @@ function Paste(replace, parallel, serial, enclose)
     r.PreventUIRefresh(1)
     if enclose then
         if is_cut then
-            CheckSourceNextItemParallel(CLIPBOARD.i, CLIPBOARD.P_TYPE, CLIPBOARD.P_DIFF, CLIPBOARD.P_ID, CLIPBOARD.track)
+            CheckSourceNextItemParallel(
+                CLIPBOARD.i,
+                CLIPBOARD.P_TYPE,
+                CLIPBOARD.P_DIFF,
+                CLIPBOARD.P_ID,
+                CLIPBOARD.track
+            )
             API.SetNamedConfigParm(CLIPBOARD.track, CLIPBOARD.id, "parallel", para_info)
         end
         CopyTargetsToNewContainer(CLIPBOARD.track, RC_DATA.tbl, RC_DATA.i, CLIPBOARD.guid, CLIPBOARD.i, is_cut)
     else
         if is_cut then
-            CheckSourceNextItemParallel(CLIPBOARD.i, CLIPBOARD.P_TYPE, CLIPBOARD.P_DIFF, CLIPBOARD.P_ID, CLIPBOARD.track)
+            CheckSourceNextItemParallel(
+                CLIPBOARD.i,
+                CLIPBOARD.P_TYPE,
+                CLIPBOARD.P_DIFF,
+                CLIPBOARD.P_ID,
+                CLIPBOARD.track
+            )
             API.SetNamedConfigParm(CLIPBOARD.track, CLIPBOARD.id, "parallel", para_info)
             --! ADD NEW COLLAPSE DATA IF CONTAINER
             AddCollapsePASTEData(CLIPBOARD.id)
@@ -690,18 +758,18 @@ local surround_mapping = {
 }
 
 function SetChildSurround(fx_tbl, max_ch)
-    local max_allowed = max_ch/2
+    local max_allowed = max_ch / 2
     for i = 1, #fx_tbl do
         local child = GetFx(fx_tbl[i].guid)
         if surround_mapping[i] then
             local pin = surround_mapping[i]
             API.SetNamedConfigParm(TARGET, child.FX_ID, "container_nch", max_ch)
             -- IN
-            API.SetPinMappings(TARGET, child.FX_ID, 0, 0, 2^(pin-1), 0)--Set pin
-            API.SetPinMappings(TARGET, child.FX_ID, 0, 1, 2^(pin), 0)  --Set pin 
+            API.SetPinMappings(TARGET, child.FX_ID, 0, 0, 2 ^ (pin - 1), 0) --Set pin
+            API.SetPinMappings(TARGET, child.FX_ID, 0, 1, 2 ^ pin, 0) --Set pin
             -- OUT
-            API.SetPinMappings(TARGET, child.FX_ID, 1, 0, 2^(pin-1), 0)--Set pin
-            API.SetPinMappings(TARGET, child.FX_ID, 1, 1, 2^(pin), 0)  --Set pin 
+            API.SetPinMappings(TARGET, child.FX_ID, 1, 0, 2 ^ (pin - 1), 0) --Set pin
+            API.SetPinMappings(TARGET, child.FX_ID, 1, 1, 2 ^ pin, 0) --Set pin
         end
     end
 end
