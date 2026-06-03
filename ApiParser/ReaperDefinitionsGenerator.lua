@@ -1,7 +1,7 @@
--- @description Reaper VSCode Definitions Generator
+-- @description Reaper Lua Definitions Generator
 -- @author Sexan, Cfillion, Docs source X-Raym - https://www.extremraym.com/cloud/reascript-doc/
 -- @license GPL v3
--- @version 1.12
+-- @version 1.13
 -- @changelog
 --  Export files in current script path (reaper_defs.lua, api_file.txt)
 
