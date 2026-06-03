@@ -1,14 +1,12 @@
 -- @description Reaper VSCode Definitions Generator
 -- @author Sexan, Cfillion, Docs source X-Raym - https://www.extremraym.com/cloud/reascript-doc/
 -- @license GPL v3
--- @version 1.11
+-- @version 1.12
 -- @changelog
---  Replace <br> html tag with markdown two trailing whitespace for better compability with other IDES
+--  Export files in current script path (reaper_defs.lua, api_file.txt)
 
---local r = reaper
---local script_path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]]
---print(debug.getinfo(1, "S").source)
-local API_PATH = "api_file.txt"
+local script_path = debug.getinfo(1, "S").source:match [[^@?(.*[\/])[^\/]-$]]
+local API_PATH = script_path .. "api_file.txt"
 
 local lua_func_str = [[
 ---is_new_value,filename,sectionID,cmdID,mode,resolution,val,contextstr = reaper.get_action_context()
@@ -667,4 +665,4 @@ local final_str = table.concat(reaper_str_tbl, "\n") ..
     "\n" .. table.concat(gfx_str_tbl, "\n") .. "\n" .. table.concat(array_str_tbl, "\n")
 
 -- EXPORT IN REAPER FOLDER
-SaveToFile(final_str, "reaper_defs.lua")
+SaveToFile(final_str,script_path ..  "reaper_defs.lua")
