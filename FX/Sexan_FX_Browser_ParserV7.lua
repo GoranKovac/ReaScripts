@@ -1,9 +1,11 @@
 -- @description Sexan FX Browser parser V7
 -- @author Sexan
 -- @license GPL v3
--- @version 1.48
+-- @version 1.49
 -- @changelog
---  Updated example to require script from ReaPack
+--  Fix identifier for shell plugins (waves or similar)
+--  Shell plugins only have UID for the shell rather than plugin name
+--  First check if UID exist if not fallback to plugin name
 
 local r                                = reaper
 local os                               = r.GetOS()
@@ -175,6 +177,7 @@ local function FindFXIDName(tbl, id, js)
             -- JS PLUGINS CAN HAVE ONLY PART OF IDENTIFIER IN THE STRING
             if tbl[i].id:find(id) then return tbl[i].name end
         else
+            if tbl[i].tag == id then return tbl[i].name end
             if tbl[i].id == id then return tbl[i].name end
         end
     end
@@ -211,11 +214,13 @@ local function ParseVST(name, ident)
         VST3i[#VST3i + 1] = name
         INSTRUMENTS[#INSTRUMENTS + 1] = name
     end
-    -- WE NEED TO EXTRACT ONLY DLL WITHOUT PATH SO REVERSE IT FOR EASIER MATCH TO FIRST "/"" AFTER DLL
-    ident = os:match("Win") and ident:reverse():match("(.-)\\") or ident:reverse():match("(.-)/")
+    -- WE NEED TO EXTRACT ONLY DLL WITHOUT PATH SO MATCH ONLY LAST SLASH TO END
+    ident = ident:match("([^/\\]+)$")
+    -- check for vst shell id if any
+    local tag = ident:match("<%d+$") or ident:match("([^/\\]+)$")
     -- NEED TO REPLACE WHITESPACES AND DASH WITH LOWER DASH ALSO (HOW ITS IN VST INI FILE)
-    ident = ident:reverse():gsub(" ", "_"):gsub("-", "_")
-    VST_INFO[#VST_INFO + 1] = { id = ident, name = name }
+    tag = tag:gsub(" ", "_"):gsub("-", "_")
+    VST_INFO[#VST_INFO + 1] = { id = ident, name = name, tag = tag }
     PLUGIN_LIST[#PLUGIN_LIST + 1] = name
 end
 
@@ -298,6 +303,8 @@ local function ParseFXTags()
         if dev_category then
             dev_category = dev_category:gsub("[%[%]]", "")
             if DEV then AddDevList(dev_category) end
+            -- EXTRACT VST SHELL ID IF ANY
+            FX = FX:match("<%d+$") or FX
             local fx_name = FindFXIDName(VST_INFO, FX)
             fx_name = fx_name and fx_name or FindFXIDName(AU_INFO, FX)
             fx_name = fx_name and fx_name or FindFXIDName(CLAP_INFO, FX)
@@ -356,11 +363,13 @@ local function ParseCustomCategories()
         if cur_cat_tbl then
             local FX, categories = line:match("(.+)=(.+)")
             if categories then
+                FX = FX:match("<%d+$") or FX
                 local fx_name = FindFXIDName(VST_INFO, FX)
                 fx_name = fx_name and fx_name or FindFXIDName(AU_INFO, FX)
                 fx_name = fx_name and fx_name or FindFXIDName(CLAP_INFO, FX)
                 fx_name = fx_name and fx_name or FindFXIDName(JS_INFO, FX, "JS")
                 fx_name = fx_name and fx_name or FindFXIDName(LV2_INFO, FX)
+
                 for category_type in categories:gmatch('([^+-%|]+)') do
                     local dev_tbl = InTbl(cur_cat_tbl, category_type)
                     if fx_name then
@@ -535,10 +544,9 @@ local function ParseFavorites()
                 local fx_found
                 -- VST
                 if fx_type == "3" then -- VST
-                    local id = os:match("Win") and item:reverse():match("(.-)\\") or item:reverse():match("(.-)/")
+                    -- chech for vst shell id or dll_name
+                    local id = item:match("<%d+$") or item:match("([^/\\]+)$")
                     if id then
-                        -- NEED TO REPLACE WHITESPACES AND DASH WITH LOWER DASH ALSO (HOW ITS IN VST INI FILE)
-                        id = id:reverse():gsub(" ", "_"):gsub("-", "_")
                         fx_found = FindFXIDName(VST_INFO, id)
                     end
                 elseif fx_type == "2" then       -- JSFX
