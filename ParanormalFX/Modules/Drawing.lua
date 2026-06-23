@@ -50,6 +50,24 @@ local COLOR = {
     ["no_PM"] = 0x606582ff,
 }
 
+local ENABLED_FX_TYPES = {}
+local PLUGIN_TYPES = {
+    { name = "VST3",  enabled = false },
+    { name = "VST3i", enabled = false },
+    { name = "VST",   enabled = false },
+    { name = "VSTi",  enabled = false },
+    { name = "AU",    enabled = false },
+    { name = "AUi",   enabled = false },
+    { name = "CLAP",  enabled = false },
+    { name = "CLAPi", enabled = false },
+    { name = "LV2",   enabled = false },
+    { name = "LV2i",  enabled = false },
+    { name = "JS",    enabled = false },
+    { name = "DX",    enabled = false },
+    { name = "DXi",   enabled = false },
+    { name = "Other", enabled = false },
+}
+
 function GetColorTbl()
     return COLOR
 end
@@ -686,11 +704,28 @@ end
 ---------------
 --- DND END ---
 ---------------
+local function DrawPluginTypes(max_size)
+    local tw = 0
+    for i = 1, #PLUGIN_TYPES do
+        if tw < max_size and i > 1 then
+            r.ImGui_SameLine(ctx)
+        end
+        local retval, value = r.ImGui_Checkbox(ctx, PLUGIN_TYPES[i].name .. "##fx_type_filter_" .. PLUGIN_TYPES[i].name, PLUGIN_TYPES[i].enabled)
+        tw = tw > max_size and 0 or tw + r.ImGui_GetItemRectSize( ctx )
+        if retval then
+            PLUGIN_TYPES[i].enabled = value
+            ENABLED_FX_TYPES[PLUGIN_TYPES[i].name] = PLUGIN_TYPES[i].enabled or nil
+        end
+    end
+end
+
 local FX_LIST, CAT
 
 FILTER = ""
 local function FilterBox()
     local MAX_FX_SIZE = 300
+    DrawPluginTypes(MAX_FX_SIZE)
+    local draw_all = next(ENABLED_FX_TYPES) ~= nil
     if r.ImGui_IsWindowAppearing(ctx) then
         r.ImGui_SetKeyboardFocusHere(ctx)
     end
@@ -702,11 +737,14 @@ local function FilterBox()
     if #filtered_fx ~= 0 then
         if r.ImGui_BeginChild(ctx, "##popupp", MAX_FX_SIZE, filter_h) then
             for i = 1, #filtered_fx do
-                if r.ImGui_Selectable(ctx, filtered_fx[i].name, i == ADDFX_Sel_Entry) then
-                    AddFX(filtered_fx[i].name)
-                    r.ImGui_CloseCurrentPopup(ctx)
+                local type = filtered_fx[i].name:match("^(%S+):")
+                if not draw_all or ENABLED_FX_TYPES[type] then
+                    if r.ImGui_Selectable(ctx, filtered_fx[i].name, i == ADDFX_Sel_Entry) then
+                        AddFX(filtered_fx[i].name)
+                        r.ImGui_CloseCurrentPopup(ctx)
+                    end
+                    DndAddFX_SRC(filtered_fx[i].name)
                 end
-                DndAddFX_SRC(filtered_fx[i].name)
             end
             r.ImGui_EndChild(ctx)
         end
@@ -781,11 +819,13 @@ local function DrawTrackTemplates(tbl, path)
 end
 
 local function DrawItems(tbl, main_cat_name)
+    local draw_all = next(ENABLED_FX_TYPES) ~= nil
     for i = 1, #tbl do
         if r.ImGui_BeginMenu(ctx, tbl[i].name) then
             for j = 1, #tbl[i].fx do
                 if tbl[i].fx[j] then
                     local name = tbl[i].fx[j]
+                    local type = name:match("^(%S+):")
 
                     if main_cat_name == "ALL PLUGINS" and tbl[i].name ~= "INSTRUMENTS" then
                         -- STRIP PREFIX IN "ALL PLUGINS" CATEGORIES EXCEPT INSTRUMENT WHERE THERE CAN BE MIXED ONES
@@ -795,10 +835,12 @@ local function DrawItems(tbl, main_cat_name)
                         name = name:gsub(" %(" .. Literalize(tbl[i].name) .. "%)", "")
                     end
                     local tw = r.ImGui_CalcTextSize(ctx, name)
-                    if r.ImGui_Selectable(ctx, name, nil, nil, tw > 500 and 500 or tw) then
-                        AddFX(tbl[i].fx[j])
+                    if not draw_all or ENABLED_FX_TYPES[type] then
+                        if r.ImGui_Selectable(ctx, name, nil, nil, tw > 500 and 500 or tw) then
+                            AddFX(tbl[i].fx[j])
+                        end
+                        DndAddFX_SRC(tbl[i].fx[j])
                     end
-                    DndAddFX_SRC(tbl[i].fx[j])
                 end
             end
             r.ImGui_EndMenu(ctx)
