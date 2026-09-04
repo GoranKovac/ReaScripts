@@ -1,9 +1,9 @@
 -- @description Sexan PieMenu 3000
 -- @author Sexan
 -- @license GPL v3
--- @version 0.36.5
+-- @version 0.36.6
 -- @changelog
---  Reduce 10px from all sides to make some linux compositors happy
+--  Do Fullscreen only once
 -- @provides
 --   [main=main,midi_editor] .
 --   [main=main,midi_editor] Sexan_Pie3000_Setup.lua
@@ -642,7 +642,6 @@ local function Main()
     end
     if LAST_ACTION then DoAction() end
 
-    DoFullScreen()
     if KILL_ON_ESC and ESC then DONE = true end
     --r.ShowConsoleMsg(tostring(DONE) .. "\n")
     if r.ImGui_Begin(ctx, 'PIE 3000', false, FLAGS) then
@@ -682,4 +681,5 @@ function Exit()
 end
 
 r.atexit(Exit)
+DoFullScreen()
 DeferLoop(Main)
